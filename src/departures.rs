@@ -1757,10 +1757,11 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 40] = [
+pub const RULE_IDS: [&str; 43] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
+    "bracket-query-parameter-call-keyword",
     "closed-empty-object-example",
     "collapsed-anyof-property-description",
     "constant-header-docs-arguments",
@@ -1780,11 +1781,13 @@ pub const RULE_IDS: [&str; 40] = [
     "lifted-base-path-docs-examples",
     "multipart-object-required-file-example",
     "nested-discriminator-flat-wire",
+    "non-string-client-header-example",
     "nullable-items-docs",
     "optional-lowered-required-query-array-example",
     "pattern-narrowed-enum-example",
     "readme-client-class-casing",
     "repeated-credential-example-keyword",
+    "repeated-query-body-example-keyword",
     "request-alias-reference-parameters",
     "schema-rejected-array-length-example",
     "schema-rejected-name-example",
@@ -1820,6 +1823,14 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "body-query-parameter-value" => Rule {
             region: Some(body_query_parameter_value),
+            ..none
+        },
+        "bracket-query-parameter-call-keyword" => Rule {
+            line: Some(bracket_query_parameter_call_keyword),
+            ..none
+        },
+        "non-string-client-header-example" => Rule {
+            line: Some(non_string_client_header_example),
             ..none
         },
         "collapsed-anyof-property-description" => Rule {
@@ -1937,6 +1948,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "repeated-credential-example-keyword" => Rule {
             region: Some(repeated_credential_example_keyword),
+            ..none
+        },
+        "repeated-query-body-example-keyword" => Rule {
+            region: Some(repeated_query_body_example_keyword),
             ..none
         },
         "stream-reference-return-type" => Rule {
@@ -3610,6 +3625,105 @@ fn repeated_credential_example_keyword(pair: &Pair<'_>) -> Result<Option<Region>
     Ok(differing_window(pair.fern, pair.crozier))
 }
 
+/// `repeated-query-body-example-keyword`: in `README.md` or `reference.md`, a
+/// method call's worked example (`client.<…>(` or `await client.<…>(`) whose
+/// argument line repeats a keyword an earlier argument line of the same call
+/// passed, where crozier's aligned line passes `<model>_<keyword>` with the same
+/// value. The source document must declare the collision Fern renames that way:
+/// an operation with a query parameter and a JSON body that `$ref`s component
+/// `<Model>`, which declares a property of the same argument name and is
+/// referenced somewhere besides that body, so Fern keeps it a named model. Fern's
+/// file, with each such line replaced by crozier's, must be crozier's. The
+/// region is the two files' differing window. The same mechanism as
+/// `repeated-credential-example-keyword`, in a method call rather than the
+/// client constructor.
+fn repeated_query_body_example_keyword(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) || pair.fern.len() != pair.crozier.len() {
+        return Ok(None);
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    let mut kept: Vec<&str> = Vec::with_capacity(pair.fern.len());
+    let mut call: Option<(usize, BTreeSet<&str>)> = None;
+    let mut replaced = false;
+    for (fern, crozier) in pair.fern.iter().zip(pair.crozier) {
+        let trimmed = fern.trim_start();
+        let indent = fern.len() - trimmed.len();
+        if trimmed.ends_with('(') && opens_method_call(trimmed) {
+            call = Some((indent, BTreeSet::new()));
+        } else if let Some((opened, seen)) = call.as_mut() {
+            if trimmed == ")" && indent == *opened {
+                call = None;
+            } else if let Some((fern_indent, name, value)) = keyword_argument_line(fern) {
+                if fern_indent.len() == *opened + 4 && !seen.insert(name) {
+                    let renamed = keyword_argument_line(crozier).filter(|(at, renamed, kept)| {
+                        *at == fern_indent
+                            && kept == &value
+                            && reused_query_body_model(source, name, renamed)
+                    });
+                    if renamed.is_none() {
+                        return Ok(None);
+                    }
+                    replaced = true;
+                    kept.push(crozier);
+                    continue;
+                }
+            }
+        }
+        kept.push(fern);
+    }
+    if !replaced || kept != pair.crozier {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// Whether `source` declares an operation whose query parameter passes
+/// `keyword` beside a JSON body `$ref` to a component that declares a property
+/// passed as `keyword`, is referenced somewhere besides that body, and whose
+/// snake-cased name prefixes `renamed` as `<model>_<keyword>`.
+fn reused_query_body_model(source: &crate::openapi::OpenApi, keyword: &str, renamed: &str) -> bool {
+    source_operations(source).any(|(operation, parameters)| {
+        let queried = parameters
+            .iter()
+            .any(|parameter| is_query(parameter) && argument_names(&parameter.name, keyword));
+        let Some(pointer) = operation
+            .request_body
+            .as_ref()
+            .and_then(|body| {
+                body.content
+                    .iter()
+                    .find(|(media, _)| media.contains("json"))
+            })
+            .and_then(|(_, media)| media.schema.as_ref())
+            .and_then(|schema| schema.reference.as_deref())
+        else {
+            return false;
+        };
+        let Some(model) = pointer.strip_prefix("#/components/schemas/") else {
+            return false;
+        };
+        let Some(component) = source.components.schemas.get(model) else {
+            return false;
+        };
+        let declares = component
+            .properties
+            .keys()
+            .any(|property| argument_names(property, keyword));
+        let mut references = 0;
+        visit_source_schemas(Some(source), &mut |schema| {
+            if schema.reference.as_deref() == Some(pointer) {
+                references += 1;
+            }
+        });
+        queried
+            && declares
+            && references > 1
+            && renamed == format!("{}_{keyword}", crate::naming::to_snake_case(model))
+    })
+}
+
 /// `empty-namespace-package`: the package root's `client.py` and `__init__.py`,
 /// where Fern wrote the empty namespace's client and package marker, are
 /// crozier's root client and package whole.
@@ -4822,6 +4936,82 @@ fn emoji_tag_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -
         })
 }
 
+/// `bracket-query-parameter-call-keyword`: in a README or `reference.md` worked
+/// call, the keyword of a query parameter whose wire name ends in `[]`. Fern's
+/// Markdown writes `<name>_array=`, which the generated method does not take;
+/// crozier writes the method's own `<name>=`. The source document must declare
+/// such a query parameter, and every other byte of the line is the same.
+fn bracket_query_parameter_call_keyword(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let argument = crozier.trim_start();
+    let indent = &crozier[..crozier.len() - argument.len()];
+    let Some((keyword, value)) = argument.split_once('=') else {
+        return false;
+    };
+    if !python_identifier(keyword) || value.is_empty() {
+        return false;
+    }
+    source_operations(source).any(|(_, parameters)| {
+        parameters.iter().any(|parameter| {
+            parameter.name.strip_suffix("[]").is_some_and(|stem| {
+                is_query(parameter)
+                    && crate::naming::field_name(stem) == keyword
+                    && fern
+                        == format!(
+                            "{indent}{}={value}",
+                            crate::naming::field_name(&format!("{stem}_array"))
+                        )
+            })
+        })
+    })
+}
+
+/// `non-string-client-header-example`: in a `client.py` docstring's client
+/// construction, a promoted header the source document declares `boolean`,
+/// `integer` or `number`. Fern passes the `YOUR_<NAME>` string placeholder its
+/// string headers take; crozier passes the generator's own placeholder for the
+/// declared type (`True`, `1`, `1.1`). Every other byte of the line is the same.
+fn non_string_client_header_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with("client.py") || pair.rel.ends_with("raw_client.py") || fern == crozier {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let argument = crozier.trim_start();
+    let indent = &crozier[..crozier.len() - argument.len()];
+    let Some((name, value)) = argument
+        .strip_suffix(',')
+        .and_then(|argument| argument.split_once('='))
+    else {
+        return false;
+    };
+    let declared = match value {
+        "True" => "boolean",
+        "1" => "integer",
+        "1.1" => "number",
+        _ => return false,
+    };
+    fern == format!("{indent}{name}=\"YOUR_{}\",", name.to_uppercase())
+        && source_operations(source).any(|(_, parameters)| {
+            parameters.iter().any(|parameter| {
+                parameter.location == Some(crate::openapi::ParameterLocation::Header)
+                    && crate::naming::field_name(crate::ir::header_param_stem(&parameter.name))
+                        == name
+                    && parameter
+                        .schema
+                        .as_ref()
+                        .and_then(|schema| schema.ty.as_ref()?.primary())
+                        == Some(declared)
+            })
+        })
+}
+
 /// Only the underscore missing from a declared, generated method's documentation.
 fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
@@ -4877,6 +5067,155 @@ fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozi
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn non_string_client_header_examples_admit_only_the_declared_type() {
+        let document = serde_json::json!({"paths": {"/berths": {"get": {
+            "parameters": [
+                {"name": "X-Strict-Mode", "in": "header", "required": true, "schema": {"type": "boolean"}},
+                {"name": "X-Shift-Number", "in": "header", "required": true, "schema": {"type": "integer"}},
+                {"name": "X-Draft-Depth", "in": "header", "required": true, "schema": {"type": "number"}},
+                {"name": "X-Tenant-Code", "in": "header", "required": true, "schema": {"type": "string"}},
+                {"name": "strict_count", "in": "query", "schema": {"type": "integer"}}
+            ],
+            "responses": {}
+        }}}});
+        let context = source_context(document, &[]);
+        let rule: LineRule = non_string_client_header_example;
+        for rel in ["src/fern/client.py", "src/fern/berths/client.py"] {
+            for (fern, crozier) in [
+                (
+                    "        strict_mode=\"YOUR_STRICT_MODE\",",
+                    "        strict_mode=True,",
+                ),
+                (
+                    "        shift_number=\"YOUR_SHIFT_NUMBER\",",
+                    "        shift_number=1,",
+                ),
+                (
+                    "        draft_depth=\"YOUR_DRAFT_DEPTH\",",
+                    "        draft_depth=1.1,",
+                ),
+            ] {
+                assert!(
+                    line_holds(rule, rel, &context, fern, crozier),
+                    "{rel}: {crozier}"
+                );
+            }
+        }
+        // The value must be the declared type's placeholder, the line otherwise
+        // unchanged, and the header a declared boolean or numeric one.
+        let fern = "        strict_mode=\"YOUR_STRICT_MODE\",";
+        for crozier in [
+            "        strict_mode=1,",
+            "        strict_mode=False,",
+            "            strict_mode=True,",
+            "        strict_mode=True",
+        ] {
+            assert!(
+                !line_holds(rule, "src/fern/client.py", &context, fern, crozier),
+                "{crozier}"
+            );
+        }
+        assert!(!line_holds(
+            rule,
+            "src/fern/client.py",
+            &context,
+            "        tenant_code=\"YOUR_TENANT_CODE\",",
+            "        tenant_code=1,"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/client.py",
+            &context,
+            "        strict_count=\"YOUR_STRICT_COUNT\",",
+            "        strict_count=1,"
+        ));
+        // Only the client docstrings: never a raw client or the Markdown files.
+        for rel in ["src/fern/raw_client.py", "README.md", "reference.md"] {
+            assert!(!line_holds(
+                rule,
+                rel,
+                &context,
+                fern,
+                "        strict_mode=True,"
+            ));
+        }
+        assert!(!line_holds(
+            rule,
+            "src/fern/client.py",
+            &Context::default(),
+            fern,
+            "        strict_mode=True,"
+        ));
+    }
+
+    #[test]
+    fn bracket_query_call_keywords_admit_only_the_declared_parameter_spelled_out() {
+        let document = serde_json::json!({"paths": {"/berths": {"get": {
+            "parameters": [
+                {"name": "codes[]", "in": "query", "schema": {"type": "array", "items": {"type": "string"}}},
+                {"name": "zone[]", "in": "header", "schema": {"type": "string"}}
+            ],
+            "responses": {}
+        }}}});
+        let context = source_context(document, &[]);
+        let rule: LineRule = bracket_query_parameter_call_keyword;
+        for rel in ["README.md", "reference.md"] {
+            assert!(line_holds(
+                rule,
+                rel,
+                &context,
+                "    codes_array=[",
+                "    codes=["
+            ));
+            // Any other change on the line still fails.
+            assert!(!line_holds(
+                rule,
+                rel,
+                &context,
+                "    codes_array=[",
+                "    codes=[1,"
+            ));
+            assert!(!line_holds(
+                rule,
+                rel,
+                &context,
+                "    codes_array=[",
+                "        codes=["
+            ));
+        }
+        // Only a declared `[]` query parameter, never a header or another name.
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            "    zone_array=[",
+            "    zone=["
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            "    ids_array=[",
+            "    ids=["
+        ));
+        // Only the Markdown files; a docstring already passes the argument.
+        assert!(!line_holds(
+            rule,
+            "src/fern/berths/client.py",
+            &context,
+            "    codes_array=[",
+            "    codes=["
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &Context::default(),
+            "    codes_array=[",
+            "    codes=["
+        ));
+    }
 
     #[test]
     fn digit_leading_documented_methods_require_the_declared_generated_identifier() {
@@ -6467,6 +6806,110 @@ mod tests {
                 .unwrap()
                 .is_none()
         );
+    }
+
+    /// A document whose `POST /questions` takes a query parameter `location`
+    /// beside a `$ref` body `Question` declaring `bench`; `reused` adds a
+    /// response listing `Question` again.
+    fn reused_body_source(location: &str, reused: bool) -> serde_json::Value {
+        let mut paths = serde_json::json!({
+            "/questions": {"post": {
+                "parameters": [{"name": "bench", "in": location, "required": true,
+                                "schema": {"type": "string"}}],
+                "requestBody": {"content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Question"}}}},
+                "responses": {"200": {"description": "ok"}}
+            }}
+        });
+        if reused {
+            paths["/questions"]["get"] = serde_json::json!({"responses": {"200": {
+                "description": "ok",
+                "content": {"application/json": {"schema": {
+                    "type": "array", "items": {"$ref": "#/components/schemas/Question"}}}}
+            }}});
+        }
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": paths,
+            "components": {"schemas": {"Question": {"type": "object", "properties": {
+                "bench": {"type": "string"}, "asked_by": {"type": "string"}}}}}
+        })
+    }
+
+    #[test]
+    fn the_query_body_keyword_rule_takes_only_a_reused_body_s_renamed_keyword() {
+        let fern = [
+            "client.questions.file_question(",
+            "    bench=\"bench\",",
+            "    bench=\"bench\",",
+            "    asked_by=\"asked_by\",",
+            ")",
+        ];
+        let crozier = [
+            "client.questions.file_question(",
+            "    bench=\"bench\",",
+            "    question_bench=\"bench\",",
+            "    asked_by=\"asked_by\",",
+            ")",
+        ];
+        let holds = |rel: &str, source: &Context, fern: &[&str], crozier: &[&str]| {
+            repeated_query_body_example_keyword(&Pair {
+                rel,
+                fern,
+                crozier,
+                context: source,
+            })
+            .unwrap()
+        };
+        let reused = source_context(reused_body_source("query", true), &[]);
+        assert_eq!(
+            holds("reference.md", &reused, &fern, &crozier),
+            Some(Region {
+                fern: 2..3,
+                crozier: 2..3
+            })
+        );
+        assert!(holds("README.md", &reused, &fern, &crozier).is_some());
+        // The async twin's indented `await` call reads the same.
+        let indent = |lines: &[&str]| -> Vec<String> {
+            lines
+                .iter()
+                .map(|line| format!("    {}", line.replacen("client.", "await client.", 1)))
+                .collect()
+        };
+        let (fern_async, crozier_async) = (indent(&fern), indent(&crozier));
+        let fern_async: Vec<&str> = fern_async.iter().map(String::as_str).collect();
+        let crozier_async: Vec<&str> = crozier_async.iter().map(String::as_str).collect();
+        assert!(holds("README.md", &reused, &fern_async, &crozier_async).is_some());
+        // Not in a client's docstring, where Fern already writes the rename.
+        assert!(holds("src/fern/questions/client.py", &reused, &fern, &crozier).is_none());
+        // Not without the source document, nor when the body is referenced
+        // only once (Fern inlines it and writes the rename itself), nor for a
+        // path parameter's clash (Fern renames the path argument instead).
+        assert!(holds("reference.md", &Context::default(), &fern, &crozier).is_none());
+        let once = source_context(reused_body_source("query", false), &[]);
+        assert!(holds("reference.md", &once, &fern, &crozier).is_none());
+        let path = source_context(reused_body_source("path", true), &[]);
+        assert!(holds("reference.md", &path, &fern, &crozier).is_none());
+        // A rename the signature does not declare, a changed value, or crozier
+        // keeping the repeat, is not the departure.
+        for wrong in [
+            "    body_bench=\"bench\",",
+            "    question_bench=\"other\",",
+            "    bench=\"bench\",",
+        ] {
+            let mut lines = crozier;
+            lines[2] = wrong;
+            assert!(
+                holds("reference.md", &reused, &fern, &lines).is_none(),
+                "{wrong}"
+            );
+        }
+        // Another line differing beside the rename is not explained either.
+        let mut extra = crozier;
+        extra[3] = "    asked_by=\"someone\",";
+        assert!(holds("reference.md", &reused, &fern, &extra).is_none());
     }
 
     #[test]

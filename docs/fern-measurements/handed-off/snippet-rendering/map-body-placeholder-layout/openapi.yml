@@ -1,0 +1,88 @@
+openapi: 3.0.3
+info:
+  title: Seed Bank
+  version: 1.0.0
+  description: A community seed bank, written to measure how a required free-form JSON body with no example is laid out in worked calls.
+servers:
+  - url: https://seeds.example
+paths:
+  /varieties:
+    post:
+      operationId: registerVariety
+      tags: [varieties]
+      summary: Register a variety from an untyped record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VarietyRecord'
+      responses:
+        '201':
+          description: The registered variety.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variety'
+  /varieties/{varietyId}/traits:
+    put:
+      operationId: replaceTraits
+      tags: [varieties]
+      summary: Replace a variety's traits
+      parameters:
+        - name: varietyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraitMap'
+      responses:
+        '200':
+          description: The variety.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variety'
+  /varieties/{varietyId}/notes:
+    patch:
+      operationId: patchNotes
+      tags: [varieties]
+      summary: Merge free-form notes into a variety
+      parameters:
+        - name: varietyId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: The variety.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Variety'
+components:
+  schemas:
+    VarietyRecord:
+      title: VarietyRecord
+    TraitMap:
+      type: object
+      additionalProperties:
+        type: string
+    Variety:
+      type: object
+      properties:
+        id:
+          type: string

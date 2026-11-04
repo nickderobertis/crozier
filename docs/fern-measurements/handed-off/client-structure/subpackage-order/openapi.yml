@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Lending Library
+  version: 1.0.0
+  description: A library's circulation desk, written to measure how nested sub-clients are ordered.
+servers:
+  - url: https://library.example.org
+paths:
+  /loans/{loanId}/renewals:
+    post:
+      operationId: renewLoan
+      x-fern-sdk-group-name: [library, loans, renewals]
+      x-fern-sdk-method-name: create
+      parameters:
+        - name: loanId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The renewal.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Loan'
+  /archive/boxes:
+    get:
+      operationId: listArchiveBoxes
+      x-fern-sdk-group-name: [library, archive, boxes]
+      x-fern-sdk-method-name: list
+      responses:
+        '200':
+          description: Archive boxes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /members:
+    get:
+      operationId: listMembers
+      x-fern-sdk-group-name: [library, members]
+      x-fern-sdk-method-name: list
+      responses:
+        '200':
+          description: Members.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /loans:
+    get:
+      operationId: listLoans
+      x-fern-sdk-group-name: [library, loans]
+      x-fern-sdk-method-name: list
+      responses:
+        '200':
+          description: Loans.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Loan'
+components:
+  schemas:
+    Loan:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: string
+        title:
+          type: string

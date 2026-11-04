@@ -1,0 +1,17 @@
+# json-binary-body-snippet: worked request values against the actual bytes annotation
+
+Run on 2026-11-03 (Python 3.14.7, HTTPX 0.28.1, Pydantic 2.14.0) with `crates/crozier-e2e/tests/e2e/snippet_rendering_wire.py`: the certified
+pair's tree from a copy of `fern-expected/`, crozier's from `crozier generate` over `openapi.yml` at this branch;
+each call goes over a socket to a local HTTP server.
+
+## binary-json-body-example: certified pair (fern-expected/src)
+
+$ python snippet_rendering_wire.py fern-expected/src --expected invalid
+{"examples": {"replace_chart AsyncPatternsClient": "plain string rejected by the bytes annotation", "replace_chart PatternsClient": "plain string rejected by the bytes annotation", "replace_chart reference.md": "plain string rejected by the bytes annotation", "replace_draft AsyncPatternsClient": "plain string rejected by the bytes annotation", "replace_draft PatternsClient": "plain string rejected by the bytes annotation", "replace_draft reference.md": "plain string rejected by the bytes annotation"}, "sent": [{"body": "\"c3RyaW5n\"", "content_type": "application/json", "method": "PUT", "path": "/patterns/twill-4/draft"}, {"body": "\"c3RyaW5n\"", "content_type": "application/json", "method": "PUT", "path": "/patterns/twill-4/chart"}]}
+exit 0
+
+## binary-json-body-example: crozier
+
+$ python snippet_rendering_wire.py sdk/src --expected valid
+{"examples": {"replace_chart AsyncPatternsClient": "bytes example has its declared type", "replace_chart PatternsClient": "bytes example has its declared type", "replace_chart reference.md": "bytes example has its declared type", "replace_draft AsyncPatternsClient": "bytes example has its declared type", "replace_draft PatternsClient": "bytes example has its declared type", "replace_draft reference.md": "bytes example has its declared type"}, "sent": [{"body": "\"c3RyaW5n\"", "content_type": "application/json", "method": "PUT", "path": "/patterns/twill-4/draft"}, {"body": "\"c3RyaW5n\"", "content_type": "application/json", "method": "PUT", "path": "/patterns/twill-4/chart"}]}
+exit 0

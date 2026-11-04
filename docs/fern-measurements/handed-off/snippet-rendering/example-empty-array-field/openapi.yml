@@ -1,0 +1,97 @@
+openapi: 3.0.3
+info:
+  title: Tile Catalogue
+  version: 1.0.0
+  description: A tile maker's catalogue, written to measure how a model's optional array field is worked when its example holds no usable item.
+servers:
+  - url: https://tiles.example
+paths:
+  /tiles:
+    delete:
+      operationId: retireTiles
+      tags: [tiles]
+      summary: Retire the tiles a criteria matches
+      parameters:
+        - name: criteria
+          in: query
+          required: true
+          style: deepObject
+          explode: true
+          schema:
+            $ref: '#/components/schemas/Criteria'
+      responses:
+        '204':
+          description: Retired.
+  /tiles/search:
+    post:
+      operationId: searchTiles
+      tags: [tiles]
+      summary: Search tiles
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label, finish]
+              properties:
+                label:
+                  type: string
+                finish:
+                  $ref: '#/components/schemas/Finish'
+            example:
+              label: kitchen splashback
+              finish:
+                glazes: []
+                sheen: matte
+      responses:
+        '200':
+          description: The matching tiles.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tile'
+components:
+  schemas:
+    Criteria:
+      type: object
+      properties:
+        any_of:
+          type: array
+          items:
+            $ref: '#/components/schemas/Criteria'
+        all_of:
+          type: array
+          items:
+            $ref: '#/components/schemas/Criteria'
+      additionalProperties:
+        type: object
+        properties:
+          equals:
+            type: string
+        additionalProperties: false
+      example:
+        any_of:
+          - colour:
+              equals: teal
+          - all_of:
+              - colour:
+                  equals: white
+              - edge:
+                  equals: bullnose
+    Finish:
+      type: object
+      properties:
+        glazes:
+          type: array
+          items:
+            type: string
+        sheen:
+          type: string
+    Tile:
+      type: object
+      properties:
+        sku:
+          type: string

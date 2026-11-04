@@ -74,6 +74,12 @@ mod naming_wire;
 /// held whole in both enum modes, with the values a design-review ruling keeps.
 #[path = "e2e/handed_off_example_values.rs"]
 mod handed_off_example_values;
+/// The usage-snippet causes the fixture-only witness searches handed off —
+/// how a worked call is written and whether one is written at all — measured
+/// under `docs/fern-measurements/handed-off/snippet-rendering/` and held whole
+/// in both enum modes, with the Fern defects catalogued in their place.
+#[path = "e2e/handed_off_snippet_rendering.rs"]
+mod handed_off_snippet_rendering;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These journeys take about 16 seconds together; they sit on the same crozier-e2e edge every other journey in that project shares, the far costlier golden replays included; and splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
@@ -151,6 +157,15 @@ mod handed_off_type_declarations;
 /// measured under `docs/fern-measurements/handed-off/document-acceptance/`.
 #[path = "e2e/document_acceptance.rs"]
 mod document_acceptance;
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+/// The client-structure root causes the fixture-only witness searches handed
+/// off, each in a document written for it under
+/// `docs/fern-measurements/handed-off/client-structure/`, held whole against
+/// the certified pair's tree.
+#[path = "e2e/client_structure.rs"]
+mod client_structure;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The handed-off body and media-type root causes, each measured on a
 /// from-scratch document under `docs/fern-measurements/handed-off/bodies-media/`
@@ -906,6 +921,13 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     let mut add = |golden: String, compared: departures_ledger::ComparedGolden| {
         inventory.goldens.insert(golden, compared);
     };
+    add(
+        format!(
+            "{}/request-example-union-variant-fields/unusable-list/fern-expected",
+            handed_off_snippet_rendering::AREA_DIR
+        ),
+        departures_ledger::ComparedGolden::default(),
+    );
     for corpus in registered_diff_corpora() {
         let golden = format!("tests/fixtures/{}/expected", corpus.api);
         if root.join(&golden).is_dir() {
@@ -994,7 +1016,16 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
         (handed_off_example_values::AREA_DIR, "fern-expected"),
+        (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
+        (
+            client_structure::CLIENT_STRUCTURE_DIR,
+            client_structure::PYTHON_ENUMS_TREE,
+        ),
+        (
+            client_structure::CLIENT_STRUCTURE_DIR,
+            client_structure::LITERALS_TREE,
+        ),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -1053,6 +1084,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             golden,
             departures_ledger::ComparedGolden {
                 excluded: vec![handed_off_example_values::MANIFEST.to_string()],
+                carve_outs: Default::default(),
+            },
+        );
+    }
+    for golden in handed_off_snippet_rendering::compared_overlays() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded: vec![handed_off_snippet_rendering::MANIFEST.to_string()],
                 carve_outs: Default::default(),
             },
         );
@@ -16010,6 +16050,9 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
     (selected, failures)
 }
 
+#[path = "e2e/fixture_diff_report.rs"]
+mod fixture_diff_report;
+
 /// Mismatch-investigation aid — NOT a gate (ignored by default). Complementing
 /// [`report_fixture_gaps`], it
 /// prints the normalized unified diff of every committed fixture file crozier does
@@ -16021,21 +16064,25 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
 /// Scope with two env vars (the `just` recipe forwards its positional args):
 /// `CROZIER_DIFF_CORPUS=<api>` limits to one corpus, `CROZIER_DIFF_FILE=<substr>`
 /// to fixture paths containing `<substr>`. The Fern refresh automation instead
-/// invokes one exact corpus at a time with `CROZIER_DIFF_SUMMARY_ONLY=1`; that
-/// reports every differing path without retaining potentially huge unified diffs.
+/// invokes one exact corpus at a time. Text diffs are rendered one file at a
+/// time within fixed byte and alignment-cell limits; larger pairs name the
+/// omitted line counts. `CROZIER_DIFF_SUMMARY_ONLY=1` skips text rendering.
 /// `CROZIER_DIFF_CORPORA=<api>,...` remains available for exact multi-corpus
 /// callers. Missing registry entries are processing failures rather than silent
 /// omissions. Pure reporter — it never asserts on a diff (a diff is the point).
 #[test]
 #[ignore = "mismatch-investigation aid, not a gate; run via `just fixtures-diff`"]
 fn report_fixture_diffs() {
+    let include_text_diffs = std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none();
+    if fixture_diff_report::synthetic_report(include_text_diffs) {
+        return;
+    }
     let corpus_filter = std::env::var("CROZIER_DIFF_CORPUS")
         .ok()
         .filter(|s| !s.is_empty());
     let file_filter = std::env::var("CROZIER_DIFF_FILE")
         .ok()
         .filter(|s| !s.is_empty());
-    let include_text_diffs = std::env::var_os("CROZIER_DIFF_SUMMARY_ONLY").is_none();
 
     let requested = std::env::var("CROZIER_DIFF_CORPORA").ok();
     // A flat golden with no packaged sibling is not a registered corpus, so it is
@@ -16099,7 +16146,7 @@ fn report_fixture_diffs() {
             &expected_root,
             out.path(),
             file_filter.as_deref(),
-            include_text_diffs,
+            false,
             corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
             Some(&spec),
         ) {
@@ -16110,7 +16157,14 @@ fn report_fixture_diffs() {
                 continue;
             }
         };
-        print_fixture_differences(&differences, &unmatched);
+        fixture_diff_report::print(
+            &differences,
+            &unmatched,
+            &expected_root,
+            out.path(),
+            Some(&spec),
+            include_text_diffs,
+        );
         total += differences.len();
     }
     for golden in flat_goldens {
@@ -16139,7 +16193,7 @@ fn report_fixture_diffs() {
             &expected_root,
             out.path(),
             file_filter.as_deref(),
-            include_text_diffs,
+            false,
             departure_ledger().golden(&golden_path(&expected_root), &[]),
             Some(&spec),
         ) {
@@ -16151,7 +16205,14 @@ fn report_fixture_diffs() {
             }
         };
         // A flat golden has no `unmatched` list: every difference is a regression.
-        print_fixture_differences(&differences, &std::collections::HashSet::new());
+        fixture_diff_report::print(
+            &differences,
+            &std::collections::HashSet::new(),
+            &expected_root,
+            out.path(),
+            Some(&spec),
+            include_text_diffs,
+        );
         total += differences.len();
     }
     println!(

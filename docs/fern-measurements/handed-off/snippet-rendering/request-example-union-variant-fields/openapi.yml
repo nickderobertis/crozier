@@ -1,0 +1,256 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Panels
+  version: 1.0.0
+  description: A greenhouse monitoring board, written to measure how a request example's discriminated-union property is worked from the chosen variant's fields.
+servers:
+  - url: https://panels.greenhouse.example
+paths:
+  /boards:
+    post:
+      operationId: createBoard
+      tags: [boards]
+      summary: Create a monitoring board
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Board'
+      responses:
+        '201':
+          description: The board.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Board'
+  /boards/preview:
+    post:
+      operationId: previewBoard
+      tags: [boards]
+      summary: Preview a monitoring board without saving it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Board'
+            example:
+              title: Propagation house
+              panel:
+                title: Bench humidity
+                reading:
+                  source: sensors
+                  channels: [humidity, soil_moisture]
+                  window: hourly
+                  bench:
+                    row: 2
+                    side: east
+                  checks:
+                    - kind: threshold
+                      limit: 70
+      responses:
+        '200':
+          description: The previewed board.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Board'
+components:
+  schemas:
+    Board:
+      type: object
+      required: [title, panel]
+      properties:
+        title:
+          type: string
+        panel:
+          $ref: '#/components/schemas/Panel'
+    Panel:
+      type: object
+      required: [title, reading]
+      properties:
+        title:
+          type: string
+        reading:
+          discriminator:
+            propertyName: source
+            mapping:
+              sensors: '#/components/schemas/SensorReading'
+              forecast: '#/components/schemas/ForecastReading'
+          oneOf:
+            - $ref: '#/components/schemas/SensorReading'
+            - $ref: '#/components/schemas/ForecastReading'
+    SensorReading:
+      type: object
+      required: [source]
+      example:
+        source: sensors
+        channels: [air_temperature, humidity]
+        window: daily
+        bench:
+          row: 4
+          side: west
+        checks:
+          - kind: threshold
+            limit: 32.5
+        alerts:
+          - target: vent
+            operator: above
+            levels: [high, critical]
+        season:
+          kind: autumn
+          phase: late
+      properties:
+        source:
+          type: string
+          enum: [sensors]
+        channels:
+          type: array
+          items:
+            type: string
+            enum: [humidity, soil_moisture, air_temperature]
+        window:
+          $ref: '#/components/schemas/Window'
+        bench:
+          type: object
+          properties:
+            row:
+              type: integer
+            side:
+              type: string
+        alerts:
+          type: array
+          items:
+            discriminator:
+              propertyName: target
+              mapping:
+                bench: '#/components/schemas/BenchAlert'
+                vent: '#/components/schemas/VentAlert'
+            oneOf:
+              - $ref: '#/components/schemas/BenchAlert'
+              - $ref: '#/components/schemas/VentAlert'
+        season:
+          discriminator:
+            propertyName: kind
+            mapping:
+              spring: '#/components/schemas/SpringSeason'
+              autumn: '#/components/schemas/AutumnSeason'
+          oneOf:
+            - $ref: '#/components/schemas/SpringSeason'
+            - $ref: '#/components/schemas/AutumnSeason'
+        checks:
+          type: array
+          items:
+            discriminator:
+              propertyName: kind
+              mapping:
+                threshold: '#/components/schemas/ThresholdCheck'
+                trend: '#/components/schemas/TrendCheck'
+            oneOf:
+              - $ref: '#/components/schemas/ThresholdCheck'
+              - $ref: '#/components/schemas/TrendCheck'
+    AlertOperator:
+      type: string
+      enum: [below, above]
+    BenchAlert:
+      oneOf:
+        - title: Ranged bench alert
+          type: object
+          required: [operator, levels, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            levels:
+              type: array
+              items:
+                type: string
+            target:
+              type: string
+              enum: [bench]
+        - title: Cleared bench alert
+          type: object
+          required: [operator, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            target:
+              type: string
+              enum: [bench]
+    VentAlert:
+      oneOf:
+        - title: Ranged vent alert
+          type: object
+          required: [operator, levels, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            levels:
+              type: array
+              items:
+                type: string
+            target:
+              type: string
+              enum: [vent]
+        - title: Cleared vent alert
+          type: object
+          required: [operator, target]
+          properties:
+            operator:
+              $ref: '#/components/schemas/AlertOperator'
+            target:
+              type: string
+              enum: [vent]
+    SpringSeason:
+      type: object
+      required: [kind, phase]
+      properties:
+        kind:
+          type: string
+          enum: [spring]
+        phase:
+          type: string
+          enum: [early, late]
+    AutumnSeason:
+      type: object
+      required: [kind, phase]
+      properties:
+        kind:
+          type: string
+          enum: [autumn]
+        phase:
+          type: string
+          enum: [early, late]
+    ForecastReading:
+      type: object
+      required: [source]
+      properties:
+        source:
+          type: string
+          enum: [forecast]
+        days:
+          type: integer
+    Window:
+      type: string
+      enum: [hourly, daily]
+    ThresholdCheck:
+      type: object
+      required: [kind]
+      example:
+        kind: threshold
+        limit: 80
+      properties:
+        kind:
+          type: string
+          enum: [threshold]
+        limit:
+          type: number
+    TrendCheck:
+      type: object
+      required: [kind]
+      properties:
+        kind:
+          type: string
+          enum: [trend]
+        hours:
+          type: integer

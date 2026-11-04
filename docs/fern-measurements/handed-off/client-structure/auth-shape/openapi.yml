@@ -1,0 +1,70 @@
+openapi: 3.0.3
+info:
+  title: Help Desk
+  version: 1.0.0
+  description: A support desk's ticket service, written to measure two header credentials of one name and a bearer-formatted header key.
+servers:
+  - url: https://desk.example.com
+security:
+  - deskKey: []
+paths:
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [Tickets]
+      responses:
+        '200':
+          description: Tickets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /tickets/escalated:
+    get:
+      operationId: listEscalatedTickets
+      tags: [Tickets]
+      security:
+        - agentHeader: []
+      responses:
+        '200':
+          description: Escalated tickets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /tickets/archived:
+    get:
+      operationId: listArchivedTickets
+      tags: [Tickets]
+      security:
+        - proxyAgent: []
+      responses:
+        '200':
+          description: Archived tickets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  securitySchemes:
+    deskKey:
+      type: apiKey
+      in: header
+      name: Authorization
+      x-bearer-format: bearer
+    agentHeader:
+      type: apiKey
+      in: header
+      name: X-Desk-Agent
+      description: The agent identifier a front proxy sets.
+    proxyAgent:
+      type: apiKey
+      in: header
+      name: X-Desk-Agent
+      description: The same agent identifier, declared a second time for archived tickets.

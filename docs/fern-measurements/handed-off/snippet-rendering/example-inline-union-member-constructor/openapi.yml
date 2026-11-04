@@ -1,0 +1,78 @@
+openapi: 3.0.3
+info:
+  title: Courier Desk
+  version: 1.0.0
+  description: A parcel desk's checkout, written to measure how a request example's element is worked when it matches an inline object member of a union.
+servers:
+  - url: https://desk.courier.example
+paths:
+  /checkouts/{checkoutId}:
+    post:
+      operationId: updateCheckout
+      tags: [checkouts]
+      summary: Update a checkout's delivery choices
+      parameters:
+        - name: checkoutId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [deliveries]
+              properties:
+                deliveries:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeliveryChoice'
+                note:
+                  type: string
+            example:
+              deliveries:
+                - method: locker
+      responses:
+        '200':
+          description: The checkout.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+components:
+  schemas:
+    DeliveryChoice:
+      type: object
+      additionalProperties: false
+      required: [method]
+      properties:
+        method:
+          type: string
+        locker:
+          $ref: '#/components/schemas/LockerChoice'
+        doorstep:
+          $ref: '#/components/schemas/DoorstepChoice'
+      oneOf:
+        - properties:
+            method:
+              const: locker
+          required: [locker]
+        - properties:
+            method:
+              const: doorstep
+          required: [doorstep]
+    LockerChoice:
+      type: object
+      properties:
+        locker_id:
+          type: string
+    DoorstepChoice:
+      type: object
+      properties:
+        instructions:
+          type: string

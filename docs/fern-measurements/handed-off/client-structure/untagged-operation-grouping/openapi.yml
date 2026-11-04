@@ -1,0 +1,75 @@
+openapi: 3.0.3
+info:
+  title: Kennel Board
+  version: 1.0.0
+  description: A boarding kennel's booking desk, written to measure where a method named by x-fern-sdk-method-name alone lands.
+servers:
+  - url: https://kennel.example.net
+paths:
+  /stays:
+    post:
+      operationId: bookStay
+      tags: [Stays]
+      x-fern-sdk-method-name: book_stay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StayRequest'
+      responses:
+        '200':
+          description: The booked stay.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stay'
+    get:
+      operationId: listStays
+      tags: [Stays]
+      responses:
+        '200':
+          description: Every stay.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Stay'
+  /stays/{stayId}:
+    get:
+      operationId: getStay
+      tags: [Stays]
+      parameters:
+        - name: stayId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One stay.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stay'
+components:
+  schemas:
+    StayRequest:
+      type: object
+      required: [dog, nights]
+      properties:
+        dog:
+          type: string
+        nights:
+          type: integer
+    Stay:
+      type: object
+      required: [id, dog, nights]
+      properties:
+        id:
+          type: string
+        dog:
+          type: string
+        nights:
+          type: integer

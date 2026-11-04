@@ -469,7 +469,7 @@ class GateTableTests(unittest.TestCase):
         commands = {gate.command for gate in gates}
         self.assertEqual(
             {
-                "env CROZIER_DIFF_SUMMARY_ONLY=1 just fixtures-diff {item}",
+                "just fixtures-diff {item}",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e",
                 "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry",
                 "python3 tools/fern-refusals/fern-refusals.py check",
@@ -1154,7 +1154,9 @@ class BodyTests(unittest.TestCase):
         self.assertIn("… (truncated; the decision artifact holds the whole report)", one)
         self.assertLess(len(one), weekly.REPORT_LIMIT + 2000)
         many = weekly.body(self.decision(["y" * 5000] * 400), self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
-        self.assertLessEqual(len(many), weekly.BODY_LIMIT + 5000)
+        self.assertLessEqual(len(many), weekly.BODY_LIMIT)
+        self.assertIn("Failing items: 400", many)
+        self.assertIn("omitted from the detailed list", many)
 
     def test_a_changed_known_failure_is_a_diff_whose_long_report_is_truncated(self) -> None:
         decision = weekly.Decision(weekly.Pair("2.0.0", "3.0.0"), True, "digest")
@@ -1179,10 +1181,15 @@ class GitHubListingTests(unittest.TestCase):
     def listing(self, stdout: str) -> subprocess.CompletedProcess[str]:
         return subprocess.CompletedProcess(["gh"], 0, stdout, "")
 
-    def test_only_a_json_list_of_objects_is_a_listing(self) -> None:
+    def test_empty_output_or_a_json_list_of_objects_is_a_listing(self) -> None:
         self.assertEqual([], weekly.gh_objects(self.listing("[]\n"), "labels"))
+        self.assertEqual([], weekly.gh_objects(self.listing(""), "labels"))
         self.assertEqual([{"name": "x"}], weekly.gh_objects(self.listing('[{"name": "x"}]'), "labels"))
-        for stdout, message in (("", "printed no JSON"), ("{}", "no list of objects"), ("[1]", "no list of objects")):
+        for stdout, message in (
+            ("invalid", "printed no JSON"),
+            ("{}", "no list of objects"),
+            ("[1]", "no list of objects"),
+        ):
             with self.subTest(stdout=stdout), self.assertRaises(weekly.WeeklyError) as raised:
                 weekly.gh_objects(self.listing(stdout), "labels")
             self.assertIn(message, str(raised.exception))

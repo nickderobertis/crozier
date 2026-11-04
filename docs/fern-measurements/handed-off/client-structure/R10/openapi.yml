@@ -1,0 +1,65 @@
+openapi: 3.0.3
+info:
+  title: Tollgate
+  version: 1.0.0
+  description: A toll road's payment service, written to measure how a discriminated union and its variants are imported.
+servers:
+  - url: https://toll.example.com
+paths:
+  /payments:
+    post:
+      operationId: payToll
+      tags: [Payments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Paid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  receipt:
+                    type: string
+components:
+  schemas:
+    PaymentRequest:
+      type: object
+      required: [lane, source]
+      properties:
+        lane:
+          type: integer
+        source:
+          $ref: '#/components/schemas/PaymentRequestSource'
+    PaymentRequestSource:
+      oneOf:
+        - $ref: '#/components/schemas/PaymentRequestSourceTag'
+        - $ref: '#/components/schemas/PaymentRequestSourceCard'
+      discriminator:
+        propertyName: kind
+        mapping:
+          tag: '#/components/schemas/PaymentRequestSourceTag'
+          card: '#/components/schemas/PaymentRequestSourceCard'
+    PaymentRequestSourceTag:
+      type: object
+      required: [kind, tagId]
+      properties:
+        kind:
+          type: string
+          enum: [tag]
+        tagId:
+          type: string
+    PaymentRequestSourceCard:
+      type: object
+      required: [kind, last4]
+      properties:
+        kind:
+          type: string
+          enum: [card]
+        last4:
+          type: string

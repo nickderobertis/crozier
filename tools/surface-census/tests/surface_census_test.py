@@ -14845,6 +14845,12 @@ class PredicateSelectorTests(unittest.TestCase):
         ("digit-word-joins", ["/x/{user2FA}", "/x/{user2fa}"], 2),
         ("digit-boundary-collapses", ["/x/{address_line_1}", "/x/{addressLine1}"], 2),
         ("non-identifier-folds", ["/x/{filter[name]}", "/x/{filterName}"], 2),
+        # A whitespace chunk that folds to nothing keeps its separator after a
+        # word, so `share (%)` is `share_` beside `share`, and `seed % weight`
+        # is `seed__weight` beside `seed weight`'s `seed_weight`.
+        ("empty-chunk-keeps-separator", ["/x/{share (%)}", "/x/{share}"], 0),
+        ("empty-chunk-between-words", ["/x/{seed % weight}", "/x/{seed weight}"], 0),
+        ("empty-chunks-agree", ["/x/{seed % weight}", "/x/{seed (%) weight}"], 2),
         ("no-variables-at-all", ["/a", "/b"], 0),
     )
 
@@ -16099,6 +16105,36 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
             )
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({("operation.operationId:digit-leading-method", "tagged"): 1}, rows(completed))
+
+    def test_tag_location_decides_a_groupless_ids_digit_leading_method(self) -> None:
+        """`2fa__` under `2fa` is the tag's own words, so the root method is the
+        tag's `2fa`; `widgets-2fa` under `widgets` strips the tag's words to
+        `2fa`; `pets2fa` under `pets` is one word that only begins with the tag,
+        so it keeps its whole id and no digit leads it."""
+        cases = {
+            "root": {"operationId": "2fa__", "tags": ["2fa"]},
+            "stripped": {"operationId": "widgets-2fa", "tags": ["widgets"]},
+            "whole": {"operationId": "pets2fa", "tags": ["pets"]},
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, operation in cases.items():
+                write_json_fixture(root, name, _operation_document(operation))
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "operation.operationId:digit-leading-method",
+            )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {
+                ("operation.operationId:digit-leading-method", "root"): 1,
+                ("operation.operationId:digit-leading-method", "stripped"): 1,
+            },
+            rows(completed),
+        )
 
     def test_an_untyped_enum_tag_leaves_a_one_of_undiscriminated(self) -> None:
         """A `oneOf` whose members tag `kind` with a bare one-member `enum` is no
