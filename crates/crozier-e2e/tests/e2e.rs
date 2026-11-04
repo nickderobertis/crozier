@@ -8686,7 +8686,7 @@ components:
     // Its arm-level cover owes the measured pair, with the setting and without.
     fixture.assert_refused(
         "handwritten-config-gates.tsv",
-        "with setting `audiences=public` — run `just handwritten-reach`",
+        "with setting `audiences=public` — run `just census-repin`",
     );
     fixture.write_gates(&format!(
         "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t1\t1\n\

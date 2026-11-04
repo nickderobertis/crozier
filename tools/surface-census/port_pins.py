@@ -11,28 +11,30 @@ import sys
 from collections.abc import Sequence
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, NamedTuple, TypeAlias
+from typing import Any, Protocol
 
 import reach_store
 
-PortName: TypeAlias = str
-PythonPort: TypeAlias = str
-RustFunction: TypeAlias = str
-TokenDigest: TypeAlias = str
 
+class PortPin(Protocol):
+    """The census owns the record; checking needs only this read-only interface."""
 
-class PortPin(NamedTuple):
-    name: PortName
-    port: PythonPort
-    rust: RustFunction
-    confirm: str
-    digest: TokenDigest
+    @property
+    def name(self) -> str: ...
 
-    def report(self) -> str:
-        return (
-            f"{self.port} mirrors {self.rust}: confirm {self.confirm}; "
-            f"after re-reading, run `just census-repin --confirm-port {self.name}`"
-        )
+    @property
+    def port(self) -> str: ...
+
+    @property
+    def rust(self) -> str: ...
+
+    @property
+    def confirm(self) -> str: ...
+
+    @property
+    def digest(self) -> str: ...
+
+    def report(self) -> str: ...
 
 
 def census(root: Path) -> Any:

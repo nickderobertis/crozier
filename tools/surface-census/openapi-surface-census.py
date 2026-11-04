@@ -59,7 +59,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any, NamedTuple, NoReturn
 from urllib.parse import unquote
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
@@ -68,9 +68,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "corpus")
 import itertools
 
 import corpus_remote_ref_pins as corpus_pins
-
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from port_pins import PortPin
 
 # The corpus is half JSON and half YAML, and this script has to run inside
 # `just check` on the Linux/macOS/Windows matrix with nothing but the standard
@@ -2602,6 +2599,20 @@ CASES: dict[str, tuple[Case, ...]] = {
 }
 
 
+class PortPin(NamedTuple):
+    name: str
+    port: str
+    rust: str
+    confirm: str
+    digest: str
+
+    def report(self) -> str:
+        return (
+            f"{self.port} mirrors {self.rust}: confirm {self.confirm}; "
+            f"after re-reading, run `just census-repin --confirm-port {self.name}`"
+        )
+
+
 # Token digests guard readings without a differential test against real Rust.
 # A local rename still asks for a rereading; layout and comments do not.
 # `CASES` records retain the ordered blind-function case readings above.
@@ -2884,7 +2895,7 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/ir.rs::base_type_ref",
         "that scalar union members still convert to the same primitive kinds",
-        "6517468497c83701",
+        "2ed5d7c0ead13fa7",
     ),
     PortPin(
         "last_composed_variant",
@@ -2933,14 +2944,21 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/openapi.rs::bool_literal",
         "that canonical Boolean literal overrides still take precedence",
-        "353128c830d51d4e",
+        "b2831dcdfb9bcb98",
+    ),
+    PortPin(
+        "has_datetime_type_override",
+        "Census.same_primitive_unions",
+        "src/openapi.rs::has_datetime_type_override",
+        "that canonical datetime overrides still take precedence over the legacy spelling and string format",
+        "725af43232ef8a05",
     ),
     PortPin(
         "LiteralTypeOverride::from",
         "Census.same_primitive_unions",
         "src/openapi.rs::<LiteralTypeOverride as From>::from",
-        "that the same literal override spellings still select Boolean literals",
-        "d2aa21fd33ee6741",
+        "that the same literal and datetime override spellings still select primitive kinds",
+        "d560f3ebb3112f41",
     ),
     PortPin(
         "is_closed_empty_object",
