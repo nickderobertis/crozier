@@ -4,13 +4,57 @@ use super::{crozier, filtered_tree_failures, repo_root};
 
 pub(crate) const DIR: &str = "docs/fern-measurements/handed-off/follow-up-tickets";
 
-fn rows() -> Vec<Vec<String>> {
-    std::fs::read_to_string(repo_root().join(format!("{DIR}.tsv")))
-        .expect("ticket index")
-        .lines()
-        .skip(1)
-        .map(|row| row.split('\t').map(str::to_owned).collect())
+fn read_rows(path: &std::path::Path) -> Result<Vec<[String; 6]>, String> {
+    let text =
+        std::fs::read_to_string(path).map_err(|error| format!("{}: {error}", path.display()))?;
+    let mut lines = text.lines();
+    if lines.next() != Some("source\troot_cause\tverdict\tmeasurement\tdeparture\tnote") {
+        return Err(format!(
+            "{}: expected the six-column ticket triage header",
+            path.display()
+        ));
+    }
+    lines
+        .enumerate()
+        .map(|(index, line)| {
+            line.split('\t')
+                .map(str::to_owned)
+                .collect::<Vec<_>>()
+                .try_into()
+                .map_err(|cells: Vec<String>| {
+                    format!(
+                        "{}:{}: expected six columns, found {}",
+                        path.display(),
+                        index + 2,
+                        cells.len()
+                    )
+                })
+        })
         .collect()
+}
+
+fn rows() -> Vec<[String; 6]> {
+    read_rows(&repo_root().join(format!("{DIR}.tsv"))).expect("valid ticket index")
+}
+
+/// Every independent replay validates the file before accessing its columns.
+#[test]
+fn follow_up_ticket_index_loader_rejects_bad_files_and_recovers() {
+    let temp = tempfile::tempdir().unwrap();
+    let path = temp.path().join("tickets.tsv");
+    assert!(read_rows(&path).unwrap_err().contains("tickets.tsv"));
+    std::fs::write(&path, "wrong header\n").unwrap();
+    assert!(read_rows(&path).unwrap_err().contains("header"));
+    let valid = std::fs::read_to_string(repo_root().join(format!("{DIR}.tsv"))).unwrap();
+    let header = valid.lines().next().unwrap();
+    for row in ["short\trow", "a\tb\tc\td\te\tf\tg"] {
+        std::fs::write(&path, format!("{header}\n{row}\n")).unwrap();
+        assert!(read_rows(&path)
+            .unwrap_err()
+            .contains(":2: expected six columns"));
+    }
+    std::fs::write(&path, &valid).unwrap();
+    assert_eq!(read_rows(&path).unwrap(), rows());
 }
 
 #[test]
@@ -22,7 +66,6 @@ fn follow_up_ticket_index_holds_every_ticket_once() {
         ["602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703"]
     );
     for row in rows {
-        assert_eq!(row.len(), 6);
         assert_eq!(
             row[0],
             format!(
@@ -222,6 +265,7 @@ fn follow_up_ticket_alias_validation_reports_missing_ruff() {
 /// Exercise the real CLI's failure handling across a real child-process pipe.
 /// The external ruff double drains stdin before its abnormal exit, or closes
 /// stdin while the large alias is still being sent.
+// llmlint: ignore-block[e2e_not_mocked] Only the external ruff failure mode is doubled at its process boundary: the real crozier CLI writes real temp files and sends bytes through real child pipes. Real ruff cannot deterministically consume stdin then simulate exit 2 or close its input prematurely; the successful real-ruff paths are held by the matching, refusal and recovery journeys above. The task explicitly permits real subprocess doubles for this failure contract.
 #[cfg(unix)]
 #[test]
 fn follow_up_ticket_alias_validation_reports_ruff_process_failures() {
@@ -250,4 +294,5 @@ fn follow_up_ticket_alias_validation_reports_ruff_process_failures() {
         assert!(!out.exists());
     }
 }
+// llmlint: ignore-end[e2e_not_mocked]
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
