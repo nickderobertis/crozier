@@ -10489,10 +10489,10 @@ class RankedBacklogTests(unittest.TestCase):
             owners[cells[2]] = owners.get(cells[2], 0) + 1
         shared = {loc: count for loc, count in owners.items() if count > 1}
         flat = " ".join(self.section("**Each feature is classified exactly once.**", "**Nothing is left").split())
-        stated = re.search(r"(\w+) spec locations carry more than one row", flat)
+        stated = re.search(r"(\d+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
         assert stated is not None
-        self.assertEqual(len(shared), {"Fifteen": 15, "Eighteen": 18}.get(stated.group(1)))
+        self.assertEqual(len(shared), int(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
             if f"`{location}`" not in flat:
@@ -20450,6 +20450,34 @@ class CoverageRestatementTests(unittest.TestCase):
         region.write_text(valid, encoding="utf-8")
         recovered = self.run_restater("--snapshot-json", str(snapshot))
         self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_shared_location_count_is_derived_and_missing_statement_recovers(self) -> None:
+        region = self.root / "docs/openapi-surface/schemas.md"
+        original = region.read_text(encoding="utf-8")
+        written = self.run_restater("--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        pattern = r"(\d+) spec\s+locations carry more than one row"
+        before = matched(re.search(pattern, self.index.read_text(encoding="utf-8")))
+        region.write_text(
+            original.replace(
+                "Schema Object.x-fern-type-name (component declaration)",
+                "Schema Object.properties (model API construct name)",
+            ),
+            encoding="utf-8",
+        )
+        changed = self.run_restater("--write")
+        self.assertEqual(0, changed.returncode, changed.stderr)
+        after = matched(re.search(pattern, self.index.read_text(encoding="utf-8")))
+        self.assertEqual(int(before[1]) + 1, int(after[1]))
+        region.write_text(original, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--write").returncode)
+        valid = self.index.read_text(encoding="utf-8")
+        self.index.write_text(re.sub(pattern, "missing shared-location count", valid), encoding="utf-8")
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("repair the named input", refused.stderr)
+        self.index.write_text(valid, encoding="utf-8")
+        self.assertEqual(0, self.run_restater().returncode)
 
     def test_combination_only_restating_rejects_category_drift_and_recovers(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")

@@ -494,6 +494,7 @@ def restate(root: Path) -> str:
     entries: dict[str, CategoryRow] = {}
     golden_combinations: set[str] = set()
     counts: dict[str, Totals] = {}
+    locations: Counter[str] = Counter()
     gaps: dict[str, list[str]] = {name: [] for name in SETTLEMENTS}
     for name in parser.region_files(index):
         region = Path(name).stem
@@ -514,6 +515,7 @@ def restate(root: Path) -> str:
                 golden_combinations.add(key)
         rows = [row for row in rows if not row[0].strip("`").startswith(parser.COMBINATION_PREFIX)]
         categories = Counter(row[3].strip("`") for row in rows)
+        locations.update(row[2] for row in rows)
         settlements: Counter[str] = Counter()
         for cells in rows:
             key = cells[0].strip("`")
@@ -556,6 +558,12 @@ def restate(root: Path) -> str:
         text, r"\d+ read `search-incomplete`\.", f"{verdicts['search-incomplete']} read `search-incomplete`."
     )
     text = substitute(text, r"The \d+ rows carry \d+ distinct", f"The {total} rows carry {total} distinct")
+    shared_locations = sum(count > 1 for count in locations.values())
+    text = substitute(
+        text,
+        r"(?:Fifteen|Eighteen|\d+) spec\s+locations carry more than one row",
+        f"{shared_locations} spec\nlocations carry more than one row",
+    )
     text = substitute(
         text,
         r"(What the census still cannot enumerate\.\*\* The )\d+ features",

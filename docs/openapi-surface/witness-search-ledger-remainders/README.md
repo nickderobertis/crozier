@@ -191,3 +191,11 @@ Its [publisher-grant screen](../withdrawn-witnesses/nexmo-conversation.md#the-pu
 already rejects registration. No new generation would resolve that missing
 grant; it is rejected for its publisher grant, rather than an outstanding generation
 screen. A new admissible publisher grant would permit reconsideration.
+
+## Static handling sites
+
+Each newly inventoried combination row lists one handling function in its
+`crozier sites` cell. That static count is the number of functions explicitly
+listed, checked against their declarations in the current Rust sources. It is
+not an instrumented region count or a claim that a witness reaches the branch;
+the rows remain open and unproven.

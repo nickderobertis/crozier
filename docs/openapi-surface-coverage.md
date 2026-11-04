@@ -2641,7 +2641,7 @@ search evidence and outstanding candidates are recorded in
 **Each feature is classified exactly once.** The 726 rows carry 726 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
-already runs over all six files, re-run here and passing. Eighteen spec
+already runs over all six files, re-run here and passing. 18 spec
 locations carry more than one row, every one of them inside a single region and
 every one of them the grammar's field-versus-value split: `Schema Object.format`
 heads 28 rows (the field, plus one per registered format value), `Media Type
