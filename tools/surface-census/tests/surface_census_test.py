@@ -22657,3 +22657,40 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
             path.write_text("".join(lines), encoding="utf-8")
             with self.assertRaisesRegex(AssertionError, "missing causes:.*" + re.escape(removed)):
                 reconcile_handed_off(root)
+
+
+class WithdrawnWitnessSelectorTests(unittest.TestCase):
+    """The withdrawn witness's four shapes remain independently searchable."""
+
+    def test_pointer_copies_and_inferred_type_tags(self) -> None:
+        path = REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml"
+        source = path.read_text(encoding="utf-8")
+        selectors = (
+            "schema.$ref:properties-copy",
+            "schema.oneOf:properties-copy-type-variant",
+            "schema.oneOf:properties-copy-inferred-type",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in ((source, True), (source.replace("properties", "attributes"), False)):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                counts = census.census_document(census.load_document(path))
+                for selector in selectors:
+                    with self.subTest(selector=selector, expected=expected):
+                        self.assertEqual(counts.get(selector, 0) > 0, expected)
+
+    def test_timestamp_style_requiredness_location_and_format(self) -> None:
+        source = (REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml").read_text(encoding="utf-8")
+        selector = "parameter.example:optional-nontemporal-yaml-timestamp"
+        controls = (
+            source.replace("2018-01-01 10:00:00", '"2018-01-01 10:00:00"'),
+            source.replace("required: false", "required: true"),
+            source.replace("format: dateTime", "format: date-time"),
+            source.replace("in: query", "in: header"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in ((source, 1), *((control, 0) for control in controls)):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                counts = census.census_document(census.load_document(path))
+                self.assertEqual(counts.get(selector, 0), expected)

@@ -130,6 +130,10 @@ class _Line:
     text: str
 
 
+class _YamlTimestamp(str):
+    """A plain YAML timestamp, preserving spelling and quoted-string distinction."""
+
+
 class _YamlReader:
     """A strict reader for the block-YAML subset OpenAPI documents are written in."""
 
@@ -746,6 +750,8 @@ class _YamlReader:
             return int(text)
         if _FLOAT.match(text) or _EXP.match(text):
             return float(text)
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[Zz]|[ ]?[+-]\d{2}:?\d{2})?", text):
+            return _YamlTimestamp(text)
         return text
 
 
@@ -1198,6 +1204,10 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "schema.$ref:properties-copy": "one per schema reference containing properties whose complete local component pointer resolves",
+    "schema.oneOf:properties-copy-type-variant": "one per union containing a properties-copy reference to an object with a required string type tag",
+    "schema.oneOf:properties-copy-inferred-type": "one per union containing properties-copy references with distinct required string type tags and no explicit discriminator",
+    "parameter.example:optional-nontemporal-yaml-timestamp": "one per optional string query parameter with a plain YAML timestamp example and no date or date-time format",
     "operation.operationId:camel-case-tag-prefix": "one per operation with an upper-camel multiword tag and lower-camel dotted operationId starting with that tag, ignoring case",
     "operation.requestBody:optional-nullable-enum-multipart-part": "one per operation with an optional, defaulted multipart part whose anyOf is a string-enum component reference beside null",
     "operation.requestBody:titled-array-component-oas-three-one": "one per OpenAPI 3.1 operation whose JSON body references a titled, described array component",
@@ -4960,6 +4970,61 @@ def _composition_members(value: Any) -> list[Any] | None:
     return [member for _, member in sorted(indexed, key=lambda pair: pair[0])]
 
 
+def properties_copy_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Resolve the complete local pointer copied by inline_schema_pointers."""
+    if (
+        not isinstance(reference, str)
+        or "properties" not in reference
+        or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX)
+    ):
+        return None
+    parts = [
+        part.replace("~1", "/").replace("~0", "~") for part in reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")
+    ]
+    node: Any = schemas
+    for part in parts:
+        if isinstance(node, dict):
+            node = node.get(part)
+        elif isinstance(node, list) and part.isascii() and part.isdecimal():
+            index = int(part)
+            node = node[index] if index < len(node) else None
+        else:
+            return None
+    return node if isinstance(node, dict) else None
+
+
+def properties_copy_union_predicates(node: dict[Any, Any], schemas: dict[Any, Any]) -> list[str]:
+    """Count copied union variants and distinct inferred type tags separately."""
+    members = union_members(node)
+    if not members:
+        return []
+    targets = [
+        properties_copy_target(member.get("$ref"), schemas) if isinstance(member, dict) else None for member in members
+    ]
+    if not any(target is not None for target in targets):
+        return []
+    targets = [target if target is not None else member for target, member in zip(targets, members, strict=True)]
+    values = []
+    for target in targets:
+        if not isinstance(target, dict) or "type" not in required_names(target):
+            continue
+        properties = target.get("properties")
+        field = properties.get("type") if isinstance(properties, dict) else None
+        if isinstance(field, dict) and primary_type(field.get("type")) == "string":
+            value = discriminant_value(field)
+            if value is not None:
+                values.append(value)
+    found = ["schema.oneOf:properties-copy-type-variant"] if values else []
+    if (
+        "discriminator" not in node
+        and not _undiscriminated(node)
+        and len(values) == len(members)
+        and len(set(values)) == len(values)
+    ):
+        found.append("schema.oneOf:properties-copy-inferred-type")
+    return found
+
+
 def pointer_walk_predicates(reference: str, schemas: dict[Any, Any]) -> list[str]:
     """The arms `resolve_schema_pointer` enters walking this `$ref` through this document.
 
@@ -6685,6 +6750,16 @@ class Census:
             if not parameter_schema_is_scalar(schema):
                 found.append("parameter.example:non-scalar-query")
         if kind_name == "parameter":
+            schema = self.resolved_schema(node.get("schema"))
+            if (
+                node.get("in") == "query"
+                and node.get("required") is not True
+                and isinstance(schema, dict)
+                and primary_type(schema.get("type")) == "string"
+                and schema.get("format") not in ("date", "date-time")
+                and isinstance(node.get("example", schema.get("example")), _YamlTimestamp)
+            ):
+                found.append("parameter.example:optional-nontemporal-yaml-timestamp")
             found += self.parameter_shape_predicates(node)
         return found
 
@@ -7693,6 +7768,7 @@ class Census:
         if annotated_all_of_ref(node):
             found.append("schema.allOf:annotated-ref")
         found += self.discriminated_union_predicates(node)
+        found += properties_copy_union_predicates(node, self.component_schemas)
         reference = node.get("$ref")
         if isinstance(reference, str) and selected_example_kind(node) is not None:
             target = self.component_target(reference)
@@ -7700,6 +7776,8 @@ class Census:
             if kind is not None:
                 found.append(f"schema.example:on-ref-to-{kind}")
         if isinstance(reference, str):
+            if properties_copy_target(reference, self.component_schemas) is not None:
+                found.append("schema.$ref:properties-copy")
             found += pointer_form_predicates(reference)
             found += self.pointer_target_predicates(reference)
             found += self.resolving_target_predicates(reference)

@@ -506,9 +506,17 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-165, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+169, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
+- `schema.$ref:properties-copy` — one per schema reference containing properties whose
+  complete local component pointer resolves
+- `schema.oneOf:properties-copy-type-variant` — one per union containing a properties-
+  copy reference to an object with a required string type tag
+- `schema.oneOf:properties-copy-inferred-type` — one per union containing properties-
+  copy references with distinct required string type tags and no explicit discriminator
+- `parameter.example:optional-nontemporal-yaml-timestamp` — one per optional string
+  query parameter with a plain YAML timestamp example and no date or date-time format
 - `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
   multiword tag and lower-camel dotted operationId starting with that tag, ignoring case
 - `operation.requestBody:optional-nullable-enum-multipart-part` — one per operation with
@@ -1077,7 +1085,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Ninety-four of the 165 are node-local**, which is what makes them one family:
+**Ninety-eight of the 169 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
