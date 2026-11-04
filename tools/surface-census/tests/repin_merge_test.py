@@ -63,6 +63,11 @@ def conflicted(tmp_path: Path, path: str, base: str, ours: str, theirs: str) -> 
     root = tmp_path / "repo"
     root.mkdir()
     git(root, "init", "-q", "-b", "main")
+    git(root, "config", "user.name", "t")
+    git(root, "config", "user.email", "t@t")
+    git(root, "config", "core.autocrlf", "false")
+    git(root, "config", "merge.conflictStyle", "merge")
+    git(root, "config", "rerere.enabled", "false")
     (root / path).parent.mkdir(parents=True, exist_ok=True)
     (root / path).write_text(base, encoding="utf-8")
     commit(root, "base")
@@ -73,7 +78,29 @@ def conflicted(tmp_path: Path, path: str, base: str, ours: str, theirs: str) -> 
     (root / path).write_text(ours, encoding="utf-8")
     commit(root, "ours")
     assert git(root, "merge", "-q", "theirs", check=False).returncode != 0, "the branches must conflict"
+    assert git(root, "diff", "--name-only", "--diff-filter=U").stdout.strip() == path
+    write_conflict(root, path, ours, theirs)
     return root
+
+
+def write_conflict(root: Path, path: str, ours: str, theirs: str) -> None:
+    """Keep the real unmerged index, with a stable single worktree hunk.
+
+    Git versions may group nearby edits differently. These parser journeys
+    prescribe the hunk boundaries rather than assert Git's grouping heuristic.
+    """
+    left, right = ours.splitlines(keepends=True), theirs.splitlines(keepends=True)
+    prefix: list[str] = []
+    while left and right and left[0] == right[0]:
+        prefix.append(left.pop(0))
+        right.pop(0)
+    suffix: list[str] = []
+    while left and right and left[-1] == right[-1]:
+        suffix.insert(0, left.pop())
+        right.pop()
+    assert left != right
+    text = "".join([*prefix, "<<<<<<< HEAD\n", *left, "=======\n", *right, ">>>>>>> theirs\n", *suffix])
+    (root / path).write_text(text, encoding="utf-8")
 
 
 def header() -> str:
@@ -160,6 +187,11 @@ def conflicted_files(tmp_path: Path, files: dict[str, tuple[str, str, str]]) -> 
     root = tmp_path / "repo"
     root.mkdir()
     git(root, "init", "-q", "-b", "main")
+    git(root, "config", "user.name", "t")
+    git(root, "config", "user.email", "t@t")
+    git(root, "config", "core.autocrlf", "false")
+    git(root, "config", "merge.conflictStyle", "merge")
+    git(root, "config", "rerere.enabled", "false")
 
     def write(side: int) -> None:
         for path, texts in files.items():
@@ -176,6 +208,8 @@ def conflicted_files(tmp_path: Path, files: dict[str, tuple[str, str, str]]) -> 
     commit(root, "ours")
     assert git(root, "merge", "-q", "theirs", check=False).returncode != 0, "the branches must conflict"
     assert set(git(root, "diff", "--name-only", "--diff-filter=U").stdout.split()) == set(files)
+    for path, (_base, ours, theirs) in files.items():
+        write_conflict(root, path, ours, theirs)
     return root
 
 
@@ -269,6 +303,11 @@ def test_non_text_and_deleted_conflicts_are_refused_and_can_be_resolved_by_hand(
     root = tmp_path / "repo"
     root.mkdir()
     git(root, "init", "-q", "-b", "main")
+    git(root, "config", "user.name", "t")
+    git(root, "config", "user.email", "t@t")
+    git(root, "config", "core.autocrlf", "false")
+    git(root, "config", "merge.conflictStyle", "merge")
+    git(root, "config", "rerere.enabled", "false")
     path = root / LEDGER
     path.parent.mkdir(parents=True)
     path.write_bytes(b"base\n" if kind == "modify-delete" else b"\x00base\n")

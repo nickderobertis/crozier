@@ -81,7 +81,7 @@ components:
 def write(root: Path, name: str, text: str) -> None:
     path = root / name
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(textwrap.dedent(text), encoding="utf-8")
+    path.write_text(textwrap.dedent(text), encoding="utf-8", newline="\n")
 
 
 def git(root: Path, *args: str) -> str:
@@ -251,6 +251,9 @@ def fixture(root: Path) -> None:
     git(root, "init", "-qb", "main")
     git(root, "config", "user.name", "t")
     git(root, "config", "user.email", "t@t")
+    git(root, "config", "core.autocrlf", "false")
+    git(root, "config", "merge.conflictStyle", "merge")
+    git(root, "config", "rerere.enabled", "false")
     commit(root, "synthetic measurement workspace")
 
 
@@ -622,9 +625,12 @@ def test_interpreter_selection_refuses_failure_and_recovers(
     write(root, "scripts/census-python.sh", "exit 7\n" if failure == "exit" else "exit 0\n")
     if failure in ("missing_interpreter", "nonexecutable", "nonpython"):
         selected = root / "selected-python"
-        if failure != "missing_interpreter":
-            selected.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
-            selected.chmod(0o755 if failure == "nonpython" else 0o644)
+        if failure == "nonexecutable":
+            selected.mkdir()  # A directory is not executable on either Windows or POSIX.
+        elif failure == "nonpython":
+            compiler = shutil.which("rustc")
+            assert compiler is not None
+            selected = Path(compiler)  # A real native program that cannot pass the Python probe.
         write(root, "scripts/census-python.sh", "printf '%s\\n' " + shlex.quote(str(selected)) + "\n")
     spec = importlib.util.spec_from_file_location(
         "repin_interpreter_boundary", REPO / "tools/surface-census/census-repin.py"
@@ -641,3 +647,21 @@ def test_interpreter_selection_refuses_failure_and_recovers(
     assert "interpreter selector" in str(refused.value) and "just bootstrap" in str(refused.value)
     write(root, "scripts/census-python.sh", "printf '%s\\n' " + shlex.quote(PYTHON) + "\n")
     assert verb.census_python(root) == PYTHON
+
+
+def test_selector_command_is_resolved_to_a_native_absolute_interpreter(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "repo"
+    write(root, "scripts/census-python.sh", "printf '%s\\n' python\n")
+    monkeypatch.setenv("PATH", str(Path(PYTHON).parent) + os.pathsep + os.environ["PATH"])
+    spec = importlib.util.spec_from_file_location(
+        "repin_native_interpreter_boundary", REPO / "tools/surface-census/census-repin.py"
+    )
+    assert spec and spec.loader
+    verb = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = verb
+    spec.loader.exec_module(verb)
+    selected = Path(verb.census_python(root))
+    assert selected.is_absolute(), "child writers need a native absolute path, not a Bash command or /c/ path"
+    assert selected.samefile(PYTHON)

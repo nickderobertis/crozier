@@ -194,23 +194,24 @@ def lookup(
     extra: dict[str, str] | None = None,
     gh_token: str | None = None,
 ) -> subprocess.CompletedProcess:
-    """`census-repin --base-only` over `root`. With no `token`, only git is on PATH, and a
-    stand-in `gh` printing `gh_token` for `gh auth token` when one is given."""
+    """`census-repin --base-only` over `root`. With no `token`, isolate the gh login from the host; a
+    stand-in `gh` prints `gh_token` for `gh auth token` when one is given."""
     env = {
         key: value for key, value in os.environ.items() if key not in ("GITHUB_TOKEN", "GH_TOKEN", "GITHUB_REPOSITORY")
     }
     env |= {"CROZIER_GITHUB_API_URL": api, "CROZIER_GOLDEN_REACH_BASE_CACHE": str(cache)} | (extra or {})
     if token is not None:
         env["GITHUB_TOKEN"] = token
-    else:
+    elif gh_token is not None:
         tools = cache.parent / "bin"
         tools.mkdir(exist_ok=True)
         if not (tools / "git").exists():
             (tools / "git").symlink_to(shutil.which("git") or "/usr/bin/git")
-        if gh_token is not None:
-            (tools / "gh").write_text(f'#!/bin/sh\n[ "$1 $2" = "auth token" ] && echo {gh_token}\n', encoding="utf-8")
-            (tools / "gh").chmod(0o755)
+        (tools / "gh").write_text(f'#!/bin/sh\n[ "$1 $2" = "auth token" ] && echo {gh_token}\n', encoding="utf-8")
+        (tools / "gh").chmod(0o755)
         env["PATH"] = str(tools)
+    else:
+        env["GH_CONFIG_DIR"] = str(cache.parent / "empty-gh-config")
     run = subprocess.run(
         [sys.executable, str(VERB), "--repo-root", str(root), "--base-only"],
         capture_output=True,
@@ -265,7 +266,7 @@ def test_a_cached_base_is_used_without_a_request_when_no_nearer_ancestor_was_pub
     [
         ("missing", "offline-token", "listing artifacts answered HTTP 404"),
         ("refused", "offline-token", "GitHub refused the token from GITHUB_TOKEN (HTTP 401)"),
-        ("ok", None, "no GITHUB_TOKEN or GH_TOKEN is set and `gh` is not installed"),
+        ("ok", None, "no GITHUB_TOKEN or GH_TOKEN is set"),
         ("busy", "offline-token", "the rate-limit guard would wait"),
     ],
     ids=["artifact list 404", "refused token", "no token", "guard would wait"],
@@ -485,6 +486,7 @@ def test_the_ci_jobs_packaged_base_is_found_by_the_verb_on_a_later_commit(
     monkeypatch.setenv("CROZIER_GOLDEN_REACH_BASE_CACHE", str(tmp_path / "job-cache"))
     monkeypatch.setenv("CROZIER_GITHUB_API_URL", github)
     monkeypatch.setenv("GITHUB_TOKEN", "offline-token")
+    monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
     GitHub.artifacts = {c1: artifact(store(c1), tmp_path)}
     git(root, "checkout", "-q", "--detach", c3)
     runner_temp = tmp_path / "runner-temp"

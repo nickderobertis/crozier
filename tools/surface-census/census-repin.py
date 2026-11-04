@@ -38,6 +38,7 @@ import importlib.util
 import io
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -542,8 +543,13 @@ def reanchor_all(root: Path, base_commit: str | None) -> dict[str, str]:
 
 
 def census_python(root: Path) -> str:
+    # Resolve PATH explicitly: Windows CreateProcess otherwise prefers the
+    # system's WSL bash over Git Bash, even when Git Bash is first on PATH.
+    shell = shutil.which("bash")
+    if shell is None:
+        refuse("cannot run the interpreter selector: bash is not on PATH; run `just bootstrap` and repair the selector")
     try:
-        run = subprocess.run(["bash", "scripts/census-python.sh"], cwd=root, capture_output=True, text=True)
+        run = subprocess.run([shell, "scripts/census-python.sh"], cwd=root, capture_output=True, text=True)
     except OSError as error:
         refuse(
             f"cannot run the interpreter selector scripts/census-python.sh ({error}); run `just bootstrap` and repair the selector"
@@ -555,7 +561,14 @@ def census_python(root: Path) -> str:
     python = run.stdout.strip()
     try:
         probe = subprocess.run(
-            [python, "-c", "import sys; assert sys.version_info >= (3, 11); print('crozier-census-python')"],
+            [
+                shell,
+                "-c",
+                '"$1" -c "$2"',
+                "census-python",
+                python,
+                "import sys; assert sys.version_info >= (3, 11); print('crozier-census-python'); print(sys.executable)",
+            ],
             cwd=root,
             capture_output=True,
             text=True,
@@ -564,11 +577,14 @@ def census_python(root: Path) -> str:
         refuse(
             f"interpreter selector scripts/census-python.sh selected unusable {python!r} ({error}); run `just bootstrap` and repair the selector"
         )
-    if probe.returncode != 0 or probe.stdout.strip() != "crozier-census-python":
+    lines = probe.stdout.strip().splitlines()
+    if probe.returncode != 0 or len(lines) != 2 or lines[0] != "crozier-census-python" or not Path(lines[-1]).is_file():
         refuse(
             f"interpreter selector scripts/census-python.sh selected {python!r}, which failed the Python 3.11+ probe: {probe.stderr.strip()[-500:]}; run `just bootstrap` and repair the selector"
         )
-    return python
+    # Bash may select /c/... on Windows; sys.executable is usable by native
+    # Python subprocesses as well as by Bash.
+    return lines[-1]
 
 
 def _run(root: Path, argv: list[str], what: str, stdout: Path | None = None) -> None:
