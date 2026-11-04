@@ -1204,6 +1204,8 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "schema.x-fern-type-name:component": "one per component schema carrying a declared type name, including a blank override",
+    "schema.properties:construct-name": "one per object schema declaring a property literally named construct, which collides with the model API",
     "schema.$ref:properties-copy": "one per schema reference containing properties whose complete local component pointer resolves",
     "schema.oneOf:properties-copy-type-variant": "one per union containing a properties-copy reference to an object with a required string type tag",
     "schema.oneOf:properties-copy-inferred-type": "one per union containing properties-copy references with distinct required string type tags and no explicit discriminator",
@@ -1837,6 +1839,7 @@ PREDICATES = {
 # Predicates that read document context rather than one object-model node.
 # GrammarContractTests independently reconciles this partition and its prose.
 DOCUMENT_COMPARING_PREDICATES = (
+    "schema.x-fern-type-name:component",
     "schema.$ref:properties-copy",
     "schema.oneOf:properties-copy-type-variant",
     "schema.oneOf:properties-copy-inferred-type",
@@ -7723,6 +7726,13 @@ class Census:
         by `pointer_target_predicates`, and never followed to what it addresses.
         """
         found: list[str] = []
+        if ("x-fern-type-name" in node or "x-crozier-type-name" in node) and any(
+            node is value for value in self.component_schemas.values()
+        ):
+            found.append("schema.x-fern-type-name:component")
+        properties = node.get("properties")
+        if isinstance(properties, dict) and "construct" in properties:
+            found.append("schema.properties:construct-name")
         primary = primary_type(node.get("type"))
         if primary == "array":
             found.append("schema.type:primary=array")

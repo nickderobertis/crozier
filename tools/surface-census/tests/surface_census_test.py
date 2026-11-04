@@ -3481,6 +3481,7 @@ class GrammarContractTests(unittest.TestCase):
     # node-local unless it is here.
     DOCUMENT_COMPARING_PREDICATES = frozenset(
         {
+            "schema.x-fern-type-name:component",
             "schema.$ref:properties-copy",
             "schema.oneOf:properties-copy-type-variant",
             "schema.oneOf:properties-copy-inferred-type",
@@ -22697,3 +22698,36 @@ class WithdrawnWitnessSelectorTests(unittest.TestCase):
                 path.write_text(text, encoding="utf-8")
                 counts = census.census_document(census.load_document(path))
                 self.assertEqual(counts.get(selector, 0), expected)
+
+
+class ModelApiPropertySelectorTests(unittest.TestCase):
+    def test_construct_property_and_adjacent_name(self) -> None:
+        source = (REPO / "docs/openapi-surface/authored-probes/376-354-model-property-construct/openapi.yml").read_text(
+            encoding="utf-8"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in ((source, 1), (source.replace("construct:", "construction:"), 0)):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                counts = census.census_document(census.load_document(path))
+                self.assertEqual(counts.get("schema.properties:construct-name", 0), expected)
+
+
+class ComponentTypeNameSelectorTests(unittest.TestCase):
+    def test_component_override_and_property_control(self) -> None:
+        for path in sorted((REPO / "docs/openapi-surface/authored-probes").glob("376-350-*/openapi.yml")):
+            with self.subTest(case=path.parent.name):
+                doc = census.load_document(path)
+                self.assertGreater(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
+        doc = {
+            "openapi": "3.0.3",
+            "components": {
+                "schemas": {
+                    "Container": {
+                        "type": "object",
+                        "properties": {"value": {"type": "string", "x-fern-type-name": "Label"}},
+                    }
+                }
+            },
+        }
+        self.assertEqual(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
