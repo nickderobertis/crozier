@@ -3026,11 +3026,6 @@ docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected	sr
 docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	README.md	44	wrapped-union-member-docs-example
 docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	reference.md	24	wrapped-union-member-docs-example
 docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
@@ -3803,6 +3798,11 @@ docs/openapi-surface/probe-expected/spaceDelimited-object	src/fern/core/client_w
 docs/openapi-surface/probe-expected/spaceDelimited-object	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/spaceDelimited-object	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/spaceDelimited-object	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/thermostat-nullable-member	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/thermostat-nullable-member	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/thermostat-nullable-member	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/thermostat-nullable-member	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/probe-expected/thermostat-nullable-member	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/trace-operation	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/trace-operation	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/probe-expected/trace-operation	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
