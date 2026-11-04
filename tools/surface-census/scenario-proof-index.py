@@ -1131,7 +1131,9 @@ def restate(root: Path) -> tuple[str, list[str]]:
             settings.append(setting or "?")
             defects |= known.ledger.get(golden, set()) & known.defects
             source = golden_source(root, golden)
-            if source is not None and source not in sources:
+            if source is None:
+                failures.append(f"{INDEX} {row['shape']}: golden {golden} has no committed source document")
+            elif source not in sources:
                 sources.append(source)
         if sources:
             row["source"] = ";".join(sources)

@@ -1957,10 +1957,13 @@ def load_coverage(out: Path, repo_root: Path | None = None) -> tuple[dict[str, d
         store, tree = stale_measurement(out, repo_root)
         # Absolute JSON files are compatibility views of this token-relative store.
         # Decode the authoritative entries at the current layout, including columns.
-        coverage = {
-            name: RS.positions(tree, store["functions"], entry["regions"]) for name, entry in store["tests"].items()
-        }
-        return coverage, RS.positions(tree, store["functions"]), store["commit"]
+        try:
+            coverage = {
+                name: RS.positions(tree, store["functions"], entry["regions"]) for name, entry in store["tests"].items()
+            }
+            return coverage, RS.positions(tree, store["functions"]), store["commit"]
+        except RS.StoreError as error:
+            fail(f"the measurement under {out} has unusable regions ({error}); run `{REPIN}`")
     universe = load_regions(universe_path)
     coverage = {path.stem: load_regions(path) for path in sorted((out / "tests").glob("*.json"))}
     return coverage, universe, measured_commit(out)

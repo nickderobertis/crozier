@@ -101,7 +101,7 @@ def test_a_stale_outstanding_row_names_the_verb(tmp_path: Path) -> None:
 
 
 def test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_is_repaired(tmp_path: Path) -> None:
-    """`write` names a golden whose metadata does not read, leaves the index as it was, then restates it."""
+    """`write` refuses incomplete catalogs atomically, then recovers after their repair."""
     root = tmp_path / "repo"
     subprocess.run(["git", "clone", "-q", "--shared", str(REPO), str(root)], check=True, timeout=600)
     script = root / "tools/surface-census/scenario-proof-index.py"
@@ -113,27 +113,47 @@ def test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_i
         if "\treal\t" in line and line.split("\t")[7] == "match"
     )
     golden = row.split("\t")[4].split(";")[0]
-    metadata = root / golden / ".fern" / "metadata.json"
-    good = metadata.read_bytes()
-    metadata.write_text("{ not json", encoding="utf-8")
-    # A stale derived cell the writer would restate, were its catalogs readable.
-    stale = index.read_text(encoding="utf-8").replace(row, row.replace("\tmatch\t", "\tdeparture\t", 1), 1)
-    assert stale != index.read_text(encoding="utf-8")
-    index.write_text(stale, encoding="utf-8")
-    refused = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(root), "write"], capture_output=True, text=True, timeout=300
-    )
-    assert refused.returncode == 1
-    assert f"golden {golden}'s metadata is not JSON" in refused.stderr
-    assert index.read_text(encoding="utf-8") == stale, "a refused write leaves the index as it was"
-    metadata.write_bytes(good)
-    written = subprocess.run(
-        [sys.executable, str(script), "--repo-root", str(root), "write"], capture_output=True, text=True, timeout=300
-    )
-    assert written.returncode == 0, written.stderr
-    assert index.read_text(encoding="utf-8") == (REPO / "docs/openapi-surface/scenario-proof-index.tsv").read_text(
-        encoding="utf-8"
-    ), "the repaired catalogs restate the committed index"
+    for broken in ("metadata", "document"):
+        match broken:
+            case "metadata":
+                damaged = root / golden / ".fern" / "metadata.json"
+                good = damaged.read_bytes()
+                damaged.write_text("{ not json", encoding="utf-8")
+                diagnostic = f"golden {golden}'s metadata is not JSON"
+            case "document":
+                catalog = _load("repin_messages_missing_source_index", script)
+                source = catalog.golden_source(root, golden)
+                assert source is not None
+                damaged = root / source
+                good = damaged.read_bytes()
+                damaged.unlink()
+                diagnostic = f"golden {golden} has no committed source document"
+            case _:
+                raise AssertionError(broken)
+        # A stale derived cell the writer would restate, were its catalogs readable.
+        stale = index.read_text(encoding="utf-8").replace(row, row.replace("\tmatch\t", "\tdeparture\t", 1), 1)
+        assert stale != index.read_text(encoding="utf-8")
+        index.write_text(stale, encoding="utf-8")
+        refused = subprocess.run(
+            [sys.executable, str(script), "--repo-root", str(root), "write"],
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert refused.returncode == 1
+        assert diagnostic in refused.stderr
+        assert index.read_text(encoding="utf-8") == stale, "a refused write leaves the index as it was"
+        damaged.write_bytes(good)
+        written = subprocess.run(
+            [sys.executable, str(script), "--repo-root", str(root), "write"],
+            capture_output=True,
+            text=True,
+            timeout=300,
+        )
+        assert written.returncode == 0, written.stderr
+        assert index.read_text(encoding="utf-8") == (REPO / "docs/openapi-surface/scenario-proof-index.tsv").read_text(
+            encoding="utf-8"
+        ), "the repaired catalogs restate the committed index"
 
 
 def _measured(root: Path, out: Path) -> Any:
@@ -238,6 +258,29 @@ def test_a_layout_only_change_reports_regions_translated_from_the_store(tmp_path
         ),
         encoding="utf-8",
     )
+    good_store = (out / reach.STORE_FILE).read_bytes()
+    invalid = rs.load(out / reach.STORE_FILE)
+    invalid["functions"]["src/lib.rs::a"]["regions"] = [[0, 10, 1, 0]]
+    rs.save(invalid, out / reach.STORE_FILE)
+    refused = subprocess.run(
+        [
+            sys.executable,
+            str(REPO / "tools/surface-census/golden-reach.py"),
+            "--repo-root",
+            str(root),
+            "--out",
+            str(out),
+            "report",
+            "--write",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert refused.returncode != 0 and "starts after its end" in refused.stderr
+    assert f"run `{VERB}`" in refused.stderr and "Traceback" not in refused.stderr
+    assert not (regions / "golden-reach.tsv").exists(), "invalid coordinates cannot publish a ledger"
+    (out / reach.STORE_FILE).write_bytes(good_store)
     reported = subprocess.run(
         [
             sys.executable,

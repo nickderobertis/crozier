@@ -731,3 +731,17 @@ def test_semantic_commas_change_the_real_parsers_digest(before: str, after: str,
 )
 def test_ordinary_list_commas_stay_stable_through_reflow(before: str, after: str) -> None:
     assert tree_of(before).functions["src/lib.rs::a"].digest == tree_of(after).functions["src/lib.rs::a"].digest
+
+
+def test_decoding_refuses_offsets_that_reverse_a_region_in_the_real_source() -> None:
+    tree = tree_of("pub fn a() -> u8 { 1 }\n")
+    with pytest.raises(RS.StoreError, match="starts after its end"):
+        tree.decode("src/lib.rs::a", [0, 10, 1, 0])
+
+
+def test_a_base_with_physically_reversed_regions_measures_fully(repo: Path) -> None:
+    base = base_of(repo)
+    base["functions"]["src/lib.rs::render"]["regions"] = [[0, 10, 1, 0]]
+    planned = step(repo, {"CHANGELOG.md": "notes\n"}, base)
+    assert planned.full is not None and "starts after its end" in planned.full
+    assert set(planned.tests) == set(TESTS) and set(planned.fixtures) == {"fx"}

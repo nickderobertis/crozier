@@ -605,8 +605,11 @@ class Tree:
         if function is None:
             raise StoreError(f"function {key} is not in this tree")
         parsed = function.file
-        line0, col0 = parsed.position(function.decode(encoded[:2]))
-        line1, col1 = parsed.position(function.decode(encoded[2:]))
+        start, end = function.decode(encoded[:2]), function.decode(encoded[2:])
+        if start > end:
+            raise StoreError(f"{key}: decoded region {encoded} starts after its end")
+        line0, col0 = parsed.position(start)
+        line1, col1 = parsed.position(end)
         return parsed.path, (line0, col0, line1, col1)
 
     def table(self) -> dict[str, FunctionRecord]:
@@ -1480,6 +1483,13 @@ def plan(
         ):
             return full(f"`{key}` was added to or removed from a trait or trait impl")
     changed_set = set(changed)
+    try:
+        for key, record in functions.items():
+            if key not in changed_set:
+                for region in record["regions"]:
+                    tree.decode(key, region)
+    except StoreError as error:
+        return full(f"the base has unusable counter regions: {error}")
     for name, entry in base["tests"].items():
         if name in tests and name not in rerun:
             hit = sorted(set(entry["regions"]) & changed_set)
