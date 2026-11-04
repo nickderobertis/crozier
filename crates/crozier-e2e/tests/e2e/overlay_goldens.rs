@@ -463,7 +463,7 @@ fn the_default_max_retries_golden_changes_only_the_clients() {
 }
 
 /// Ticket #694 moves Webflow's shared package exports in both enum modes.
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] The task requires this moved registered golden in literals mode; the test uses the same crozier-e2e overlay engine and project edge as the existing overlay replay. Splitting the shared golden family into a new project is outside this ticket repair; this local selector avoids replaying unrelated overlays during its verification.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] The task requires this moved registered golden in literals mode; the test uses the same crozier-e2e overlay engine and project edge as the existing overlay replay. Splitting the shared golden family into a new project is outside this ticket repair; this local selector avoids replaying unrelated overlays during its verification.
 #[test]
 fn webflow_ticket_export_ownership_matches_fern_in_literals() {
     let mut count = 0;
@@ -480,6 +480,7 @@ fn webflow_ticket_export_ownership_matches_fern_in_literals() {
     }
     assert_eq!(count, 1, "the Webflow literals golden must be registered");
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// crozier's output under each setting reproduces Fern's overlay golden
 /// byte-for-byte (under the shared comparison engine) for every listed corpus.

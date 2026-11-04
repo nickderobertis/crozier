@@ -4,7 +4,19 @@ use super::{crozier, filtered_tree_failures, repo_root};
 
 pub(crate) const DIR: &str = "docs/fern-measurements/handed-off/follow-up-tickets";
 
-fn read_rows(path: &std::path::Path) -> Result<Vec<[String; 6]>, String> {
+#[derive(Debug, PartialEq, Eq)]
+enum Replay {
+    ByteMatch,
+    Refusal,
+}
+
+#[derive(Debug, PartialEq, Eq)]
+struct TicketRow {
+    fields: [String; 6],
+    replay: Replay,
+}
+
+fn read_rows(path: &std::path::Path) -> Result<Vec<TicketRow>, String> {
     let text =
         std::fs::read_to_string(path).map_err(|error| format!("{}: {error}", path.display()))?;
     let mut lines = text.lines();
@@ -17,7 +29,7 @@ fn read_rows(path: &std::path::Path) -> Result<Vec<[String; 6]>, String> {
     lines
         .enumerate()
         .map(|(index, line)| {
-            line.split('\t')
+            let fields: [String; 6] = line.split('\t')
                 .map(str::to_owned)
                 .collect::<Vec<_>>()
                 .try_into()
@@ -28,12 +40,22 @@ fn read_rows(path: &std::path::Path) -> Result<Vec<[String; 6]>, String> {
                         index + 2,
                         cells.len()
                     )
-                })
+                })?;
+            let replay = match fields[2].as_str() {
+                "already-matching" | "parity-gap-repaired" => Replay::ByteMatch,
+                "refusal-kept" => Replay::Refusal,
+                verdict => return Err(format!(
+                    "{}:{}: unsupported replay verdict {verdict:?}; add its CLI proof before recording it",
+                    path.display(),
+                    index + 2,
+                )),
+            };
+            Ok(TicketRow { fields, replay })
         })
         .collect()
 }
 
-fn rows() -> Vec<[String; 6]> {
+fn rows() -> Vec<TicketRow> {
     read_rows(&repo_root().join(format!("{DIR}.tsv"))).expect("valid ticket index")
 }
 
@@ -53,6 +75,14 @@ fn follow_up_ticket_index_loader_rejects_bad_files_and_recovers() {
             .unwrap_err()
             .contains(":2: expected six columns"));
     }
+    std::fs::write(
+        &path,
+        valid.replacen("already-matching", "unknown-verdict", 1),
+    )
+    .unwrap();
+    let error = read_rows(&path).unwrap_err();
+    assert!(error.contains(":2: unsupported replay verdict"), "{error}");
+    assert!(error.contains("unknown-verdict"), "{error}");
     std::fs::write(&path, &valid).unwrap();
     assert_eq!(read_rows(&path).unwrap(), rows());
 }
@@ -60,20 +90,20 @@ fn follow_up_ticket_index_loader_rejects_bad_files_and_recovers() {
 #[test]
 fn follow_up_ticket_index_holds_every_ticket_once() {
     let rows = rows();
-    let actual: Vec<&str> = rows.iter().map(|row| row[1].as_str()).collect();
+    let actual: Vec<&str> = rows.iter().map(|row| row.fields[1].as_str()).collect();
     assert_eq!(
         actual,
         ["602", "679", "685", "694", "696", "697", "698", "699", "700", "701", "702", "703"]
     );
     for row in rows {
         assert_eq!(
-            row[0],
+            row.fields[0],
             format!(
                 "https://github.com/nickderobertis/crozier/issues/{}",
-                row[1]
+                row.fields[1]
             )
         );
-        assert!(repo_root().join(&row[3]).join("README.md").is_file());
+        assert!(repo_root().join(&row.fields[3]).join("README.md").is_file());
     }
 }
 
@@ -81,14 +111,11 @@ fn follow_up_ticket_index_holds_every_ticket_once() {
 #[test]
 fn follow_up_ticket_matching_outputs_hold_against_the_certified_pair() {
     let mut failures = Vec::new();
-    for row in rows()
-        .iter()
-        .filter(|row| row[2] == "already-matching" || row[2] == "parity-gap-repaired")
-    {
-        let case = repo_root().join(&row[3]);
-        let golden = format!("{}fern-expected", row[3]);
+    for row in rows().iter().filter(|row| row.replay == Replay::ByteMatch) {
+        let case = repo_root().join(&row.fields[3]);
+        let golden = format!("{}fern-expected", row.fields[3]);
         failures.extend(filtered_tree_failures(
-            &row[1],
+            &row.fields[1],
             &golden,
             &case.join("openapi.yml"),
             &case.join("fern-expected"),
@@ -100,8 +127,8 @@ fn follow_up_ticket_matching_outputs_hold_against_the_certified_pair() {
 
 #[test]
 fn follow_up_ticket_refusals_hold_in_default_and_strict_modes() {
-    for row in rows().iter().filter(|row| row[2] == "refusal-kept") {
-        let case = repo_root().join(&row[3]);
+    for row in rows().iter().filter(|row| row.replay == Replay::Refusal) {
+        let case = repo_root().join(&row.fields[3]);
         assert_ne!(
             std::fs::read_to_string(case.join("exit-code"))
                 .unwrap()
@@ -111,7 +138,7 @@ fn follow_up_ticket_refusals_hold_in_default_and_strict_modes() {
         assert!(!std::fs::read_to_string(case.join("fern.log"))
             .unwrap()
             .is_empty());
-        let class = if row[1] == "679" {
+        let class = if row.fields[1] == "679" {
             "generator-lint-failure"
         } else {
             "request-property-camelcase-collision"
