@@ -370,6 +370,12 @@ def reanchor(spec: str, root: Path, base_commit: str) -> Anchor:
         return Anchor(
             spec, None, f"it does not resolve at the base {base_commit[:12]} either, so there is no line to follow"
         )
+    if not (root / path).is_file():
+        return Anchor(
+            spec,
+            None,
+            f"its source file {path} is gone at HEAD (deleted or renamed); name where the feature is handled now",
+        )
     old_site = REACH.resolve_site(spec, base_root)
     old = RS.parse(path, (base_root / path).read_bytes())
     new = RS.parse(path, (root / path).read_bytes())

@@ -94,6 +94,24 @@ def test_reanchoring_adds_escapes_to_basic_toml_strings_without_changing_literal
     assert parsed == {"arm": new, "note": f"covered `{new}`", "literal": new, "multiline": f"covered `{new}`"}
 
 
+@pytest.mark.parametrize("renamed", [False, True], ids=["deleted", "renamed"])
+def test_a_missing_anchored_source_is_refused_without_rewriting_quotes(tmp_path: Path, renamed: bool) -> None:
+    root, base = repository(tmp_path, BASE, BASE + "// another tree\n")
+    source = root / "src/lib.rs"
+    if renamed:
+        source.rename(source.with_name("renamed.rs"))
+    else:
+        source.unlink()
+    git(root, "add", "-A")
+    git(root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "-m", "move anchored source")
+    before = (root / SITES).read_bytes()
+    with pytest.raises(SystemExit) as refused:
+        _verb().reanchor_all(root, base)
+    assert SPEC in str(refused.value) and "source file src/lib.rs is gone" in str(refused.value)
+    assert (root / SITES).read_bytes() == before
+    assert git(root, "status", "--porcelain") == ""
+
+
 # A second `if x {` line, deeper in the same function: the old pattern now matches two lines.
 DUPLICATED = BASE.replace(
     "    y\n}", "    for _ in 0..1 {\n        if x {\n            continue;\n        }\n    }\n    y\n}"
