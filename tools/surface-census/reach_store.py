@@ -32,9 +32,10 @@ compile them.
 
 ``start``/``end`` are the item's 1-indexed first and last line, ``digest`` the
 SHA-256 (first 32 hex digits) of its **normalized token stream** — every token
-of the item, attributes included, comments and whitespace dropped, and a comma
-directly before a closing bracket dropped too (rustfmt adds and removes those as
-it reflows a list) — and
+of the item, attributes included, comments and whitespace dropped. Optional final
+commas in ordinary lists are dropped for rustfmt reflow; single-element tuple
+commas and every comma inside a macro invocation, macro definition or attribute
+are retained because those can carry meaning — and
 ``regions`` the item's counter regions (executed or not: the *universe*), in
 the region encoding below, sorted.
 
@@ -626,6 +627,138 @@ def _module_file(directory: Path, base: Path, name: str) -> list[Path]:
     return [directory / f"{name}.rs", directory / name / "mod.rs", base / name / f"{name}.rs"]
 
 
+# These words introduce a grouped expression or pattern, rather than a call's
+# argument list. `fn(T,)`, `Fn(T,)`, constructors and ordinary calls are lists.
+_GROUP_BEFORE_PAREN = frozenset(
+    {
+        "return",
+        "break",
+        "yield",
+        "if",
+        "while",
+        "match",
+        "for",
+        "in",
+        "let",
+        "else",
+        "loop",
+        "async",
+        "move",
+        "unsafe",
+        "const",
+        "static",
+        "type",
+        "where",
+        "as",
+        "impl",
+        "trait",
+        "struct",
+        "enum",
+        "mod",
+        "use",
+        "pub",
+        "mut",
+        "ref",
+        "dyn",
+        "await",
+    }
+)
+
+
+def _formatting_commas(tokens: list[Token]) -> list[bool]:
+    """Commas rustfmt may add to ordinary lists, never punctuation a macro can inspect.
+
+    A singleton tuple's comma is its type/value/pattern constructor. In a call
+    or parameter list a final comma is optional; in other parentheses it is
+    optional only when another top-level comma already makes a tuple. Angle
+    pairs and closure parameter pipes are skipped while counting, so commas
+    inside either cannot turn a singleton tuple into an apparent multi-element
+    tuple. A comparison or bitwise expression mistaken for a delimiter pair
+    only preserves an extra comma (a conservative re-run).
+    """
+    pairs = _matches(tokens)
+    opened = {end: start for start, end in pairs.items()}
+    protected = [False] * len(tokens)
+
+    def protect(start: int) -> None:
+        if start in pairs:
+            for index in range(start, pairs[start] + 1):
+                protected[index] = True
+
+    for index, token in enumerate(tokens):
+        if token.text == "#":
+            start = index + 1
+            if start < len(tokens) and tokens[start].text == "!":
+                start += 1
+            if start < len(tokens) and tokens[start].text == "[":
+                protect(start)
+        elif token.text == "!" and index and index + 1 in pairs:
+            previous = tokens[index - 1].text
+            raw = index >= 3 and [t.text for t in tokens[index - 3 : index - 1]] == ["r", "#"]
+            if _IDENT.fullmatch(previous) and (previous not in _GROUP_BEFORE_PAREN or raw):
+                protect(index + 1)
+        elif token.text == "macro_rules" and index + 1 < len(tokens) and tokens[index + 1].text == "!":
+            # The name can be a raw identifier (`r#name`), too.
+            for start in range(index + 2, min(index + 6, len(tokens))):
+                if start in pairs:
+                    protect(start)
+                    break
+
+    def multiple_tuple_elements(start: int, end: int) -> bool:
+        top, index = [], start + 1
+        while index < end:
+            if index in pairs:
+                index = pairs[index] + 1
+            else:
+                top.append(index)
+                index += 1
+        angles, angle_pairs = [], {}
+        pipe, pipe_pairs = None, {}
+        for index in top:
+            if tokens[index].text == "|":
+                if pipe is None:
+                    pipe = index
+                else:
+                    pipe_pairs[pipe] = index
+                    pipe = None
+            if tokens[index].text == "<":
+                angles.append(index)
+            elif tokens[index].text == ">" and angles and (not index or tokens[index - 1].text not in ("-", "=")):
+                angle_pairs[angles.pop()] = index
+        commas, skip = 0, -1
+        for index in top:
+            if index <= skip:
+                continue
+            if index in angle_pairs:
+                skip = angle_pairs[index]
+            elif index in pipe_pairs:
+                skip = pipe_pairs[index]
+            elif tokens[index].text == ",":
+                commas += 1
+        return commas > 1
+
+    excluded = [False] * len(tokens)
+    for index, token in enumerate(tokens[:-1]):
+        closer = tokens[index + 1].text
+        if token.text != "," or protected[index] or closer not in (")", "]", "}", ">"):
+            continue
+        if closer == ")":
+            start = opened.get(index + 1)
+            if start is None:
+                continue
+            previous = tokens[start - 1].text if start else ""
+            raw = start >= 3 and [t.text for t in tokens[start - 3 : start - 1]] == ["r", "#"]
+            call = (
+                (bool(_IDENT.fullmatch(previous)) and (previous not in _GROUP_BEFORE_PAREN or raw))
+                or previous in (")", "]")
+                or (previous == ">" and start >= 2 and tokens[start - 2].text != "-")
+            )
+            if not call and not multiple_tuple_elements(start, index + 1):
+                continue
+        excluded[index] = True
+    return excluded
+
+
 def read_tree(root: Path, sources: Mapping[str, bytes] | None = None) -> Tree:
     """Parse every `src/**/*.rs` of the tree at `root` (or of `sources`, `path -> bytes`).
 
@@ -651,12 +784,7 @@ def read_tree(root: Path, sources: Mapping[str, bytes] | None = None) -> Tree:
         if path in test_only:
             continue
         files[path] = file
-        # rustfmt adds and drops a trailing comma as it reflows a list, so the
-        # normalized stream leaves out a comma directly before a closing bracket.
-        excluded = [
-            token.text == "," and index + 1 < len(file.tokens) and file.tokens[index + 1].text in (")", "]", "}")
-            for index, token in enumerate(file.tokens)
-        ]
+        excluded = _formatting_commas(file.tokens)
         inside = [False] * len(file.tokens)
         tested = [False] * len(file.tokens)
         for lo, hi in file.test_spans:

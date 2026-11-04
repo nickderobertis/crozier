@@ -688,3 +688,46 @@ def test_a_function_only_a_fixtures_control_run_executed_re_runs_that_fixture(re
     plan = step(repo, edit(repo, "src/lib.rs", "x * 2", "x * 3"), base)
     assert (plan.full, set(plan.fixtures)) == (None, {"fx"})
     assert plan.reasons["fixture fx"] == "it executed changed src/lib.rs::untouched"
+
+
+@pytest.mark.parametrize(
+    ("before", "after", "key"),
+    [
+        ("pub fn a() -> impl std::fmt::Debug { (1,) }", "pub fn a() -> impl std::fmt::Debug { (1) }", "a"),
+        ("pub fn a() { (|x, y| x + y,); }", "pub fn a() { (|x, y| x + y); }", "a"),
+        ("pub fn a(x: (u8,)) {}", "pub fn a(x: (u8)) {}", "a"),
+        ("pub fn a() -> (u8,) { todo!() }", "pub fn a() -> (u8) { todo!() }", "a"),
+        ("pub fn a(x: (u8,)) { let (y,) = x; }", "pub fn a(x: (u8,)) { let (y) = x; }", "a"),
+        ("pub fn a() { pick!(1,); }", "pub fn a() { pick!(1); }", "a"),
+        ("pub fn a() { pick![1,]; }", "pub fn a() { pick![1]; }", "a"),
+        ("pub fn a() { pick!{1,}; }", "pub fn a() { pick!{1}; }", "a"),
+        ("#[custom(a,)] pub fn a() {}", "#[custom(a)] pub fn a() {}", "{items}"),
+        ("#![custom(a,)] pub fn a() {}", "#![custom(a)] pub fn a() {}", "{items}"),
+        ("macro_rules! pick { (a,) => { 1 }; }", "macro_rules! pick { (a) => { 1 }; }", "{items}"),
+        ("pub fn a() { (factory::<A, B>(),); }", "pub fn a() { (factory::<A, B>()); }", "a"),
+        (
+            "pub fn a() { (factory::<fn() -> Result<A, B>, C>(),); }",
+            "pub fn a() { (factory::<fn() -> Result<A, B>, C>()); }",
+            "a",
+        ),
+    ],
+)
+def test_semantic_commas_change_the_real_parsers_digest(before: str, after: str, key: str) -> None:
+    assert (
+        tree_of(before).functions[f"src/lib.rs::{key}"].digest != tree_of(after).functions[f"src/lib.rs::{key}"].digest
+    )
+
+
+@pytest.mark.parametrize(
+    ("before", "after"),
+    [
+        ("pub fn a() { consume(1); }", "pub fn a() { consume(\n1,\n); }"),
+        ("pub fn a(x: u8) {}", "pub fn a(\nx: u8,\n) {}"),
+        ("pub fn a() { let _ = (1, 2); }", "pub fn a() { let _ = (\n1, 2,\n); }"),
+        ("pub fn a() { let _ = (1 < 2, 3); }", "pub fn a() { let _ = (1 < 2, 3,); }"),
+        ("pub fn a() { let _ = !(consume(1)); }", "pub fn a() { let _ = !(consume(\n1,\n)); }"),
+        ("pub fn a<T>() { consume::<T>(); }", "pub fn a<T,>() { consume::<T,>(); }"),
+    ],
+)
+def test_ordinary_list_commas_stay_stable_through_reflow(before: str, after: str) -> None:
+    assert tree_of(before).functions["src/lib.rs::a"].digest == tree_of(after).functions["src/lib.rs::a"].digest
