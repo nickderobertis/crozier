@@ -22,7 +22,8 @@
     "surface-census",
     "surface-reach",
     "witness-search",
-    "witness-search-git"
+    "witness-search-git",
+    "surface-repin"
   ],
   "targets": {
     "coverage": {
@@ -89,7 +90,9 @@
         "{workspaceRoot}/tools/surface-census/pyproject.toml",
         "{workspaceRoot}/tools/surface-reach/pyproject.toml",
         "{workspaceRoot}/tools/witness-search/pyproject.toml",
-        "{workspaceRoot}/tools/witness-search-git/pyproject.toml"
+        "{workspaceRoot}/tools/witness-search-git/pyproject.toml",
+        "{workspaceRoot}/tools/surface-repin/project.json",
+        "{workspaceRoot}/tools/surface-repin/pyproject.toml"
       ]
     },
     "format": {

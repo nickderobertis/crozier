@@ -575,7 +575,7 @@ def restate(root: Path) -> str:
         f"**{len(one)}** golden rows rest on one document",
     )
     header = "| key | region | only golden-only witness |\n|---|---|---|\n"
-    section = substitute(section, re.escape(header) + r"(?:\|[^\n]*\|\n)*", header + "\n".join(one) + "\n")
+    section = substitute(section, re.escape(header) + r"(?:\|[^\n]*\|\n)*", header + "".join(f"{row}\n" for row in one))
     text = before + thin_heading + section + following + tail
     text = substitute(
         text,

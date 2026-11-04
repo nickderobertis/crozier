@@ -278,7 +278,11 @@ def main() -> int:
             if not args.check:
                 output.write_text(text, encoding="utf-8")
             elif not output.is_file() or output.read_text(encoding="utf-8") != text:
-                print(f"witness-search-registries-index: {output} is stale; rerun without --check", file=sys.stderr)
+                print(
+                    f"witness-search-registries-index: {output} is stale; run `just census-repin`, which "
+                    "regenerates it with the census tables",
+                    file=sys.stderr,
+                )
                 return 1
         except OSError as error:
             verb, fix = (

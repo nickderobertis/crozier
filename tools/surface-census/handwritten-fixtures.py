@@ -42,7 +42,10 @@ import tempfile
 import tomllib
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
+from typing import IO, TYPE_CHECKING, Any, Final, Literal, NamedTuple, NewType, Protocol, get_args
+
+if TYPE_CHECKING:
+    from reach_store import Store, Tree
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -105,7 +108,8 @@ def _load(name: str, path: Path) -> Any:
 
 
 def golden_reach() -> Any:
-    return _load("handwritten_golden_reach", REPO / "tools" / "surface-census" / "golden-reach.py")
+    loaded = sys.modules.get("handwritten_golden_reach")
+    return loaded or _load("handwritten_golden_reach", REPO / "tools" / "surface-census" / "golden-reach.py")
 
 
 def region_keys() -> Any:
@@ -674,27 +678,23 @@ def read_reach_ledger(path: Path) -> tuple[list[ReachRow], list[str]]:
     """`handwritten-reach.tsv`: its header, its rows and their order."""
     name = path.name
     if not path.is_file():
-        return [], [
-            f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"
-        ]
+        return [], [f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just census-repin`"]
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != REACH_HEADER:
-        return [], [
-            f"{name}: the header line must be exactly {'<TAB>'.join(REACH_HEADER)}; run `just handwritten-reach`"
-        ]
+        return [], [f"{name}: the header line must be exactly {'<TAB>'.join(REACH_HEADER)}; run `just census-repin`"]
     rows, failures = [], []
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
         if len(fields) != len(REACH_HEADER) or not fields[3].isdigit() or not fields[4].isdigit():
             failures.append(
-                f"{name} line {number}: not five tab-separated fields ending in two counts; run `just handwritten-reach`"
+                f"{name} line {number}: not five tab-separated fields ending in two counts; run `just census-repin`"
             )
             continue
         rows.append(ReachRow(fields[0], fields[1], fields[2], int(fields[3]), int(fields[4])))
     keys = [row[:3] for row in rows]
     if keys != sorted(keys) or len(keys) != len(set(keys)):
         failures.append(
-            f"{name}: rows are not sorted by fixture, key and site with none twice; run `just handwritten-reach`"
+            f"{name}: rows are not sorted by fixture, key and site with none twice; run `just census-repin`"
         )
     return rows, failures
 
@@ -1033,7 +1033,7 @@ def gate(root: Path) -> dict[str, Any]:
                 )
             executed = measured.get((name, cover.key, cover.arm))
             if executed is None:
-                failures.append(f"{where}: handwritten-reach.tsv has no row for it — run `just handwritten-reach`")
+                failures.append(f"{where}: handwritten-reach.tsv has no row for it — run `just census-repin`")
             elif executed[0] < 1:
                 failures.append(
                     f"{where}: handwritten-reach.tsv measures 0 of its {executed[1]} regions executed, "
@@ -1232,17 +1232,15 @@ def isolation_failures(root: Path, names: list[str], ledger: dict[str, Any]) -> 
     return failures
 
 
-def measure(args: argparse.Namespace) -> int:
-    """One instrumented crozier run per fixture with an arm-level cover; write the ledger."""
-    repo_root: Path = args.repo_root
-    base: Path = args.handwritten_dir or repo_root / HANDWRITTEN
-    ledger: Path = args.ledger or repo_root / REACH_LEDGER
-    gates: Path = args.gates or repo_root / GATE_LEDGER
+def fixture_plan(repo_root: Path, base: Path) -> tuple[list[tuple[str, Cover]], list[Interaction], dict[str, Fixture]]:
+    """Every arm-level cover and combination interaction site a run of `base`'s fixtures is measured at."""
     if not base.is_dir():
         raise SystemExit(f"handwritten-reach: {base} is not a directory; pass --handwritten-dir or restore it")
     reach = golden_reach()
     sites = reach.read_sites_table(repo_root / REGIONS / "golden-reach-sites.tsv")
-    audit, failures = reach.read_cooccurrence(repo_root / REGIONS / "combination-cooccurrence.tsv")
+    audited = repo_root / REGIONS / "combination-cooccurrence.tsv"
+    # A tree from before the co-occurrence audit has no `co-occurrence` cover to place.
+    audit, failures = reach.read_cooccurrence(audited) if audited.is_file() else ({}, [])
     if failures:
         raise SystemExit("handwritten-reach: " + "; ".join(failures))
     planned: list[tuple[str, Cover]] = []
@@ -1269,47 +1267,153 @@ def measure(args: argparse.Namespace) -> int:
                 )
             reach.resolve_site(cover.arm, repo_root)
             planned.append((entry.name, cover))
-    rows: list[tuple[str, str, str, int, int]] = []
-    gate_rows: list[tuple[str, str, str, str, int, int]] = []
-    if planned or interactions:
-        crozier = instrumented_crozier(repo_root, reach)
-        profdata, llvm_cov = reach._llvm_tool("llvm-profdata"), reach._llvm_tool("llvm-cov")
-        runs: dict[str, tuple[dict, dict]] = {}
-        for name in sorted({name for name, _cover in planned} | {row.fixture for row in interactions}):
-            runs[name] = scoped_run(
-                base / name / "openapi.yml", declared[name].audiences, crozier, profdata, llvm_cov, repo_root, reach
-            )
-        # A fixture declaring a setting is measured without it too: the control
-        # half of the configuration gate its covers' records rest on.
-        controls = {
-            name: scoped_run(base / name / "openapi.yml", (), crozier, profdata, llvm_cov, repo_root, reach)
-            for name in sorted({name for name, _cover in planned if declared[name].audiences})
-        }
+    return planned, interactions, declared
 
-        def reached(run: tuple[dict, dict], arm: str) -> tuple[int, int]:
-            universe, hit = run
-            site = reach.resolve_site(arm, repo_root)
-            regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(r)}
-            return len(regions & {tuple(r) for r in hit.get(site.file, [])}), len(regions)
 
-        for name, cover in planned:
-            # `planned` holds the arm-level covers alone.
-            assert cover.arm is not None
-            rows.append((name, cover.key, cover.arm, *reached(runs[name], cover.arm)))
-            if name in controls:
-                gate_rows.append(
-                    (name, cover.key, cover.arm, setting_of(declared[name]), *reached(runs[name], cover.arm))
+def measured_fixtures(repo_root: Path, base: Path) -> dict[str, tuple[str, ...]]:
+    """The fixtures a measurement runs (each with an arm-level cover or an interaction site) -> their audiences."""
+    planned, interactions, declared = fixture_plan(repo_root, base)
+    names = {name for name, _cover in planned} | {row.fixture for row in interactions}
+    return {name: tuple(declared[name].audiences) for name in sorted(names)}
+
+
+class GateRow(NamedTuple):
+    """One configuration-gate row for a fixture measured with or without its setting."""
+
+    fixture: str
+    key: str
+    site: str
+    setting: str
+    regions_executed: int
+    regions: int
+
+
+def ledger_rows(
+    repo_root: Path, base: Path, store: Store, tree: Tree, partial: bool = False
+) -> tuple[list[ReachRow], list[GateRow]]:
+    """`handwritten-reach.tsv` and `handwritten-config-gates.tsv` rows, from the store's fixture entries.
+
+    A `partial` store (a measurement scoped to some fixtures) yields rows for its fixtures alone.
+    """
+    reach = golden_reach()
+    store_module = reach.RS
+    planned, interactions, declared = fixture_plan(repo_root, base)
+    if partial:
+        planned = [(name, cover) for name, cover in planned if name in store["fixtures"]]
+        interactions = [row for row in interactions if row.fixture in store["fixtures"]]
+    universe = store_module.positions(tree, store["functions"])
+    decoded: dict[tuple[str, str], dict] = {}
+
+    def hits(name: str, part: Literal["regions", "control"]) -> dict:
+        if (name, part) not in decoded:
+            entry = store["fixtures"].get(name)
+            executed = None if entry is None else entry["regions"] if part == "regions" else entry.get("control")
+            if executed is None:
+                raise SystemExit(
+                    f"handwritten-reach: {name} has no {'control ' if part == 'control' else ''}measurement in the "
+                    f"store; run `{store_module.REPIN}`"
                 )
-                gate_rows.append((name, cover.key, cover.arm, UNSET, *reached(controls[name], cover.arm)))
-        for row in interactions:
-            rows.append((*row, *reached(runs[row.fixture], row.site)))
-    rows.sort(key=lambda row: row[:3])
-    gate_rows.sort(key=lambda row: row[:4])
+            decoded[(name, part)] = store_module.positions(tree, store["functions"], executed)
+        return decoded[(name, part)]
+
+    def reached(name: str, part: Literal["regions", "control"], arm: str) -> tuple[int, int]:
+        site = reach.resolve_site(arm, repo_root)
+        regions = {r for r in universe.get(site.file, set()) if site.holds(r)}
+        return len(regions & hits(name, part).get(site.file, set())), len(regions)
+
+    rows: list[ReachRow] = []
+    gate_rows: list[GateRow] = []
+    for name, cover in planned:
+        # `planned` holds the arm-level covers alone.
+        assert cover.arm is not None
+        executed, total = reached(name, "regions", cover.arm)
+        rows.append(ReachRow(fixture=name, key=cover.key, site=cover.arm, regions_executed=executed, regions=total))
+        if declared[name].audiences:
+            # A fixture declaring a setting is measured without it too: the control
+            # half of the configuration gate its covers' records rest on.
+            gate_rows.append(
+                GateRow(
+                    fixture=name,
+                    key=cover.key,
+                    site=cover.arm,
+                    setting=setting_of(declared[name]),
+                    regions_executed=executed,
+                    regions=total,
+                )
+            )
+            control, total = reached(name, "control", cover.arm)
+            gate_rows.append(
+                GateRow(
+                    fixture=name, key=cover.key, site=cover.arm, setting=UNSET, regions_executed=control, regions=total
+                )
+            )
+    for row in interactions:
+        rows.append(ReachRow(*row, *reached(row.fixture, "regions", row.site)))
+    rows.sort(key=lambda row: (row.fixture, row.key, row.site))
+    gate_rows.sort(key=lambda row: (row.fixture, row.key, row.site, row.setting))
+    return rows, gate_rows
+
+
+def write_ledgers(rows: list[ReachRow], gate_rows: list[GateRow], ledger: Path, gates: Path) -> None:
     for path, header, lines in ((ledger, REACH_HEADER, rows), (gates, GATE_HEADER, gate_rows)):
         path.write_text(
             "\n".join(["\t".join(header)] + ["\t".join(map(str, row)) for row in lines]) + "\n",
             encoding="utf-8",
         )
+
+
+def report(repo_root: Path, store: Store, partial: bool = False) -> tuple[int, int]:
+    """Write both committed ledgers from `store` for the tree at `repo_root`; return their row counts."""
+    reach = golden_reach()
+    tree = reach.RS.read_tree(repo_root)
+    rows, gate_rows = ledger_rows(repo_root, repo_root / HANDWRITTEN, store, tree, partial)
+    write_ledgers(rows, gate_rows, repo_root / REACH_LEDGER, repo_root / GATE_LEDGER)
+    return len(rows), len(gate_rows)
+
+
+def measure(args: argparse.Namespace) -> int:
+    """Measure every fixture with an arm-level cover (or an interaction site) into the store; write the ledgers.
+
+    Over the committed fixtures it is a step of this checkout's store, re-running
+    every fixture and carrying the golden tests the carry rule allows; over another
+    directory (`--handwritten-dir`) it measures that directory alone and keeps no store.
+    """
+    repo_root: Path = args.repo_root
+    committed = repo_root / HANDWRITTEN
+    base: Path = args.handwritten_dir or committed
+    ledger: Path = args.ledger or repo_root / REACH_LEDGER
+    gates: Path = args.gates or repo_root / GATE_LEDGER
+    if not base.is_dir():
+        raise SystemExit(f"handwritten-reach: {base} is not a directory; pass --handwritten-dir or restore it")
+    reach = golden_reach()
+    own = base.resolve() == committed.resolve()
+    out = repo_root / ".local" / "golden-reach"
+    if own:
+        dirty = reach.uncommitted_changes(repo_root)
+        if dirty:
+            raise SystemExit(
+                f"handwritten-reach: {len(dirty)} tracked file(s) differ from HEAD ({', '.join(dirty[:5])}); "
+                "commit them first so the store's measured commit is the tree measured"
+            )
+    planned, interactions, _declared = fixture_plan(repo_root, base)
+    fixtures = measured_fixtures(repo_root, base)
+    rows: list[ReachRow] = []
+    gate_rows: list[GateRow] = []
+    if fixtures:
+        with reach.RS.instrumented_lock("handwritten-reach"):
+            step = reach.measure_step(
+                repo_root,
+                base=reach.local_store(out) if own else None,
+                full_reason="measuring the hand-written fixtures alone",
+                forced_fixtures=frozenset(fixtures),
+                include_tests=False,
+                handwritten_dir=base,
+            )
+        rows, gate_rows = ledger_rows(repo_root, base, step.store, reach.RS.read_tree(repo_root))
+        if own:
+            reach.write_views(step, out, repo_root)
+            reach._sibling("reach_base").publish(step.store)
+    write_ledgers(rows, gate_rows, ledger, gates)
     print(
         f"handwritten-reach: measured {len(planned)} arm-level cover(s) and {len(interactions)} "
         f"combination interaction site(s) into {ledger}, "
@@ -1319,33 +1423,27 @@ def measure(args: argparse.Namespace) -> int:
 
 
 def instrumented_crozier(repo_root: Path, reach: Any) -> Path:
-    """Build the instrumented crozier `just golden-reach` measures with, and return it."""
-    build = subprocess.run(
-        [
-            "cargo",
-            "llvm-cov",
-            "--locked",
-            "--no-report",
-            "nextest",
-            "--workspace",
-            "-E",
-            "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)",
-        ],
-        cwd=repo_root,
-        capture_output=True,
-        text=True,
-    )
-    if build.returncode != 0:
-        sys.stderr.write(build.stdout[-4000:] + build.stderr[-4000:])
-        raise SystemExit(
-            "handwritten-reach: the instrumented build failed (its output is above); fix what it names and re-run"
-        )
-    _e2e, crozier = reach._instrumented_binaries(repo_root)
+    """Build the instrumented crozier every measurement runs (golden-reach.py's own build), and return it."""
+    _e2e, crozier = reach.instrumented_build(repo_root)
     return crozier
 
 
+class CoverageTools(Protocol):
+    """What a scoped run needs of golden-reach.py: running an llvm tool, and reading an export."""
+
+    def run_llvm(self, argv: list[str], stdout: IO[str] | None = None) -> None: ...
+
+    def covered(self, export: Path, repo_root: Path) -> tuple[dict, dict]: ...
+
+
 def scoped_run(
-    spec: Path, audiences: tuple[str, ...], crozier: Path, profdata: str, llvm_cov: str, repo_root: Path, reach: Any
+    spec: Path,
+    audiences: tuple[str, ...],
+    crozier: Path,
+    profdata: str,
+    llvm_cov: str,
+    repo_root: Path,
+    reach: CoverageTools,
 ) -> tuple[dict, dict]:
     """(every production region, the executed ones) of one crozier run over `spec` alone,
     filtered to the fixture's `audiences` as the gate generates it."""
@@ -1383,7 +1481,7 @@ def scoped_run(
         export = raw / "export.json"
         with export.open("w", encoding="utf-8") as sink:
             reach.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier)], stdout=sink)
-        return reach._covered(export, repo_root)
+        return reach.covered(export, repo_root)
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -26,6 +26,7 @@ members = [
     "crozier-screenshots",
     "crozier-surface-census",
     "crozier-surface-reach",
+    "crozier-surface-repin",
     "crozier-witness-search",
     "crozier-witness-search-git",
 ]
@@ -502,6 +503,21 @@ requires-dist = [
 name = "crozier-surface-reach"
 version = "0.0.0"
 source = { virtual = "tools/surface-reach" }
+dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+]
+
+[[package]]
+name = "crozier-surface-repin"
+version = "0.0.0"
+source = { virtual = "tools/surface-repin" }
 dependencies = [
     { name = "crozier-corpus" },
     { name = "crozier-surface-census" },

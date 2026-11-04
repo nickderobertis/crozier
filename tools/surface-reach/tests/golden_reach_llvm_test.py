@@ -41,7 +41,7 @@ class RealLlvmToolTests(unittest.TestCase):
         # the message names it without the suffix.
         self.assertIn("`llvm-profdata merge` exited", message)
         self.assertIn("stale.profraw", message)
-        self.assertIn("just golden-reach", message)
+        self.assertIn("just census-repin", message)
 
 
 class RealRuffTests(unittest.TestCase):
