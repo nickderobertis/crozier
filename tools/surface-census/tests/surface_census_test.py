@@ -20368,6 +20368,22 @@ class CoverageRestatementTests(unittest.TestCase):
         header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
         row = f"1\tcase\topen\tcombo-header-string-default\tcase.yml\t{digest}\tsearch.md\n"
         matrix.write_text(header + row, encoding="utf-8")
+        for invalid in (
+            header.replace("schema_version", "wrong_header") + row,
+            header + row.replace("1\tcase", "2\tcase"),
+            header + row.replace("\topen\t", "\tunknown\t"),
+            header + row + row,
+            header + row.replace("case.yml", "../case.yml"),
+            header + row.replace("case.yml", "..\\case.yml"),
+        ):
+            matrix.write_text(invalid, encoding="utf-8")
+            refused = self.run_restater("--write")
+            self.assertEqual(1, refused.returncode)
+            self.assertIn("repair the named input", refused.stderr)
+            self.assertNotIn("Traceback", refused.stderr)
+            matrix.write_text(header + row, encoding="utf-8")
+            recovered = self.run_restater("--write")
+            self.assertEqual(0, recovered.returncode, recovered.stderr)
         initial = self.run_restater("--write")
         self.assertEqual(0, initial.returncode, initial.stderr)
         rendered = self.index.read_text(encoding="utf-8")
@@ -22833,6 +22849,96 @@ class WithdrawnWitnessSelectorTests(unittest.TestCase):
                     with self.subTest(selector=selector, expected=expected):
                         self.assertEqual(counts.get(selector, 0) > 0, expected)
 
+    def test_union_tag_conditions_are_independent(self) -> None:
+        member = {"type": "object", "required": ["type"], "properties": {"type": {"type": "string", "enum": ["first"]}}}
+        other = {"type": "object", "required": ["type"], "properties": {"type": {"type": "string", "enum": ["second"]}}}
+        original = {
+            "openapi": "3.0.3",
+            "info": {"title": "copy controls", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {
+                    "variant_properties": member,
+                    "Union": {"oneOf": [{"$ref": "#/components/schemas/variant_properties"}, other]},
+                }
+            },
+        }
+        controls = []
+        for name in (
+            "plain",
+            "optional",
+            "non-string",
+            "duplicate",
+            "discriminator",
+            "undiscriminated",
+            "canonical-undiscriminated",
+        ):
+            document = json.loads(json.dumps(original))
+            schemas = document["components"]["schemas"]
+            union = schemas["Union"]
+            targets = [schemas["variant_properties"], union["oneOf"][1]]
+            if name == "optional":
+                for target in targets:
+                    target["required"] = []
+            elif name == "non-string":
+                for target in targets:
+                    target["properties"]["type"]["type"] = "integer"
+            elif name == "duplicate":
+                targets[1]["properties"]["type"]["enum"] = ["first"]
+            elif name == "discriminator":
+                union["discriminator"] = {"propertyName": "type"}
+            elif name in ("undiscriminated", "canonical-undiscriminated"):
+                union[("x-crozier-" if name.startswith("canonical") else "x-fern-") + "discriminated"] = False
+            controls.append((name, document))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in controls:
+                write_json_fixture(root, name, document)
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            actual = {(row["fixture"], row["selector"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
+            for name, _ in controls:
+                self.assertEqual(
+                    int(name not in ("optional", "non-string")),
+                    actual.get((name, "schema.oneOf:properties-copy-type-variant"), 0),
+                    name,
+                )
+                self.assertEqual(
+                    int(name == "plain"), actual.get((name, "schema.oneOf:properties-copy-inferred-type"), 0), name
+                )
+
+    def test_parameter_example_overrides_schema_timestamp(self) -> None:
+        source = (REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, text, expected in (
+                ("schema-fallback", source, 1),
+                (
+                    "parameter-timestamp",
+                    source.replace("required: false", "required: false\n          example: 2020-02-03"),
+                    1,
+                ),
+                (
+                    "parameter-string",
+                    source.replace("required: false", 'required: false\n          example: "2020-02-03"'),
+                    0,
+                ),
+                ("parameter-null", source.replace("required: false", "required: false\n          example: null"), 0),
+            ):
+                path = root / "case" / "openapi.yml"
+                path.parent.mkdir(exist_ok=True)
+                path.write_text(text, encoding="utf-8")
+                completed = run(
+                    "--vendored-only",
+                    "--fixtures-root",
+                    str(root),
+                    "--selector",
+                    "parameter.example:optional-nontemporal-yaml-timestamp",
+                    "--json",
+                )
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertEqual(expected, sum(row["count"] for row in json.loads(completed.stdout)["rows"]), name)
+
     def test_timestamp_style_requiredness_location_and_format(self) -> None:
         source = (REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml").read_text(encoding="utf-8")
         selector = "parameter.example:optional-nontemporal-yaml-timestamp"
@@ -22874,6 +22980,9 @@ class ComponentTypeNameSelectorTests(unittest.TestCase):
             with self.subTest(case=path.parent.name):
                 doc = census.load_document(path)
                 self.assertGreater(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
+                canonical = json.loads(json.dumps(doc).replace('"x-fern-type-name"', '"x-crozier-type-name"'))
+                self.assertGreater(census.census_document(canonical).get("schema.x-fern-type-name:component", 0), 0)
+
         doc = {
             "openapi": "3.0.3",
             "components": {
