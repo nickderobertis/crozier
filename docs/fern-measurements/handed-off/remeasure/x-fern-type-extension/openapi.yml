@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Seed Scan Registry",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/scan": {
+      "get": {
+        "operationId": "get_scan",
+        "responses": {
+          "200": {
+            "description": "Scan record",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Scan"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Scan": {
+        "type": "object",
+        "properties": {
+          "capturedAt": {
+            "type": "string",
+            "pattern": "^.+Z$",
+            "x-fern-type": "datetime"
+          },
+          "queuedAt": {
+            "type": "string",
+            "x-fern-type": "datetime"
+          },
+          "active": {
+            "type": "boolean",
+            "x-fern-type": "literal<true>"
+          }
+        }
+      }
+    }
+  }
+}

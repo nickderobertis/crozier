@@ -1,0 +1,156 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Garden Receipt Desk",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/plainack": {
+      "get": {
+        "operationId": "get_PlainAck",
+        "responses": {
+          "200": {
+            "description": "Receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlainAck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groupedack": {
+      "get": {
+        "operationId": "get_GroupedAck",
+        "responses": {
+          "200": {
+            "description": "Receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupedAck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/closedack": {
+      "get": {
+        "operationId": "get_ClosedAck",
+        "responses": {
+          "200": {
+            "description": "Receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClosedAck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/exampleack": {
+      "get": {
+        "operationId": "get_ExampleAck",
+        "responses": {
+          "200": {
+            "description": "Receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExampleAck"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ownfieldsack": {
+      "get": {
+        "operationId": "get_OwnFieldsAck",
+        "responses": {
+          "200": {
+            "description": "Receipt",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OwnFieldsAck"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Payload": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        }
+      },
+      "PlainAck": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payload"
+          }
+        ]
+      },
+      "GroupedAck": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payload"
+          }
+        ],
+        "x-fern-sdk-group-name": "receipts"
+      },
+      "ClosedAck": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payload"
+          }
+        ],
+        "additionalProperties": false
+      },
+      "ExampleAck": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payload"
+          }
+        ],
+        "example": {
+          "label": "received"
+        }
+      },
+      "OwnFieldsAck": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Payload"
+          }
+        ],
+        "properties": {
+          "detail": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

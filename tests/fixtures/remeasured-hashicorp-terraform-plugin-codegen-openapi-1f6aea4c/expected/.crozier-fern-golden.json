@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c",
+  "corpus_spec_ref": "55b2a49774f094d0d8aff834bce5eabe9e8a7345",
+  "corpus_spec_url": "https://raw.githubusercontent.com/hashicorp/terraform-plugin-codegen-openapi/55b2a49774f094d0d8aff834bce5eabe9e8a7345/internal/cmd/testdata/edgecase/openapi_spec.yml"
+}

@@ -182,7 +182,12 @@ fn examples_docs_measurements_match_fern() {
 /// A hand-written fixture's committed Fern tree, copied so a test may perturb
 /// it, with the golden its ledger rows belong to.
 fn handwritten_copy(fixture: &str) -> (tempfile::TempDir, String, std::path::PathBuf) {
-    let root = repo_root().join(HANDWRITTEN_DIR).join(fixture);
+    let area = if fixture == "poster-upload" {
+        super::SUPERSEDED_FIXTURES_DIR
+    } else {
+        HANDWRITTEN_DIR
+    };
+    let root = repo_root().join(area).join(fixture);
     let expected = root.join("fern-expected");
     let copy = tempfile::tempdir().expect("golden copy tempdir");
     copy_dir(&expected, copy.path());

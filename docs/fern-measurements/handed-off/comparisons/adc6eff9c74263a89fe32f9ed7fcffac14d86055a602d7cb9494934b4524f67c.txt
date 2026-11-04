@@ -1,0 +1,41 @@
+sha256: adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c
+result: refused-by-ruling
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/diffs
+crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
+compare exit: 4
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c
+
+differing files:
+
+certified exit: 1
+certified diagnostic: [error] PaymentResponse is already declared in paymentsApiInbound.yml
+default refusal: type-name-collision (exit 1)
+default command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/default --package-name fern --project-name default_package_name
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/openapi.yml: type-name-collision: type PaymentResponse is declared in namespaces "" and "payments_api_inbound"; give the types distinct declared names
+fern-strict refusal: type-name-collision (exit 1)
+fern-strict command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/fern-strict --package-name fern --project-name default_package_name --fern-strict
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/openapi.yml: type-name-collision: type PaymentResponse is declared in namespaces "" and "payments_api_inbound"; give the types distinct declared names (fern-strict: Fern refuses this document)
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/crozier.yml python: reference command finished in 0.02s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/crozier.yml python: could_not_check (the reference command exited 0 but left $CROZIER_REFERENCE_OUTPUT empty)
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/crozier.yml
+  python: could_not_check
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/adc6eff9c74263a89fe32f9ed7fcffac14d86055a602d7cb9494934b4524f67c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: the reference command exited 0 but left $CROZIER_REFERENCE_OUTPUT empty
+    timing: reference 0.02s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 0 mismatched, 1 could not check
+Timing totals: no generator ran both sides
+Result: no mismatch, but 1 could not be checked (exit 4)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: 'MIT / https://mit-license.org' -> MIT
+licence file (none) -> None
+outcome: passed: info.license 'MIT / https://mit-license.org' reads as MIT, which the corpus rule admits

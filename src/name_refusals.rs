@@ -358,10 +358,18 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             // class's `multipart-*` shapes), where a JSON body's field takes a
             // prefix instead.
             if let Some(body) = op.request_body.as_ref().filter(|body| {
-                !body.content.keys().any(|media| {
+                // An unsplit octet-stream body wins before form lowering, so
+                // its unused multipart alternative claims no method arguments.
+                let unsplit_bytes = body.content.contains_key("application/octet-stream")
+                    && body
+                        .content
+                        .values()
+                        .any(|media| media.sdk_method_name().is_none());
+                let json = body.content.keys().any(|media| {
                     let media = media.split(';').next().unwrap_or_default().trim();
                     media == "application/json" || media.ends_with("+json")
-                })
+                });
+                !(unsplit_bytes || json)
             }) {
                 for (media_type, media) in &body.content {
                     let Some(schema) = media

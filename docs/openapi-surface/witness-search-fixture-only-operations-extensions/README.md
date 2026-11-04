@@ -318,6 +318,9 @@ differing lines.
 
 ## Handed-off differences
 
+The repair-node comparisons below are historical.
+
+
 Every admissible declarer the certified pair generates from, where crozier's output differs, is handed off here at the manager's direction, not repaired in this record: a separate plan repairs each root cause, so crozier's output for these documents is unchanged by this record. The vtex Marketplace-Protocol differences were handed to the run's `vtex-output-parity` node, which repaired them and registered the document as corpus row 3479 (`vtex-marketplace-protocol`); its row below records what this search measured before that repair. Each document's files and first differing line pair are measured by `crozier compare` at this record's head against the certified pair's tree (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3); [`handed-off.tsv`](handed-off.tsv) lists every file each one touches.
 
 ### Root causes

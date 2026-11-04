@@ -55,6 +55,7 @@ format-ipv6	absent-tree	discards	docs/openapi-surface/probe-expected/format-ipv6
 format-iri	absent-tree	discards	docs/openapi-surface/probe-expected/format-iri	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
 format-iri-reference	absent-tree	discards	docs/openapi-surface/probe-expected/format-iri-reference	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
 format-relative-json-pointer	absent-tree	discards	docs/openapi-surface/probe-expected/format-relative-json-pointer	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
+harbor-nullable-inline-object	absent-tree	measured	docs/openapi-surface/probe-expected/harbor-nullable-inline-object	—	58a20481c757955214a6a50683a0f006030209ab086eb6fd78007b97507f11c2
 header-allow-reserved	absent-tree	discards	docs/openapi-surface/probe-expected/header-allow-reserved	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 header-array	refusal	refuses	docs/openapi-surface/probe-expected/header-array.fern-refusal.txt	—	a4231021e8b933cf51b6172e64f195e6ec37b6680023a5951d529300c1d58933
 header-deprecated	absent-tree	discards	docs/openapi-surface/probe-expected/header-deprecated	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
@@ -120,6 +121,7 @@ schema-example-on-ref-to-union-no-example-control	absent-tree	measured	docs/open
 server-description-multiword	absent-tree	discards	docs/openapi-surface/probe-expected/server-description-multiword	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 servers-three-levels	absent-tree	discards	docs/openapi-surface/probe-expected/servers-three-levels	—	260673c2ef2063ccc6e69d6850422ddbff593df192fcb4bba1fa991c35e601de
 spaceDelimited-object	absent-tree	discards	docs/openapi-surface/probe-expected/spaceDelimited-object	—	40385b2cd0f0da666d23940a1d640e04eb5c3e7a73c1a5339594057ec3c57928
+thermostat-nullable-member	absent-tree	measured	docs/openapi-surface/probe-expected/thermostat-nullable-member	—	a19f11f60bf80b07d900a30d9d3a2ebd2af6465f7ba7d3d4df23d1d8911eb46c
 trace-operation	absent-tree	discards	docs/openapi-surface/probe-expected/trace-operation	—	03acc136df6799cee89c895188ebb9a087b9b90a9aac2834ad0eee80a4788e75
 unevaluated-items	absent-tree	discards	docs/openapi-surface/probe-expected/unevaluated-items	—	3aa3b7ab6ae40f32fd93c274ba432c616ae0fb3ecc042339ea3b5a7c8632f2fa
 xml-prefix	differential	ignores	docs/openapi-surface/probe-expected/xml-prefix	xml-prefix-control	6afff2df1b2fc152f7d57cfec4f356cace871dd12b47d35563fbd0f697f99d28

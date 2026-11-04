@@ -193,6 +193,30 @@
     "docs/fern-measurements/handed-off/follow-up-tickets/679-escaped-quote-control/fern-expected": {},
     "docs/fern-measurements/handed-off/follow-up-tickets/694/fern-expected": {},
     "docs/fern-measurements/handed-off/follow-up-tickets/696/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/group-placed-nested-type-placement/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/remeasure/group-placed-nested-type-placement/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/ignored-multipart-query-collision/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/json-ref-body-kept-whole/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/nullable-union-and-unknown-body/expected-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/handed-off/remeasure/nullable-union-and-unknown-body/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/parent-example-map-values/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/split-media-body-orphan-model/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/typed-single-ref-allof-alias/fern-expected": {},
+    "docs/fern-measurements/handed-off/remeasure/x-fern-type-extension/fern-expected": {},
     "docs/fern-measurements/handed-off/snippet-rendering/R15/fern-expected": {},
     "docs/fern-measurements/handed-off/snippet-rendering/R17/fern-expected": {},
     "docs/fern-measurements/handed-off/snippet-rendering/byte-text-response-reference-snippet/fern-expected": {},
@@ -587,6 +611,7 @@
     "docs/fern-measurements/schema-shapes/pottery-studio-shapes/fern-expected": {},
     "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/buoy-depth-response/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/closed-empty-inline-objects/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/depot-bin-ledger/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/described-scalar-bodies/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/event-stream-event-dispatch/fern-expected": {},
@@ -596,6 +621,7 @@
     "docs/fern-measurements/superseded-fixtures/multipart-nullable-array/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/multipart-request-name/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/patch-inline-nullable-unrequired-props-omit/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/poster-upload/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/request-alias/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected": {},
@@ -715,7 +741,6 @@
     "docs/openapi-surface/handwritten/byte-text-response/fern-expected": {},
     "docs/openapi-surface/handwritten/cargo-hold-pallets/fern-expected": {},
     "docs/openapi-surface/handwritten/circuit-readings/fern-expected": {},
-    "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected": {},
     "docs/openapi-surface/handwritten/compass-member-notes/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
     "docs/openapi-surface/handwritten/courier-delivery-hooks/fern-expected": {},
@@ -742,7 +767,6 @@
     "docs/openapi-surface/handwritten/greenhouse-vents/fern-expected": {},
     "docs/openapi-surface/handwritten/grid-valve-console/fern-expected": {},
     "docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected": {},
-    "docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected": {},
@@ -797,7 +821,6 @@
     "docs/openapi-surface/handwritten/parcel-courier-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-response/fern-expected": {},
     "docs/openapi-surface/handwritten/passport-scan/fern-expected": {},
-    "docs/openapi-surface/handwritten/poster-upload/fern-expected": {},
     "docs/openapi-surface/handwritten/prompt-variable/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-anyof-composed-member/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-anyof-empty-object-member/fern-expected": {},
@@ -831,7 +854,6 @@
     "docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected": {},
     "docs/openapi-surface/handwritten/survey-map-value-union/fern-expected": {},
     "docs/openapi-surface/handwritten/telescope-renamed-discriminant/fern-expected": {},
-    "docs/openapi-surface/handwritten/thermostat-nullable-member/fern-expected": {},
     "docs/openapi-surface/handwritten/tidepool-survey-log/fern-expected": {},
     "docs/openapi-surface/handwritten/tram-route-query/fern-expected": {},
     "docs/openapi-surface/handwritten/transcript-format-part/fern-expected": {},
@@ -923,6 +945,7 @@
     "docs/openapi-surface/probe-expected/format-iri": {},
     "docs/openapi-surface/probe-expected/format-iri-reference": {},
     "docs/openapi-surface/probe-expected/format-relative-json-pointer": {},
+    "docs/openapi-surface/probe-expected/harbor-nullable-inline-object": {},
     "docs/openapi-surface/probe-expected/header-allow-reserved": {},
     "docs/openapi-surface/probe-expected/header-deprecated": {},
     "docs/openapi-surface/probe-expected/http-concealed": {},
@@ -985,6 +1008,7 @@
     "docs/openapi-surface/probe-expected/server-description-multiword": {},
     "docs/openapi-surface/probe-expected/servers-three-levels": {},
     "docs/openapi-surface/probe-expected/spaceDelimited-object": {},
+    "docs/openapi-surface/probe-expected/thermostat-nullable-member": {},
     "docs/openapi-surface/probe-expected/trace-operation": {},
     "docs/openapi-surface/probe-expected/unevaluated-items": {},
     "docs/openapi-surface/probe-expected/xml-prefix": {},
@@ -1507,6 +1531,36 @@
     "tests/fixtures/recursive-types/expected": {},
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},
     "tests/fixtures/redocly.com-museum/expected": {},
+    "tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected": {},
+    "tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/remeasured-clencyc-mozillafestivalbackend-b2264b38/expected": {},
+    "tests/fixtures/remeasured-clencyc-mozillafestivalbackend-b2264b38/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/remeasured-grafikart-filemanager-element-e36a74ce/expected": {},
+    "tests/fixtures/remeasured-grafikart-filemanager-element-e36a74ce/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c/expected": {},
+    "tests/fixtures/remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/remeasured-membrane-api-gateway-8340f5da/expected": {},
+    "tests/fixtures/remeasured-membrane-api-gateway-8340f5da/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/reverb.com/expected": {},
     "tests/fixtures/rgb-lightning-node/expected": {},
     "tests/fixtures/rgb-lightning-node/expected-literals": {

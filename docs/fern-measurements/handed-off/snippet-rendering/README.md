@@ -60,3 +60,9 @@ A cause another area records `parity-gap-repaired` can still appear below. In th
 | ro-crate | `reference.md` and `entities/client.py`: `list_entities`' optional `entityType` (an array of `$ref EntityType` with a parameter-level array `example`), which the pair passes and crozier leaves out | operations-extensions `R11` (`../example-values.tsv`, `user-ruling`, ruling 4). Here the pair contradicts R11's measured rule, so this is newly found residual `optional-ref-item-array-query-example`, drafted as `20261103T142950Z-keep-an-optional-array-query-s-item-example-wher` |
 
 No differing file or region of these seven documents is left unattributed, and none belongs to a cause of this node.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).

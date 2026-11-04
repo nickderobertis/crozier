@@ -477,8 +477,8 @@ when the two differ.
 ### `request-alias-reference-parameters`
 
 - **Kind:** `fern-defect`
-- **Trigger:** An aliased object JSON body is flattened into method arguments but reference.md advertises a whole request argument.
-- **Fern writes:** The reference parameter is request with the alias type, although the generated method has no request argument.
+- **Trigger:** An aliased or retained shared object JSON body is flattened into method arguments but reference.md advertises a whole request argument.
+- **Fern writes:** The reference parameter is request with the model or alias type, although the generated method has no request argument.
 - **crozier writes:** The reference lists the actual flattened arguments and their types and descriptions; generated code and usage examples remain matched.
 - **Why:** Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
 - **Evidence:** [`docs/departures/evidence/request-alias-reference-parameters.md`](../../docs/departures/evidence/request-alias-reference-parameters.md)

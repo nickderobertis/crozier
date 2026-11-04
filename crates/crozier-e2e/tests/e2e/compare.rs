@@ -1413,9 +1413,10 @@ fn compare_reports_the_readme_casing_departure_on_the_mixed_case_organization_go
 #[cfg(unix)]
 #[test]
 fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_difference() {
-    let golden = "docs/openapi-surface/handwritten/closed-empty-inline-objects/fern-expected";
-    let case =
-        crate::repo_root().join("docs/openapi-surface/handwritten/closed-empty-inline-objects");
+    let golden =
+        "docs/fern-measurements/superseded-fixtures/closed-empty-inline-objects/fern-expected";
+    let case = crate::repo_root()
+        .join("docs/fern-measurements/superseded-fixtures/closed-empty-inline-objects");
     let repo = tempfile::tempdir().expect("repo tempdir");
     let root = repo.path();
     git(root, &["init", "-q"]);

@@ -47,16 +47,31 @@ const REFUSED: [(&str, &str); 4] = [
     ("null-info-paths-components", "missing-info-object: info"),
 ];
 
+/// Rows whose measurements this module holds, including reconciled causes.
+fn triage_rows() -> Vec<Vec<String>> {
+    [TRIAGE, "docs/fern-measurements/handed-off/remeasure.tsv"]
+        .into_iter()
+        .flat_map(|path| {
+            let text = std::fs::read_to_string(repo_root().join(path))
+                .unwrap_or_else(|error| panic!("{path}: {error}"));
+            text.lines()
+                .skip(1)
+                .map(|row| row.split('\t').map(str::to_string).collect::<Vec<_>>())
+                .filter(|cells| {
+                    cells.get(3).is_some_and(|measurement| {
+                        measurement.starts_with(&format!("{DOCUMENT_ACCEPTANCE_DIR}/"))
+                    })
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect()
+}
+
 /// The triage's root causes recorded with `verdict`, in row order.
 fn causes(verdict: &str) -> Vec<String> {
-    let text = std::fs::read_to_string(repo_root().join(TRIAGE))
-        .unwrap_or_else(|error| panic!("{TRIAGE}: {error}"));
-    text.lines()
-        .skip(1)
-        .filter_map(|row| {
-            let cells: Vec<&str> = row.split('\t').collect();
-            (cells.get(2) == Some(&verdict)).then(|| cells[1].to_string())
-        })
+    triage_rows()
+        .into_iter()
+        .filter_map(|cells| (cells[2] == verdict).then(|| cells[1].clone()))
         .collect()
 }
 
@@ -349,17 +364,16 @@ fn the_refusals_are_the_triage_s_refusal_kept_rows() {
         held, kept,
         "{TRIAGE}'s refusal-kept rows and REFUSED differ"
     );
-    let text = std::fs::read_to_string(repo_root().join(TRIAGE)).unwrap();
-    for row in text.lines().skip(1) {
-        let cells: Vec<&str> = row.split('\t').collect();
+    for cells in triage_rows() {
+        let row = cells.join("\t");
         assert_eq!(cells.len(), 6, "{TRIAGE}: {row}");
         assert!(
-            ["parity-gap-repaired", "refusal-kept"].contains(&cells[2]),
+            ["parity-gap-repaired", "refusal-kept"].contains(&cells[2].as_str()),
             "{TRIAGE}: {} is recorded `{}`, a verdict no test here holds",
             cells[1],
             cells[2]
         );
-        assert!(case_dir(cells[1]).join("openapi.yml").is_file(), "{row}");
+        assert!(case_dir(&cells[1]).join("openapi.yml").is_file(), "{row}");
     }
 }
 

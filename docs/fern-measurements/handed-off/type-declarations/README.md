@@ -49,3 +49,9 @@ Of the documents whose every listed cause is this area's, all byte-match. OpenRe
 - `nullable-anyof-allof-described-member` over a one-member union: where `anyOf: [allOf: [$ref U, {description}], null]` names a `U` that is a one-member `oneOf` or `anyOf`, the certified pair types the field as that member and documents nothing, on a component model, an inline object and a request-body argument alike; a two-member union keeps the annotation on its hoisted type. The measurement document holds all of them (`Plan.garnish`, `Plan.pairing`, `PlanExtras.topping`, the `garnish` body argument and the `Plan.sides` control), and `annotates_sole_member_union` in `src/ir.rs` holds the rule.
 - `reference-description-leading-newline`'s document (agentstack) also needed a body naming a component that only re-names a union (`{$ref: …, title}` over an `anyOf`): crozier dropped that operation, and with it every method of its group; it now sends `request: <Component>` as the certified pair does. Its measurement document holds the shape.
 - `orphan-type-emission`'s bytes-body sub-rule cannot be measured apart from the bodies-paths record's `reference-body-param-doc`; by the manager's ruling that one `reference.md` line stays with the `parity-bodies-media-r1` node. That node's repair (#722) has since landed, and on the finished tree the measurement byte-matches whole in both enum modes; the crozier-e2e test compares `reference.md` line by line and still admits only that one line, written the way crozier wrote it before #722.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).

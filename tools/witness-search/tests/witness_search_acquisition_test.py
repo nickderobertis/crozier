@@ -1410,7 +1410,9 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         # The single features, and apart from them every combination
         # `combinations.md` selects, tracked whatever its category.
         combinations = [row["key"] for row in rows if row["key"].startswith("combo-")]
-        self.assertEqual(len(rows) - len(combinations), 113)
+        # The multipart README and closed-empty-object body features now have
+        # registered publisher witnesses, so their retired covers leave this set.
+        self.assertEqual(len(rows) - len(combinations), 111)
         selected = re.findall(
             r"^\| `(combo-[a-z0-9-]+)` \|",
             (REPO / "docs/openapi-surface/combinations.md").read_text(encoding="utf-8"),

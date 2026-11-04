@@ -43,7 +43,9 @@ import unicodedata
 import unittest
 from collections import Counter
 from collections.abc import Callable, Iterator, Mapping
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
+from dataclasses import fields as dataclass_fields
+from enum import StrEnum
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
 from typing import Any, ClassVar, NamedTuple, ParamSpec, Protocol
@@ -17514,6 +17516,38 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 7}, rows(completed))
 
+    def test_same_primitive_union_honors_datetime_override_and_canonical_precedence(self) -> None:
+        selector = "components.schemas:same-primitive-union"
+
+        def document(extensions: dict[str, object]) -> dict:
+            return {
+                "components": {
+                    "schemas": {
+                        "Moment": {
+                            "anyOf": [
+                                {"type": "string", "format": "date", **extensions},
+                                {"type": "string", "format": "date-time"},
+                            ]
+                        }
+                    }
+                }
+            }
+
+        self.assertEqual(
+            {(selector, "legacy"): 1, (selector, "canonical"): 1, (selector, "null-canonical"): 1},
+            self.census_one(
+                selector,
+                {
+                    "legacy": document({"x-fern-type": "datetime"}),
+                    "canonical": document({"x-crozier-type": "datetime", "x-fern-type": "literal<true>"}),
+                    "null-canonical": document({"x-crozier-type": None, "x-fern-type": "datetime"}),
+                    "near-canonical": document({"x-crozier-type": "literal<true>", "x-fern-type": "datetime"}),
+                    "near-empty": document({"x-crozier-type": "", "x-fern-type": "datetime"}),
+                    "near-unmarked": document({}),
+                },
+            ),
+        )
+
     def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
         """An array query parameter whose inline `items` composes two members.
 
@@ -22087,3 +22121,539 @@ class OutputInsensitiveTests(unittest.TestCase):
         result = self.run_reader()
         self.assertNotEqual(0, result.returncode)
         self.assertIn("also claimed proven", result.stderr)
+
+
+class HandedOffVerdict(StrEnum):
+    REPAIRED = "parity-gap-repaired"
+    MATCHING = "already-matching"
+    DEFECT = "fern-defect-departed"
+    USER_RULING = "user-ruling"
+    DEFAULT = "default-matched"
+    REFUSAL = "refusal-kept"
+
+
+class HandedOffRuling(StrEnum):
+    EMPTY_SDK = "empty-sdk-refused"
+    FALSY_EXAMPLE = "falsy-property-example"
+    TIMESTAMP = "yaml-timestamp-parameter-example"
+    MINIMAL_CALL = "minimal-worked-call"
+    EXAMPLES = "declared-examples-array"
+    INLINE_UNION = "inline-union-types"
+    IMPORT_ORDER = "init-import-order"
+    COMBINATION = "exhausted-combination-fallback"
+
+
+@dataclass(frozen=True)
+class AppliedHandedOffRuling:
+    ruling: HandedOffRuling
+
+
+@dataclass(frozen=True)
+class HandedOffTriageRecord:
+    source: str
+    root_cause: str
+    verdict: HandedOffVerdict | AppliedHandedOffRuling
+    measurement: str
+    departure: str
+    note: str
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> HandedOffTriageRecord:
+        raw = row["verdict"]
+        try:
+            verdict = (
+                AppliedHandedOffRuling(HandedOffRuling(raw.split(":", 1)[1]))
+                if raw.startswith("ruling-applied:")
+                else HandedOffVerdict(raw)
+            )
+        except ValueError:
+            raise AssertionError(f"{row['root_cause']}: invalid verdict {raw}") from None
+        return cls(
+            source=row["source"],
+            root_cause=row["root_cause"],
+            verdict=verdict,
+            measurement=row["measurement"],
+            departure=row["departure"],
+            note=row["note"],
+        )
+
+
+class HandedOffStatus(StrEnum):
+    REGISTERED = "registered"
+    INADMISSIBLE = "byte-matches-not-admissible"
+    REFUSED = "refused-by-ruling"
+    DIFFERS = "differs"
+    COULD_NOT_CHECK = "could-not-check"
+    INCOMPLETE = "registration-incomplete"
+
+
+@dataclass(frozen=True)
+class HandedOffHash:
+    value: str
+
+    def __post_init__(self) -> None:
+        assert re.fullmatch(r"[0-9a-f]{64}", self.value), f"invalid document hash: {self.value}"
+
+    def __str__(self) -> str:
+        return self.value
+
+
+@dataclass(frozen=True)
+class HandedOffCorpusReference:
+    number: int
+    name: str
+
+    @classmethod
+    def parse(cls, value: str) -> HandedOffCorpusReference:
+        match = re.fullmatch(r"([1-9][0-9]*) \(([A-Za-z0-9][A-Za-z0-9._-]*)\)", value)
+        assert match, f"invalid corpus reference: {value}"
+        return cls(int(match[1]), match[2])
+
+
+@dataclass(frozen=True)
+class HandedOffDocumentRecord:
+    document: str
+    sha256: HandedOffHash
+    source: str
+    root_causes: str
+    status: HandedOffStatus
+    corpus_row: str
+    note: str
+
+    @classmethod
+    def parse(cls, row: Mapping[str, str]) -> HandedOffDocumentRecord:
+        try:
+            status = HandedOffStatus(row["status"])
+        except ValueError:
+            raise AssertionError(f"{row['sha256']}: invalid status {row['status']}") from None
+        return cls(
+            document=row["document"],
+            sha256=HandedOffHash(row["sha256"]),
+            source=row["source"],
+            root_causes=row["root_causes"],
+            status=status,
+            corpus_row=row["corpus_row"],
+            note=row["note"],
+        )
+
+
+TRIAGE_COLUMNS = tuple(field.name for field in dataclass_fields(HandedOffTriageRecord))
+DOCUMENT_COLUMNS = tuple(field.name for field in dataclass_fields(HandedOffDocumentRecord))
+HANDED_OFF_SOURCES = tuple(
+    f"docs/openapi-surface/witness-search-fixture-only-{area}/README.md"
+    for area in ("bodies-paths", "operations-extensions", "schemas")
+)
+TRIAGE_VERDICTS = {member.value for member in HandedOffVerdict}
+
+
+def reconcile_handed_off(root: pathlib.Path) -> None:
+    """Read the source records and on-disk evidence, refusing triage drift."""
+    directory = root / "docs/fern-measurements/handed-off"
+    readme = (directory / "README.md").read_text(encoding="utf-8")
+    columns = readme.split("in order:", 1)[1].split(".", 1)[0]
+    assert tuple(re.findall(r"`([^`]+)`", columns)) == TRIAGE_COLUMNS, "README triage columns drift"
+    verdicts = readme.split("The closed verdict set is", 1)[1].split(". A ", 1)[0]
+    assert set(re.findall(r"`([^`]+)`", verdicts)) == TRIAGE_VERDICTS | {"ruling-applied:<ruling id>"}, (
+        "README triage verdicts drift"
+    )
+    causes: dict[str, str] = {}
+    for source in HANDED_OFF_SOURCES:
+        text = (root / source).read_text(encoding="utf-8")
+        section = text.split("### Root causes\n", 1)[1].split("\n### ", 1)[0]
+        names = re.findall(r"^\| `?([\w-]+)`? \|", section, re.MULTILINE)
+        names += re.findall(r'<a id="([\w-]+)"></a>`', section)
+        for name in names:
+            if name != "root":
+                assert name not in causes, f"duplicate source cause: {name}"
+                causes[name] = source
+    seen: dict[str, pathlib.Path] = {}
+    for path in sorted(directory.glob("*.tsv")):
+        if path.name in {"documents.tsv", "residuals.tsv"}:
+            continue
+        with path.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream, delimiter="\t")
+            assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path}: triage header"
+            for raw in reader:
+                row = HandedOffTriageRecord.parse(raw)
+                name = row.root_cause
+                assert name not in seen, f"{name}: rows in {seen.get(name)} and {path}"
+                seen[name] = path
+                if name in causes:
+                    assert row.source == causes[name], f"{name}: wrong source record"
+                elif path.name == "follow-up-tickets.tsv":
+                    assert (
+                        re.fullmatch(r"https://github\.com/nickderobertis/crozier/issues/[1-9][0-9]*", row.source)
+                        and row.source.rsplit("/", 1)[1] == name
+                    ), f"{name}: ticket source must name its cause"
+                else:
+                    assert path.name == "remeasure.tsv", f"{name}: unknown cause outside remeasure.tsv"
+                    assert row.source == "docs/fern-measurements/handed-off/documents.tsv", f"{name}: remeasure source"
+
+    assert not causes.keys() - seen.keys(), f"missing causes: {sorted(causes.keys() - seen.keys())}"
+    with (directory / "documents.tsv").open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream, delimiter="\t")
+        assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
+        documents = [HandedOffDocumentRecord.parse(row) for row in reader]
+    residuals: dict[str, set[str]] = {}
+    residual_path = directory / "residuals.tsv"
+    if residual_path.is_file():
+        with residual_path.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream, delimiter="\t")
+            assert tuple(reader.fieldnames or ()) == ("sha256", "file", "root_cause", "area", "note"), "residual header"
+            for row in reader:
+                assert row["file"] and row["root_cause"] and row["area"] and row["note"], "incomplete residual"
+                residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
+    hashes: set[str] = set()
+    registered = set()
+    for row in documents:
+        sha = str(row.sha256)
+        assert sha not in hashes, f"duplicate document: {sha}"
+        hashes.add(sha)
+        status = row.status
+        evidence = directory / "comparisons" / f"{sha}.txt"
+        assert evidence.is_file(), f"{sha}: missing comparison record"
+        text = evidence.read_text(encoding="utf-8")
+        assert re.search(rf"^sha256: {sha}$", text, re.MULTILINE), f"{sha}: comparison hash disagrees"
+        expected = (
+            "byte-matches"
+            if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}
+            else status
+        )
+        assert re.search(rf"^result: {re.escape(expected)}$", text, re.MULTILINE), f"{sha}: comparison result disagrees"
+        assert re.search(r"^command: \S.*$", text, re.MULTILINE), f"{sha}: missing comparison command"
+        assert "differing files:\n" in text, f"{sha}: missing differing-file list"
+        differing = {
+            line.removeprefix("- ")
+            for line in text.split("differing files:\n", 1)[-1].split("\n\n", 1)[0].splitlines()
+            if line.startswith("- ")
+        }
+        if status in {HandedOffStatus.REGISTERED, HandedOffStatus.INADMISSIBLE, HandedOffStatus.INCOMPLETE}:
+            assert not differing, f"{sha}: byte-match lists differing files"
+        if status == HandedOffStatus.DIFFERS:
+            assert differing == residuals.get(sha), f"{sha}: residual file list disagrees"
+        match status:
+            case HandedOffStatus.REGISTERED:
+                assert row.corpus_row not in {"", "-"}, f"{sha}: missing corpus row"
+                corpus = HandedOffCorpusReference.parse(row.corpus_row)
+                fixtures = root / "tests/fixtures"
+                manifest = (fixtures / "CORPUS.md").read_text(encoding="utf-8")
+                assert f"| {corpus.number} | `{corpus.name}` |" in manifest, f"{sha}: unknown corpus row"
+                sources = (fixtures / "corpus-sources.tsv").read_text(encoding="utf-8")
+                assert any(
+                    cells[0] == corpus.name and cells[-1] == sha
+                    for line in sources.splitlines()
+                    if not line.startswith("#") and len(cells := line.split("\t")) == 4
+                ), f"{sha}: corpus source hash disagrees"
+                registered.add(f"- `{row.document}` | `{sha}` | {row.corpus_row}")
+            case HandedOffStatus.INADMISSIBLE:
+                assert "rule:" in row.note and '"' in row.note, f"{sha}: missing inadmissibility evidence"
+            case HandedOffStatus.REFUSED:
+                default = re.search(r"^default refusal: ([a-z][a-z0-9-]+) \(exit ([1-9][0-9]*)\)$", text, re.MULTILINE)
+                strict = re.search(
+                    r"^fern-strict refusal: ([a-z][a-z0-9-]+) \(exit ([1-9][0-9]*)\)$", text, re.MULTILINE
+                )
+                assert default and strict, f"{sha}: missing nonzero refusal modes"
+                assert default[1] == strict[1], f"{sha}: refusal classes disagree"
+                with (root / "docs/fern-refusals/classes.tsv").open(encoding="utf-8", newline="") as stream:
+                    decided = {
+                        record["class"]
+                        for record in csv.DictReader(stream, delimiter="\t")
+                        if record["status"] != "unevaluated"
+                    }
+                assert default[1] in decided, f"{sha}: undecided refusal class"
+                assert re.search(r"^certified exit: [0-9]+$", text, re.MULTILINE), f"{sha}: missing certified exit"
+                assert re.search(r"^certified diagnostic: .+", text, re.MULTILINE), f"{sha}: missing certified refusal"
+            case HandedOffStatus.DIFFERS:
+                assert sha in residuals, f"{sha}: differing document has no residual record"
+            case HandedOffStatus.INCOMPLETE:
+                assert residuals.get(sha) == {"expected-literals/"}, f"{sha}: missing literals residual"
+                assert "literals" in row.note, f"{sha}: missing registration reason"
+            case HandedOffStatus.COULD_NOT_CHECK:
+                assert row.note.strip(), f"{sha}: missing could-not-check reason"
+
+    assert residuals.keys() <= hashes, "residual for an unmeasured document"
+    for source in HANDED_OFF_SOURCES:
+        section = (
+            (root / source).read_text(encoding="utf-8").split("## Handed-off differences\n", 1)[1].split("\n## ", 1)[0]
+        )
+        handed_off = set(
+            re.findall(r"`([0-9a-f]{64})`", "\n".join(line for line in section.splitlines() if line.startswith("| ")))
+        )
+        assert handed_off <= hashes, f"{source}: unmeasured documents {sorted(handed_off - hashes)}"
+    admitted = (
+        (directory / "README.md")
+        .read_text(encoding="utf-8")
+        .split("## Newly admitted documents\n", 1)[1]
+        .split("\n## ", 1)[0]
+    )
+    lines = {line for line in admitted.splitlines() if line.startswith("- ")}
+    assert lines == registered, "Newly admitted documents disagrees with registered rows"
+
+
+class HandedOffReconciliationTests(unittest.TestCase):
+    """The triage check reads real files, including deliberately drifted copies."""
+
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = pathlib.Path(self.temp.name)
+        self.directory = self.root / "docs/fern-measurements/handed-off"
+        self.directory.mkdir(parents=True)
+        fixtures = self.root / "tests/fixtures"
+        fixtures.mkdir(parents=True)
+        (fixtures / "CORPUS.md").write_text("| 5050 | `sample` | github-raw | immutable |\n", encoding="utf-8")
+        (fixtures / "corpus-sources.tsv").write_text(
+            "sample\tsource.yml\timmutable\t" + "a" * 64 + "\n", encoding="utf-8"
+        )
+        for index, source in enumerate(HANDED_OFF_SOURCES):
+            path = self.root / source
+            path.parent.mkdir(parents=True)
+            path.write_text(
+                f"### Root causes\n\n| `cause-{index}` | measured rule |\n\n### Documents\n\n## Handed-off differences\n",
+                encoding="utf-8",
+            )
+        self.rows = [
+            asdict(
+                HandedOffTriageRecord(
+                    source=source,
+                    root_cause=f"cause-{index}",
+                    verdict=HandedOffVerdict.MATCHING,
+                    measurement=f"measurement/{index}/",
+                    departure="-",
+                    note="Measured match",
+                )
+            )
+            for index, source in enumerate(HANDED_OFF_SOURCES)
+        ]
+        self.write_rows(self.directory / "sample.tsv", TRIAGE_COLUMNS, self.rows)
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [])
+        self.readme_prefix = (
+            "Each area has columns in order: "
+            + ", ".join(f"`{column}`" for column in TRIAGE_COLUMNS)
+            + ".\nThe closed verdict set is "
+            + ", ".join(f"`{verdict}`" for verdict in sorted(TRIAGE_VERDICTS))
+            + ", `ruling-applied:<ruling id>`. A verdict is decided.\n\n"
+        )
+        (self.directory / "README.md").write_text(
+            self.readme_prefix + "## Newly admitted documents\n", encoding="utf-8"
+        )
+
+    @staticmethod
+    def write_rows(path: pathlib.Path, columns: tuple[str, ...], rows: list[dict[str, str]]) -> None:
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=columns, delimiter="\t", lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+
+    def test_reconciles_files_and_rejects_each_triage_drift(self) -> None:
+        reconcile_handed_off(self.root)
+        for label, rows, columns in (
+            ("missing causes", self.rows[1:], TRIAGE_COLUMNS),
+            ("unknown cause", [{**self.rows[0], "root_cause": "unrecorded"}, *self.rows[1:]], TRIAGE_COLUMNS),
+            (
+                "invalid verdict",
+                [{**self.rows[0], "verdict": "departure-awaiting-ruling"}, *self.rows[1:]],
+                TRIAGE_COLUMNS,
+            ),
+            ("triage header", self.rows, tuple(reversed(TRIAGE_COLUMNS))),
+        ):
+            with self.subTest(drift=label):
+                self.write_rows(self.directory / "sample.tsv", columns, rows)
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+        self.write_rows(self.directory / "sample.tsv", TRIAGE_COLUMNS, self.rows)
+        self.write_rows(self.directory / "duplicate.tsv", TRIAGE_COLUMNS, [self.rows[0]])
+        with self.assertRaisesRegex(AssertionError, "rows in"):
+            reconcile_handed_off(self.root)
+        (self.directory / "duplicate.tsv").unlink()
+        reconcile_handed_off(self.root)
+
+    def test_follow_up_ticket_area_validates_sources_and_rejects_drift(self) -> None:
+        path = self.directory / "follow-up-tickets.tsv"
+        row = {
+            **self.rows[0],
+            "source": "https://github.com/nickderobertis/crozier/issues/694",
+            "root_cause": "694",
+        }
+        self.write_rows(path, TRIAGE_COLUMNS, [row])
+        reconcile_handed_off(self.root)
+        for source, cause in (
+            ("https://example.org/issues/694", "694"),
+            (row["source"], "695"),
+            (row["source"] + "/comments", "694"),
+        ):
+            with self.subTest(source=source, cause=cause):
+                self.write_rows(path, TRIAGE_COLUMNS, [{**row, "source": source, "root_cause": cause}])
+                with self.assertRaisesRegex(AssertionError, "ticket source"):
+                    reconcile_handed_off(self.root)
+        self.write_rows(path, TRIAGE_COLUMNS, [row])
+        path.rename(self.directory / "other-tickets.tsv")
+        with self.assertRaisesRegex(AssertionError, "unknown cause"):
+            reconcile_handed_off(self.root)
+        (self.directory / "other-tickets.tsv").rename(path)
+        reconcile_handed_off(self.root)
+
+    def test_document_evidence_and_admitted_index_agree(self) -> None:
+        sha = "a" * 64
+        document = HandedOffDocumentRecord(
+            document="publisher/api:openapi.yml@" + "b" * 40,
+            sha256=HandedOffHash(sha),
+            source=HANDED_OFF_SOURCES[0],
+            root_causes="cause-0",
+            status=HandedOffStatus.REGISTERED,
+            corpus_row="5050 (sample)",
+            note="Measured",
+        )
+        row = {key: str(value) for key, value in asdict(document).items()}
+        row["sha256"] = str(document.sha256)
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
+        with self.assertRaisesRegex(AssertionError, "missing comparison record"):
+            reconcile_handed_off(self.root)
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        evidence.write_text(
+            f"sha256: {sha}\nresult: refused-by-ruling\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, "result disagrees"):
+            reconcile_handed_off(self.root)
+        evidence.write_text(
+            f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, "Newly admitted documents"):
+            reconcile_handed_off(self.root)
+        (self.directory / "README.md").write_text(
+            self.readme_prefix
+            + f"## Newly admitted documents\n\n- `{row['document']}` | `{sha}` | {row['corpus_row']}\n",
+            encoding="utf-8",
+        )
+        reconcile_handed_off(self.root)
+        evidence.write_text(
+            f"sha256: {'b' * 64}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\ncertified cache document sha256: {sha}\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, "hash disagrees"):
+            reconcile_handed_off(self.root)
+
+        valid = f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\ndiffering files:\n\n"
+        evidence.write_text(valid, encoding="utf-8")
+        for label, path, wrong in (
+            ("unknown corpus row", self.root / "tests/fixtures/CORPUS.md", ""),
+            (
+                "corpus source hash",
+                self.root / "tests/fixtures/corpus-sources.tsv",
+                "sample\tsource.yml\timmutable\t" + "b" * 64 + "\n",
+            ),
+            ("missing differing-file list", evidence, valid.replace("differing files:\n", "")),
+        ):
+            with self.subTest(drift=label):
+                original = path.read_text(encoding="utf-8")
+                path.write_text(wrong, encoding="utf-8")
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+                path.write_text(original, encoding="utf-8")
+        reconcile_handed_off(self.root)
+
+        self.write_rows(
+            self.directory / "documents.tsv",
+            DOCUMENT_COLUMNS,
+            [{**row, "status": "not-compared", "note": "valid-OpenAPI exception against empty SDK"}],
+        )
+        evidence.write_text(valid.replace("result: byte-matches", "result: not-compared"), encoding="utf-8")
+        (self.directory / "README.md").write_text(
+            self.readme_prefix + "## Newly admitted documents\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(AssertionError, "invalid status not-compared"):
+            reconcile_handed_off(self.root)
+
+    def test_refusals_require_matching_nonzero_modes_and_a_decided_class(self) -> None:
+        sha = "a" * 64
+        document = HandedOffDocumentRecord(
+            document="publisher/api:openapi.yml@" + "b" * 40,
+            sha256=HandedOffHash(sha),
+            source=HANDED_OFF_SOURCES[0],
+            root_causes="cause-0",
+            status=HandedOffStatus.REFUSED,
+            corpus_row="-",
+            note="Recorded refusal",
+        )
+        row = {key: str(value) for key, value in asdict(document).items()}
+        row["sha256"] = str(document.sha256)
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
+        registry = self.root / "docs/fern-refusals/classes.tsv"
+        registry.parent.mkdir(parents=True)
+        shutil.copyfile(REPO / "docs/fern-refusals/classes.tsv", registry)
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        valid = (
+            f"sha256: {sha}\nresult: refused-by-ruling\ncommand: crozier compare measurement.yml\n"
+            "differing files:\n\ndefault refusal: enum-value-unnameable (exit 1)\n"
+            "fern-strict refusal: enum-value-unnameable (exit 1)\n"
+            "certified exit: 1\ncertified diagnostic: enum-name-unsuitable\n"
+        )
+        evidence.write_text(valid, encoding="utf-8")
+        reconcile_handed_off(self.root)
+        for label, wrong in (
+            (
+                "nonzero refusal modes",
+                valid.replace(
+                    "default refusal: enum-value-unnameable (exit 1)", "default refusal: enum-value-unnameable (exit 0)"
+                ),
+            ),
+            (
+                "refusal classes disagree",
+                valid.replace("fern-strict refusal: enum-value-unnameable", "fern-strict refusal: type-name-collision"),
+            ),
+            ("undecided refusal class", valid.replace("enum-value-unnameable", "unrecorded-class")),
+            ("missing certified refusal", valid.replace("certified diagnostic: enum-name-unsuitable\n", "")),
+        ):
+            with self.subTest(drift=label):
+                evidence.write_text(wrong, encoding="utf-8")
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+        evidence.write_text(valid, encoding="utf-8")
+        reconcile_handed_off(self.root)
+
+
+class HandedOffRepositoryRecordTests(unittest.TestCase):
+    def test_committed_handed_off_records_reconcile(self) -> None:
+        reconcile_handed_off(REPO)
+
+    def test_readme_outcome_counts_are_the_document_measurement(self) -> None:
+        directory = REPO / "docs/fern-measurements/handed-off"
+        with (directory / "documents.tsv").open(encoding="utf-8", newline="") as stream:
+            documents = [HandedOffDocumentRecord.parse(row) for row in csv.DictReader(stream, delimiter="\t")]
+        counts = Counter(row.status for row in documents)
+        totals = {
+            "registered": counts[HandedOffStatus.REGISTERED],
+            "decided": counts[HandedOffStatus.REFUSED] + counts[HandedOffStatus.INADMISSIBLE],
+            "listed residuals": counts[HandedOffStatus.DIFFERS] + counts[HandedOffStatus.INCOMPLETE],
+            "could-not-check": counts[HandedOffStatus.COULD_NOT_CHECK],
+        }
+        self.assertEqual(sum(totals.values()), len(documents))
+        readme = (directory / "README.md").read_text(encoding="utf-8")
+        self.assertIn(f"records all {len(documents)} source hashes", readme)
+        for label, count in totals.items():
+            self.assertIn(f"**{count} {label}**", readme)
+        self.assertIn(f"{counts[HandedOffStatus.DIFFERS]} `differs`", readme)
+        self.assertIn(f"{counts[HandedOffStatus.INCOMPLETE]} `registration-incomplete`", readme)
+
+    def test_removing_a_committed_cause_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = pathlib.Path(temporary)
+            directory = root / "docs/fern-measurements/handed-off"
+            directory.mkdir(parents=True)
+            for source in HANDED_OFF_SOURCES:
+                path = root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(REPO / source, path)
+            for path in (REPO / "docs/fern-measurements/handed-off").glob("*.tsv"):
+                shutil.copyfile(path, directory / path.name)
+            shutil.copyfile(REPO / "docs/fern-measurements/handed-off/README.md", directory / "README.md")
+            path = directory / "bodies-media.tsv"
+            lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+            removed = lines.pop(1).split("\t")[1]
+            path.write_text("".join(lines), encoding="utf-8")
+            with self.assertRaisesRegex(AssertionError, "missing causes:.*" + re.escape(removed)):
+                reconcile_handed_off(root)

@@ -103,6 +103,11 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            "remeasured-arawa-workspace-0c8259f6",
+            "remeasured-clencyc-mozillafestivalbackend-b2264b38",
+            "remeasured-grafikart-filemanager-element-e36a74ce",
+            "remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c",
+            "remeasured-membrane-api-gateway-8340f5da",
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
@@ -462,6 +467,32 @@ fn the_default_max_retries_golden_changes_only_the_clients() {
     }
 }
 
+/// Compare one corpus under its certified literals setting, so a newly
+/// registered corpus can run both modes without replaying unrelated overlays.
+pub(super) fn assert_literals_match(corpus: &Corpus) {
+    let kind = KINDS
+        .iter()
+        .find(|kind| kind.dir == "expected-literals")
+        .expect("literals setting");
+    assert!(
+        kind.fixtures.contains(&corpus.api),
+        "{} has no literals registration",
+        corpus.api
+    );
+    let overlay = read_overlay(kind, corpus.api)
+        .unwrap()
+        .expect("certified literals overlay");
+    assert_overlay_matches(kind, corpus, &overlay);
+}
+
+fn assert_overlay_matches(kind: &Kind, corpus: &Corpus, overlay: &Overlay) {
+    let golden = materialize(kind, corpus.api, overlay);
+    let ledger = overlay_golden_ledger(kind, corpus, overlay)
+        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
+    let out = generate_corpus_with(corpus, kind.flags);
+    assert_generated_tree_matches(corpus, &ledger, golden.path(), out.path());
+}
+
 /// Ticket #694 moves Webflow's shared package exports in both enum modes.
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] The task requires this moved registered golden in literals mode; the test uses the same crozier-e2e overlay engine and project edge as the existing overlay replay. Splitting the shared golden family into a new project is outside this ticket repair; this local selector avoids replaying unrelated overlays during its verification.
 #[test]
@@ -500,11 +531,7 @@ fn overlay_goldens_match_fern_output() {
                     break;
                 };
                 let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                    let golden = materialize(kind, corpus.api, overlay);
-                    let ledger = overlay_golden_ledger(kind, corpus, overlay)
-                        .unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
-                    let out = generate_corpus_with(corpus, kind.flags);
-                    assert_generated_tree_matches(corpus, &ledger, golden.path(), out.path());
+                    assert_overlay_matches(kind, corpus, overlay);
                 }));
                 if let Err(panic) = outcome {
                     let message = panic

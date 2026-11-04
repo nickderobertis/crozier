@@ -226,3 +226,9 @@ Union rules a handed-off document carries beyond what its record named, which th
 While settling the documents this node measured and repaired further union rules, each in a sub-case of [`union-modelling/`](union-modelling/) with its own from-scratch document and certified-pair tree: `event-stream-beside-json`, `annotated-reference-beside-null`, `singleton-enum-members`, `sole-reference-all-of-member`, and the `$ref`-tag and map-value halves of `singleton-enum-tags`. One of them, `union-modelling/nullable-reference-member`, is also the first half of the bodies-paths record's `parameter-type-resolution` cause (a query parameter `oneOf: [anyOf: [$ref X, string with contentSchema X], null]` is `Union[Optional[X], str]`); gecko and numbat no longer differ on it.
 
 No registered golden's output moved: every committed corpus source, hand-written fixture and measurement document was generated before the first repair and again on the finished tree, in both enum modes, and compared file for file.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).
