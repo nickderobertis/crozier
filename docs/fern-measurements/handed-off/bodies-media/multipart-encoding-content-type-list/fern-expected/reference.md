@@ -1,6 +1,6 @@
 # Reference
 ## Plates
-<details><summary><code>client.plates.<a href="src/fern/plates/client.py">upload_artwork</a>(...)</code></summary>
+<details><summary><code>client.plates.<a href="src/fern/plates/client.py#L29-L57">upload_artwork</a>(...)</code></summary>
 <dl>
 <dd>
 

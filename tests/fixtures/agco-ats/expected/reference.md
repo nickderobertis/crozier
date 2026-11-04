@@ -1,6 +1,6 @@
 # Reference
 ## Aftermarketservices
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">getcerts</a>() -> SystemObject</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L34-L56">getcerts</a>() -> SystemObject</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.aftermarketservices.getcerts()
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">putecu</a>(...) -> AgcoPowerServicesModelsEcu</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L58-L132">putecu</a>(...) -> AgcoPowerServicesModelsEcu</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.aftermarketservices.putecu(
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">getengineiqacodes</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L134-L169">getengineiqacodes</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -235,7 +235,7 @@ client.aftermarketservices.getengineiqacodes(
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">putiqacodes</a>(...) -> bool</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L171-L214">putiqacodes</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -327,7 +327,7 @@ client.aftermarketservices.putiqacodes(
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">getproductiondata</a>(...) -> typing.List[AgcoPowerServicesModelsProductionData]</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L216-L251">getproductiondata</a>(...) -> typing.List[AgcoPowerServicesModelsProductionData]</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.aftermarketservices.getproductiondata(
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">getconnectionstatus</a>() -> bool</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L253-L275">getconnectionstatus</a>() -> bool</code></summary>
 <dl>
 <dd>
 
@@ -470,7 +470,7 @@ client.aftermarketservices.getconnectionstatus()
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">getuserstatus</a>(...) -> AgcoPowerServicesModelsUserStatus</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L277-L310">getuserstatus</a>(...) -> AgcoPowerServicesModelsUserStatus</code></summary>
 <dl>
 <dd>
 
@@ -551,7 +551,7 @@ client.aftermarketservices.getuserstatus(
 </dl>
 </details>
 
-<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py">updateuserstatus</a>(...) -> bool</code></summary>
+<details><summary><code>client.aftermarketservices.<a href="src/fern/aftermarketservices/client.py#L312-L355">updateuserstatus</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.aftermarketservices.updateuserstatus(
 </details>
 
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">putmanagetokens</a>(...)</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L33-L73">putmanagetokens</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -713,7 +713,7 @@ client.authentication.putmanagetokens(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">default</a>(...) -> ApiModelsAuthenticatedUser</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L75-L126">default</a>(...) -> ApiModelsAuthenticatedUser</code></summary>
 <dl>
 <dd>
 
@@ -810,7 +810,7 @@ client.authentication.default(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">isalive</a>()</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L128-L149">isalive</a>()</code></summary>
 <dl>
 <dd>
 
@@ -872,7 +872,7 @@ client.authentication.isalive()
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">requestpasswordreset</a>(...)</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L151-L189">requestpasswordreset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -962,7 +962,7 @@ client.authentication.requestpasswordreset(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">resetpasword</a>(...)</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L191-L225">resetpasword</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1044,7 +1044,7 @@ client.authentication.resetpasword(
 </details>
 
 ## Authorizationcategories
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">get</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsCategory</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L34-L78">get</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsCategory</code></summary>
 <dl>
 <dd>
 
@@ -1138,7 +1138,7 @@ client.authorizationcategories.get()
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">post</a>(...) -> str</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L80-L118">post</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1208,7 +1208,7 @@ client.authorizationcategories.post()
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">getusers</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsCategoryUserReport</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L120-L183">getusers</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsCategoryUserReport</code></summary>
 <dl>
 <dd>
 
@@ -1326,7 +1326,7 @@ client.authorizationcategories.getusers()
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L185-L229">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1406,7 +1406,7 @@ client.authorizationcategories.put(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L231-L257">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1478,7 +1478,7 @@ client.authorizationcategories.delete(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">adduser</a>(...)</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L259-L289">adduser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1559,7 +1559,7 @@ client.authorizationcategories.adduser(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py">removeuser</a>(...)</code></summary>
+<details><summary><code>client.authorizationcategories.<a href="src/fern/authorizationcategories/client.py#L291-L321">removeuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1641,7 +1641,7 @@ client.authorizationcategories.removeuser(
 </details>
 
 ## Authorizationcodedefinitions
-<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py">getauthorizationcodedefinition</a>(...) -> AuthorizationCodesSharedModelsAuthorizationCodeDefinition</code></summary>
+<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py#L37-L66">getauthorizationcodedefinition</a>(...) -> AuthorizationCodesSharedModelsAuthorizationCodeDefinition</code></summary>
 <dl>
 <dd>
 
@@ -1713,7 +1713,7 @@ client.authorizationcodedefinitions.getauthorizationcodedefinition(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py">postauthorizationcodedefinition</a>(...) -> str</code></summary>
+<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py#L68-L178">postauthorizationcodedefinition</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1785,7 +1785,7 @@ client.authorizationcodedefinitions.postauthorizationcodedefinition(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py">addcategorytodefinition</a>(...)</code></summary>
+<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py#L180-L211">addcategorytodefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1866,7 +1866,7 @@ client.authorizationcodedefinitions.addcategorytodefinition(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py">removecategoryfromdefinition</a>(...)</code></summary>
+<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py#L213-L244">removecategoryfromdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1947,7 +1947,7 @@ client.authorizationcodedefinitions.removecategoryfromdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py">putauthorizationcodedefinition</a>(...)</code></summary>
+<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py#L246-L361">putauthorizationcodedefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2028,7 +2028,7 @@ client.authorizationcodedefinitions.putauthorizationcodedefinition(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py">deleteauthorizationcodedefinition</a>(...)</code></summary>
+<details><summary><code>client.authorizationcodedefinitions.<a href="src/fern/authorizationcodedefinitions/client.py#L363-L391">deleteauthorizationcodedefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2101,7 +2101,7 @@ client.authorizationcodedefinitions.deleteauthorizationcodedefinition(
 </details>
 
 ## Authorizationcodes
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">getauthorizationcodes</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsAuthorizationCode</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L40-L103">getauthorizationcodes</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsAuthorizationCode</code></summary>
 <dl>
 <dd>
 
@@ -2219,7 +2219,7 @@ client.authorizationcodes.getauthorizationcodes()
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">postauthorizationcode</a>(...) -> int</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L105-L188">postauthorizationcode</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2289,7 +2289,7 @@ client.authorizationcodes.postauthorizationcode()
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">getauthorizationcode</a>(...) -> AuthorizationCodesSharedModelsAuthorizationCode</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L190-L219">getauthorizationcode</a>(...) -> AuthorizationCodesSharedModelsAuthorizationCode</code></summary>
 <dl>
 <dd>
 
@@ -2361,7 +2361,7 @@ client.authorizationcodes.getauthorizationcode(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">putauthorizationcode</a>(...)</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L221-L310">putauthorizationcode</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2441,7 +2441,7 @@ client.authorizationcodes.putauthorizationcode(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">deleteauthorizationcode</a>(...)</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L312-L338">deleteauthorizationcode</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2513,7 +2513,7 @@ client.authorizationcodes.deleteauthorizationcode(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">getcontactinformation</a>(...) -> AuthorizationCodesSharedModelsAuthorizationContactInformation</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L340-L369">getcontactinformation</a>(...) -> AuthorizationCodesSharedModelsAuthorizationContactInformation</code></summary>
 <dl>
 <dd>
 
@@ -2585,7 +2585,7 @@ client.authorizationcodes.getcontactinformation(
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py">validateauthorizationcode</a>(...) -> AuthorizationCodesSharedModelsCodeValidationModel</code></summary>
+<details><summary><code>client.authorizationcodes.<a href="src/fern/authorizationcodes/client.py#L371-L399">validateauthorizationcode</a>(...) -> AuthorizationCodesSharedModelsCodeValidationModel</code></summary>
 <dl>
 <dd>
 
@@ -2658,7 +2658,7 @@ client.authorizationcodes.validateauthorizationcode(
 </details>
 
 ## Authorizationcontactinformation
-<details><summary><code>client.authorizationcontactinformation.<a href="src/fern/authorizationcontactinformation/client.py">get</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsAuthorizationContactInformation</code></summary>
+<details><summary><code>client.authorizationcontactinformation.<a href="src/fern/authorizationcontactinformation/client.py#L32-L90">get</a>(...) -> ApiIPagedResponseAuthorizationCodesSharedModelsAuthorizationContactInformation</code></summary>
 <dl>
 <dd>
 
@@ -2768,7 +2768,7 @@ client.authorizationcontactinformation.get()
 </dl>
 </details>
 
-<details><summary><code>client.authorizationcontactinformation.<a href="src/fern/authorizationcontactinformation/client.py">post</a>(...) -> int</code></summary>
+<details><summary><code>client.authorizationcontactinformation.<a href="src/fern/authorizationcontactinformation/client.py#L92-L186">post</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2845,7 +2845,7 @@ client.authorizationcontactinformation.post(
 </details>
 
 ## Brands
-<details><summary><code>client.brands.<a href="src/fern/brands/client.py">brands</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.brands.<a href="src/fern/brands/client.py#L25-L47">brands</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2908,7 +2908,7 @@ client.brands.brands()
 </details>
 
 ## Bundles
-<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py">getbundles</a>(...) -> ApiPagedResponseUpdateSystemModelsBundle</code></summary>
+<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py#L30-L83">getbundles</a>(...) -> ApiPagedResponseUpdateSystemModelsBundle</code></summary>
 <dl>
 <dd>
 
@@ -3010,7 +3010,7 @@ client.bundles.getbundles()
 </dl>
 </details>
 
-<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py">postbundle</a>(...) -> str</code></summary>
+<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py#L85-L142">postbundle</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3084,7 +3084,7 @@ client.bundles.postbundle(
 </dl>
 </details>
 
-<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py">getbundle</a>(...) -> UpdateSystemModelsBundle</code></summary>
+<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py#L144-L173">getbundle</a>(...) -> UpdateSystemModelsBundle</code></summary>
 <dl>
 <dd>
 
@@ -3156,7 +3156,7 @@ client.bundles.getbundle(
 </dl>
 </details>
 
-<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py">putbundle</a>(...)</code></summary>
+<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py#L175-L237">putbundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3239,7 +3239,7 @@ client.bundles.putbundle(
 </dl>
 </details>
 
-<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py">deletebundle</a>(...)</code></summary>
+<details><summary><code>client.bundles.<a href="src/fern/bundles/client.py#L239-L265">deletebundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3312,7 +3312,7 @@ client.bundles.deletebundle(
 </details>
 
 ## Clients
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">get</a>(...) -> UpdateSystemModelsClient</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L36-L63">get</a>(...) -> UpdateSystemModelsClient</code></summary>
 <dl>
 <dd>
 
@@ -3384,7 +3384,7 @@ client.clients.get(
 </dl>
 </details>
 
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L65-L110">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3464,7 +3464,7 @@ client.clients.put(
 </dl>
 </details>
 
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">getavailablesubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsAvailableUpdateGroupSubscription</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L112-L158">getavailablesubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsAvailableUpdateGroupSubscription</code></summary>
 <dl>
 <dd>
 
@@ -3560,7 +3560,7 @@ client.clients.getavailablesubscriptions(
 </dl>
 </details>
 
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">getsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupSubscription</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L160-L206">getsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupSubscription</code></summary>
 <dl>
 <dd>
 
@@ -3657,7 +3657,7 @@ client.clients.getsubscriptions(
 </details>
 
 ## Updatesystem
-<details><summary><code>client.updatesystem.<a href="src/fern/updatesystem/client.py">getcachedfiles</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.updatesystem.<a href="src/fern/updatesystem/client.py#L26-L59">getcachedfiles</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -3738,7 +3738,7 @@ client.updatesystem.getcachedfiles(
 </dl>
 </details>
 
-<details><summary><code>client.updatesystem.<a href="src/fern/updatesystem/client.py">getcheckin</a>(...) -> UpdateSystemModelsCheckinResult</code></summary>
+<details><summary><code>client.updatesystem.<a href="src/fern/updatesystem/client.py#L61-L112">getcheckin</a>(...) -> UpdateSystemModelsCheckinResult</code></summary>
 <dl>
 <dd>
 
@@ -3836,7 +3836,7 @@ client.updatesystem.getcheckin(
 </details>
 
 ## Packagereports
-<details><summary><code>client.packagereports.<a href="src/fern/packagereports/client.py">default</a>(...)</code></summary>
+<details><summary><code>client.packagereports.<a href="src/fern/packagereports/client.py#L30-L79">default</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3916,7 +3916,7 @@ client.packagereports.default(
 </dl>
 </details>
 
-<details><summary><code>client.packagereports.<a href="src/fern/packagereports/client.py">batch</a>(...)</code></summary>
+<details><summary><code>client.packagereports.<a href="src/fern/packagereports/client.py#L81-L116">batch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4000,7 +4000,7 @@ client.packagereports.batch(
 </details>
 
 ## Contentdefinitions
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">putcontentdefinitionattributes</a>(...)</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L40-L77">putcontentdefinitionattributes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4076,7 +4076,7 @@ client.contentdefinitions.putcontentdefinitionattributes(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">putcontentdefinitionattributeasync</a>(...)</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L79-L134">putcontentdefinitionattributeasync</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4157,7 +4157,7 @@ client.contentdefinitions.putcontentdefinitionattributeasync(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">deletecontentdefinitionattribute</a>(...)</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L136-L166">deletecontentdefinitionattribute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4229,7 +4229,7 @@ client.contentdefinitions.deletecontentdefinitionattribute(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">getcontentdefinitions</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentDefinition</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L168-L232">getcontentdefinitions</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentDefinition</code></summary>
 <dl>
 <dd>
 
@@ -4348,7 +4348,7 @@ client.contentdefinitions.getcontentdefinitions()
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">postcontentdefinition</a>(...) -> int</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L234-L298">postcontentdefinition</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4422,7 +4422,7 @@ client.contentdefinitions.postcontentdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">getcontentdefinition</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentDefinition</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L300-L339">getcontentdefinition</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentDefinition</code></summary>
 <dl>
 <dd>
 
@@ -4503,7 +4503,7 @@ client.contentdefinitions.getcontentdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">putcontentdefinition</a>(...)</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L341-L409">putcontentdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4585,7 +4585,7 @@ client.contentdefinitions.putcontentdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">deletecontentdefinition</a>(...)</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L411-L440">deletecontentdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4658,7 +4658,7 @@ client.contentdefinitions.deletecontentdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">getcontentdefinitionattributes</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentDefinitionAttribute</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L442-L488">getcontentdefinitionattributes</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentDefinitionAttribute</code></summary>
 <dl>
 <dd>
 
@@ -4754,7 +4754,7 @@ client.contentdefinitions.getcontentdefinitionattributes(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">postcontentdefinitionattribute</a>(...) -> int</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L490-L546">postcontentdefinitionattribute</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4835,7 +4835,7 @@ client.contentdefinitions.postcontentdefinitionattribute(
 </dl>
 </details>
 
-<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py">postcontentdefinitionattributes</a>(...)</code></summary>
+<details><summary><code>client.contentdefinitions.<a href="src/fern/contentdefinitions/client.py#L548-L591">postcontentdefinitionattributes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4921,7 +4921,7 @@ client.contentdefinitions.postcontentdefinitionattributes(
 </details>
 
 ## Contentrelease
-<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py">getcontentreleaseversion</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentReleaseVersion</code></summary>
+<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py#L32-L62">getcontentreleaseversion</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentReleaseVersion</code></summary>
 <dl>
 <dd>
 
@@ -4994,7 +4994,7 @@ client.contentrelease.getcontentreleaseversion(
 </dl>
 </details>
 
-<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py">postcontentrelease</a>(...) -> int</code></summary>
+<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py#L64-L134">postcontentrelease</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5066,7 +5066,7 @@ client.contentrelease.postcontentrelease()
 </dl>
 </details>
 
-<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py">putcontentdefinition</a>(...)</code></summary>
+<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py#L136-L211">putcontentdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5147,7 +5147,7 @@ client.contentrelease.putcontentdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py">deletecontentreleaseversionn</a>(...)</code></summary>
+<details><summary><code>client.contentrelease.<a href="src/fern/contentrelease/client.py#L213-L242">deletecontentreleaseversionn</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5221,7 +5221,7 @@ client.contentrelease.deletecontentreleaseversionn(
 </details>
 
 ## Contentsubmissions
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">putcontentsubmissionattributes</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L45-L82">putcontentsubmissionattributes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5297,7 +5297,7 @@ client.contentsubmissions.putcontentsubmissionattributes(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">putcontentsubmissionattributeasync</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L84-L139">putcontentsubmissionattributeasync</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5378,7 +5378,7 @@ client.contentsubmissions.putcontentsubmissionattributeasync(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">deletecontentsubmissionattribute</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L141-L171">deletecontentsubmissionattribute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5450,7 +5450,7 @@ client.contentsubmissions.deletecontentsubmissionattribute(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">getcontentsubmissions</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentSubmission</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L173-L247">getcontentsubmissions</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentSubmission</code></summary>
 <dl>
 <dd>
 
@@ -5585,7 +5585,7 @@ client.contentsubmissions.getcontentsubmissions()
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">postcontentsubmission</a>(...) -> int</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L249-L349">postcontentsubmission</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5657,7 +5657,7 @@ client.contentsubmissions.postcontentsubmission()
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">getcontentsubmission</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentSubmission</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L351-L390">getcontentsubmission</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentSubmission</code></summary>
 <dl>
 <dd>
 
@@ -5738,7 +5738,7 @@ client.contentsubmissions.getcontentsubmission(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">putcontentsubmission</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L392-L497">putcontentsubmission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5819,7 +5819,7 @@ client.contentsubmissions.putcontentsubmission(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">deletecontentsubmission</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L499-L528">deletecontentsubmission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5892,7 +5892,7 @@ client.contentsubmissions.deletecontentsubmission(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">getcontentsubmissionattributes</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentSubmissionAttribute</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L530-L576">getcontentsubmissionattributes</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesContentSubmissionAttribute</code></summary>
 <dl>
 <dd>
 
@@ -5988,7 +5988,7 @@ client.contentsubmissions.getcontentsubmissionattributes(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">postcontentsubmissionattribute</a>(...) -> int</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L578-L634">postcontentsubmissionattribute</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -6069,7 +6069,7 @@ client.contentsubmissions.postcontentsubmissionattribute(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">postcontentsubmissionattributes</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L636-L679">postcontentsubmissionattributes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6154,7 +6154,7 @@ client.contentsubmissions.postcontentsubmissionattributes(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py">getcontentsubmissionstatus</a>(...) -> BuildSystemSharedInterfacesIJobRun</code></summary>
+<details><summary><code>client.contentsubmissions.<a href="src/fern/contentsubmissions/client.py#L681-L721">getcontentsubmissionstatus</a>(...) -> BuildSystemSharedInterfacesIJobRun</code></summary>
 <dl>
 <dd>
 
@@ -6235,7 +6235,7 @@ client.contentsubmissions.getcontentsubmissionstatus(
 </details>
 
 ## Contentsubmissiontypes
-<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py">getcontentsubmissiontypes</a>(...) -> typing.List[ContentSubmissionSharedBusinessEntitiesContentSubmissionType]</code></summary>
+<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py#L31-L57">getcontentsubmissiontypes</a>(...) -> typing.List[ContentSubmissionSharedBusinessEntitiesContentSubmissionType]</code></summary>
 <dl>
 <dd>
 
@@ -6305,7 +6305,7 @@ client.contentsubmissiontypes.getcontentsubmissiontypes()
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py">postcontentsubmissiontype</a>(...) -> int</code></summary>
+<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py#L59-L140">postcontentsubmissiontype</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -6378,7 +6378,7 @@ client.contentsubmissiontypes.postcontentsubmissiontype(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py">getcontentsubmissiontype</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentSubmissionType</code></summary>
+<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py#L142-L171">getcontentsubmissiontype</a>(...) -> ContentSubmissionSharedBusinessEntitiesContentSubmissionType</code></summary>
 <dl>
 <dd>
 
@@ -6450,7 +6450,7 @@ client.contentsubmissiontypes.getcontentsubmissiontype(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py">putcontentsubmissiontype</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py#L173-L259">putcontentsubmissiontype</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6532,7 +6532,7 @@ client.contentsubmissiontypes.putcontentsubmissiontype(
 </dl>
 </details>
 
-<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py">deletecontentsubmissiontype</a>(...)</code></summary>
+<details><summary><code>client.contentsubmissiontypes.<a href="src/fern/contentsubmissiontypes/client.py#L261-L287">deletecontentsubmissiontype</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6605,7 +6605,7 @@ client.contentsubmissiontypes.deletecontentsubmissiontype(
 </details>
 
 ## Dealerbycountry
-<details><summary><code>client.dealerbycountry.<a href="src/fern/dealerbycountry/client.py">getcountries</a>(...) -> ApiPagedResponseDealerDbModelsDealersPerCountry</code></summary>
+<details><summary><code>client.dealerbycountry.<a href="src/fern/dealerbycountry/client.py#L28-L62">getcountries</a>(...) -> ApiPagedResponseDealerDbModelsDealersPerCountry</code></summary>
 <dl>
 <dd>
 
@@ -6684,7 +6684,7 @@ client.dealerbycountry.getcountries()
 </details>
 
 ## Dealers
-<details><summary><code>client.dealers.<a href="src/fern/dealers/client.py">getdealers</a>(...) -> ApiPagedResponseDealerDbModelsDealer</code></summary>
+<details><summary><code>client.dealers.<a href="src/fern/dealers/client.py#L27-L80">getdealers</a>(...) -> ApiPagedResponseDealerDbModelsDealer</code></summary>
 <dl>
 <dd>
 
@@ -6786,7 +6786,7 @@ client.dealers.getdealers()
 </dl>
 </details>
 
-<details><summary><code>client.dealers.<a href="src/fern/dealers/client.py">getdealerbydealercode</a>(...) -> DealerDbModelsDealer</code></summary>
+<details><summary><code>client.dealers.<a href="src/fern/dealers/client.py#L82-L111">getdealerbydealercode</a>(...) -> DealerDbModelsDealer</code></summary>
 <dl>
 <dd>
 
@@ -6859,7 +6859,7 @@ client.dealers.getdealerbydealercode(
 </details>
 
 ## Fileuploadindexfields
-<details><summary><code>client.fileuploadindexfields.<a href="src/fern/fileuploadindexfields/client.py">get</a>(...) -> ApiPagedResponseCommunicationModelsFileUploadIndexField</code></summary>
+<details><summary><code>client.fileuploadindexfields.<a href="src/fern/fileuploadindexfields/client.py#L28-L62">get</a>(...) -> ApiPagedResponseCommunicationModelsFileUploadIndexField</code></summary>
 <dl>
 <dd>
 
@@ -6938,7 +6938,7 @@ client.fileuploadindexfields.get()
 </details>
 
 ## Fileuploadtypes
-<details><summary><code>client.fileuploadtypes.<a href="src/fern/fileuploadtypes/client.py">get</a>(...) -> ApiPagedResponseCommunicationModelsFileUploadType</code></summary>
+<details><summary><code>client.fileuploadtypes.<a href="src/fern/fileuploadtypes/client.py#L28-L62">get</a>(...) -> ApiPagedResponseCommunicationModelsFileUploadType</code></summary>
 <dl>
 <dd>
 
@@ -7017,7 +7017,7 @@ client.fileuploadtypes.get()
 </details>
 
 ## Fileuploads
-<details><summary><code>client.fileuploads.<a href="src/fern/fileuploads/client.py">postreport</a>(...) -> ApiPagedResponseCommunicationModelsFileUpload</code></summary>
+<details><summary><code>client.fileuploads.<a href="src/fern/fileuploads/client.py#L30-L86">postreport</a>(...) -> ApiPagedResponseCommunicationModelsFileUpload</code></summary>
 <dl>
 <dd>
 
@@ -7127,7 +7127,7 @@ Optional. The stored data fields to include in the results.
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">getfiles</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsFileDownload</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L34-L74">getfiles</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsFileDownload</code></summary>
 <dl>
 <dd>
 
@@ -7213,7 +7213,7 @@ client.files.getfiles()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">postfile</a>(...) -> str</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L76-L157">postfile</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7291,7 +7291,7 @@ client.files.postfile(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">getfile</a>(...) -> GlobalResourcesSharedModelsFileDownload</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L159-L187">getfile</a>(...) -> GlobalResourcesSharedModelsFileDownload</code></summary>
 <dl>
 <dd>
 
@@ -7363,7 +7363,7 @@ client.files.getfile(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">putfile</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L189-L278">putfile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7453,7 +7453,7 @@ client.files.putfile(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">deletefile</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L280-L306">deletefile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7525,7 +7525,7 @@ client.files.deletefile(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">getfilecontents</a>(...) -> SystemObject</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L308-L335">getfilecontents</a>(...) -> SystemObject</code></summary>
 <dl>
 <dd>
 
@@ -7597,7 +7597,7 @@ client.files.getfilecontents(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">putfilecontents</a>(...) -> SystemObject</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L337-L364">putfilecontents</a>(...) -> SystemObject</code></summary>
 <dl>
 <dd>
 
@@ -7670,7 +7670,7 @@ client.files.putfilecontents(
 </details>
 
 ## Globalimagecategories
-<details><summary><code>client.globalimagecategories.<a href="src/fern/globalimagecategories/client.py">getfiles</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsGlobalImageCategory</code></summary>
+<details><summary><code>client.globalimagecategories.<a href="src/fern/globalimagecategories/client.py#L32-L66">getfiles</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsGlobalImageCategory</code></summary>
 <dl>
 <dd>
 
@@ -7748,7 +7748,7 @@ client.globalimagecategories.getfiles()
 </dl>
 </details>
 
-<details><summary><code>client.globalimagecategories.<a href="src/fern/globalimagecategories/client.py">postfile</a>(...) -> str</code></summary>
+<details><summary><code>client.globalimagecategories.<a href="src/fern/globalimagecategories/client.py#L68-L100">postfile</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7820,7 +7820,7 @@ client.globalimagecategories.postfile(
 </dl>
 </details>
 
-<details><summary><code>client.globalimagecategories.<a href="src/fern/globalimagecategories/client.py">getfile</a>(...) -> GlobalResourcesSharedModelsGlobalImageCategory</code></summary>
+<details><summary><code>client.globalimagecategories.<a href="src/fern/globalimagecategories/client.py#L102-L131">getfile</a>(...) -> GlobalResourcesSharedModelsGlobalImageCategory</code></summary>
 <dl>
 <dd>
 
@@ -7893,7 +7893,7 @@ client.globalimagecategories.getfile(
 </details>
 
 ## Globalimages
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">getglobalimages</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsGlobalImage</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L36-L94">getglobalimages</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsGlobalImage</code></summary>
 <dl>
 <dd>
 
@@ -8003,7 +8003,7 @@ client.globalimages.getglobalimages()
 </dl>
 </details>
 
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">postglobalimage</a>(...) -> str</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L96-L202">postglobalimage</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8089,7 +8089,7 @@ client.globalimages.postglobalimage(
 </dl>
 </details>
 
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">getglobalimage</a>(...) -> GlobalResourcesSharedModelsGlobalImage</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L204-L233">getglobalimage</a>(...) -> GlobalResourcesSharedModelsGlobalImage</code></summary>
 <dl>
 <dd>
 
@@ -8161,7 +8161,7 @@ client.globalimages.getglobalimage(
 </dl>
 </details>
 
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">putglobalimage</a>(...)</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L235-L349">putglobalimage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8259,7 +8259,7 @@ client.globalimages.putglobalimage(
 </dl>
 </details>
 
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">deletefile</a>(...)</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L351-L377">deletefile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8331,7 +8331,7 @@ client.globalimages.deletefile(
 </dl>
 </details>
 
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">getglobalimagecontents</a>(...) -> SystemObject</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L379-L417">getglobalimagecontents</a>(...) -> SystemObject</code></summary>
 <dl>
 <dd>
 
@@ -8411,7 +8411,7 @@ client.globalimages.getglobalimagecontents(
 </dl>
 </details>
 
-<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py">putglobalimagecontents</a>(...) -> SystemObject</code></summary>
+<details><summary><code>client.globalimages.<a href="src/fern/globalimages/client.py#L419-L458">putglobalimagecontents</a>(...) -> SystemObject</code></summary>
 <dl>
 <dd>
 
@@ -8493,7 +8493,7 @@ client.globalimages.putglobalimagecontents(
 </details>
 
 ## Languages
-<details><summary><code>client.languages.<a href="src/fern/languages/client.py">getlanguages</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsLanguage</code></summary>
+<details><summary><code>client.languages.<a href="src/fern/languages/client.py#L32-L72">getlanguages</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsLanguage</code></summary>
 <dl>
 <dd>
 
@@ -8579,7 +8579,7 @@ client.languages.getlanguages()
 </dl>
 </details>
 
-<details><summary><code>client.languages.<a href="src/fern/languages/client.py">createlanguage</a>(...) -> int</code></summary>
+<details><summary><code>client.languages.<a href="src/fern/languages/client.py#L74-L117">createlanguage</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -8652,7 +8652,7 @@ client.languages.createlanguage(
 </dl>
 </details>
 
-<details><summary><code>client.languages.<a href="src/fern/languages/client.py">getlanguage</a>(...) -> GlobalResourcesSharedModelsLanguage</code></summary>
+<details><summary><code>client.languages.<a href="src/fern/languages/client.py#L119-L148">getlanguage</a>(...) -> GlobalResourcesSharedModelsLanguage</code></summary>
 <dl>
 <dd>
 
@@ -8724,7 +8724,7 @@ client.languages.getlanguage(
 </dl>
 </details>
 
-<details><summary><code>client.languages.<a href="src/fern/languages/client.py">updatelanguage</a>(...)</code></summary>
+<details><summary><code>client.languages.<a href="src/fern/languages/client.py#L150-L201">updatelanguage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8806,7 +8806,7 @@ client.languages.updatelanguage(
 </dl>
 </details>
 
-<details><summary><code>client.languages.<a href="src/fern/languages/client.py">deletelanguage</a>(...)</code></summary>
+<details><summary><code>client.languages.<a href="src/fern/languages/client.py#L203-L229">deletelanguage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8879,7 +8879,7 @@ client.languages.deletelanguage(
 </details>
 
 ## Licenseactivations
-<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py">post</a>(...) -> DealerDbModelsLicenseActivation</code></summary>
+<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py#L33-L91">post</a>(...) -> DealerDbModelsLicenseActivation</code></summary>
 <dl>
 <dd>
 
@@ -8986,7 +8986,7 @@ client.licenseactivations.post(
 </dl>
 </details>
 
-<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py">postregisteredtlite</a>(...) -> bool</code></summary>
+<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py#L93-L149">postregisteredtlite</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -9085,7 +9085,7 @@ client.licenseactivations.postregisteredtlite(
 </dl>
 </details>
 
-<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py">put</a>(...) -> DealerDbModelsLicenseActivation</code></summary>
+<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py#L151-L194">put</a>(...) -> DealerDbModelsLicenseActivation</code></summary>
 <dl>
 <dd>
 
@@ -9174,7 +9174,7 @@ client.licenseactivations.put(
 </dl>
 </details>
 
-<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py">putconfirm</a>(...)</code></summary>
+<details><summary><code>client.licenseactivations.<a href="src/fern/licenseactivations/client.py#L196-L228">putconfirm</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9256,7 +9256,7 @@ client.licenseactivations.putconfirm(
 </details>
 
 ## Licenses
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">get</a>(...) -> DealerDbModelsLicense</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L26-L53">get</a>(...) -> DealerDbModelsLicense</code></summary>
 <dl>
 <dd>
 
@@ -9329,7 +9329,7 @@ client.licenses.get(
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">getlogs</a>(...) -> ApiPagedResponseApiModelsLog</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L27-L61">getlogs</a>(...) -> ApiPagedResponseApiModelsLog</code></summary>
 <dl>
 <dd>
 
@@ -9407,7 +9407,7 @@ client.logs.getlogs()
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">postlog</a>(...) -> str</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L63-L90">postlog</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9479,7 +9479,7 @@ client.logs.postlog(
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">getlog</a>(...) -> ApiModelsLog</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L92-L119">getlog</a>(...) -> ApiModelsLog</code></summary>
 <dl>
 <dd>
 
@@ -9552,7 +9552,7 @@ client.logs.getlog(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">postmail</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L28-L80">postmail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9662,7 +9662,7 @@ client.notifications.postmail(
 </details>
 
 ## Packagetypes
-<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py">get</a>(...) -> UpdateSystemModelsPackageType</code></summary>
+<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py#L29-L56">get</a>(...) -> UpdateSystemModelsPackageType</code></summary>
 <dl>
 <dd>
 
@@ -9734,7 +9734,7 @@ client.packagetypes.get(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py">post</a>(...) -> str</code></summary>
+<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py#L58-L138">post</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9806,7 +9806,7 @@ client.packagetypes.post(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py#L140-L225">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9887,7 +9887,7 @@ client.packagetypes.put(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py#L227-L253">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9959,7 +9959,7 @@ client.packagetypes.delete(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py">addpackagetypeuser</a>(...)</code></summary>
+<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py#L255-L287">addpackagetypeuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10040,7 +10040,7 @@ client.packagetypes.addpackagetypeuser(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py">removepackagetypeuser</a>(...)</code></summary>
+<details><summary><code>client.packagetypes.<a href="src/fern/packagetypes/client.py#L289-L321">removepackagetypeuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10122,7 +10122,7 @@ client.packagetypes.removepackagetypeuser(
 </details>
 
 ## Packagetypetobundles
-<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py">get</a>(...) -> ApiPagedResponseUpdateSystemModelsPackageTypeIDtoBundle</code></summary>
+<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py#L34-L87">get</a>(...) -> ApiPagedResponseUpdateSystemModelsPackageTypeIDtoBundle</code></summary>
 <dl>
 <dd>
 
@@ -10224,7 +10224,7 @@ client.packagetypetobundles.get()
 </dl>
 </details>
 
-<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py">post</a>(...)</code></summary>
+<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py#L89-L146">post</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10299,7 +10299,7 @@ client.packagetypetobundles.post(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py#L148-L205">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10374,7 +10374,7 @@ client.packagetypetobundles.put(
 </dl>
 </details>
 
-<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.packagetypetobundles.<a href="src/fern/packagetypetobundles/client.py#L207-L241">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10456,7 +10456,7 @@ client.packagetypetobundles.delete(
 </details>
 
 ## Packages
-<details><summary><code>client.packages.<a href="src/fern/packages/client.py">getpackages</a>(...) -> ApiPagedResponseUpdateSystemModelsPackage</code></summary>
+<details><summary><code>client.packages.<a href="src/fern/packages/client.py#L31-L84">getpackages</a>(...) -> ApiPagedResponseUpdateSystemModelsPackage</code></summary>
 <dl>
 <dd>
 
@@ -10558,7 +10558,7 @@ client.packages.getpackages()
 </dl>
 </details>
 
-<details><summary><code>client.packages.<a href="src/fern/packages/client.py">postpackage</a>(...) -> str</code></summary>
+<details><summary><code>client.packages.<a href="src/fern/packages/client.py#L86-L201">postpackage</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10636,7 +10636,7 @@ client.packages.postpackage(
 </dl>
 </details>
 
-<details><summary><code>client.packages.<a href="src/fern/packages/client.py">getpackage</a>(...) -> UpdateSystemModelsPackage</code></summary>
+<details><summary><code>client.packages.<a href="src/fern/packages/client.py#L203-L232">getpackage</a>(...) -> UpdateSystemModelsPackage</code></summary>
 <dl>
 <dd>
 
@@ -10708,7 +10708,7 @@ client.packages.getpackage(
 </dl>
 </details>
 
-<details><summary><code>client.packages.<a href="src/fern/packages/client.py">putpackage</a>(...)</code></summary>
+<details><summary><code>client.packages.<a href="src/fern/packages/client.py#L234-L354">putpackage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10795,7 +10795,7 @@ client.packages.putpackage(
 </dl>
 </details>
 
-<details><summary><code>client.packages.<a href="src/fern/packages/client.py">deletepackage</a>(...)</code></summary>
+<details><summary><code>client.packages.<a href="src/fern/packages/client.py#L356-L382">deletepackage</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10868,7 +10868,7 @@ client.packages.deletepackage(
 </details>
 
 ## Permissions
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">getpermissions</a>(...) -> ApiPagedResponseApiModelsPermission</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L31-L71">getpermissions</a>(...) -> ApiPagedResponseApiModelsPermission</code></summary>
 <dl>
 <dd>
 
@@ -10954,7 +10954,7 @@ client.permissions.getpermissions()
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">postpermission</a>(...) -> int</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L73-L128">postpermission</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -11027,7 +11027,7 @@ client.permissions.postpermission(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">getpermission</a>(...) -> ApiModelsPermission</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L130-L157">getpermission</a>(...) -> ApiModelsPermission</code></summary>
 <dl>
 <dd>
 
@@ -11099,7 +11099,7 @@ client.permissions.getpermission(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">putpermission</a>(...)</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L159-L219">putpermission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11181,7 +11181,7 @@ client.permissions.putpermission(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">deletepermission</a>(...)</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L221-L247">deletepermission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11254,7 +11254,7 @@ client.permissions.deletepermission(
 </details>
 
 ## Prioritypackages
-<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py">getprioritypackages</a>(...) -> ApiPagedResponseUpdateSystemModelsPriorityPackage</code></summary>
+<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py#L36-L80">getprioritypackages</a>(...) -> ApiPagedResponseUpdateSystemModelsPriorityPackage</code></summary>
 <dl>
 <dd>
 
@@ -11348,7 +11348,7 @@ client.prioritypackages.getprioritypackages()
 </dl>
 </details>
 
-<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py">postprioritypackages</a>(...) -> str</code></summary>
+<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py#L82-L200">postprioritypackages</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11421,7 +11421,7 @@ client.prioritypackages.postprioritypackages(
 </dl>
 </details>
 
-<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py">getprioritypackage</a>(...) -> UpdateSystemModelsPriorityPackage</code></summary>
+<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py#L202-L231">getprioritypackage</a>(...) -> UpdateSystemModelsPriorityPackage</code></summary>
 <dl>
 <dd>
 
@@ -11493,7 +11493,7 @@ client.prioritypackages.getprioritypackage(
 </dl>
 </details>
 
-<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py">deleteprioritypackages</a>(...)</code></summary>
+<details><summary><code>client.prioritypackages.<a href="src/fern/prioritypackages/client.py#L233-L259">deleteprioritypackages</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11566,7 +11566,7 @@ client.prioritypackages.deleteprioritypackages(
 </details>
 
 ## Release
-<details><summary><code>client.release.<a href="src/fern/release/client.py">getreleases</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesRelease</code></summary>
+<details><summary><code>client.release.<a href="src/fern/release/client.py#L33-L78">getreleases</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesRelease</code></summary>
 <dl>
 <dd>
 
@@ -11661,7 +11661,7 @@ client.release.getreleases()
 </dl>
 </details>
 
-<details><summary><code>client.release.<a href="src/fern/release/client.py">postrelease</a>(...) -> int</code></summary>
+<details><summary><code>client.release.<a href="src/fern/release/client.py#L80-L140">postrelease</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -11733,7 +11733,7 @@ client.release.postrelease()
 </dl>
 </details>
 
-<details><summary><code>client.release.<a href="src/fern/release/client.py">getrelease</a>(...) -> ContentSubmissionSharedBusinessEntitiesRelease</code></summary>
+<details><summary><code>client.release.<a href="src/fern/release/client.py#L142-L172">getrelease</a>(...) -> ContentSubmissionSharedBusinessEntitiesRelease</code></summary>
 <dl>
 <dd>
 
@@ -11806,7 +11806,7 @@ client.release.getrelease(
 </dl>
 </details>
 
-<details><summary><code>client.release.<a href="src/fern/release/client.py">postreleasebundle</a>(...)</code></summary>
+<details><summary><code>client.release.<a href="src/fern/release/client.py#L174-L206">postreleasebundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11887,7 +11887,7 @@ client.release.postreleasebundle(
 </dl>
 </details>
 
-<details><summary><code>client.release.<a href="src/fern/release/client.py">deletereleasebundle</a>(...)</code></summary>
+<details><summary><code>client.release.<a href="src/fern/release/client.py#L208-L240">deletereleasebundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11968,7 +11968,7 @@ client.release.deletereleasebundle(
 </dl>
 </details>
 
-<details><summary><code>client.release.<a href="src/fern/release/client.py">putcontentdefinition</a>(...)</code></summary>
+<details><summary><code>client.release.<a href="src/fern/release/client.py#L242-L307">putcontentdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12050,7 +12050,7 @@ client.release.putcontentdefinition(
 </details>
 
 ## Reporting
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">bundlestatussummary</a>(...) -> ApiPagedResponseUpdateSystemModelsPackageStatusSummary</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L45-L87">bundlestatussummary</a>(...) -> ApiPagedResponseUpdateSystemModelsPackageStatusSummary</code></summary>
 <dl>
 <dd>
 
@@ -12138,7 +12138,7 @@ client.reporting.bundlestatussummary(
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">bundlesinupdategroup</a>(...) -> ApiPagedResponseUpdateSystemModelsBundle</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L89-L136">bundlesinupdategroup</a>(...) -> ApiPagedResponseUpdateSystemModelsBundle</code></summary>
 <dl>
 <dd>
 
@@ -12235,7 +12235,7 @@ client.reporting.bundlesinupdategroup(
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">clientinfo</a>(...) -> UpdateSystemModelsClientInfo</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L138-L167">clientinfo</a>(...) -> UpdateSystemModelsClientInfo</code></summary>
 <dl>
 <dd>
 
@@ -12307,7 +12307,7 @@ client.reporting.clientinfo(
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">currentpackagesinupdategroup</a>(...) -> typing.List[UpdateSystemModelsPackage]</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L169-L209">currentpackagesinupdategroup</a>(...) -> typing.List[UpdateSystemModelsPackage]</code></summary>
 <dl>
 <dd>
 
@@ -12387,7 +12387,7 @@ client.reporting.currentpackagesinupdategroup(
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">getclient</a>(...) -> UpdateSystemModelsClient</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L211-L240">getclient</a>(...) -> UpdateSystemModelsClient</code></summary>
 <dl>
 <dd>
 
@@ -12459,7 +12459,7 @@ client.reporting.getclient(
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">getsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupClientRelationship</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L242-L290">getsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupClientRelationship</code></summary>
 <dl>
 <dd>
 
@@ -12553,7 +12553,7 @@ client.reporting.getsubscriptions()
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">packagestatussummary</a>(...) -> UpdateSystemModelsPackageStatusSummary</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L292-L321">packagestatussummary</a>(...) -> UpdateSystemModelsPackageStatusSummary</code></summary>
 <dl>
 <dd>
 
@@ -12625,7 +12625,7 @@ client.reporting.packagestatussummary(
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">registeredclients</a>(...) -> ApiPagedResponseUpdateSystemModelsClientStatusUpdateSystemModelsPagedClientStatusMetadata</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L323-L407">registeredclients</a>(...) -> ApiPagedResponseUpdateSystemModelsClientStatusUpdateSystemModelsPagedClientStatusMetadata</code></summary>
 <dl>
 <dd>
 
@@ -12778,7 +12778,7 @@ Optional. Specify the order in which results should be returned. Use this format
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">updategroups</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroup</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L409-L443">updategroups</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroup</code></summary>
 <dl>
 <dd>
 
@@ -12856,7 +12856,7 @@ client.reporting.updategroups()
 </dl>
 </details>
 
-<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py">updatemetrics</a>(...) -> UpdateSystemModelsUpdateMetricsData</code></summary>
+<details><summary><code>client.reporting.<a href="src/fern/reporting/client.py#L445-L483">updatemetrics</a>(...) -> UpdateSystemModelsUpdateMetricsData</code></summary>
 <dl>
 <dd>
 
@@ -12937,7 +12937,7 @@ client.reporting.updatemetrics(
 </details>
 
 ## Roles
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">getroles</a>(...) -> ApiPagedResponseApiModelsRole</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L32-L84">getroles</a>(...) -> ApiPagedResponseApiModelsRole</code></summary>
 <dl>
 <dd>
 
@@ -13039,7 +13039,7 @@ client.roles.getroles()
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">postrole</a>(...) -> int</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L86-L129">postrole</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -13112,7 +13112,7 @@ client.roles.postrole(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">getrole</a>(...) -> ApiModelsRole</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L131-L158">getrole</a>(...) -> ApiModelsRole</code></summary>
 <dl>
 <dd>
 
@@ -13184,7 +13184,7 @@ client.roles.getrole(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">putrole</a>(...)</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L160-L207">putrole</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13266,7 +13266,7 @@ client.roles.putrole(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">deleterole</a>(...)</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L209-L235">deleterole</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13338,7 +13338,7 @@ client.roles.deleterole(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">getrolepermissions</a>(...) -> ApiPagedResponseApiModelsPermission</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L237-L283">getrolepermissions</a>(...) -> ApiPagedResponseApiModelsPermission</code></summary>
 <dl>
 <dd>
 
@@ -13434,7 +13434,7 @@ client.roles.getrolepermissions(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">putrolepermissions</a>(...)</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L285-L329">putrolepermissions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13521,7 +13521,7 @@ client.roles.putrolepermissions(
 </details>
 
 ## Userpermissions
-<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py">getusers</a>(...) -> ApiPagedResponseApiModelsUser</code></summary>
+<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py#L34-L74">getusers</a>(...) -> ApiPagedResponseApiModelsUser</code></summary>
 <dl>
 <dd>
 
@@ -13609,7 +13609,7 @@ client.userpermissions.getusers(
 </dl>
 </details>
 
-<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py#L76-L116">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13695,7 +13695,7 @@ client.userpermissions.put(
 </dl>
 </details>
 
-<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py">getpermissions</a>(...) -> ApiPagedResponseApiModelsUserEffectivePermission</code></summary>
+<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py#L118-L164">getpermissions</a>(...) -> ApiPagedResponseApiModelsUserEffectivePermission</code></summary>
 <dl>
 <dd>
 
@@ -13791,7 +13791,7 @@ client.userpermissions.getpermissions(
 </dl>
 </details>
 
-<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py">getcurrentuserroles</a>(...) -> ApiPagedResponseApiModelsRole</code></summary>
+<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py#L166-L206">getcurrentuserroles</a>(...) -> ApiPagedResponseApiModelsRole</code></summary>
 <dl>
 <dd>
 
@@ -13877,7 +13877,7 @@ client.userpermissions.getcurrentuserroles()
 </dl>
 </details>
 
-<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py">getroles</a>(...) -> ApiPagedResponseApiModelsRole</code></summary>
+<details><summary><code>client.userpermissions.<a href="src/fern/userpermissions/client.py#L208-L254">getroles</a>(...) -> ApiPagedResponseApiModelsRole</code></summary>
 <dl>
 <dd>
 
@@ -13974,7 +13974,7 @@ client.userpermissions.getroles(
 </details>
 
 ## Stringdefinitions
-<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py">getdefinitions</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsStringDefinition</code></summary>
+<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py#L32-L110">getdefinitions</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsStringDefinition</code></summary>
 <dl>
 <dd>
 
@@ -14116,7 +14116,7 @@ client.stringdefinitions.getdefinitions()
 </dl>
 </details>
 
-<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py">postdefinition</a>(...)</code></summary>
+<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py#L112-L146">postdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14192,7 +14192,7 @@ client.stringdefinitions.postdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py">updatedefinitions</a>(...)</code></summary>
+<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py#L148-L182">updatedefinitions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14268,7 +14268,7 @@ client.stringdefinitions.updatedefinitions(
 </dl>
 </details>
 
-<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py">getdefinition</a>(...) -> GlobalResourcesSharedModelsStringDefinition</code></summary>
+<details><summary><code>client.stringdefinitions.<a href="src/fern/stringdefinitions/client.py#L184-L233">getdefinition</a>(...) -> GlobalResourcesSharedModelsStringDefinition</code></summary>
 <dl>
 <dd>
 
@@ -14365,7 +14365,7 @@ client.stringdefinitions.getdefinition(
 </details>
 
 ## Stringtranslations
-<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py">gettranslations</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsStringTranslation</code></summary>
+<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py#L35-L71">gettranslations</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsStringTranslation</code></summary>
 <dl>
 <dd>
 
@@ -14443,7 +14443,7 @@ client.stringtranslations.gettranslations()
 </dl>
 </details>
 
-<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py">updatetranslations</a>(...)</code></summary>
+<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py#L73-L107">updatetranslations</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14519,7 +14519,7 @@ client.stringtranslations.updatetranslations(
 </dl>
 </details>
 
-<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py">gettranslation</a>(...) -> GlobalResourcesSharedModelsStringTranslation</code></summary>
+<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py#L109-L142">gettranslation</a>(...) -> GlobalResourcesSharedModelsStringTranslation</code></summary>
 <dl>
 <dd>
 
@@ -14600,7 +14600,7 @@ client.stringtranslations.gettranslation(
 </dl>
 </details>
 
-<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py">updatetranslation</a>(...)</code></summary>
+<details><summary><code>client.stringtranslations.<a href="src/fern/stringtranslations/client.py#L144-L215">updatetranslation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14691,7 +14691,7 @@ client.stringtranslations.updatetranslation(
 </details>
 
 ## Translationkeys
-<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py">get</a>(...) -> ApiIPagedResponseOasSupportSharedModelsTranslationKey</code></summary>
+<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py#L32-L72">get</a>(...) -> ApiIPagedResponseOasSupportSharedModelsTranslationKey</code></summary>
 <dl>
 <dd>
 
@@ -14777,7 +14777,7 @@ client.translationkeys.get()
 </dl>
 </details>
 
-<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py">createtranslationkey</a>(...) -> int</code></summary>
+<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py#L74-L117">createtranslationkey</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -14850,7 +14850,7 @@ client.translationkeys.createtranslationkey(
 </dl>
 </details>
 
-<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py">gettranslationkey</a>(...) -> OasSupportSharedModelsTranslationKey</code></summary>
+<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py#L119-L148">gettranslationkey</a>(...) -> OasSupportSharedModelsTranslationKey</code></summary>
 <dl>
 <dd>
 
@@ -14922,7 +14922,7 @@ client.translationkeys.gettranslationkey(
 </dl>
 </details>
 
-<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py">updatetranslationkey</a>(...)</code></summary>
+<details><summary><code>client.translationkeys.<a href="src/fern/translationkeys/client.py#L150-L197">updatetranslationkey</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15005,7 +15005,7 @@ client.translationkeys.updatetranslationkey(
 </details>
 
 ## Translationrequests
-<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py">gettranslationrequests</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationRequest</code></summary>
+<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py#L36-L70">gettranslationrequests</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationRequest</code></summary>
 <dl>
 <dd>
 
@@ -15083,7 +15083,7 @@ client.translationrequests.gettranslationrequests()
 </dl>
 </details>
 
-<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py">createtranslationrequest</a>(...) -> int</code></summary>
+<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py#L72-L171">createtranslationrequest</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -15165,7 +15165,7 @@ client.translationrequests.createtranslationrequest(
 </dl>
 </details>
 
-<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py">gettranslationrequest</a>(...) -> GlobalResourcesSharedModelsTranslationRequest</code></summary>
+<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py#L173-L202">gettranslationrequest</a>(...) -> GlobalResourcesSharedModelsTranslationRequest</code></summary>
 <dl>
 <dd>
 
@@ -15237,7 +15237,7 @@ client.translationrequests.gettranslationrequest(
 </dl>
 </details>
 
-<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py">updatetranslationrequest</a>(...)</code></summary>
+<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py#L204-L313">updatetranslationrequest</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15336,7 +15336,7 @@ client.translationrequests.updatetranslationrequest(
 </dl>
 </details>
 
-<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py">updatetranslationrequeststrings</a>(...)</code></summary>
+<details><summary><code>client.translationrequests.<a href="src/fern/translationrequests/client.py#L315-L347">updatetranslationrequeststrings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15420,7 +15420,7 @@ client.translationrequests.updatetranslationrequeststrings(
 </details>
 
 ## Translationsets
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">updatetranslationsetattributes</a>(...)</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L53-L87">updatetranslationsetattributes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15496,7 +15496,7 @@ client.translationsets.updatetranslationsetattributes(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">updatetranslationsetattribute</a>(...)</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L89-L139">updatetranslationsetattribute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15577,7 +15577,7 @@ client.translationsets.updatetranslationsetattribute(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">deletetranslationsetattribute</a>(...)</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L141-L169">deletetranslationsetattribute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15649,7 +15649,7 @@ client.translationsets.deletetranslationsetattribute(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">gettranslationsets</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSet</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L171-L234">gettranslationsets</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSet</code></summary>
 <dl>
 <dd>
 
@@ -15767,7 +15767,7 @@ client.translationsets.gettranslationsets()
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">gettranslationset</a>(...) -> GlobalResourcesSharedModelsTranslationSet</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L236-L274">gettranslationset</a>(...) -> GlobalResourcesSharedModelsTranslationSet</code></summary>
 <dl>
 <dd>
 
@@ -15847,7 +15847,7 @@ client.translationsets.gettranslationset(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">updatetranslationset</a>(...)</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L276-L352">updatetranslationset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15931,7 +15931,7 @@ client.translationsets.updatetranslationset(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">gettranslationsetattributes</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSetAttribute</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L354-L400">gettranslationsetattributes</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSetAttribute</code></summary>
 <dl>
 <dd>
 
@@ -16027,7 +16027,7 @@ client.translationsets.gettranslationsetattributes(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">posttranslationsetattribute</a>(...) -> int</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L402-L453">posttranslationsetattribute</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -16108,7 +16108,7 @@ client.translationsets.posttranslationsetattribute(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">posttranslationsetattributes</a>(...)</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L455-L493">posttranslationsetattributes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16193,7 +16193,7 @@ client.translationsets.posttranslationsetattributes(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">getsourcestrings</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSetSourceString</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L495-L535">getsourcestrings</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSetSourceString</code></summary>
 <dl>
 <dd>
 
@@ -16281,7 +16281,7 @@ client.translationsets.getsourcestrings(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">getstatistics</a>(...) -> GlobalResourcesSharedModelsTranslationSetStatistics</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L537-L566">getstatistics</a>(...) -> GlobalResourcesSharedModelsTranslationSetStatistics</code></summary>
 <dl>
 <dd>
 
@@ -16353,7 +16353,7 @@ client.translationsets.getstatistics(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">gettranslationsetstrings</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSetString</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L568-L610">gettranslationsetstrings</a>(...) -> ApiIPagedResponseGlobalResourcesSharedModelsTranslationSetString</code></summary>
 <dl>
 <dd>
 
@@ -16441,7 +16441,7 @@ client.translationsets.gettranslationsetstrings(
 </dl>
 </details>
 
-<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py">updatetranslationsetstrings</a>(...)</code></summary>
+<details><summary><code>client.translationsets.<a href="src/fern/translationsets/client.py#L612-L652">updatetranslationsetstrings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16529,7 +16529,7 @@ client.translationsets.updatetranslationsetstrings(
 </details>
 
 ## Updategroupclientrelationships
-<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py">getsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupClientRelationship</code></summary>
+<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py#L35-L88">getsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupClientRelationship</code></summary>
 <dl>
 <dd>
 
@@ -16631,7 +16631,7 @@ client.updategroupclientrelationships.getsubscriptions()
 </dl>
 </details>
 
-<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py">postsubscription</a>(...) -> str</code></summary>
+<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py#L90-L146">postsubscription</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16704,7 +16704,7 @@ client.updategroupclientrelationships.postsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py">putsubscriptionbyclientidupdategroupid</a>(...)</code></summary>
+<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py#L148-L191">putsubscriptionbyclientidupdategroupid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16794,7 +16794,7 @@ client.updategroupclientrelationships.putsubscriptionbyclientidupdategroupid(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py">getsubscription</a>(...) -> UpdateSystemModelsUpdateGroupClientRelationship</code></summary>
+<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py#L193-L222">getsubscription</a>(...) -> UpdateSystemModelsUpdateGroupClientRelationship</code></summary>
 <dl>
 <dd>
 
@@ -16866,7 +16866,7 @@ client.updategroupclientrelationships.getsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py">putsubscription</a>(...)</code></summary>
+<details><summary><code>client.updategroupclientrelationships.<a href="src/fern/updategroupclientrelationships/client.py#L224-L285">putsubscription</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16949,7 +16949,7 @@ client.updategroupclientrelationships.putsubscription(
 </details>
 
 ## Updategroupsubscriptions
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">getupdategroupsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupSubscription</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L32-L85">getupdategroupsubscriptions</a>(...) -> ApiPagedResponseUpdateSystemModelsUpdateGroupSubscription</code></summary>
 <dl>
 <dd>
 
@@ -17051,7 +17051,7 @@ client.updategroupsubscriptions.getupdategroupsubscriptions()
 </dl>
 </details>
 
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">postupdategroupsubscription</a>(...) -> int</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L87-L145">postupdategroupsubscription</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -17126,7 +17126,7 @@ client.updategroupsubscriptions.postupdategroupsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">postupdategroupsubscriptions</a>(...)</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L147-L184">postupdategroupsubscriptions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17205,7 +17205,7 @@ client.updategroupsubscriptions.postupdategroupsubscriptions(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">putupdategroupsubscriptions</a>(...)</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L186-L223">putupdategroupsubscriptions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17284,7 +17284,7 @@ client.updategroupsubscriptions.putupdategroupsubscriptions(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">getupdategroupsubscription</a>(...) -> UpdateSystemModelsUpdateGroupSubscription</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L225-L256">getupdategroupsubscription</a>(...) -> UpdateSystemModelsUpdateGroupSubscription</code></summary>
 <dl>
 <dd>
 
@@ -17356,7 +17356,7 @@ client.updategroupsubscriptions.getupdategroupsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">putupdategroupsubscription</a>(...)</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L258-L321">putupdategroupsubscription</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17440,7 +17440,7 @@ client.updategroupsubscriptions.putupdategroupsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py">deleteupdategroupsubscription</a>(...)</code></summary>
+<details><summary><code>client.updategroupsubscriptions.<a href="src/fern/updategroupsubscriptions/client.py#L323-L353">deleteupdategroupsubscription</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17513,7 +17513,7 @@ client.updategroupsubscriptions.deleteupdategroupsubscription(
 </details>
 
 ## Updategroups
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">get</a>(...) -> UpdateSystemModelsUpdateGroup</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L30-L57">get</a>(...) -> UpdateSystemModelsUpdateGroup</code></summary>
 <dl>
 <dd>
 
@@ -17585,7 +17585,7 @@ client.updategroups.get(
 </dl>
 </details>
 
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">post</a>(...) -> str</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L59-L152">post</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17659,7 +17659,7 @@ client.updategroups.post(
 </dl>
 </details>
 
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L154-L252">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17742,7 +17742,7 @@ client.updategroups.put(
 </dl>
 </details>
 
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L254-L280">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17814,7 +17814,7 @@ client.updategroups.delete(
 </dl>
 </details>
 
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">getupdategroupbundles</a>(...) -> ApiPagedResponseUpdateSystemModelsBundle</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L282-L329">getupdategroupbundles</a>(...) -> ApiPagedResponseUpdateSystemModelsBundle</code></summary>
 <dl>
 <dd>
 
@@ -17911,7 +17911,7 @@ client.updategroups.getupdategroupbundles(
 </dl>
 </details>
 
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">addupdategroupuser</a>(...)</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L331-L363">addupdategroupuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17992,7 +17992,7 @@ client.updategroups.addupdategroupuser(
 </dl>
 </details>
 
-<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py">removeupdategroupuser</a>(...)</code></summary>
+<details><summary><code>client.updategroups.<a href="src/fern/updategroups/client.py#L365-L397">removeupdategroupuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18074,7 +18074,7 @@ client.updategroups.removeupdategroupuser(
 </details>
 
 ## Usercontentdefinitions
-<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py">getusercontentdefinitions</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesUserContentDefinition</code></summary>
+<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py#L34-L83">getusercontentdefinitions</a>(...) -> ApiPagedResponseContentSubmissionSharedBusinessEntitiesUserContentDefinition</code></summary>
 <dl>
 <dd>
 
@@ -18169,7 +18169,7 @@ client.usercontentdefinitions.getusercontentdefinitions()
 </dl>
 </details>
 
-<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py">postusercontentdefinition</a>(...) -> int</code></summary>
+<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py#L85-L130">postusercontentdefinition</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -18241,7 +18241,7 @@ client.usercontentdefinitions.postusercontentdefinition()
 </dl>
 </details>
 
-<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py">getusercontentdefinition</a>(...) -> ContentSubmissionSharedBusinessEntitiesUserContentDefinition</code></summary>
+<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py#L132-L164">getusercontentdefinition</a>(...) -> ContentSubmissionSharedBusinessEntitiesUserContentDefinition</code></summary>
 <dl>
 <dd>
 
@@ -18314,7 +18314,7 @@ client.usercontentdefinitions.getusercontentdefinition(
 </dl>
 </details>
 
-<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py">deleteusercontentdefinition</a>(...)</code></summary>
+<details><summary><code>client.usercontentdefinitions.<a href="src/fern/usercontentdefinitions/client.py#L166-L197">deleteusercontentdefinition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18388,7 +18388,7 @@ client.usercontentdefinitions.deleteusercontentdefinition(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get</a>(...) -> ApiModelsUser</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L29-L56">get</a>(...) -> ApiModelsUser</code></summary>
 <dl>
 <dd>
 
@@ -18460,7 +18460,7 @@ client.users.get(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post</a>(...) -> ApiModelsUser</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L58-L116">post</a>(...) -> ApiModelsUser</code></summary>
 <dl>
 <dd>
 
@@ -18530,7 +18530,7 @@ client.users.post()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">getcurrentuser</a>() -> ApiModelsUser</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L118-L140">getcurrentuser</a>() -> ApiModelsUser</code></summary>
 <dl>
 <dd>
 
@@ -18592,7 +18592,7 @@ client.users.getcurrentuser()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">putcurrentuser</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L142-L199">putcurrentuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18662,7 +18662,7 @@ client.users.putcurrentuser()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L201-L265">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18742,7 +18742,7 @@ client.users.put(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L267-L293">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18815,7 +18815,7 @@ client.users.delete(
 </details>
 
 ## Voucherhistory
-<details><summary><code>client.voucherhistory.<a href="src/fern/voucherhistory/client.py">getvoucherhistory</a>(...) -> ApiPagedResponseDealerDbModelsVoucherHistory</code></summary>
+<details><summary><code>client.voucherhistory.<a href="src/fern/voucherhistory/client.py#L27-L80">getvoucherhistory</a>(...) -> ApiPagedResponseDealerDbModelsVoucherHistory</code></summary>
 <dl>
 <dd>
 
@@ -18918,7 +18918,7 @@ client.voucherhistory.getvoucherhistory()
 </details>
 
 ## Vouchers
-<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py">get</a>(...) -> DealerDbModelsVoucher</code></summary>
+<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py#L33-L69">get</a>(...) -> DealerDbModelsVoucher</code></summary>
 <dl>
 <dd>
 
@@ -18998,7 +18998,7 @@ client.vouchers.get(
 </dl>
 </details>
 
-<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py">post</a>(...) -> str</code></summary>
+<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py#L71-L164">post</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19068,7 +19068,7 @@ client.vouchers.post()
 </dl>
 </details>
 
-<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py#L166-L265">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19148,7 +19148,7 @@ client.vouchers.put(
 </dl>
 </details>
 
-<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py#L267-L293">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19220,7 +19220,7 @@ client.vouchers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py">getvoucherhistory</a>(...) -> ApiPagedResponseDealerDbModelsVoucherHistory</code></summary>
+<details><summary><code>client.vouchers.<a href="src/fern/vouchers/client.py#L295-L337">getvoucherhistory</a>(...) -> ApiPagedResponseDealerDbModelsVoucherHistory</code></summary>
 <dl>
 <dd>
 
@@ -19309,7 +19309,7 @@ client.vouchers.getvoucherhistory(
 </details>
 
 ## Activities
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">getactivities</a>(...) -> ApiPagedResponseBuildSystemSharedDtoActivity</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L32-L73">getactivities</a>(...) -> ApiPagedResponseBuildSystemSharedDtoActivity</code></summary>
 <dl>
 <dd>
 
@@ -19396,7 +19396,7 @@ client.activities.getactivities()
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">postactivity</a>(...) -> int</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L75-L130">postactivity</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -19468,7 +19468,7 @@ client.activities.postactivity()
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">getactivity</a>(...) -> BuildSystemSharedDtoActivity</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L132-L171">getactivity</a>(...) -> BuildSystemSharedDtoActivity</code></summary>
 <dl>
 <dd>
 
@@ -19549,7 +19549,7 @@ client.activities.getactivity(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">putactivity</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L173-L233">putactivity</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19630,7 +19630,7 @@ client.activities.putactivity(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">deleteactivity</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L235-L262">deleteactivity</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19704,7 +19704,7 @@ client.activities.deleteactivity(
 </details>
 
 ## Activityruns
-<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py">getactivityruns</a>(...) -> ApiPagedResponseBuildSystemSharedDtoActivityRun</code></summary>
+<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py#L38-L80">getactivityruns</a>(...) -> ApiPagedResponseBuildSystemSharedDtoActivityRun</code></summary>
 <dl>
 <dd>
 
@@ -19794,7 +19794,7 @@ Optional. Filter activity runs by status.  Value should be a comma separated lis
 </dl>
 </details>
 
-<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py">getactivityrun</a>(...) -> BuildSystemSharedDtoActivityRun</code></summary>
+<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py#L82-L112">getactivityrun</a>(...) -> BuildSystemSharedDtoActivityRun</code></summary>
 <dl>
 <dd>
 
@@ -19867,7 +19867,7 @@ client.activityruns.getactivityrun(
 </dl>
 </details>
 
-<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py">putactivityrun</a>(...)</code></summary>
+<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py#L114-L190">putactivityrun</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -19949,7 +19949,7 @@ client.activityruns.putactivityrun(
 </dl>
 </details>
 
-<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py">getactivityrunstatus</a>(...) -> BuildSystemSharedDtoActivityRunStatus</code></summary>
+<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py#L192-L222">getactivityrunstatus</a>(...) -> BuildSystemSharedDtoActivityRunStatus</code></summary>
 <dl>
 <dd>
 
@@ -20022,7 +20022,7 @@ client.activityruns.getactivityrunstatus(
 </dl>
 </details>
 
-<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py">putactivityrunstatus</a>(...)</code></summary>
+<details><summary><code>client.activityruns.<a href="src/fern/activityruns/client.py#L224-L279">putactivityrunstatus</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20104,7 +20104,7 @@ client.activityruns.putactivityrunstatus(
 </details>
 
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">getagents</a>(...) -> ApiPagedResponseBuildSystemSharedDtoAgent</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L37-L72">getagents</a>(...) -> ApiPagedResponseBuildSystemSharedDtoAgent</code></summary>
 <dl>
 <dd>
 
@@ -20183,7 +20183,7 @@ client.agents.getagents()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">postagent</a>(...) -> int</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L74-L141">postagent</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -20262,7 +20262,7 @@ client.agents.postagent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">getcurrentagentasync</a>() -> BuildSystemSharedDtoAgent</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L143-L168">getcurrentagentasync</a>() -> BuildSystemSharedDtoAgent</code></summary>
 <dl>
 <dd>
 
@@ -20325,7 +20325,7 @@ client.agents.getcurrentagentasync()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">getcurrentagentactivityrun</a>() -> BuildSystemSharedDtoActivityRun</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L170-L195">getcurrentagentactivityrun</a>() -> BuildSystemSharedDtoActivityRun</code></summary>
 <dl>
 <dd>
 
@@ -20388,7 +20388,7 @@ client.agents.getcurrentagentactivityrun()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">getagentasync</a>(...) -> BuildSystemSharedDtoAgent</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L197-L227">getagentasync</a>(...) -> BuildSystemSharedDtoAgent</code></summary>
 <dl>
 <dd>
 
@@ -20461,7 +20461,7 @@ client.agents.getagentasync(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">putagent</a>(...)</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L229-L300">putagent</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20548,7 +20548,7 @@ client.agents.putagent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">deleteagent</a>(...)</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L302-L329">deleteagent</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20621,7 +20621,7 @@ client.agents.deleteagent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">getagentactivityrun</a>(...) -> BuildSystemSharedDtoActivityRun</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L331-L361">getagentactivityrun</a>(...) -> BuildSystemSharedDtoActivityRun</code></summary>
 <dl>
 <dd>
 
@@ -20694,7 +20694,7 @@ client.agents.getagentactivityrun(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">putagentactivityrun</a>(...)</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L363-L438">putagentactivityrun</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20775,7 +20775,7 @@ client.agents.putagentactivityrun(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">putagentstatus</a>(...)</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L440-L483">putagentstatus</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20858,7 +20858,7 @@ client.agents.putagentstatus(
 </details>
 
 ## Jobruns
-<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py">getjobruns</a>(...) -> ApiPagedResponseBuildSystemSharedDtoJobRun</code></summary>
+<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py#L34-L78">getjobruns</a>(...) -> ApiPagedResponseBuildSystemSharedDtoJobRun</code></summary>
 <dl>
 <dd>
 
@@ -20945,7 +20945,7 @@ client.jobruns.getjobruns()
 </dl>
 </details>
 
-<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py">postjobrun</a>(...) -> int</code></summary>
+<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py#L80-L145">postjobrun</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -21017,7 +21017,7 @@ client.jobruns.postjobrun()
 </dl>
 </details>
 
-<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py">getjobrun</a>(...) -> BuildSystemSharedDtoJobRun</code></summary>
+<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py#L147-L186">getjobrun</a>(...) -> BuildSystemSharedDtoJobRun</code></summary>
 <dl>
 <dd>
 
@@ -21098,7 +21098,7 @@ client.jobruns.getjobrun(
 </dl>
 </details>
 
-<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py">putjobrun</a>(...)</code></summary>
+<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py#L188-L259">putjobrun</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21180,7 +21180,7 @@ client.jobruns.putjobrun(
 </dl>
 </details>
 
-<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py">deletejobrun</a>(...)</code></summary>
+<details><summary><code>client.jobruns.<a href="src/fern/jobruns/client.py#L261-L288">deletejobrun</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21254,7 +21254,7 @@ client.jobruns.deletejobrun(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">getjobs</a>(...) -> ApiPagedResponseBuildSystemSharedDtoJob</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L32-L74">getjobs</a>(...) -> ApiPagedResponseBuildSystemSharedDtoJob</code></summary>
 <dl>
 <dd>
 
@@ -21342,7 +21342,7 @@ client.jobs.getjobs()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">postjob</a>(...) -> int</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L76-L131">postjob</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -21414,7 +21414,7 @@ client.jobs.postjob()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">getjob</a>(...) -> BuildSystemSharedDtoJob</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L133-L172">getjob</a>(...) -> BuildSystemSharedDtoJob</code></summary>
 <dl>
 <dd>
 
@@ -21495,7 +21495,7 @@ client.jobs.getjob(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">putjob</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L174-L234">putjob</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21576,7 +21576,7 @@ client.jobs.putjob(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">deletejob</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L236-L263">deletejob</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21650,7 +21650,7 @@ client.jobs.deletejob(
 </details>
 
 ## Steps
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">getsteps</a>(...) -> ApiPagedResponseBuildSystemSharedDtoStep</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L31-L72">getsteps</a>(...) -> ApiPagedResponseBuildSystemSharedDtoStep</code></summary>
 <dl>
 <dd>
 
@@ -21737,7 +21737,7 @@ client.steps.getsteps()
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">poststep</a>(...) -> int</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L74-L141">poststep</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -21811,7 +21811,7 @@ client.steps.poststep(
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">getstep</a>(...) -> BuildSystemSharedDtoStep</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L143-L182">getstep</a>(...) -> BuildSystemSharedDtoStep</code></summary>
 <dl>
 <dd>
 
@@ -21892,7 +21892,7 @@ client.steps.getstep(
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">putstep</a>(...)</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L184-L256">putstep</a>(...)</code></summary>
 <dl>
 <dd>
 

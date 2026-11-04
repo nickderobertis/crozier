@@ -1,6 +1,6 @@
 # Reference
 ## ContentManager
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_agents</a>(...) -> ProjectAgents</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L41-L71">get_project_agents</a>(...) -> ProjectAgents</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.content_manager.get_project_agents(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_documents_by_transaction</a>(...) -> ProjectDocuments</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L73-L116">get_project_documents_by_transaction</a>(...) -> ProjectDocuments</code></summary>
 <dl>
 <dd>
 
@@ -164,7 +164,7 @@ client.content_manager.get_project_documents_by_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_all_project_data_index_documents</a>(...) -> ProjectDocuments</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L118-L163">get_all_project_data_index_documents</a>(...) -> ProjectDocuments</code></summary>
 <dl>
 <dd>
 
@@ -262,7 +262,7 @@ client.content_manager.get_all_project_data_index_documents(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_conversion_statistics</a>(...) -> DocumentStatistics</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L165-L200">get_project_conversion_statistics</a>(...) -> DocumentStatistics</code></summary>
 <dl>
 <dd>
 
@@ -344,7 +344,7 @@ client.content_manager.get_project_conversion_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_documents</a>(...) -> ProjectDocuments</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L202-L260">get_project_data_index_documents</a>(...) -> ProjectDocuments</code></summary>
 <dl>
 <dd>
 
@@ -459,7 +459,7 @@ client.content_manager.get_project_data_index_documents(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_grouped_documents</a>(...) -> ResponseGroupedDocuments</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L262-L320">get_project_data_index_grouped_documents</a>(...) -> ResponseGroupedDocuments</code></summary>
 <dl>
 <dd>
 
@@ -574,7 +574,7 @@ client.content_manager.get_project_data_index_grouped_documents(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_index_upload_jobs</a>(...) -> ResponseUploadJobs</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L322-L355">get_project_index_upload_jobs</a>(...) -> ResponseUploadJobs</code></summary>
 <dl>
 <dd>
 
@@ -656,7 +656,7 @@ client.content_manager.get_project_index_upload_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_document_markdown</a>(...) -> ProjectDocumentUrl</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L357-L400">get_project_data_index_document_markdown</a>(...) -> ProjectDocumentUrl</code></summary>
 <dl>
 <dd>
 
@@ -747,7 +747,7 @@ client.content_manager.get_project_data_index_document_markdown(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_pdf_document</a>(...) -> ProjectDocumentUrl</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L402-L445">get_project_data_index_pdf_document</a>(...) -> ProjectDocumentUrl</code></summary>
 <dl>
 <dd>
 
@@ -838,7 +838,7 @@ client.content_manager.get_project_data_index_pdf_document(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_json_document</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L447-L490">get_project_data_index_json_document</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -929,7 +929,7 @@ client.content_manager.get_project_data_index_json_document(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_document_artifacts</a>(...) -> ResponseDocumentArtifacts</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L492-L535">get_project_data_index_document_artifacts</a>(...) -> ResponseDocumentArtifacts</code></summary>
 <dl>
 <dd>
 
@@ -1020,7 +1020,7 @@ client.content_manager.get_project_data_index_document_artifacts(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_document_metadata</a>(...) -> ProjectDocument</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L537-L580">get_project_data_index_document_metadata</a>(...) -> ProjectDocument</code></summary>
 <dl>
 <dd>
 
@@ -1111,7 +1111,7 @@ client.content_manager.get_project_data_index_document_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">add_project_data_index_document_metadata</a>(...)</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L582-L641">add_project_data_index_document_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1210,7 +1210,7 @@ client.content_manager.add_project_data_index_document_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py">get_project_data_index_document_events</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.content_manager.<a href="src/fern/content_manager/client.py#L643-L692">get_project_data_index_document_events</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1318,7 +1318,7 @@ client.content_manager.get_project_data_index_document_events(
 </details>
 
 ## DataIndices
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">get_project_data_indices</a>(...) -> typing.List[ProjectDataIndexWithStatus]</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L35-L65">get_project_data_indices</a>(...) -> typing.List[ProjectDataIndexWithStatus]</code></summary>
 <dl>
 <dd>
 
@@ -1391,7 +1391,7 @@ client.data_indices.get_project_data_indices(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">create_project_data_index</a>(...) -> ProjectDataIndexWithStatus</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L67-L118">create_project_data_index</a>(...) -> ProjectDataIndexWithStatus</code></summary>
 <dl>
 <dd>
 
@@ -1480,7 +1480,7 @@ client.data_indices.create_project_data_index(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">get_project_data_index</a>(...) -> ProjectDataIndexWithStatus</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L120-L153">get_project_data_index</a>(...) -> ProjectDataIndexWithStatus</code></summary>
 <dl>
 <dd>
 
@@ -1562,7 +1562,7 @@ client.data_indices.get_project_data_index(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">delete_project_data_index</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L155-L198">delete_project_data_index</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1653,7 +1653,7 @@ client.data_indices.delete_project_data_index(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">update_project_data_index</a>(...) -> ProjectDataIndexWithStatus</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L200-L255">update_project_data_index</a>(...) -> ProjectDataIndexWithStatus</code></summary>
 <dl>
 <dd>
 
@@ -1751,7 +1751,7 @@ client.data_indices.update_project_data_index(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">create_project_data_index_delete_token</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L257-L292">create_project_data_index_delete_token</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1833,7 +1833,7 @@ client.data_indices.create_project_data_index_delete_token(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">get_project_data_index_conversion_settings</a>(...) -> typing.Optional[ProjectDataIndexConversionSettingsOutput]</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L294-L329">get_project_data_index_conversion_settings</a>(...) -> typing.Optional[ProjectDataIndexConversionSettingsOutput]</code></summary>
 <dl>
 <dd>
 
@@ -1915,7 +1915,7 @@ client.data_indices.get_project_data_index_conversion_settings(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py">update_project_data_index_conversion_settings</a>(...) -> typing.Optional[ProjectDataIndexConversionSettingsOutput]</code></summary>
+<details><summary><code>client.data_indices.<a href="src/fern/data_indices/client.py#L331-L384">update_project_data_index_conversion_settings</a>(...) -> typing.Optional[ProjectDataIndexConversionSettingsOutput]</code></summary>
 <dl>
 <dd>
 
@@ -2006,7 +2006,7 @@ client.data_indices.update_project_data_index_conversion_settings(
 </details>
 
 ## DataIndicesUpload
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">upload_project_data_index_file</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L46-L84">upload_project_data_index_file</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -2097,7 +2097,7 @@ client.data_indices_upload.upload_project_data_index_file(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">upload_register_project_documents</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L86-L144">upload_register_project_documents</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -2203,7 +2203,7 @@ client.data_indices_upload.upload_register_project_documents(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">load_project_data_index_files_elastic</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L146-L197">load_project_data_index_files_elastic</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -2301,7 +2301,7 @@ client.data_indices_upload.load_project_data_index_files_elastic(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">ccs_convert_file_project_data_index</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L199-L264">ccs_convert_file_project_data_index</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -2423,7 +2423,7 @@ client.data_indices_upload.ccs_convert_file_project_data_index(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">ccs_convert_upload_file_project_data_index</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L266-L342">ccs_convert_upload_file_project_data_index</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -2561,7 +2561,7 @@ client.data_indices_upload.ccs_convert_upload_file_project_data_index(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">html_print_convert_upload</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L344-L405">html_print_convert_upload</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -2676,7 +2676,7 @@ client.data_indices_upload.html_print_convert_upload(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">get_attachment_upload_data</a>(...) -> AttachmentUploadData</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L407-L454">get_attachment_upload_data</a>(...) -> AttachmentUploadData</code></summary>
 <dl>
 <dd>
 
@@ -2776,7 +2776,7 @@ client.data_indices_upload.get_attachment_upload_data(
 </dl>
 </details>
 
-<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py">register_attachment</a>(...)</code></summary>
+<details><summary><code>client.data_indices_upload.<a href="src/fern/data_indices_upload/client.py#L456-L510">register_attachment</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2885,7 +2885,7 @@ client.data_indices_upload.register_attachment(
 </details>
 
 ## KnowledgeGraphs
-<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py">list_public_knowledge_graphs</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py#L28-L56">list_public_knowledge_graphs</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -2956,7 +2956,7 @@ client.knowledge_graphs.list_public_knowledge_graphs()
 </dl>
 </details>
 
-<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py">backend_list_project_kgs</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py#L58-L94">backend_list_project_kgs</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -3037,7 +3037,7 @@ client.knowledge_graphs.backend_list_project_kgs(
 </dl>
 </details>
 
-<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py">create_project_knowledge_graph</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py#L96-L135">create_project_knowledge_graph</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3121,7 +3121,7 @@ client.knowledge_graphs.create_project_knowledge_graph(
 </dl>
 </details>
 
-<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py">update_project_knowledge_graph_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.knowledge_graphs.<a href="src/fern/knowledge_graphs/client.py#L137-L180">update_project_knowledge_graph_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3215,7 +3215,7 @@ client.knowledge_graphs.update_project_knowledge_graph_metadata(
 </details>
 
 ## Project
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_default_values</a>(...) -> DefaultValues</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L43-L73">get_project_default_values</a>(...) -> DefaultValues</code></summary>
 <dl>
 <dd>
 
@@ -3288,7 +3288,7 @@ client.project.get_project_default_values(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">update_project_default_values</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L75-L121">update_project_default_values</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3374,7 +3374,7 @@ client.project.update_project_default_values(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_integration_config_genai</a>(...) -> GetProjectIntegrationConfigGenaiResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L123-L161">get_project_integration_config_genai</a>(...) -> GetProjectIntegrationConfigGenaiResponse</code></summary>
 <dl>
 <dd>
 
@@ -3455,7 +3455,7 @@ client.project.get_project_integration_config_genai(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">update_project_integration_config_genai</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L163-L208">update_project_integration_config_genai</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3543,7 +3543,7 @@ client.project.update_project_integration_config_genai(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_project_integration_config_genai</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L210-L239">delete_project_integration_config_genai</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3616,7 +3616,7 @@ client.project.delete_project_integration_config_genai(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">provision_project_packages</a>(...) -> TaskContext</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L241-L285">provision_project_packages</a>(...) -> TaskContext</code></summary>
 <dl>
 <dd>
 
@@ -3705,7 +3705,7 @@ client.project.provision_project_packages(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">convert_document</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L287-L343">convert_document</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -3818,7 +3818,7 @@ client.project.convert_document(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_convert_task</a>(...) -> TaskResult</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L345-L386">get_convert_task</a>(...) -> TaskResult</code></summary>
 <dl>
 <dd>
 
@@ -3909,7 +3909,7 @@ client.project.get_convert_task(
 </details>
 
 ## Semantic
-<details><summary><code>client.semantic.<a href="src/fern/semantic/client.py">ingest</a>(...) -> CpsTask</code></summary>
+<details><summary><code>client.semantic.<a href="src/fern/semantic/client.py#L31-L80">ingest</a>(...) -> CpsTask</code></summary>
 <dl>
 <dd>
 
@@ -4006,7 +4006,7 @@ client.semantic.ingest(
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_information</a>() -> SystemInfo</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L28-L52">get_system_information</a>() -> SystemInfo</code></summary>
 <dl>
 <dd>
 
@@ -4069,7 +4069,7 @@ client.system.get_system_information()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_modules_configuration</a>() -> ModulesConfig</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L54-L80">get_system_modules_configuration</a>() -> ModulesConfig</code></summary>
 <dl>
 <dd>
 
@@ -4132,7 +4132,7 @@ client.system.get_system_modules_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_modules_tasks</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L82-L108">get_system_modules_tasks</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4195,7 +4195,7 @@ client.system.get_system_modules_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">list_system_knowledge_graphs</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L110-L146">list_system_knowledge_graphs</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4274,7 +4274,7 @@ client.system.list_system_knowledge_graphs()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_all_kgs_admin</a>() -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L148-L172">get_all_kgs_admin</a>() -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4337,7 +4337,7 @@ client.system.get_all_kgs_admin()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">list_packages</a>() -> typing.List[CpsPackage]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L174-L198">list_packages</a>() -> typing.List[CpsPackage]</code></summary>
 <dl>
 <dd>
 
@@ -4400,7 +4400,7 @@ client.system.list_packages()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_all_dcs_admin</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L200-L224">get_all_dcs_admin</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -4464,7 +4464,7 @@ client.system.get_all_dcs_admin()
 </details>
 
 ## SystemFlavours
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">list_all_flavours</a>() -> typing.List[BagFlavourFullData]</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L32-L58">list_all_flavours</a>() -> typing.List[BagFlavourFullData]</code></summary>
 <dl>
 <dd>
 
@@ -4527,7 +4527,7 @@ client.system_flavours.list_all_flavours()
 </dl>
 </details>
 
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">get_flavour</a>(...) -> BagFlavourFullData</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L60-L90">get_flavour</a>(...) -> BagFlavourFullData</code></summary>
 <dl>
 <dd>
 
@@ -4600,7 +4600,7 @@ client.system_flavours.get_flavour(
 </dl>
 </details>
 
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">save_flavour</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L92-L170">save_flavour</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4689,7 +4689,7 @@ client.system_flavours.save_flavour(
 </dl>
 </details>
 
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">delete_flavour</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L172-L202">delete_flavour</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4762,7 +4762,7 @@ client.system_flavours.delete_flavour(
 </dl>
 </details>
 
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">list_projects_flavours</a>() -> typing.List[ProjectsFlavours]</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L204-L230">list_projects_flavours</a>() -> typing.List[ProjectsFlavours]</code></summary>
 <dl>
 <dd>
 
@@ -4825,7 +4825,7 @@ client.system_flavours.list_projects_flavours()
 </dl>
 </details>
 
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">save_project_flavours</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L232-L279">save_project_flavours</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4904,7 +4904,7 @@ client.system_flavours.save_project_flavours(
 </dl>
 </details>
 
-<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py">list_flavours_by_project</a>(...) -> ListProjectFlavours</code></summary>
+<details><summary><code>client.system_flavours.<a href="src/fern/system_flavours/client.py#L281-L311">list_flavours_by_project</a>(...) -> ListProjectFlavours</code></summary>
 <dl>
 <dd>
 
@@ -4978,7 +4978,7 @@ client.system_flavours.list_flavours_by_project(
 </details>
 
 ## SystemSummary
-<details><summary><code>client.system_summary.<a href="src/fern/system_summary/client.py">system_get_kg_storage_summary_async</a>(...) -> StorageSummaryTask</code></summary>
+<details><summary><code>client.system_summary.<a href="src/fern/system_summary/client.py#L27-L57">system_get_kg_storage_summary_async</a>(...) -> StorageSummaryTask</code></summary>
 <dl>
 <dd>
 
@@ -5051,7 +5051,7 @@ client.system_summary.system_get_kg_storage_summary_async(
 </dl>
 </details>
 
-<details><summary><code>client.system_summary.<a href="src/fern/system_summary/client.py">system_get_dc_storage_summary_async</a>(...) -> StorageSummaryTask</code></summary>
+<details><summary><code>client.system_summary.<a href="src/fern/system_summary/client.py#L59-L89">system_get_dc_storage_summary_async</a>(...) -> StorageSummaryTask</code></summary>
 <dl>
 <dd>
 
@@ -5124,7 +5124,7 @@ client.system_summary.system_get_dc_storage_summary_async(
 </dl>
 </details>
 
-<details><summary><code>client.system_summary.<a href="src/fern/system_summary/client.py">system_get_cps_summary</a>() -> typing.List[CpsSummary]</code></summary>
+<details><summary><code>client.system_summary.<a href="src/fern/system_summary/client.py#L91-L117">system_get_cps_summary</a>() -> typing.List[CpsSummary]</code></summary>
 <dl>
 <dd>
 
@@ -5188,7 +5188,7 @@ client.system_summary.system_get_cps_summary()
 </details>
 
 ## SystemQuotas
-<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py">get_flavours_default_quotas</a>() -> typing.List[FlavoursDefaultQuota]</code></summary>
+<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py#L32-L58">get_flavours_default_quotas</a>() -> typing.List[FlavoursDefaultQuota]</code></summary>
 <dl>
 <dd>
 
@@ -5251,7 +5251,7 @@ client.system_quotas.get_flavours_default_quotas()
 </dl>
 </details>
 
-<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py">save_flavours_default_quotas</a>(...) -> typing.List[FlavoursDefaultQuota]</code></summary>
+<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py#L60-L96">save_flavours_default_quotas</a>(...) -> typing.List[FlavoursDefaultQuota]</code></summary>
 <dl>
 <dd>
 
@@ -5330,7 +5330,7 @@ client.system_quotas.save_flavours_default_quotas(
 </dl>
 </details>
 
-<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py">get_projects_flavours_quota</a>() -> typing.List[ProjectFlavoursQuota]</code></summary>
+<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py#L98-L124">get_projects_flavours_quota</a>() -> typing.List[ProjectFlavoursQuota]</code></summary>
 <dl>
 <dd>
 
@@ -5393,7 +5393,7 @@ client.system_quotas.get_projects_flavours_quota()
 </dl>
 </details>
 
-<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py">save_project_flavours_quota</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py#L126-L175">save_project_flavours_quota</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5474,7 +5474,7 @@ client.system_quotas.save_project_flavours_quota(
 </dl>
 </details>
 
-<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py">get_project_flavours_quota</a>(...) -> typing.List[FlavoursQuota]</code></summary>
+<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py#L177-L207">get_project_flavours_quota</a>(...) -> typing.List[FlavoursQuota]</code></summary>
 <dl>
 <dd>
 
@@ -5547,7 +5547,7 @@ client.system_quotas.get_project_flavours_quota(
 </dl>
 </details>
 
-<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py">get_project_flavour_total_kgs</a>(...) -> ProjectFlavourTotalKgs</code></summary>
+<details><summary><code>client.system_quotas.<a href="src/fern/system_quotas/client.py#L209-L244">get_project_flavour_total_kgs</a>(...) -> ProjectFlavourTotalKgs</code></summary>
 <dl>
 <dd>
 
@@ -5630,7 +5630,7 @@ client.system_quotas.get_project_flavour_total_kgs(
 </details>
 
 ## Tasks
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">get_project_celery_task</a>(...) -> TaskResult</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L28-L71">get_project_celery_task</a>(...) -> TaskResult</code></summary>
 <dl>
 <dd>
 
@@ -5720,7 +5720,7 @@ client.tasks.get_project_celery_task(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">list_project_tasks</a>(...) -> typing.List[TaskContext]</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L73-L129">list_project_tasks</a>(...) -> typing.List[TaskContext]</code></summary>
 <dl>
 <dd>
 
@@ -5833,7 +5833,7 @@ client.tasks.list_project_tasks(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">get_project_task</a>(...) -> TaskContext</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L131-L164">get_project_task</a>(...) -> TaskContext</code></summary>
 <dl>
 <dd>
 
@@ -5915,7 +5915,7 @@ client.tasks.get_project_task(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">abort_project_task</a>(...)</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L166-L198">abort_project_task</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5998,7 +5998,7 @@ client.tasks.abort_project_task(
 </details>
 
 ## Upload
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">list_project_scratch_files</a>(...) -> typing.List[ProjectScratchFiles]</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L28-L66">list_project_scratch_files</a>(...) -> typing.List[ProjectScratchFiles]</code></summary>
 <dl>
 <dd>
 
@@ -6079,7 +6079,7 @@ client.upload.list_project_scratch_files(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">list_project_scratch_files_paginated</a>(...) -> ProjectScratchFilesPaginated</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L68-L124">list_project_scratch_files_paginated</a>(...) -> ProjectScratchFilesPaginated</code></summary>
 <dl>
 <dd>
 
@@ -6192,7 +6192,7 @@ client.upload.list_project_scratch_files_paginated(
 </dl>
 </details>
 
-<details><summary><code>client.upload.<a href="src/fern/upload/client.py">create_project_scratch_file</a>(...) -> TemporaryUploadFileResult</code></summary>
+<details><summary><code>client.upload.<a href="src/fern/upload/client.py#L126-L159">create_project_scratch_file</a>(...) -> TemporaryUploadFileResult</code></summary>
 <dl>
 <dd>
 

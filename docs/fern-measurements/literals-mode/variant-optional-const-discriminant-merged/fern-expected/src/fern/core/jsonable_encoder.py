@@ -8,6 +8,31 @@ Taken from FastAPI, and made a bit simpler
 https://github.com/tiangolo/fastapi/blob/master/fastapi/encoders.py
 """
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import base64
 import dataclasses
 import datetime as dt
@@ -15,7 +40,7 @@ from enum import Enum
 from pathlib import PurePath
 from types import GeneratorType
 from typing import Any, Callable, Dict, List, Optional, Set, Union
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 
 import pydantic
 from .datetime_utils import serialize_datetime
@@ -118,7 +143,11 @@ def encode_path_param(obj: Any) -> str:
     """
     if isinstance(obj, bool):
         return "true" if obj else "false"
-    return str(jsonable_encoder(obj))
+    value = str(jsonable_encoder(obj))
+
+    for segment in unquote(value).split("/"):
+        _reject_dot_segment(segment)
+    return value
 
 
 def quote_path_param(obj: Any) -> str:
@@ -130,4 +159,12 @@ def quote_path_param(obj: Any) -> str:
     """
     if isinstance(obj, bool):
         return "true" if obj else "false"
-    return quote(str(jsonable_encoder(obj)), safe="")
+    value = str(jsonable_encoder(obj))
+    _reject_dot_segment(value)
+    return quote(value, safe="")
+
+
+def _reject_dot_segment(value: str) -> None:
+
+    if value in (".", ".."):
+        raise ValueError(f'Invalid path parameter value "{value}": "." and ".." are not allowed.')

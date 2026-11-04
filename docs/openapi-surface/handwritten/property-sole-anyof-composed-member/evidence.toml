@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "879103e566b9020a5ea672119edbe2f4129bb46e18466dfa354262040b471e91"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "77ead4b0bc390ca1318e6d5c7bf2ca6afcfb847f274d5cf8f54f018518774c5b"
 
 [[covers]]
 key = "property-sole-anyof-composed-member"

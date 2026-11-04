@@ -1,6 +1,6 @@
 # Reference
 ## Datasets
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_available_data_sets</a>() -> typing.List[DataSet]</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L34-L58">get_available_data_sets</a>() -> typing.List[DataSet]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.datasets.get_available_data_sets()
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">search_dataset</a>(...) -> PostDatasetsDatasetNameSearchResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L60-L105">search_dataset</a>(...) -> PostDatasetsDatasetNameSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.datasets.search_dataset(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_item_details</a>(...) -> GetDatasetsDatasetNameDetailsItemIdResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L107-L138">get_item_details</a>(...) -> GetDatasetsDatasetNameDetailsItemIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.datasets.get_item_details(
 </details>
 
 ## Facets
-<details><summary><code>client.facets.<a href="src/fern/facets/client.py">get_facets</a>(...) -> typing.List[GetDatasetsDatasetNameFacetsResponseItem]</code></summary>
+<details><summary><code>client.facets.<a href="src/fern/facets/client.py#L32-L60">get_facets</a>(...) -> typing.List[GetDatasetsDatasetNameFacetsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -320,7 +320,7 @@ client.facets.get_facets(
 </dl>
 </details>
 
-<details><summary><code>client.facets.<a href="src/fern/facets/client.py">get_facet_options</a>(...) -> typing.List[FacetResult]</code></summary>
+<details><summary><code>client.facets.<a href="src/fern/facets/client.py#L62-L124">get_facet_options</a>(...) -> typing.List[FacetResult]</code></summary>
 <dl>
 <dd>
 

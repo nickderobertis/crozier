@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "b7948e1d02940ebf46b6e518fd91a33de964e4c47390327670bfdc1d13731a3d"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "5e754ce533ab26b6e9f8a071c0cca6f1f23580143e756b97881229d366cd3719"
 
 source_digest = "78d2d77b77651154a0f7a5de48426949d1eef557ff3a2699236bd5a0a959db0b"
 reason = "Registered goldens reach the nullable arm `src/ir.rs::Builder::variant_ref`; this fixture no longer claims a handwritten coverage gap."

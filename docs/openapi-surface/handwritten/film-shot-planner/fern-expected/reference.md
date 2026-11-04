@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_settings</a>(...) -> GetSettingsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L139">get_settings</a>(...) -> GetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -57,7 +57,7 @@ client.get_settings(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_slates</a>(...) -> ListSlatesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L141-L173">list_slates</a>(...) -> ListSlatesResponse</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.list_slates(
 </details>
 
 ## Crew
-<details><summary><code>client.crew.<a href="src/fern/crew/client.py">call_sheet</a>() -> CallSheetCrewResponse</code></summary>
+<details><summary><code>client.crew.<a href="src/fern/crew/client.py#L26-L46">call_sheet</a>() -> CallSheetCrewResponse</code></summary>
 <dl>
 <dd>
 

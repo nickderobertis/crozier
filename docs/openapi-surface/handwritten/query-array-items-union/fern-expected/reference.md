@@ -1,6 +1,6 @@
 # Reference
 ## Readings
-<details><summary><code>client.readings.<a href="src/fern/readings/client.py">list_readings</a>(...) -> typing.List[float]</code></summary>
+<details><summary><code>client.readings.<a href="src/fern/readings/client.py#L26-L55">list_readings</a>(...) -> typing.List[float]</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Prints
-<details><summary><code>client.prints.<a href="src/fern/prints/client.py">order_print</a>(...)</code></summary>
+<details><summary><code>client.prints.<a href="src/fern/prints/client.py#L29-L63">order_print</a>(...)</code></summary>
 <dl>
 <dd>
 

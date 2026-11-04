@@ -1,6 +1,6 @@
 # Reference
 ## Calibrations
-<details><summary><code>client.calibrations.<a href="src/fern/calibrations/client.py">record_calibration</a>(...) -> RecordCalibrationResponse</code></summary>
+<details><summary><code>client.calibrations.<a href="src/fern/calibrations/client.py#L29-L60">record_calibration</a>(...) -> RecordCalibrationResponse</code></summary>
 <dl>
 <dd>
 

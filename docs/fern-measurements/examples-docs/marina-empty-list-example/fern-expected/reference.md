@@ -1,6 +1,6 @@
 # Reference
 ## Notices
-<details><summary><code>client.notices.<a href="src/fern/notices/client.py">post_notice</a>(...)</code></summary>
+<details><summary><code>client.notices.<a href="src/fern/notices/client.py#L28-L71">post_notice</a>(...)</code></summary>
 <dl>
 <dd>
 

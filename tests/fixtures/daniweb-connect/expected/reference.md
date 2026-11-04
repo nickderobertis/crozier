@@ -1,6 +1,6 @@
 # Reference
 ## Apps
-<details><summary><code>client.apps.<a href="src/fern/apps/client.py">get_apps</a>(...) -> EndpointGetApps</code></summary>
+<details><summary><code>client.apps.<a href="src/fern/apps/client.py#L27-L61">get_apps</a>(...) -> EndpointGetApps</code></summary>
 <dl>
 <dd>
 
@@ -79,7 +79,7 @@ client.apps.get_apps()
 </dl>
 </details>
 
-<details><summary><code>client.apps.<a href="src/fern/apps/client.py">get_apps_id</a>(...) -> EndpointGetAppsId</code></summary>
+<details><summary><code>client.apps.<a href="src/fern/apps/client.py#L63-L93">get_apps_id</a>(...) -> EndpointGetAppsId</code></summary>
 <dl>
 <dd>
 
@@ -151,7 +151,7 @@ client.apps.get_apps_id()
 </details>
 
 ## Audiences
-<details><summary><code>client.audiences.<a href="src/fern/audiences/client.py">get_audiences</a>(...) -> EndpointGetAudiences</code></summary>
+<details><summary><code>client.audiences.<a href="src/fern/audiences/client.py#L28-L62">get_audiences</a>(...) -> EndpointGetAudiences</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.audiences.get_audiences()
 </dl>
 </details>
 
-<details><summary><code>client.audiences.<a href="src/fern/audiences/client.py">get_audiences_id</a>(...) -> EndpointGetAudiencesId</code></summary>
+<details><summary><code>client.audiences.<a href="src/fern/audiences/client.py#L64-L94">get_audiences_id</a>(...) -> EndpointGetAudiencesId</code></summary>
 <dl>
 <dd>
 
@@ -301,7 +301,7 @@ client.audiences.get_audiences_id()
 </dl>
 </details>
 
-<details><summary><code>client.audiences.<a href="src/fern/audiences/client.py">post_audiences_id_memberships</a>(...) -> EndpointPostAudiencesIdMemberships</code></summary>
+<details><summary><code>client.audiences.<a href="src/fern/audiences/client.py#L96-L126">post_audiences_id_memberships</a>(...) -> EndpointPostAudiencesIdMemberships</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.audiences.post_audiences_id_memberships(
 </details>
 
 ## Autocompletes
-<details><summary><code>client.autocompletes.<a href="src/fern/autocompletes/client.py">get_autocompletes</a>(...) -> EndpointGetAutocompletes</code></summary>
+<details><summary><code>client.autocompletes.<a href="src/fern/autocompletes/client.py#L26-L54">get_autocompletes</a>(...) -> EndpointGetAutocompletes</code></summary>
 <dl>
 <dd>
 
@@ -447,7 +447,7 @@ client.autocompletes.get_autocompletes()
 </details>
 
 ## Conversations
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">post_conversations_schedules</a>(...) -> EndpointPostConversationsSchedules</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L50-L95">post_conversations_schedules</a>(...) -> EndpointPostConversationsSchedules</code></summary>
 <dl>
 <dd>
 
@@ -550,7 +550,7 @@ client.conversations.post_conversations_schedules()
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">post_conversations_searches</a>(...) -> EndpointPostConversationsSearches</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L97-L149">post_conversations_searches</a>(...) -> EndpointPostConversationsSearches</code></summary>
 <dl>
 <dd>
 
@@ -655,7 +655,7 @@ client.conversations.post_conversations_searches(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">get_conversations_statuses</a>(...) -> EndpointGetConversationsStatuses</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L151-L201">get_conversations_statuses</a>(...) -> EndpointGetConversationsStatuses</code></summary>
 <dl>
 <dd>
 
@@ -758,7 +758,7 @@ client.conversations.get_conversations_statuses()
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">get_conversations_id</a>(...) -> EndpointGetConversationsId</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L203-L233">get_conversations_id</a>(...) -> EndpointGetConversationsId</code></summary>
 <dl>
 <dd>
 
@@ -829,7 +829,7 @@ client.conversations.get_conversations_id()
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">get_conversations_id_messages</a>(...) -> EndpointGetConversationsIdMessages</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L235-L303">get_conversations_id_messages</a>(...) -> EndpointGetConversationsIdMessages</code></summary>
 <dl>
 <dd>
 
@@ -966,7 +966,7 @@ client.conversations.get_conversations_id_messages(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">post_conversations_id_messages</a>(...) -> EndpointPostConversationsIdMessages</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L305-L390">post_conversations_id_messages</a>(...) -> EndpointPostConversationsIdMessages</code></summary>
 <dl>
 <dd>
 
@@ -1136,7 +1136,7 @@ client.conversations.post_conversations_id_messages(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">post_conversations_id_schedules</a>(...) -> EndpointPostConversationsIdSchedules</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L392-L431">post_conversations_id_schedules</a>(...) -> EndpointPostConversationsIdSchedules</code></summary>
 <dl>
 <dd>
 
@@ -1238,7 +1238,7 @@ client.conversations.post_conversations_id_schedules(...)
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">post_conversations_id_searches</a>(...) -> EndpointPostConversationsIdSearches</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L433-L478">post_conversations_id_searches</a>(...) -> EndpointPostConversationsIdSearches</code></summary>
 <dl>
 <dd>
 
@@ -1340,7 +1340,7 @@ client.conversations.post_conversations_id_searches(...)
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">get_conversations_id_statuses</a>(...) -> EndpointGetConversationsIdStatuses</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L480-L510">get_conversations_id_statuses</a>(...) -> EndpointGetConversationsIdStatuses</code></summary>
 <dl>
 <dd>
 
@@ -1411,7 +1411,7 @@ client.conversations.get_conversations_id_statuses()
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">patch_conversations_id_statuses</a>(...) -> EndpointPatchConversationsIdStatuses</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L512-L547">patch_conversations_id_statuses</a>(...) -> EndpointPatchConversationsIdStatuses</code></summary>
 <dl>
 <dd>
 
@@ -1494,7 +1494,7 @@ client.conversations.patch_conversations_id_statuses(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups</a>(...) -> EndpointGetGroups</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L64-L98">get_groups</a>(...) -> EndpointGetGroups</code></summary>
 <dl>
 <dd>
 
@@ -1573,7 +1573,7 @@ client.groups.get_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups</a>(...) -> EndpointPostGroups</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L100-L157">post_groups</a>(...) -> EndpointPostGroups</code></summary>
 <dl>
 <dd>
 
@@ -1682,7 +1682,7 @@ client.groups.post_groups(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups_messages_metadata_filters</a>(...) -> EndpointPostGroupsMessagesMetadataFilters</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L159-L221">post_groups_messages_metadata_filters</a>(...) -> EndpointPostGroupsMessagesMetadataFilters</code></summary>
 <dl>
 <dd>
 
@@ -1809,7 +1809,7 @@ client.groups.post_groups_messages_metadata_filters()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_messages_id</a>(...) -> EndpointGetGroupsMessagesId</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L223-L253">get_groups_messages_id</a>(...) -> EndpointGetGroupsMessagesId</code></summary>
 <dl>
 <dd>
 
@@ -1880,7 +1880,7 @@ client.groups.get_groups_messages_id()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_groups_messages_id</a>(...) -> EndpointDeleteGroupsMessagesId</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L255-L285">delete_groups_messages_id</a>(...) -> EndpointDeleteGroupsMessagesId</code></summary>
 <dl>
 <dd>
 
@@ -1951,7 +1951,7 @@ client.groups.delete_groups_messages_id()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_messages_id_metadata</a>(...) -> EndpointGetGroupsMessagesIdMetadata</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L287-L328">get_groups_messages_id_metadata</a>(...) -> EndpointGetGroupsMessagesIdMetadata</code></summary>
 <dl>
 <dd>
 
@@ -2040,7 +2040,7 @@ client.groups.get_groups_messages_id_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups_messages_id_metadata</a>(...) -> EndpointPostGroupsMessagesIdMetadata</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L330-L402">post_groups_messages_id_metadata</a>(...) -> EndpointPostGroupsMessagesIdMetadata</code></summary>
 <dl>
 <dd>
 
@@ -2185,7 +2185,7 @@ client.groups.post_groups_messages_id_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_messages_id_metadata_collections</a>(...) -> EndpointGetGroupsMessagesIdMetadataCollections</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L404-L434">get_groups_messages_id_metadata_collections</a>(...) -> EndpointGetGroupsMessagesIdMetadataCollections</code></summary>
 <dl>
 <dd>
 
@@ -2258,7 +2258,7 @@ client.groups.get_groups_messages_id_metadata_collections(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups_schedules</a>(...) -> EndpointPostGroupsSchedules</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L436-L481">post_groups_schedules</a>(...) -> EndpointPostGroupsSchedules</code></summary>
 <dl>
 <dd>
 
@@ -2361,7 +2361,7 @@ client.groups.post_groups_schedules()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_statuses</a>(...) -> EndpointGetGroupsStatuses</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L483-L522">get_groups_statuses</a>(...) -> EndpointGetGroupsStatuses</code></summary>
 <dl>
 <dd>
 
@@ -2448,7 +2448,7 @@ client.groups.get_groups_statuses()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_id</a>(...) -> EndpointGetGroupsId</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L524-L554">get_groups_id</a>(...) -> EndpointGetGroupsId</code></summary>
 <dl>
 <dd>
 
@@ -2519,7 +2519,7 @@ client.groups.get_groups_id()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">patch_groups_id</a>(...) -> EndpointPatchGroupsId</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L556-L612">patch_groups_id</a>(...) -> EndpointPatchGroupsId</code></summary>
 <dl>
 <dd>
 
@@ -2632,7 +2632,7 @@ client.groups.patch_groups_id(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_id_memberships</a>(...) -> EndpointGetGroupsIdMemberships</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L614-L655">get_groups_id_memberships</a>(...) -> EndpointGetGroupsIdMemberships</code></summary>
 <dl>
 <dd>
 
@@ -2719,7 +2719,7 @@ client.groups.get_groups_id_memberships()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups_id_memberships</a>(...) -> EndpointPostGroupsIdMemberships</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L657-L698">post_groups_id_memberships</a>(...) -> EndpointPostGroupsIdMemberships</code></summary>
 <dl>
 <dd>
 
@@ -2808,7 +2808,7 @@ client.groups.post_groups_id_memberships(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_groups_id_memberships</a>(...) -> EndpointDeleteGroupsIdMemberships</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L700-L730">delete_groups_id_memberships</a>(...) -> EndpointDeleteGroupsIdMemberships</code></summary>
 <dl>
 <dd>
 
@@ -2881,7 +2881,7 @@ client.groups.delete_groups_id_memberships(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">patch_groups_id_memberships</a>(...) -> EndpointPatchGroupsIdMemberships</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L732-L774">patch_groups_id_memberships</a>(...) -> EndpointPatchGroupsIdMemberships</code></summary>
 <dl>
 <dd>
 
@@ -2971,7 +2971,7 @@ client.groups.patch_groups_id_memberships(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_id_messages</a>(...) -> EndpointGetGroupsIdMessages</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L776-L848">get_groups_id_messages</a>(...) -> EndpointGetGroupsIdMessages</code></summary>
 <dl>
 <dd>
 
@@ -3116,7 +3116,7 @@ client.groups.get_groups_id_messages(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups_id_messages</a>(...) -> EndpointPostGroupsIdMessages</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L850-L931">post_groups_id_messages</a>(...) -> EndpointPostGroupsIdMessages</code></summary>
 <dl>
 <dd>
 
@@ -3278,7 +3278,7 @@ client.groups.post_groups_id_messages(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_groups_id_schedules</a>(...) -> EndpointPostGroupsIdSchedules</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L933-L972">post_groups_id_schedules</a>(...) -> EndpointPostGroupsIdSchedules</code></summary>
 <dl>
 <dd>
 
@@ -3380,7 +3380,7 @@ client.groups.post_groups_id_schedules(...)
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_groups_id_statuses</a>(...) -> EndpointGetGroupsIdStatuses</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L974-L1004">get_groups_id_statuses</a>(...) -> EndpointGetGroupsIdStatuses</code></summary>
 <dl>
 <dd>
 
@@ -3452,7 +3452,7 @@ client.groups.get_groups_id_statuses()
 </details>
 
 ## Industries
-<details><summary><code>client.industries.<a href="src/fern/industries/client.py">get_industries</a>() -> EndpointGetIndustries</code></summary>
+<details><summary><code>client.industries.<a href="src/fern/industries/client.py#L26-L48">get_industries</a>() -> EndpointGetIndustries</code></summary>
 <dl>
 <dd>
 
@@ -3502,7 +3502,7 @@ client.industries.get_industries()
 </details>
 
 ## Markdown
-<details><summary><code>client.markdown.<a href="src/fern/markdown/client.py">post_markdown</a>(...) -> EndpointPostMarkdown</code></summary>
+<details><summary><code>client.markdown.<a href="src/fern/markdown/client.py#L30-L66">post_markdown</a>(...) -> EndpointPostMarkdown</code></summary>
 <dl>
 <dd>
 
@@ -3569,7 +3569,7 @@ client.markdown.post_markdown(
 </dl>
 </details>
 
-<details><summary><code>client.markdown.<a href="src/fern/markdown/client.py">get_markdown_emoticons</a>() -> EndpointGetMarkdownEmoticons</code></summary>
+<details><summary><code>client.markdown.<a href="src/fern/markdown/client.py#L68-L92">get_markdown_emoticons</a>() -> EndpointGetMarkdownEmoticons</code></summary>
 <dl>
 <dd>
 
@@ -3619,7 +3619,7 @@ client.markdown.get_markdown_emoticons()
 </details>
 
 ## Messages
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">post_messages_metadata_filters</a>(...) -> EndpointPostMessagesMetadataFilters</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L36-L98">post_messages_metadata_filters</a>(...) -> EndpointPostMessagesMetadataFilters</code></summary>
 <dl>
 <dd>
 
@@ -3746,7 +3746,7 @@ client.messages.post_messages_metadata_filters()
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_messages_id</a>(...) -> EndpointGetMessagesId</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L100-L130">get_messages_id</a>(...) -> EndpointGetMessagesId</code></summary>
 <dl>
 <dd>
 
@@ -3817,7 +3817,7 @@ client.messages.get_messages_id()
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_messages_id_metadata</a>(...) -> EndpointGetMessagesIdMetadata</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L132-L173">get_messages_id_metadata</a>(...) -> EndpointGetMessagesIdMetadata</code></summary>
 <dl>
 <dd>
 
@@ -3906,7 +3906,7 @@ client.messages.get_messages_id_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">post_messages_id_metadata</a>(...) -> EndpointPostMessagesIdMetadata</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L175-L247">post_messages_id_metadata</a>(...) -> EndpointPostMessagesIdMetadata</code></summary>
 <dl>
 <dd>
 
@@ -4051,7 +4051,7 @@ client.messages.post_messages_id_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_messages_id_metadata_collections</a>(...) -> EndpointGetMessagesIdMetadataCollections</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L249-L279">get_messages_id_metadata_collections</a>(...) -> EndpointGetMessagesIdMetadataCollections</code></summary>
 <dl>
 <dd>
 
@@ -4125,7 +4125,7 @@ client.messages.get_messages_id_metadata_collections(
 </details>
 
 ## Positions
-<details><summary><code>client.positions.<a href="src/fern/positions/client.py">post_positions</a>(...) -> EndpointPostPositions</code></summary>
+<details><summary><code>client.positions.<a href="src/fern/positions/client.py#L37-L110">post_positions</a>(...) -> EndpointPostPositions</code></summary>
 <dl>
 <dd>
 
@@ -4266,7 +4266,7 @@ client.positions.post_positions(
 </dl>
 </details>
 
-<details><summary><code>client.positions.<a href="src/fern/positions/client.py">delete_positions_id</a>(...) -> EndpointDeletePositionsId</code></summary>
+<details><summary><code>client.positions.<a href="src/fern/positions/client.py#L112-L142">delete_positions_id</a>(...) -> EndpointDeletePositionsId</code></summary>
 <dl>
 <dd>
 
@@ -4339,7 +4339,7 @@ client.positions.delete_positions_id(
 </dl>
 </details>
 
-<details><summary><code>client.positions.<a href="src/fern/positions/client.py">patch_positions_id</a>(...) -> EndpointPatchPositionsId</code></summary>
+<details><summary><code>client.positions.<a href="src/fern/positions/client.py#L144-L222">patch_positions_id</a>(...) -> EndpointPatchPositionsId</code></summary>
 <dl>
 <dd>
 
@@ -4490,7 +4490,7 @@ client.positions.patch_positions_id(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users</a>() -> EndpointGetUsers</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L57-L81">get_users</a>() -> EndpointGetUsers</code></summary>
 <dl>
 <dd>
 
@@ -4553,7 +4553,7 @@ client.users.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post_users_invites</a>(...) -> EndpointPostUsersInvites</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L83-L118">post_users_invites</a>(...) -> EndpointPostUsersInvites</code></summary>
 <dl>
 <dd>
 
@@ -4634,7 +4634,7 @@ client.users.post_users_invites(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post_users_metadata_filters</a>(...) -> EndpointPostUsersMetadataFilters</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L120-L182">post_users_metadata_filters</a>(...) -> EndpointPostUsersMetadataFilters</code></summary>
 <dl>
 <dd>
 
@@ -4761,7 +4761,7 @@ client.users.post_users_metadata_filters()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_nearby</a>(...) -> EndpointGetUsersNearby</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L184-L226">get_users_nearby</a>(...) -> EndpointGetUsersNearby</code></summary>
 <dl>
 <dd>
 
@@ -4856,7 +4856,7 @@ client.users.get_users_nearby()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post_users_searches</a>(...) -> EndpointPostUsersSearches</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L228-L442">post_users_searches</a>(...) -> EndpointPostUsersSearches</code></summary>
 <dl>
 <dd>
 
@@ -5287,7 +5287,7 @@ client.users.post_users_searches()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id</a>(...) -> EndpointGetUsersId</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L444-L474">get_users_id</a>(...) -> EndpointGetUsersId</code></summary>
 <dl>
 <dd>
 
@@ -5358,7 +5358,7 @@ client.users.get_users_id()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_groups</a>(...) -> EndpointGetUsersIdGroups</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L476-L506">get_users_id_groups</a>(...) -> EndpointGetUsersIdGroups</code></summary>
 <dl>
 <dd>
 
@@ -5431,7 +5431,7 @@ client.users.get_users_id_groups(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_groups_messages</a>(...) -> EndpointGetUsersIdGroupsMessages</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L508-L549">get_users_id_groups_messages</a>(...) -> EndpointGetUsersIdGroupsMessages</code></summary>
 <dl>
 <dd>
 
@@ -5520,7 +5520,7 @@ client.users.get_users_id_groups_messages(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post_users_id_messages</a>(...) -> EndpointPostUsersIdMessages</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L551-L635">post_users_id_messages</a>(...) -> EndpointPostUsersIdMessages</code></summary>
 <dl>
 <dd>
 
@@ -5689,7 +5689,7 @@ client.users.post_users_id_messages(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_metadata</a>(...) -> EndpointGetUsersIdMetadata</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L637-L678">get_users_id_metadata</a>(...) -> EndpointGetUsersIdMetadata</code></summary>
 <dl>
 <dd>
 
@@ -5778,7 +5778,7 @@ client.users.get_users_id_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">post_users_id_metadata</a>(...) -> EndpointPostUsersIdMetadata</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L680-L752">post_users_id_metadata</a>(...) -> EndpointPostUsersIdMetadata</code></summary>
 <dl>
 <dd>
 
@@ -5923,7 +5923,7 @@ client.users.post_users_id_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_metadata_collections</a>(...) -> EndpointGetUsersIdMetadataCollections</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L754-L784">get_users_id_metadata_collections</a>(...) -> EndpointGetUsersIdMetadataCollections</code></summary>
 <dl>
 <dd>
 
@@ -5996,7 +5996,7 @@ client.users.get_users_id_metadata_collections(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_positions</a>(...) -> EndpointGetUsersIdPositions</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L786-L818">get_users_id_positions</a>(...) -> EndpointGetUsersIdPositions</code></summary>
 <dl>
 <dd>
 
@@ -6077,7 +6077,7 @@ client.users.get_users_id_positions(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_synergies</a>(...) -> EndpointGetUsersIdSynergies</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L820-L850">get_users_id_synergies</a>(...) -> EndpointGetUsersIdSynergies</code></summary>
 <dl>
 <dd>
 
@@ -6148,7 +6148,7 @@ client.users.get_users_id_synergies()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">patch_users_id_synergies</a>(...) -> EndpointPatchUsersIdSynergies</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L852-L896">patch_users_id_synergies</a>(...) -> EndpointPatchUsersIdSynergies</code></summary>
 <dl>
 <dd>
 
@@ -6237,7 +6237,7 @@ client.users.patch_users_id_synergies(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">patch_users</a>(...) -> EndpointPatchUsers</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L898-L988">patch_users</a>(...) -> EndpointPatchUsers</code></summary>
 <dl>
 <dd>
 
@@ -6421,7 +6421,7 @@ client.users.patch_users()
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_webhooks</a>() -> EndpointGetWebhooks</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L32-L56">get_webhooks</a>() -> EndpointGetWebhooks</code></summary>
 <dl>
 <dd>
 
@@ -6484,7 +6484,7 @@ client.webhooks.get_webhooks()
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">post_webhooks</a>(...) -> EndpointPostWebhooks</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L58-L109">post_webhooks</a>(...) -> EndpointPostWebhooks</code></summary>
 <dl>
 <dd>
 
@@ -6592,7 +6592,7 @@ client.webhooks.post_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_webhooks_id</a>(...) -> EndpointDeleteWebhooksId</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L111-L141">delete_webhooks_id</a>(...) -> EndpointDeleteWebhooksId</code></summary>
 <dl>
 <dd>
 

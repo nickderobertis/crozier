@@ -1,6 +1,6 @@
 # Reference
 ## RapidataIdentityApi
-<details><summary><code>client.rapidata_identity_api.<a href="src/fern/rapidata_identity_api/client.py">get</a>()</code></summary>
+<details><summary><code>client.rapidata_identity_api.<a href="src/fern/rapidata_identity_api/client.py#L25-L46">get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.rapidata_identity_api.get()
 </details>
 
 ## Bidder
-<details><summary><code>client.bidder.<a href="src/fern/bidder/client.py">lists_the_customers_holding_bidder_relations_one_cursor_page_at_a_time</a>(...) -> GetBidderRelationMembersEndpointCursorPagedResultOfOutput</code></summary>
+<details><summary><code>client.bidder.<a href="src/fern/bidder/client.py#L32-L74">lists_the_customers_holding_bidder_relations_one_cursor_page_at_a_time</a>(...) -> GetBidderRelationMembersEndpointCursorPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.bidder.lists_the_customers_holding_bidder_relations_one_cursor_page_at_a_
 </dl>
 </details>
 
-<details><summary><code>client.bidder.<a href="src/fern/bidder/client.py">grants_a_bidder_relation_to_a_customer</a>(...)</code></summary>
+<details><summary><code>client.bidder.<a href="src/fern/bidder/client.py#L76-L115">grants_a_bidder_relation_to_a_customer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -219,7 +219,7 @@ client.bidder.grants_a_bidder_relation_to_a_customer(
 </dl>
 </details>
 
-<details><summary><code>client.bidder.<a href="src/fern/bidder/client.py">revokes_a_bidder_relation_from_a_customer</a>(...)</code></summary>
+<details><summary><code>client.bidder.<a href="src/fern/bidder/client.py#L117-L156">revokes_a_bidder_relation_from_a_customer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -302,7 +302,7 @@ client.bidder.revokes_a_bidder_relation_from_a_customer(
 </details>
 
 ## Capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">lists_the_organizations_granted_a_capability_one_cursor_page_at_a_time</a>(...) -> GetCapabilityGranteesEndpointCursorPagedResultOfOutput</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L31-L75">lists_the_organizations_granted_a_capability_one_cursor_page_at_a_time</a>(...) -> GetCapabilityGranteesEndpointCursorPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -391,7 +391,7 @@ client.capabilities.lists_the_organizations_granted_a_capability_one_cursor_page
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">lists_the_capabilities_a_customer_holds</a>(...) -> GetCustomerCapabilitiesEndpointOutput</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L77-L112">lists_the_capabilities_a_customer_holds</a>(...) -> GetCustomerCapabilitiesEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -466,7 +466,7 @@ client.capabilities.lists_the_capabilities_a_customer_holds(
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">lists_the_capabilities_granted_to_an_organization</a>(...) -> GetOrganizationCapabilitiesEndpointOutput</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L114-L148">lists_the_capabilities_granted_to_an_organization</a>(...) -> GetOrganizationCapabilitiesEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -540,7 +540,7 @@ client.capabilities.lists_the_capabilities_granted_to_an_organization(
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">grants_a_capability_to_an_organization</a>(...)</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L150-L186">grants_a_capability_to_an_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -622,7 +622,7 @@ client.capabilities.grants_a_capability_to_an_organization(
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">revokes_an_organizations_capability_grant</a>(...)</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L188-L224">revokes_an_organizations_capability_grant</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -705,7 +705,7 @@ client.capabilities.revokes_an_organizations_capability_grant(
 </details>
 
 ## Client
-<details><summary><code>client.client.<a href="src/fern/client/client.py">creates_a_new_client_for_the_current_customer</a>(...) -> CreateClientEndpointOutput</code></summary>
+<details><summary><code>client.client.<a href="src/fern/client/client.py#L37-L73">creates_a_new_client_for_the_current_customer</a>(...) -> CreateClientEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -770,7 +770,7 @@ client.client.creates_a_new_client_for_the_current_customer()
 </dl>
 </details>
 
-<details><summary><code>client.client.<a href="src/fern/client/client.py">identity_get_client</a>(...) -> Client</code></summary>
+<details><summary><code>client.client.<a href="src/fern/client/client.py#L75-L102">identity_get_client</a>(...) -> Client</code></summary>
 <dl>
 <dd>
 
@@ -829,7 +829,7 @@ client.client.identity_get_client(
 </dl>
 </details>
 
-<details><summary><code>client.client.<a href="src/fern/client/client.py">deletes_a_client</a>(...)</code></summary>
+<details><summary><code>client.client.<a href="src/fern/client/client.py#L104-L130">deletes_a_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -888,7 +888,7 @@ client.client.deletes_a_client(
 </dl>
 </details>
 
-<details><summary><code>client.client.<a href="src/fern/client/client.py">queries_clients_for_the_current_customer</a>(...) -> QueryClientsEndpointPagedResultOfOutput</code></summary>
+<details><summary><code>client.client.<a href="src/fern/client/client.py#L132-L199">queries_clients_for_the_current_customer</a>(...) -> QueryClientsEndpointPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -1007,7 +1007,7 @@ client.client.queries_clients_for_the_current_customer()
 </dl>
 </details>
 
-<details><summary><code>client.client.<a href="src/fern/client/client.py">registers_a_new_client_using_the_open_id_connect_dynamic_client_registration_protocol</a>(...)</code></summary>
+<details><summary><code>client.client.<a href="src/fern/client/client.py#L201-L289">registers_a_new_client_using_the_open_id_connect_dynamic_client_registration_protocol</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1181,7 +1181,7 @@ Array of strings representing ways to contact people responsible for this client
 </details>
 
 ## Customer
-<details><summary><code>client.customer.<a href="src/fern/customer/client.py">deletes_the_account_it_can_no_longer_sign_in_stops_receiving_email_and_leaves_every_organization_it_belongs_to</a>(...)</code></summary>
+<details><summary><code>client.customer.<a href="src/fern/customer/client.py#L32-L70">deletes_the_account_it_can_no_longer_sign_in_stops_receiving_email_and_leaves_every_organization_it_belongs_to</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1260,7 +1260,7 @@ client.customer.deletes_the_account_it_can_no_longer_sign_in_stops_receiving_ema
 </dl>
 </details>
 
-<details><summary><code>client.customer.<a href="src/fern/customer/client.py">queries_customers_with_filtering_and_pagination</a>(...) -> QueryCustomersEndpointPagedResultOfOutput</code></summary>
+<details><summary><code>client.customer.<a href="src/fern/customer/client.py#L72-L144">queries_customers_with_filtering_and_pagination</a>(...) -> QueryCustomersEndpointPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -1388,7 +1388,7 @@ client.customer.queries_customers_with_filtering_and_pagination()
 </details>
 
 ## ExternalApps
-<details><summary><code>client.external_apps.<a href="src/fern/external_apps/client.py">lists_the_customers_holding_relations_on_one_app_one_cursor_page_at_a_time</a>(...) -> GetExternalAppRelationMembersEndpointCursorPagedResultOfOutput</code></summary>
+<details><summary><code>client.external_apps.<a href="src/fern/external_apps/client.py#L33-L82">lists_the_customers_holding_relations_on_one_app_one_cursor_page_at_a_time</a>(...) -> GetExternalAppRelationMembersEndpointCursorPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -1486,7 +1486,7 @@ client.external_apps.lists_the_customers_holding_relations_on_one_app_one_cursor
 </dl>
 </details>
 
-<details><summary><code>client.external_apps.<a href="src/fern/external_apps/client.py">grants_an_external_app_relation_to_a_customer</a>(...)</code></summary>
+<details><summary><code>client.external_apps.<a href="src/fern/external_apps/client.py#L84-L129">grants_an_external_app_relation_to_a_customer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1579,7 +1579,7 @@ client.external_apps.grants_an_external_app_relation_to_a_customer(
 </dl>
 </details>
 
-<details><summary><code>client.external_apps.<a href="src/fern/external_apps/client.py">revokes_an_external_app_relation_from_a_customer</a>(...)</code></summary>
+<details><summary><code>client.external_apps.<a href="src/fern/external_apps/client.py#L131-L174">revokes_an_external_app_relation_from_a_customer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1671,7 +1671,7 @@ client.external_apps.revokes_an_external_app_relation_from_a_customer(
 </details>
 
 ## Identity
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">reads_the_bridge_token_keys_for_a_given_read_key</a>(...) -> ReadBridgeTokenEndpointKeysOutput</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L31-L64">reads_the_bridge_token_keys_for_a_given_read_key</a>(...) -> ReadBridgeTokenEndpointKeysOutput</code></summary>
 <dl>
 <dd>
 
@@ -1744,7 +1744,7 @@ client.identity.reads_the_bridge_token_keys_for_a_given_read_key(
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">creates_a_pair_of_read_and_write_bridge_token_keys_for_a_client</a>(...) -> CreateBridgeTokenEndpointOutput</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L66-L99">creates_a_pair_of_read_and_write_bridge_token_keys_for_a_client</a>(...) -> CreateBridgeTokenEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -1817,7 +1817,7 @@ client.identity.creates_a_pair_of_read_and_write_bridge_token_keys_for_a_client(
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">signs_in_a_user_using_a_token_received_from_google_one_tap</a>(...) -> GoogleOneTapLoginEndpointOutput</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L101-L134">signs_in_a_user_using_a_token_received_from_google_one_tap</a>(...) -> GoogleOneTapLoginEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -1890,7 +1890,7 @@ client.identity.signs_in_a_user_using_a_token_received_from_google_one_tap(
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">stores_the_referrer_in_a_cookie_for_later_use_during_sign_up</a>(...)</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L136-L166">stores_the_referrer_in_a_cookie_for_later_use_during_sign_up</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1950,7 +1950,7 @@ client.identity.stores_the_referrer_in_a_cookie_for_later_use_during_sign_up(
 </details>
 
 ## Newsletter
-<details><summary><code>client.newsletter.<a href="src/fern/newsletter/client.py">signs_an_email_address_up_to_the_newsletter</a>(...)</code></summary>
+<details><summary><code>client.newsletter.<a href="src/fern/newsletter/client.py#L28-L62">signs_an_email_address_up_to_the_newsletter</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2018,7 +2018,7 @@ client.newsletter.signs_an_email_address_up_to_the_newsletter(
 </dl>
 </details>
 
-<details><summary><code>client.newsletter.<a href="src/fern/newsletter/client.py">removes_an_email_address_from_the_newsletter</a>(...)</code></summary>
+<details><summary><code>client.newsletter.<a href="src/fern/newsletter/client.py#L64-L98">removes_an_email_address_from_the_newsletter</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2087,7 +2087,7 @@ client.newsletter.removes_an_email_address_from_the_newsletter(
 </details>
 
 ## Organization
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">accepts_the_invitation_identified_by_invitation_id_and_sets_the_joined_organization_as_the_callers_active_one</a>(...) -> AcceptOrgInvitationByIdEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L50-L84">accepts_the_invitation_identified_by_invitation_id_and_sets_the_joined_organization_as_the_callers_active_one</a>(...) -> AcceptOrgInvitationByIdEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2161,7 +2161,7 @@ client.organization.accepts_the_invitation_identified_by_invitation_id_and_sets_
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">accepts_the_invitation_identified_by_the_token</a>(...) -> AcceptOrgInvitationEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L86-L120">accepts_the_invitation_identified_by_the_token</a>(...) -> AcceptOrgInvitationEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2235,7 +2235,7 @@ client.organization.accepts_the_invitation_identified_by_the_token(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">sets_the_given_members_org_scoped_role</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L122-L168">sets_the_given_members_org_scoped_role</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2327,7 +2327,7 @@ client.organization.sets_the_given_members_org_scoped_role(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">returns_a_paged_list_of_the_callers_organizations_each_with_the_callers_role</a>(...) -> QueryOrganizationsEndpointPagedResultOfOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L170-L224">returns_a_paged_list_of_the_callers_organizations_each_with_the_callers_role</a>(...) -> QueryOrganizationsEndpointPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -2424,7 +2424,7 @@ client.organization.returns_a_paged_list_of_the_callers_organizations_each_with_
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">creates_an_organization_and_makes_the_calling_customer_its_owner</a>(...) -> CreateOrganizationEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L226-L266">creates_an_organization_and_makes_the_calling_customer_its_owner</a>(...) -> CreateOrganizationEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2505,7 +2505,7 @@ client.organization.creates_an_organization_and_makes_the_calling_customer_its_o
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">returns_the_organization_with_the_given_id</a>(...) -> GetOrganizationEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L268-L299">returns_the_organization_with_the_given_id</a>(...) -> GetOrganizationEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2564,7 +2564,7 @@ client.organization.returns_the_organization_with_the_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">deletes_the_organization_and_everything_it_owns_across_the_platform</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L301-L336">deletes_the_organization_and_everything_it_owns_across_the_platform</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2640,7 +2640,7 @@ client.organization.deletes_the_organization_and_everything_it_owns_across_the_p
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">updates_the_given_organizations_provided_fields</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L338-L393">updates_the_given_organizations_provided_fields</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2743,7 +2743,7 @@ The email domain to claim for auto-join, or null to release the claim. New custo
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">returns_the_pending_invitations_of_the_given_organization</a>(...) -> ListOrgInvitationsEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L395-L426">returns_the_pending_invitations_of_the_given_organization</a>(...) -> ListOrgInvitationsEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2802,7 +2802,7 @@ client.organization.returns_the_pending_invitations_of_the_given_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">creates_an_invitation_to_join_the_organization</a>(...) -> InviteOrgMemberEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L428-L476">creates_an_invitation_to_join_the_organization</a>(...) -> InviteOrgMemberEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2895,7 +2895,7 @@ client.organization.creates_an_invitation_to_join_the_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">returns_the_pending_not_yet_expired_invitations_issued_to_the_callers_email_address</a>() -> ListMyOrgInvitationsEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L478-L506">returns_the_pending_not_yet_expired_invitations_issued_to_the_callers_email_address</a>() -> ListMyOrgInvitationsEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -2944,7 +2944,7 @@ client.organization.returns_the_pending_not_yet_expired_invitations_issued_to_th
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">returns_the_members_of_the_given_organization</a>(...) -> ListOrgMembersEndpointOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L508-L539">returns_the_members_of_the_given_organization</a>(...) -> ListOrgMembersEndpointOutput</code></summary>
 <dl>
 <dd>
 
@@ -3003,7 +3003,7 @@ client.organization.returns_the_members_of_the_given_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">returns_a_paged_list_of_every_organization</a>(...) -> QueryAllOrganizationsEndpointPagedResultOfOutput</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L541-L606">returns_a_paged_list_of_every_organization</a>(...) -> QueryAllOrganizationsEndpointPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -3108,7 +3108,7 @@ client.organization.returns_a_paged_list_of_every_organization()
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">declines_the_invitation_identified_by_invitation_id_no_membership_is_created</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L608-L641">declines_the_invitation_identified_by_invitation_id_no_membership_is_created</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3182,7 +3182,7 @@ client.organization.declines_the_invitation_identified_by_invitation_id_no_membe
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">removes_the_given_customers_membership_from_the_organization</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L643-L680">removes_the_given_customers_membership_from_the_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3265,7 +3265,7 @@ client.organization.removes_the_given_customers_membership_from_the_organization
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">revokes_the_given_invitation_so_its_token_can_no_longer_be_accepted</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L682-L719">revokes_the_given_invitation_so_its_token_can_no_longer_be_accepted</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3348,7 +3348,7 @@ client.organization.revokes_the_given_invitation_so_its_token_can_no_longer_be_a
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">sets_the_support_slack_channel_url_for_the_given_organization</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L721-L760">sets_the_support_slack_channel_url_for_the_given_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3429,7 +3429,7 @@ client.organization.sets_the_support_slack_channel_url_for_the_given_organizatio
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">switches_the_calling_customers_active_organization_to_the_given_one</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L762-L796">switches_the_calling_customers_active_organization_to_the_given_one</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3505,7 +3505,7 @@ client.organization.switches_the_calling_customers_active_organization_to_the_gi
 </details>
 
 ## Platform
-<details><summary><code>client.platform.<a href="src/fern/platform/client.py">lists_the_customers_holding_platform_relations_one_cursor_page_at_a_time</a>(...) -> GetPlatformRelationMembersEndpointCursorPagedResultOfOutput</code></summary>
+<details><summary><code>client.platform.<a href="src/fern/platform/client.py#L32-L74">lists_the_customers_holding_platform_relations_one_cursor_page_at_a_time</a>(...) -> GetPlatformRelationMembersEndpointCursorPagedResultOfOutput</code></summary>
 <dl>
 <dd>
 
@@ -3592,7 +3592,7 @@ client.platform.lists_the_customers_holding_platform_relations_one_cursor_page_a
 </dl>
 </details>
 
-<details><summary><code>client.platform.<a href="src/fern/platform/client.py">grants_a_platform_relation_to_a_customer</a>(...)</code></summary>
+<details><summary><code>client.platform.<a href="src/fern/platform/client.py#L76-L115">grants_a_platform_relation_to_a_customer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3674,7 +3674,7 @@ client.platform.grants_a_platform_relation_to_a_customer(
 </dl>
 </details>
 
-<details><summary><code>client.platform.<a href="src/fern/platform/client.py">revokes_a_platform_relation_from_a_customer</a>(...)</code></summary>
+<details><summary><code>client.platform.<a href="src/fern/platform/client.py#L117-L156">revokes_a_platform_relation_from_a_customer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3757,7 +3757,7 @@ client.platform.revokes_a_platform_relation_from_a_customer(
 </details>
 
 ## Survey
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">submits_a_survey_for_the_calling_customer</a>(...)</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L28-L57">submits_a_survey_for_the_calling_customer</a>(...)</code></summary>
 <dl>
 <dd>
 

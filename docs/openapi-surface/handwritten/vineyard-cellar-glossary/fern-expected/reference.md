@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_phrases</a>() -> typing.List[Phrase]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L127">list_phrases</a>() -> typing.List[Phrase]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.list_phrases()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_tank_batch</a>(...) -> Batch</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L129-L153">get_tank_batch</a>(...) -> Batch</code></summary>
 <dl>
 <dd>
 

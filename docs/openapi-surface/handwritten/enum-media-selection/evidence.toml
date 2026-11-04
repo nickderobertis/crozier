@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "c4d21d7edac52e80767e25bbb86fc3ca9f8679e400a76c5da3512f9267c07d91"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "5ff6f1d7bc0d456a403e8df20d6a6c4fc34d7014bf632ef69eaa3236134f3de3"
 
 [[covers]]
 key = "schema-example-outside-enum"

@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">list_accounts</a>(...) -> AccountListResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L32-L72">list_accounts</a>(...) -> AccountListResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.accounts.list_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">create_account</a>(...) -> AccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L74-L103">create_account</a>(...) -> AccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -130,7 +130,7 @@ client.accounts.create_account()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_account</a>(...) -> AccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L105-L132">get_account</a>(...) -> AccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -189,7 +189,7 @@ client.accounts.get_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">delete_account</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L134-L160">delete_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.accounts.delete_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">update_account</a>(...) -> AccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L162-L197">update_account</a>(...) -> AccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -316,7 +316,7 @@ client.accounts.update_account(
 </details>
 
 ## Prospects
-<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py">list_prospects</a>(...) -> ProspectListResponse</code></summary>
+<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py#L32-L72">list_prospects</a>(...) -> ProspectListResponse</code></summary>
 <dl>
 <dd>
 
@@ -389,7 +389,7 @@ client.prospects.list_prospects()
 </dl>
 </details>
 
-<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py">create_prospect</a>(...) -> ProspectResponse</code></summary>
+<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py#L74-L103">create_prospect</a>(...) -> ProspectResponse</code></summary>
 <dl>
 <dd>
 
@@ -446,7 +446,7 @@ client.prospects.create_prospect()
 </dl>
 </details>
 
-<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py">get_prospect</a>(...) -> ProspectResponse</code></summary>
+<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py#L105-L132">get_prospect</a>(...) -> ProspectResponse</code></summary>
 <dl>
 <dd>
 
@@ -505,7 +505,7 @@ client.prospects.get_prospect(
 </dl>
 </details>
 
-<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py">delete_prospect</a>(...)</code></summary>
+<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py#L134-L160">delete_prospect</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -564,7 +564,7 @@ client.prospects.delete_prospect(
 </dl>
 </details>
 
-<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py">update_prospect</a>(...) -> ProspectResponse</code></summary>
+<details><summary><code>client.prospects.<a href="src/fern/prospects/client.py#L162-L197">update_prospect</a>(...) -> ProspectResponse</code></summary>
 <dl>
 <dd>
 
@@ -632,7 +632,7 @@ client.prospects.update_prospect(
 </details>
 
 ## Sequences
-<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py">list_sequences</a>(...) -> SequenceListResponse</code></summary>
+<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py#L31-L71">list_sequences</a>(...) -> SequenceListResponse</code></summary>
 <dl>
 <dd>
 
@@ -705,7 +705,7 @@ client.sequences.list_sequences()
 </dl>
 </details>
 
-<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py">create_sequence</a>(...) -> SequenceResponse</code></summary>
+<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py#L73-L102">create_sequence</a>(...) -> SequenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -762,7 +762,7 @@ client.sequences.create_sequence()
 </dl>
 </details>
 
-<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py">get_sequence</a>(...) -> SequenceResponse</code></summary>
+<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py#L104-L131">get_sequence</a>(...) -> SequenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -821,7 +821,7 @@ client.sequences.get_sequence(
 </dl>
 </details>
 
-<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py">delete_sequence</a>(...)</code></summary>
+<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py#L133-L159">delete_sequence</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -880,7 +880,7 @@ client.sequences.delete_sequence(
 </dl>
 </details>
 
-<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py">update_sequence</a>(...) -> SequenceResponse</code></summary>
+<details><summary><code>client.sequences.<a href="src/fern/sequences/client.py#L161-L193">update_sequence</a>(...) -> SequenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -949,7 +949,7 @@ client.sequences.update_sequence(
 </details>
 
 ## SequenceSteps
-<details><summary><code>client.sequence_steps.<a href="src/fern/sequence_steps/client.py">list_sequence_steps</a>(...)</code></summary>
+<details><summary><code>client.sequence_steps.<a href="src/fern/sequence_steps/client.py#L29-L64">list_sequence_steps</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1014,7 +1014,7 @@ client.sequence_steps.list_sequence_steps()
 </dl>
 </details>
 
-<details><summary><code>client.sequence_steps.<a href="src/fern/sequence_steps/client.py">create_sequence_step</a>(...)</code></summary>
+<details><summary><code>client.sequence_steps.<a href="src/fern/sequence_steps/client.py#L66-L94">create_sequence_step</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1072,7 +1072,7 @@ client.sequence_steps.create_sequence_step()
 </details>
 
 ## SequenceStates
-<details><summary><code>client.sequence_states.<a href="src/fern/sequence_states/client.py">list_sequence_states</a>(...)</code></summary>
+<details><summary><code>client.sequence_states.<a href="src/fern/sequence_states/client.py#L29-L64">list_sequence_states</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1137,7 +1137,7 @@ client.sequence_states.list_sequence_states()
 </dl>
 </details>
 
-<details><summary><code>client.sequence_states.<a href="src/fern/sequence_states/client.py">create_sequence_state</a>(...)</code></summary>
+<details><summary><code>client.sequence_states.<a href="src/fern/sequence_states/client.py#L66-L94">create_sequence_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1195,7 +1195,7 @@ client.sequence_states.create_sequence_state()
 </details>
 
 ## Templates
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">list_templates</a>(...)</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L30-L65">list_templates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1260,7 +1260,7 @@ client.templates.list_templates()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">create_template</a>(...)</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L67-L95">create_template</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1317,7 +1317,7 @@ client.templates.create_template()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">get_template</a>(...)</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L97-L123">get_template</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1376,7 +1376,7 @@ client.templates.get_template(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">delete_template</a>(...)</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L125-L151">delete_template</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1435,7 +1435,7 @@ client.templates.delete_template(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">update_template</a>(...)</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L153-L187">update_template</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1503,7 +1503,7 @@ client.templates.update_template(
 </details>
 
 ## Snippets
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">list_snippets</a>(...)</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L29-L64">list_snippets</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1568,7 +1568,7 @@ client.snippets.list_snippets()
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">create_snippet</a>(...)</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L66-L94">create_snippet</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1626,7 +1626,7 @@ client.snippets.create_snippet()
 </details>
 
 ## Rulesets
-<details><summary><code>client.rulesets.<a href="src/fern/rulesets/client.py">list_rulesets</a>(...)</code></summary>
+<details><summary><code>client.rulesets.<a href="src/fern/rulesets/client.py#L29-L64">list_rulesets</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1691,7 +1691,7 @@ client.rulesets.list_rulesets()
 </dl>
 </details>
 
-<details><summary><code>client.rulesets.<a href="src/fern/rulesets/client.py">create_ruleset</a>(...)</code></summary>
+<details><summary><code>client.rulesets.<a href="src/fern/rulesets/client.py#L66-L94">create_ruleset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1749,7 +1749,7 @@ client.rulesets.create_ruleset()
 </details>
 
 ## SequenceTemplates
-<details><summary><code>client.sequence_templates.<a href="src/fern/sequence_templates/client.py">list_sequence_templates</a>(...)</code></summary>
+<details><summary><code>client.sequence_templates.<a href="src/fern/sequence_templates/client.py#L29-L64">list_sequence_templates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1814,7 +1814,7 @@ client.sequence_templates.list_sequence_templates()
 </dl>
 </details>
 
-<details><summary><code>client.sequence_templates.<a href="src/fern/sequence_templates/client.py">create_sequence_template</a>(...)</code></summary>
+<details><summary><code>client.sequence_templates.<a href="src/fern/sequence_templates/client.py#L66-L94">create_sequence_template</a>(...)</code></summary>
 <dl>
 <dd>
 

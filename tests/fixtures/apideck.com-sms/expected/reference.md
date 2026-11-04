@@ -99,7 +99,7 @@ client.messages.all_(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">add</a>(...) -> CreateMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L92-L238">add</a>(...) -> CreateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.messages.add(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">one</a>(...) -> GetMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L240-L286">one</a>(...) -> GetMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -276,7 +276,7 @@ client.messages.one(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">delete</a>(...) -> DeleteMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L288-L325">delete</a>(...) -> DeleteMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -359,7 +359,7 @@ client.messages.delete(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">update</a>(...) -> UpdateMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L327-L479">update</a>(...) -> UpdateMessageResponse</code></summary>
 <dl>
 <dd>
 

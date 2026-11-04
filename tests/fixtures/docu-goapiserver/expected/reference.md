@@ -1,6 +1,6 @@
 # Reference
 ## sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">post_sessions_v3</a>(...) -> Session</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L29-L64">post_sessions_v3</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.sessions.post_sessions_v3(
 </details>
 
 ## schools
-<details><summary><code>client.schools.<a href="src/fern/schools/client.py">get_schools_v3</a>(...) -> typing.List[School]</code></summary>
+<details><summary><code>client.schools.<a href="src/fern/schools/client.py#L29-L73">get_schools_v3</a>(...) -> typing.List[School]</code></summary>
 <dl>
 <dd>
 
@@ -172,7 +172,7 @@ client.schools.get_schools_v3(
 </dl>
 </details>
 
-<details><summary><code>client.schools.<a href="src/fern/schools/client.py">get_schools_id_v3</a>(...) -> School</code></summary>
+<details><summary><code>client.schools.<a href="src/fern/schools/client.py#L75-L110">get_schools_id_v3</a>(...) -> School</code></summary>
 <dl>
 <dd>
 
@@ -254,7 +254,7 @@ client.schools.get_schools_id_v3(
 </dl>
 </details>
 
-<details><summary><code>client.schools.<a href="src/fern/schools/client.py">patch_schools_id_v3</a>(...) -> School</code></summary>
+<details><summary><code>client.schools.<a href="src/fern/schools/client.py#L112-L153">patch_schools_id_v3</a>(...) -> School</code></summary>
 <dl>
 <dd>
 
@@ -346,7 +346,7 @@ client.schools.patch_schools_id_v3(
 </details>
 
 ## companies
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">get_companies_id_settings_v3</a>(...) -> CompanySettings</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L27-L58">get_companies_id_settings_v3</a>(...) -> CompanySettings</code></summary>
 <dl>
 <dd>
 
@@ -419,7 +419,7 @@ client.companies.get_companies_id_settings_v3(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">get_companies_id_v3</a>(...) -> Company</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L60-L89">get_companies_id_v3</a>(...) -> Company</code></summary>
 <dl>
 <dd>
 
@@ -493,7 +493,7 @@ client.companies.get_companies_id_v3(
 </details>
 
 ## rooms
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">get_rooms_v3</a>(...) -> typing.List[typing.Optional[Room]]</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L26-L63">get_rooms_v3</a>(...) -> typing.List[typing.Optional[Room]]</code></summary>
 <dl>
 <dd>
 
@@ -575,7 +575,7 @@ client.rooms.get_rooms_v3(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">get_rooms_id_v3</a>(...) -> Room</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L65-L100">get_rooms_id_v3</a>(...) -> Room</code></summary>
 <dl>
 <dd>
 
@@ -658,7 +658,7 @@ client.rooms.get_rooms_id_v3(
 </details>
 
 ## users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_v3</a>(...) -> typing.List[User]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L27-L77">get_users_v3</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -750,7 +750,7 @@ client.users.get_users_v3(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users_id_v3</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L79-L114">get_users_id_v3</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -833,7 +833,7 @@ client.users.get_users_id_v3(
 </details>
 
 ## leads
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">get_leads_v3</a>(...) -> GetLeadsV3Response</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L41-L158">get_leads_v3</a>(...) -> GetLeadsV3Response</code></summary>
 <dl>
 <dd>
 
@@ -1018,7 +1018,7 @@ client.leads.get_leads_v3(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">patch_leads_v3</a>(...) -> typing.List[LeadStages]</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L160-L216">patch_leads_v3</a>(...) -> typing.List[LeadStages]</code></summary>
 <dl>
 <dd>
 
@@ -1116,7 +1116,7 @@ client.leads.patch_leads_v3(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">get_leads_id_v3</a>(...) -> GetLeadsIdV3Response</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L218-L270">get_leads_id_v3</a>(...) -> GetLeadsIdV3Response</code></summary>
 <dl>
 <dd>
 
@@ -1215,7 +1215,7 @@ client.leads.get_leads_id_v3(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">get_leads_id_stages_v3</a>(...) -> typing.List[LeadStage]</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L272-L313">get_leads_id_stages_v3</a>(...) -> typing.List[LeadStage]</code></summary>
 <dl>
 <dd>
 
@@ -1306,7 +1306,7 @@ client.leads.get_leads_id_stages_v3(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">patch_leads_id_stages_v3</a>(...) -> typing.List[LeadStage]</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L315-L367">patch_leads_id_stages_v3</a>(...) -> typing.List[LeadStage]</code></summary>
 <dl>
 <dd>
 
@@ -1408,7 +1408,7 @@ client.leads.patch_leads_id_stages_v3(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">patch_leads_intended_start_date_v3</a>(...) -> UpdateIntendedStartDatesResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L369-L423">patch_leads_intended_start_date_v3</a>(...) -> UpdateIntendedStartDatesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1508,7 +1508,7 @@ client.leads.patch_leads_intended_start_date_v3(
 </details>
 
 ## students
-<details><summary><code>client.students.<a href="src/fern/students/client.py">get_students_v3</a>(...) -> GetStudentsV3Response</code></summary>
+<details><summary><code>client.students.<a href="src/fern/students/client.py#L34-L106">get_students_v3</a>(...) -> GetStudentsV3Response</code></summary>
 <dl>
 <dd>
 
@@ -1632,7 +1632,7 @@ client.students.get_students_v3(
 </dl>
 </details>
 
-<details><summary><code>client.students.<a href="src/fern/students/client.py">get_students_id_v3</a>(...) -> GetStudentsIdV3Response</code></summary>
+<details><summary><code>client.students.<a href="src/fern/students/client.py#L108-L160">get_students_id_v3</a>(...) -> GetStudentsIdV3Response</code></summary>
 <dl>
 <dd>
 
@@ -1731,7 +1731,7 @@ client.students.get_students_id_v3(
 </dl>
 </details>
 
-<details><summary><code>client.students.<a href="src/fern/students/client.py">patch_students_id_v3</a>(...) -> UpdateStudentResponse</code></summary>
+<details><summary><code>client.students.<a href="src/fern/students/client.py#L162-L221">patch_students_id_v3</a>(...) -> UpdateStudentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1841,7 +1841,7 @@ client.students.patch_students_id_v3(
 </details>
 
 ## payments
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">get_payments_v3</a>(...) -> GetPaymentsV3Response</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L32-L194">get_payments_v3</a>(...) -> GetPaymentsV3Response</code></summary>
 <dl>
 <dd>
 
@@ -2096,7 +2096,7 @@ client.payments.get_payments_v3(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">get_payments_id_v3</a>(...) -> Payment</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L196-L257">get_payments_id_v3</a>(...) -> Payment</code></summary>
 <dl>
 <dd>
 
@@ -2204,7 +2204,7 @@ client.payments.get_payments_id_v3(
 </details>
 
 ## enrollments
-<details><summary><code>client.enrollments.<a href="src/fern/enrollments/client.py">get_enrollments_v3</a>(...) -> GetEnrollmentsV3Response</code></summary>
+<details><summary><code>client.enrollments.<a href="src/fern/enrollments/client.py#L28-L110">get_enrollments_v3</a>(...) -> GetEnrollmentsV3Response</code></summary>
 <dl>
 <dd>
 
@@ -2344,7 +2344,7 @@ client.enrollments.get_enrollments_v3(
 </details>
 
 ## family_balances
-<details><summary><code>client.family_balances.<a href="src/fern/family_balances/client.py">get_family_balances_v3</a>(...) -> GetFamilyBalancesV3Response</code></summary>
+<details><summary><code>client.family_balances.<a href="src/fern/family_balances/client.py#L33-L154">get_family_balances_v3</a>(...) -> GetFamilyBalancesV3Response</code></summary>
 <dl>
 <dd>
 
@@ -2542,7 +2542,7 @@ client.family_balances.get_family_balances_v3(
 </dl>
 </details>
 
-<details><summary><code>client.family_balances.<a href="src/fern/family_balances/client.py">get_family_balances_id_transactions_v3</a>(...) -> typing.List[FamilyLedger]</code></summary>
+<details><summary><code>client.family_balances.<a href="src/fern/family_balances/client.py#L156-L206">get_family_balances_id_transactions_v3</a>(...) -> typing.List[FamilyLedger]</code></summary>
 <dl>
 <dd>
 
@@ -2641,7 +2641,7 @@ client.family_balances.get_family_balances_id_transactions_v3(
 </dl>
 </details>
 
-<details><summary><code>client.family_balances.<a href="src/fern/family_balances/client.py">get_family_balances_id_v3</a>(...) -> FamilyBalance</code></summary>
+<details><summary><code>client.family_balances.<a href="src/fern/family_balances/client.py#L208-L271">get_family_balances_id_v3</a>(...) -> FamilyBalance</code></summary>
 <dl>
 <dd>
 
@@ -2749,7 +2749,7 @@ client.family_balances.get_family_balances_id_v3(
 </details>
 
 ## pre_registration_fallout
-<details><summary><code>client.pre_registration_fallout.<a href="src/fern/pre_registration_fallout/client.py">get_pre_registration_fallout_v3</a>(...) -> GetPreRegistrationFalloutV3Response</code></summary>
+<details><summary><code>client.pre_registration_fallout.<a href="src/fern/pre_registration_fallout/client.py#L28-L108">get_pre_registration_fallout_v3</a>(...) -> GetPreRegistrationFalloutV3Response</code></summary>
 <dl>
 <dd>
 
@@ -2890,7 +2890,7 @@ client.pre_registration_fallout.get_pre_registration_fallout_v3(
 </details>
 
 ## absences
-<details><summary><code>client.absences.<a href="src/fern/absences/client.py">get_absences_v3</a>(...) -> typing.List[Absence]</code></summary>
+<details><summary><code>client.absences.<a href="src/fern/absences/client.py#L28-L114">get_absences_v3</a>(...) -> typing.List[Absence]</code></summary>
 <dl>
 <dd>
 
@@ -3032,7 +3032,7 @@ client.absences.get_absences_v3(
 </details>
 
 ## waitlist
-<details><summary><code>client.waitlist.<a href="src/fern/waitlist/client.py">get_waitlist_v3</a>(...) -> typing.List[Waitlist]</code></summary>
+<details><summary><code>client.waitlist.<a href="src/fern/waitlist/client.py#L31-L99">get_waitlist_v3</a>(...) -> typing.List[Waitlist]</code></summary>
 <dl>
 <dd>
 
@@ -3154,7 +3154,7 @@ client.waitlist.get_waitlist_v3(
 </dl>
 </details>
 
-<details><summary><code>client.waitlist.<a href="src/fern/waitlist/client.py">get_waitlist_student_id_v3</a>(...) -> Waitlist</code></summary>
+<details><summary><code>client.waitlist.<a href="src/fern/waitlist/client.py#L101-L138">get_waitlist_student_id_v3</a>(...) -> Waitlist</code></summary>
 <dl>
 <dd>
 
@@ -3236,7 +3236,7 @@ client.waitlist.get_waitlist_student_id_v3(
 </dl>
 </details>
 
-<details><summary><code>client.waitlist.<a href="src/fern/waitlist/client.py">patch_waitlist_student_id_v3</a>(...) -> Waitlist</code></summary>
+<details><summary><code>client.waitlist.<a href="src/fern/waitlist/client.py#L140-L193">patch_waitlist_student_id_v3</a>(...) -> Waitlist</code></summary>
 <dl>
 <dd>
 
@@ -3329,7 +3329,7 @@ client.waitlist.patch_waitlist_student_id_v3(
 </details>
 
 ## billing_plans
-<details><summary><code>client.billing_plans.<a href="src/fern/billing_plans/client.py">get_billing_plans_v3</a>(...) -> GetBillingPlansV3Response</code></summary>
+<details><summary><code>client.billing_plans.<a href="src/fern/billing_plans/client.py#L30-L137">get_billing_plans_v3</a>(...) -> GetBillingPlansV3Response</code></summary>
 <dl>
 <dd>
 
@@ -3509,7 +3509,7 @@ client.billing_plans.get_billing_plans_v3(
 </dl>
 </details>
 
-<details><summary><code>client.billing_plans.<a href="src/fern/billing_plans/client.py">get_billing_plans_id_v3</a>(...) -> BillingPlan</code></summary>
+<details><summary><code>client.billing_plans.<a href="src/fern/billing_plans/client.py#L139-L180">get_billing_plans_id_v3</a>(...) -> BillingPlan</code></summary>
 <dl>
 <dd>
 
@@ -3601,7 +3601,7 @@ client.billing_plans.get_billing_plans_id_v3(
 </details>
 
 ## spaces
-<details><summary><code>client.spaces.<a href="src/fern/spaces/client.py">get_spaces_v3</a>(...) -> SpacesSnapshot</code></summary>
+<details><summary><code>client.spaces.<a href="src/fern/spaces/client.py#L36-L77">get_spaces_v3</a>(...) -> SpacesSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -3683,7 +3683,7 @@ client.spaces.get_spaces_v3(
 </dl>
 </details>
 
-<details><summary><code>client.spaces.<a href="src/fern/spaces/client.py">get_spaces_detailed_list_v3</a>(...) -> GetSpacesDetailedListV3Response</code></summary>
+<details><summary><code>client.spaces.<a href="src/fern/spaces/client.py#L79-L215">get_spaces_detailed_list_v3</a>(...) -> GetSpacesDetailedListV3Response</code></summary>
 <dl>
 <dd>
 
@@ -3895,7 +3895,7 @@ client.spaces.get_spaces_detailed_list_v3(
 </dl>
 </details>
 
-<details><summary><code>client.spaces.<a href="src/fern/spaces/client.py">patch_spaces_closed_spaces_v3</a>(...) -> UpdateClosedSpacesResponse</code></summary>
+<details><summary><code>client.spaces.<a href="src/fern/spaces/client.py#L217-L268">patch_spaces_closed_spaces_v3</a>(...) -> UpdateClosedSpacesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3993,7 +3993,7 @@ client.spaces.patch_spaces_closed_spaces_v3(
 </details>
 
 ## enrollment_tracker
-<details><summary><code>client.enrollment_tracker.<a href="src/fern/enrollment_tracker/client.py">get_enrollment_tracker_v3</a>(...) -> EnrollmentTracker</code></summary>
+<details><summary><code>client.enrollment_tracker.<a href="src/fern/enrollment_tracker/client.py#L26-L75">get_enrollment_tracker_v3</a>(...) -> EnrollmentTracker</code></summary>
 <dl>
 <dd>
 
@@ -4092,7 +4092,7 @@ client.enrollment_tracker.get_enrollment_tracker_v3(
 </details>
 
 ## efficiency_ratios
-<details><summary><code>client.efficiency_ratios.<a href="src/fern/efficiency_ratios/client.py">get_efficiency_ratios_v3</a>(...) -> typing.List[EfficiencyRatio]</code></summary>
+<details><summary><code>client.efficiency_ratios.<a href="src/fern/efficiency_ratios/client.py#L26-L57">get_efficiency_ratios_v3</a>(...) -> typing.List[EfficiencyRatio]</code></summary>
 <dl>
 <dd>
 
@@ -4166,7 +4166,7 @@ client.efficiency_ratios.get_efficiency_ratios_v3(
 </details>
 
 ## procare_messages
-<details><summary><code>client.procare_messages.<a href="src/fern/procare_messages/client.py">get_procare_messages_v3</a>(...) -> typing.List[ProcareMessageTask]</code></summary>
+<details><summary><code>client.procare_messages.<a href="src/fern/procare_messages/client.py#L33-L75">get_procare_messages_v3</a>(...) -> typing.List[ProcareMessageTask]</code></summary>
 <dl>
 <dd>
 
@@ -4248,7 +4248,7 @@ client.procare_messages.get_procare_messages_v3(
 </dl>
 </details>
 
-<details><summary><code>client.procare_messages.<a href="src/fern/procare_messages/client.py">post_procare_messages_v3</a>(...) -> ProcareMessageCreated</code></summary>
+<details><summary><code>client.procare_messages.<a href="src/fern/procare_messages/client.py#L77-L138">post_procare_messages_v3</a>(...) -> ProcareMessageCreated</code></summary>
 <dl>
 <dd>
 
@@ -4360,7 +4360,7 @@ client.procare_messages.post_procare_messages_v3(
 </dl>
 </details>
 
-<details><summary><code>client.procare_messages.<a href="src/fern/procare_messages/client.py">get_procare_messages_task_id_v3</a>(...) -> typing.Optional[ProcareMessageStatus]</code></summary>
+<details><summary><code>client.procare_messages.<a href="src/fern/procare_messages/client.py#L140-L171">get_procare_messages_task_id_v3</a>(...) -> typing.Optional[ProcareMessageStatus]</code></summary>
 <dl>
 <dd>
 
@@ -4434,7 +4434,7 @@ client.procare_messages.get_procare_messages_task_id_v3(
 </details>
 
 ## attendances
-<details><summary><code>client.attendances.<a href="src/fern/attendances/client.py">get_attendances_v3</a>(...) -> GetAttendancesV3Response</code></summary>
+<details><summary><code>client.attendances.<a href="src/fern/attendances/client.py#L31-L161">get_attendances_v3</a>(...) -> GetAttendancesV3Response</code></summary>
 <dl>
 <dd>
 
@@ -4640,7 +4640,7 @@ client.attendances.get_attendances_v3(
 </details>
 
 ## billing_attendance_audits
-<details><summary><code>client.billing_attendance_audits.<a href="src/fern/billing_attendance_audits/client.py">get_billing_attendance_audits_v3</a>(...) -> typing.List[BillingAttendanceAudit]</code></summary>
+<details><summary><code>client.billing_attendance_audits.<a href="src/fern/billing_attendance_audits/client.py#L26-L90">get_billing_attendance_audits_v3</a>(...) -> typing.List[BillingAttendanceAudit]</code></summary>
 <dl>
 <dd>
 
@@ -4756,7 +4756,7 @@ client.billing_attendance_audits.get_billing_attendance_audits_v3(
 </details>
 
 ## classroom_attendance
-<details><summary><code>client.classroom_attendance.<a href="src/fern/classroom_attendance/client.py">get_classroom_attendance_v3</a>(...) -> ClassroomAttendance</code></summary>
+<details><summary><code>client.classroom_attendance.<a href="src/fern/classroom_attendance/client.py#L27-L77">get_classroom_attendance_v3</a>(...) -> ClassroomAttendance</code></summary>
 <dl>
 <dd>
 
@@ -4849,7 +4849,7 @@ client.classroom_attendance.get_classroom_attendance_v3(
 </details>
 
 ## activities_summary
-<details><summary><code>client.activities_summary.<a href="src/fern/activities_summary/client.py">get_activities_summary_v3</a>(...) -> typing.List[ActivitySummaryKid]</code></summary>
+<details><summary><code>client.activities_summary.<a href="src/fern/activities_summary/client.py#L26-L63">get_activities_summary_v3</a>(...) -> typing.List[ActivitySummaryKid]</code></summary>
 <dl>
 <dd>
 
@@ -4932,7 +4932,7 @@ client.activities_summary.get_activities_summary_v3(
 </details>
 
 ## activity_details
-<details><summary><code>client.activity_details.<a href="src/fern/activity_details/client.py">get_activity_details_v3</a>(...) -> typing.List[typing.Optional[typing.List[DailyActivity]]]</code></summary>
+<details><summary><code>client.activity_details.<a href="src/fern/activity_details/client.py#L27-L76">get_activity_details_v3</a>(...) -> typing.List[typing.Optional[typing.List[DailyActivity]]]</code></summary>
 <dl>
 <dd>
 
@@ -5031,7 +5031,7 @@ client.activity_details.get_activity_details_v3(
 </details>
 
 ## data_refresh
-<details><summary><code>client.data_refresh.<a href="src/fern/data_refresh/client.py">get_data_refresh_v3</a>(...) -> DataRefresh</code></summary>
+<details><summary><code>client.data_refresh.<a href="src/fern/data_refresh/client.py#L27-L58">get_data_refresh_v3</a>(...) -> DataRefresh</code></summary>
 <dl>
 <dd>
 
@@ -5104,7 +5104,7 @@ client.data_refresh.get_data_refresh_v3(
 </dl>
 </details>
 
-<details><summary><code>client.data_refresh.<a href="src/fern/data_refresh/client.py">get_data_refresh_details_v3</a>(...) -> typing.List[SchoolRefresh]</code></summary>
+<details><summary><code>client.data_refresh.<a href="src/fern/data_refresh/client.py#L60-L101">get_data_refresh_details_v3</a>(...) -> typing.List[SchoolRefresh]</code></summary>
 <dl>
 <dd>
 
@@ -5187,7 +5187,7 @@ client.data_refresh.get_data_refresh_details_v3(
 </details>
 
 ## sibling_discounts
-<details><summary><code>client.sibling_discounts.<a href="src/fern/sibling_discounts/client.py">get_sibling_discounts_v3</a>(...) -> typing.List[SiblingDiscount]</code></summary>
+<details><summary><code>client.sibling_discounts.<a href="src/fern/sibling_discounts/client.py#L30-L108">get_sibling_discounts_v3</a>(...) -> typing.List[SiblingDiscount]</code></summary>
 <dl>
 <dd>
 
@@ -5325,7 +5325,7 @@ client.sibling_discounts.get_sibling_discounts_v3(
 </dl>
 </details>
 
-<details><summary><code>client.sibling_discounts.<a href="src/fern/sibling_discounts/client.py">get_sibling_discounts_student_id_v3</a>(...) -> SiblingDiscount</code></summary>
+<details><summary><code>client.sibling_discounts.<a href="src/fern/sibling_discounts/client.py#L110-L147">get_sibling_discounts_student_id_v3</a>(...) -> SiblingDiscount</code></summary>
 <dl>
 <dd>
 
@@ -5408,7 +5408,7 @@ client.sibling_discounts.get_sibling_discounts_student_id_v3(
 </details>
 
 ## new_start_tracker
-<details><summary><code>client.new_start_tracker.<a href="src/fern/new_start_tracker/client.py">get_new_start_tracker_v3</a>(...) -> typing.List[NewStartStudent]</code></summary>
+<details><summary><code>client.new_start_tracker.<a href="src/fern/new_start_tracker/client.py#L28-L96">get_new_start_tracker_v3</a>(...) -> typing.List[NewStartStudent]</code></summary>
 <dl>
 <dd>
 
@@ -5530,7 +5530,7 @@ client.new_start_tracker.get_new_start_tracker_v3(
 </dl>
 </details>
 
-<details><summary><code>client.new_start_tracker.<a href="src/fern/new_start_tracker/client.py">get_new_start_tracker_student_id_v3</a>(...) -> NewStartStudent</code></summary>
+<details><summary><code>client.new_start_tracker.<a href="src/fern/new_start_tracker/client.py#L98-L135">get_new_start_tracker_student_id_v3</a>(...) -> NewStartStudent</code></summary>
 <dl>
 <dd>
 
@@ -5613,7 +5613,7 @@ client.new_start_tracker.get_new_start_tracker_student_id_v3(
 </details>
 
 ## withdrawal_tracker
-<details><summary><code>client.withdrawal_tracker.<a href="src/fern/withdrawal_tracker/client.py">get_withdrawal_tracker_v3</a>(...) -> typing.List[WithdrawalStudent]</code></summary>
+<details><summary><code>client.withdrawal_tracker.<a href="src/fern/withdrawal_tracker/client.py#L31-L104">get_withdrawal_tracker_v3</a>(...) -> typing.List[WithdrawalStudent]</code></summary>
 <dl>
 <dd>
 
@@ -5743,7 +5743,7 @@ client.withdrawal_tracker.get_withdrawal_tracker_v3(
 </dl>
 </details>
 
-<details><summary><code>client.withdrawal_tracker.<a href="src/fern/withdrawal_tracker/client.py">get_withdrawal_tracker_student_id_v3</a>(...) -> WithdrawalStudent</code></summary>
+<details><summary><code>client.withdrawal_tracker.<a href="src/fern/withdrawal_tracker/client.py#L106-L143">get_withdrawal_tracker_student_id_v3</a>(...) -> WithdrawalStudent</code></summary>
 <dl>
 <dd>
 
@@ -5826,7 +5826,7 @@ client.withdrawal_tracker.get_withdrawal_tracker_student_id_v3(
 </details>
 
 ## transition_tracker
-<details><summary><code>client.transition_tracker.<a href="src/fern/transition_tracker/client.py">get_transition_tracker_v3</a>(...) -> typing.List[TransitionStudent]</code></summary>
+<details><summary><code>client.transition_tracker.<a href="src/fern/transition_tracker/client.py#L28-L96">get_transition_tracker_v3</a>(...) -> typing.List[TransitionStudent]</code></summary>
 <dl>
 <dd>
 
@@ -5948,7 +5948,7 @@ client.transition_tracker.get_transition_tracker_v3(
 </dl>
 </details>
 
-<details><summary><code>client.transition_tracker.<a href="src/fern/transition_tracker/client.py">get_transition_tracker_student_id_v3</a>(...) -> TransitionStudent</code></summary>
+<details><summary><code>client.transition_tracker.<a href="src/fern/transition_tracker/client.py#L98-L135">get_transition_tracker_student_id_v3</a>(...) -> TransitionStudent</code></summary>
 <dl>
 <dd>
 
@@ -6031,7 +6031,7 @@ client.transition_tracker.get_transition_tracker_student_id_v3(
 </details>
 
 ## gusto_companies
-<details><summary><code>client.gusto_companies.<a href="src/fern/gusto_companies/client.py">get_gusto_companies_v3</a>(...) -> typing.List[GustoCompany]</code></summary>
+<details><summary><code>client.gusto_companies.<a href="src/fern/gusto_companies/client.py#L28-L59">get_gusto_companies_v3</a>(...) -> typing.List[GustoCompany]</code></summary>
 <dl>
 <dd>
 
@@ -6104,7 +6104,7 @@ client.gusto_companies.get_gusto_companies_v3(
 </dl>
 </details>
 
-<details><summary><code>client.gusto_companies.<a href="src/fern/gusto_companies/client.py">get_gusto_companies_id_time_off_v3</a>(...) -> typing.List[EmployeeTimeOff]</code></summary>
+<details><summary><code>client.gusto_companies.<a href="src/fern/gusto_companies/client.py#L61-L137">get_gusto_companies_id_time_off_v3</a>(...) -> typing.List[EmployeeTimeOff]</code></summary>
 <dl>
 <dd>
 
@@ -6229,7 +6229,7 @@ client.gusto_companies.get_gusto_companies_id_time_off_v3(
 </dl>
 </details>
 
-<details><summary><code>client.gusto_companies.<a href="src/fern/gusto_companies/client.py">get_gusto_companies_id_v3</a>(...) -> GustoCompany</code></summary>
+<details><summary><code>client.gusto_companies.<a href="src/fern/gusto_companies/client.py#L139-L176">get_gusto_companies_id_v3</a>(...) -> GustoCompany</code></summary>
 <dl>
 <dd>
 
@@ -6312,7 +6312,7 @@ client.gusto_companies.get_gusto_companies_id_v3(
 </details>
 
 ## gusto_employees
-<details><summary><code>client.gusto_employees.<a href="src/fern/gusto_employees/client.py">get_gusto_employees_v3</a>(...) -> typing.List[GustoEmployee]</code></summary>
+<details><summary><code>client.gusto_employees.<a href="src/fern/gusto_employees/client.py#L26-L57">get_gusto_employees_v3</a>(...) -> typing.List[GustoEmployee]</code></summary>
 <dl>
 <dd>
 
@@ -6385,7 +6385,7 @@ client.gusto_employees.get_gusto_employees_v3(
 </dl>
 </details>
 
-<details><summary><code>client.gusto_employees.<a href="src/fern/gusto_employees/client.py">get_gusto_employees_id_v3</a>(...) -> GustoEmployee</code></summary>
+<details><summary><code>client.gusto_employees.<a href="src/fern/gusto_employees/client.py#L59-L96">get_gusto_employees_id_v3</a>(...) -> GustoEmployee</code></summary>
 <dl>
 <dd>
 
@@ -6468,7 +6468,7 @@ client.gusto_employees.get_gusto_employees_id_v3(
 </details>
 
 ## gusto_contractors
-<details><summary><code>client.gusto_contractors.<a href="src/fern/gusto_contractors/client.py">get_gusto_contractors_v3</a>(...) -> typing.List[GustoContractor]</code></summary>
+<details><summary><code>client.gusto_contractors.<a href="src/fern/gusto_contractors/client.py#L26-L57">get_gusto_contractors_v3</a>(...) -> typing.List[GustoContractor]</code></summary>
 <dl>
 <dd>
 
@@ -6541,7 +6541,7 @@ client.gusto_contractors.get_gusto_contractors_v3(
 </dl>
 </details>
 
-<details><summary><code>client.gusto_contractors.<a href="src/fern/gusto_contractors/client.py">get_gusto_contractors_id_v3</a>(...) -> GustoContractor</code></summary>
+<details><summary><code>client.gusto_contractors.<a href="src/fern/gusto_contractors/client.py#L59-L96">get_gusto_contractors_id_v3</a>(...) -> GustoContractor</code></summary>
 <dl>
 <dd>
 
@@ -6624,7 +6624,7 @@ client.gusto_contractors.get_gusto_contractors_id_v3(
 </details>
 
 ## gusto_payrolls
-<details><summary><code>client.gusto_payrolls.<a href="src/fern/gusto_payrolls/client.py">get_gusto_payrolls_v3</a>(...) -> typing.Optional[typing.List[Payroll]]</code></summary>
+<details><summary><code>client.gusto_payrolls.<a href="src/fern/gusto_payrolls/client.py#L28-L86">get_gusto_payrolls_v3</a>(...) -> typing.Optional[typing.List[Payroll]]</code></summary>
 <dl>
 <dd>
 
@@ -6730,7 +6730,7 @@ client.gusto_payrolls.get_gusto_payrolls_v3(
 </dl>
 </details>
 
-<details><summary><code>client.gusto_payrolls.<a href="src/fern/gusto_payrolls/client.py">get_gusto_payrolls_totals_v3</a>(...) -> typing.Optional[typing.List[PayrollTotal]]</code></summary>
+<details><summary><code>client.gusto_payrolls.<a href="src/fern/gusto_payrolls/client.py#L88-L146">get_gusto_payrolls_totals_v3</a>(...) -> typing.Optional[typing.List[PayrollTotal]]</code></summary>
 <dl>
 <dd>
 
@@ -6837,7 +6837,7 @@ client.gusto_payrolls.get_gusto_payrolls_totals_v3(
 </details>
 
 ## procare_staff
-<details><summary><code>client.procare_staff.<a href="src/fern/procare_staff/client.py">get_procare_staff_v3</a>(...) -> typing.Optional[typing.List[ProcareStaff]]</code></summary>
+<details><summary><code>client.procare_staff.<a href="src/fern/procare_staff/client.py#L26-L63">get_procare_staff_v3</a>(...) -> typing.Optional[typing.List[ProcareStaff]]</code></summary>
 <dl>
 <dd>
 
@@ -6919,7 +6919,7 @@ client.procare_staff.get_procare_staff_v3(
 </dl>
 </details>
 
-<details><summary><code>client.procare_staff.<a href="src/fern/procare_staff/client.py">get_procare_staff_id_v3</a>(...) -> ProcareStaff</code></summary>
+<details><summary><code>client.procare_staff.<a href="src/fern/procare_staff/client.py#L65-L100">get_procare_staff_id_v3</a>(...) -> ProcareStaff</code></summary>
 <dl>
 <dd>
 

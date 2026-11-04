@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "e73e2992607927585383e5e803c21ce07c4bac5505b85aab744eb942e0d43b12"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "3645e6e23cdf4ba977b9f5d52d71d74f3d439ad622bdafe6af591c0cbdc87282"
 
 [[covers]]
 key = "schema-example-temporal-duplicate-element"

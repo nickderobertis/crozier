@@ -1,6 +1,6 @@
 # Reference
 ## Directory API
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_best_podcasts</a>(...) -> BestPodcastsResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L43-L130">get_best_podcasts</a>(...) -> BestPodcastsResponse</code></summary>
 <dl>
 <dd>
 
@@ -149,7 +149,7 @@ If you'd like to sort by popularity, please use **listen_score**.
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_curated_podcasts</a>(...) -> GetCuratedPodcastsResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L132-L161">get_curated_podcasts</a>(...) -> GetCuratedPodcastsResponse</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.directory_api.get_curated_podcasts()
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_curated_podcast_by_id</a>(...) -> CuratedListFull</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L163-L195">get_curated_podcast_by_id</a>(...) -> CuratedListFull</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.directory_api.get_curated_podcast_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_episodes_in_batch</a>(...) -> GetEpisodesInBatchResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L197-L228">get_episodes_in_batch</a>(...) -> GetEpisodesInBatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -367,7 +367,7 @@ client.directory_api.get_episodes_in_batch(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_episode_by_id</a>(...) -> EpisodeFull</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L230-L271">get_episode_by_id</a>(...) -> EpisodeFull</code></summary>
 <dl>
 <dd>
 
@@ -449,7 +449,7 @@ client.directory_api.get_episode_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_episode_recommendations</a>(...) -> GetEpisodeRecommendationsResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L273-L314">get_episode_recommendations</a>(...) -> GetEpisodeRecommendationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -531,7 +531,7 @@ client.directory_api.get_episode_recommendations(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_genres</a>(...) -> GetGenresResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L316-L350">get_genres</a>(...) -> GetGenresResponse</code></summary>
 <dl>
 <dd>
 
@@ -607,7 +607,7 @@ client.directory_api.get_genres(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">just_listen</a>() -> EpisodeSimple</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L352-L376">just_listen</a>() -> EpisodeSimple</code></summary>
 <dl>
 <dd>
 
@@ -670,7 +670,7 @@ client.directory_api.just_listen()
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_languages</a>() -> GetLanguagesResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L378-L402">get_languages</a>() -> GetLanguagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -733,7 +733,7 @@ client.directory_api.get_languages()
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_podcasts_in_batch</a>(...) -> GetPodcastsInBatchResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L404-L467">get_podcasts_in_batch</a>(...) -> GetPodcastsInBatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -807,7 +807,7 @@ client.directory_api.get_podcasts_in_batch()
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_podcast_by_id</a>(...) -> PodcastFull</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L469-L514">get_podcast_by_id</a>(...) -> PodcastFull</code></summary>
 <dl>
 <dd>
 
@@ -897,7 +897,7 @@ client.directory_api.get_podcast_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_podcast_recommendations</a>(...) -> GetPodcastRecommendationsResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L516-L557">get_podcast_recommendations</a>(...) -> GetPodcastRecommendationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -979,7 +979,7 @@ client.directory_api.get_podcast_recommendations(
 </dl>
 </details>
 
-<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py">get_regions</a>() -> GetRegionsResponse</code></summary>
+<details><summary><code>client.directory_api.<a href="src/fern/directory_api/client.py#L559-L583">get_regions</a>() -> GetRegionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1043,7 +1043,7 @@ client.directory_api.get_regions()
 </details>
 
 ## Playlist API
-<details><summary><code>client.playlist_api.<a href="src/fern/playlist_api/client.py">get_playlists</a>(...) -> PlaylistsResponse</code></summary>
+<details><summary><code>client.playlist_api.<a href="src/fern/playlist_api/client.py#L30-L69">get_playlists</a>(...) -> PlaylistsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1125,7 +1125,7 @@ client.playlist_api.get_playlists(
 </dl>
 </details>
 
-<details><summary><code>client.playlist_api.<a href="src/fern/playlist_api/client.py">get_playlist_by_id</a>(...) -> PlaylistResponse</code></summary>
+<details><summary><code>client.playlist_api.<a href="src/fern/playlist_api/client.py#L71-L132">get_playlist_by_id</a>(...) -> PlaylistResponse</code></summary>
 <dl>
 <dd>
 
@@ -1240,7 +1240,7 @@ depending on the value of the **sort** parameter.
 </details>
 
 ## Insights API
-<details><summary><code>client.insights_api.<a href="src/fern/insights_api/client.py">get_podcasts_by_domain_name</a>(...) -> PodcastDomainResponse</code></summary>
+<details><summary><code>client.insights_api.<a href="src/fern/insights_api/client.py#L27-L69">get_podcasts_by_domain_name</a>(...) -> PodcastDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -1323,7 +1323,7 @@ client.insights_api.get_podcasts_by_domain_name(
 </dl>
 </details>
 
-<details><summary><code>client.insights_api.<a href="src/fern/insights_api/client.py">get_podcast_audience</a>(...) -> PodcastAudienceResponse</code></summary>
+<details><summary><code>client.insights_api.<a href="src/fern/insights_api/client.py#L71-L102">get_podcast_audience</a>(...) -> PodcastAudienceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1397,7 +1397,7 @@ client.insights_api.get_podcast_audience(
 </details>
 
 ## Podcaster API
-<details><summary><code>client.podcaster_api.<a href="src/fern/podcaster_api/client.py">submit_podcast</a>(...) -> SubmitPodcastResponse</code></summary>
+<details><summary><code>client.podcaster_api.<a href="src/fern/podcaster_api/client.py#L30-L64">submit_podcast</a>(...) -> SubmitPodcastResponse</code></summary>
 <dl>
 <dd>
 
@@ -1470,7 +1470,7 @@ client.podcaster_api.submit_podcast(
 </dl>
 </details>
 
-<details><summary><code>client.podcaster_api.<a href="src/fern/podcaster_api/client.py">delete_podcast_by_id</a>(...) -> DeletePodcastResponse</code></summary>
+<details><summary><code>client.podcaster_api.<a href="src/fern/podcaster_api/client.py#L66-L101">delete_podcast_by_id</a>(...) -> DeletePodcastResponse</code></summary>
 <dl>
 <dd>
 
@@ -1553,7 +1553,7 @@ client.podcaster_api.delete_podcast_by_id(
 </details>
 
 ## Search API
-<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py">get_related_searches</a>(...) -> RelatedSearchesResponse</code></summary>
+<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py#L31-L62">get_related_searches</a>(...) -> RelatedSearchesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1626,7 +1626,7 @@ client.search_api.get_related_searches(
 </dl>
 </details>
 
-<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py">search</a>(...) -> SearchResponse</code></summary>
+<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py#L64-L222">search</a>(...) -> SearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1884,7 +1884,7 @@ If **type** parameter is **podcast**, it's for average audio length of all episo
 </dl>
 </details>
 
-<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py">spellcheck</a>(...) -> SpellCheckResponse</code></summary>
+<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py#L224-L253">spellcheck</a>(...) -> SpellCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -1957,7 +1957,7 @@ client.search_api.spellcheck(
 </dl>
 </details>
 
-<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py">get_trending_searches</a>() -> TrendingSearchesResponse</code></summary>
+<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py#L255-L281">get_trending_searches</a>() -> TrendingSearchesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2020,7 +2020,7 @@ client.search_api.get_trending_searches()
 </dl>
 </details>
 
-<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py">typeahead</a>(...) -> TypeaheadResponse</code></summary>
+<details><summary><code>client.search_api.<a href="src/fern/search_api/client.py#L283-L338">typeahead</a>(...) -> TypeaheadResponse</code></summary>
 <dl>
 <dd>
 

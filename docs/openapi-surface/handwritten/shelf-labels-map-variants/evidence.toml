@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "7d69c8fb6d193d11376de2f33cfbd6ca23fec8200c5eef4e1fcf714a4a028286"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "b55e176c7a1f6f396f63b88cec7da2524dcab3670ba42024272a54de6271b4a7"
 
 [[covers]]
 key = "property-map-value-oneof"

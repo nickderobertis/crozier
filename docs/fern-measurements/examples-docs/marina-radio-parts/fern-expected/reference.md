@@ -1,6 +1,6 @@
 # Reference
 ## Radio
-<details><summary><code>client.radio.<a href="src/fern/radio/client.py">broadcast</a>(...)</code></summary>
+<details><summary><code>client.radio.<a href="src/fern/radio/client.py#L29-L72">broadcast</a>(...)</code></summary>
 <dl>
 <dd>
 

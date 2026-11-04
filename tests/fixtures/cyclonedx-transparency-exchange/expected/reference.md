@@ -1,6 +1,6 @@
 # Reference
 ## TEA Product
-<details><summary><code>client.tea_product.<a href="src/fern/tea_product/client.py">get_tea_product_by_uuid</a>(...) -> Product</code></summary>
+<details><summary><code>client.tea_product.<a href="src/fern/tea_product/client.py#L31-L62">get_tea_product_by_uuid</a>(...) -> Product</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.tea_product.get_tea_product_by_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.tea_product.<a href="src/fern/tea_product/client.py">query_tea_products</a>(...) -> PaginatedProductResponse</code></summary>
+<details><summary><code>client.tea_product.<a href="src/fern/tea_product/client.py#L64-L150">query_tea_products</a>(...) -> PaginatedProductResponse</code></summary>
 <dl>
 <dd>
 
@@ -217,7 +217,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </details>
 
 ## TEA Product Release
-<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py">get_releases_by_product_id</a>(...) -> PaginatedProductReleaseResponse</code></summary>
+<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py#L41-L133">get_releases_by_product_id</a>(...) -> PaginatedProductReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </dl>
 </details>
 
-<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py">get_tea_product_release_by_uuid</a>(...) -> ProductRelease</code></summary>
+<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py#L135-L166">get_tea_product_release_by_uuid</a>(...) -> ProductRelease</code></summary>
 <dl>
 <dd>
 
@@ -436,7 +436,7 @@ client.tea_product_release.get_tea_product_release_by_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py">query_tea_product_releases</a>(...) -> PaginatedProductReleaseResponse</code></summary>
+<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py#L168-L263">query_tea_product_releases</a>(...) -> PaginatedProductReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +588,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </dl>
 </details>
 
-<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py">get_latest_collection_for_product_release</a>(...) -> Collection</code></summary>
+<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py#L265-L296">get_latest_collection_for_product_release</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -661,7 +661,7 @@ client.tea_product_release.get_latest_collection_for_product_release(
 </dl>
 </details>
 
-<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py">get_collections_by_product_release_id</a>(...) -> PaginatedCollectionResponse</code></summary>
+<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py#L298-L386">get_collections_by_product_release_id</a>(...) -> PaginatedCollectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -803,7 +803,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </dl>
 </details>
 
-<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py">get_collection_for_product_release</a>(...) -> Collection</code></summary>
+<details><summary><code>client.tea_product_release.<a href="src/fern/tea_product_release/client.py#L388-L425">get_collection_for_product_release</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.tea_product_release.get_collection_for_product_release(
 </details>
 
 ## CLE
-<details><summary><code>client.cle.<a href="src/fern/cle/client.py">get_cle_by_product_release_id</a>(...) -> Cle</code></summary>
+<details><summary><code>client.cle.<a href="src/fern/cle/client.py#L27-L58">get_cle_by_product_release_id</a>(...) -> Cle</code></summary>
 <dl>
 <dd>
 
@@ -959,7 +959,7 @@ client.cle.get_cle_by_product_release_id(
 </dl>
 </details>
 
-<details><summary><code>client.cle.<a href="src/fern/cle/client.py">get_cle_by_product_id</a>(...) -> Cle</code></summary>
+<details><summary><code>client.cle.<a href="src/fern/cle/client.py#L60-L89">get_cle_by_product_id</a>(...) -> Cle</code></summary>
 <dl>
 <dd>
 
@@ -1032,7 +1032,7 @@ client.cle.get_cle_by_product_id(
 </dl>
 </details>
 
-<details><summary><code>client.cle.<a href="src/fern/cle/client.py">get_cle_by_component_id</a>(...) -> Cle</code></summary>
+<details><summary><code>client.cle.<a href="src/fern/cle/client.py#L91-L120">get_cle_by_component_id</a>(...) -> Cle</code></summary>
 <dl>
 <dd>
 
@@ -1105,7 +1105,7 @@ client.cle.get_cle_by_component_id(
 </dl>
 </details>
 
-<details><summary><code>client.cle.<a href="src/fern/cle/client.py">get_cle_by_component_release_id</a>(...) -> Cle</code></summary>
+<details><summary><code>client.cle.<a href="src/fern/cle/client.py#L122-L153">get_cle_by_component_release_id</a>(...) -> Cle</code></summary>
 <dl>
 <dd>
 
@@ -1179,7 +1179,7 @@ client.cle.get_cle_by_component_release_id(
 </details>
 
 ## TEA Component
-<details><summary><code>client.tea_component.<a href="src/fern/tea_component/client.py">get_tea_component_by_id</a>(...) -> Component</code></summary>
+<details><summary><code>client.tea_component.<a href="src/fern/tea_component/client.py#L34-L65">get_tea_component_by_id</a>(...) -> Component</code></summary>
 <dl>
 <dd>
 
@@ -1252,7 +1252,7 @@ client.tea_component.get_tea_component_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.tea_component.<a href="src/fern/tea_component/client.py">get_releases_by_component_id</a>(...) -> PaginatedComponentReleaseResponse</code></summary>
+<details><summary><code>client.tea_component.<a href="src/fern/tea_component/client.py#L67-L159">get_releases_by_component_id</a>(...) -> PaginatedComponentReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1398,7 +1398,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </dl>
 </details>
 
-<details><summary><code>client.tea_component.<a href="src/fern/tea_component/client.py">query_tea_components</a>(...) -> PaginatedComponentResponse</code></summary>
+<details><summary><code>client.tea_component.<a href="src/fern/tea_component/client.py#L161-L247">query_tea_components</a>(...) -> PaginatedComponentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1542,7 +1542,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </details>
 
 ## TEA Component Release
-<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py">query_tea_component_releases</a>(...) -> PaginatedComponentReleaseResponse</code></summary>
+<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py#L35-L130">query_tea_component_releases</a>(...) -> PaginatedComponentReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1694,7 +1694,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </dl>
 </details>
 
-<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py">get_component_release_by_id</a>(...) -> ComponentReleaseWithCollection</code></summary>
+<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py#L132-L163">get_component_release_by_id</a>(...) -> ComponentReleaseWithCollection</code></summary>
 <dl>
 <dd>
 
@@ -1767,7 +1767,7 @@ client.tea_component_release.get_component_release_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py">get_latest_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py#L165-L196">get_latest_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -1840,7 +1840,7 @@ client.tea_component_release.get_latest_collection(
 </dl>
 </details>
 
-<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py">get_collections_by_release_id</a>(...) -> PaginatedCollectionResponse</code></summary>
+<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py#L198-L286">get_collections_by_release_id</a>(...) -> PaginatedCollectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1982,7 +1982,7 @@ the secondary key is `version` if additional tie-breaking is needed.
 </dl>
 </details>
 
-<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py">get_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.tea_component_release.<a href="src/fern/tea_component_release/client.py#L288-L323">get_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -2065,7 +2065,7 @@ client.tea_component_release.get_collection(
 </details>
 
 ## TEA Artifact
-<details><summary><code>client.tea_artifact.<a href="src/fern/tea_artifact/client.py">get_latest_artifact</a>(...) -> Artifact</code></summary>
+<details><summary><code>client.tea_artifact.<a href="src/fern/tea_artifact/client.py#L27-L56">get_latest_artifact</a>(...) -> Artifact</code></summary>
 <dl>
 <dd>
 
@@ -2138,7 +2138,7 @@ client.tea_artifact.get_latest_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.tea_artifact.<a href="src/fern/tea_artifact/client.py">get_artifact_by_version</a>(...) -> Artifact</code></summary>
+<details><summary><code>client.tea_artifact.<a href="src/fern/tea_artifact/client.py#L58-L93">get_artifact_by_version</a>(...) -> Artifact</code></summary>
 <dl>
 <dd>
 
@@ -2221,7 +2221,7 @@ client.tea_artifact.get_artifact_by_version(
 </details>
 
 ## TEA Discovery
-<details><summary><code>client.tea_discovery.<a href="src/fern/tea_discovery/client.py">discovery_by_tei</a>(...) -> typing.List[DiscoveryInfo]</code></summary>
+<details><summary><code>client.tea_discovery.<a href="src/fern/tea_discovery/client.py#L26-L57">discovery_by_tei</a>(...) -> typing.List[DiscoveryInfo]</code></summary>
 <dl>
 <dd>
 

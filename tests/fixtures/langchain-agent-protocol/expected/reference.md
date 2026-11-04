@@ -1,6 +1,6 @@
 # Reference
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">search_agents</a>(...) -> typing.List[Agent]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L30-L76">search_agents</a>(...) -> typing.List[Agent]</code></summary>
 <dl>
 <dd>
 
@@ -93,7 +93,7 @@ client.agents.search_agents()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get_agent</a>(...) -> Agent</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L78-L107">get_agent</a>(...) -> Agent</code></summary>
 <dl>
 <dd>
 
@@ -164,7 +164,7 @@ client.agents.get_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get_agent_schemas</a>(...) -> AgentSchema</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L109-L140">get_agent_schemas</a>(...) -> AgentSchema</code></summary>
 <dl>
 <dd>
 
@@ -236,7 +236,7 @@ client.agents.get_agent_schemas(
 </details>
 
 ## Threads
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">create_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L34-L76">create_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -321,7 +321,7 @@ client.threads.create_thread()
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">search_threads</a>(...) -> typing.List[Thread]</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L78-L130">search_threads</a>(...) -> typing.List[Thread]</code></summary>
 <dl>
 <dd>
 
@@ -424,7 +424,7 @@ client.threads.search_threads()
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread_history</a>(...) -> typing.List[ThreadState]</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L132-L174">get_thread_history</a>(...) -> typing.List[ThreadState]</code></summary>
 <dl>
 <dd>
 
@@ -511,7 +511,7 @@ client.threads.get_thread_history(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">copy_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L176-L205">copy_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -582,7 +582,7 @@ client.threads.copy_thread(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">get_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L207-L236">get_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -653,7 +653,7 @@ client.threads.get_thread(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">delete_thread</a>(...)</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L238-L266">delete_thread</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -724,7 +724,7 @@ client.threads.delete_thread(
 </dl>
 </details>
 
-<details><summary><code>client.threads.<a href="src/fern/threads/client.py">patch_thread</a>(...) -> Thread</code></summary>
+<details><summary><code>client.threads.<a href="src/fern/threads/client.py#L268-L325">patch_thread</a>(...) -> Thread</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.threads.patch_thread(
 </details>
 
 ## Background Runs
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">search_runs</a>(...) -> typing.List[Run]</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L39-L99">search_runs</a>(...) -> typing.List[Run]</code></summary>
 <dl>
 <dd>
 
@@ -937,7 +937,7 @@ client.background_runs.search_runs()
 </dl>
 </details>
 
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">get_run</a>(...) -> Run</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L101-L130">get_run</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -1008,7 +1008,7 @@ client.background_runs.get_run(
 </dl>
 </details>
 
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">delete_run</a>(...)</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L132-L160">delete_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1079,7 +1079,7 @@ client.background_runs.delete_run(
 </dl>
 </details>
 
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">wait_run</a>(...) -> RunWaitResponse</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L162-L191">wait_run</a>(...) -> RunWaitResponse</code></summary>
 <dl>
 <dd>
 
@@ -1150,7 +1150,7 @@ client.background_runs.wait_run(
 </dl>
 </details>
 
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">stream_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L193-L222">stream_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1221,7 +1221,7 @@ client.background_runs.stream_run(
 </dl>
 </details>
 
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">cancel_run</a>(...)</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L224-L262">cancel_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1294,7 +1294,7 @@ client.background_runs.cancel_run(
 </dl>
 </details>
 
-<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py">create_run</a>(...) -> Run</code></summary>
+<details><summary><code>client.background_runs.<a href="src/fern/background_runs/client.py#L264-L351">create_run</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -1368,7 +1368,7 @@ client.background_runs.create_run(
 </details>
 
 ## Runs
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">create_and_stream_run</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L36-L125">create_and_stream_run</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ client.runs.create_and_stream_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">create_and_wait_run</a>(...) -> RunWaitResponse</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L127-L207">create_and_wait_run</a>(...) -> RunWaitResponse</code></summary>
 <dl>
 <dd>
 
@@ -1511,7 +1511,7 @@ client.runs.create_and_wait_run()
 </details>
 
 ## Streaming
-<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py">open_thread_websocket_stream</a>(...)</code></summary>
+<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py#L31-L61">open_thread_websocket_stream</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1582,7 +1582,7 @@ client.streaming.open_thread_websocket_stream(
 </dl>
 </details>
 
-<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py">open_thread_sse_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py#L63-L123">open_thread_sse_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1688,7 +1688,7 @@ client.streaming.open_thread_sse_stream(
 </dl>
 </details>
 
-<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py">send_thread_streaming_command</a>(...) -> StreamingCommandResponse</code></summary>
+<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py#L125-L175">send_thread_streaming_command</a>(...) -> StreamingCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -1786,7 +1786,7 @@ client.streaming.send_thread_streaming_command(
 </details>
 
 ## Store
-<details><summary><code>client.store.<a href="src/fern/store/client.py">get_item</a>(...) -> Item</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L31-L65">get_item</a>(...) -> Item</code></summary>
 <dl>
 <dd>
 
@@ -1851,7 +1851,7 @@ client.store.get_item(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">put_item</a>(...)</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L67-L110">put_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1930,7 +1930,7 @@ client.store.put_item(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">delete_item</a>(...)</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L112-L147">delete_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1995,7 +1995,7 @@ client.store.delete_item(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">search_items</a>(...) -> SearchItemsResponse</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L149-L197">search_items</a>(...) -> SearchItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2074,7 +2074,7 @@ client.store.search_items()
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">list_namespaces</a>(...) -> ListNamespaceResponse</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L199-L252">list_namespaces</a>(...) -> ListNamespaceResponse</code></summary>
 <dl>
 <dd>
 

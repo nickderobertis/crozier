@@ -1,6 +1,6 @@
 # Reference
 ## Coils
-<details><summary><code>client.coils.<a href="src/fern/coils/client.py">order_coil</a>(...)</code></summary>
+<details><summary><code>client.coils.<a href="src/fern/coils/client.py#L28-L56">order_coil</a>(...)</code></summary>
 <dl>
 <dd>
 

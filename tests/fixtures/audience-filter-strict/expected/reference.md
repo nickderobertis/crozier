@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">list_widgets</a>() -> typing.List[Widget]</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L26-L48">list_widgets</a>() -> typing.List[Widget]</code></summary>
 <dl>
 <dd>
 

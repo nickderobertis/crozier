@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.17",
+  "corpus_spec_name": "onmyshelf-api",
+  "corpus_spec_ref": "e56b713d272d627a18ba14d3eea992231c550146",
+  "corpus_spec_url": "https://raw.githubusercontent.com/onmyshelf/api/e56b713d272d627a18ba14d3eea992231c550146/inc/openapi.json"
+}

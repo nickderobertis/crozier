@@ -1,6 +1,6 @@
 # Reference
 ## Index
-<details><summary><code>client.index.<a href="src/fern/index/client.py">search_index</a>(...) -> Error</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L31-L72">search_index</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -96,7 +96,7 @@ client.index.search_index()
 </details>
 
 ## Tlog
-<details><summary><code>client.tlog.<a href="src/fern/tlog/client.py">get_log_info</a>(...) -> Error</code></summary>
+<details><summary><code>client.tlog.<a href="src/fern/tlog/client.py#L26-L53">get_log_info</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.tlog.get_log_info()
 </dl>
 </details>
 
-<details><summary><code>client.tlog.<a href="src/fern/tlog/client.py">get_log_proof</a>(...) -> Error</code></summary>
+<details><summary><code>client.tlog.<a href="src/fern/tlog/client.py#L55-L95">get_log_proof</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -253,7 +253,7 @@ client.tlog.get_log_proof()
 </details>
 
 ## Entries
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">get_log_entry_by_index</a>(...) -> Error</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L30-L55">get_log_entry_by_index</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.entries.get_log_entry_by_index()
 </dl>
 </details>
 
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">create_log_entry</a>(...) -> Error</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L57-L83">create_log_entry</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -381,7 +381,7 @@ client.entries.create_log_entry(
 </dl>
 </details>
 
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">search_log_query</a>(...) -> Error</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L85-L120">search_log_query</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -453,7 +453,7 @@ client.entries.search_log_query()
 </dl>
 </details>
 
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">get_log_entry_by_uuid</a>(...) -> Error</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L122-L151">get_log_entry_by_uuid</a>(...) -> Error</code></summary>
 <dl>
 <dd>
 
@@ -526,7 +526,7 @@ client.entries.get_log_entry_by_uuid(
 </details>
 
 ## Pubkey
-<details><summary><code>client.pubkey.<a href="src/fern/pubkey/client.py">get_public_key</a>(...)</code></summary>
+<details><summary><code>client.pubkey.<a href="src/fern/pubkey/client.py#L25-L51">get_public_key</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">define_prompt</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L130">define_prompt</a>(...)</code></summary>
 <dl>
 <dd>
 

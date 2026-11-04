@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_file</a>() -> FileConflict</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">get_file</a>() -> FileConflict</code></summary>
 <dl>
 <dd>
 

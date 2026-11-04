@@ -1,6 +1,6 @@
 # Reference
 ## Charters
-<details><summary><code>client.charters.<a href="src/fern/charters/client.py">book_charter</a>(...)</code></summary>
+<details><summary><code>client.charters.<a href="src/fern/charters/client.py#L29-L63">book_charter</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.charters.book_charter(
 </dl>
 </details>
 
-<details><summary><code>client.charters.<a href="src/fern/charters/client.py">get_charter</a>(...) -> Charter</code></summary>
+<details><summary><code>client.charters.<a href="src/fern/charters/client.py#L65-L91">get_charter</a>(...) -> Charter</code></summary>
 <dl>
 <dd>
 

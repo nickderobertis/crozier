@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post_extractpackages</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L105-L127">post_extractpackages</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

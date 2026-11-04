@@ -1,6 +1,6 @@
 # Reference
 ## Beacons
-<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py">upload_firmware</a>(...)</code></summary>
+<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py#L28-L79">upload_firmware</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -91,7 +91,7 @@ client.beacons.upload_firmware(
 </dl>
 </details>
 
-<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py">update_firmware</a>(...)</code></summary>
+<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py#L81-L126">update_firmware</a>(...)</code></summary>
 <dl>
 <dd>
 

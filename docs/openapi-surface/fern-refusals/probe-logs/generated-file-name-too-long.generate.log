@@ -4,7 +4,7 @@ Warnings for generators.yml:
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.17
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           
@@ -73,7 +73,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 210, in run
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 243, in run
                                               PydanticModelGenerator().generate_types(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   generator_exec_wrapper=generator_exec_wrapper,
@@ -96,7 +96,7 @@ Warnings for generators.yml:
                                             File "/src/fern_python/generators/pydantic_model/pydantic_model_generator.py", line 187, in _generate_type
                                               project.write_source_file(source_file=source_file, filepath=filepath)
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                            File "/src/fern_python/codegen/project.py", line 231, in write_source_file
+                                            File "/src/fern_python/codegen/project.py", line 254, in write_source_file
                                               source_file.write_to_file(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   filepath=self.get_source_file_filepath(

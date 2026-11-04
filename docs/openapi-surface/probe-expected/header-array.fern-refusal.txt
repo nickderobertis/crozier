@@ -1,5 +1,5 @@
-fern_cli_version: 5.163.1
-fern_python_sdk_version: 5.41.3
+fern_cli_version: 5.194.0
+fern_python_sdk_version: 5.41.17
 generate_exit: 1
 diagnostic: Expected example to be a list. Example is: "probeParam"
 output_tree: none

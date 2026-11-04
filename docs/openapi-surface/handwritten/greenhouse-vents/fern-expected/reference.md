@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_vents</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L96-L118">list_vents</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.list_vents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_vent</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L120-L146">get_vent</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -103,7 +103,7 @@ client.get_vent(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">close_all_vents</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L148-L169">close_all_vents</a>()</code></summary>
 <dl>
 <dd>
 

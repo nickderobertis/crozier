@@ -67,7 +67,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, Kiln
 
 client = AsyncFernApi()
 

@@ -1,6 +1,6 @@
 # Reference
 ## Service
-<details><summary><code>client.service.<a href="src/fern/service/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L26-L48">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.service.health()
 </details>
 
 ## Rooms
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">create_room</a>(...) -> CreatedRoom</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L41-L78">create_room</a>(...) -> CreatedRoom</code></summary>
 <dl>
 <dd>
 
@@ -131,7 +131,7 @@ client.rooms.create_room(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">close_room</a>(...) -> CloseRoomResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L80-L108">close_room</a>(...) -> CloseRoomResponse</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.rooms.close_room(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">get_room_status</a>(...) -> RoomStatus</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L110-L136">get_room_status</a>(...) -> RoomStatus</code></summary>
 <dl>
 <dd>
 
@@ -263,7 +263,7 @@ client.rooms.get_room_status(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">get_room_task</a>(...) -> GetRoomTaskResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L138-L166">get_room_task</a>(...) -> GetRoomTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -322,7 +322,7 @@ client.rooms.get_room_task(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">list_room_messages</a>(...) -> ListRoomMessagesResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L168-L211">list_room_messages</a>(...) -> ListRoomMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -411,7 +411,7 @@ client.rooms.list_room_messages(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">send_room_message</a>(...) -> SendRoomMessageResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L213-L250">send_room_message</a>(...) -> SendRoomMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -493,7 +493,7 @@ client.rooms.send_room_message(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">list_room_attachments</a>(...) -> ListRoomAttachmentsResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L252-L280">list_room_attachments</a>(...) -> ListRoomAttachmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -552,7 +552,7 @@ client.rooms.list_room_attachments(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">upload_room_attachment</a>(...) -> UploadRoomAttachmentResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L282-L307">upload_room_attachment</a>(...) -> UploadRoomAttachmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -622,7 +622,7 @@ client.rooms.upload_room_attachment(...)
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">download_room_attachment</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L309-L340">download_room_attachment</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -690,7 +690,7 @@ client.rooms.download_room_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">get_room_final</a>(...) -> RoomFinal</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L342-L370">get_room_final</a>(...) -> RoomFinal</code></summary>
 <dl>
 <dd>
 
@@ -763,7 +763,7 @@ client.rooms.get_room_final(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">finalize_room</a>(...) -> FinalizeRoomResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L372-L406">finalize_room</a>(...) -> FinalizeRoomResponse</code></summary>
 <dl>
 <dd>
 
@@ -845,7 +845,7 @@ client.rooms.finalize_room(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">collect_room</a>(...) -> CollectRoomResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L408-L441">collect_room</a>(...) -> CollectRoomResponse</code></summary>
 <dl>
 <dd>
 
@@ -928,7 +928,7 @@ client.rooms.collect_room(
 </details>
 
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">use_agent_invitation</a>(...) -> UseAgentInvitationResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L30-L64">use_agent_invitation</a>(...) -> UseAgentInvitationResponse</code></summary>
 <dl>
 <dd>
 

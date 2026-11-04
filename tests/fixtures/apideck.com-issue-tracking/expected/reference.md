@@ -107,7 +107,7 @@ client.collections.all_(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">one</a>(...) -> GetCollectionResponse</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L85-L131">one</a>(...) -> GetCollectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -200,7 +200,7 @@ client.collections.one(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">collection_tags_all</a>(...) -> GetCollectionTagsResponse</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L26-L82">collection_tags_all</a>(...) -> GetCollectionTagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.tags.collection_tags_all(
 </details>
 
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_all</a>(...) -> GetTicketsResponse</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L43-L114">collection_tickets_all</a>(...) -> GetTicketsResponse</code></summary>
 <dl>
 <dd>
 
@@ -433,7 +433,7 @@ client.tickets.collection_tickets_all(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_add</a>(...) -> CreateTicketResponse</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L116-L230">collection_tickets_add</a>(...) -> CreateTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -524,7 +524,7 @@ client.tickets.collection_tickets_add(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_one</a>(...) -> GetTicketResponse</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L232-L285">collection_tickets_one</a>(...) -> GetTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.tickets.collection_tickets_one(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_delete</a>(...) -> DeleteTicketResponse</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L287-L335">collection_tickets_delete</a>(...) -> DeleteTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -717,7 +717,7 @@ client.tickets.collection_tickets_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">collection_tickets_update</a>(...) -> UpdateTicketResponse</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L337-L457">collection_tickets_update</a>(...) -> UpdateTicketResponse</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.tickets.collection_tickets_update(
 </details>
 
 ## Comments
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_all</a>(...) -> GetCommentsResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L38-L110">collection_ticket_comments_all</a>(...) -> GetCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -943,7 +943,7 @@ client.comments.collection_ticket_comments_all(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_add</a>(...) -> CreateCommentResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L112-L184">collection_ticket_comments_add</a>(...) -> CreateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1043,7 +1043,7 @@ client.comments.collection_ticket_comments_add(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_one</a>(...) -> GetCommentResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L186-L259">collection_ticket_comments_one</a>(...) -> GetCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1169,7 +1169,7 @@ client.comments.collection_ticket_comments_one(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_delete</a>(...) -> DeleteCommentResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L261-L314">collection_ticket_comments_delete</a>(...) -> DeleteCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1270,7 +1270,7 @@ client.comments.collection_ticket_comments_delete(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">collection_ticket_comments_update</a>(...) -> UpdateCommentResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L316-L394">collection_ticket_comments_update</a>(...) -> UpdateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1380,7 +1380,7 @@ client.comments.collection_ticket_comments_update(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">collection_users_all</a>(...) -> GetCollectionUsersResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L27-L83">collection_users_all</a>(...) -> GetCollectionUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1488,7 +1488,7 @@ client.users.collection_users_all(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">collection_users_one</a>(...) -> GetCollectionUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L85-L138">collection_users_one</a>(...) -> GetCollectionUserResponse</code></summary>
 <dl>
 <dd>
 

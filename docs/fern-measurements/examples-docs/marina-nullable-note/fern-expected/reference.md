@@ -1,6 +1,6 @@
 # Reference
 ## Berths
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">create_berth</a>(...)</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L28-L62">create_berth</a>(...)</code></summary>
 <dl>
 <dd>
 

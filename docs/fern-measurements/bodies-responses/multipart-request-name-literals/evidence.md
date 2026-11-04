@@ -1,8 +1,8 @@
 # Multipart component request name, literals
 
 Source: `docs/fern-measurements/superseded-fixtures/multipart-request-name/openapi.yml`.
-Fern CLI 5.163.1; fernapi/fern-python-sdk 5.41.3; enum_type: literals;
+Fern CLI 5.194.0; fernapi/fern-python-sdk 5.41.17; enum_type: literals;
 package_name: fern; project_name: default_package_name. Complete unedited
 comment-stripped certified output.
 
-Canonical tree SHA-256: `a8b3b86b29e0e3394a04518ad9455ce54d5bc87aa7c61ba396d10205087b2ff6`
+Canonical tree SHA-256: `0028d577b77c8041aba3c9c74f3e11660415d4197400ecd8260f25bf415e2e86`

@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "67a43d9928815a579b564fe8ff9ff8feacc6bccded2b8d591833bed0f2c5944b"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "59e17070955545c71a57babe03fef9ad5b42d4359e3e717c01f4561f9094a986"
 
 [[covers]]
 key = "discriminator-mapping"

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_firings</a>() -> TwelveHourCycle</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L120">list_firings</a>() -> TwelveHourCycle</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.list_firings()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_kiln</a>(...) -> ThreeDKilnModel</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L122-L148">get_kiln</a>(...) -> ThreeDKilnModel</code></summary>
 <dl>
 <dd>
 

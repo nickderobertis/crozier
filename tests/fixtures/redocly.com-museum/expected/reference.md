@@ -1,6 +1,6 @@
 # Reference
 ## Operations
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">get_museum_hours</a>(...) -> MuseumHours</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py#L27-L78">get_museum_hours</a>(...) -> MuseumHours</code></summary>
 <dl>
 <dd>
 
@@ -94,7 +94,7 @@ client.operations.get_museum_hours(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">list_special_events</a>(...) -> SpecialEventCollection</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L37-L95">list_special_events</a>(...) -> SpecialEventCollection</code></summary>
 <dl>
 <dd>
 
@@ -196,7 +196,7 @@ client.events.list_special_events(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">create_special_event</a>(...) -> SpecialEvent</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L97-L167">create_special_event</a>(...) -> SpecialEvent</code></summary>
 <dl>
 <dd>
 
@@ -278,7 +278,7 @@ client.events.create_special_event(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_special_event</a>(...) -> SpecialEvent</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L169-L201">get_special_event</a>(...) -> SpecialEvent</code></summary>
 <dl>
 <dd>
 
@@ -352,7 +352,7 @@ client.events.get_special_event(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">delete_special_event</a>(...)</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L203-L232">delete_special_event</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -426,7 +426,7 @@ client.events.delete_special_event(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">update_special_event</a>(...) -> SpecialEvent</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L234-L294">update_special_event</a>(...) -> SpecialEvent</code></summary>
 <dl>
 <dd>
 
@@ -543,7 +543,7 @@ client.events.update_special_event(
 </details>
 
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">buy_museum_tickets</a>(...) -> MuseumTicketsConfirmation</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L34-L95">buy_museum_tickets</a>(...) -> MuseumTicketsConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -652,7 +652,7 @@ client.tickets.buy_museum_tickets(
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">get_ticket_code</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L97-L129">get_ticket_code</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

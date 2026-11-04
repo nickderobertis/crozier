@@ -1,6 +1,6 @@
 # Reference
 ## Harvests
-<details><summary><code>client.harvests.<a href="src/fern/harvests/client.py">list_harvests</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.harvests.<a href="src/fern/harvests/client.py#L29-L61">list_harvests</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.harvests.list_harvests()
 </dl>
 </details>
 
-<details><summary><code>client.harvests.<a href="src/fern/harvests/client.py">list_weighed_harvests</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.harvests.<a href="src/fern/harvests/client.py#L63-L95">list_weighed_harvests</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.harvests.list_weighed_harvests()
 </details>
 
 ## Rows
-<details><summary><code>client.rows.<a href="src/fern/rows/client.py">get_row</a>(...) -> str</code></summary>
+<details><summary><code>client.rows.<a href="src/fern/rows/client.py#L29-L73">get_row</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

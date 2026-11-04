@@ -10,3 +10,5 @@ Warnings for generators.yml:
         issue: Default value '-createdAt' is not a valid enum value
 
 Found 2 errors and 0 warnings in <n> seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

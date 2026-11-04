@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">record_reading</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L149">record_reading</a>(...)</code></summary>
 <dl>
 <dd>
 

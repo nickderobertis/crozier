@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.17",
+  "corpus_spec_name": "dashy-route-api",
+  "corpus_spec_ref": "6d7a394da71d083e719e32f3e365fa99fec320c2",
+  "corpus_spec_url": "https://raw.githubusercontent.com/lissy93/dashy/6d7a394da71d083e719e32f3e365fa99fec320c2/services/endpoints/api/openapi.yml"
+}

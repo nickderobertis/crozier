@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_reading</a>(...) -> Reading</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L125">get_reading</a>(...) -> Reading</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_reading(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_calibration</a>(...) -> Calibration</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L155">get_calibration</a>(...) -> Calibration</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.get_calibration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_seal</a>(...) -> Seal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L157-L183">get_seal</a>(...) -> Seal</code></summary>
 <dl>
 <dd>
 

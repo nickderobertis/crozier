@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_parcel</a>(...) -> Parcel</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L136">create_parcel</a>(...) -> Parcel</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.create_parcel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_parcel</a>(...) -> Parcel</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L138-L164">get_parcel</a>(...) -> Parcel</code></summary>
 <dl>
 <dd>
 

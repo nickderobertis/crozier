@@ -1,6 +1,6 @@
 # Reference
 ## OddsCalculations
-<details><summary><code>client.odds_calculations.<a href="src/fern/odds_calculations/client.py">odds</a>(...) -> float</code></summary>
+<details><summary><code>client.odds_calculations.<a href="src/fern/odds_calculations/client.py#L30-L74">odds</a>(...) -> float</code></summary>
 <dl>
 <dd>
 

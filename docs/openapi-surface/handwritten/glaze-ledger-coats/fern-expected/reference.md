@@ -1,6 +1,6 @@
 # Reference
 ## Pots
-<details><summary><code>client.pots.<a href="src/fern/pots/client.py">record_pot</a>(...) -> Pot</code></summary>
+<details><summary><code>client.pots.<a href="src/fern/pots/client.py#L32-L73">record_pot</a>(...) -> Pot</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.pots.record_pot(
 </dl>
 </details>
 
-<details><summary><code>client.pots.<a href="src/fern/pots/client.py">recoat_pot</a>(...) -> Pot</code></summary>
+<details><summary><code>client.pots.<a href="src/fern/pots/client.py#L75-L118">recoat_pot</a>(...) -> Pot</code></summary>
 <dl>
 <dd>
 

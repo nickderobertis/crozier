@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">estimate_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L132">estimate_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.estimate_stream(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">estimate</a>(...) -> Estimate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L134-L162">estimate</a>(...) -> Estimate</code></summary>
 <dl>
 <dd>
 

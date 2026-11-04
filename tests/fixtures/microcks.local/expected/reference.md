@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_resources_by_service</a>(...) -> typing.List[Resource]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L125-L154">get_resources_by_service</a>(...) -> typing.List[Resource]</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.get_resources_by_service(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_resource</a>(...) -> Resource</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L156-L183">get_resource</a>(...) -> Resource</code></summary>
 <dl>
 <dd>
 
@@ -118,7 +118,7 @@ client.get_resource(
 </details>
 
 ## job
-<details><summary><code>client.job.<a href="src/fern/job/client.py">upload_artifact</a>(...) -> str</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L35-L60">upload_artifact</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -188,7 +188,7 @@ client.job.upload_artifact(...)
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_jobs</a>(...) -> typing.List[ImportJob]</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L62-L102">get_import_jobs</a>(...) -> typing.List[ImportJob]</code></summary>
 <dl>
 <dd>
 
@@ -275,7 +275,7 @@ client.job.get_import_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">create_import_job</a>(...) -> ImportJob</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L104-L207">create_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.job.create_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_job_counter</a>() -> Counter</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L209-L231">get_import_job_counter</a>() -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -398,7 +398,7 @@ client.job.get_import_job_counter()
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">get_import_job</a>(...) -> ImportJob</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L233-L262">get_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -471,7 +471,7 @@ client.job.get_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">update_import_job</a>(...) -> ImportJob</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L264-L373">update_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -554,7 +554,7 @@ client.job.update_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">delete_import_job</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L375-L404">delete_import_job</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -627,7 +627,7 @@ client.job.delete_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">activate_import_job</a>(...) -> ImportJob</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L406-L435">activate_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -700,7 +700,7 @@ client.job.activate_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">start_import_job</a>(...) -> ImportJob</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L437-L466">start_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -773,7 +773,7 @@ client.job.start_import_job(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">stop_import_job</a>(...) -> ImportJob</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L468-L497">stop_import_job</a>(...) -> ImportJob</code></summary>
 <dl>
 <dd>
 
@@ -847,7 +847,7 @@ client.job.stop_import_job(
 </details>
 
 ## mock
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">export_snapshot</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L34-L57">export_snapshot</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -909,7 +909,7 @@ client.mock.export_snapshot(...)
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">import_snapshot</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L59-L85">import_snapshot</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -982,7 +982,7 @@ client.mock.import_snapshot(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services</a>(...) -> Service</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L87-L121">get_services</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -1047,7 +1047,7 @@ client.mock.get_services()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services_counter</a>() -> Counter</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L123-L145">get_services_counter</a>() -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -1096,7 +1096,7 @@ client.mock.get_services_counter()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_services_labels</a>() -> LabelsMap</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L147-L169">get_services_labels</a>() -> LabelsMap</code></summary>
 <dl>
 <dd>
 
@@ -1145,7 +1145,7 @@ client.mock.get_services_labels()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">search_services</a>(...) -> typing.List[Service]</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L171-L200">search_services</a>(...) -> typing.List[Service]</code></summary>
 <dl>
 <dd>
 
@@ -1206,7 +1206,7 @@ client.mock.search_services(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_service</a>(...) -> GetServiceResponse</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L202-L238">get_service</a>(...) -> GetServiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1273,7 +1273,7 @@ client.mock.get_service(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">delete_service</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L240-L268">delete_service</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1346,7 +1346,7 @@ client.mock.delete_service(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">update_service_metadata</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L270-L326">update_service_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1415,7 +1415,7 @@ client.mock.update_service_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">override_service_operation</a>(...)</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L328-L388">override_service_operation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1516,7 +1516,7 @@ client.mock.override_service_operation(
 </details>
 
 ## config
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_features_configuration</a>() -> typing.Any</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L31-L53">get_features_configuration</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1565,7 +1565,7 @@ client.config.get_features_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_keycloak_config</a>() -> KeycloakConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L55-L77">get_keycloak_config</a>() -> KeycloakConfig</code></summary>
 <dl>
 <dd>
 
@@ -1614,7 +1614,7 @@ client.config.get_keycloak_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secrets</a>(...) -> typing.List[Secret]</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L79-L113">get_secrets</a>(...) -> typing.List[Secret]</code></summary>
 <dl>
 <dd>
 
@@ -1679,7 +1679,7 @@ client.config.get_secrets()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">create_secret</a>(...) -> Secret</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L115-L181">create_secret</a>(...) -> Secret</code></summary>
 <dl>
 <dd>
 
@@ -1739,7 +1739,7 @@ client.config.create_secret(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secrets_counter</a>() -> Counter</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L183-L205">get_secrets_counter</a>() -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -1788,7 +1788,7 @@ client.config.get_secrets_counter()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_secret</a>(...) -> Secret</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L207-L236">get_secret</a>(...) -> Secret</code></summary>
 <dl>
 <dd>
 
@@ -1861,7 +1861,7 @@ client.config.get_secret(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_secret</a>(...)</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L238-L266">update_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1934,7 +1934,7 @@ client.config.update_secret(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">delete_secret</a>(...)</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L268-L296">delete_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2008,7 +2008,7 @@ client.config.delete_secret(
 </details>
 
 ## metrics
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_conformance_metrics_aggregation</a>() -> typing.List[WeightedMetricValue]</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L30-L54">get_conformance_metrics_aggregation</a>() -> typing.List[WeightedMetricValue]</code></summary>
 <dl>
 <dd>
 
@@ -2057,7 +2057,7 @@ client.metrics.get_conformance_metrics_aggregation()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_service_test_conformance_metric</a>(...) -> TestConformanceMetric</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L56-L85">get_service_test_conformance_metric</a>(...) -> TestConformanceMetric</code></summary>
 <dl>
 <dd>
 
@@ -2116,7 +2116,7 @@ client.metrics.get_service_test_conformance_metric(
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_aggregated_invocations_stats</a>(...) -> DailyInvocationStatistic</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L87-L114">get_aggregated_invocations_stats</a>(...) -> DailyInvocationStatistic</code></summary>
 <dl>
 <dd>
 
@@ -2173,7 +2173,7 @@ client.metrics.get_aggregated_invocations_stats()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_latest_aggregated_invocations_stats</a>(...) -> CounterMap</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L116-L145">get_latest_aggregated_invocations_stats</a>(...) -> CounterMap</code></summary>
 <dl>
 <dd>
 
@@ -2230,7 +2230,7 @@ client.metrics.get_latest_aggregated_invocations_stats()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_top_ivnocations_stats_by_day</a>(...) -> typing.List[DailyInvocationStatistic]</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L147-L183">get_top_ivnocations_stats_by_day</a>(...) -> typing.List[DailyInvocationStatistic]</code></summary>
 <dl>
 <dd>
 
@@ -2295,7 +2295,7 @@ client.metrics.get_top_ivnocations_stats_by_day()
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_invocation_stats_by_service</a>(...) -> DailyInvocationStatistic</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L185-L228">get_invocation_stats_by_service</a>(...) -> DailyInvocationStatistic</code></summary>
 <dl>
 <dd>
 
@@ -2371,7 +2371,7 @@ client.metrics.get_invocation_stats_by_service(
 </dl>
 </details>
 
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_latest_test_results</a>(...) -> typing.List[TestResultSummary]</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L230-L257">get_latest_test_results</a>(...) -> typing.List[TestResultSummary]</code></summary>
 <dl>
 <dd>
 
@@ -2429,7 +2429,7 @@ client.metrics.get_latest_test_results()
 </details>
 
 ## test
-<details><summary><code>client.test.<a href="src/fern/test/client.py">create_test</a>(...) -> TestResult</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L35-L103">create_test</a>(...) -> TestResult</code></summary>
 <dl>
 <dd>
 
@@ -2539,7 +2539,7 @@ client.test.create_test(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_results_by_service</a>(...) -> typing.List[TestResult]</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L105-L134">get_test_results_by_service</a>(...) -> typing.List[TestResult]</code></summary>
 <dl>
 <dd>
 
@@ -2598,7 +2598,7 @@ client.test.get_test_results_by_service(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_results_by_service_counter</a>(...) -> Counter</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L136-L165">get_test_results_by_service_counter</a>(...) -> Counter</code></summary>
 <dl>
 <dd>
 
@@ -2657,7 +2657,7 @@ client.test.get_test_results_by_service_counter(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_test_result</a>(...) -> TestResult</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L167-L196">get_test_result</a>(...) -> TestResult</code></summary>
 <dl>
 <dd>
 
@@ -2730,7 +2730,7 @@ client.test.get_test_result(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_events_by_test_case</a>(...) -> typing.List[UnidirectionalEvent]</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L198-L231">get_events_by_test_case</a>(...) -> typing.List[UnidirectionalEvent]</code></summary>
 <dl>
 <dd>
 
@@ -2798,7 +2798,7 @@ client.test.get_events_by_test_case(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">get_messages_by_test_case</a>(...) -> typing.List[RequestResponsePair]</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L233-L266">get_messages_by_test_case</a>(...) -> typing.List[RequestResponsePair]</code></summary>
 <dl>
 <dd>
 
@@ -2866,7 +2866,7 @@ client.test.get_messages_by_test_case(
 </dl>
 </details>
 
-<details><summary><code>client.test.<a href="src/fern/test/client.py">report_test_case_result</a>(...) -> TestCaseResult</code></summary>
+<details><summary><code>client.test.<a href="src/fern/test/client.py#L268-L305">report_test_case_result</a>(...) -> TestCaseResult</code></summary>
 <dl>
 <dd>
 

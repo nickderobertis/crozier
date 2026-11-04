@@ -1,6 +1,6 @@
 # Reference
 ## Sites
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">list_sites</a>() -> typing.List[Site]</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L30-L52">list_sites</a>() -> typing.List[Site]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.sites.list_sites()
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">search_sites</a>(...) -> typing.List[Site]</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L54-L83">search_sites</a>(...) -> typing.List[Site]</code></summary>
 <dl>
 <dd>
 
@@ -103,7 +103,7 @@ client.sites.search_sites()
 </details>
 
 ## Survey
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">amend_site</a>(...) -> Site</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L31-L62">amend_site</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.survey.amend_site(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">record_sites</a>(...)</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L64-L96">record_sites</a>(...)</code></summary>
 <dl>
 <dd>
 

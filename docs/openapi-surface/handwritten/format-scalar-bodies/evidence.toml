@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "85a5dd8b8a18098eb04217a51c1c20b4ea5f869548452dd093ceb275817a2a13"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "00805aec285f5127b025eb28abff760163329dd4ec404415df8af73e2830c098"
 
 [[covers]]
 key = "format-email"

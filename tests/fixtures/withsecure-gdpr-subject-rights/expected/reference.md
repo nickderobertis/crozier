@@ -1,6 +1,6 @@
 # Reference
 ## Flags
-<details><summary><code>client.flags.<a href="src/fern/flags/client.py">get_personal_data_contexts</a>(...) -> ContextsResponse</code></summary>
+<details><summary><code>client.flags.<a href="src/fern/flags/client.py#L26-L59">get_personal_data_contexts</a>(...) -> ContextsResponse</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.flags.get_personal_data_contexts(
 </details>
 
 ## Export
-<details><summary><code>client.export.<a href="src/fern/export/client.py">export_personal_data</a>(...) -> ExportRequestResponse</code></summary>
+<details><summary><code>client.export.<a href="src/fern/export/client.py#L33-L72">export_personal_data</a>(...) -> ExportRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -151,7 +151,7 @@ client.export.export_personal_data(
 </dl>
 </details>
 
-<details><summary><code>client.export.<a href="src/fern/export/client.py">query_the_status_of_an_export_request</a>(...) -> ExportReadyResponse</code></summary>
+<details><summary><code>client.export.<a href="src/fern/export/client.py#L74-L113">query_the_status_of_an_export_request</a>(...) -> ExportReadyResponse</code></summary>
 <dl>
 <dd>
 
@@ -231,7 +231,7 @@ client.export.query_the_status_of_an_export_request(
 </details>
 
 ## Deletion
-<details><summary><code>client.deletion.<a href="src/fern/deletion/client.py">delete_personal_data</a>(...) -> DeletionRequestResponse</code></summary>
+<details><summary><code>client.deletion.<a href="src/fern/deletion/client.py#L34-L79">delete_personal_data</a>(...) -> DeletionRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -318,7 +318,7 @@ client.deletion.delete_personal_data(
 </dl>
 </details>
 
-<details><summary><code>client.deletion.<a href="src/fern/deletion/client.py">query_the_status_of_a_deletion_request</a>(...) -> DeletionReadyResponse</code></summary>
+<details><summary><code>client.deletion.<a href="src/fern/deletion/client.py#L81-L120">query_the_status_of_a_deletion_request</a>(...) -> DeletionReadyResponse</code></summary>
 <dl>
 <dd>
 

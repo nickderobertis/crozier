@@ -57,7 +57,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 import datetime
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, DueMarker_Calendar
 
 client = AsyncFernApi(
     base_url="https://yourhost.com/path/to/api",

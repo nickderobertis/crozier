@@ -1,6 +1,6 @@
 # Reference
 ## General
-<details><summary><code>client.general.<a href="src/fern/general/client.py">service_status</a>() -> str</code></summary>
+<details><summary><code>client.general.<a href="src/fern/general/client.py#L26-L50">service_status</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.general.service_status()
 </dl>
 </details>
 
-<details><summary><code>client.general.<a href="src/fern/general/client.py">service_status_check</a>() -> Status</code></summary>
+<details><summary><code>client.general.<a href="src/fern/general/client.py#L52-L76">service_status_check</a>() -> Status</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.general.service_status_check()
 </details>
 
 ## Dataset
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">get</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L41-L116">get</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -259,7 +259,7 @@ client.dataset.get(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">register</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L118-L443">register</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -630,7 +630,7 @@ client.dataset.register(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L445-L504">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -738,7 +738,7 @@ client.dataset.delete(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">patch</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L506-L878">patch</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -1180,7 +1180,7 @@ client.dataset.patch(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">acquire_a_lock_for_a_dataset_id</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L880-L965">acquire_a_lock_for_a_dataset_id</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -1319,7 +1319,7 @@ client.dataset.acquire_a_lock_for_a_dataset_id(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">lock_rm</a>(...)</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L967-L1034">lock_rm</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1435,7 +1435,7 @@ client.dataset.lock_rm(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">permission</a>(...) -> DatasetPermission</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1036-L1104">permission</a>(...) -> DatasetPermission</code></summary>
 <dl>
 <dd>
 
@@ -1551,7 +1551,7 @@ client.dataset.permission(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">ctag_check</a>(...) -> bool</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1106-L1172">ctag_check</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -1668,7 +1668,7 @@ client.dataset.ctag_check(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">add_tag</a>(...)</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1174-L1247">add_tag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1795,7 +1795,7 @@ client.dataset.add_tag(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">size</a>(...) -> DatasetSize</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1249-L1311">size</a>(...) -> DatasetSize</code></summary>
 <dl>
 <dd>
 
@@ -1905,7 +1905,7 @@ client.dataset.size(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">read_directory</a>(...) -> DatasetAndDirectories</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1313-L1369">read_directory</a>(...) -> DatasetAndDirectories</code></summary>
 <dl>
 <dd>
 
@@ -2006,7 +2006,7 @@ client.dataset.read_directory(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">list</a>(...) -> PaginatedDatasets</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1371-L1442">list</a>(...) -> PaginatedDatasets</code></summary>
 <dl>
 <dd>
 
@@ -2131,7 +2131,7 @@ client.dataset.list(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">list_post</a>(...) -> PaginatedDatasets</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1444-L1522">list_post</a>(...) -> PaginatedDatasets</code></summary>
 <dl>
 <dd>
 
@@ -2270,7 +2270,7 @@ client.dataset.list_post(
 </dl>
 </details>
 
-<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py">exist</a>(...) -> typing.List[bool]</code></summary>
+<details><summary><code>client.dataset.<a href="src/fern/dataset/client.py#L1524-L1580">exist</a>(...) -> typing.List[bool]</code></summary>
 <dl>
 <dd>
 
@@ -2375,7 +2375,7 @@ client.dataset.exist(
 </details>
 
 ## DatasetDeprecated
-<details><summary><code>client.dataset_deprecated.<a href="src/fern/dataset_deprecated/client.py">dataset_sizes</a>(...) -> typing.List[float]</code></summary>
+<details><summary><code>client.dataset_deprecated.<a href="src/fern/dataset_deprecated/client.py#L28-L86">dataset_sizes</a>(...) -> typing.List[float]</code></summary>
 <dl>
 <dd>
 
@@ -2482,7 +2482,7 @@ client.dataset_deprecated.dataset_sizes(
 </details>
 
 ## Utility
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">ls</a>(...) -> LsDatasets</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L27-L86">ls</a>(...) -> LsDatasets</code></summary>
 <dl>
 <dd>
 
@@ -2589,7 +2589,7 @@ client.utility.ls(
 </dl>
 </details>
 
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">storage_tiers</a>()</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L88-L111">storage_tiers</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2652,7 +2652,7 @@ client.utility.storage_tiers()
 </dl>
 </details>
 
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">cp</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L113-L174">cp</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2758,7 +2758,7 @@ client.utility.cp(
 </dl>
 </details>
 
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">gcs_access_token</a>(...) -> AccessToken</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L176-L231">gcs_access_token</a>(...) -> AccessToken</code></summary>
 <dl>
 <dd>
 
@@ -2855,7 +2855,7 @@ client.utility.gcs_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">upload_connection_string</a>(...) -> AccessToken</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L233-L273">upload_connection_string</a>(...) -> AccessToken</code></summary>
 <dl>
 <dd>
 
@@ -2936,7 +2936,7 @@ client.utility.upload_connection_string(
 </dl>
 </details>
 
-<details><summary><code>client.utility.<a href="src/fern/utility/client.py">download_connection_string</a>(...) -> AccessToken</code></summary>
+<details><summary><code>client.utility.<a href="src/fern/utility/client.py#L275-L315">download_connection_string</a>(...) -> AccessToken</code></summary>
 <dl>
 <dd>
 
@@ -3018,7 +3018,7 @@ client.utility.download_connection_string(
 </details>
 
 ## ImpersonationTokenObsolete
-<details><summary><code>client.impersonation_token_obsolete.<a href="src/fern/impersonation_token_obsolete/client.py">imp_token</a>(...) -> ImpersonationToken</code></summary>
+<details><summary><code>client.impersonation_token_obsolete.<a href="src/fern/impersonation_token_obsolete/client.py#L30-L89">imp_token</a>(...) -> ImpersonationToken</code></summary>
 <dl>
 <dd>
 
@@ -3123,7 +3123,7 @@ client.impersonation_token_obsolete.imp_token(
 </dl>
 </details>
 
-<details><summary><code>client.impersonation_token_obsolete.<a href="src/fern/impersonation_token_obsolete/client.py">imp_token_refresh</a>(...) -> ImpersonationToken</code></summary>
+<details><summary><code>client.impersonation_token_obsolete.<a href="src/fern/impersonation_token_obsolete/client.py#L91-L122">imp_token_refresh</a>(...) -> ImpersonationToken</code></summary>
 <dl>
 <dd>
 
@@ -3196,7 +3196,7 @@ client.impersonation_token_obsolete.imp_token_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.impersonation_token_obsolete.<a href="src/fern/impersonation_token_obsolete/client.py">imp_token_patch</a>(...) -> ImpersonationToken</code></summary>
+<details><summary><code>client.impersonation_token_obsolete.<a href="src/fern/impersonation_token_obsolete/client.py#L124-L163">imp_token_patch</a>(...) -> ImpersonationToken</code></summary>
 <dl>
 <dd>
 
@@ -3281,7 +3281,7 @@ client.impersonation_token_obsolete.imp_token_patch(
 </details>
 
 ## ImpersonationToken
-<details><summary><code>client.impersonation_token.<a href="src/fern/impersonation_token/client.py">generate</a>(...) -> ImpersonationToken</code></summary>
+<details><summary><code>client.impersonation_token.<a href="src/fern/impersonation_token/client.py#L30-L84">generate</a>(...) -> ImpersonationToken</code></summary>
 <dl>
 <dd>
 
@@ -3383,7 +3383,7 @@ client.impersonation_token.generate(
 </dl>
 </details>
 
-<details><summary><code>client.impersonation_token.<a href="src/fern/impersonation_token/client.py">refresh</a>(...) -> ImpersonationToken</code></summary>
+<details><summary><code>client.impersonation_token.<a href="src/fern/impersonation_token/client.py#L86-L129">refresh</a>(...) -> ImpersonationToken</code></summary>
 <dl>
 <dd>
 
@@ -3466,7 +3466,7 @@ client.impersonation_token.refresh(
 </details>
 
 ## Subproject
-<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py">get</a>(...) -> SubProject</code></summary>
+<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py#L32-L77">get</a>(...) -> SubProject</code></summary>
 <dl>
 <dd>
 
@@ -3556,7 +3556,7 @@ client.subproject.get(
 </dl>
 </details>
 
-<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py">create</a>(...) -> SubProject</code></summary>
+<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py#L79-L171">create</a>(...) -> SubProject</code></summary>
 <dl>
 <dd>
 
@@ -3701,7 +3701,7 @@ client.subproject.create(
 </dl>
 </details>
 
-<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py#L173-L207">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3783,7 +3783,7 @@ client.subproject.delete(
 </dl>
 </details>
 
-<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py">patch</a>(...) -> SubProject</code></summary>
+<details><summary><code>client.subproject.<a href="src/fern/subproject/client.py#L209-L295">patch</a>(...) -> SubProject</code></summary>
 <dl>
 <dd>
 
@@ -3920,7 +3920,7 @@ client.subproject.patch(
 </details>
 
 ## SubProject
-<details><summary><code>client.sub_project.<a href="src/fern/sub_project/client.py">sub_project_list</a>(...) -> typing.List[SubProject]</code></summary>
+<details><summary><code>client.sub_project.<a href="src/fern/sub_project/client.py#L26-L57">sub_project_list</a>(...) -> typing.List[SubProject]</code></summary>
 <dl>
 <dd>
 
@@ -3994,7 +3994,7 @@ client.sub_project.sub_project_list(
 </details>
 
 ## Tenant
-<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py">get</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py#L29-L58">get</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -4067,7 +4067,7 @@ client.tenant.get(
 </dl>
 </details>
 
-<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py">create</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py#L60-L111">create</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -4168,7 +4168,7 @@ client.tenant.create(
 </details>
 
 ## TenantObsolete
-<details><summary><code>client.tenant_obsolete.<a href="src/fern/tenant_obsolete/client.py">tenant_sdpath</a>(...) -> str</code></summary>
+<details><summary><code>client.tenant_obsolete.<a href="src/fern/tenant_obsolete/client.py#L25-L54">tenant_sdpath</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4242,7 +4242,7 @@ client.tenant_obsolete.tenant_sdpath(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">user_list</a>(...) -> typing.List[typing.List[str]]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L30-L61">user_list</a>(...) -> typing.List[typing.List[str]]</code></summary>
 <dl>
 <dd>
 
@@ -4315,7 +4315,7 @@ client.users.user_list(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">user_add</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L63-L108">user_add</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4407,7 +4407,7 @@ client.users.user_add(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">user_rm</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L110-L142">user_rm</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4489,7 +4489,7 @@ client.users.user_rm(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">user_roles</a>(...) -> UserRoles</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L144-L173">user_roles</a>(...) -> UserRoles</code></summary>
 <dl>
 <dd>
 
@@ -4563,7 +4563,7 @@ client.users.user_roles(
 </details>
 
 ## Apps
-<details><summary><code>client.apps.<a href="src/fern/apps/client.py">app_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.apps.<a href="src/fern/apps/client.py#L25-L56">app_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -4638,7 +4638,7 @@ client.apps.app_list(
 </dl>
 </details>
 
-<details><summary><code>client.apps.<a href="src/fern/apps/client.py">app_register</a>(...)</code></summary>
+<details><summary><code>client.apps.<a href="src/fern/apps/client.py#L58-L90">app_register</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4720,7 +4720,7 @@ client.apps.app_register(
 </dl>
 </details>
 
-<details><summary><code>client.apps.<a href="src/fern/apps/client.py">trustedapp_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.apps.<a href="src/fern/apps/client.py#L92-L125">trustedapp_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -4795,7 +4795,7 @@ client.apps.trustedapp_list(
 </dl>
 </details>
 
-<details><summary><code>client.apps.<a href="src/fern/apps/client.py">trustedapp_register</a>(...)</code></summary>
+<details><summary><code>client.apps.<a href="src/fern/apps/client.py#L127-L163">trustedapp_register</a>(...)</code></summary>
 <dl>
 <dd>
 

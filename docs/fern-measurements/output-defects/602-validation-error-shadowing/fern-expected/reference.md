@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_first_problem</a>(...) -> ValidationError</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L125">get_first_problem</a>(...) -> ValidationError</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_first_problem(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">follow_problems</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L157">follow_problems</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.follow_problems(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">download_annotated</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L159-L187">download_annotated</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

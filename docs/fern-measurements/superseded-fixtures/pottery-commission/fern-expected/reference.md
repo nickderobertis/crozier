@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">place_commission</a>(...) -> Commission</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L141">place_commission</a>(...) -> Commission</code></summary>
 <dl>
 <dd>
 

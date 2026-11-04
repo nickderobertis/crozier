@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "14f614cf3660aeb3780af1b508229818f44fb501c31e5ac7c7237e5b6359c1d5"
+fern_cli_version = "5.194.0"
+fern_python_sdk_version = "5.41.17"
+digest = "7b02c01fab6f0dc17d2474e3369c34353a27ed32d4aaac5032502eb51ff9c9f5"
 
 source_digest = "c778f3ed136ff05d787840e5f156bbd9837a5b6b42f01f983cd932be57172652"
 reason = "Registered goldens reach the allOf arm `src/openapi.rs::collapse_sole_composition_member`; this fixture no longer claims a handwritten coverage gap."

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_beacons</a>(...) -> BeaconPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L135">list_beacons</a>(...) -> BeaconPage</code></summary>
 <dl>
 <dd>
 

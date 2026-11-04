@@ -1,6 +1,6 @@
 # Reference
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">list_tickets</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L25-L65">list_tickets</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -81,7 +81,7 @@ client.tickets.list_tickets()
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">open_ticket</a>()</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L67-L88">open_ticket</a>()</code></summary>
 <dl>
 <dd>
 
@@ -130,7 +130,7 @@ client.tickets.open_ticket()
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">get_ticket</a>(...) -> str</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L90-L116">get_ticket</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.tickets.get_ticket(
 </details>
 
 ## Status
-<details><summary><code>client.status.<a href="src/fern/status/client.py">get_status</a>() -> str</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L25-L47">get_status</a>() -> str</code></summary>
 <dl>
 <dd>
 

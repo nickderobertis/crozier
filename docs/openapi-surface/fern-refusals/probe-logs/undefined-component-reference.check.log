@@ -4,3 +4,5 @@ Warnings for generators.yml:
 [api]: #/components/parameters/CartIdParam is undefined 
        CliError: #/components/parameters/CartIdParam is undefined
 All checks passed
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

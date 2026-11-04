@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">plan_split</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L108-L145">plan_split</a>(...)</code></summary>
 <dl>
 <dd>
 

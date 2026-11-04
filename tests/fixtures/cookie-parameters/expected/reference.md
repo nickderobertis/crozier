@@ -1,6 +1,6 @@
 # Reference
 ## Cookies
-<details><summary><code>client.cookies.<a href="src/fern/cookies/client.py">getsession</a>() -> Session</code></summary>
+<details><summary><code>client.cookies.<a href="src/fern/cookies/client.py#L26-L50">getsession</a>() -> Session</code></summary>
 <dl>
 <dd>
 

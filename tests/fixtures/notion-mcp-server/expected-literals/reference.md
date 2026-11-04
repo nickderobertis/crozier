@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_user</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L136-L165">get_user</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L167-L204">get_users</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_self</a>() -> GetSelfResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L206-L231">get_self</a>() -> GetSelfResponse</code></summary>
 <dl>
 <dd>
 
@@ -200,7 +200,7 @@ client.get_self()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_search</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L233-L289">post_search</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -303,7 +303,7 @@ client.post_search()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_block_children</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L291-L336">get_block_children</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -392,7 +392,7 @@ client.get_block_children(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_block_children</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L338-L384">patch_block_children</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.patch_block_children(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_a_block</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L386-L418">retrieve_a_block</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -557,7 +557,7 @@ client.retrieve_a_block(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_a_block</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L420-L452">delete_a_block</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -630,7 +630,7 @@ client.delete_a_block(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_a_block</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L454-L499">update_a_block</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -719,7 +719,7 @@ client.update_a_block(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_a_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L501-L542">retrieve_a_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -800,7 +800,7 @@ client.retrieve_a_page(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L544-L606">patch_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -913,7 +913,7 @@ client.patch_page(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L608-L668">post_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1023,7 +1023,7 @@ client.post_page(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_a_page_property</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L670-L720">retrieve_a_page_property</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1121,7 +1121,7 @@ client.retrieve_a_page_property(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_a_comment</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L722-L767">retrieve_a_comment</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1210,7 +1210,7 @@ client.retrieve_a_comment(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_a_comment</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L769-L823">create_a_comment</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1301,7 +1301,7 @@ client.create_a_comment(
 </details>
 
 ## Data sources
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">query_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L31-L99">query_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1430,7 +1430,7 @@ client.data_sources.query_data_source(
 </dl>
 </details>
 
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">retrieve_a_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L101-L133">retrieve_a_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1503,7 +1503,7 @@ client.data_sources.retrieve_a_data_source(
 </dl>
 </details>
 
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">update_a_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L135-L182">update_a_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1600,7 +1600,7 @@ client.data_sources.update_a_data_source(
 </dl>
 </details>
 
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">create_a_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L184-L230">create_a_data_source</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1694,7 +1694,7 @@ client.data_sources.create_a_data_source(
 </dl>
 </details>
 
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">list_data_source_templates</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L232-L275">list_data_source_templates</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1784,7 +1784,7 @@ client.data_sources.list_data_source_templates(
 </details>
 
 ## Databases
-<details><summary><code>client.databases.<a href="src/fern/databases/client.py">retrieve_a_database</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.databases.<a href="src/fern/databases/client.py#L25-L57">retrieve_a_database</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1858,7 +1858,7 @@ client.databases.retrieve_a_database(
 </details>
 
 ## Pages
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">move_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L36-L74">move_page</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1943,7 +1943,7 @@ client.pages.move_page(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">retrieve_page_markdown</a>(...) -> RetrievePageMarkdownResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L76-L117">retrieve_page_markdown</a>(...) -> RetrievePageMarkdownResponse</code></summary>
 <dl>
 <dd>
 
@@ -2024,7 +2024,7 @@ client.pages.retrieve_page_markdown(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">update_page_markdown</a>(...) -> UpdatePageMarkdownResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L119-L183">update_page_markdown</a>(...) -> UpdatePageMarkdownResponse</code></summary>
 <dl>
 <dd>
 

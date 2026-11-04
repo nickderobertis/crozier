@@ -1,6 +1,6 @@
 # Reference
 ## Yard
-<details><summary><code>client.yard.<a href="src/fern/yard/client.py">book</a>(...)</code></summary>
+<details><summary><code>client.yard.<a href="src/fern/yard/client.py#L35-L66">book</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.yard.book(
 </details>
 
 ## Yard Cranes
-<details><summary><code>client.yard.cranes.<a href="src/fern/yard/cranes/client.py">list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.yard.cranes.<a href="src/fern/yard/cranes/client.py#L25-L45">list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

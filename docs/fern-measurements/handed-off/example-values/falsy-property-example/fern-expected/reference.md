@@ -1,6 +1,6 @@
 # Reference
 ## Buoys
-<details><summary><code>client.buoys.<a href="src/fern/buoys/client.py">register_buoy</a>(...) -> RegisterBuoyResponse</code></summary>
+<details><summary><code>client.buoys.<a href="src/fern/buoys/client.py#L30-L79">register_buoy</a>(...) -> RegisterBuoyResponse</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.buoys.register_buoy(
 </dl>
 </details>
 
-<details><summary><code>client.buoys.<a href="src/fern/buoys/client.py">record_reading</a>(...) -> RecordReadingResponse</code></summary>
+<details><summary><code>client.buoys.<a href="src/fern/buoys/client.py#L81-L126">record_reading</a>(...) -> RecordReadingResponse</code></summary>
 <dl>
 <dd>
 

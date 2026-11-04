@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_live</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L144">get_proxy_live</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.get_proxy_live()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_ready</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L146-L171">get_proxy_ready</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.get_proxy_ready()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_openapi_json</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L173-L198">get_proxy_openapi_json</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -149,7 +149,7 @@ client.get_proxy_openapi_json()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_session</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L200-L225">post_proxy_session</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -199,7 +199,7 @@ client.post_proxy_session()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_proxy_session</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L227-L252">delete_proxy_session</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -249,7 +249,7 @@ client.delete_proxy_session()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_health</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L254-L279">get_proxy_health</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -299,7 +299,7 @@ client.get_proxy_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_config_summary</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L281-L306">get_proxy_config_summary</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.get_proxy_config_summary()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L308-L343">get_proxy_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -415,7 +415,7 @@ client.get_proxy_events()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_keys</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L345-L370">get_proxy_keys</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -465,7 +465,7 @@ client.get_proxy_keys()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L372-L411">post_proxy_keys</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -526,7 +526,7 @@ client.post_proxy_keys(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_proxy_keys_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L413-L456">put_proxy_keys_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -610,7 +610,7 @@ client.put_proxy_keys_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_proxy_keys_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L458-L487">delete_proxy_keys_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -670,7 +670,7 @@ client.delete_proxy_keys_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_id_test</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L489-L518">post_proxy_keys_id_test</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -730,7 +730,7 @@ client.post_proxy_keys_id_test(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_id_disable</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L520-L549">post_proxy_keys_id_disable</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -790,7 +790,7 @@ client.post_proxy_keys_id_disable(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_id_enable</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L551-L580">post_proxy_keys_id_enable</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -850,7 +850,7 @@ client.post_proxy_keys_id_enable(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_id_reset_circuit</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L582-L611">post_proxy_keys_id_reset_circuit</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -910,7 +910,7 @@ client.post_proxy_keys_id_reset_circuit(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_id_secret</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L613-L642">post_proxy_keys_id_secret</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -970,7 +970,7 @@ client.post_proxy_keys_id_secret(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_keys_id_failures</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L644-L675">get_proxy_keys_id_failures</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1038,7 +1038,7 @@ client.get_proxy_keys_id_failures(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_batch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L677-L713">post_proxy_keys_batch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1109,7 +1109,7 @@ client.post_proxy_keys_batch(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_keys_import</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L715-L749">post_proxy_keys_import</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.post_proxy_keys_import(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_logs</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L751-L808">get_proxy_logs</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1280,7 +1280,7 @@ client.get_proxy_logs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_logs_trace_request_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L810-L839">get_proxy_logs_trace_request_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1340,7 +1340,7 @@ client.get_proxy_logs_trace_request_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_logs_export</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L841-L898">get_proxy_logs_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1446,7 +1446,7 @@ client.get_proxy_logs_export()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_logs_prune</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L900-L935">post_proxy_logs_prune</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1512,7 +1512,7 @@ client.post_proxy_logs_prune()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_observability</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L937-L964">get_proxy_observability</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1570,7 +1570,7 @@ client.get_proxy_observability()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_metrics</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L966-L989">get_proxy_metrics</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1620,7 +1620,7 @@ client.get_proxy_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_audit</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L991-L1018">get_proxy_audit</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1678,7 +1678,7 @@ client.get_proxy_audit()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_proxy_audit_export</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1020-L1064">get_proxy_audit_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1768,7 +1768,7 @@ client.get_proxy_audit_export()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_proxy_alerts_webhook_test</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1066-L1091">post_proxy_alerts_webhook_test</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

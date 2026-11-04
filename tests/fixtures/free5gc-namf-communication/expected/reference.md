@@ -1,6 +1,6 @@
 # Reference
 ## IndividualUeContextDocument
-<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py">create_ue_context</a>(...) -> UeContextCreatedData</code></summary>
+<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py#L43-L97">create_ue_context</a>(...) -> UeContextCreatedData</code></summary>
 <dl>
 <dd>
 
@@ -94,7 +94,7 @@ client.individual_ue_context_document.create_ue_context(
 </dl>
 </details>
 
-<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py">release_ue_context</a>(...)</code></summary>
+<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py#L99-L149">release_ue_context</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -181,7 +181,7 @@ client.individual_ue_context_document.release_ue_context(
 </dl>
 </details>
 
-<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py">ebi_assignment</a>(...) -> AssignedEbiData</code></summary>
+<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py#L151-L212">ebi_assignment</a>(...) -> AssignedEbiData</code></summary>
 <dl>
 <dd>
 
@@ -281,7 +281,7 @@ client.individual_ue_context_document.ebi_assignment(
 </dl>
 </details>
 
-<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py">ue_context_transfer</a>(...) -> UeContextTransferRspData</code></summary>
+<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py#L214-L271">ue_context_transfer</a>(...) -> UeContextTransferRspData</code></summary>
 <dl>
 <dd>
 
@@ -350,7 +350,7 @@ client.individual_ue_context_document.ue_context_transfer(
 </dl>
 </details>
 
-<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py">registration_status_update</a>(...) -> UeRegStatusUpdateRspData</code></summary>
+<details><summary><code>client.individual_ue_context_document.<a href="src/fern/individual_ue_context_document/client.py#L273-L323">registration_status_update</a>(...) -> UeRegStatusUpdateRspData</code></summary>
 <dl>
 <dd>
 
@@ -440,7 +440,7 @@ client.individual_ue_context_document.registration_status_update(
 </details>
 
 ## N1N2MessageCollectionDocument
-<details><summary><code>client.n1n2message_collection_document.<a href="src/fern/n1n2message_collection_document/client.py">n1n2message_transfer</a>(...) -> N1N2MessageTransferRspData</code></summary>
+<details><summary><code>client.n1n2message_collection_document.<a href="src/fern/n1n2message_collection_document/client.py#L33-L120">n1n2message_transfer</a>(...) -> N1N2MessageTransferRspData</code></summary>
 <dl>
 <dd>
 
@@ -508,7 +508,7 @@ client.n1n2message_collection_document.n1n2message_transfer(
 </details>
 
 ## N1N2SubscriptionsCollectionForIndividualUeContextsDocument
-<details><summary><code>client.n1n2subscriptions_collection_for_individual_ue_contexts_document.<a href="src/fern/n1n2subscriptions_collection_for_individual_ue_contexts_document/client.py">n1n2message_subscribe</a>(...) -> UeN1N2InfoSubscriptionCreatedData</code></summary>
+<details><summary><code>client.n1n2subscriptions_collection_for_individual_ue_contexts_document.<a href="src/fern/n1n2subscriptions_collection_for_individual_ue_contexts_document/client.py#L36-L99">n1n2message_subscribe</a>(...) -> UeN1N2InfoSubscriptionCreatedData</code></summary>
 <dl>
 <dd>
 
@@ -620,7 +620,7 @@ client.n1n2subscriptions_collection_for_individual_ue_contexts_document.n1n2mess
 </details>
 
 ## N1N2IndividualSubscriptionDocument
-<details><summary><code>client.n1n2individual_subscription_document.<a href="src/fern/n1n2individual_subscription_document/client.py">n1n2message_un_subscribe</a>(...)</code></summary>
+<details><summary><code>client.n1n2individual_subscription_document.<a href="src/fern/n1n2individual_subscription_document/client.py#L25-L59">n1n2message_un_subscribe</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -689,7 +689,7 @@ client.n1n2individual_subscription_document.n1n2message_un_subscribe(
 </details>
 
 ## NonUeN2MessagesCollectionDocument
-<details><summary><code>client.non_ue_n2messages_collection_document.<a href="src/fern/non_ue_n2messages_collection_document/client.py">non_ue_n2message_transfer</a>(...) -> N2InformationTransferRspData</code></summary>
+<details><summary><code>client.non_ue_n2messages_collection_document.<a href="src/fern/non_ue_n2messages_collection_document/client.py#L35-L95">non_ue_n2message_transfer</a>(...) -> N2InformationTransferRspData</code></summary>
 <dl>
 <dd>
 
@@ -751,7 +751,7 @@ client.non_ue_n2messages_collection_document.non_ue_n2message_transfer(
 </details>
 
 ## NonUeN2MessagesSubscriptionsCollectionDocument
-<details><summary><code>client.non_ue_n2messages_subscriptions_collection_document.<a href="src/fern/non_ue_n2messages_subscriptions_collection_document/client.py">non_ue_n2info_subscribe</a>(...) -> NonUeN2InfoSubscriptionCreatedData</code></summary>
+<details><summary><code>client.non_ue_n2messages_subscriptions_collection_document.<a href="src/fern/non_ue_n2messages_subscriptions_collection_document/client.py#L35-L126">non_ue_n2info_subscribe</a>(...) -> NonUeN2InfoSubscriptionCreatedData</code></summary>
 <dl>
 <dd>
 
@@ -884,7 +884,7 @@ client.non_ue_n2messages_subscriptions_collection_document.non_ue_n2info_subscri
 </details>
 
 ## NonUeN2MessageNotificationIndividualSubscriptionDocument
-<details><summary><code>client.non_ue_n2message_notification_individual_subscription_document.<a href="src/fern/non_ue_n2message_notification_individual_subscription_document/client.py">non_ue_n2info_un_subscribe</a>(...)</code></summary>
+<details><summary><code>client.non_ue_n2message_notification_individual_subscription_document.<a href="src/fern/non_ue_n2message_notification_individual_subscription_document/client.py#L30-L60">non_ue_n2info_un_subscribe</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -944,7 +944,7 @@ client.non_ue_n2message_notification_individual_subscription_document.non_ue_n2i
 </details>
 
 ## SubscriptionsCollectionDocument
-<details><summary><code>client.subscriptions_collection_document.<a href="src/fern/subscriptions_collection_document/client.py">amf_status_change_subscribe</a>(...) -> SubscriptionData</code></summary>
+<details><summary><code>client.subscriptions_collection_document.<a href="src/fern/subscriptions_collection_document/client.py#L30-L82">amf_status_change_subscribe</a>(...) -> SubscriptionData</code></summary>
 <dl>
 <dd>
 
@@ -1020,7 +1020,7 @@ client.subscriptions_collection_document.amf_status_change_subscribe(
 </details>
 
 ## IndividualSubscriptionDocument
-<details><summary><code>client.individual_subscription_document.<a href="src/fern/individual_subscription_document/client.py">amf_status_change_subscribe_modfy</a>(...) -> SubscriptionData</code></summary>
+<details><summary><code>client.individual_subscription_document.<a href="src/fern/individual_subscription_document/client.py#L30-L87">amf_status_change_subscribe_modfy</a>(...) -> SubscriptionData</code></summary>
 <dl>
 <dd>
 
@@ -1104,7 +1104,7 @@ client.individual_subscription_document.amf_status_change_subscribe_modfy(
 </dl>
 </details>
 
-<details><summary><code>client.individual_subscription_document.<a href="src/fern/individual_subscription_document/client.py">amf_status_change_un_subscribe</a>(...)</code></summary>
+<details><summary><code>client.individual_subscription_document.<a href="src/fern/individual_subscription_document/client.py#L89-L117">amf_status_change_un_subscribe</a>(...)</code></summary>
 <dl>
 <dd>
 

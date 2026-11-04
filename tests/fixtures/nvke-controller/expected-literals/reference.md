@@ -1,6 +1,6 @@
 # Reference
 ## Clusters
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">list_clusters</a>(...) -> ListClustersResponse</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L37-L66">list_clusters</a>(...) -> ListClustersResponse</code></summary>
 <dl>
 <dd>
 
@@ -71,7 +71,7 @@ client.clusters.list_clusters()
 </dl>
 </details>
 
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">create_cluster</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L68-L211">create_cluster</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -283,7 +283,7 @@ Quorum, health and deletion protections still apply.
 </dl>
 </details>
 
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">get_cluster</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L213-L243">get_cluster</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -357,7 +357,7 @@ client.clusters.get_cluster(
 </dl>
 </details>
 
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">delete_cluster</a>(...)</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L245-L276">delete_cluster</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -433,7 +433,7 @@ client.clusters.delete_cluster(
 </dl>
 </details>
 
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">update_cluster</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L278-L368">update_cluster</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -581,7 +581,7 @@ updates return 409 while it runs.
 </dl>
 </details>
 
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">get_cluster_spire_server</a>(...) -> ClusterSpireServerStatus</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L370-L405">get_cluster_spire_server</a>(...) -> ClusterSpireServerStatus</code></summary>
 <dl>
 <dd>
 
@@ -658,7 +658,7 @@ client.clusters.get_cluster_spire_server(
 </dl>
 </details>
 
-<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py">update_cluster_spire_server</a>(...)</code></summary>
+<details><summary><code>client.clusters.<a href="src/fern/clusters/client.py#L407-L452">update_cluster_spire_server</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -747,7 +747,7 @@ client.clusters.update_cluster_spire_server(
 </details>
 
 ## Control plane
-<details><summary><code>client.control_plane.<a href="src/fern/control_plane/client.py">get_cluster_control_plane</a>(...) -> ClusterControlPlane</code></summary>
+<details><summary><code>client.control_plane.<a href="src/fern/control_plane/client.py#L27-L61">get_cluster_control_plane</a>(...) -> ClusterControlPlane</code></summary>
 <dl>
 <dd>
 
@@ -823,7 +823,7 @@ client.control_plane.get_cluster_control_plane(
 </dl>
 </details>
 
-<details><summary><code>client.control_plane.<a href="src/fern/control_plane/client.py">get_cluster_control_plane_config_history</a>(...) -> ControlPlaneConfigHistory</code></summary>
+<details><summary><code>client.control_plane.<a href="src/fern/control_plane/client.py#L63-L99">get_cluster_control_plane_config_history</a>(...) -> ControlPlaneConfigHistory</code></summary>
 <dl>
 <dd>
 
@@ -900,7 +900,7 @@ client.control_plane.get_cluster_control_plane_config_history(
 </details>
 
 ## Node pools
-<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py">list_node_pools</a>(...) -> ListNodePoolsResponse</code></summary>
+<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py#L36-L78">list_node_pools</a>(...) -> ListNodePoolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -987,7 +987,7 @@ client.node_pools.list_node_pools()
 </dl>
 </details>
 
-<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py">create_node_pool</a>(...) -> NodePool</code></summary>
+<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py#L80-L223">create_node_pool</a>(...) -> NodePool</code></summary>
 <dl>
 <dd>
 
@@ -1223,7 +1223,7 @@ client.node_pools.create_node_pool(
 </dl>
 </details>
 
-<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py">get_node_pool</a>(...) -> NodePool</code></summary>
+<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py#L225-L254">get_node_pool</a>(...) -> NodePool</code></summary>
 <dl>
 <dd>
 
@@ -1296,7 +1296,7 @@ client.node_pools.get_node_pool(
 </dl>
 </details>
 
-<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py">delete_node_pool</a>(...)</code></summary>
+<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py#L256-L294">delete_node_pool</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1379,7 +1379,7 @@ client.node_pools.delete_node_pool(
 </dl>
 </details>
 
-<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py">update_node_pool</a>(...) -> NodePool</code></summary>
+<details><summary><code>client.node_pools.<a href="src/fern/node_pools/client.py#L296-L402">update_node_pool</a>(...) -> NodePool</code></summary>
 <dl>
 <dd>
 
@@ -1564,7 +1564,7 @@ Must be newer than the current version.
 </details>
 
 ## Node sets
-<details><summary><code>client.node_sets.<a href="src/fern/node_sets/client.py">list_node_sets</a>(...) -> ListNodeSetsResponse</code></summary>
+<details><summary><code>client.node_sets.<a href="src/fern/node_sets/client.py#L27-L56">list_node_sets</a>(...) -> ListNodeSetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1635,7 +1635,7 @@ client.node_sets.list_node_sets()
 </dl>
 </details>
 
-<details><summary><code>client.node_sets.<a href="src/fern/node_sets/client.py">get_node_set</a>(...) -> NodeSet</code></summary>
+<details><summary><code>client.node_sets.<a href="src/fern/node_sets/client.py#L58-L87">get_node_set</a>(...) -> NodeSet</code></summary>
 <dl>
 <dd>
 
@@ -1709,7 +1709,7 @@ client.node_sets.get_node_set(
 </details>
 
 ## Nodes
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">list_nodes</a>(...) -> ListNodesResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L31-L86">list_nodes</a>(...) -> ListNodesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1812,7 +1812,7 @@ client.nodes.list_nodes()
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">get_node</a>(...) -> Node</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L88-L119">get_node</a>(...) -> Node</code></summary>
 <dl>
 <dd>
 
@@ -1887,7 +1887,7 @@ client.nodes.get_node(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">delete_node</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L121-L198">delete_node</a>(...)</code></summary>
 <dl>
 <dd>
 

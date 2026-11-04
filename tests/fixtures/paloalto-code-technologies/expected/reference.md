@@ -1,6 +1,6 @@
 # Reference
 ## Technologies
-<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py">get_apps</a>() -> typing.List[IvcsInstalledApp]</code></summary>
+<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py#L29-L54">get_apps</a>() -> typing.List[IvcsInstalledApp]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.technologies.get_apps()
 </dl>
 </details>
 
-<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py">get_webhooks</a>() -> typing.List[IvcsWebhook]</code></summary>
+<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py#L56-L81">get_webhooks</a>() -> typing.List[IvcsWebhook]</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.technologies.get_webhooks()
 </dl>
 </details>
 
-<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py">assets_inventory_get_all</a>() -> GetResponse</code></summary>
+<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py#L83-L108">assets_inventory_get_all</a>() -> GetResponse</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ client.technologies.assets_inventory_get_all()
 </dl>
 </details>
 
-<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py">get_ci_inventory</a>() -> typing.List[ParsedInventory]</code></summary>
+<details><summary><code>client.technologies.<a href="src/fern/technologies/client.py#L110-L137">get_ci_inventory</a>() -> typing.List[ParsedInventory]</code></summary>
 <dl>
 <dd>
 

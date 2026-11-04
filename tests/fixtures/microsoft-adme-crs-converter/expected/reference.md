@@ -1,6 +1,6 @@
 # Reference
 ## HealthCheck
-<details><summary><code>client.health_check.<a href="src/fern/health_check/client.py">liveness_check</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.health_check.<a href="src/fern/health_check/client.py#L25-L50">liveness_check</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.health_check.liveness_check()
 </dl>
 </details>
 
-<details><summary><code>client.health_check.<a href="src/fern/health_check/client.py">readiness_check</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.health_check.<a href="src/fern/health_check/client.py#L52-L77">readiness_check</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -101,7 +101,7 @@ client.health_check.readiness_check()
 </details>
 
 ## CrsConverterApiV2
-<details><summary><code>client.crs_converter_api_v2.<a href="src/fern/crs_converter_api_v2/client.py">convert_point1</a>(...) -> ConvertPointsResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v2.<a href="src/fern/crs_converter_api_v2/client.py#L34-L82">convert_point1</a>(...) -> ConvertPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.crs_converter_api_v2.convert_point1(
 </dl>
 </details>
 
-<details><summary><code>client.crs_converter_api_v2.<a href="src/fern/crs_converter_api_v2/client.py">convert_geo_json1</a>(...) -> ConvertGeoJsonResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v2.<a href="src/fern/crs_converter_api_v2/client.py#L84-L124">convert_geo_json1</a>(...) -> ConvertGeoJsonResponse</code></summary>
 <dl>
 <dd>
 
@@ -229,7 +229,7 @@ client.crs_converter_api_v2.convert_geo_json1(
 </dl>
 </details>
 
-<details><summary><code>client.crs_converter_api_v2.<a href="src/fern/crs_converter_api_v2/client.py">convert_trajectory1</a>(...) -> ConvertTrajectoryResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v2.<a href="src/fern/crs_converter_api_v2/client.py#L126-L203">convert_trajectory1</a>(...) -> ConvertTrajectoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.crs_converter_api_v2.convert_trajectory1(
 </details>
 
 ## InfoApi
-<details><summary><code>client.info_api.<a href="src/fern/info_api/client.py">info</a>() -> VersionInfo</code></summary>
+<details><summary><code>client.info_api.<a href="src/fern/info_api/client.py#L26-L49">info</a>() -> VersionInfo</code></summary>
 <dl>
 <dd>
 
@@ -350,7 +350,7 @@ client.info_api.info()
 </dl>
 </details>
 
-<details><summary><code>client.info_api.<a href="src/fern/info_api/client.py">info1</a>() -> VersionInfo</code></summary>
+<details><summary><code>client.info_api.<a href="src/fern/info_api/client.py#L51-L74">info1</a>() -> VersionInfo</code></summary>
 <dl>
 <dd>
 
@@ -401,7 +401,7 @@ client.info_api.info1()
 </details>
 
 ## CrsConverterApiV3
-<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py">convert_point</a>(...) -> ConvertPointsResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py#L36-L84">convert_point</a>(...) -> ConvertPointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -469,7 +469,7 @@ client.crs_converter_api_v3.convert_point(
 </dl>
 </details>
 
-<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py">convert_bin_grid</a>(...) -> ConvertBinGridResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py#L86-L121">convert_bin_grid</a>(...) -> ConvertBinGridResponse</code></summary>
 <dl>
 <dd>
 
@@ -535,7 +535,7 @@ client.crs_converter_api_v3.convert_bin_grid()
 </dl>
 </details>
 
-<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py">convert_geo_json</a>(...) -> ConvertGeoJsonResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py#L123-L163">convert_geo_json</a>(...) -> ConvertGeoJsonResponse</code></summary>
 <dl>
 <dd>
 
@@ -595,7 +595,7 @@ client.crs_converter_api_v3.convert_geo_json(
 </dl>
 </details>
 
-<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py">convert_trajectory</a>(...) -> ConvertTrajectoryResponse</code></summary>
+<details><summary><code>client.crs_converter_api_v3.<a href="src/fern/crs_converter_api_v3/client.py#L165-L242">convert_trajectory</a>(...) -> ConvertTrajectoryResponse</code></summary>
 <dl>
 <dd>
 

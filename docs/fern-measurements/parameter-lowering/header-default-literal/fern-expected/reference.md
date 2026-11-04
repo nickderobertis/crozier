@@ -1,6 +1,6 @@
 # Reference
 ## Entries
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">post_entry</a>()</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L25-L49">post_entry</a>()</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.entries.post_entry()
 </dl>
 </details>
 
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">void_entry</a>()</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L51-L75">void_entry</a>()</code></summary>
 <dl>
 <dd>
 
@@ -94,7 +94,7 @@ client.entries.void_entry()
 </dl>
 </details>
 
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">reconcile_entries</a>()</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L77-L101">reconcile_entries</a>()</code></summary>
 <dl>
 <dd>
 
@@ -142,7 +142,7 @@ client.entries.reconcile_entries()
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>() -> str</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L50">get_health</a>() -> str</code></summary>
 <dl>
 <dd>
 

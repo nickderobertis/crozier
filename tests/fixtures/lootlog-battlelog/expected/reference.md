@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">healthz_controller_health_check</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L49">healthz_controller_health_check</a>()</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.health.healthz_controller_health_check()
 </details>
 
 ## Battles
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_create_battle</a>(...) -> BattleCreatedResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L117-L181">battles_controller_create_battle</a>(...) -> BattleCreatedResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.battles.battles_controller_create_battle(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_dashboard_battles</a>(...) -> BattlesListResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L183-L290">battles_controller_get_dashboard_battles</a>(...) -> BattlesListResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -353,7 +353,7 @@ client.battles.battles_controller_get_dashboard_battles()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_user_characters</a>() -> BattleCharactersResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L292-L317">battles_controller_get_user_characters</a>() -> BattleCharactersResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -401,7 +401,7 @@ client.battles.battles_controller_get_user_characters()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_battle_analytics</a>(...) -> BattleAnalyticsResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L319-L384">battles_controller_get_battle_analytics</a>(...) -> BattleAnalyticsResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -521,7 +521,7 @@ client.battles.battles_controller_get_battle_analytics()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_abyss_seasons</a>(...) -> typing.List[AbyssSeasonResponseDtoOutput]</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L386-L423">battles_controller_get_abyss_seasons</a>(...) -> typing.List[AbyssSeasonResponseDtoOutput]</code></summary>
 <dl>
 <dd>
 
@@ -587,7 +587,7 @@ client.battles.battles_controller_get_abyss_seasons(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_combat_profile</a>(...) -> CombatProfileResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L425-L518">battles_controller_get_combat_profile</a>(...) -> CombatProfileResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -763,7 +763,7 @@ client.battles.battles_controller_get_combat_profile()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_profession_win_rate</a>(...) -> typing.List[ProfessionWinRateResponseDtoOutput]</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L520-L613">battles_controller_get_profession_win_rate</a>(...) -> typing.List[ProfessionWinRateResponseDtoOutput]</code></summary>
 <dl>
 <dd>
 
@@ -939,7 +939,7 @@ client.battles.battles_controller_get_profession_win_rate()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_head_to_head</a>(...) -> HeadToHeadPaginatedResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L615-L708">battles_controller_get_head_to_head</a>(...) -> HeadToHeadPaginatedResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -1115,7 +1115,7 @@ client.battles.battles_controller_get_head_to_head()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_current_streak</a>(...) -> StreakResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L710-L803">battles_controller_get_current_streak</a>(...) -> StreakResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -1291,7 +1291,7 @@ client.battles.battles_controller_get_current_streak()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_battle_duration</a>(...) -> BattleDurationStatsResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L805-L898">battles_controller_get_battle_duration</a>(...) -> BattleDurationStatsResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -1467,7 +1467,7 @@ client.battles.battles_controller_get_battle_duration()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_ph_growth</a>(...) -> typing.List[PhGrowthDataPointResponseDtoOutput]</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L900-L993">battles_controller_get_ph_growth</a>(...) -> typing.List[PhGrowthDataPointResponseDtoOutput]</code></summary>
 <dl>
 <dd>
 
@@ -1643,7 +1643,7 @@ client.battles.battles_controller_get_ph_growth()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_rating_growth</a>(...) -> typing.List[RatingGrowthDataPointResponseDtoOutput]</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L995-L1088">battles_controller_get_rating_growth</a>(...) -> typing.List[RatingGrowthDataPointResponseDtoOutput]</code></summary>
 <dl>
 <dd>
 
@@ -1819,7 +1819,7 @@ client.battles.battles_controller_get_rating_growth()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_rating_delta_by_opponent</a>(...) -> typing.List[RatingDeltaByOpponentResponseDtoOutput]</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1090-L1183">battles_controller_get_rating_delta_by_opponent</a>(...) -> typing.List[RatingDeltaByOpponentResponseDtoOutput]</code></summary>
 <dl>
 <dd>
 
@@ -1995,7 +1995,7 @@ client.battles.battles_controller_get_rating_delta_by_opponent()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_player_vs_player_battles</a>(...) -> PlayerVsPlayerPaginatedResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1185-L1288">battles_controller_get_player_vs_player_battles</a>(...) -> PlayerVsPlayerPaginatedResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2189,7 +2189,7 @@ client.battles.battles_controller_get_player_vs_player_battles(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_search_warriors</a>(...) -> BattleWarriorsSearchResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1290-L1319">battles_controller_search_warriors</a>(...) -> BattleWarriorsSearchResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2247,7 +2247,7 @@ client.battles.battles_controller_search_warriors(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_user_worlds</a>() -> BattleUserWorldsResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1321-L1346">battles_controller_get_user_worlds</a>() -> BattleUserWorldsResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2295,7 +2295,7 @@ client.battles.battles_controller_get_user_worlds()
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_battle_timeline</a>(...) -> BattleTimelineResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1348-L1377">battles_controller_get_battle_timeline</a>(...) -> BattleTimelineResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2353,7 +2353,7 @@ client.battles.battles_controller_get_battle_timeline(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_battle</a>(...) -> BattleResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1379-L1408">battles_controller_get_battle</a>(...) -> BattleResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2411,7 +2411,7 @@ client.battles.battles_controller_get_battle(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_delete_battle</a>(...) -> BattleDeletedResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1410-L1439">battles_controller_delete_battle</a>(...) -> BattleDeletedResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2469,7 +2469,7 @@ client.battles.battles_controller_delete_battle(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_update_battle</a>(...) -> BattleResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1441-L1475">battles_controller_update_battle</a>(...) -> BattleResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2536,7 +2536,7 @@ client.battles.battles_controller_update_battle(
 </dl>
 </details>
 
-<details><summary><code>client.battles.<a href="src/fern/battles/client.py">battles_controller_get_battle_raw_data</a>(...) -> BattleRawResponseDtoOutput</code></summary>
+<details><summary><code>client.battles.<a href="src/fern/battles/client.py#L1477-L1506">battles_controller_get_battle_raw_data</a>(...) -> BattleRawResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2595,7 +2595,7 @@ client.battles.battles_controller_get_battle_raw_data(
 </details>
 
 ## PublicBattles
-<details><summary><code>client.public_battles.<a href="src/fern/public_battles/client.py">public_battles_controller_get_public_battle</a>(...) -> BattleResponseDtoOutput</code></summary>
+<details><summary><code>client.public_battles.<a href="src/fern/public_battles/client.py#L28-L59">public_battles_controller_get_public_battle</a>(...) -> BattleResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2653,7 +2653,7 @@ client.public_battles.public_battles_controller_get_public_battle(
 </dl>
 </details>
 
-<details><summary><code>client.public_battles.<a href="src/fern/public_battles/client.py">public_battles_controller_get_public_battle_raw</a>(...) -> BattleRawResponseDtoOutput</code></summary>
+<details><summary><code>client.public_battles.<a href="src/fern/public_battles/client.py#L61-L92">public_battles_controller_get_public_battle_raw</a>(...) -> BattleRawResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2711,7 +2711,7 @@ client.public_battles.public_battles_controller_get_public_battle_raw(
 </dl>
 </details>
 
-<details><summary><code>client.public_battles.<a href="src/fern/public_battles/client.py">public_battles_controller_get_public_battle_timeline</a>(...) -> BattleTimelineResponseDtoOutput</code></summary>
+<details><summary><code>client.public_battles.<a href="src/fern/public_battles/client.py#L94-L125">public_battles_controller_get_public_battle_timeline</a>(...) -> BattleTimelineResponseDtoOutput</code></summary>
 <dl>
 <dd>
 
@@ -2770,7 +2770,7 @@ client.public_battles.public_battles_controller_get_public_battle_timeline(
 </details>
 
 ## Internal
-<details><summary><code>client.internal.<a href="src/fern/internal/client.py">internal_controller_delete_user_data</a>(...) -> BattleAcceptedResponseDtoOutput</code></summary>
+<details><summary><code>client.internal.<a href="src/fern/internal/client.py#L29-L68">internal_controller_delete_user_data</a>(...) -> BattleAcceptedResponseDtoOutput</code></summary>
 <dl>
 <dd>
 

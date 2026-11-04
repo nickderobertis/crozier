@@ -107,7 +107,7 @@ client.activities.all_(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">add</a>(...) -> CreateActivityResponse</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L96-L338">add</a>(...) -> CreateActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.activities.add(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">one</a>(...) -> GetActivityResponse</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L340-L386">one</a>(...) -> GetActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +282,7 @@ client.activities.one(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">delete</a>(...) -> DeleteActivityResponse</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L388-L425">delete</a>(...) -> DeleteActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -365,7 +365,7 @@ client.activities.delete(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">update</a>(...) -> UpdateActivityResponse</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L427-L675">update</a>(...) -> UpdateActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -573,7 +573,7 @@ client.companies.all_(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">add</a>(...) -> CreateCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L115-L326">add</a>(...) -> CreateCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -656,7 +656,7 @@ client.companies.add(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">one</a>(...) -> GetCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L328-L374">one</a>(...) -> GetCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -748,7 +748,7 @@ client.companies.one(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">delete</a>(...) -> DeleteCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L376-L413">delete</a>(...) -> DeleteCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -831,7 +831,7 @@ client.companies.delete(
 </dl>
 </details>
 
-<details><summary><code>client.companies.<a href="src/fern/companies/client.py">update</a>(...) -> UpdateCompanyResponse</code></summary>
+<details><summary><code>client.companies.<a href="src/fern/companies/client.py#L415-L632">update</a>(...) -> UpdateCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1039,7 +1039,7 @@ client.contacts.all_(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">add</a>(...) -> CreateContactResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L112-L306">add</a>(...) -> CreateContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -1122,7 +1122,7 @@ client.contacts.add(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">one</a>(...) -> GetContactResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L308-L354">one</a>(...) -> GetContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -1214,7 +1214,7 @@ client.contacts.one(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">delete</a>(...) -> DeleteContactResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L356-L393">delete</a>(...) -> DeleteContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -1297,7 +1297,7 @@ client.contacts.delete(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">update</a>(...) -> UpdateContactResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L395-L595">update</a>(...) -> UpdateContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -1505,7 +1505,7 @@ client.leads.all_(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">add</a>(...) -> CreateLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L110-L256">add</a>(...) -> CreateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1589,7 +1589,7 @@ client.leads.add(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">one</a>(...) -> GetLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L258-L304">one</a>(...) -> GetLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1681,7 +1681,7 @@ client.leads.one(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">delete</a>(...) -> DeleteLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L306-L343">delete</a>(...) -> DeleteLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1764,7 +1764,7 @@ client.leads.delete(
 </dl>
 </details>
 
-<details><summary><code>client.leads.<a href="src/fern/leads/client.py">update</a>(...) -> UpdateLeadResponse</code></summary>
+<details><summary><code>client.leads.<a href="src/fern/leads/client.py#L345-L497">update</a>(...) -> UpdateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1957,7 +1957,7 @@ client.notes.all_(
 </dl>
 </details>
 
-<details><summary><code>client.notes.<a href="src/fern/notes/client.py">add</a>(...) -> CreateNoteResponse</code></summary>
+<details><summary><code>client.notes.<a href="src/fern/notes/client.py#L86-L176">add</a>(...) -> CreateNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2038,7 +2038,7 @@ client.notes.add()
 </dl>
 </details>
 
-<details><summary><code>client.notes.<a href="src/fern/notes/client.py">one</a>(...) -> GetNoteResponse</code></summary>
+<details><summary><code>client.notes.<a href="src/fern/notes/client.py#L178-L224">one</a>(...) -> GetNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2130,7 +2130,7 @@ client.notes.one(
 </dl>
 </details>
 
-<details><summary><code>client.notes.<a href="src/fern/notes/client.py">delete</a>(...) -> DeleteNoteResponse</code></summary>
+<details><summary><code>client.notes.<a href="src/fern/notes/client.py#L226-L263">delete</a>(...) -> DeleteNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2213,7 +2213,7 @@ client.notes.delete(
 </dl>
 </details>
 
-<details><summary><code>client.notes.<a href="src/fern/notes/client.py">update</a>(...) -> UpdateNoteResponse</code></summary>
+<details><summary><code>client.notes.<a href="src/fern/notes/client.py#L265-L362">update</a>(...) -> UpdateNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2420,7 +2420,7 @@ client.opportunities.all_(
 </dl>
 </details>
 
-<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py">add</a>(...) -> CreateOpportunityResponse</code></summary>
+<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py#L106-L344">add</a>(...) -> CreateOpportunityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2504,7 +2504,7 @@ client.opportunities.add(
 </dl>
 </details>
 
-<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py">one</a>(...) -> GetOpportunityResponse</code></summary>
+<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py#L346-L392">one</a>(...) -> GetOpportunityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2596,7 +2596,7 @@ client.opportunities.one(
 </dl>
 </details>
 
-<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py">delete</a>(...) -> DeleteOpportunityResponse</code></summary>
+<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py#L394-L431">delete</a>(...) -> DeleteOpportunityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2679,7 +2679,7 @@ client.opportunities.delete(
 </dl>
 </details>
 
-<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py">update</a>(...) -> UpdateOpportunityResponse</code></summary>
+<details><summary><code>client.opportunities.<a href="src/fern/opportunities/client.py#L433-L677">update</a>(...) -> UpdateOpportunityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2872,7 +2872,7 @@ client.pipelines.all_(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">add</a>(...) -> CreatePipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L89-L171">add</a>(...) -> CreatePipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -2955,7 +2955,7 @@ client.pipelines.add(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">one</a>(...) -> GetPipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L173-L219">one</a>(...) -> GetPipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -3047,7 +3047,7 @@ client.pipelines.one(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">delete</a>(...) -> DeletePipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L221-L258">delete</a>(...) -> DeletePipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -3130,7 +3130,7 @@ client.pipelines.delete(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">update</a>(...) -> UpdatePipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L260-L348">update</a>(...) -> UpdatePipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -3322,7 +3322,7 @@ client.users.all_(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">add</a>(...) -> CreateUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L91-L222">add</a>(...) -> CreateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -3409,7 +3409,7 @@ client.users.add(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">one</a>(...) -> GetUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L224-L270">one</a>(...) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ client.users.one(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete</a>(...) -> DeleteUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L272-L309">delete</a>(...) -> DeleteUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -3584,7 +3584,7 @@ client.users.delete(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update</a>(...) -> UpdateUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L311-L448">update</a>(...) -> UpdateUserResponse</code></summary>
 <dl>
 <dd>
 

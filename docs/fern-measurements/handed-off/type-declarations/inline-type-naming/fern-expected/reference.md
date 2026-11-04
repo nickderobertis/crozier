@@ -1,6 +1,6 @@
 # Reference
 ## Captions Media
-<details><summary><code>client.captions.media.<a href="src/fern/captions/media/client.py">caption_url</a>(...) -> CaptionMediaResponse</code></summary>
+<details><summary><code>client.captions.media.<a href="src/fern/captions/media/client.py#L31-L68">caption_url</a>(...) -> CaptionMediaResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.captions.media.caption_url(
 </dl>
 </details>
 
-<details><summary><code>client.captions.media.<a href="src/fern/captions/media/client.py">caption_file</a>(...) -> CaptionMediaResponse</code></summary>
+<details><summary><code>client.captions.media.<a href="src/fern/captions/media/client.py#L70-L98">caption_file</a>(...) -> CaptionMediaResponse</code></summary>
 <dl>
 <dd>
 

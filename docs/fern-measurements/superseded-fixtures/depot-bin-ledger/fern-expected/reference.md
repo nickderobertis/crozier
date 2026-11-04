@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list</a>() -> typing.List[Bin]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L114-L134">list</a>() -> typing.List[Bin]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set</a>(...) -> Bin</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L136-L164">set</a>(...) -> Bin</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.map_()
 </details>
 
 ## Sensors
-<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py">list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.sensors.<a href="src/fern/sensors/client.py#L25-L45">list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

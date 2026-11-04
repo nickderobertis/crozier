@@ -1,6 +1,6 @@
 # Reference
 ## consent
-<details><summary><code>client.consent.<a href="src/fern/consent/client.py">create_consent_record</a>(...) -> ConsentRecord</code></summary>
+<details><summary><code>client.consent.<a href="src/fern/consent/client.py#L30-L96">create_consent_record</a>(...) -> ConsentRecord</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.consent.create_consent_record(
 </details>
 
 ## token
-<details><summary><code>client.token.<a href="src/fern/token/client.py">issue_delegation_token</a>(...) -> DelegationToken</code></summary>
+<details><summary><code>client.token.<a href="src/fern/token/client.py#L30-L99">issue_delegation_token</a>(...) -> DelegationToken</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.token.issue_delegation_token(
 </details>
 
 ## introspection
-<details><summary><code>client.introspection.<a href="src/fern/introspection/client.py">introspect_delegation_token</a>(...) -> IntrospectionResponse</code></summary>
+<details><summary><code>client.introspection.<a href="src/fern/introspection/client.py#L30-L69">introspect_delegation_token</a>(...) -> IntrospectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -238,7 +238,7 @@ client.introspection.introspect_delegation_token(
 </details>
 
 ## revocation
-<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py">revoke_delegation_token</a>(...)</code></summary>
+<details><summary><code>client.revocation.<a href="src/fern/revocation/client.py#L29-L68">revoke_delegation_token</a>(...)</code></summary>
 <dl>
 <dd>
 

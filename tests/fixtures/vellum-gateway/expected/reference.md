@@ -1,6 +1,6 @@
 # Reference
 ## Permissions
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">thresholds_get</a>() -> PermissionsThresholdsGetResponse</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L36-L58">thresholds_get</a>() -> PermissionsThresholdsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.permissions.thresholds_get()
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">thresholds_put</a>(...) -> PermissionsThresholdsPutResponse</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L60-L97">thresholds_put</a>(...) -> PermissionsThresholdsPutResponse</code></summary>
 <dl>
 <dd>
 
@@ -134,7 +134,7 @@ client.permissions.thresholds_put()
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">conversation_threshold_get</a>(...) -> ConversationThresholdGetResponse</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L99-L128">conversation_threshold_get</a>(...) -> ConversationThresholdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -206,7 +206,7 @@ client.permissions.conversation_threshold_get(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">conversation_threshold_put</a>(...) -> ConversationThresholdPutResponse</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L130-L168">conversation_threshold_put</a>(...) -> ConversationThresholdPutResponse</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.permissions.conversation_threshold_put(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">conversation_threshold_delete</a>(...)</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L170-L198">conversation_threshold_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -347,7 +347,7 @@ client.permissions.conversation_threshold_delete(
 </details>
 
 ## ChannelAdmissionPolicy
-<details><summary><code>client.channel_admission_policy.<a href="src/fern/channel_admission_policy/client.py">list</a>() -> ChannelAdmissionPolicyListResponse</code></summary>
+<details><summary><code>client.channel_admission_policy.<a href="src/fern/channel_admission_policy/client.py#L31-L53">list</a>() -> ChannelAdmissionPolicyListResponse</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ client.channel_admission_policy.list()
 </dl>
 </details>
 
-<details><summary><code>client.channel_admission_policy.<a href="src/fern/channel_admission_policy/client.py">set</a>(...) -> ChannelAdmissionPolicySetResponse</code></summary>
+<details><summary><code>client.channel_admission_policy.<a href="src/fern/channel_admission_policy/client.py#L55-L96">set</a>(...) -> ChannelAdmissionPolicySetResponse</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.channel_admission_policy.set(
 </details>
 
 ## ChannelIngress
-<details><summary><code>client.channel_ingress.<a href="src/fern/channel_ingress/client.py">list</a>() -> ChannelIngressListResponse</code></summary>
+<details><summary><code>client.channel_ingress.<a href="src/fern/channel_ingress/client.py#L31-L53">list</a>() -> ChannelIngressListResponse</code></summary>
 <dl>
 <dd>
 
@@ -562,7 +562,7 @@ client.channel_ingress.list()
 </dl>
 </details>
 
-<details><summary><code>client.channel_ingress.<a href="src/fern/channel_ingress/client.py">approve</a>(...) -> ChannelIngressApproveResponse</code></summary>
+<details><summary><code>client.channel_ingress.<a href="src/fern/channel_ingress/client.py#L55-L87">approve</a>(...) -> ChannelIngressApproveResponse</code></summary>
 <dl>
 <dd>
 
@@ -643,7 +643,7 @@ client.channel_ingress.approve(
 </dl>
 </details>
 
-<details><summary><code>client.channel_ingress.<a href="src/fern/channel_ingress/client.py">revoke</a>(...) -> ChannelIngressRevokeResponse</code></summary>
+<details><summary><code>client.channel_ingress.<a href="src/fern/channel_ingress/client.py#L89-L118">revoke</a>(...) -> ChannelIngressRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -716,7 +716,7 @@ client.channel_ingress.revoke(
 </details>
 
 ## ChannelPermissionOverrides
-<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py">list</a>() -> ChannelPermissionOverridesListResponse</code></summary>
+<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py#L41-L65">list</a>() -> ChannelPermissionOverridesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -778,7 +778,7 @@ client.channel_permission_overrides.list()
 </dl>
 </details>
 
-<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py">channel_permission_override_set</a>(...) -> ChannelPermissionOverrideSetResponse</code></summary>
+<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py#L67-L121">channel_permission_override_set</a>(...) -> ChannelPermissionOverrideSetResponse</code></summary>
 <dl>
 <dd>
 
@@ -877,7 +877,7 @@ client.channel_permission_overrides.channel_permission_override_set(
 </dl>
 </details>
 
-<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py">channel_permission_resolve</a>(...) -> ChannelPermissionResolveResponse</code></summary>
+<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py#L123-L174">channel_permission_resolve</a>(...) -> ChannelPermissionResolveResponse</code></summary>
 <dl>
 <dd>
 
@@ -975,7 +975,7 @@ client.channel_permission_overrides.channel_permission_resolve(
 </dl>
 </details>
 
-<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py">channel_permission_override_delete</a>(...) -> ChannelPermissionOverrideDeleteResponse</code></summary>
+<details><summary><code>client.channel_permission_overrides.<a href="src/fern/channel_permission_overrides/client.py#L176-L218">channel_permission_override_delete</a>(...) -> ChannelPermissionOverrideDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1058,7 +1058,7 @@ client.channel_permission_overrides.channel_permission_override_delete(
 </details>
 
 ## Contacts
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">upsert</a>(...) -> ContactsUpsertResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L37-L99">upsert</a>(...) -> ContactsUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -1178,7 +1178,7 @@ client.contacts.upsert(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">contact_delete</a>(...)</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L101-L127">contact_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1250,7 +1250,7 @@ client.contacts.contact_delete(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">prompt_submit</a>(...) -> ContactsPromptSubmitResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L129-L197">prompt_submit</a>(...) -> ContactsPromptSubmitResponse</code></summary>
 <dl>
 <dd>
 
@@ -1378,7 +1378,7 @@ client.contacts.prompt_submit(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">record_submit</a>(...) -> ContactsRecordSubmitResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L199-L267">record_submit</a>(...) -> ContactsRecordSubmitResponse</code></summary>
 <dl>
 <dd>
 
@@ -1506,7 +1506,7 @@ client.contacts.record_submit(
 </dl>
 </details>
 
-<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py">contact_channel_verify</a>(...) -> ContactChannelVerifyResponse</code></summary>
+<details><summary><code>client.contacts.<a href="src/fern/contacts/client.py#L269-L298">contact_channel_verify</a>(...) -> ContactChannelVerifyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1579,7 +1579,7 @@ client.contacts.contact_channel_verify(
 </details>
 
 ## CredentialRequests
-<details><summary><code>client.credential_requests.<a href="src/fern/credential_requests/client.py">peek</a>(...) -> CredentialRequestsPeekResponse</code></summary>
+<details><summary><code>client.credential_requests.<a href="src/fern/credential_requests/client.py#L30-L58">peek</a>(...) -> CredentialRequestsPeekResponse</code></summary>
 <dl>
 <dd>
 
@@ -1651,7 +1651,7 @@ client.credential_requests.peek(
 </dl>
 </details>
 
-<details><summary><code>client.credential_requests.<a href="src/fern/credential_requests/client.py">submit</a>(...) -> CredentialRequestsSubmitResponse</code></summary>
+<details><summary><code>client.credential_requests.<a href="src/fern/credential_requests/client.py#L60-L91">submit</a>(...) -> CredentialRequestsSubmitResponse</code></summary>
 <dl>
 <dd>
 
@@ -1733,7 +1733,7 @@ client.credential_requests.submit(
 </details>
 
 ## FeatureFlags
-<details><summary><code>client.feature_flags.<a href="src/fern/feature_flags/client.py">get</a>() -> FeatureFlagsGetResponse</code></summary>
+<details><summary><code>client.feature_flags.<a href="src/fern/feature_flags/client.py#L31-L53">get</a>() -> FeatureFlagsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1795,7 +1795,7 @@ client.feature_flags.get()
 </dl>
 </details>
 
-<details><summary><code>client.feature_flags.<a href="src/fern/feature_flags/client.py">patch</a>(...) -> FeatureFlagsPatchResponse</code></summary>
+<details><summary><code>client.feature_flags.<a href="src/fern/feature_flags/client.py#L55-L91">patch</a>(...) -> FeatureFlagsPatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1877,7 +1877,7 @@ client.feature_flags.patch(
 </details>
 
 ## TrustRules
-<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py">list</a>(...) -> TrustRulesListResponse</code></summary>
+<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py#L44-L92">list</a>(...) -> TrustRulesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1971,7 +1971,7 @@ client.trust_rules.list()
 </dl>
 </details>
 
-<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py">trust_rule_create</a>(...) -> TrustRuleCreateResponse</code></summary>
+<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py#L94-L143">trust_rule_create</a>(...) -> TrustRuleCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2065,7 +2065,7 @@ client.trust_rules.trust_rule_create(
 </dl>
 </details>
 
-<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py">trust_rule_suggest</a>(...) -> TrustRuleSuggestResponse</code></summary>
+<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py#L145-L224">trust_rule_suggest</a>(...) -> TrustRuleSuggestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2199,7 +2199,7 @@ client.trust_rules.trust_rule_suggest(
 </dl>
 </details>
 
-<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py">trust_rule_delete</a>(...) -> TrustRuleDeleteResponse</code></summary>
+<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py#L226-L255">trust_rule_delete</a>(...) -> TrustRuleDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2271,7 +2271,7 @@ client.trust_rules.trust_rule_delete(
 </dl>
 </details>
 
-<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py">trust_rule_update</a>(...) -> TrustRuleUpdateResponse</code></summary>
+<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py#L257-L297">trust_rule_update</a>(...) -> TrustRuleUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2359,7 +2359,7 @@ client.trust_rules.trust_rule_update(
 </dl>
 </details>
 
-<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py">trust_rule_reset</a>(...) -> TrustRuleResetResponse</code></summary>
+<details><summary><code>client.trust_rules.<a href="src/fern/trust_rules/client.py#L299-L328">trust_rule_reset</a>(...) -> TrustRuleResetResponse</code></summary>
 <dl>
 <dd>
 

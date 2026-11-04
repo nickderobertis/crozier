@@ -1,6 +1,6 @@
 # Reference
 ## Items
-<details><summary><code>client.items.<a href="src/fern/items/client.py">createbatch</a>(...) -> typing.List[Item]</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L30-L68">createbatch</a>(...) -> typing.List[Item]</code></summary>
 <dl>
 <dd>
 

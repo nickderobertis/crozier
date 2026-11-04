@@ -1,6 +1,6 @@
 # Reference
 ## AccessibilityV2
-<details><summary><code>client.accessibility_v2.<a href="src/fern/accessibility_v2/client.py">get_accessibility_as_geo_json</a>(...) -> AccessibilityResponseGeoJson</code></summary>
+<details><summary><code>client.accessibility_v2.<a href="src/fern/accessibility_v2/client.py#L35-L143">get_accessibility_as_geo_json</a>(...) -> AccessibilityResponseGeoJson</code></summary>
 <dl>
 <dd>
 
@@ -167,7 +167,7 @@ client.accessibility_v2.get_accessibility_as_geo_json(
 </details>
 
 ## MunicipalitiesV2
-<details><summary><code>client.municipalities_v2.<a href="src/fern/municipalities_v2/client.py">get_municipalities</a>() -> MunicipalityFeatureCollection</code></summary>
+<details><summary><code>client.municipalities_v2.<a href="src/fern/municipalities_v2/client.py#L26-L48">get_municipalities</a>() -> MunicipalityFeatureCollection</code></summary>
 <dl>
 <dd>
 
@@ -216,7 +216,7 @@ client.municipalities_v2.get_municipalities()
 </details>
 
 ## RoadOperatorsV2
-<details><summary><code>client.road_operators_v2.<a href="src/fern/road_operators_v2/client.py">get_road_operators</a>() -> RoadOperators</code></summary>
+<details><summary><code>client.road_operators_v2.<a href="src/fern/road_operators_v2/client.py#L26-L46">get_road_operators</a>() -> RoadOperators</code></summary>
 <dl>
 <dd>
 

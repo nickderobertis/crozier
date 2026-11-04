@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_lockers</a>() -> typing.List[Locker]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L103-L123">list_lockers</a>() -> typing.List[Locker]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.list_lockers()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_closed_rentals</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L125-L149">list_closed_rentals</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

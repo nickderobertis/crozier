@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">list_widgets</a>(...) -> ListWidgetsResponse</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L27-L56">list_widgets</a>(...) -> ListWidgetsResponse</code></summary>
 <dl>
 <dd>
 
