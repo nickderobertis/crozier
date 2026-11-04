@@ -22,3 +22,12 @@
   the hyphen-named script's module for them, and under pytest 20 cases fail with
   `BrokenProcessPool`. Coverage is still measured and combined like every other
   suite's.
+- **Name the repin.** A census check that compares a measured table names `just
+  census-repin` in its message (`REPIN` in the census suite); a section no
+  generator writes says to restate it from the ledger the verb writes. The fast
+  offline checks only compare, never measure. A scoped run (`--tests`,
+  `--fixtures`) leaves the arm sections and the coverage headline alone: a
+  subset of the witnesses cannot restate them.
+- Every instrumented build or run holds `instrumented-measurement.lock` under
+  the host cache, including one started by hand:
+  `flock "${XDG_CACHE_HOME:-$HOME/.cache}/crozier/instrumented-measurement.lock" <command>`.

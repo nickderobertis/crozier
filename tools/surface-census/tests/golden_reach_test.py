@@ -295,6 +295,49 @@ class ReportTests(unittest.TestCase):
         text = (self.repo / "docs" / "openapi-surface" / "demo.md").read_text(encoding="utf-8")
         return {cells[0].strip("`"): cells for cells in golden_reach.region_rows(text)}
 
+    def test_report_refuses_step_provenance_from_another_measurement_and_recovers(self) -> None:
+        rs = golden_reach.RS
+        tree = rs.read_tree(self.repo)
+        commit = "a" * 40
+        functions = rs.universe_table(tree, {"src/demo.rs": UNIVERSE})
+        store = {
+            "schema": rs.SCHEMA,
+            "commit": commit,
+            "rustc": "1.96.0 abc",
+            "llvm": "22.1.2",
+            "full_at": commit,
+            "steps_since_full": 0,
+            "measured_at": rs.now_iso(),
+            "tests": {
+                path.stem: {
+                    "commit": commit,
+                    "regions": rs.entry_regions(tree, functions, json.loads(path.read_text(encoding="utf-8"))),
+                }
+                for path in (self.measurement / "tests").glob("*.json")
+            },
+            "fixtures": {},
+            "functions": functions,
+        }
+        rs.save(store, self.measurement / golden_reach.STORE_FILE)
+        good = {"commit": commit, "tests": 2, "run": 2, "carried": 0, "base": None, "full": "full"}
+        provenance = self.measurement / "provenance.json"
+        provenance.write_text(json.dumps(good), encoding="utf-8")
+        written = self.run_report("--write")
+        self.assertEqual(written.returncode, 0, written.stderr)
+        ledger = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        expected = ledger.read_bytes()
+        for fields in ({"run": 1}, {"commit": "b" * 40}, {"tests": 3}):
+            with self.subTest(fields=fields):
+                provenance.write_text(json.dumps(good | fields), encoding="utf-8")
+                refused = self.run_report("--write")
+                self.assertNotEqual(refused.returncode, 0, "stale provenance must not be published")
+                self.assertIn("just census-repin", refused.stderr)
+                self.assertEqual(ledger.read_bytes(), expected)
+        provenance.write_text(json.dumps(good), encoding="utf-8")
+        recovered = self.run_report("--write")
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual(ledger.read_bytes(), expected)
+
     def test_report_writes_the_ranked_ledger_and_every_golden_rows_reach_cell(self) -> None:
         run = self.run_report("--write")
         self.assertEqual(0, run.returncode, run.stderr)
@@ -768,7 +811,7 @@ class ReportTests(unittest.TestCase):
                 run = self.run_arms()
                 self.assertNotEqual(0, run.returncode)
                 self.assertIn("carries no single", run.stderr)
-                self.assertIn("restore the markers, then re-run", run.stderr)
+                self.assertIn("restore the markers, then run `just census-repin`", run.stderr)
                 self.assertEqual(text, index.read_text(encoding="utf-8"), "a refused run rewrote the index")
 
     def test_arms_refuses_a_malformed_cover_declaration(self) -> None:
@@ -815,7 +858,7 @@ class ReportTests(unittest.TestCase):
                 run = self.run_arms()
                 self.assertNotEqual(0, run.returncode)
                 self.assertIn(message, run.stderr)
-                self.assertIn("re-run `just handwritten-reach`", run.stderr)
+                self.assertIn("run `just census-repin`", run.stderr)
 
     def test_a_config_gated_arm_the_gate_measures_reads_the_gate_tables_verdict(self) -> None:
         self.assertEqual(0, self.run_report("--write").returncode)
@@ -1059,7 +1102,7 @@ class ReportTests(unittest.TestCase):
         (self.measurement / "universe.json").unlink()
         run = self.run_report()
         self.assertNotEqual(0, run.returncode)
-        self.assertIn("just golden-reach", run.stderr)
+        self.assertIn("just census-repin", run.stderr)
 
     @unittest.skipIf(
         os.name == "nt",
@@ -1310,7 +1353,7 @@ class MeasurementInputTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             with self.assertRaises(SystemExit) as refused:
                 golden_reach.measured_commit(Path(scratch))
-            self.assertIn("just golden-reach", str(refused.exception))
+            self.assertIn("just census-repin", str(refused.exception))
             (Path(scratch) / "provenance.json").write_text('{"commit": "main"}', encoding="utf-8", newline="\n")
             with self.assertRaises(SystemExit) as refused:
                 golden_reach.measured_commit(Path(scratch))
@@ -1439,7 +1482,7 @@ class MeasurementInputTests(unittest.TestCase):
                 with self.assertRaises(SystemExit) as refused:
                     golden_reach.read_ledger(ledger)
                 self.assertIn(f"{ledger}:3", str(refused.exception))
-                self.assertIn("just golden-reach-report", str(refused.exception))
+                self.assertIn("just census-repin", str(refused.exception))
 
     def test_an_enumeration_of_another_shape_is_refused_by_every_reader(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
@@ -1538,7 +1581,7 @@ class MeasurementInputTests(unittest.TestCase):
                     with self.assertRaises(SystemExit) as refused:
                         load(path)
                     self.assertIn(str(path), str(refused.exception))
-                    self.assertIn("re-run `just golden-reach`", str(refused.exception))
+                    self.assertIn("run `just census-repin`", str(refused.exception))
             regions.write_text('{"src/ir.rs": [[1, 2, 3, 4]]}', encoding="utf-8", newline="\n")
             self.assertEqual({"src/ir.rs": {(1, 2, 3, 4)}}, golden_reach.load_regions(regions))
             accepted = {
@@ -2605,7 +2648,7 @@ class ArmSearchStageTests(_StageScratch):
         self.assertEqual(
             committed.read_bytes(),
             (self.scratch / "outstanding.tsv").read_bytes(),
-            "re-run `python3 tools/surface-census/golden-reach-search.py outstanding` and commit the list",
+            "the arm searches' outstanding list is stale; run `just census-repin`, which regenerates it",
         )
 
     def test_a_screened_candidate_only_holds_a_search_open_while_this_builds_probe_reaches_the_arm(self) -> None:

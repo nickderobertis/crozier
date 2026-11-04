@@ -1074,7 +1074,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             ]
             stale = subprocess.run([*command, "--check"], capture_output=True, text=True, timeout=30, encoding="utf-8")
             self.assertEqual(stale.returncode, 1)
-            self.assertIn("rerun without --check", stale.stderr)
+            self.assertIn("is stale; run `just census-repin`", stale.stderr)
             registries = root / "witness-search-registries"
             if os.name != "nt" and os.geteuid() != 0:
                 # A directory it cannot write, then an index it cannot read: each named with its fix.

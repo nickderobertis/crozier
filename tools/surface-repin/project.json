@@ -1,0 +1,102 @@
+{
+  "name": "surface-repin",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-repin/tests/repin_composition_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-repin/test-repin-composition/.coverage"
+        }
+      },
+      "cache": true,
+      "parallelism": false,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/surface-census/*",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/tools/corpus/*.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/rust-toolchain.toml",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tests/fixtures/departures-ledger.tsv",
+        "{workspaceRoot}/docs/fern-refusals/classes.tsv",
+        "{workspaceRoot}/docs/openapi-surface/scenario-proof-index.tsv",
+        "{workspaceRoot}/docs/openapi-surface/output-insensitive.tsv",
+        "{workspaceRoot}/docs/openapi-surface/combination-cooccurrence.tsv",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-apis.guru/records.tsv",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-jentic/records.tsv",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-vendor-portals/records.tsv",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-portal-plan.tsv",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-repin/test-repin-composition"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs surface-repin"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/surface-repin"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/surface-repin"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/surface-repin"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/surface-repin"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/surface-census/tests/*.py",
+        "pythonTooling"
+      ]
+    }
+  }
+}
