@@ -81,6 +81,7 @@ def read_records(root: Path) -> tuple[dict[str, IndependenceProof], list[str]]:
     """Validate manifest v1 before any source or subprocess is used as evidence."""
     records: dict[str, IndependenceProof] = {}
     failures = []
+    reach = reach_reader()
     try:
         raw = tomllib.loads((root / MANIFEST).read_text(encoding="utf-8"))
         if (
@@ -111,8 +112,8 @@ def read_records(root: Path) -> tuple[dict[str, IndependenceProof], list[str]]:
                 for condition in row["conditions"]:
                     if not isinstance(condition, dict) or set(condition) != {"feature", "handler", "condition"}:
                         raise ValueError("each condition needs feature, handler and condition")
-                    if not isinstance(condition["handler"], str) or not re.fullmatch(
-                        r"src/[\w/]+\.rs::\w+(?:::\w+)*", condition["handler"]
+                    if not isinstance(condition["handler"], str) or not reach.HANDLER_SPEC.fullmatch(
+                        condition["handler"]
                     ):
                         raise ValueError("condition handler must be path::function")
                     if not isinstance(condition["condition"], str) or not condition["condition"].strip():

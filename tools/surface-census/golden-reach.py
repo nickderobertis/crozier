@@ -294,7 +294,8 @@ def cooccurrence_proof(cell: str) -> CombinationProof | None:
     """
     if not cell.startswith("class:"):
         return None
-    match = re.fullmatch(r"class:(interaction|independent|handwritten|open)(?: search:([^\s;]+))?; (\S.*)", cell)
+    classes = "|".join(re.escape(kind.value) for kind in CombinationProofClass)
+    match = re.fullmatch(rf"class:({classes})(?: search:([^\s;]+))?; (\S.*)", cell)
     if match is None:
         raise ValueError("expected `class:<interaction|independent|handwritten|open>[ search:<path>]; <reason>`")
     kind, search, _reason = match.groups()

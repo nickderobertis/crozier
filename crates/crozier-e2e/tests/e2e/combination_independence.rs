@@ -52,13 +52,11 @@ struct Proof {
     documents: Documents,
 }
 
-#[test]
-fn independent_combination_documents_match_certified_trees() {
-    let root = repo_root();
+fn read_proofs(root: &Path) -> Vec<Proof> {
     let reader = std::process::Command::new(
         python_interpreter().expect("Python to read the independence manifest"),
     )
-    .arg(root.join("tools/surface-census/combination-independence.py"))
+    .arg(repo_root().join("tools/surface-census/combination-independence.py"))
     .arg("--json")
     .arg("--repo-root")
     .arg(root)
@@ -69,8 +67,70 @@ fn independent_combination_documents_match_certified_trees() {
         "{}",
         String::from_utf8_lossy(&reader.stderr)
     );
-    let proofs: Vec<Proof> =
-        serde_json::from_slice(&reader.stdout).expect("validated independence records");
+    serde_json::from_slice(&reader.stdout).expect("validated independence records")
+}
+
+#[test]
+fn a_populated_independence_manifest_crosses_the_python_rust_boundary() {
+    let scratch = tempfile::tempdir().unwrap();
+    let manifest = scratch
+        .path()
+        .join("docs/openapi-surface/combination-independence.toml");
+    std::fs::create_dir_all(manifest.parent().unwrap()).unwrap();
+    let mut text = String::from(
+        r#"schema_version = 1
+[[combinations]]
+key = "combo-parser-boundary"
+modes = ["python_enums", "literals"]
+[[combinations.conditions]]
+feature = "first"
+handler = "src/ir.rs::error_response_entries"
+condition = "if code.starts_with('2') {"
+[[combinations.conditions]]
+feature = "second"
+handler = "src/ir.rs::error_body_schema"
+condition = ".find(|schema| !is_unknown(schema))"
+[combinations.documents]
+"#,
+    );
+    for label in ["first", "second", "both"] {
+        text.push_str(&format!(
+            "{label} = {{document = \"cases/{label}/openapi.yml\", python_enums = \"cases/{label}/enums\", literals = \"cases/{label}/literals\"}}\n"
+        ));
+    }
+    std::fs::write(&manifest, text).unwrap();
+    let proofs = read_proofs(scratch.path());
+    assert_eq!(proofs.len(), 1);
+    let proof = &proofs[0];
+    assert_eq!(proof.key, "combo-parser-boundary");
+    assert_eq!(proof.modes.len(), 2);
+    assert!(matches!(proof.modes[0], Mode::PythonEnums));
+    assert!(matches!(proof.modes[1], Mode::Literals));
+    for (label, document) in [
+        ("first", &proof.documents.first),
+        ("second", &proof.documents.second),
+        ("both", &proof.documents.both),
+    ] {
+        assert_eq!(
+            document.document,
+            PathBuf::from(format!("cases/{label}/openapi.yml"))
+        );
+        assert_eq!(
+            document.tree(Mode::PythonEnums),
+            Path::new(&format!("cases/{label}/enums"))
+        );
+        assert_eq!(
+            document.tree(Mode::Literals),
+            Path::new(&format!("cases/{label}/literals"))
+        );
+    }
+}
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This complete-tree replay belongs to the existing compiled-binary golden suite (crates/crozier-e2e/AGENTS.md), alongside corpus and hand-written replays using the same parity engine; splitting that family's graph edge is the existing generator-replay follow-up rather than a separate boundary introduced for this one comparison.
+#[test]
+fn independent_combination_documents_match_certified_trees() {
+    let root = repo_root();
+    let proofs = read_proofs(root);
     for proof in proofs {
         for mode in proof.modes {
             for (label, document) in [

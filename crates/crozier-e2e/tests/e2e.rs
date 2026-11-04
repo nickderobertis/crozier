@@ -68,8 +68,10 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These certified-tree replays use the same compiled-binary suite and parity engine as every corpus and hand-written golden comparison (crates/crozier-e2e/AGENTS.md); splitting the shared golden edge belongs to the existing generator-replay graph follow-up, while this declaration keeps the new runner on that established boundary.
 #[path = "e2e/combination_independence.rs"]
 mod combination_independence;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The worked-example value causes the fixture-only witness searches handed
