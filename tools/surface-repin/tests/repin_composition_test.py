@@ -104,18 +104,22 @@ def fixture(root: Path) -> None:
     """The real readers' smallest catalogs, with the coverage document as their template."""
     for name in ("surface-census", "witness-search", "corpus"):
         shutil.copytree(REPO / "tools" / name, root / "tools" / name, ignore=shutil.ignore_patterns("__pycache__"))
-    # The real census checks its Rust readings before selecting an interpreter.
-    # Keep those inputs intact beside the synthetic crate's two compiled functions.
-    census_source = (REPO / "tools/surface-census/openapi-surface-census.py").read_text(encoding="utf-8")
-    pinned_files = {
-        ast.literal_eval(node.args[2]).split("::", 1)[0]
-        for node in ast.walk(ast.parse(census_source))
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "PortPin"
-    }
-    for name in pinned_files:
-        target = root / name
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(REPO / name, target)
+    # This synthetic crate has no Rust decisions mirrored by the census's Python
+    # ports. Its catalog is empty; real-source port drift belongs to test-ports.
+    census_path = root / "tools/surface-census/openapi-surface-census.py"
+    source = census_path.read_text(encoding="utf-8")
+    table = next(
+        node
+        for node in ast.parse(source).body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "PORT_PINS" for target in node.targets)
+    )
+    assert table.end_lineno is not None
+    lines = source.splitlines(keepends=True)
+    census_path.write_text(
+        "".join(lines[: table.lineno - 1]) + "PORT_PINS = ()\n" + "".join(lines[table.end_lineno :]),
+        encoding="utf-8",
+    )
     for name in ("justfile", "rust-toolchain.toml", "scripts/census-python.sh", "assets/scaffolding/metadata.json"):
         target = root / name
         target.parent.mkdir(parents=True, exist_ok=True)
