@@ -2881,7 +2881,8 @@ the tests run and carried.
 - **artifact** `golden-reach-base-<40-hex commit>`, one file `base.json.gz`, kept
   90 days, published by `ci.yml`'s `golden-reach-base` job on each push to `main`
   (a newer push cancels a run in progress);
-- **keys** `schema` (1; any other is refused), `commit`, `rustc`, `llvm`,
+- **keys** `schema` (1; any other is refused), `commit`, `rustc` (an opaque
+  identity containing release, commit hash and host triple), `llvm`,
   `full_at`, `steps_since_full`, `measured_at` (ISO 8601 UTC), `tests`,
   `fixtures`, `functions`;
 - **drift bound**: a step measures fully when there is no base, when the base is

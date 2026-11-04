@@ -573,14 +573,25 @@ def test_a_release_commit_bumping_only_crozier_s_version_re_runs_nothing(repo: P
     ("top", "versions", "reason"),
     [
         ({"rustc": "1.95.0 old"}, VERSIONS, "measured with rustc 1.95.0"),
+        (
+            {"rustc": "1.96.0 abc aarch64-apple-darwin"},
+            ("1.96.0 abc x86_64-unknown-linux-gnu", "22.1.2"),
+            "measured with rustc 1.96.0 abc aarch64-apple-darwin",
+        ),
+        (
+            {"rustc": "1.96.0 abc"},
+            ("1.96.0 abc x86_64-unknown-linux-gnu", "22.1.2"),
+            "this tree builds with rustc 1.96.0 abc x86_64-unknown-linux-gnu",
+        ),
         ({"measured_at": "2026-01-01T00:00:00Z"}, VERSIONS, "more than 7"),
         ({"steps_since_full": 20}, VERSIONS, "21 since a full measurement, over 20"),
     ],
-    ids=["another compiler", "older than seven days", "past twenty steps"],
+    ids=["another compiler", "another host", "legacy host missing", "older than seven days", "past twenty steps"],
 )
 def test_the_drift_bound_measures_fully_and_says_why(repo: Path, top: dict, versions: tuple, reason: str) -> None:
     plan = step(repo, {}, base_of(repo, **top), versions=versions)
     assert plan.full is not None and reason in plan.full
+    assert set(plan.tests) == set(TESTS) and set(plan.fixtures) == {"fx"}
 
 
 def test_twenty_steps_is_still_inside_the_bound(repo: Path) -> None:

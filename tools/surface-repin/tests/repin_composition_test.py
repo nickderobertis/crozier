@@ -513,7 +513,7 @@ def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: 
     subprocess.run(["rustc", str(shim), "-o", str(compiler)], check=True, capture_output=True)
     shutil.copy2(compiler, binaries / f"cargo{suffix}")
     marker = tmp_path / "build-started"
-    for field in ("release", "commit-hash", "LLVM version"):
+    for field in ("release", "commit-hash", "LLVM version", "host"):
         env = os.environ | {
             "PATH": str(binaries) + os.pathsep + os.environ["PATH"],
             "XDG_CACHE_HOME": str(tmp_path / "cache"),
@@ -533,6 +533,30 @@ def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: 
         assert "install the pinned toolchain" in result.stderr
         assert not marker.exists(), "an unidentified compiler cannot start an instrumented build"
         assert not (root / ".local/golden-reach/store.json.gz").exists()
+
+    identities: list[tuple[str, str]] = []
+    hosts = ("x86_64-unknown-linux-gnu", "aarch64-apple-darwin")
+    probe = "import json,sys\nfrom pathlib import Path\nsys.path.insert(0, sys.argv[1])\nimport reach_store\nprint(json.dumps(reach_store.toolchain(Path(sys.argv[2]))))"
+    for host in hosts:
+        env["PROBE_RUSTC_VERSION"] = "\n".join(
+            f"host: {host}" if line.startswith("host:") else line for line in version.splitlines()
+        )
+        result = subprocess.run(
+            [PYTHON, "-c", probe, str(root / "tools/surface-census"), str(root)],
+            cwd=root,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr
+        rustc_identity, llvm_identity = json.loads(result.stdout)
+        assert isinstance(rustc_identity, str) and isinstance(llvm_identity, str)
+        identities.append((rustc_identity, llvm_identity))
+        assert rustc_identity.endswith(host)
+    assert identities[0] != identities[1], "equal Rust releases built for different hosts cannot share counters"
+    assert identities[0][0].rsplit(" ", 1)[0] == identities[1][0].rsplit(" ", 1)[0]
+    assert identities[0][1] == identities[1][1]
 
 
 @pytest.mark.parametrize("failure", ["exit", "empty", "missing_bash"])

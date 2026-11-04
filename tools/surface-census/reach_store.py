@@ -969,19 +969,19 @@ def save(store: Store, path: Path) -> None:
 
 
 def toolchain(root: Path) -> tuple[str, str]:
-    """`(rustc, llvm)` as the store records them, read from `rustc -vV` in `root`."""
+    """Opaque identities from `rustc -vV`: release/hash/host, and its bundled LLVM version."""
     run = subprocess.run(["rustc", "-vV"], cwd=root, capture_output=True, text=True)
     if run.returncode != 0:
         fail(f"`rustc -vV` exited {run.returncode}: {run.stderr.strip()[-300:]}; install the pinned toolchain")
     fields = dict(line.split(": ", 1) for line in run.stdout.splitlines() if ": " in line)
     missing = [
         name
-        for name in ("release", "commit-hash", "LLVM version")
+        for name in ("release", "commit-hash", "LLVM version", "host")
         if not fields.get(name, "").strip() or fields[name] in ("?", "unknown")
     ]
     if missing:
         fail(f"`rustc -vV` omitted a usable {', '.join(missing)}; install the pinned toolchain before measuring")
-    return f"{fields['release']} {fields['commit-hash']}", fields["LLVM version"]
+    return f"{fields['release']} {fields['commit-hash']} {fields['host']}", fields["LLVM version"]
 
 
 def now_iso() -> str:
