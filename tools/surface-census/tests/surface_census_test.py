@@ -17470,6 +17470,38 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 7}, rows(completed))
 
+    def test_same_primitive_union_honors_datetime_override_and_canonical_precedence(self) -> None:
+        selector = "components.schemas:same-primitive-union"
+
+        def document(extensions: dict[str, object]) -> dict:
+            return {
+                "components": {
+                    "schemas": {
+                        "Moment": {
+                            "anyOf": [
+                                {"type": "string", "format": "date", **extensions},
+                                {"type": "string", "format": "date-time"},
+                            ]
+                        }
+                    }
+                }
+            }
+
+        self.assertEqual(
+            {(selector, "legacy"): 1, (selector, "canonical"): 1, (selector, "null-canonical"): 1},
+            self.census_one(
+                selector,
+                {
+                    "legacy": document({"x-fern-type": "datetime"}),
+                    "canonical": document({"x-crozier-type": "datetime", "x-fern-type": "literal<true>"}),
+                    "null-canonical": document({"x-crozier-type": None, "x-fern-type": "datetime"}),
+                    "near-canonical": document({"x-crozier-type": "literal<true>", "x-fern-type": "datetime"}),
+                    "near-empty": document({"x-crozier-type": "", "x-fern-type": "datetime"}),
+                    "near-unmarked": document({}),
+                },
+            ),
+        )
+
     def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
         """An array query parameter whose inline `items` composes two members.
 

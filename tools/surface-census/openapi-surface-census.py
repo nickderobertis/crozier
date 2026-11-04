@@ -5143,7 +5143,7 @@ UNION_PORT_DIGESTS = {
     "untyped_const_tag": "df10174704350956",
     "inferred_union_discriminant_property": "a1a3229b10970d85",
     "same_primitive_union_last": "46bacd9b81edeea4",
-    "base_type_ref": "acfac357a9b46fce",
+    "base_type_ref": "35f2b9e1cb617ac7",
     "last_composed_variant": "3ac394950dc70c7f",
     "is_composed_member": "ea34dd7fa128f6b3",
     "is_map": "ce58b2f1f60a3f18",
@@ -5153,15 +5153,15 @@ UNION_PORT_DIGESTS = {
 
 # `Census.same_primitive_unions`'s scalar arms also port helpers `base_type_ref`
 # calls but does not contain: `number_prim` and `int_prim` (a number's integer
-# formats, and which of them is a long), and the Boolean literal override, read
+# formats, and which of them is a long), and the Boolean literal and datetime overrides, read
 # through `Schema::bool_literal` and the spellings `LiteralTypeOverride::from`
 # accepts. The offline tier pins each by the same
 # normalized-body digest; `Type::method` names the method of `impl ... for Type`.
 SCALAR_PORT_DIGESTS = {
     ("src/ir.rs", "number_prim"): "1b2664ec7ba49051",
     ("src/ir.rs", "int_prim"): "1f5450ca73084537",
-    ("src/openapi.rs", "bool_literal"): "9ae8fdd0eba9b349",
-    ("src/openapi.rs", "LiteralTypeOverride::from"): "6b29bbd32bbd4fb1",
+    ("src/openapi.rs", "bool_literal"): "1ddf77335cc52a3f",
+    ("src/openapi.rs", "LiteralTypeOverride::from"): "3c967be70a520263",
 }
 
 
@@ -7815,6 +7815,9 @@ class Census:
                 or member.get("nullable") is True
             ):
                 return None
+            override = member.get("x-crozier-type")
+            if override is None:
+                override = member.get("x-fern-type")
             form = member.get("format")
             match member.get("type"):
                 # `normalize_float_type` of `src/openapi.rs` runs first and reads the
@@ -7822,6 +7825,8 @@ class Census:
                 case "float":
                     return "float"
                 case "string":
+                    if override == "datetime":
+                        return "datetime"
                     return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
                 case "integer":
                     return "long" if form in ("int64", "uint64") else "int"
@@ -7830,9 +7835,6 @@ class Census:
                 case "number":
                     return "float"
                 case "boolean":
-                    override = member.get("x-crozier-type")
-                    if override is None:
-                        override = member.get("x-fern-type")
                     if override in ("literal<true>", "literal<false>"):
                         return override
                     return "bool"
