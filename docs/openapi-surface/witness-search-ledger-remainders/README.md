@@ -37,8 +37,8 @@ walk remains partial. No live code search was run. No new witness is registered.
 | key | selector | verdict | reason |
 |---|---|---|---|
 | `withdrawn-properties-reference-copy` | `schema.$ref:properties-copy` | `search-incomplete` | Three registered sources declare the broader copying predicate; their pointers end on properties or items, not the withdrawn plain component or composition-member forms. The acquired pools are unavailable, and the handoff walk is partial. |
-| `withdrawn-properties-copy-variant-name` | `schema.oneOf:properties-copy-type-variant` | `search-incomplete` | No certified witness established; archive declarers remain unscreened. The acquired pools are unavailable, and the handoff walk is partial. |
-| `withdrawn-properties-copy-inferred-type` | `schema.oneOf:properties-copy-inferred-type` | `search-incomplete` | No certified witness established; archive declarers remain unscreened. The acquired pools are unavailable, and the handoff walk is partial. |
+| `withdrawn-properties-copy-variant-name` | `schema.oneOf:properties-copy-type-variant` | `search-incomplete` | The sole archive declarer is rejected by its recorded publisher-grant screen. The acquired pools are unavailable, and the handoff walk is partial. |
+| `withdrawn-properties-copy-inferred-type` | `schema.oneOf:properties-copy-inferred-type` | `search-incomplete` | The sole archive declarer is rejected by its recorded publisher-grant screen. The acquired pools are unavailable, and the handoff walk is partial. |
 | `withdrawn-optional-nontemporal-timestamp` | `parameter.example:optional-nontemporal-yaml-timestamp` | `search-incomplete` | No real witness found. Thirty archive documents declare the timestamp selector and remain unscreened; Cyoda does not. The acquired pools are unavailable, and the handoff walk is partial. |
 
 The broader reference-copy selector counts `dnd5eapi.co` (2),
@@ -177,8 +177,17 @@ The counted [named census](census.tsv) contains every non-local declaring candid
 ## Unscreened withdrawal declarations
 
 The archive has 19 reference-copy declaring documents and one declaring document
-for each union selector, plus 30 timestamp declaring documents. Each positive
-reading in `archive-census.tsv.gz` is an outstanding candidate: verify its exact
+for each union selector, plus 30 timestamp declaring documents. [withdrawal-candidates.tsv](withdrawal-candidates.tsv) lists every positive
+reading with its status. Except the rejected Nexmo document below, each is an
+outstanding candidate: verify its exact
 trigger, publisher provenance and grant, then generate and compare its exact
 bytes with the certified pair. These searches remain `search-incomplete`; the
 missing pools and partial handoff also prevent exhaustion.
+
+The sole archive candidate for both union selectors is the already withdrawn
+`APIs/nexmo.com/conversation/2.0.1/openapi.yaml`, SHA-256
+`6eb10fee318269b7131a3a0d43897e8d33774a31db3cec86b3d33ffc05eb05b4`.
+Its [publisher-grant screen](../withdrawn-witnesses/nexmo-conversation.md#the-publisher-grant-search)
+already rejects registration. No new generation would resolve that missing
+grant; it is rejected for its publisher grant, rather than an outstanding generation
+screen. A new admissible publisher grant would permit reconsideration.

@@ -4659,6 +4659,25 @@ class ConjunctionCensusTests(unittest.TestCase):
             "nexmo-messages": 1,
         },
         "operation.context:document-security-declared&operation.security": {},
+        "operation.operationId:tag-only&operation.tags": {},
+        "operation.requestBody>requestBody.content>mediaType.schema>schema.$ref:unresolved-nested-local": {},
+        "parameter.in=header&parameter.schema>schema.default": {},
+        "parameter.in=header&parameter.schema>schema.type=array": {},
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued": {},
+        "response.content>mediaType.schema>schema.$ref:unresolved-nested-local": {},
+        "schema.allOf>schema.$ref:unresolved-nested-local": {},
+        "schema.anyOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued": {},
+        "schema.oneOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued": {
+            "discriminated-unions": 1,
+            "recursive-types": 1,
+        },
+        "schema.properties>schema.$ref:defs-member": {},
+        "schema.properties>schema.$ref:unresolved-nested-local": {},
+        "schema.properties>schema.anyOf:several-non-null-members&schema.anyOf>schema.oneOf": {},
+        "schema.type:primary=array&schema.items>schema.$ref:defs-member": {},
+        "schema.type:primary=object&schema.allOf>schema.$ref~>schema.nullable": {},
+        "schema.type=array&schema.items>schema.$ref:unresolved-nested-local": {},
+        "schema.type=object&schema.additionalProperties>schema.$ref:unresolved-nested-local": {},
     }
 
     # A conjunction no selected source declares, asserted as absent rather than as
@@ -6070,6 +6089,19 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - PARAMETER_EXTENSION_SHAPE_PREDICATES
         - BODY_AND_RESPONSE_PREDICATES
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
+        # Independently discriminated by WithdrawnWitnessSelectorTests and
+        # AuthoredEvidenceTierTests below, rather than this older arm table.
+        - {
+            "schema.$ref:unresolved-nested-local",
+            "operation.operationId:tag-only",
+            "schema.$ref:properties-copy",
+            "schema.properties:construct-name",
+            "schema.$ref:defs-member",
+            "schema.x-fern-type-name:component",
+            "schema.oneOf:properties-copy-inferred-type",
+            "schema.oneOf:properties-copy-type-variant",
+            "parameter.example:optional-nontemporal-yaml-timestamp",
+        }
     )
 
     @classmethod
