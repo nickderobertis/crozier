@@ -4141,5 +4141,63 @@ class RecipeTests(unittest.TestCase):
         self.assertEqual(REPO / ".local" / "golden-reach", golden_reach.DEFAULT_OUT)
 
 
+class CooccurrenceProofClassTests(unittest.TestCase):
+    def read_reason(self, path: Path, reason: str):
+        path.write_text(
+            "\t".join(golden_reach.COOCCURRENCE_COLUMNS)
+            + "\n"
+            + "\t".join(
+                (
+                    "combo-dispatch",
+                    "dispatch",
+                    "/components/schemas/Dispatch",
+                    "first: src/ir.rs::build ; second: src/emit.rs::generate",
+                    reason,
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        return golden_reach.read_cooccurrence(path)
+
+    def test_classes_round_trip_through_the_unchanged_audit_header(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "audit.tsv"
+            for proof_class in ("interaction", "independent", "handwritten", "open"):
+                search = "docs/openapi-surface/search/README.md" if proof_class in ("handwritten", "open") else None
+                reason = f"class:{proof_class}" + (f" search:{search}" if search else "") + "; measured reason"
+                with self.subTest(proof_class=proof_class):
+                    rows, failures = self.read_reason(path, reason)
+                    self.assertEqual([], failures)
+                    self.assertEqual(proof_class, rows["combo-dispatch"].proof_class)
+                    self.assertIsInstance(rows["combo-dispatch"].proof_class, golden_reach.ProofClass)
+                    self.assertEqual(search, rows["combo-dispatch"].search_record)
+                    self.assertEqual(reason, rows["combo-dispatch"].why_no_branch)
+                    self.assertEqual(5, len(path.read_text().splitlines()[0].split("\t")))
+
+    def test_invalid_classes_and_search_paths_are_refused_then_recover(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "audit.tsv"
+            for reason in (
+                "class:gap; reason",
+                "class:open; reason",
+                "class:handwritten; reason",
+                "class:interaction search:docs/search.md; reason",
+                "class:independent search:docs/search.md; reason",
+                "class:open search:/absolute.md; reason",
+                "class:open search:../outside.md; reason",
+                r"class:open search:C:\outside.md; reason",
+                r"class:open search:docs\search.md; reason",
+                "class:interaction; ",
+            ):
+                with self.subTest(reason=reason):
+                    _rows, failures = self.read_reason(path, reason)
+                    self.assertTrue(failures, reason)
+                    self.assertIn("combo-dispatch", "\n".join(failures))
+            rows, failures = self.read_reason(path, "class:open search:docs/search.md; retry remains outstanding")
+            self.assertEqual([], failures)
+            self.assertEqual("open", rows["combo-dispatch"].proof_class)
+
+
 if __name__ == "__main__":
     unittest.main()

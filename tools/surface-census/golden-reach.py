@@ -58,7 +58,7 @@ import tempfile
 import tomllib
 from collections import Counter, defaultdict
 from enum import StrEnum
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
 
 if TYPE_CHECKING:
@@ -242,6 +242,14 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
 
 
 COOCCURRENCE_AUDIT = REGIONS_DIR / "combination-cooccurrence.tsv"
+COOCCURRENCE_PROOF = re.compile(r"class:(interaction|independent|handwritten|open)(?: search:([^\s;]+))?; (\S.*)")
+
+
+class ProofClass(StrEnum):
+    INTERACTION = "interaction"
+    INDEPENDENT = "independent"
+    HANDWRITTEN = "handwritten"
+    OPEN = "open"
 
 
 class CooccurrenceAudit(NamedTuple):
@@ -252,6 +260,40 @@ class CooccurrenceAudit(NamedTuple):
     site: str
     handlers: str
     why_no_branch: str
+
+    def _proof(self) -> tuple[ProofClass | None, str | None]:
+        """Read the class prefix; legacy prose remains unclassified for the census gate."""
+        if not self.why_no_branch.startswith("class:"):
+            return None, None
+        match = COOCCURRENCE_PROOF.fullmatch(self.why_no_branch)
+        if match:
+            proof_class, search, _reason = match.groups()
+            needs_search = proof_class in ("handwritten", "open")
+            if needs_search == bool(search) and (
+                search is None
+                or (
+                    not PurePosixPath(search).is_absolute()
+                    and ".." not in PurePosixPath(search).parts
+                    and "\\" not in search
+                    and ":" not in search
+                )
+            ):
+                return ProofClass(proof_class), search
+        raise ValueError(
+            "why_no_branch must begin `class:<interaction|independent|handwritten|open>`; "
+            "handwritten and open require ` search:<repository-relative path>`, "
+            "then every class requires `; <reason>`"
+        )
+
+    @property
+    def proof_class(self) -> ProofClass | None:
+        """The declared proof class, or None for an audit not yet classified."""
+        return self._proof()[0]
+
+    @property
+    def search_record(self) -> str | None:
+        """The bounded-search record required for a hand-written or open proof."""
+        return self._proof()[1]
 
 
 # The file's header is the model's fields, so the two cannot drift apart.
@@ -287,7 +329,13 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, Cooccu
         except ValueError as error:
             failures.append(f"{cells[0]}: {path.name}'s handlers cell {error}")
             continue
-        rows[cells[0]] = CooccurrenceAudit(*cells)
+        row = CooccurrenceAudit(*cells)
+        try:
+            row._proof()
+        except ValueError as error:
+            failures.append(f"{cells[0]}: {path.name}'s {error}")
+            continue
+        rows[cells[0]] = row
     if keys != sorted(keys):
         failures.append(f"{path.name}: rows are not sorted by key")
     return rows, failures
