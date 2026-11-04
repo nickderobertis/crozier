@@ -468,8 +468,8 @@ if(args.includes('rate_limit')) {
 } else if(path.endsWith('/protection')) answer=a.protection || {required_status_checks:{contexts:a.contexts || ['gate','llmlint']}};
 else if(path.endsWith('/rules/branches/main')) answer=a.rules || [];
 else if(path.includes('/actions/runs?')) { const page=Number(new URL('https://api.invalid/'+path).searchParams.get('page')); answer={workflow_runs:a.records.map(r=>r.run).slice(a.paginate ? (page-1)*100 : 0, a.paginate ? page*100 : undefined)}; }
-else if(args.includes('run-jobs')) answer={jobs:a.records.find(r=>r.run.id===Number(args[args.indexOf('--run')+1])).jobs};
-else if(/\\/attempts\\//.test(path)) { const jobs=a.previous || a.records.find(r=>r.run.id===Number(path.split('/')[5])).jobs; const page=Number(new URL('https://api.invalid/'+path).searchParams.get('page')); answer={jobs:a.paginateJobs ? jobs.slice((page-1)*100,page*100) : jobs}; }
+else if(args.includes('run-jobs')) { const record=a.records.find(r=>r.run.id===Number(args[args.indexOf('--run')+1])); answer={jobs:record.jobs.map(j=>({...j,run_id:record.run.id,run_attempt:record.run.run_attempt}))}; }
+else if(/\\/attempts\\//.test(path)) { const jobs=a.previous || a.records.find(r=>r.run.id===Number(path.split('/')[5])).jobs; const page=Number(new URL('https://api.invalid/'+path).searchParams.get('page')); const selected=a.paginateJobs ? jobs.slice((page-1)*100,page*100) : jobs; answer={jobs:selected.map(j=>({...j,run_id:Number(path.split('/')[5]),run_attempt:Number(path.split('/')[7])}))}; }
 else if(/\\/actions\\/runs\\/\\d+$/.test(path)) answer=a.records.find(r=>r.run.id===Number(path.split('/').at(-1)))?.run;
 if(a.missing && path.includes('/actions/runs?')) answer={};
 if(a.badQuota && args.includes('rate_limit')) answer={resources:{core:{limit:'100',remaining:39,reset:null}}};
@@ -477,12 +477,14 @@ if(a.badProtection && path.endsWith('/protection')) answer={required_status_chec
 if(a.badRules && path.endsWith('/rules/branches/main')) answer=[{type:'required_status_checks',parameters:{required_status_checks:'bad'}}];
 if(a.badRun && path.includes('/actions/runs?')) answer={workflow_runs:[{...a.records[0].run,id:'bad'}]};
 if(a.badFresh && /\\/actions\\/runs\\/\\d+$/.test(path)) answer={...answer,head_sha:'0'.repeat(40)};
+if(a.jobDamage && answer.jobs) { const job=answer.jobs[0]; if(a.jobDamage==='timestamp') job.started_at=123; else if(a.jobDamage==='name') job.name=null; else if(a.jobDamage==='identity') job.run_id+=1; else if(a.jobDamage==='attempt') job.run_attempt+=1; else if(a.jobDamage==='missing') answer={}; }
+if(a.secondary && args[0]==='host') { console.error('API secondary rate limit refused'); process.exit(1); }
 if(a.fail) { console.error('read refused'); process.exit(1); }
 if(!answer) { console.error('unexpected external request: '+args.join(' ')); process.exit(1); }
 process.stdout.write(JSON.stringify(answer));
 `;
   for (const name of ['gh', 'onevcs']) { writeFileSync(join(root, name), stub); chmodSync(join(root, name), 0o755); }
-  const run = (extra = [], overrides = {}) => spawnSync(process.execPath, [timingCLI, 'runs', '--since', '2026-10-31T00:00:00Z', '--until', '2026-11-04T00:00:00Z', '--cache-dir', join(root, 'cache'), ...extra], { encoding: 'utf8', env: { ...process.env, GH_TOKEN: 'replay', PATH: `${root}:${process.env.PATH}`, ANSWERS: answerFile, CALLS: calls, ...overrides } });
+  const run = (extra = [], overrides = {}, window = {}) => spawnSync(process.execPath, [timingCLI, 'runs', '--since', window.since ?? '2026-10-31T00:00:00Z', '--until', window.until ?? '2026-11-04T00:00:00Z', '--cache-dir', join(root, 'cache'), ...extra], { encoding: 'utf8', env: { ...process.env, GH_TOKEN: 'replay', PATH: `${root}:${process.env.PATH}`, ANSWERS: answerFile, CALLS: calls, ...overrides } });
   return { root, records, answerFile, calls, run };
 }
 
@@ -564,7 +566,7 @@ test('timing CLI excludes cancelled and missing contexts from passing summary an
 test('timing CLI rejects invalid invocation and failed or missing reads', { skip: process.platform === 'win32' }, (t) => {
   const r = timingReplay(t);
   assert.equal(r.run(['--limit', '0']).status, 2);
-  assert.equal(r.run(['--until', 'yesterday']).status, 2);
+  assert.equal(r.run([], {}, {until:'yesterday'}).status, 2);
   for (const variant of ['fail', 'missing']) {
     writeFileSync(r.answerFile, JSON.stringify({ records: r.records, [variant]: true }));
     const run = r.run();
@@ -705,6 +707,16 @@ test('timing CLI replays recorded crozier attempts even when timestamp order dif
   // including the failed attempt, even though attempt 2 completed earlier.
   assert.equal(head.gate_seconds, 3331);
   assert.equal(head.jobs.length, 10);
+  // A failed-job-only retry leaves successful contexts on the earlier attempt.
+  // Replay that partial-answer variant using the same recorded job responses.
+  rmSync(join(r.root,'cache'),{recursive:true});
+  r.records[r.records.length-1] = { run:records[1].run, jobs:records[1].jobs.filter(j=>j.name===context) };
+  writeFileSync(r.answerFile,JSON.stringify({records:r.records,previous:records[0].jobs,contexts:[context,'visual-docs / arches']}));
+  const partial=r.run();
+  assert.equal(partial.status,0,partial.stderr);
+  const carried=JSON.parse(partial.stdout).runs.find(h=>h.run_id===41288057298);
+  assert.equal(carried.conclusion,'success');
+  assert.equal(carried.gate_seconds,3331);
 });
 
 
@@ -799,7 +811,7 @@ test('timing CLI fetches uncached historical attempts and every job page', { ski
 
 test('timing CLI rejects malformed boundary data and mismatched cached identities', { skip: process.platform === 'win32' }, (t) => {
   const r = timingReplay(t);
-  assert.equal(r.run(['--until','2026-02-30T00:00:00Z']).status, 2);
+  assert.equal(r.run([], {}, {until:'2026-02-30T00:00:00Z'}).status, 2);
   for (const field of ['badQuota','badProtection','badRules','badRun','badFresh']) {
     writeFileSync(r.answerFile, JSON.stringify({records:r.records,[field]:true}));
     const run = r.run();
@@ -840,12 +852,63 @@ test('timing CLI reports inconsistent job timestamps as unknown', { skip: proces
   const r = timingReplay(t);
   const job = r.records[0].jobs[0];
   job.created_at = '2026-11-03T18:01:00Z';
-  job.started_at = '2026-11-03T18:00:00Z';
-  job.completed_at = '2026-11-03T17:59:00Z';
+  job.started_at = '2026-11-03T17:00:00Z';
+  job.completed_at = '2026-11-03T16:59:00Z';
   writeFileSync(r.answerFile,JSON.stringify({records:r.records}));
   const run = r.run();
   assert.equal(run.status,0,run.stderr);
   const measured = JSON.parse(run.stdout).runs[0].jobs[0];
   assert.equal(measured.queue_seconds,null);
   assert.equal(measured.run_seconds,null);
+  assert.equal(measured.start_offset_seconds,0);
+  assert.match(measured.start_offset_reason,/inconsistent start timestamp/);
+});
+
+
+test('timing CLI rejects invalid invocation before making external reads', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  for (const args of [['--unknown','x'],['--format','json','--format','markdown'],['--limit'],['--format','csv'],['--head-contains','not-a-sha']]) {
+    const run = r.run(args);
+    assert.equal(run.status,2,run.stderr);
+    assert.equal(run.stdout,'');
+  }
+  for (const window of [{since:'2026-11-04T00:00:00Z',until:'2026-11-01T00:00:00Z'},{until:'2026-11-03T24:00:00Z'},{since:'2026-02-30T00:00:00Z'}]) assert.equal(r.run([],{},window).status,2);
+  assert.equal(existsSync(r.calls),false);
+});
+
+test('timing CLI validates job fields, timestamps and run/attempt identities', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  for (const jobDamage of ['timestamp','name','identity','attempt','missing']) {
+    writeFileSync(r.answerFile,JSON.stringify({records:r.records,jobDamage}));
+    const run=r.run();
+    assert.equal(run.status,1,jobDamage+': '+run.stderr);
+    assert.equal(run.stdout,'');
+    assert.match(run.stderr,/invalid job|job identity mismatch|missing or mismatched jobs/);
+  }
+});
+
+test('timing CLI stops on secondary limits and reports empty history and damaged caches', { skip: process.platform === 'win32' }, (t) => {
+  const r = timingReplay(t);
+  writeFileSync(r.answerFile,JSON.stringify({records:r.records,secondary:true}));
+  const refusal=r.run();
+  assert.equal(refusal.status,1,refusal.stderr);
+  assert.match(refusal.stderr,/secondary rate limit/);
+  const calls=readFileSync(r.calls,'utf8').trim().split('\n').map(JSON.parse);
+  assert.equal(calls.filter(a=>a[0]==='host').length,1);
+  assert.equal(calls.at(-1)[0],'host');
+  writeFileSync(r.answerFile,JSON.stringify({records:r.records}));
+  const empty=r.run(['--head-contains','f'.repeat(40)]);
+  assert.equal(empty.status,1);
+  assert.equal(empty.stdout,'');
+  assert.match(empty.stderr,/no matching runs/);
+  assert.equal(r.run().status,0);
+  const file=join(r.root,'cache',`run-${r.records[0].run.id}-attempt-1.json`);
+  const valid=JSON.parse(readFileSync(file,'utf8'));
+  for (const content of ['{',JSON.stringify({}),JSON.stringify({...valid,jobs:[{...valid.jobs[0],run_id:1}]})]) {
+    writeFileSync(file,content);
+    const run=r.run();
+    assert.equal(run.status,1);
+    assert.equal(run.stdout,'');
+    assert.match(run.stderr,/invalid cached attempt|cached attempt identity mismatch|job identity mismatch/);
+  }
 });

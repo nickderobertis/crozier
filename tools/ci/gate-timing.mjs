@@ -109,8 +109,9 @@ export function validateAttempt(attempt) {
   validateRun(run);
   if (!Array.isArray(jobs) || (!jobs.length && !['cancelled', 'skipped'].includes(run.conclusion))) throw new Error(`missing jobs for run ${run.id}`);
   for (const job of jobs) {
-    if (typeof job.name !== 'string' || typeof job.status !== 'string' || (job.conclusion !== null && typeof job.conclusion !== 'string')) throw new Error(`invalid job for run ${run.id}`);
-    for (const key of ['created_at', 'started_at', 'completed_at']) if (job[key] != null && !Number.isFinite(Date.parse(job[key]))) throw new Error(`invalid job ${key}`);
+    if (!job || typeof job.name !== 'string' || !job.name.trim() || typeof job.status !== 'string' || (job.conclusion != null && typeof job.conclusion !== 'string')) throw new Error(`invalid job for run ${run.id}`);
+    if (!Number.isSafeInteger(job.id) || job.id < 1 || job.run_id !== run.id || job.run_attempt !== run.run_attempt) throw new Error(`job identity mismatch for run ${run.id}/${run.run_attempt}`);
+    for (const key of ['created_at', 'started_at', 'completed_at']) if (job[key] != null && !validTimestamp(job[key])) throw new Error(`invalid job ${key}`);
   }
   return attempt;
 }
@@ -123,10 +124,14 @@ export function calculateHead(attempts, required) {
   const last = sorted.at(-1).run;
   const kind = first.event === 'push' ? 'main' : first.head_branch.startsWith('release-plz-') ? 'release-pr' : 'pr';
   const allJobs = sorted.flatMap(({ run, jobs }) => jobs.map((job) => ({ ...job, run_id: run.id, run_attempt: run.run_attempt })));
-  // Latest attempt of each workflow replaces its predecessor's context result,
-  // but all attempts remain in the elapsed span and job inventory.
+  // A later attempt replaces only contexts it supplies: successful contexts
+  // survive a failed-job-only retry. Attempt number outranks timestamp order.
   const latest = new Map();
-  for (const { run, jobs } of sorted) if (!latest.has(run.id) || run.run_attempt > latest.get(run.id).run.run_attempt) latest.set(run.id, { run, jobs });
+  for (const { run, jobs } of [...sorted].sort((a, b) => a.run.run_attempt - b.run.run_attempt)) {
+    const merged = new Map((latest.get(run.id)?.jobs ?? []).map((job) => [job.name, job]));
+    for (const job of jobs) merged.set(job.name, job);
+    latest.set(run.id, { run, jobs: [...merged.values()] });
+  }
   const finalJobs = [...latest.values()].flatMap(({ jobs }) => jobs);
   const mainJobs = [...latest.values()].filter(({ run }) => run.name === 'ci' || run.path === '.github/workflows/ci.yml').flatMap(({ jobs }) => jobs);
   const contexts = kind === 'main' ? mainJobs : required.map((name) => finalJobs.filter((job) => job.name === name).sort((a, b) => Date.parse(a.completed_at ?? 0) - Date.parse(b.completed_at ?? 0)).at(-1));
@@ -248,7 +253,9 @@ export async function collect(options) {
     for (let attempt = 1; attempt <= fresh.run_attempt; attempt++) {
       const file = join(dir, `run-${run.id}-attempt-${attempt}.json`);
       let raw;
-      if (existsSync(file)) raw = JSON.parse(readFileSync(file, 'utf8'));
+      if (existsSync(file)) {
+        try { raw = JSON.parse(readFileSync(file, 'utf8')); } catch (error) { throw new Error(`invalid cached attempt ${file}; remove this cache file and retry: ${error.message}`); }
+      }
       else {
         let jobs;
         let useGh = attempt !== fresh.run_attempt;
@@ -273,11 +280,11 @@ export async function collect(options) {
         }
         if (!Array.isArray(jobs) || (!jobs.length && !['cancelled', 'skipped'].includes(fresh.conclusion)) || jobs.some((j) => j.run_attempt !== attempt)) throw new Error(`missing or mismatched jobs for ${run.id}/${attempt}`);
         raw = { observed_at, required_contexts: required, run: { ...fresh, run_attempt: attempt }, jobs };
+        validateAttempt(raw);
         if ((attempt < fresh.run_attempt || fresh.status === 'completed') && jobs.every((j) => j.status === 'completed')) writeFileSync(file, JSON.stringify(raw, null, 2));
       }
-      validateAttempt(raw);
-      if (raw.run.id !== fresh.id || raw.run.run_attempt !== attempt || raw.run.head_sha !== fresh.head_sha) throw new Error(`cached attempt identity mismatch: ${file}; remove this cache file and retry`);
-      groups.get(key).push(raw);
+      if (raw?.run?.id !== fresh.id || raw?.run?.run_attempt !== attempt || raw?.run?.head_sha !== fresh.head_sha) throw new Error(`cached attempt identity mismatch: ${file}; remove this cache file and retry`);
+      groups.get(key).push(validateAttempt(raw));
     }
   }
   const measured = [...groups.values()].map((attempts) => calculateHead(attempts, required));
