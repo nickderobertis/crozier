@@ -131,6 +131,9 @@ def _wait_line(process: subprocess.Popen[str], deadline: float) -> list[str]:
 
 def test_every_entry_point_waits_for_the_lock_and_builds_only_once_it_is_released(clone: Path, tmp_path: Path) -> None:
     """All six start together against one held lock, so the case costs one entry point's wait, not six."""
+    if sys.platform == "win32":
+        pytest.skip("the holder takes the lock with fcntl")
+
     import fcntl
 
     xdg = tmp_path / "xdg"
