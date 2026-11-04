@@ -25,7 +25,10 @@ The area records are [bodies and media](bodies-media.tsv),
 [example values](example-values.tsv),
 [snippet rendering](snippet-rendering.tsv),
 [type declarations](type-declarations.tsv), and
-[union modelling](union-modelling.tsv).
+[union modelling](union-modelling.tsv). Additional causes found while
+re-measuring, including the non-table causes moved here under the planner’s
+ruling, are [remeasure](remeasure.tsv); their notes retain their original
+source records and evidence directories.
 
 ## Newly admitted documents
 

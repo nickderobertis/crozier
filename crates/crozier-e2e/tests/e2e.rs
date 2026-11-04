@@ -152,6 +152,9 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+#[path = "e2e/remeasure.rs"]
+mod remeasure;
+
 /// The document-acceptance handed-off area: documents the certified pair reads
 /// where crozier refused, failed to parse or wrote invalid Python, each
 /// measured under `docs/fern-measurements/handed-off/document-acceptance/`.
@@ -1018,6 +1021,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
+        (remeasure::DIR, "fern-expected"),
         (
             client_structure::CLIENT_STRUCTURE_DIR,
             client_structure::PYTHON_ENUMS_TREE,

@@ -22024,3 +22024,215 @@ class OutputInsensitiveTests(unittest.TestCase):
         result = self.run_reader()
         self.assertNotEqual(0, result.returncode)
         self.assertIn("also claimed proven", result.stderr)
+
+
+TRIAGE_COLUMNS = ("source", "root_cause", "verdict", "measurement", "departure", "note")
+DOCUMENT_COLUMNS = ("document", "sha256", "source", "root_causes", "status", "corpus_row", "note")
+HANDED_OFF_SOURCES = tuple(
+    f"docs/openapi-surface/witness-search-fixture-only-{area}/README.md"
+    for area in ("bodies-paths", "operations-extensions", "schemas")
+)
+TRIAGE_VERDICTS = {
+    "parity-gap-repaired",
+    "already-matching",
+    "fern-defect-departed",
+    "user-ruling",
+    "default-matched",
+    "refusal-kept",
+}
+RULING_IDS = {
+    "empty-sdk-refused",
+    "falsy-property-example",
+    "yaml-timestamp-parameter-example",
+    "minimal-worked-call",
+    "declared-examples-array",
+    "inline-union-types",
+    "init-import-order",
+    "exhausted-combination-fallback",
+}
+
+
+def reconcile_handed_off(root: pathlib.Path) -> None:
+    """Read the source records and on-disk evidence, refusing triage drift."""
+    directory = root / "docs/fern-measurements/handed-off"
+    causes: dict[str, str] = {}
+    for source in HANDED_OFF_SOURCES:
+        text = (root / source).read_text(encoding="utf-8")
+        section = text.split("### Root causes\n", 1)[1].split("\n### ", 1)[0]
+        names = re.findall(r"^\| `?([\w-]+)`? \|", section, re.MULTILINE)
+        names += re.findall(r'<a id="([\w-]+)"></a>`', section)
+        for name in names:
+            if name != "root":
+                assert name not in causes, f"duplicate source cause: {name}"
+                causes[name] = source
+    seen: dict[str, pathlib.Path] = {}
+    for path in sorted(directory.glob("*.tsv")):
+        if path.name == "documents.tsv":
+            continue
+        with path.open(encoding="utf-8", newline="") as stream:
+            reader = csv.DictReader(stream, delimiter="\t")
+            assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path}: triage header"
+            for row in reader:
+                name = row["root_cause"]
+                assert name not in seen, f"{name}: rows in {seen.get(name)} and {path}"
+                seen[name] = path
+                if name in causes:
+                    assert row["source"] == causes[name], f"{name}: wrong source record"
+                else:
+                    assert path.name == "remeasure.tsv", f"{name}: unknown cause outside remeasure.tsv"
+                    assert row["source"] == "docs/fern-measurements/handed-off/documents.tsv", (
+                        f"{name}: remeasure source"
+                    )
+                verdict = row["verdict"]
+                assert verdict in TRIAGE_VERDICTS or (
+                    verdict.startswith("ruling-applied:") and verdict.split(":", 1)[1] in RULING_IDS
+                ), f"{name}: invalid verdict {verdict}"
+    assert not causes.keys() - seen.keys(), f"missing causes: {sorted(causes.keys() - seen.keys())}"
+    with (directory / "documents.tsv").open(encoding="utf-8", newline="") as stream:
+        reader = csv.DictReader(stream, delimiter="\t")
+        assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
+        documents = list(reader)
+    hashes: set[str] = set()
+    registered = set()
+    for row in documents:
+        sha = row["sha256"]
+        assert re.fullmatch(r"[0-9a-f]{64}", sha), f"invalid document hash: {sha}"
+        assert sha not in hashes, f"duplicate document: {sha}"
+        hashes.add(sha)
+        status = row["status"]
+        assert status in {"registered", "byte-matches-not-admissible", "refused-by-ruling", "not-compared"}, (
+            f"{sha}: invalid status {status}"
+        )
+        evidence = directory / "comparisons" / f"{sha}.txt"
+        assert evidence.is_file(), f"{sha}: missing comparison record"
+        text = evidence.read_text(encoding="utf-8")
+        assert f"sha256: {sha}\n" in text, f"{sha}: comparison hash disagrees"
+        expected = "byte-matches" if status in {"registered", "byte-matches-not-admissible"} else status
+        assert f"result: {expected}\n" in text, f"{sha}: comparison result disagrees"
+        assert "command: " in text, f"{sha}: missing comparison command"
+        if status == "registered":
+            assert row["corpus_row"] not in {"", "-"}, f"{sha}: missing corpus row"
+            registered.add(f"- `{row['document']}` | `{sha}` | {row['corpus_row']}")
+        elif status == "byte-matches-not-admissible":
+            assert "rule:" in row["note"] and '"' in row["note"], f"{sha}: missing inadmissibility evidence"
+        elif status == "not-compared":
+            assert "valid-OpenAPI" in row["note"] and "empty" in row["note"], f"{sha}: unexplained comparison exception"
+    for source in HANDED_OFF_SOURCES:
+        section = (
+            (root / source).read_text(encoding="utf-8").split("## Handed-off differences\n", 1)[1].split("\n## ", 1)[0]
+        )
+        handed_off = set(
+            re.findall(r"`([0-9a-f]{64})`", "\n".join(line for line in section.splitlines() if line.startswith("| ")))
+        )
+        assert handed_off <= hashes, f"{source}: unmeasured documents {sorted(handed_off - hashes)}"
+    admitted = (
+        (directory / "README.md")
+        .read_text(encoding="utf-8")
+        .split("## Newly admitted documents\n", 1)[1]
+        .split("\n## ", 1)[0]
+    )
+    lines = {line for line in admitted.splitlines() if line.startswith("- ")}
+    assert lines == registered, "Newly admitted documents disagrees with registered rows"
+
+
+class HandedOffReconciliationTests(unittest.TestCase):
+    """The triage check reads real files, including deliberately drifted copies."""
+
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = pathlib.Path(self.temp.name)
+        self.directory = self.root / "docs/fern-measurements/handed-off"
+        self.directory.mkdir(parents=True)
+        for index, source in enumerate(HANDED_OFF_SOURCES):
+            path = self.root / source
+            path.parent.mkdir(parents=True)
+            path.write_text(
+                f"### Root causes\n\n| `cause-{index}` | measured rule |\n\n### Documents\n\n## Handed-off differences\n",
+                encoding="utf-8",
+            )
+        self.rows = [
+            dict(
+                zip(
+                    TRIAGE_COLUMNS,
+                    (source, f"cause-{index}", "already-matching", f"measurement/{index}/", "-", "Measured match"),
+                    strict=True,
+                )
+            )
+            for index, source in enumerate(HANDED_OFF_SOURCES)
+        ]
+        self.write_rows(self.directory / "sample.tsv", TRIAGE_COLUMNS, self.rows)
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [])
+        (self.directory / "README.md").write_text("## Newly admitted documents\n", encoding="utf-8")
+
+    @staticmethod
+    def write_rows(path: pathlib.Path, columns: tuple[str, ...], rows: list[dict[str, str]]) -> None:
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            writer = csv.DictWriter(stream, fieldnames=columns, delimiter="\t", lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+
+    def test_reconciles_files_and_rejects_each_triage_drift(self) -> None:
+        reconcile_handed_off(self.root)
+        for label, rows, columns in (
+            ("missing causes", self.rows[1:], TRIAGE_COLUMNS),
+            ("unknown cause", [{**self.rows[0], "root_cause": "unrecorded"}, *self.rows[1:]], TRIAGE_COLUMNS),
+            (
+                "invalid verdict",
+                [{**self.rows[0], "verdict": "departure-awaiting-ruling"}, *self.rows[1:]],
+                TRIAGE_COLUMNS,
+            ),
+            ("triage header", self.rows, tuple(reversed(TRIAGE_COLUMNS))),
+        ):
+            with self.subTest(drift=label):
+                self.write_rows(self.directory / "sample.tsv", columns, rows)
+                with self.assertRaisesRegex(AssertionError, label):
+                    reconcile_handed_off(self.root)
+        self.write_rows(self.directory / "sample.tsv", TRIAGE_COLUMNS, self.rows)
+        self.write_rows(self.directory / "duplicate.tsv", TRIAGE_COLUMNS, [self.rows[0]])
+        with self.assertRaisesRegex(AssertionError, "rows in"):
+            reconcile_handed_off(self.root)
+        (self.directory / "duplicate.tsv").unlink()
+        reconcile_handed_off(self.root)
+
+    def test_document_evidence_and_admitted_index_agree(self) -> None:
+        sha = "a" * 64
+        row = dict(
+            zip(
+                DOCUMENT_COLUMNS,
+                (
+                    "publisher/api:openapi.yml@" + "b" * 40,
+                    sha,
+                    HANDED_OFF_SOURCES[0],
+                    "cause-0",
+                    "registered",
+                    "5050 (sample)",
+                    "Measured",
+                ),
+                strict=True,
+            )
+        )
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [row])
+        with self.assertRaisesRegex(AssertionError, "missing comparison record"):
+            reconcile_handed_off(self.root)
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        evidence.write_text(
+            f"sha256: {sha}\nresult: refused-by-ruling\ncommand: crozier compare measurement.yml\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(AssertionError, "result disagrees"):
+            reconcile_handed_off(self.root)
+        evidence.write_text(
+            f"sha256: {sha}\nresult: byte-matches\ncommand: crozier compare measurement.yml\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(AssertionError, "Newly admitted documents"):
+            reconcile_handed_off(self.root)
+        (self.directory / "README.md").write_text(
+            f"## Newly admitted documents\n\n- `{row['document']}` | `{sha}` | {row['corpus_row']}\n", encoding="utf-8"
+        )
+        reconcile_handed_off(self.root)
+        evidence.write_text(
+            f"sha256: {'b' * 64}\nresult: byte-matches\ncommand: crozier compare measurement.yml\n", encoding="utf-8"
+        )
+        with self.assertRaisesRegex(AssertionError, "hash disagrees"):
+            reconcile_handed_off(self.root)

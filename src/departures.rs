@@ -819,6 +819,9 @@ fn request_example_context<'a>(
             current = next;
         }
     }
+    // A retained object and an alias of it have the same documentation defect
+    // when the method spreads the object's fields instead of taking `request`.
+    out.alias_fields.extend(model_fields);
     let mut bytes_methods = BTreeSet::new();
     let mut json_methods = BTreeSet::new();
     let mut json_headers = BTreeSet::new();

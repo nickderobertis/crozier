@@ -48,3 +48,30 @@ The departure rule requires an actual object alias, a flattened JSON request,
 the actual signature, and matching parameter descriptions read from the raw
 method. It uses the emitter's reference formatting helpers. An unexplained
 type, description, extra parameter or unrelated file change still fails.
+
+## A shared model retained after method-name collapse
+
+The same standing defect occurs without an alias. The independent
+[Orchard Label Register measurement](../../fern-measurements/handed-off/remeasure/json-ref-body-kept-whole/openapi.yml)
+posts one object schema from two operations sharing a method name. The certified
+pair retains and exports `LabelRegistration`, spreads `label` into the winning
+method, sends no explicit content-type, and advertises `**request:**
+LabelRegistration` in `reference.md`. crozier retains that model and wire shape,
+but documents `**label:** str`, the argument its method accepts.
+
+The [binding proof](../../../crates/crozier-e2e/tests/e2e/remeasure_reference.py)
+imports the actual certified SDK and binds the advertised keyword on both
+clients. The committed
+[result](../../fern-measurements/handed-off/remeasure/json-ref-body-kept-whole/runtime.txt)
+shows `got an unexpected keyword argument 'request'` for both. Reproduce with:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 uv run --locked python crates/crozier-e2e/tests/e2e/remeasure_reference.py docs/fern-measurements/handed-off/remeasure/json-ref-body-kept-whole/fern-expected/src
+```
+
+The standing ruling against documentation contradicting generated code applies.
+The existing departure now also recognizes the retained object's actual fields,
+still requiring matching signature types, JSON wire fields and descriptions.
+`remeasure_collapsed_body_keeps_the_shared_model_and_documents_accepted_fields`
+drives crozier over the measurement and compares the complete certified tree;
+changing the corrected parameter's type remains an unexplained mismatch.

@@ -1568,11 +1568,17 @@ fn inline_body_source_names(
     // measurement's two `Sensors_addNote` operations post `SensorsAddNoteRequest`
     // and `SensorsAddNoteRequest1`, and neither is written (as Ironclad's
     // `WorkflowsCreateCommentRequest`).
-    let replaced_only = replaced
-        .into_iter()
-        .filter(|(name, uses)| *uses == 1 && !counts.contains_key(name))
-        .map(|(name, _)| name)
-        .collect::<Vec<_>>();
+    // Reusing one component still keeps its public model when method-name
+    // collapse replaces one of its operations. The surviving method spreads
+    // the fields, but the reference documents the retained request model.
+    let mut replaced_only = Vec::new();
+    for (name, uses) in replaced {
+        if let Some(count) = counts.get_mut(&name) {
+            *count += uses;
+        } else if uses == 1 {
+            replaced_only.push(name);
+        }
+    }
     counts
         .into_iter()
         .filter_map(|(name, uses)| (uses == 1).then_some(name))
@@ -3084,6 +3090,27 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         })
         .cloned()
         .collect();
+    let surviving_operations: std::collections::HashSet<_> = endpoints
+        .iter()
+        .map(|endpoint| (endpoint.path.as_str(), endpoint.http_method))
+        .collect();
+    let replaced_body_sources: std::collections::HashSet<_> = doc
+        .paths
+        .iter()
+        .flat_map(|(path, item)| {
+            let surviving = &surviving_operations;
+            item.operations()
+                .into_iter()
+                .filter_map(move |(method, op)| {
+                    (!surviving.contains(&(path.as_str(), method)))
+                        .then_some(op.request_body.as_ref()?)
+                        .and_then(selected_json_request_media)
+                        .and_then(|(_, media)| media.schema.as_ref())
+                        .and_then(|schema| schema.reference.as_deref())
+                        .map(ref_to_class)
+                })
+        })
+        .collect();
     for endpoint in &mut endpoints {
         let body_schema = doc
             .paths
@@ -3112,6 +3139,18 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             .and_then(|schema| schema.reference.as_deref())
             .map(ref_to_class)
             .is_some_and(|name| dropped_sources.contains(&name));
+        // A reused body retained after method collapse still spreads its fields.
+        // Document those accepted arguments, rather than Fern's nonexistent
+        // `request` parameter (request-alias-reference-parameters).
+        if endpoint.body_schema_shared
+            && matches!(&endpoint.request_body, Some(RequestBody::Inline(fields)) if !fields.is_empty())
+            && body_schema
+                .and_then(|schema| schema.reference.as_deref())
+                .map(ref_to_class)
+                .is_some_and(|name| replaced_body_sources.contains(&name))
+        {
+            endpoint.reference_body_type = None;
+        }
         if endpoint.body_schema_dropped {
             let source = body_schema
                 .and_then(|schema| schema.reference.as_deref())
