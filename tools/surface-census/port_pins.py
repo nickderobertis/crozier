@@ -11,28 +11,33 @@ import sys
 from collections.abc import Sequence
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any, Protocol, TypeAlias
 
 import reach_store
+
+PortName: TypeAlias = str
+PythonPort: TypeAlias = str
+RustFunction: TypeAlias = str
+TokenDigest: TypeAlias = str
 
 
 class PortPin(Protocol):
     """The census owns the record; checking needs only this read-only interface."""
 
     @property
-    def name(self) -> str: ...
+    def name(self) -> PortName: ...
 
     @property
-    def port(self) -> str: ...
+    def port(self) -> PythonPort: ...
 
     @property
-    def rust(self) -> str: ...
+    def rust(self) -> RustFunction: ...
 
     @property
     def confirm(self) -> str: ...
 
     @property
-    def digest(self) -> str: ...
+    def digest(self) -> TokenDigest: ...
 
     def report(self) -> str: ...
 

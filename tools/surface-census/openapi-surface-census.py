@@ -59,7 +59,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NamedTuple, NoReturn
+from typing import Any, NamedTuple, NoReturn, TypeAlias
 from urllib.parse import unquote
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
@@ -2599,12 +2599,18 @@ CASES: dict[str, tuple[Case, ...]] = {
 }
 
 
+PortName: TypeAlias = str
+PythonPort: TypeAlias = str
+RustFunction: TypeAlias = str
+TokenDigest: TypeAlias = str
+
+
 class PortPin(NamedTuple):
-    name: str
-    port: str
-    rust: str
+    name: PortName
+    port: PythonPort
+    rust: RustFunction
     confirm: str
-    digest: str
+    digest: TokenDigest
 
     def report(self) -> str:
         return (

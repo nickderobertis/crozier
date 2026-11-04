@@ -2977,7 +2977,7 @@ unreached by any Fern-accepted document.
 | 27 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 28 | `anyof-array-variant-composed-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 29 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **18** | **4** | open — real-specification witness search remains open |
-| 30 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — no real witness reaches the operation-scoped map-value arm; see the named gaps |
+| 30 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — real-specification witness search remains open |
 | 31 | `annotated-ref-target-anyof` | `schemas` | **1** | **17** | **1** | open — real-specification witness search remains open |
 | 32 | `type-single` | `schemas` | **1** | **15** | **316** | open — real-specification witness search remains open |
 | 33 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **14** | **5** | open — real-specification witness search remains open |
@@ -5443,20 +5443,20 @@ against each run's exports:
 
 | file | function | without | with | |
 |---|---|---:|---:|---:|
-| `src/ir.rs` | `add_named` | 16 | 1 | −15 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | `field_type_ref` | 79 | 66 | −13 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | `variant_ref` | 75 | 64 | −11 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | `build_enum` | 3 | 0 | −3 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | `fastapi_endpoint_name` | 2 | 0 | −2 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | `is_declared_empty_object`, `python`, top level | 10 | 5 | −5 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | **union** | **472** | **423** | **−49** 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | `inline_schema_pointers` | 27 | 1 | −26 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | `normalize_security_scheme_refs` | 18 | 2 | −16 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | `normalize_unlisted_required` | 11 | 0 | −11 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | `schema_pointer_target`, `visit_map`, `de_required` | 12 | 7 | −5 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | **union** | **201** | **143** | **−58** 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/emit.rs` | `named_value_inner`, `client_wrapper_file` | 14 | 10 | −4 7 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/emit.rs` | **union** | **304** | **300** | **−4** 7 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `add_named` | 16 | 1 | −15 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `field_type_ref` | 79 | 66 | −13 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `variant_ref` | 75 | 64 | −11 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `build_enum` | 3 | 0 | −3 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `fastapi_endpoint_name` | 2 | 0 | −2 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `is_declared_empty_object`, `python`, top level | 10 | 5 | −5 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | **union** | **472** | **423** | **−49** 87 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `inline_schema_pointers` | 27 | 1 | −26 1 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `normalize_security_scheme_refs` | 18 | 2 | −16 1 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `normalize_unlisted_required` | 11 | 0 | −11 1 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `schema_pointer_target`, `visit_map`, `de_required` | 12 | 7 | −5 1 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | **union** | **201** | **143** | **−58** 1 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/emit.rs` | `named_value_inner`, `client_wrapper_file` | 14 | 10 | −4 7 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/emit.rs` | **union** | **304** | **300** | **−4** 7 of [the 98 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 
 **None of the six blind functions moved.** `hoist_union_variant` holds 52,
 `resolve_schema_pointer` 49, `ref_to_class` 12, `prop_type_ref` 9,
