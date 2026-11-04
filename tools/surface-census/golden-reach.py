@@ -59,7 +59,7 @@ import tomllib
 from collections import Counter, defaultdict
 from enum import StrEnum
 from pathlib import Path
-from typing import IO, TYPE_CHECKING, Any, NamedTuple, NoReturn
+from typing import IO, TYPE_CHECKING, Any, Literal, NamedTuple, NoReturn, TypeAlias
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -244,6 +244,26 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
 COOCCURRENCE_AUDIT = REGIONS_DIR / "combination-cooccurrence.tsv"
 
 
+class CombinationProofClass(StrEnum):
+    INTERACTION = "interaction"
+    INDEPENDENT = "independent"
+    HANDWRITTEN = "handwritten"
+    OPEN = "open"
+
+
+class UnsearchedCombinationProof(NamedTuple):
+    proof_class: Literal[CombinationProofClass.INTERACTION, CombinationProofClass.INDEPENDENT]
+    search_record: None = None
+
+
+class SearchedCombinationProof(NamedTuple):
+    proof_class: Literal[CombinationProofClass.HANDWRITTEN, CombinationProofClass.OPEN]
+    search_record: str
+
+
+CombinationProof: TypeAlias = UnsearchedCombinationProof | SearchedCombinationProof
+
+
 class CooccurrenceAudit(NamedTuple):
     """One `combination-cooccurrence.tsv` row, its cells in column order."""
 
@@ -254,24 +274,26 @@ class CooccurrenceAudit(NamedTuple):
     why_no_branch: str
 
     @property
-    def proof_class(self) -> str | None:
+    def proof_class(self) -> CombinationProofClass | None:
         """The declared proof class; unclassified historical rows have none."""
-        return cooccurrence_proof(self.why_no_branch)[0]
+        proof = cooccurrence_proof(self.why_no_branch)
+        return proof.proof_class if proof is not None else None
 
     @property
     def search_record(self) -> str | None:
         """The bounded-search record required by an open or hand-written proof."""
-        return cooccurrence_proof(self.why_no_branch)[1]
+        proof = cooccurrence_proof(self.why_no_branch)
+        return proof.search_record if proof is not None else None
 
 
-def cooccurrence_proof(cell: str) -> tuple[str | None, str | None]:
+def cooccurrence_proof(cell: str) -> CombinationProof | None:
     """Read the shared class/search prefix without changing the audit's columns.
 
     Historical unclassified cells return no class; the finished-state gate must
     reject them rather than infer a proof from co-occurrence alone.
     """
     if not cell.startswith("class:"):
-        return None, None
+        return None
     match = re.fullmatch(r"class:(interaction|independent|handwritten|open)(?: search:([^\s;]+))?; (\S.*)", cell)
     if match is None:
         raise ValueError("expected `class:<interaction|independent|handwritten|open>[ search:<path>]; <reason>`")
@@ -285,7 +307,13 @@ def cooccurrence_proof(cell: str) -> tuple[str | None, str | None]:
         or any(p in {"", ".", ".."} for p in search.split("/"))
     ):
         raise ValueError("search record must be a repository-relative path without traversal")
-    return kind, search
+    if search is not None:
+        if kind == CombinationProofClass.HANDWRITTEN:
+            return SearchedCombinationProof(CombinationProofClass.HANDWRITTEN, search)
+        return SearchedCombinationProof(CombinationProofClass.OPEN, search)
+    if kind == CombinationProofClass.INTERACTION:
+        return UnsearchedCombinationProof(CombinationProofClass.INTERACTION)
+    return UnsearchedCombinationProof(CombinationProofClass.INDEPENDENT)
 
 
 # The file's header is the model's fields, so the two cannot drift apart.

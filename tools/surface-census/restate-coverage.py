@@ -203,7 +203,7 @@ NAMED_COMBINATIONS_HEADING = "#### Unproven combinations, named"
 
 class ProofSplit(NamedTuple):
     real: int
-    cooccurrence: int
+    independent: int
     measured: int
     handwritten: int
     unproven: int
@@ -219,7 +219,7 @@ class ProofSplit(NamedTuple):
     @property
     def classes(self) -> tuple[int, ...]:
         """The six classes that sum to every selected combination."""
-        return (self.real, self.cooccurrence, self.measured, self.handwritten, self.unproven, self.decided)
+        return (self.real, self.independent, self.measured, self.handwritten, self.unproven, self.decided)
 
 
 def witness_blocked_keys(root: Path) -> set[str]:
@@ -255,8 +255,8 @@ def combination_proofs(root: Path) -> ProofSplit:
 
     A `golden` row is a real-specification byte-match only when the reach ledger
     names a golden-only witness for it and reports every interaction site reached;
-    one whose site cell is `co-occurrence` is counted apart, since no measured
-    crozier branch joins both its features. One with no witness, no ledger row or an
+    an independent row is counted apart only with its explicit audit class.
+    Co-occurrence alone, an open search, no witness, no ledger row or an
     unreached interaction site is unproven. A `limitations` row and an undecided
     `UNREACHABLE` gap rest on a committed measurement of non-generation; a gap the
     shared table decides is neither proven nor unproven; every other gap is unproven.
@@ -272,6 +272,9 @@ def combination_proofs(root: Path) -> ProofSplit:
         raise ValueError(str(error)) from error
     blocked = witness_blocked_keys(root)
     ruled = user_ruled_combinations(root)
+    audit, failures = reader("golden-reach.py").read_cooccurrence(surface / "combination-cooccurrence.tsv")
+    if failures:
+        raise ValueError("; ".join(failures))
     try:
         table = reader("golden-reach.py").read_sites_table(surface / "golden-reach-sites.tsv")
     except SystemExit as error:
@@ -285,9 +288,26 @@ def combination_proofs(root: Path) -> ProofSplit:
             category = cells[3].strip("`")
             settlement = cells[7].lstrip("`*").split(" ", 1)[0].strip("`*—")
             reach = ledger.get(key)
+            proof = audit.get(key)
+            # Co-occurrence alone establishes neither interaction nor independence.
+            # An open search stays unproven even if its old region row still says golden.
+            if (proof is not None and proof.proof_class == "open") or (
+                category == "golden"
+                and key in table
+                and table[key].cooccurrence
+                and (proof is None or proof.proof_class is None)
+            ):
+                split["unproven"] += 1
+                continue
             match category:
-                case "golden" if reach is not None and reach.witnesses and reach.cooccurrence:
-                    split["cooccurrence"] += 1
+                case "golden" if (
+                    reach is not None
+                    and reach.witnesses
+                    and reach.cooccurrence
+                    and proof is not None
+                    and proof.proof_class == "independent"
+                ):
+                    split["independent"] += 1
                 case "golden" if reach is not None and reach.witnesses and reach.sites and not reach.unreached_sites:
                     split["real"] += 1
                 case "golden":
@@ -325,20 +345,20 @@ def restate_combinations(root: Path, text: str) -> str:
     return substitute(
         text,
         COMBINATION_PROOF_SENTENCE,
-        "**Combinations by proof.** A combination is proven only where the run that byte-matches Fern\n"
-        "executes the branch where its two features meet. `finished_state_failures` in\n"
-        "[the census suite](../tools/surface-census/tests/surface_census_test.py) holds that bar, with\n"
+        "**Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,\n"
+        "at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in\n"
+        "[the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with\n"
         "[the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.\n"
         f"**{split.real}** are byte-matched against a registered real specification at their\n"
-        f"interaction branch, **{split.cooccurrence}** "
-        f"{'is a byte-matched co-occurrence' if split.cooccurrence == 1 else 'are byte-matched co-occurrences'}, "
-        "where no measured crozier branch joins both features\n"
+        f"interaction branch, **{split.independent}** "
+        f"{'has' if split.independent == 1 else 'have'} independent handling, checked against the source,\n"
+        "instrumented feature-only controls and fresh certified trees\n"
         "([the audit](openapi-surface/combination-cooccurrence.tsv)), "
         f"**{split.measured}** {'is' if split.measured == 1 else 'are'} compared against a committed measurement of\n"
         f"non-generation, **{split.handwritten}** rest on a hand-written fixture "
         f"({split.blocked} of them witness-blocked, {split.together} of them co-occurrences proven on the "
         f"fixture), **{split.unproven}** "
-        f"{'remains' if split.unproven == 1 else 'remain'}\nunproven, each named below "
+        f"{'remains' if split.unproven == 1 else 'remain'}\nunproven "
         f"({split.ruled} left unproven by the user's ruling), and **{split.decided}** "
         f"{'is' if split.decided == 1 else 'are'} decided output-insensitive: "
         f"{' + '.join(map(str, split.classes))} = {sum(split.classes)}.",

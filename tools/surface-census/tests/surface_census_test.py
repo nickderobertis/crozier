@@ -1317,6 +1317,28 @@ def combination_proof_failures(
     rows = combination_rows(root)
     audit, found = cooccurrence_audit(root)
     failures += found
+    independent = {key: row for key, row in audit.items() if row.proof_class == "independent"}
+    if independent:
+        reader = load_script("tools/surface-census/combination-independence.py")
+        proofs, found = reader.read_records(root)
+        failures += found
+        for key, row in independent.items():
+            if key not in proofs:
+                failures.append(f"{key}: independent handling needs its three-document proof in {reader.MANIFEST}")
+                continue
+            proof = proofs[key]
+            failures += reader.source_failures(
+                root if (root / "src").is_dir() else REPO, proof, reach.handler_specs(row.handlers)
+            )
+            for condition in proof.conditions:
+                if f"`{condition.condition}`" not in row.why_no_branch:
+                    failures.append(f"{key}: its audit does not quote `{condition.condition}` verbatim")
+            for label, document in proof.documents.items():
+                if not (root / document.document).is_file():
+                    failures.append(f"{key}: {label} document `{document.document}` is missing")
+                for mode, tree in document.trees.items():
+                    if not any(path.is_file() for path in (root / tree).rglob("*")):
+                        failures.append(f"{key}: {label} ({mode}) has no complete certified tree at `{tree}`")
     for key in sorted(k for k in table if k.startswith(COMBINATION_PREFIX) and k not in rows):
         failures.append(f"{key}: golden-reach-sites.tsv declares it, but no region row carries it")
     cooccurring = {key for key, row in table.items() if key.startswith(COMBINATION_PREFIX) and row.cooccurrence}
@@ -12769,6 +12791,77 @@ class CombinationClassReaderTests(unittest.TestCase):
                 self.assertIn("why_no_branch", failures[0])
 
 
+class IndependenceManifestTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name)
+        self.reader = load_script("tools/surface-census/combination-independence.py")
+        self.manifest = self.root / self.reader.MANIFEST
+        self.manifest.parent.mkdir(parents=True)
+        self.manifest.write_text(
+            'schema_version = 1\n[[combinations]]\nkey = "combo-sample"\nmodes = ["python_enums"]\n'
+            '[[combinations.conditions]]\nfeature = "first"\nhandler = "src/ir.rs::error_body_schema"\n'
+            'condition = ".filter_map(|media| media.schema.as_ref())"\n'
+            '[[combinations.conditions]]\nfeature = "second"\nhandler = "src/ir.rs::error_body_schema"\n'
+            'condition = ".find(|schema| !is_unknown(schema))"\n'
+            "[combinations.documents]\n"
+            + "".join(
+                f'{label} = {{document = "measurements/{label}/openapi.yml", '
+                f'python_enums = "measurements/{label}/fern-expected"}}\n'
+                for label in ("first", "second", "both")
+            ),
+            encoding="utf-8",
+        )
+
+    def test_source_guard_requires_the_named_function_and_its_verbatim_conditions(self) -> None:
+        source = self.root / "src/ir.rs"
+        source.parent.mkdir()
+        shutil.copyfile(REPO / "src/ir.rs", source)
+        proofs, failures = self.reader.read_records(self.root)
+        self.assertEqual([], failures)
+        proof = proofs["combo-sample"]
+        handlers = ["src/ir.rs::error_body_schema"]
+        self.assertEqual([], self.reader.source_failures(self.root, proof, handlers))
+        original = source.read_text()
+        reach = load_script("tools/surface-census/golden-reach.py")
+        site = reach.resolve_site(handlers[0], self.root)
+        lines = original.splitlines(keepends=True)
+        body = "".join(lines[site.start - 1 : site.end])
+        altered = body.replace(".find(|schema| !is_unknown(schema))", ".find(|schema| is_unknown(schema))")
+        self.assertNotEqual(body, altered)
+        source.write_text(original.replace(body, altered, 1))
+        self.assertEqual(
+            ["combo-sample: `src/ir.rs::error_body_schema` no longer contains `.find(|schema| !is_unknown(schema))`"],
+            self.reader.source_failures(self.root, proof, handlers),
+        )
+        source.write_text(original.replace("fn error_body_schema(", "fn renamed_error_body_schema(", 1))
+        self.assertTrue(
+            all("does not resolve" in failure for failure in self.reader.source_failures(self.root, proof, handlers))
+        )
+        source.write_text(original)
+        self.assertEqual([], self.reader.source_failures(self.root, proof, handlers))
+
+    def test_the_cli_reads_a_valid_manifest_and_rejects_an_unknown_version_then_recovers(self) -> None:
+        command = [
+            sys.executable,
+            str(REPO / "tools/surface-census/combination-independence.py"),
+            "--json",
+            "--repo-root",
+            str(self.root),
+        ]
+        good = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(0, good.returncode, good.stderr)
+        self.assertEqual("combo-sample", json.loads(good.stdout)[0]["key"])
+        original = self.manifest.read_text()
+        self.manifest.write_text(original.replace("schema_version = 1", "schema_version = 2"))
+        bad = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(1, bad.returncode)
+        self.assertIn("schema_version = 1", bad.stderr)
+        self.manifest.write_text(original)
+        self.assertEqual(0, subprocess.run(command, capture_output=True).returncode)
+
+
 class HandwrittenReachReaderContractTests(unittest.TestCase):
     def test_the_typed_adapter_tracks_the_authoritative_readers_fields(self) -> None:
         gate = load_script("tools/surface-census/handwritten-fixtures.py")
@@ -20302,7 +20395,7 @@ class CoverageRestatementTests(unittest.TestCase):
         surface.mkdir()
         for path in (REPO / "docs/openapi-surface").glob("*.md"):
             shutil.copyfile(path, surface / path.name)
-        for name in ("golden-reach.tsv", "golden-reach-sites.tsv"):
+        for name in ("golden-reach.tsv", "golden-reach-sites.tsv", "combination-cooccurrence.tsv"):
             shutil.copyfile(REPO / "docs/openapi-surface" / name, surface / name)
         stage_restatement_population(self.root)
         for evidence in (REPO / "docs/openapi-surface/handwritten").glob("*/evidence.toml"):
@@ -20324,6 +20417,30 @@ class CoverageRestatementTests(unittest.TestCase):
             encoding="utf-8",
             check=False,
         )
+
+    def test_a_cooccurrence_is_unproven_until_its_audit_records_a_proof_class(self) -> None:
+        restater = load_script("tools/surface-census/restate-coverage.py")
+        reach = load_script("tools/surface-census/golden-reach.py")
+        surface = self.root / "docs/openapi-surface"
+        rows = reach.read_sites_table(surface / "golden-reach-sites.tsv")
+        ledger = {row.key: row for _rank, row in reach.read_ledger(surface / "golden-reach.tsv")}
+        key = next(key for key, row in rows.items() if row.cooccurrence and ledger[key].witnesses)
+        path = surface / "combination-cooccurrence.tsv"
+        original = path.read_text()
+        line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
+        fields = line.split("\t")
+        reason = fields[4]
+        fields[4] = "No classified proof yet."
+        path.write_text(original.replace(line, "\t".join(fields), 1))
+        unclassified = restater.combination_proofs(self.root)
+        for kind, change in (("independent", 1), ("open search:docs/openapi-surface/search/README.md", 0)):
+            with self.subTest(kind=kind):
+                fields[4] = f"class:{kind}; {reason}"
+                path.write_text(original.replace(line, "\t".join(fields), 1))
+                classified = restater.combination_proofs(self.root)
+                self.assertEqual(unclassified.independent + change, classified.independent)
+                self.assertEqual(unclassified.unproven - change, classified.unproven)
+                self.assertEqual(sum(unclassified.classes), sum(classified.classes))
 
     def test_combination_only_restating_rejects_category_drift_and_recovers(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
@@ -20378,10 +20495,10 @@ class CoverageRestatementTests(unittest.TestCase):
             found = matched(
                 re.search(
                     r"\*\*Combinations by proof\.\*\* A combination is proven only where .*? \*\*(\d+)\*\* are "
-                    r"byte-matched .*? interaction branch, \*\*(\d+)\*\* (?:is a byte-matched co-occurrence|are "
-                    r"byte-matched co-occurrences), .*? \*\*(\d+)\*\* (?:is|are) compared .*? \*\*(\d+)\*\* rest on "
+                    r"byte-matched .*? interaction branch, \*\*(\d+)\*\* (?:has|have) independent handling, "
+                    r".*? \*\*(\d+)\*\* (?:is|are) compared .*? \*\*(\d+)\*\* rest on "
                     r".*? \(\d+ of them witness-blocked, \d+ of them co-occurrences proven on the fixture\), "
-                    r"\*\*(\d+)\*\* remains? unproven, each named below \(\d+ left "
+                    r"\*\*(\d+)\*\* remains? unproven \(\d+ left "
                     r"unproven by the user's ruling\), and \*\*(\d+)\*\* (?:is|are) decided output-insensitive: "
                     r"[\d +]+ = (\d+)\.",
                     flat,
@@ -20443,13 +20560,13 @@ class CoverageRestatementTests(unittest.TestCase):
             found = matched(re.search(r"\*\*Combinations by proof\.\*\*.*?: ([\d +]+) = (\d+)\.", flat))
             return [int(n) for n in found[1].split(" + ")]
 
-        def moves(edits: list[tuple[Path, str, str]], expected: list[int]) -> None:
+        def moves(edits: list[tuple[Path, str, str]], expected: list[int], *, changes_headline: bool = True) -> None:
             saved = {path: path.read_text(encoding="utf-8") for path, _old, _new in edits}
             for path, old, new in edits:
                 text = path.read_text(encoding="utf-8")
                 self.assertEqual(1, text.count(old), old)
                 path.write_text(text.replace(old, new), encoding="utf-8")
-            self.assertEqual(1, self.run_restater("--combinations-only").returncode, edits)
+            self.assertEqual(int(changes_headline), self.run_restater("--combinations-only").returncode, edits)
             written = self.run_restater("--combinations-only", "--write")
             self.assertEqual(0, written.returncode, written.stderr)
             self.assertEqual(expected, stated(), edits)
@@ -20508,7 +20625,12 @@ class CoverageRestatementTests(unittest.TestCase):
             for fields in rows
             if fields[1:2] and fields[1].startswith("combo-") and fields[8] == "co-occurrence"
         )
-        moves([(ledger, together + "\n", "")], [real, cooccurrence - 1, measured, weak, unproven + 1, decided])
+        # Removing an unclassified co-occurrence changes no proof count: it was already unproven.
+        moves(
+            [(ledger, together + "\n", "")],
+            [real, cooccurrence, measured, weak, unproven, decided],
+            changes_headline=False,
+        )
 
     def test_combination_proof_subtotals_follow_their_evidence(self) -> None:
         """The witness-blocked, fixture co-occurrence and user-ruling subtotals each move

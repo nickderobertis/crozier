@@ -1,0 +1,8 @@
+# Three-document independent-handling evidence. Paths are repository-relative.
+# Each [[combinations]] has key, modes (python_enums first; literals when relevant),
+# conditions and documents. Each [[combinations.conditions]] has feature (first or
+# second), handler (src/file.rs::function) and condition (verbatim Rust source).
+# [combinations.documents] has first, second and both inline tables; each has
+# document (the authored spec) and a complete certified tree path for every mode.
+schema_version = 1
+combinations = []
