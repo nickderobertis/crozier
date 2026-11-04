@@ -30891,6 +30891,7 @@ fn remeasured_membrane_api_gateway_8340f5da_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These registrations are permanent corpus proof the user requires on every pull request. Moving them behind a narrower Nx edge belongs to the crozier gate-time work (the gate-under-an-hour run's slowest-suites step), tracked by the existing follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 // Keep identifiers short so rustfmt leaves census-discovered helper calls on one line.
 /// Certified enum-mode witness, corpus row 5500.
 const LITERALS_AMRC_FACTORYPLUS_BE5E3789: Corpus = Corpus {
@@ -32118,3 +32119,4 @@ fn registered_literals_zalando_incubator_agentic_identity_broker_c7fb9242_matche
     assert_committed_corpus_matches(&LITERALS_ZALANDO_INCUBATO_C7FB9242);
     overlay_goldens::assert_literals_match(&LITERALS_ZALANDO_INCUBATO_C7FB9242);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

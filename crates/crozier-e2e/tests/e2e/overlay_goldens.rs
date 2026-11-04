@@ -103,6 +103,7 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These registrations are permanent corpus proof the user requires on every pull request. Moving them behind a narrower Nx edge belongs to the crozier gate-time work (the gate-under-an-hour run's slowest-suites step), tracked by the existing follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
             "registered-literals-amrc-factoryplus-documentation-be5e3789",
             "registered-literals-apis-guru-openapi-directory-2f8c36b9",
             "registered-literals-apis-guru-openapi-directory-9031af6a",
@@ -175,6 +176,7 @@ const KINDS: &[Kind] = &[
             "registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265",
             "registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72",
             "registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             "remeasured-arawa-workspace-0c8259f6",
             "remeasured-clencyc-mozillafestivalbackend-b2264b38",
             "remeasured-grafikart-filemanager-element-e36a74ce",
