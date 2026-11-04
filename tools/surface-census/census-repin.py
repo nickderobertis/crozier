@@ -233,7 +233,14 @@ def resolve_merge(root: Path) -> int:
     texts: dict[str, str] = {}
     resolved = 0
     for path in paths:
-        text = (root / path).read_text(encoding="utf-8")
+        try:
+            text = (root / path).read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as error:
+            refused.append(f"{path}: cannot read the conflicted path as UTF-8 text ({error})")
+            continue
+        if "\x00" in text:
+            refused.append(f"{path}: binary conflict, not a generated text hunk")
+            continue
         texts[path] = text
         hunks = conflict_hunks(text, path)
         if not hunks:

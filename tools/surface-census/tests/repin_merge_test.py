@@ -262,3 +262,41 @@ def test_an_incomplete_conflict_is_refused_before_any_rewrite(tmp_path: Path, da
     assert path.read_text(encoding="utf-8") == text
     assert git(root, "rev-parse", "HEAD").stdout == head
     assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0
+
+
+@pytest.mark.parametrize("kind", ["modify-delete", "non-utf8", "nul"])
+def test_non_text_and_deleted_conflicts_are_refused_and_can_be_resolved_by_hand(tmp_path: Path, kind: str) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    git(root, "init", "-q", "-b", "main")
+    path = root / LEDGER
+    path.parent.mkdir(parents=True)
+    path.write_bytes(b"base\n" if kind == "modify-delete" else b"\x00base\n")
+    commit(root, "base")
+    git(root, "checkout", "-qb", "theirs")
+    path.write_bytes(b"theirs\n" if kind == "modify-delete" else b"\x00theirs\n")
+    commit(root, "theirs")
+    git(root, "checkout", "-q", "main")
+    match kind:
+        case "modify-delete":
+            path.unlink()
+        case "non-utf8":
+            path.write_bytes(b"\x00\xffours\n")
+        case "nul":
+            # Binary content can contain marker-looking bytes; those are not a text conflict.
+            path.write_bytes(b"\x00ours\n<<<<<<< HEAD\na\n=======\nb\n>>>>>>> branch\n")
+    commit(root, "ours")
+    assert git(root, "merge", "-q", "theirs", check=False).returncode != 0
+    if kind == "modify-delete":
+        path.unlink()  # Keep the deletion in the worktree while the index is still unmerged.
+    before = path.read_bytes() if path.exists() else None
+    head = git(root, "rev-parse", "HEAD").stdout
+    with pytest.raises(SystemExit) as refused:
+        VERB.resolve_merge(root)
+    assert LEDGER in str(refused.value) and "resolve them by hand" in str(refused.value)
+    assert (path.read_bytes() if path.exists() else None) == before
+    assert git(root, "rev-parse", "HEAD").stdout == head
+    assert git(root, "rev-parse", "-q", "--verify", "MERGE_HEAD", check=False).returncode == 0
+    git(root, "checkout", "--theirs", "--", LEDGER)
+    commit(root, "resolve the non-text conflict by hand")
+    assert VERB.resolve_merge(root) == 0

@@ -131,7 +131,7 @@ def github() -> Iterator[str]:
     server.server_close()
 
 
-def store(commit: str, **top: Any) -> dict:
+def store(commit: str, **top: object) -> dict:
     return {
         "schema": 1,
         "commit": commit,
@@ -475,6 +475,7 @@ def test_the_ci_jobs_packaged_base_is_found_by_the_verb_on_a_later_commit(
     stepped_from: list[str | None] = []
 
     def measured(repo_root: Path, *, base: dict | None, full_reason: str, jobs: int) -> Any:
+        """Return the real Step; the hyphenated CLI loaded by path has no importable annotation."""
         stepped_from.append(base["commit"] if base else None)
         head = git(repo_root, "rev-parse", "HEAD")
         return reach.Step(store(head, full_at=c1, steps_since_full=1), c1, None, (), (), (), (), {})

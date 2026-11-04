@@ -4,8 +4,7 @@ The store keeps each golden test's executed counter regions relative to its
 enclosing function, and `plan` decides what a change re-runs. These cases drive
 the real parser over real Rust source, the real store files on disk, `plan` over
 a real scratch git repository (every rule of the carry rule, one commit each),
-and the real host lock from a second process. No committed suite measures
-crozier instrumented through the verb: that journey is a development check only.
+and the real host lock from a second process.
 """
 
 from __future__ import annotations
@@ -212,7 +211,7 @@ def test_a_token_change_changes_the_digest_and_a_comment_does_not() -> None:
     assert tree_of(LIB.replace("x * 2", "x * 3")).functions["src/lib.rs::untouched"].digest != base
 
 
-def _store(tree: Tree, commit: str, tests: dict[str, list[str]], fixtures: dict[str, list[str]], **top: Any) -> dict:
+def _store(tree: Tree, commit: str, tests: dict[str, list[str]], fixtures: dict[str, list[str]], **top: object) -> dict:
     functions = tree.table()
     for value in functions.values():
         value["regions"] = [[0, 0, 0, 1]]
@@ -232,7 +231,7 @@ def _store(tree: Tree, commit: str, tests: dict[str, list[str]], fixtures: dict[
     return store
 
 
-def _one_function(store: dict, **change: Any) -> dict:
+def _one_function(store: dict, **change: object) -> dict:
     """`store` with its `render` function record changed, and no entry naming it."""
     functions = {key: dict(value) for key, value in store["functions"].items()}
     functions["src/lib.rs::render"].update(change)
@@ -370,7 +369,7 @@ CONSTANTS = {"ALPHA": "alpha_matches_fern_output", "BETA": "beta_matches_fern_ou
 VERSIONS = ("1.96.0 abc", "22.1.2")
 
 
-def base_of(root: Path, **top: Any) -> dict:
+def base_of(root: Path, **top: object) -> dict:
     return _store(
         RS.read_tree(root),
         git(root, "rev-parse", "HEAD"),

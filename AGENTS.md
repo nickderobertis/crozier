@@ -151,8 +151,8 @@ Use the `just` recipes; do not hand-roll equivalents.
   apart from what crozier's own tests reach. Outside `check` (runs the corpus instrumented); `just test-fixtures-coverage` guards it and IS in
   `check`. Reading the split:
   [`tests/fixtures/AGENTS.md`](tests/fixtures/AGENTS.md).
-- `just census-repin` — the fix every stale census table names; never hand-edit a
-  measured table. See
+- `just census-repin` — reuse the host's saved base across worktrees; a carried
+  witness retains its execution commit. See
   [`docs/openapi-surface-coverage.md`](docs/openapi-surface-coverage.md#golden-reach-row-by-row).
 - `just surface-census` — which OpenAPI shapes the registered golden **sources**
   declare, measured off each source document's object model (never a generated
