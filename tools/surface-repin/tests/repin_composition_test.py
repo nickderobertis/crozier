@@ -290,7 +290,11 @@ def exercise(root: Path, tmp_path: Path) -> None:
 
     selector = root / "scripts/census-python.sh"
     selected = selector.read_bytes()
-    for bad_script in ("exit 7\n", "exit 0\n"):
+    for bad_script in (
+        "exit 7\n",
+        "exit 0\n",
+        "printf '%s\\n' " + shlex.quote(str(root / "missing-python")) + "\n",
+    ):
         before = store(root) if (root / ".local/golden-reach/store.json.gz").exists() else None
         selector.write_text(bad_script, encoding="utf-8")
         refused = run("just", "census-repin", "--jobs", "1", success=False)
@@ -559,12 +563,20 @@ def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: 
     assert identities[0][1] == identities[1][1]
 
 
-@pytest.mark.parametrize("failure", ["exit", "empty", "missing_bash"])
+@pytest.mark.parametrize(
+    "failure", ["exit", "empty", "missing_bash", "missing_interpreter", "nonexecutable", "nonpython"]
+)
 def test_interpreter_selection_refuses_failure_and_recovers(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
 ) -> None:
     root = tmp_path / "repo"
     write(root, "scripts/census-python.sh", "exit 7\n" if failure == "exit" else "exit 0\n")
+    if failure in ("missing_interpreter", "nonexecutable", "nonpython"):
+        selected = root / "selected-python"
+        if failure != "missing_interpreter":
+            selected.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+            selected.chmod(0o755 if failure == "nonpython" else 0o644)
+        write(root, "scripts/census-python.sh", "printf '%s\\n' " + shlex.quote(str(selected)) + "\n")
     spec = importlib.util.spec_from_file_location(
         "repin_interpreter_boundary", REPO / "tools/surface-census/census-repin.py"
     )

@@ -530,7 +530,23 @@ def census_python(root: Path) -> str:
         refuse(
             f"interpreter selector scripts/census-python.sh exited {run.returncode} or printed no interpreter: {run.stderr.strip()[-500:]}; run `just bootstrap` and repair the selector"
         )
-    return run.stdout.strip()
+    python = run.stdout.strip()
+    try:
+        probe = subprocess.run(
+            [python, "-c", "import sys; assert sys.version_info >= (3, 11); print('crozier-census-python')"],
+            cwd=root,
+            capture_output=True,
+            text=True,
+        )
+    except OSError as error:
+        refuse(
+            f"interpreter selector scripts/census-python.sh selected unusable {python!r} ({error}); run `just bootstrap` and repair the selector"
+        )
+    if probe.returncode != 0 or probe.stdout.strip() != "crozier-census-python":
+        refuse(
+            f"interpreter selector scripts/census-python.sh selected {python!r}, which failed the Python 3.11+ probe: {probe.stderr.strip()[-500:]}; run `just bootstrap` and repair the selector"
+        )
+    return python
 
 
 def _run(root: Path, argv: list[str], what: str, stdout: Path | None = None) -> None:

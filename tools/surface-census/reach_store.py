@@ -547,6 +547,8 @@ class Function:
         offset = self._starts[position[0]] + position[1]
         if offset > len(self.file.source):
             raise StoreError(f"{self.key}: offset {position} lands past the end of {self.file.path}")
+        if not self._starts[0] <= offset <= self.file.tokens[self.indices[-1]].end:
+            raise StoreError(f"{self.key}: offset {position} lands outside its function")
         return offset
 
 

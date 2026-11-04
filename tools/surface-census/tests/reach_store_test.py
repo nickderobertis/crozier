@@ -755,3 +755,15 @@ def test_a_base_with_physically_reversed_regions_measures_fully(repo: Path) -> N
     planned = step(repo, {"CHANGELOG.md": "notes\n"}, base)
     assert planned.full is not None and "starts after its end" in planned.full
     assert set(planned.tests) == set(TESTS) and set(planned.fixtures) == {"fx"}
+
+
+def test_a_base_with_regions_escaping_their_function_measures_fully(repo: Path) -> None:
+    base = base_of(repo)
+    tree = RS.read_tree(repo)
+    owner = tree.functions["src/lib.rs::Model::new"]
+    other = tree.functions["src/lib.rs::render"]
+    escaped = other.file.tokens[other.indices[0]].start - owner.file.tokens[owner.indices[0]].start
+    base["functions"][owner.key]["regions"] = [[0, escaped, 0, escaped + 1]]
+    planned = step(repo, {"CHANGELOG.md": "notes\n"}, base)
+    assert planned.full is not None and "outside its function" in planned.full
+    assert set(planned.tests) == set(TESTS) and set(planned.fixtures) == {"fx"}
