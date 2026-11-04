@@ -224,7 +224,7 @@
     "test-ports": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/naming_port_test.py tools/surface-reach/tests/port_pins_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-reach/tests/naming_port_test.py tools/surface-reach/tests/port_pins_test.py tools/surface-reach/tests/reach_document_recipe_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/surface-reach/test-ports/.coverage"
         }
@@ -233,10 +233,22 @@
       "inputs": [
         "default",
         "crateSource",
+        "generator",
         "{workspaceRoot}/tools/surface-census/*.py",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/*.py",
         "{workspaceRoot}/justfile",
-        "pythonTooling"
+        "pythonTooling",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/build.rs",
+        "{workspaceRoot}/ruff.toml",
+        "{workspaceRoot}/.ruff.toml",
+        "{workspaceRoot}/crozier.yml",
+        "{workspaceRoot}/crozier.yaml",
+        "{workspaceRoot}/.crozier.yml",
+        "{workspaceRoot}/.crozier.yaml"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/surface-reach/test-ports"

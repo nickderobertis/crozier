@@ -116,11 +116,6 @@ def render(
         "The reach ranking",
     )
     witnessless_count = sum(not row.witnesses for _rank, row in population)
-    text = text.replace(
-        "None stands today: the last\ntwo,",
-        f"**{witnessless_count}** golden rows have no golden-only witness.\nTwo previously listed rows,",
-        1,
-    )
     text = summary(
         text,
         r"\*\*\d+\*\* golden rows have no golden-only witness",
@@ -151,11 +146,6 @@ def render(
                 f"{row.key}: multiple residual witnesses need attribution; re-measure with `{attribution.REMEASURE}`"
             )
         cells.append(attribution.require(root, row.key, next(iter(real)), records).cell())
-    text = text.replace(
-        "Two rows\nrest on those two alone, both on `webflow-v2`.",
-        f"**{residual_count}** golden rows rest only on residual golden witnesses.",
-        1,
-    )
     text = summary(
         text,
         r"\*\*\d+\*\* golden rows rest only on residual golden witnesses",
