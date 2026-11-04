@@ -34,6 +34,7 @@ fn follow_up_ticket_index_holds_every_ticket_once() {
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These small SDK replays must drive the existing crozier-e2e binary and its golden comparison engine, as this task requires. The whole golden family inherits e2eReads; splitting that shared project edge is the already-drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads", outside this ticket triage.
 #[test]
 fn follow_up_ticket_matching_outputs_hold_against_the_certified_pair() {
     let mut failures = Vec::new();
@@ -166,3 +167,37 @@ fn follow_up_ticket_invalid_aliases_refuse_with_the_class_in_both_modes() {
         }
     }
 }
+
+/// An existing nested-name component must retain its own identity and callers.
+#[test]
+fn follow_up_ticket_nested_null_identity_keeps_an_occupied_target() {
+    let source = repo_root().join(DIR).join("696/openapi.yml");
+    let mut document: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(source).unwrap()).unwrap();
+    document["components"]["schemas"]["SilenceOne"] = serde_json::json!({"type": "string"});
+    document["components"]["schemas"]["Reading"]["properties"]["reserved"] =
+        serde_json::json!({"$ref": "#/components/schemas/SilenceOne"});
+    let temp = tempfile::tempdir().unwrap();
+    let spec = temp.path().join("openapi.json");
+    std::fs::write(&spec, document.to_string()).unwrap();
+    let out = temp.path().join("sdk");
+    let result = super::probe_command(&spec, &out).output().unwrap();
+    assert!(
+        result.status.success(),
+        "{}",
+        String::from_utf8_lossy(&result.stderr)
+    );
+    let read = |name: &str| std::fs::read_to_string(out.join("src/fern/types").join(name)).unwrap();
+    assert!(read("silence.py").contains("Silence = typing.Optional[typing.Any]"));
+    assert!(read("silence_one.py").contains("SilenceOne = str"));
+    let model = read("reading.py");
+    assert!(
+        model.contains("silence: typing.Optional[Silence]"),
+        "{model}"
+    );
+    assert!(
+        model.contains("reserved: typing.Optional[SilenceOne]"),
+        "{model}"
+    );
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
