@@ -1,0 +1,12 @@
+# Actual CLI runs at 8752f017ce214af60fe32df2a2081761601291e7; 2026-11-04T03:20:26.955500+00:00.
+# Both modes run the committed measurement; temporary output paths are redacted.
+
+$ crozier generate python --no-config --spec docs/fern-measurements/handed-off/follow-up-tickets/679/openapi.yml --output <temporary-output> --package-name fern --project-name default_package_name
+
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/follow-up-tickets/679/openapi.yml: generator-lint-failure: type Reading property "probe\"code"
+exit: 1
+
+$ crozier generate python --no-config --spec docs/fern-measurements/handed-off/follow-up-tickets/679/openapi.yml --output <temporary-output> --package-name fern --project-name default_package_name --fern-strict
+
+crozier: invalid OpenAPI document docs/fern-measurements/handed-off/follow-up-tickets/679/openapi.yml: generator-lint-failure: type Reading property "probe\"code" (fern-strict refusal)
+exit: 1

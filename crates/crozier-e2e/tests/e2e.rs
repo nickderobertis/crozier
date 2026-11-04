@@ -152,6 +152,9 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+#[path = "e2e/follow_up_tickets.rs"]
+mod follow_up_tickets;
+
 /// The document-acceptance handed-off area: documents the certified pair reads
 /// where crozier refused, failed to parse or wrote invalid Python, each
 /// measured under `docs/fern-measurements/handed-off/document-acceptance/`.
@@ -997,6 +1000,13 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             departures_ledger::ComparedGolden::default(),
         );
     }
+    add(
+        format!(
+            "{}/679-escaped-quote-control/fern-expected",
+            follow_up_tickets::DIR
+        ),
+        departures_ledger::ComparedGolden::default(),
+    );
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
@@ -1012,6 +1022,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (output_defects::OUTPUT_DEFECTS_DIR, "fern-expected"),
+        (follow_up_tickets::DIR, "fern-expected"),
         (refusal_parity::REFUSAL_PARITY_DIR, "fern-expected"),
         (emission_parity::EMISSION_PARITY_DIR, "fern-expected"),
         (handed_off_type_declarations::DIR, "fern-expected"),
@@ -12573,7 +12584,6 @@ const WEBFLOW_V2: Corpus = Corpus {
     unmatched: &[
         "reference.md",
         "src/fern/analyze/reports/client.py",
-        "src/fern/collections/__init__.py",
         "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/products/client.py",

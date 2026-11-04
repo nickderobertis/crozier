@@ -588,7 +588,7 @@ def restate(root: Path) -> str:
     residual_section = text.partition(heading)[2].split("\n#", 1)[0]
     residual_rows = [line for line in residual_section.splitlines() if line.startswith("| `")]
     if any(
-        len(line.split("|")) != 6 or not re.search(r"\| `(?:open gap|proven|split)` \|$", line)
+        len(line.split("|")) != 6 or not re.search(r"\| `(?:open gap|byte-matched|split)` \|$", line)
         for line in residual_rows
     ):
         raise ValueError("malformed residual-golden row")
