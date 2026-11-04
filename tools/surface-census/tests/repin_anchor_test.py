@@ -10,6 +10,7 @@ from __future__ import annotations
 import importlib.util
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from typing import Any
 
@@ -71,6 +72,26 @@ def test_an_unchanged_anchor_with_wider_token_spacing_is_followed(tmp_path: Path
     verb.rewrite_specs(root, moves)
     assert verb.REACH.resolve_site(moves[SPEC], root).start == 2
     assert verb.reanchor_all(root, base) == {}
+
+
+def test_reanchoring_adds_escapes_to_basic_toml_strings_without_changing_literal_strings(tmp_path: Path) -> None:
+    root, base = repository(tmp_path, BASE, BASE.replace("if x {", "if  x {"))
+    old = "src/lib.rs::pick[=if x]"
+    (root / SITES).write_text(f"key\tselectors\tsites\tnote\nk\tschema.x\t{old}\t\n", encoding="utf-8")
+    evidence = root / "docs/openapi-surface/handwritten/f/evidence.toml"
+    evidence.parent.mkdir(parents=True)
+    evidence.write_text(
+        "# A comment with an unmatched \" and apostrophe'\n"
+        f'arm = "{old}"\nnote = "covered `{old}`"\nliteral = \'{old}\'\n'
+        f'multiline = """covered `{old}`"""\n',
+        encoding="utf-8",
+    )
+    verb = _verb()
+    moves = verb.reanchor_all(root, base)
+    verb.rewrite_specs(root, moves)
+    parsed = tomllib.loads(evidence.read_text(encoding="utf-8"))
+    new = moves[old]
+    assert parsed == {"arm": new, "note": f"covered `{new}`", "literal": new, "multiline": f"covered `{new}`"}
 
 
 # A second `if x {` line, deeper in the same function: the old pattern now matches two lines.

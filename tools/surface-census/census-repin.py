@@ -456,6 +456,24 @@ def _toml_basic(text: str) -> str:
     return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
+_TOML_TEXT = re.compile(
+    r"(?P<comment>\#[^\n]*)"
+    r'|(?P<basic>"""(?:\\.|(?!""")[^\\])*"""|"(?:\\.|[^"\\\n])*")'
+    r"|(?P<literal>'''[\s\S]*?'''|'[^'\n]*')",
+    re.DOTALL,
+)
+
+
+def _rewrite_toml_specs(text: str, old: str, new: str) -> str:
+    """Escape new regex backslashes in basic strings; preserve literal strings and comments."""
+
+    def replace(match: re.Match[str]) -> str:
+        before, after = (_toml_basic(old), _toml_basic(new)) if match.lastgroup == "basic" else (old, new)
+        return match.group().replace(before, after)
+
+    return _TOML_TEXT.sub(replace, text)
+
+
 def rewrite_specs(root: Path, moves: dict[str, str]) -> list[Path]:
     """Replace every quoted old spec by its new spelling; return the files changed."""
     changed = []
@@ -463,9 +481,7 @@ def rewrite_specs(root: Path, moves: dict[str, str]) -> list[Path]:
         text = path.read_text(encoding="utf-8")
         updated = text
         for old, new in moves.items():
-            updated = updated.replace(old, new)
-            if path.suffix == ".toml":
-                updated = updated.replace(_toml_basic(old), _toml_basic(new))
+            updated = _rewrite_toml_specs(updated, old, new) if path.suffix == ".toml" else updated.replace(old, new)
         if updated != text:
             path.write_text(updated, encoding="utf-8", newline="\n")
             changed.append(path)
