@@ -59,6 +59,11 @@ cargo build --locked --quiet -p crozier --bin crozier
 threads=8
 
 inventory=(
+  remeasured_grafikart_filemanager_element_e36a74ce_matches_fern_output
+  remeasured_arawa_workspace_0c8259f6_matches_fern_output
+  remeasured_clencyc_mozillafestivalbackend_b2264b38_matches_fern_output
+  remeasured_hashicorp_terraform_plugin_codegen_openapi_1f6aea4c_matches_fern_output
+  remeasured_membrane_api_gateway_8340f5da_matches_fern_output
   crozier_sdk_extensions_matches_fern_output
   crozier_property_name_matches_fern_output
   auth_schemes_matches_fern_output

@@ -168,7 +168,6 @@ query-array-items-union	parameter.schema:query-items-union	parameters.md	support
 query-date-union-oneof	parameter.schema:date-union-query-oneof	parameters.md	supported
 query-param-ref-to-enum-or-array-union-converted	schema.items	parameters.md	supported
 readme-endpoint-prefers-argless-non-get	pathItem.put	document-paths.md	supported
-readme-multipart-file-params-listed-first	requestBody.content	bodies-media.md	supported
 readme-multipart-optional-file-params	requestBody.content	bodies-media.md	supported
 readme-nested-group-post-preferred	operation.x-fern-sdk-group-name	document-paths.md	supported
 readme-streaming-snippet-omits-type-import	operation.x-fern-streaming	bodies-media.md	supported
@@ -177,7 +176,6 @@ ref-with-nullable-sibling-made-optional	schema.$ref	schemas.md	supported
 reference-literal-single-quote-escaped	schema.const	schemas.md	supported
 remote-document-local-pointer-resolved-against-root	schema.$ref:cross-document	schemas.md	supported
 remote-ref-at-use-site-inlined	schema.$ref:cross-document	schemas.md	supported
-request-body-property-closed-empty-object	mediaType.schema:closed-empty-object-property	schemas.md	supported
 request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
 required-nullable-query-scalar	parameter.schema:required-nullable-scalar-oas-three-zero	parameters.md	supported
 required-param-and-body-defaults-ignored	schema.default	parameters.md	supported

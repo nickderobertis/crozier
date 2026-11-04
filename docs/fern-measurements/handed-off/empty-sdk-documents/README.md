@@ -44,3 +44,13 @@ Each measurement directory holds a probe document authored from scratch
 `fern.log`), and a `README.md` stating the comparison and the verdict.
 `crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs` drives the real binary
 over every probe in both modes.
+
+Non-table causes originally recorded by this area are reconciled in
+[`../remeasure.tsv`](../remeasure.tsv); their measurement directories remain
+here, preserving the original evidence paths.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).

@@ -2120,3 +2120,17 @@ in [`float-literal-parity.md`](../../docs/float-literal-parity.md).
 | # | name | method | source | pinned ref | license | decision | shapes |
 |---:|---|---|---|---|---|---|---|
 | 4301 | `nixtla-timegpt` | github-raw | https://raw.githubusercontent.com/ourofoundation/wrappers/79688dd65e7fb2fb670ad30b01b5db5208c1d928/nixtla/timegpt/timegpt-openapi.json | `79688dd65e7fb2fb670ad30b01b5db5208c1d928` | MIT (repository LICENSE; the document declares no info.license) | committed | JSON float literals whose correctly rounded value a fast reader misses by one unit in the last place, in worked examples; example-matrix rows that end at the snippet width with their trailing comma |
+
+## Handed-off remeasurement witnesses
+
+The finished-tree comparison records and document status index live in
+[`documents.tsv`](../../docs/fern-measurements/handed-off/documents.tsv).
+These rows carry complete certified-pair trees and freshly generated literals overlays.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 5050 | `remeasured-grafikart-filemanager-element-e36a74ce` | github-raw | https://raw.githubusercontent.com/Grafikart/filemanager-element/af6fc5f6be961b14b2b2a218ddadac1fe6bbeb46/openapi.yml | `af6fc5f6be961b14b2b2a218ddadac1fe6bbeb46` | MIT (repository LICENCE.md at the pinned revision) | committed | multipart-scalar-union-part-encoding |
+| 5051 | `remeasured-arawa-workspace-0c8259f6` | github-raw | https://raw.githubusercontent.com/arawa/workspace/926f6093e68261c94f4dcd536b0c4451f2013ee8/openapi.json | `926f6093e68261c94f4dcd536b0c4451f2013ee8` | agpl | committed | snippet-rendering |
+| 5052 | `remeasured-clencyc-mozillafestivalbackend-b2264b38` | github-raw | https://raw.githubusercontent.com/clencyc/MozillaFestivalBackend/e70f0150f414d216743311be79d005d900ab81f1/openapi.yaml | `e70f0150f414d216743311be79d005d900ab81f1` | MIT (repository LICENSE at the pinned revision) | committed | readme-endpoint-choice |
+| 5053 | `remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c` | github-raw | https://raw.githubusercontent.com/hashicorp/terraform-plugin-codegen-openapi/55b2a49774f094d0d8aff834bce5eabe9e8a7345/internal/cmd/testdata/edgecase/openapi_spec.yml | `55b2a49774f094d0d8aff834bce5eabe9e8a7345` | MPL (repository LICENSE at the pinned revision) | committed | map-value-union-hoisting |
+| 5054 | `remeasured-membrane-api-gateway-8340f5da` | github-raw | https://raw.githubusercontent.com/membrane/api-gateway/c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c/core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml | `c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c` | Apache-2.0 (repository LICENSE at the pinned revision) | committed |  |

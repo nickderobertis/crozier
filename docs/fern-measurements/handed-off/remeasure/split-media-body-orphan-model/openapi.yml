@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: Garden Recording Archive
+  version: 1.0.0
+paths:
+  /recordings:
+    post:
+      operationId: store_recording
+      x-fern-sdk-method-name: store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            x-fern-sdk-method-name: storeUrl
+            schema:
+              $ref: '#/components/schemas/RecordingUrl'
+          application/octet-stream:
+            x-fern-sdk-method-name: storeFile
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Stored
+components:
+  schemas:
+    RecordingUrl:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string

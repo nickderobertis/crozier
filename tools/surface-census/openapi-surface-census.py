@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 283 of the 314 registered sources live in `corpus-sources/` (a split
+  and 288 of the 319 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -5527,7 +5527,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 
 # `Census.same_primitive_unions`'s scalar arms also port helpers `base_type_ref`
 # calls but does not contain: `number_prim` and `int_prim` (a number's integer
-# formats, and which of them is a long), and the Boolean literal override, read
+# formats, and which of them is a long), and the Boolean literal and datetime overrides, read
 # through `Schema::bool_literal` and the spellings `LiteralTypeOverride::from`
 # accepts. The offline tier pins each by the same
 # token digest; `Type::method` names the method of `impl ... for Type`.
@@ -8157,6 +8157,9 @@ class Census:
                 or member.get("nullable") is True
             ):
                 return None
+            override = member.get("x-crozier-type")
+            if override is None:
+                override = member.get("x-fern-type")
             form = member.get("format")
             match member.get("type"):
                 # `normalize_float_type` of `src/openapi.rs` runs first and reads the
@@ -8164,6 +8167,8 @@ class Census:
                 case "float":
                     return "float"
                 case "string":
+                    if override == "datetime":
+                        return "datetime"
                     return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
                 case "integer":
                     return "long" if form in ("int64", "uint64") else "int"
@@ -8172,9 +8177,6 @@ class Census:
                 case "number":
                     return "float"
                 case "boolean":
-                    override = member.get("x-crozier-type")
-                    if override is None:
-                        override = member.get("x-fern-type")
                     if override in ("literal<true>", "literal<false>"):
                         return override
                     return "bool"

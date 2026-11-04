@@ -1,0 +1,43 @@
+sha256: 9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382
+result: refused-by-ruling
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/diffs
+crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
+compare exit: 3
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382
+
+differing files:
+
+certified exit: 0
+certified diagnostic: [api]: Failed to parse openapi document Building Blocks specified in OGC API - Discrete Global Grid Systems - Part 1: Core
+default refusal: unresolved-reference (exit 1)
+default command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/default --package-name fern --project-name default_package_name
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/openapi.yml: unresolved-reference: paths//collections/{collectionId}/dggs/{dggsId}/zones/{zoneId}/get/responses/200: #/paths/~1dggs~1%7BdggsId%7D~1zones~1%7BzoneId%7D/get/responses/200
+fern-strict refusal: unresolved-reference (exit 1)
+fern-strict command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final generate python --spec /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/openapi.yml --output /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/fern-strict --package-name fern --project-name default_package_name --fern-strict
+crozier: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/refusals-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/openapi.yml: unresolved-reference: paths//collections/{collectionId}/dggs/{dggsId}/zones/{zoneId}/get/responses/200: #/paths/~1dggs~1%7BdggsId%7D~1zones~1%7BzoneId%7D/get/responses/200 (fern-strict refusal)
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml python: reference command finished in 0.02s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml python: crozier generation failed in 0.22s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml python: mismatched (crozier could not generate: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/openapi.yml: unresolved-reference: paths//collections/{collectionId}/dggs/{dggsId}/zones/{zoneId}/get/responses/200: #/paths/~1dggs~1%7BdggsId%7D~1zones~1%7BzoneId%7D/get/responses/200)
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/crozier.yml
+  python: mismatched
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: crozier could not generate: invalid OpenAPI document /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/9ccb483ad815ad25c876c7317b7edfb167452a6325164887cc888b67aa49a382/openapi.yml: unresolved-reference: paths//collections/{collectionId}/dggs/{dggsId}/zones/{zoneId}/get/responses/200: #/paths/~1dggs~1%7BdggsId%7D~1zones~1%7BzoneId%7D/get/responses/200
+    timing: reference 0.02s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals: no generator ran both sides
+Result: 1 generator(s) mismatched the reference (exit 3)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: 'OGC License / http://www.opengeospatial.org/legal/' -> None
+licence file (none) -> None
+outcome: failed: info.license 'OGC License / http://www.opengeospatial.org/legal/' names no grant the corpus rule admits

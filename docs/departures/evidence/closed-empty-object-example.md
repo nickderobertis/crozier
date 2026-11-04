@@ -6,7 +6,7 @@ schema admits only `{}` the value `{"key": "value"}`, which that schema rejects.
 ## The input
 
 The hand-written fixture
-[`closed-empty-inline-objects`](../../openapi-surface/handwritten/closed-empty-inline-objects/openapi.yml),
+[`closed-empty-inline-objects`](../../fern-measurements/superseded-fixtures/closed-empty-inline-objects/openapi.yml),
 a crozier-authored document whose `scheduleFiring` request body requires
 `profile`, declared `{type: object, additionalProperties: false}` with no
 `properties` and no `example`.
@@ -16,7 +16,7 @@ a crozier-authored document whose `scheduleFiring` request body requires
 Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 (the certified pair), in
 the workspace [`../../openapi-surface/probes/AGENTS.md`](../../openapi-surface/probes/AGENTS.md#re-running-one)
 prescribes, generates the tree committed, comment-stripped, as the fixture's
-[`fern-expected/`](../../openapi-surface/handwritten/closed-empty-inline-objects/fern-expected/).
+[`fern-expected/`](../../fern-measurements/superseded-fixtures/closed-empty-inline-objects/fern-expected/).
 It types `profile` `typing.Dict[str, typing.Any]` and examples it as the
 free-form placeholder:
 

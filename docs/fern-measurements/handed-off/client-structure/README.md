@@ -189,3 +189,9 @@ area, and every one is a root cause the bodies-and-paths record's
 - **`R10` beside `R9`.** darwin-cli's union imports share one statement as the
   certified pair writes them, and with `R9` repaired by the merged
   union-modelling work the document byte-matches.
+
+## Final remeasurement index
+
+The comparisons above describe this repair node’s own tree. Each document’s
+present status is recorded in [`../documents.tsv`](../documents.tsv); remaining
+parity and registration work is attributed in [`../residuals.tsv`](../residuals.tsv).

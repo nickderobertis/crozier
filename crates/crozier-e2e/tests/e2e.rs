@@ -152,8 +152,15 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
+#[path = "e2e/remeasure.rs"]
+mod remeasure;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These local CLI replays use no network or SDK installation; the merged 28-test witness and replay selection took 58.442 s, including both Webflow modes at about 56 s each. Keep this registration on the existing golden edge pending the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[path = "e2e/follow_up_tickets.rs"]
 mod follow_up_tickets;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The document-acceptance handed-off area: documents the certified pair reads
 /// where crozier refused, failed to parse or wrote invalid Python, each
@@ -1029,6 +1036,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (handed_off_example_values::AREA_DIR, "fern-expected"),
         (handed_off_snippet_rendering::AREA_DIR, "fern-expected"),
         (bodies_media::BODIES_MEDIA_DIR, "fern-expected"),
+        (remeasure::DIR, "fern-expected"),
         (
             client_structure::CLIENT_STRUCTURE_DIR,
             client_structure::PYTHON_ENUMS_TREE,
@@ -1068,25 +1076,27 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             }
         }
     }
-    if let Ok(entries) = std::fs::read_dir(root.join(handed_off_type_declarations::DIR)) {
-        for entry in entries.filter_map(Result::ok) {
-            if entry
-                .path()
-                .join(handed_off_type_declarations::LITERALS)
-                .is_dir()
-            {
-                add(
-                    format!(
-                        "{}/{}/{}",
-                        handed_off_type_declarations::DIR,
-                        entry.file_name().to_string_lossy(),
-                        handed_off_type_declarations::LITERALS
-                    ),
-                    departures_ledger::ComparedGolden {
-                        excluded: vec![literals_mode::MANIFEST.to_string()],
-                        carve_outs: Default::default(),
-                    },
-                );
+    for dir in [handed_off_type_declarations::DIR, remeasure::DIR] {
+        if let Ok(entries) = std::fs::read_dir(root.join(dir)) {
+            for entry in entries.filter_map(Result::ok) {
+                if entry
+                    .path()
+                    .join(handed_off_type_declarations::LITERALS)
+                    .is_dir()
+                {
+                    add(
+                        format!(
+                            "{}/{}/{}",
+                            dir,
+                            entry.file_name().to_string_lossy(),
+                            handed_off_type_declarations::LITERALS
+                        ),
+                        departures_ledger::ComparedGolden {
+                            excluded: vec![literals_mode::MANIFEST.to_string()],
+                            carve_outs: Default::default(),
+                        },
+                    );
+                }
             }
         }
     }
@@ -4526,9 +4536,13 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
             crozier_clean_env()
                 .args(["--no-config", "generate", "python", "--spec"])
                 .arg(
-                    root.join("docs/openapi-surface/handwritten")
-                        .join(shape)
-                        .join("openapi.yml"),
+                    root.join(if shape == "poster-upload" {
+                        SUPERSEDED_FIXTURES_DIR
+                    } else {
+                        HANDWRITTEN_DIR
+                    })
+                    .join(shape)
+                    .join("openapi.yml"),
                 )
                 .arg("--output")
                 .arg(out.path())
@@ -4565,7 +4579,7 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     // part content type means nothing for it, and is refused.
     let certified = tempfile::tempdir().unwrap();
     copy_dir(
-        &root.join("docs/openapi-surface/handwritten/poster-upload/fern-expected"),
+        &root.join("docs/fern-measurements/superseded-fixtures/poster-upload/fern-expected"),
         certified.path(),
     );
     for (args, code) in [
@@ -6080,9 +6094,13 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
             crozier_clean_env()
                 .args(["--no-config", "generate", "python", "--spec"])
                 .arg(
-                    root.join("docs/openapi-surface/handwritten")
-                        .join(shape)
-                        .join("openapi.yml"),
+                    root.join(if shape == "poster-upload" {
+                        SUPERSEDED_FIXTURES_DIR
+                    } else {
+                        HANDWRITTEN_DIR
+                    })
+                    .join(shape)
+                    .join("openapi.yml"),
                 )
                 .arg("--output")
                 .arg(out.path())
@@ -10406,6 +10424,11 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE,
+    &REMEASURED_ARAWA_WORKSPACE_0C8259F6,
+    &REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38,
+    &REMEASURED_HASHICORP_EDGECASE,
+    &REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA,
     &APIDECK_CRM,
     &BUNQ,
     &BUNGIE,
@@ -30700,3 +30723,99 @@ fn github_corpus_retains_its_refusal_with_parser_budgets() {
         );
     }
 }
+
+/// Complete remeasurement witness, corpus row 5050.
+const REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE: Corpus = Corpus {
+    api: "remeasured-grafikart-filemanager-element-e36a74ce",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[test]
+fn remeasured_grafikart_filemanager_element_e36a74ce_matches_fern_output() {
+    assert_committed_corpus_matches(&REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE);
+    overlay_goldens::assert_literals_match(&REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+/// Complete remeasurement witness, corpus row 5051.
+const REMEASURED_ARAWA_WORKSPACE_0C8259F6: Corpus = Corpus {
+    api: "remeasured-arawa-workspace-0c8259f6",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[test]
+fn remeasured_arawa_workspace_0c8259f6_matches_fern_output() {
+    assert_committed_corpus_matches(&REMEASURED_ARAWA_WORKSPACE_0C8259F6);
+    overlay_goldens::assert_literals_match(&REMEASURED_ARAWA_WORKSPACE_0C8259F6);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+/// Complete remeasurement witness, corpus row 5052.
+const REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38: Corpus = Corpus {
+    api: "remeasured-clencyc-mozillafestivalbackend-b2264b38",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[test]
+fn remeasured_clencyc_mozillafestivalbackend_b2264b38_matches_fern_output() {
+    assert_committed_corpus_matches(&REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38);
+    overlay_goldens::assert_literals_match(&REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+/// Complete remeasurement witness, corpus row 5053.
+const REMEASURED_HASHICORP_EDGECASE: Corpus = Corpus {
+    api: "remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[test]
+fn remeasured_hashicorp_terraform_plugin_codegen_openapi_1f6aea4c_matches_fern_output() {
+    assert_committed_corpus_matches(&REMEASURED_HASHICORP_EDGECASE);
+    overlay_goldens::assert_literals_match(&REMEASURED_HASHICORP_EDGECASE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+/// Complete remeasurement witness, corpus row 5054.
+const REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA: Corpus = Corpus {
+    api: "remeasured-membrane-api-gateway-8340f5da",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+#[test]
+fn remeasured_membrane_api_gateway_8340f5da_matches_fern_output() {
+    assert_committed_corpus_matches(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
+    overlay_goldens::assert_literals_match(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

@@ -1,0 +1,96 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Nursery Inventory Desk",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/envelopes": {
+      "post": {
+        "operationId": "submit_envelopes",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Envelope"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Stored"
+          }
+        }
+      }
+    },
+    "/records": {
+      "post": {
+        "operationId": "submit_records",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Record"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Stored"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Envelope": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object"
+          }
+        },
+        "example": {
+          "label": "nursery",
+          "attributes": {
+            "key": "{}"
+          }
+        }
+      },
+      "Record": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "attributes": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object"
+            }
+          }
+        },
+        "example": {
+          "label": "nursery",
+          "attributes": {
+            "key": "{}"
+          }
+        }
+      }
+    }
+  }
+}

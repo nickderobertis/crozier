@@ -1,0 +1,66 @@
+openapi: 3.0.3
+info:
+  title: Orchard Label Register
+  version: 1.0.0
+paths:
+  /labels:
+    post:
+      operationId: register_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelRegistration'
+      responses:
+        '204':
+          description: Registered
+  /labels/push:
+    post:
+      operationId: register_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LabelRegistration'
+      responses:
+        '204':
+          description: Registered
+  /labels/archive:
+    post:
+      operationId: archive_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveRegistration'
+      responses:
+        '204':
+          description: Stored
+  /labels/review:
+    post:
+      operationId: review_label
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArchiveRegistration'
+      responses:
+        '204':
+          description: Stored
+components:
+  schemas:
+    LabelRegistration:
+      type: object
+      required: [label]
+      properties:
+        label:
+          type: string
+    ArchiveRegistration:
+      type: object
+      properties:
+        note:
+          type: string

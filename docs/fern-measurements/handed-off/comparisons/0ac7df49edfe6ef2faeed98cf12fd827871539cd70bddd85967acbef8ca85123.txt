@@ -1,0 +1,156 @@
+sha256: 0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123
+result: byte-matches
+command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/diffs
+crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
+compare exit: 0
+certified pair: CLI 5.163.1 / Python SDK 5.41.3
+certified cache document sha256: 0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123
+
+differing files:
+
+
+compare log:
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml python: reference command finished in 0.12s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml python: crozier generation finished in 2.40s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml python: matched
+
+crozier compare report
+
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/crozier.yml
+  python: matched (layout packaged, 123 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/0ac7df49edfe6ef2faeed98cf12fd827871539cd70bddd85967acbef8ca85123/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (121):
+      reference.md:193 schema-rejected-name-example
+      reference.md:266 schema-rejected-name-example
+      reference.md:350 schema-rejected-name-example
+      reference.md:503 schema-rejected-name-example
+      reference.md:577 schema-rejected-name-example
+      reference.md:659 schema-rejected-name-example
+      reference.md:735 schema-rejected-name-example
+      reference.md:907 schema-rejected-name-example
+      reference.md:1044 schema-rejected-name-example
+      reference.md:1117 schema-rejected-name-example
+      reference.md:1203 schema-rejected-name-example
+      reference.md:1276 schema-rejected-name-example
+      reference.md:1515 schema-rejected-name-example
+      reference.md:1588 schema-rejected-name-example
+      reference.md:1670 schema-rejected-name-example
+      reference.md:1896 schema-rejected-name-example
+      reference.md:1969 schema-rejected-name-example
+      reference.md:2051 schema-rejected-name-example
+      reference.md:2277 schema-rejected-name-example
+      reference.md:2350 schema-rejected-name-example
+      reference.md:2432 schema-rejected-name-example
+      reference.md:2658 schema-rejected-name-example
+      reference.md:2731 schema-rejected-name-example
+      reference.md:2813 schema-rejected-name-example
+      reference.md:3039 schema-rejected-name-example
+      reference.md:3112 schema-rejected-name-example
+      reference.md:3194 schema-rejected-name-example
+      reference.md:3542 schema-rejected-name-example
+      reference.md:3615 schema-rejected-name-example
+      reference.md:3697 schema-rejected-name-example
+      reference.md:3921 schema-rejected-name-example
+      reference.md:3994 schema-rejected-name-example
+      reference.md:4075 schema-rejected-name-example
+      reference.md:4149 schema-rejected-name-example
+      reference.md:4223 schema-rejected-name-example
+      reference.md:4312 schema-rejected-name-example
+      reference.md:4402 schema-rejected-name-example
+      reference.md:4403 declared-example-over-placeholder
+      src/fern/__init__.py:38 init-type-checking-import-order
+      src/fern/amount/client.py:56 schema-rejected-name-example
+      src/fern/amount/client.py:97 schema-rejected-name-example
+      src/fern/amount/client.py:145 schema-rejected-name-example
+      src/fern/amount/client.py:194 schema-rejected-name-example
+      src/fern/amount/client.py:195 declared-example-over-placeholder
+      src/fern/amount/client.py:255 schema-rejected-name-example
+      src/fern/amount/client.py:304 schema-rejected-name-example
+      src/fern/amount/client.py:362 schema-rejected-name-example
+      src/fern/amount/client.py:421 schema-rejected-name-example
+      src/fern/amount/client.py:422 declared-example-over-placeholder
+      src/fern/category/client.py:134 schema-rejected-name-example
+      src/fern/category/client.py:178 schema-rejected-name-example
+      src/fern/category/client.py:209 schema-rejected-name-example
+      src/fern/category/client.py:397 schema-rejected-name-example
+      src/fern/category/client.py:449 schema-rejected-name-example
+      src/fern/category/client.py:492 schema-rejected-name-example
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/cuisinetype/client.py:95 schema-rejected-name-example
+      src/fern/cuisinetype/client.py:139 schema-rejected-name-example
+      src/fern/cuisinetype/client.py:174 schema-rejected-name-example
+      src/fern/cuisinetype/client.py:274 schema-rejected-name-example
+      src/fern/cuisinetype/client.py:326 schema-rejected-name-example
+      src/fern/cuisinetype/client.py:369 schema-rejected-name-example
+      src/fern/difficultylevel/client.py:135 schema-rejected-name-example
+      src/fern/difficultylevel/client.py:179 schema-rejected-name-example
+      src/fern/difficultylevel/client.py:214 schema-rejected-name-example
+      src/fern/difficultylevel/client.py:364 schema-rejected-name-example
+      src/fern/difficultylevel/client.py:418 schema-rejected-name-example
+      src/fern/difficultylevel/client.py:461 schema-rejected-name-example
+      src/fern/image/client.py:95 schema-rejected-name-example
+      src/fern/image/client.py:136 schema-rejected-name-example
+      src/fern/image/client.py:166 schema-rejected-name-example
+      src/fern/image/client.py:214 schema-rejected-name-example
+      src/fern/image/client.py:215 multipart-object-required-file-example
+      src/fern/image/client.py:353 schema-rejected-name-example
+      src/fern/image/client.py:402 schema-rejected-name-example
+      src/fern/image/client.py:440 schema-rejected-name-example
+      src/fern/image/client.py:496 schema-rejected-name-example
+      src/fern/ingredient/client.py:135 schema-rejected-name-example
+      src/fern/ingredient/client.py:179 schema-rejected-name-example
+      src/fern/ingredient/client.py:210 schema-rejected-name-example
+      src/fern/ingredient/client.py:358 schema-rejected-name-example
+      src/fern/ingredient/client.py:410 schema-rejected-name-example
+      src/fern/ingredient/client.py:453 schema-rejected-name-example
+      src/fern/instruction/client.py:56 schema-rejected-name-example
+      src/fern/instruction/client.py:115 schema-rejected-name-example
+      src/fern/instruction/client.py:161 schema-rejected-name-example
+      src/fern/instruction/client.py:220 schema-rejected-name-example
+      src/fern/instruction/client.py:288 schema-rejected-name-example
+      src/fern/instruction/client.py:355 schema-rejected-name-example
+      src/fern/instruction/client.py:409 schema-rejected-name-example
+      src/fern/instruction/client.py:476 schema-rejected-name-example
+      src/fern/preparationtime/client.py:135 schema-rejected-name-example
+      src/fern/preparationtime/client.py:179 schema-rejected-name-example
+      src/fern/preparationtime/client.py:214 schema-rejected-name-example
+      src/fern/preparationtime/client.py:366 schema-rejected-name-example
+      src/fern/preparationtime/client.py:418 schema-rejected-name-example
+      src/fern/preparationtime/client.py:461 schema-rejected-name-example
+      src/fern/recipe/client.py:145 schema-rejected-name-example
+      src/fern/recipe/client.py:197 schema-rejected-name-example
+      src/fern/recipe/client.py:237 schema-rejected-name-example
+      src/fern/recipe/client.py:395 schema-rejected-name-example
+      src/fern/recipe/client.py:455 schema-rejected-name-example
+      src/fern/recipe/client.py:503 schema-rejected-name-example
+      src/fern/search/client.py:54 schema-rejected-name-example
+      src/fern/search/client.py:134 schema-rejected-name-example
+      src/fern/tag/client.py:133 schema-rejected-name-example
+      src/fern/tag/client.py:177 schema-rejected-name-example
+      src/fern/tag/client.py:208 schema-rejected-name-example
+      src/fern/tag/client.py:354 schema-rejected-name-example
+      src/fern/tag/client.py:406 schema-rejected-name-example
+      src/fern/tag/client.py:445 schema-rejected-name-example
+      src/fern/unit/client.py:137 schema-rejected-name-example
+      src/fern/unit/client.py:185 schema-rejected-name-example
+      src/fern/unit/client.py:217 schema-rejected-name-example
+      src/fern/unit/client.py:367 schema-rejected-name-example
+      src/fern/unit/client.py:423 schema-rejected-name-example
+      src/fern/unit/client.py:463 schema-rejected-name-example
+    timing: reference 0.12s, crozier 2.40s, speed-up 0.05x, saved -2.28s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.12s, crozier 2.40s, speed-up 0.05x, saved -2.28s
+Result: every checked generator matched the reference (1 of 1, exit 0)
+
+Licence/provenance evidence (rule: docs/corpus-licensing.md):
+info.license: 'AGPL-3.0 / https://github.com/ihulsbus/cookbook/blob/feature/V2-microservices/LICENSE' -> AGPL
+licence file (none) -> None
+outcome: passed: info.license 'AGPL-3.0 / https://github.com/ihulsbus/cookbook/blob/feature/V2-microservices/LICENSE' reads as AGPL, which the corpus rule admits
