@@ -141,7 +141,14 @@
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "pythonTooling",
-        "{workspaceRoot}/docs/openapi-surface/residual-attribution.json"
+        "{workspaceRoot}/docs/openapi-surface/residual-attribution.json",
+        "{workspaceRoot}/build.rs",
+        "{workspaceRoot}/ruff.toml",
+        "{workspaceRoot}/.ruff.toml",
+        "{workspaceRoot}/crozier.yml",
+        "{workspaceRoot}/crozier.yaml",
+        "{workspaceRoot}/.crozier.yml",
+        "{workspaceRoot}/.crozier.yaml"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/surface-reach/test-residual-attribution"

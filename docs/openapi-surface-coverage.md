@@ -3593,8 +3593,8 @@ Rows the census classifies `golden` while every source declaring the feature is
 a `CORPUS.md` row that carries no committed golden — a `DROPPED` or `REJECTED`
 row. The census no longer reads such a row as a source (#352), so none can stand
 again. Their cells say so; the
-category itself is not this measurement's to move. None stands today: the last
-two, `operation-external-docs` (declared by `calorieninjas.com` and `github.com`)
+category itself is not this measurement's to move. **0** golden rows have no golden-only witness.
+Two previously listed rows, `operation-external-docs` (declared by `calorieninjas.com` and `github.com`)
 and `xml-attribute` (declared by `atlassian.com-jira`), gained golden-only
 witnesses in corpus rows 301 (`ideaconsult-enanomapper`) and 302
 (`openaire-graph`).
@@ -3621,8 +3621,7 @@ byte-matched file, so
 [`residual-attribution.py`](../tools/surface-census/residual-attribution.py) (`just
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
-splits the files that move by whether the golden test compares them. Two rows
-rest on those two alone, both on `webflow-v2`. `boolean-schema-true` lands in
+splits the files that move by whether the golden test compares them. **2** golden rows rest only on residual golden witnesses. `boolean-schema-true` lands in
 byte-matched files only, including `src/fern/collections/__init__.py` after the
 package-export repair, so its disposition is `byte-matched`. `format-idn-hostname` and
 `format-iri` rested on `short-io` until it reached full parity, and

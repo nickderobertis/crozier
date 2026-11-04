@@ -23,17 +23,13 @@
   `BrokenProcessPool`. Coverage is still measured and combined like every other
   suite's.
 - **Name the repin.** A census check that compares a measured table names `just
-  census-repin` in its message (`REPIN` in the census suite). The verb generates
-  all ledger-derived reach sections, validating residual attribution against its
-  recorded golden output and generator inputs before writing. The fast
-  offline checks only compare, never measure. A scoped run (`--tests`,
+  census-repin` in its message (`REPIN` in the census suite). The fast offline
+  checks only compare, never measure. A scoped run (`--tests`,
   `--fixtures`) leaves the arm sections and the coverage headline alone: a
   subset of the witnesses cannot restate them.
 - Every instrumented build or run holds `instrumented-measurement.lock` under
   the host cache, including one started by hand:
   `flock "${XDG_CACHE_HOME:-$HOME/.cache}/crozier/instrumented-measurement.lock" <command>`.
 
-- `PORT_PINS` names each untested Rust decision's Python reading and confirmation.
-  Tokens, not layout or comments, determine drift; a local rename can still fire.
-  Re-read the named decision before `just census-repin --confirm-port NAME`;
-  confirmation changes only named digests. Naming outputs use compiled-Rust comparisons; untested traces retain pins.
+- Re-read the named Rust decision against its Python port before
+  `just census-repin --confirm-port NAME`, even for a local rename.

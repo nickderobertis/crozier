@@ -685,6 +685,15 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
     for report in drift:
         print(f"census-repin: {report}", file=sys.stderr)
     if drift or args.confirm_port:
+        if (root / REGIONS / "golden-reach.tsv").is_file():
+            try:
+                stale = reach_document.stale_sections(
+                    root, REACH, _load("census_repin_handwritten", "handwritten-fixtures.py")
+                )
+                for section in stale:
+                    print(f"census-repin: stale {section}; run `just census-repin`", file=sys.stderr)
+            except (ValueError, OSError) as error:
+                print(f"census-repin: {error}; then run `just census-repin`", file=sys.stderr)
         return int(bool(drift))
     before = {path: (root / path).read_bytes() if (root / path).is_file() else None for path in tracked_changes(root)}
     # Restate the committed ledger before an expensive measurement. This also

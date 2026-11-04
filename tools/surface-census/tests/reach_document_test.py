@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import importlib.util
 import json
 import re
@@ -76,6 +77,14 @@ def test_attribution_round_trips_and_refuses_missing_or_changed_inputs(tmp_path:
     with pytest.raises(ValueError, match="feature: stale residual attribution"):
         attribution.require(tmp_path, row.key, row.fixture, loaded)
     registry.write_text(original_registry, encoding="utf-8")
+    # Adding any discovered config is a changed generation input, even when
+    # the previously measured tree had no config file.
+    for filename in attribution.CONFIG_NAMES:
+        config = tmp_path / filename
+        config.write_text("client_class: ChangedClient\n", encoding="utf-8")
+        with pytest.raises(ValueError, match="feature: stale residual attribution"):
+            attribution.require(tmp_path, row.key, row.fixture, loaded)
+        config.unlink()
     # Golden output is an independent content pin as well.
     (tmp_path / "src/lib.rs").write_text("pub fn generated() {}", encoding="utf-8")
     (tmp_path / "tests/fixtures/demo/expected/model.py").write_text("value = 2\n", encoding="utf-8")
@@ -101,6 +110,8 @@ def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_pat
         "Cargo.lock",
         "rust-toolchain.toml",
         ".ruff-version",
+        ".cargo/config.toml",
+        "pyproject.toml",
         "justfile",
         "crates/crozier-e2e/tests/e2e.rs",
         "docs/openapi-surface-coverage.md",
@@ -172,11 +183,19 @@ def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_pat
         if row["witnesses"] == "-"
     ]
     assert cells(expected, "#### Golden rows with no golden-only witness") == none
+    assert f"**{len(none)}** golden rows have no golden-only witness" in expected
     count = sum(int(row["unreached_sites"]) == 0 for row in records)
     assert f"**{count}** golden rows reach every handling site" in expected
     assert f"**{len(one)}** golden rows rest on one document" in expected
     saved_attribution = json.loads((tmp_path / attribution.RECORD).read_text(encoding="utf-8"))["rows"]
     residual_cells = cells(expected, "#### Golden rows resting only on residual goldens")
+    supplements, errors = repin._load("census_repin_handwritten", "handwritten-fixtures.py").read_residual_proofs(
+        tmp_path
+    )
+    assert not errors
+    assert (
+        f"**{len(residual_cells) + len(supplements)}** golden rows rest only on residual golden witnesses" in expected
+    )
     assert [row[0].strip("`") for row in residual_cells] == [row["key"] for row in saved_attribution]
     for row, measured in zip(residual_cells, saved_attribution, strict=True):
         assert row[1] == f"`{measured['fixture']}`"
@@ -205,6 +224,12 @@ def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_pat
     stale = re.sub(
         r"\*\*\d+\*\* golden rows reach every handling site", "**99999** golden rows reach every handling site", stale
     )
+    for phrase in (
+        "golden rows rest on one document",
+        "golden rows have no golden-only witness",
+        "golden rows rest only on residual golden witnesses",
+    ):
+        stale = re.sub(r"\*\*\d+\*\* " + phrase, "**99999** " + phrase, stale)
     stale = re.sub(r"\d+ of \[the \d+ unreached arms\]", "99999 of [the 99999 unreached arms]", stale)
     assert stale != expected
     for args in (
@@ -214,6 +239,23 @@ def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_pat
     ):
         subprocess.run(["git", *args], cwd=tmp_path, check=True, capture_output=True)
     path.write_text(stale, encoding="utf-8")
+    confirm = subprocess.run(
+        ["just", "census-repin", "--confirm-port", "camel_join"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert confirm.returncode == 0, confirm.stderr
+    for section in (
+        "The reach ranking",
+        "Rows resting on one document",
+        "Golden rows with no golden-only witness",
+        "Golden rows resting only on residual goldens",
+        "Blind-spot rows' unreached-arm counts",
+    ):
+        assert f"stale {section}; run `just census-repin`" in confirm.stderr
+    assert path.read_text(encoding="utf-8") == stale
     run = subprocess.run(["just", "census-repin"], cwd=tmp_path, capture_output=True, text=True, timeout=120)
     # The recipe completes its offline restatement, then deliberately cannot
     # start measurement in this fixture: its interpreter selector is absent.
@@ -221,6 +263,49 @@ def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_pat
     assert path.read_text(encoding="utf-8") == expected
     reach_document.rewrite(tmp_path, repin.REACH, repin._load("census_repin_handwritten", "handwritten-fixtures.py"))
     assert path.read_text(encoding="utf-8") == expected
+    # Missing or stale measurements fail at the real recipe boundary before
+    # either SDK generation or a documentation write can occur.
+    record_path = tmp_path / attribution.RECORD
+    saved_record = record_path.read_bytes()
+    for missing in (True, False):
+        if missing:
+            record_path.unlink()
+        else:
+            record_path.write_bytes(saved_record)
+            source = tmp_path / "src/lib.rs"
+            source.write_bytes(source.read_bytes() + b"\n// changed generator input\n")
+        refused = subprocess.run(["just", "census-repin"], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+        assert refused.returncode != 0
+        reason = "no residual attribution" if missing else "stale residual attribution"
+        assert f"boolean-schema-true: {reason}" in refused.stderr
+        assert "just residual-attribution" in refused.stderr
+        assert path.read_text(encoding="utf-8") == expected
+    source.write_bytes(source.read_bytes().removesuffix(b"\n// changed generator input\n"))
+    # Confirmation is read-only even when the renderer cannot restate a
+    # missing or duplicated summary. Exercise every anchor via the recipe.
+    for phrase in (
+        "golden rows reach every handling site",
+        "golden rows rest on one document",
+        "golden rows have no golden-only witness",
+        "golden rows rest only on residual golden witnesses",
+    ):
+        anchor = re.search(r"\*\*\d+\*\* " + phrase, expected)
+        assert anchor
+        for replacement in ("missing summary", anchor[0] + "\n" + anchor[0]):
+            broken = expected.replace(anchor[0], replacement, 1)
+            path.write_text(broken, encoding="utf-8")
+            refused = subprocess.run(
+                ["just", "census-repin", "--confirm-port", "camel_join"],
+                cwd=tmp_path,
+                capture_output=True,
+                text=True,
+                timeout=120,
+            )
+            assert refused.returncode == 0, refused.stderr
+            assert "restore exactly one summary" in refused.stderr
+            assert "just census-repin" in refused.stderr
+            assert path.read_text(encoding="utf-8") == broken
+    path.write_text(expected, encoding="utf-8")
     # A new residual-only population must not borrow one witness's measurement.
     ledger_lines = ledger.read_text(encoding="utf-8").splitlines()
     for number, line in enumerate(ledger_lines):
@@ -251,3 +336,42 @@ def test_a_missing_ownership_source_is_refused_without_inventing_boundaries(tmp_
     )
     with pytest.raises(ValueError, match="restore exactly one ownership source.*just census-repin"):
         reach_document.render(tmp_path, text, [], set(), set(), set(), {}, set())
+
+
+@pytest.mark.parametrize("fault", ["boolean-version", "string-version", "future-version", "unknown-root-field"])
+def test_record_versions_and_root_fields_are_validated(tmp_path: Path, fault: str) -> None:
+    path = tmp_path / attribution.RECORD
+    path.parent.mkdir(parents=True)
+    payload: dict[str, object] = {"version": 1, "rows": []}
+    match fault:
+        case "boolean-version":
+            payload["version"] = True
+        case "string-version":
+            payload["version"] = "1"
+        case "future-version":
+            payload["version"] = 2
+        case "unknown-root-field":
+            payload["unrecognized"] = "would be lost on publication"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="unsupported record.*just residual-attribution"):
+        attribution.read(tmp_path)
+
+
+def test_content_digest_uses_canonical_relative_path_order(tmp_path: Path) -> None:
+    files = {"src/AGENTS.md": b"upper", "src/a.rs": b"lower"}
+    expected = hashlib.sha256()
+    for name in sorted(files):
+        path = tmp_path / name
+        path.parent.mkdir(exist_ok=True)
+        path.write_bytes(files[name])
+        for value in (name.encode(), files[name]):
+            expected.update(len(value).to_bytes(8, "big"))
+            expected.update(value)
+    assert attribution.content_digest(tmp_path, [tmp_path / name for name in reversed(files)]) == expected.hexdigest()
+
+
+def test_attribution_config_inputs_match_rust_discovery_names() -> None:
+    source = (REPO / "src/settings.rs").read_text(encoding="utf-8")
+    declaration = re.search(r"pub const CONFIG_NAMES:.*?=\s*&\[(.*?)\];", source, re.S)
+    assert declaration is not None
+    assert tuple(re.findall(r'"([^"\n]+)"', declaration[1])) == attribution.CONFIG_NAMES

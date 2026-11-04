@@ -25,6 +25,8 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
 
@@ -106,8 +108,17 @@ def test_record_publication_runs_the_cli_and_preserves_unselected_rows(tmp_path:
     """The real binary measures a small document; only the selected record changes."""
     for directory in ("src", "templates", "assets"):
         shutil.copytree(REPO / directory, tmp_path / directory)
-    for name in ("Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".ruff-version"):
-        shutil.copy2(REPO / name, tmp_path / name)
+    for name in (
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        ".ruff-version",
+        ".cargo/config.toml",
+        "pyproject.toml",
+    ):
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / name, target)
     scripts = tmp_path / "tools/surface-census"
     scripts.mkdir(parents=True)
     for source in SCRIPT.parent.glob("*.py"):
@@ -188,6 +199,14 @@ def test_record_publication_runs_the_cli_and_preserves_unselected_rows(tmp_path:
     assert {name: selected[name] for name in measured} == measured
     assert selected["unmatched"] == ["src/fern/types/thing.py"]
     assert len(selected["golden_digest"]) == len(selected["inputs_digest"]) == 64
+    import residual_attribution_record as record_model
+
+    loaded = record_model.read(tmp_path)
+    record_model.require(tmp_path, selected["key"], selected["fixture"], loaded)
+    reader = scripts / "openapi-surface-census.py"
+    reader.write_bytes(reader.read_bytes() + b"\n# A changed measurement reader.\n")
+    with pytest.raises(ValueError, match="boolean-schema-true: stale residual attribution"):
+        record_model.require(tmp_path, selected["key"], selected["fixture"], loaded)
 
 
 if __name__ == "__main__":

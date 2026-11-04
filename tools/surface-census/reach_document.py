@@ -115,6 +115,18 @@ def render(
         f"**{reaching}** golden rows reach every handling site",
         "The reach ranking",
     )
+    witnessless_count = sum(not row.witnesses for _rank, row in population)
+    text = text.replace(
+        "None stands today: the last\ntwo,",
+        f"**{witnessless_count}** golden rows have no golden-only witness.\nTwo previously listed rows,",
+        1,
+    )
+    text = summary(
+        text,
+        r"\*\*\d+\*\* golden rows have no golden-only witness",
+        f"**{witnessless_count}** golden rows have no golden-only witness",
+        "Golden rows with no golden-only witness",
+    )
     text = table(
         text,
         "#### Golden rows with no golden-only witness",
@@ -126,15 +138,30 @@ def render(
     )
     records = attribution.read(root)
     cells = []
+    residual_count = 0
     for _rank, row in population:
         real = set(row.witnesses) - vendored - insensitive.get(row.key, frozenset())
-        if row.key in supplemental or not real or not real <= residual:
+        if not real or not real <= residual:
+            continue
+        residual_count += 1
+        if row.key in supplemental:
             continue
         if len(real) != 1:
             raise ValueError(
                 f"{row.key}: multiple residual witnesses need attribution; re-measure with `{attribution.REMEASURE}`"
             )
         cells.append(attribution.require(root, row.key, next(iter(real)), records).cell())
+    text = text.replace(
+        "Two rows\nrest on those two alone, both on `webflow-v2`.",
+        f"**{residual_count}** golden rows rest only on residual golden witnesses.",
+        1,
+    )
+    text = summary(
+        text,
+        r"\*\*\d+\*\* golden rows rest only on residual golden witnesses",
+        f"**{residual_count}** golden rows rest only on residual golden witnesses",
+        "Golden rows resting only on residual goldens",
+    )
     text = table(text, "#### Golden rows resting only on residual goldens", cells)
     unreached = Counter(
         spec.split("::", 1)[0] for _rank, row in population for spec, hit, _total in row.sites if not hit
@@ -159,7 +186,7 @@ def render(
     return "".join(lines)
 
 
-def rewrite(root: Path, reach: ReachReader, handwritten: HandwrittenReader) -> None:
+def generated(root: Path, reach: ReachReader, handwritten: HandwrittenReader) -> str:
     census = port_pins.census(root)
     registrations = census.golden_registrations(root / census.GOLDEN_REGISTRY)
     insensitive, errors = handwritten.output_insensitive_declarers(root)
@@ -167,17 +194,40 @@ def rewrite(root: Path, reach: ReachReader, handwritten: HandwrittenReader) -> N
     if errors or more:
         raise ValueError("; ".join(errors + more))
     path = root / INDEX
-    path.write_text(
-        render(
-            root,
-            path.read_text(encoding="utf-8"),
-            reach.read_ledger(root / SURFACE / "golden-reach.tsv"),
-            set(reach.golden_rows(root / SURFACE)),
-            {name for name, registration in registrations.items() if registration.unmatched},
-            {path.parent.name for path in (root / "tests/fixtures").glob("*/openapi.*")},
-            insensitive,
-            {item.key for item in supplements},
-        ),
-        encoding="utf-8",
-        newline="\n",
+    return render(
+        root,
+        path.read_text(encoding="utf-8"),
+        reach.read_ledger(root / SURFACE / "golden-reach.tsv"),
+        set(reach.golden_rows(root / SURFACE)),
+        {name for name, registration in registrations.items() if registration.unmatched},
+        {path.parent.name for path in (root / "tests/fixtures").glob("*/openapi.*")},
+        insensitive,
+        {item.key for item in supplements},
     )
+
+
+def stale_sections(root: Path, reach: ReachReader, handwritten: HandwrittenReader) -> list[str]:
+    before = (root / INDEX).read_text(encoding="utf-8")
+    after = generated(root, reach, handwritten)
+    stale = []
+
+    def section(text: str, heading: str) -> str:
+        return text.partition("#### " + heading)[2].split("\n#### ", 1)[0]
+
+    for heading in (
+        "The reach ranking",
+        "Rows resting on one document",
+        "Golden rows with no golden-only witness",
+        "Golden rows resting only on residual goldens",
+    ):
+        if section(before, heading) != section(after, heading):
+            stale.append(heading)
+    if re.findall(r"^\| `src/[^`]+\.rs` \|.*$", before, re.MULTILINE) != re.findall(
+        r"^\| `src/[^`]+\.rs` \|.*$", after, re.MULTILINE
+    ):
+        stale.append("Blind-spot rows' unreached-arm counts")
+    return stale
+
+
+def rewrite(root: Path, reach: ReachReader, handwritten: HandwrittenReader) -> None:
+    (root / INDEX).write_text(generated(root, reach, handwritten), encoding="utf-8", newline="\n")

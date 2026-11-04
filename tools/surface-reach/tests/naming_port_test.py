@@ -43,9 +43,13 @@ fn main() {
 """,
         encoding="utf-8",
     )
-    binary = tmp_path / "naming"
+    binary = tmp_path / ("naming.exe" if sys.platform == "win32" else "naming")
     built = subprocess.run(
-        ["rustc", "--edition=2024", str(driver), "-o", str(binary)], capture_output=True, text=True, timeout=120
+        ["rustc", "--edition=2024", str(driver), "-o", str(binary)],
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=120,
     )
     assert built.returncode == 0, built.stderr
     # Real naming inputs, arithmetic boundaries, symbol mappings, UUIDs and the
@@ -53,6 +57,7 @@ fn main() {
     values = sorted(
         {
             "",
+            '""',
             "list",
             "set",
             "class",
@@ -94,6 +99,7 @@ fn main() {
         input="".join(f"{name}\t{value}\n" for name, value in cases),
         capture_output=True,
         text=True,
+        encoding="utf-8",
         timeout=120,
     )
     assert run.returncode == 0, run.stderr
@@ -101,18 +107,19 @@ fn main() {
     assert len(answers) == len(cases)
     for (name, value), answer in zip(cases, answers, strict=True):
         expected = bytes.fromhex(answer).decode("utf-8")
-        if name == "deburred":
-            trace: set[str] = set()
-            port.enum_identifier(value, trace)
-            actual = str("deburred" in trace).lower()
-        elif name == "is_uuid":
-            actual = str("schema.enum:uuid-member" in port.enum_member_predicates({"enum": [value]})).lower()
-        elif name == "collapse_digit_boundaries":
-            actual = port._collapse_enum_digit_boundaries(value)
-        else:
-            actual = getattr(port, name)(value)
-        if name == "split_words":
-            actual = "\t".join(actual)
-        elif name == "is_reserved_method":
-            actual = str(actual).lower()
+        match name:
+            case "deburred":
+                trace: set[str] = set()
+                port.enum_identifier(value, trace)
+                actual = str("deburred" in trace).lower()
+            case "is_uuid":
+                actual = str("schema.enum:uuid-member" in port.enum_member_predicates({"enum": [value]})).lower()
+            case "collapse_digit_boundaries":
+                actual = port._collapse_enum_digit_boundaries(value)
+            case "split_words":
+                actual = "\t".join(port.split_words(value))
+            case "is_reserved_method":
+                actual = str(port.is_reserved_method(value)).lower()
+            case _:
+                actual = getattr(port, name)(value)
         assert actual == expected, (name, value, actual, expected)

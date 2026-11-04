@@ -21,7 +21,7 @@ def stage(root: Path) -> None:
 
 
 def command(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(args, cwd=root, capture_output=True, text=True, timeout=120)
+    return subprocess.run(args, cwd=root, capture_output=True, text=True, encoding="utf-8", timeout=120)
 
 
 def test_tokens_ignore_rustfmt_reflow_whitespace_and_comments(tmp_path: Path) -> None:

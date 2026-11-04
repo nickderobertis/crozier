@@ -45,7 +45,15 @@
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/llmlint.yml",
-        "pythonTooling"
+        "pythonTooling",
+        "generator",
+        "{workspaceRoot}/build.rs",
+        "{workspaceRoot}/ruff.toml",
+        "{workspaceRoot}/.ruff.toml",
+        "{workspaceRoot}/crozier.yml",
+        "{workspaceRoot}/crozier.yaml",
+        "{workspaceRoot}/.crozier.yml",
+        "{workspaceRoot}/.crozier.yaml"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/surface-census/test-census"

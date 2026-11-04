@@ -14,6 +14,7 @@ import port_pins
 RECORD = Path("docs/openapi-surface/residual-attribution.json")
 VERSION = 1
 REMEASURE = "just residual-attribution"
+CONFIG_NAMES = ("crozier.yml", "crozier.yaml", ".crozier.yml", ".crozier.yaml")
 
 
 FeatureKey: TypeAlias = str
@@ -47,7 +48,7 @@ class Attribution:
 
 def content_digest(root: Path, paths: list[Path]) -> str:
     digest = hashlib.sha256()
-    for path in sorted(paths):
+    for path in sorted(paths, key=lambda path: path.relative_to(root).as_posix()):
         for value in (path.relative_to(root).as_posix().encode(), path.read_bytes()):
             digest.update(len(value).to_bytes(8, "big"))
             digest.update(value)
@@ -70,7 +71,16 @@ def fingerprints(root: Path, fixture: FixtureName) -> Fingerprints:
             "Cargo.lock",
             "rust-toolchain.toml",
             ".ruff-version",
+            ".cargo/config.toml",
+            "build.rs",
+            "pyproject.toml",
+            "ruff.toml",
+            ".ruff.toml",
+            *CONFIG_NAMES,
             "tools/surface-census/residual-attribution.py",
+            "tools/surface-census/openapi-surface-census.py",
+            "tools/surface-census/residual_attribution_record.py",
+            "tools/surface-census/port_pins.py",
         )
         if (root / path).is_file()
     ]
@@ -92,7 +102,13 @@ def read(root: Path) -> dict[str, Attribution]:
         payload = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         raise ValueError(f"{RECORD}: cannot read attribution ({error}); re-measure with `{REMEASURE}`") from error
-    if not isinstance(payload, dict) or payload.get("version") != VERSION or not isinstance(payload.get("rows"), list):
+    if (
+        not isinstance(payload, dict)
+        or set(payload) != {"version", "rows"}
+        or type(payload.get("version")) is not int
+        or payload.get("version") != VERSION
+        or not isinstance(payload.get("rows"), list)
+    ):
         raise ValueError(f"{RECORD}: unsupported record; re-measure with `{REMEASURE}`")
     rows: dict[str, Attribution] = {}
     for raw in payload["rows"]:
