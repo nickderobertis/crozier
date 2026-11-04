@@ -352,10 +352,105 @@ def combination_headline_failures(root: Path) -> list[str]:
     return [] if text == expected else ["combination headline differs from the complete region category counts"]
 
 
+AUTHORED_TIER_HEADER = ("schema_version", "case", "tier", "keys", "source", "sha256", "search")
+
+
+def authored_tier_counts(root: Path) -> Counter[str] | None:
+    """Count decided authored scenarios from their versioned source inventory."""
+    path = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+    if not path.exists():
+        return None
+    with path.open(encoding="utf-8", newline="") as stream:
+        records = csv.DictReader(stream, delimiter="\t")
+        if tuple(records.fieldnames or ()) != AUTHORED_TIER_HEADER:
+            raise ValueError(f"{path}: expected the version-1 authored tier columns")
+        counts: Counter[str] = Counter()
+        seen = set()
+        for row in records:
+            name = row["case"]
+            if row["schema_version"] != "1" or row["tier"] not in ("handwritten", "open") or name in seen:
+                raise ValueError(f"{path}: invalid version, tier or duplicate case {name}")
+            relative = Path(row["source"])
+            if relative.is_absolute() or ".." in relative.parts:
+                raise ValueError(f"{path}: {name} source must stay inside the repository")
+            source = root / relative
+            if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != row["sha256"]:
+                raise ValueError(f"{path}: {name} source is missing or its SHA-256 drifted")
+            if not row["keys"] or not row["search"]:
+                raise ValueError(f"{path}: {name} needs its census keys and search record")
+            seen.add(name)
+            counts[row["tier"]] += 1
+        return counts
+
+
+def restate_authored_tiers(root: Path, text: str) -> str:
+    counts = authored_tier_counts(root)
+    if counts is None:
+        return text
+    statement = (
+        f"- **Authored-probe evidence tiers ({counts.total()} decided, 0 undecided):** "
+        f"{counts['handwritten']} naming cases now have hand-written covers; "
+        f"{counts['open']} combination cases remain explicitly **open and unproven** under "
+        "`exhausted-combination-fallback`. The [versioned matrix](openapi-surface/authored-probes/evidence-tiers.tsv) "
+        "names each case, its source hash, census keys and decided tier. The "
+        "[bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts) "
+        "lists the missing populations and every unscreened candidate. Restoring those populations "
+        "and completing the exact-trigger and certified screens would finish the open searches."
+    )
+    return re.sub(
+        r"- \*\*Authored-probe (?:gaps|evidence tiers).*?(?=\n\nWhere crozier)", statement, text, count=1, flags=re.S
+    )
+
+
+def restate_open_combinations(root: Path, text: str) -> str:
+    """Name authored open combinations without changing another row's reason."""
+    matrix = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+    if not matrix.exists():
+        return text
+    with matrix.open(encoding="utf-8", newline="") as stream:
+        owned = {
+            key
+            for row in csv.DictReader(stream, delimiter="\t")
+            if row["tier"] == "open"
+            for key in row["keys"].split(";")
+        }
+    heading = "#### Unproven combinations, named"
+    before, separator, tail = text.partition(heading)
+    if not separator:
+        raise ValueError("missing unproven combination section")
+    section, next_heading, after = tail.partition("\n#### ")
+    header = "| key | region | why it is unproven |\n|---|---|---|\n"
+    prefix, table, remainder = section.partition(header)
+    if not table:
+        raise ValueError("missing unproven combination table")
+    existing = {}
+    for line in remainder.splitlines():
+        cells = line.split("|")
+        if len(cells) == 5:
+            existing[cells[1].strip(" `")] = cells[3].strip()
+    named = []
+    decided = decided_keys(root)
+    parser = reader()
+    for region in parser.region_files(root / "docs/openapi-surface-coverage.md"):
+        for cells in parser.region_rows((root / "docs/openapi-surface" / region).read_text(encoding="utf-8")):
+            key = cells[0].strip("`")
+            if not key.startswith("combo-") or cells[3].strip("`") != "gap" or key in decided:
+                continue
+            if key in owned:
+                reason = "`search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv)"
+            else:
+                reason = existing.get(key, "`not searched`")
+            named.append((key, Path(region).stem, reason))
+    rendered = "".join(f"| `{key}` | `{region}` | {reason} |\n" for key, region, reason in sorted(named))
+    return before + separator + prefix + header + rendered + "\n" + next_heading + after
+
+
 def restate(root: Path) -> str:
     """Derive tables from category rows and the committed blind-spot measurement."""
     index = root / "docs/openapi-surface-coverage.md"
-    text = restate_combinations(root, index.read_text(encoding="utf-8"))
+    text = restate_open_combinations(
+        root, restate_authored_tiers(root, restate_combinations(root, index.read_text(encoding="utf-8")))
+    )
     acquired, registered, golden_sources = source_counts(root)
     text = substitute(
         text,
@@ -418,6 +513,28 @@ def restate(root: Path) -> str:
         text, r"^\| \*\*total\*\* \|[^\n]+$", "| **total** | " + " | ".join(f"**{n}**" for n in totals) + " |"
     )
     total, golden, limitations, handwritten, gap, fixture, probe, unreachable = totals
+    verdicts = Counter(
+        match.group(1)
+        for entry in entries.values()
+        if entry.category == "handwritten" and (match := re.search(r"search: ([a-z-]+)", entry.evidence))
+    )
+    text = substitute(
+        text,
+        r"Of the `handwritten` rows,\s+\d+ have a search record",
+        f"Of the `handwritten` rows,\n  {verdicts['exhausted']} have a search record",
+    )
+    text = substitute(
+        text, r"\d+ read `search-incomplete`\.", f"{verdicts['search-incomplete']} read `search-incomplete`."
+    )
+    text = substitute(text, r"The \d+ rows carry \d+ distinct", f"The {total} rows carry {total} distinct")
+    text = substitute(
+        text,
+        r"(What the census still cannot enumerate\.\*\* The )\d+ features",
+        f"What the census still cannot enumerate.** The {total} features",
+    )
+    text = substitute(
+        text, r"bring it to \*\*\d+\*\*, the\s+walk's count above", f"bring it to **{total}**, the\nwalk's count above"
+    )
     # A `gap` row the shared table decides at `-` leaves the unproven and
     # committed-proof counts for its own; its region tallies keep the category.
     settled = {key for key, entry in entries.items() if entry.category == "gap" and key in decided}
@@ -629,6 +746,17 @@ def restate(root: Path) -> str:
     real = golden - len(residual) - no_witness - len(supplemental)
     proof = limitations + unreachable_open
     unproven = fixture + len(residual) + no_witness
+    text = substitute(
+        text,
+        r"- \*\*Features no proof covers \(\d+\):\*\*.*?(?=\n- \*\*Output of a proven row)",
+        f"- **Features no proof covers ({unproven}):** the unproven `FIXTURE` gaps and residual-only "
+        "`golden` rows named in [Unproven features, named](#unproven-features-named).",
+    )
+    text = substitute(
+        text,
+        r"Features and arms resting on hand-written fixtures only \(\d+ features,",
+        f"Features and arms resting on hand-written fixtures only ({weak} features,",
+    )
     text = substitute(
         text,
         r"The walk enumerates \d+ features\. By category,.*?`gap`\.",
@@ -999,6 +1127,29 @@ def document_snapshot(root: Path, payload: object) -> dict[Path, str]:
             text = text.replace("is the result of the **2026-10-08** walk", "is the result of the native census walk")
             text = text.replace("re-transcribed whole from that", "generated whole from that")
         outputs[path] = text
+    # Newly inventoried authored scenarios use the same native census snapshot;
+    # no declaration count is inferred from an authored measurement tree.
+    for path in sorted((root / "docs/openapi-surface").glob("*.md")):
+        text = outputs.get(path, path.read_text(encoding="utf-8"))
+        lines = text.splitlines(keepends=True)
+        changed = False
+        for index, line in enumerate(lines):
+            cells = line.replace("\\|", "\x00").split("|")
+            if len(cells) != 10 or cells[4].strip() != "gap" or "witness-search-ledger-remainders/" not in cells[5]:
+                continue
+            selector = re.search(r"census `([^`]+)`", cells[5])
+            if selector is None:
+                raise ValueError(f"{path}: authored gap has no census selector")
+            counts = measured.get(selector.group(1), {})
+            cells[5] = re.sub(
+                r"(census `[^`]+`)(?:: \d+ declarations across \d+ registered golden sources)?",
+                rf"\1: {sum(counts.values())} declarations across {len(counts)} registered golden sources",
+                cells[5],
+            )
+            lines[index] = "|".join(cells).replace("\x00", "\\|")
+            changed = True
+        if changed:
+            outputs[path] = "".join(lines)
     return outputs
 
 

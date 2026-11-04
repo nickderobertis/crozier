@@ -1053,6 +1053,45 @@ def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None
         return False
 
 
+def counted_combination_search(root: Path, key: str, reason: str) -> bool:
+    """The amended open-combination tier keeps the counted bounded-search bar.
+
+    Zero candidates is allowed only with a named, unavailable input population;
+    a missing census, a drifted count or an unnamed candidate never qualifies.
+    This helper is separate from the shared combination classification rules.
+    """
+    if bounded_incomplete_search(root, key, reason):
+        return True
+    match = re.fullmatch(
+        r"`search incomplete` — \[bounded search\]\(([^)#]+)(?:#[^)]*)?\); "
+        r"outstanding candidates: \[named census\]\(([^)]+)\)",
+        reason,
+    )
+    if not match:
+        return False
+    paths = [pathlib.PurePosixPath(value) for value in match.groups()]
+    if any(path.is_absolute() or ".." in path.parts or pathlib.PureWindowsPath(path).drive for path in paths):
+        return False
+    record, census_path = [root / "docs" / path for path in paths]
+    if record.name != "README.md" or census_path != record.with_name("census.tsv"):
+        return False
+    try:
+        text = record.read_text(encoding="utf-8")
+        if not re.search(rf"^\| `{re.escape(key)}` \| `search-incomplete` \| 0 \|", text, re.M):
+            return False
+        section = text.partition("\n## Missing populations\n")[2].partition("\n## ")[0]
+        missing = re.findall(rf"^\| `{re.escape(key)}` \| ([^|]+) \| ([^|]+) \|$", section, re.M)
+        if not any(population.strip() and "not retained" in why.lower() for population, why in missing):
+            return False
+        with census_path.open(encoding="utf-8", newline="") as stream:
+            rows = csv.DictReader(stream, delimiter="\t")
+            if not {"key", "source", "document"}.issubset(rows.fieldnames or ()):
+                return False
+            return not any(row.get("key") == key for row in rows)
+    except (OSError, UnicodeError, csv.Error, ValueError):
+        return False
+
+
 def witness_blocked(root: Path, key: str, reason: str) -> bool:
     """Admit a searched combination whose admissible witnesses unrelated residuals block.
 
@@ -1616,6 +1655,7 @@ def finished_state_failures(root: Path) -> list[str]:
             named_combinations[key].why.startswith(NOT_SEARCHED)
             or user_ruling(named_combinations[key].why)
             or witness_blocked(root, key, named_combinations[key].why)
+            or counted_combination_search(root, key, named_combinations[key].why)
         ):
             failures.append(unadmitted_combination_reason(key))
     for key in sorted(set(named_combinations) - set(gap_combinations)):
@@ -3481,6 +3521,8 @@ class GrammarContractTests(unittest.TestCase):
     # node-local unless it is here.
     DOCUMENT_COMPARING_PREDICATES = frozenset(
         {
+            "schema.$ref:unresolved-nested-local",
+            "schema.$ref:defs-member",
             "schema.x-fern-type-name:component",
             "schema.$ref:properties-copy",
             "schema.oneOf:properties-copy-type-variant",
@@ -10287,9 +10329,8 @@ class RankedBacklogTests(unittest.TestCase):
         }
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
         handwritten = sum(1 for _region, cells in self.entries.values() if cells[3].strip("`") == "handwritten")
-        probes = sorted(
-            path.name for path in (self.REGIONS / "authored-probes").iterdir() if (path / "openapi.yml").is_file()
-        )
+        tier_counts = load_script("tools/surface-census/restate-coverage.py").authored_tier_counts(REPO)
+        assert tier_counts is not None
         remaining = " ".join(
             self.section("**Every remaining unproven scenario, named.**", "Where crozier deliberately differs").split()
         )
@@ -10298,7 +10339,7 @@ class RankedBacklogTests(unittest.TestCase):
             r"\*\*Output of a proven row that lands in an `unmatched` file \((\d+)\):\*\*(.*?)"
             r"\*\*Arms no proof covers \((\d+)\):\*\*.*?"
             r"\*\*Features and arms resting on hand-written fixtures only \((\d+) features, (\d+) arms\):\*\*.*?"
-            r"\*\*Authored-probe gaps \((\d+)\):\*\*(.*)",
+            r"\*\*Authored-probe evidence tiers \((\d+) decided, 0 undecided\):\*\*(.*)",
             remaining,
         )
         self.assertIsNotNone(stated, "the list of every remaining unproven scenario no longer states its counts")
@@ -10310,7 +10351,7 @@ class RankedBacklogTests(unittest.TestCase):
                 len(set(named_gap_arms(REPO)) & unreached),
                 handwritten + len(supplemental),
                 len(covered),
-                len(probes),
+                tier_counts.total(),
             ],
             [int(stated.group(index)) for index in (1, 2, 4, 5, 6, 7)],
             "a count of the remaining-scenario list is not its ledger's",
@@ -10318,10 +10359,9 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(
             split_rows, sorted(key for key in split_rows if f"`{key}`" in stated.group(3)), "a split row is unnamed"
         )
-        self.assertEqual(
-            probes,
-            sorted(set(re.findall(r"\(openapi-surface/authored-probes/([^/)]+)/\)", stated.group(8)))),
-            "the authored-probe list does not link exactly the committed probes",
+        self.assertIn("openapi-surface/authored-probes/evidence-tiers.tsv", stated.group(8))
+        self.assertIn(
+            f"{tier_counts['open']} combination cases remain explicitly **open and unproven**", stated.group(8)
         )
 
     @names_the_repin(REPIN_THEN_RESTATE)
@@ -22693,7 +22733,12 @@ class WithdrawnWitnessSelectorTests(unittest.TestCase):
             source.replace("in: query", "in: header"),
         )
         with tempfile.TemporaryDirectory() as directory:
-            for text, expected in ((source, 1), *((control, 0) for control in controls)):
+            for text, expected in (
+                (source, 1),
+                (source.replace("2018-01-01 10:00:00", "2018-01-01"), 1),
+                (source.replace("2018-01-01 10:00:00", "2018-01-01T10:00"), 1),
+                *((control, 0) for control in controls),
+            ):
                 path = Path(directory) / "openapi.yml"
                 path.write_text(text, encoding="utf-8")
                 counts = census.census_document(census.load_document(path))
@@ -22702,7 +22747,7 @@ class WithdrawnWitnessSelectorTests(unittest.TestCase):
 
 class ModelApiPropertySelectorTests(unittest.TestCase):
     def test_construct_property_and_adjacent_name(self) -> None:
-        source = (REPO / "docs/openapi-surface/authored-probes/376-354-model-property-construct/openapi.yml").read_text(
+        source = (REPO / "docs/openapi-surface/handwritten/376-354-model-property-construct/openapi.yml").read_text(
             encoding="utf-8"
         )
         with tempfile.TemporaryDirectory() as directory:
@@ -22715,7 +22760,7 @@ class ModelApiPropertySelectorTests(unittest.TestCase):
 
 class ComponentTypeNameSelectorTests(unittest.TestCase):
     def test_component_override_and_property_control(self) -> None:
-        for path in sorted((REPO / "docs/openapi-surface/authored-probes").glob("376-350-*/openapi.yml")):
+        for path in sorted((REPO / "docs/openapi-surface/handwritten").glob("376-350-*/openapi.yml")):
             with self.subTest(case=path.parent.name):
                 doc = census.load_document(path)
                 self.assertGreater(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
@@ -22731,3 +22776,114 @@ class ComponentTypeNameSelectorTests(unittest.TestCase):
             },
         }
         self.assertEqual(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
+
+
+class AuthoredPointerAndTagSelectorTests(unittest.TestCase):
+    def test_missing_pointer_and_resolved_neighbor(self) -> None:
+        source = (REPO / "docs/openapi-surface/authored-probes/358-absent-property/openapi.yml").read_text(
+            encoding="utf-8"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in (
+                (source, 1),
+                (source.replace("/properties/absent", "/properties/label"), 0),
+                (source.replace("/properties/absent", "/properties"), 1),
+            ):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                self.assertEqual(
+                    census.census_document(census.load_document(path)).get("schema.$ref:unresolved-nested-local", 0),
+                    expected,
+                )
+
+    def test_defs_pointer_and_tag_only_operation(self) -> None:
+        source = REPO / "docs/openapi-surface/authored-probes"
+        cases = (
+            ("356-defs-property", "schema.$ref:defs-member", "/$defs/", "/properties/"),
+            ("376-357-tag-only-operation-id", "operation.operationId:tag-only", "Search_", "Search_find"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for name, selector, old, new in cases:
+                text = (source / name / "openapi.yml").read_text(encoding="utf-8")
+                for body, expected in ((text, 1), (text.replace(old, new), 0)):
+                    path = Path(directory) / "openapi.yml"
+                    path.write_text(body, encoding="utf-8")
+                    with self.subTest(case=name, expected=expected):
+                        self.assertEqual(census.census_document(census.load_document(path)).get(selector, 0), expected)
+
+
+class AuthoredEvidenceTierTests(unittest.TestCase):
+    def test_every_authored_case_has_a_decided_counted_tier(self) -> None:
+        matrix = REPO / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+        with matrix.open(encoding="utf-8", newline="") as stream:
+            entries = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual(len(entries), 31)
+        self.assertEqual(Counter(row["tier"] for row in entries), {"open": 25, "handwritten": 6})
+        seen = set()
+        selected = {item.key: item.selector for item in census.COMBINATIONS}
+        selected |= {
+            "schema-type-name-component": "schema.x-fern-type-name:component",
+            "model-property-construct": "schema.properties:construct-name",
+        }
+        for row in entries:
+            with self.subTest(case=row["case"]):
+                self.assertEqual(row["schema_version"], "1")
+                self.assertNotIn(row["case"], seen)
+                seen.add(row["case"])
+                path = REPO / row["source"]
+                self.assertEqual(path.parent.name, row["case"])
+                self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), row["sha256"])
+                counts = census.census_document(census.load_document(path))
+                for key in row["keys"].split(";"):
+                    self.assertGreater(counts.get(selected[key], 0), 0, key)
+                self.assertIn(row["tier"], ("open", "handwritten"))
+                self.assertIn("/handwritten/" if row["tier"] == "handwritten" else "/authored-probes/", row["source"])
+        remaining = {path.parent.name for path in (matrix.parent).glob("*/openapi.yml")}
+        self.assertEqual(remaining, {row["case"] for row in entries if row["tier"] == "open"})
+
+    def test_tier_inventory_rejects_source_drift_and_recovers(self) -> None:
+        restate = load_script("tools/surface-census/restate-coverage.py")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+            target.parent.mkdir(parents=True)
+            source = root / "source.yml"
+            source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            target.write_text(
+                "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n1\tcase\topen\tcombo-case\tsource.yml\t"
+                + digest
+                + "\trecord.md#search\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(restate.authored_tier_counts(root), {"open": 1})
+            source.write_text("changed\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "SHA-256 drifted"):
+                restate.authored_tier_counts(root)
+            source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            self.assertEqual(restate.authored_tier_counts(root), {"open": 1})
+
+
+class CountedOpenCombinationTests(unittest.TestCase):
+    def test_zero_requires_the_census_and_named_missing_population(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = root / "docs/openapi-surface/search/README.md"
+            record.parent.mkdir(parents=True)
+            census_path = record.with_name("census.tsv")
+            reason = "`search incomplete` — [bounded search](openapi-surface/search/README.md#verdicts); outstanding candidates: [named census](openapi-surface/search/census.tsv)"
+            text = "## Verdicts\n\n| `combo-sample` | `search-incomplete` | 0 | no candidate |\n\n## Missing populations\n\n| `combo-sample` | archive | Inputs not retained on this host. |\n"
+            record.write_text(text, encoding="utf-8")
+            census_path.write_text("key\tsource\tdocument\n", encoding="utf-8")
+            self.assertTrue(counted_combination_search(root, "combo-sample", reason))
+            record.write_text(text.split("\n## Missing populations")[0], encoding="utf-8")
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+            record.write_text(text, encoding="utf-8")
+            census_path.unlink()
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+            census_path.write_text("key\tsource\tdocument\ncombo-sample\tregistered\tapi\n", encoding="utf-8")
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+            record.write_text(text.replace("| 0 |", "| 1 |"), encoding="utf-8")
+            self.assertTrue(counted_combination_search(root, "combo-sample", reason))
+            census_path.write_text("key\tsource\tdocument\ncombo-sample\tregistered\t\n", encoding="utf-8")
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))

@@ -48,7 +48,7 @@ The detector also covers a declared type name (`x-fern-type-name` or
 `x-crozier-type-name`) that two component schemas resolve to. Pinned Fern
 merges the two into one type. It generates the merge when the schemas are the
 same: the authored probe
-[`376-350-declared-type-name-shared`](../../openapi-surface/authored-probes/376-350-declared-type-name-shared/)
+[`376-350-declared-type-name-shared`](../../openapi-surface/handwritten/376-350-declared-type-name-shared/)
 holds Fern's tree, which crozier byte-matches. When they differ, its
 `fern check` fails on the merged type's example: both components declaring the
 name ([probe](evidence/376-350-declared-type-name-shared-differing.yml),

@@ -69,9 +69,10 @@ is a site `golden-reach-sites.tsv` declares.
 | An unquoted YAML timestamp is no example for an optional, non-temporal string query parameter, which then goes unshown | `src/emit.rs`, the query-parameter example loop's `yaml_unquoted_timestamps` arm | hand-written `ref-pointer-walk` (`listRoutes`' `since`) | `search-incomplete`. **Open gap:** no real specification is known to witness it |
 
 These are hand-written evidence, a lower level of proof than a real
-specification. They count toward no real-specification match. The fixture's
-Fern tree was regenerated with Fern CLI 5.67.1 and `fernapi/fern-python-sdk`
-5.20.0, unedited, and crozier byte-matches it (`handwritten_fixtures_match_fern_goldens`).
+specification. They count toward no real-specification match. The withdrawal measurement used Fern CLI 5.67.1 and Python SDK 5.20.0.
+The fixture now carries the certified pair and digest in its
+[`evidence.toml`](../handwritten/ref-pointer-walk/evidence.toml), and the
+`handwritten_fixtures_match_fern_goldens` gate compares its current tree.
 Its arm-level covers stand unchanged, since `just handwritten-reach` measures
 them as before.
 

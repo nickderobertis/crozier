@@ -131,7 +131,7 @@ class _Line:
 
 
 class _YamlTimestamp(str):
-    """A plain YAML timestamp, preserving spelling and quoted-string distinction."""
+    """A plain timestamp-like scalar, preserving spelling and quoted-string distinction."""
 
 
 class _YamlReader:
@@ -750,7 +750,7 @@ class _YamlReader:
             return int(text)
         if _FLOAT.match(text) or _EXP.match(text):
             return float(text)
-        if re.fullmatch(r"\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:[Zz]|[ ]?[+-]\d{2}:?\d{2})?", text):
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}.*)?", text):
             return _YamlTimestamp(text)
         return text
 
@@ -1204,6 +1204,9 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "schema.$ref:unresolved-nested-local": "one per local component-schema reference with a tail whose complete pointer does not resolve",
+    "schema.$ref:defs-member": "one per local component-schema reference through a $defs member whose complete pointer resolves",
+    "operation.operationId:tag-only": "one per operation whose identifier is its first tag followed by underscores, with no method name",
     "schema.x-fern-type-name:component": "one per component schema carrying a declared type name, including a blank override",
     "schema.properties:construct-name": "one per object schema declaring a property literally named construct, which collides with the model API",
     "schema.$ref:properties-copy": "one per schema reference containing properties whose complete local component pointer resolves",
@@ -1839,6 +1842,8 @@ PREDICATES = {
 # Predicates that read document context rather than one object-model node.
 # GrammarContractTests independently reconciles this partition and its prose.
 DOCUMENT_COMPARING_PREDICATES = (
+    "schema.$ref:unresolved-nested-local",
+    "schema.$ref:defs-member",
     "schema.x-fern-type-name:component",
     "schema.$ref:properties-copy",
     "schema.oneOf:properties-copy-type-variant",
@@ -3634,6 +3639,108 @@ COMBINATIONS += (
     ),
 )
 
+COMBINATIONS += (
+    Combination(
+        "combo-header-array-accepted-placements",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.type=array",
+        "one per declaring anchor of combo-header-array-accepted-placements",
+    ),
+    Combination(
+        "combo-header-string-default",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.default",
+        "one per declaring anchor of combo-header-string-default",
+    ),
+    Combination(
+        "combo-property-defs-pointer",
+        "schemas.md",
+        "schema.properties>schema.$ref:defs-member",
+        "one per declaring anchor of combo-property-defs-pointer",
+    ),
+    Combination(
+        "combo-property-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.properties>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-property-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-array-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.type=array&schema.items>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-array-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-map-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.type=object&schema.additionalProperties>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-map-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-allof-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.allOf>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-allof-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-request-unresolved-nested-pointer",
+        "document-paths.md",
+        "operation.requestBody>requestBody.content>mediaType.schema>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-request-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-response-unresolved-nested-pointer",
+        "bodies-media.md",
+        "response.content>mediaType.schema>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-response-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-tag-only-operation-id",
+        "document-paths.md",
+        "operation.operationId:tag-only&operation.tags",
+        "one per declaring anchor of combo-tag-only-operation-id",
+    ),
+    Combination(
+        "combo-nullable-allof-parent-own-property",
+        "schemas.md",
+        "schema.type:primary=object&schema.allOf>schema.$ref~>schema.nullable",
+        "one per declaring anchor of combo-nullable-allof-parent-own-property",
+    ),
+    Combination(
+        "combo-property-anyof-composed-sibling",
+        "schemas.md",
+        "schema.properties>schema.anyOf:several-non-null-members&schema.anyOf>schema.oneOf",
+        "one per declaring anchor of combo-property-anyof-composed-sibling",
+    ),
+    Combination(
+        "combo-required-query-array-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued",
+        "one per declaring anchor of combo-required-query-array-enum-items",
+    ),
+    Combination(
+        "combo-unrequired-tag-oneof-reference",
+        "schemas.md",
+        "schema.oneOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued",
+        "one per declaring anchor of combo-unrequired-tag-oneof-reference",
+    ),
+    Combination(
+        "combo-unrequired-tag-anyof-reference",
+        "schemas.md",
+        "schema.anyOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued",
+        "one per declaring anchor of combo-unrequired-tag-anyof-reference",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-array-defs-pointer",
+        "schemas.md",
+        "schema.type:primary=array&schema.items>schema.$ref:defs-member",
+        "one per declaring anchor of combo-array-defs-pointer",
+    ),
+)
+
 CONJUNCTIONS.update({combination.selector: combination.counts for combination in COMBINATIONS})
 
 for _spelling in CONJUNCTIONS:
@@ -4976,27 +5083,45 @@ def _composition_members(value: Any) -> list[Any] | None:
     return [member for _, member in sorted(indexed, key=lambda pair: pair[0])]
 
 
-def properties_copy_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
-    """Resolve the complete local pointer copied by inline_schema_pointers."""
-    if (
-        not isinstance(reference, str)
-        or "properties" not in reference
-        or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX)
-    ):
+def local_schema_pointer_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Resolve a complete local component-schema pointer."""
+    if not isinstance(reference, str) or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
         return None
     parts = [
         part.replace("~1", "/").replace("~0", "~") for part in reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")
     ]
-    node: Any = schemas
-    for part in parts:
-        if isinstance(node, dict):
-            node = node.get(part)
-        elif isinstance(node, list) and part.isascii() and part.isdecimal():
-            index = int(part)
-            node = node[index] if index < len(node) else None
+    node: Any = schemas.get(parts[0])
+    index = 1
+    while index < len(parts) and isinstance(node, dict):
+        field = parts[index]
+        if field in ("properties", "$defs"):
+            if index + 1 >= len(parts):
+                return None
+            entries = node.get(field)
+            node = entries.get(parts[index + 1]) if isinstance(entries, dict) else None
+            index += 2
+        elif field in ("items", "additionalProperties"):
+            node = node.get(field)
+            index += 1
+        elif field in ("oneOf", "anyOf", "allOf"):
+            if index + 1 >= len(parts) or not _USIZE.fullmatch(parts[index + 1]):
+                return None
+            members = node.get(field)
+            member = int(parts[index + 1])
+            node = members[member] if isinstance(members, list) and member < len(members) else None
+            index += 2
         else:
             return None
-    return node if isinstance(node, dict) else None
+    return node if index == len(parts) and isinstance(node, dict) else None
+
+
+def properties_copy_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Only references whose spelling selects copying, rather than naming."""
+    return (
+        local_schema_pointer_target(reference, schemas)
+        if isinstance(reference, str) and "properties" in reference
+        else None
+    )
 
 
 def properties_copy_union_predicates(node: dict[Any, Any], schemas: dict[Any, Any]) -> list[str]:
@@ -6697,6 +6822,13 @@ class Census:
                 and operation_id.split(".", 1)[0].lower() == tag.lower()
             ):
                 found.append("operation.operationId:camel-case-tag-prefix")
+            if (
+                isinstance(operation_id, str)
+                and isinstance(tag, str)
+                and operation_id.endswith("_")
+                and operation_id.rstrip("_").lower() == tag.lower()
+            ):
+                found.append("operation.operationId:tag-only")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
             if (
@@ -7789,6 +7921,12 @@ class Census:
             if kind is not None:
                 found.append(f"schema.example:on-ref-to-{kind}")
         if isinstance(reference, str):
+            if reference.startswith(_COMPONENT_SCHEMAS_PREFIX) and "/" in reference[len(_COMPONENT_SCHEMAS_PREFIX) :]:
+                target = local_schema_pointer_target(reference, self.component_schemas)
+                if target is None:
+                    found.append("schema.$ref:unresolved-nested-local")
+                elif "/$defs/" in reference:
+                    found.append("schema.$ref:defs-member")
             if properties_copy_target(reference, self.component_schemas) is not None:
                 found.append("schema.$ref:properties-copy")
             found += pointer_form_predicates(reference)

@@ -1,0 +1,9 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "d82a96444819f3373bddec4037a5c363227d21279ca55b88ac29807a855cad8a"
+
+[[covers]]
+key = "model-property-construct"
+search = "docs/openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-ledger-remainders/README.md"
