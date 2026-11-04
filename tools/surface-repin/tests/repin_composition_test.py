@@ -162,6 +162,12 @@ def fixture(root: Path) -> None:
         write(root, f"tests/fixtures/{api}/openapi.yml", DOCUMENT)
         write(root, f"tests/fixtures/{api}/expected/result.txt", f"{number}\n")
     write(root, "tests/fixtures/CORPUS.md", "# No acquired sources\n")
+    write(root, "tests/fixtures/corpus-aliases.tsv", "# aliases\nlegacy-alpha\talpha\n")
+    write(
+        root,
+        "tests/fixtures/corpus-remote-ref-pins.tsv",
+        "# immutable substitutions\nalpha\thttps://example.test/ref\thttps://example.test/pin-1\t" + "0" * 64 + "\n",
+    )
     write(root, "tests/fixtures/compared-goldens.json", '{"goldens": {}}\n')
     write(root, "assets/departures.yml", "[]\n")
     for name in (
@@ -213,7 +219,7 @@ def fixture(root: Path) -> None:
     write(
         root,
         "docs/openapi-surface/golden-reach-sites.tsv",
-        "key\tselectors\tsites\tnote\ntype\tschema.type\tsrc/lib.rs::alpha,src/lib.rs::beta\t\n",
+        "key\tselectors\tsites\tnote\ntype\tschema.type\tsrc/lib.rs::alpha,src/lib.rs::beta[=^pub fn beta]\t\n",
     )
     write(
         root,
@@ -333,23 +339,33 @@ def exercise(root: Path, tmp_path: Path) -> None:
         root,
         "src/lib.rs",
         LIBRARY.replace("    1\n", "    std::hint::black_box(());\n    1\n").replace(
-            "pub fn beta()", "// moved beta\npub fn beta()"
+            "pub fn beta()", "// moved beta\npub  fn beta()"
         ),
     )
     refused = run("just", "census-repin", "--jobs", "1", success=False)
     assert "measured input(s) differ from HEAD" in refused.stderr
     assert store(root) == base, "a dirty-input refusal cannot overwrite the last measurement"
     c1 = commit(root, "change alpha and move beta")
-    run("just", "census-repin", "--jobs", "1")
+    verbose = run("just", "census-repin", "--jobs", "1", "--verbose")
+    assert "census-repin: base:" in verbose.stderr
+    assert "census-repin: re-anchored `src/lib.rs::beta[=^pub fn beta]`" in verbose.stderr
+    assert f"census-repin: re-ran test {ALPHA}:" in verbose.stderr
+    assert f"census-repin: re-ran test {BETA}:" not in verbose.stderr
+    assert "1 test(s) run, 1 carried" in verbose.stdout
+    assert "re-anchored `" not in verbose.stdout and "re-ran test" not in verbose.stdout
     stepped = store(root)
     assert stepped["tests"][ALPHA]["commit"] == c1
     assert stepped["tests"][BETA]["commit"] == c0, "an unchanged test must retain its execution provenance"
     assert stepped["fixtures"]["configured"]["commit"] == c1
     beta_positions = json.loads((root / f".local/golden-reach/tests/{BETA}.json").read_text(encoding="utf-8"))
+    beta_header = LIBRARY.splitlines().index("pub fn beta() -> usize {") + 1
     assert beta_positions == {
-        file: [[start + 2, col, end + 2, end_col] for start, col, end, end_col in regions]
+        file: [
+            [start + 2, col, end + 2, end_col + int(file == "src/lib.rs" and end == beta_header)]
+            for start, col, end, end_col in regions
+        ]
         for file, regions in original_beta.items()
-    }, "every carried region must move past the added statement and comment"
+    }, "carried regions follow the statement, comment and extra space in beta's header"
     commit(root, "record the first repinned tables")
     merged = measure("--tests", f"^{ALPHA}$")
     assert merged["tests"][BETA] == stepped["tests"][BETA]
@@ -375,7 +391,7 @@ def exercise(root: Path, tmp_path: Path) -> None:
     assert "0 test(s) run, 2 carried" in complete.stdout
     ledger = (root / "docs/openapi-surface/golden-reach.tsv").read_text(encoding="utf-8")
     assert f"measured at commit {c2[:12]}" in ledger.splitlines()[0]
-    assert "src/lib.rs::alpha=" in ledger and "src/lib.rs::beta=" in ledger
+    assert "src/lib.rs::alpha=" in ledger and "src/lib.rs::beta[" in ledger
     schemas = (root / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
     assert "reach: **2** of **2** handling sites reached" in schemas
     assert "[ledger](golden-reach.tsv)" in schemas
@@ -490,6 +506,39 @@ def exercise(root: Path, tmp_path: Path) -> None:
     assert repaired["steps_since_full"] == 0
     assert all(entry["commit"] == repaired["commit"] for entry in repaired["tests"].values())
     assert repaired["fixtures"]["configured"]["control"]
+
+    changes = (
+        ("tests/fixtures/corpus-aliases.tsv", "legacy-alpha", "former-alpha", True),
+        ("tests/fixtures/corpus-remote-ref-pins.tsv", "/pin-1", "/pin-2", True),
+        (
+            "docs/openapi-surface/handwritten/configured/evidence.toml",
+            'audiences = ["public"]',
+            'audiences = ["public", "also-public"]',
+            False,
+        ),
+    )
+    for path, old, new, golden_changed in changes:
+        before = store(root)
+        document = root / path
+        contents = document.read_text(encoding="utf-8")
+        assert old in contents
+        document.write_text(contents.replace(old, new), encoding="utf-8")
+        changed = commit(root, f"change existing {Path(path).name} input")
+        measured = run("just", "census-repin", "--jobs", "1", "--verbose")
+        after = store(root)
+        assert after["tests"][BETA] == before["tests"][BETA]
+        if golden_changed:
+            assert after["tests"][ALPHA]["commit"] == changed
+            assert after["fixtures"] == before["fixtures"]
+            assert "1 test(s) run, 1 carried, 0 fixture(s) run, 1 carried" in measured.stdout
+            assert f"{Path(path).name} row changed" in measured.stderr
+        else:
+            assert after["tests"] == before["tests"]
+            assert after["fixtures"]["configured"]["commit"] == changed
+            for part in ("regions", "control"):
+                assert after["fixtures"]["configured"][part] == before["fixtures"]["configured"][part]
+            assert "0 test(s) run, 2 carried, 1 fixture(s) run, 0 carried" in measured.stdout
+            assert f"its fixture changed ({path})" in measured.stderr
 
 
 def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: Path) -> None:
