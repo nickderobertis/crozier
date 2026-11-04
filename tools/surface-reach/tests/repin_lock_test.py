@@ -56,8 +56,8 @@ def small_inputs(root: Path) -> None:
     document = "openapi: 3.0.3\ninfo: {title: Lock fixture, version: '1'}\npaths: {}\n"
     (fixture / "openapi.yml").write_text(document, encoding="utf-8")
     (fixture / "evidence.toml").write_text(
-        'fern_cli_version = "0.0.0"\n'
-        'fern_python_sdk_version = "0.0.0"\n'
+        'fern_cli_version = "0.0.0"\n'  # certified-pair: stand-in; lock probe never generates an SDK
+        'fern_python_sdk_version = "0.0.0"\n'  # certified-pair: stand-in; lock probe never generates an SDK
         f'digest = "{"0" * 64}"\n'
         'audiences = ["public"]\n[[covers]]\nkey = "type"\n'
         'arm = "src/lib.rs::lock_target"\nverdict = "config-gated"\n'

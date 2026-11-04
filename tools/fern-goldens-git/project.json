@@ -86,6 +86,7 @@
         "{workspaceRoot}/tools/python-workspace/**/*",
         "{workspaceRoot}/tools/surface-census/**/*",
         "{workspaceRoot}/tools/surface-reach/**/*",
+        "{workspaceRoot}/tools/surface-repin/**/*",
         "{workspaceRoot}/tools/witness-search/**/*",
         "{workspaceRoot}/tools/witness-search-git/**/*",
         "{workspaceRoot}/scripts/**/*",
