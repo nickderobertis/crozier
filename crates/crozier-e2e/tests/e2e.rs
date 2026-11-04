@@ -8705,6 +8705,7 @@ fn handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger() 
         "handwritten-config-gates.tsv",
         "names no live arm-level cover of a fixture declaring that setting",
     );
+    fixture.assert_refused("handwritten-config-gates.tsv", "run `just census-repin`");
     fixture.write_gates(&format!("{row}{row}"));
     fixture.assert_refused("handwritten-config-gates.tsv", "rows are not sorted");
     fixture.write_gates("sample-fixture\tsample-golden\n");

@@ -46,6 +46,9 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NamedTuple, NoReturn, Protocol
 
+import port_pins
+import reach_document
+
 if TYPE_CHECKING:
     from reach_store import Function, ParsedFile, Store
 
@@ -616,6 +619,10 @@ def regenerate(root: Path, store: Store, out: Path, scoped: bool = False, python
         _run(root, [*common, "arms"], "the arm sections")
     restate = [python, str(tools / "restate-coverage.py"), "--repo-root", str(root)]
     _run(root, [*restate, "--snapshot-json", str(census), "--write"], "the census tallies")
+    try:
+        reach_document.rewrite(root, REACH, handwritten)
+    except (ValueError, OSError) as error:
+        refuse(str(error))
     if not scoped:
         _run(root, [*restate, "--write"], "the coverage headline")
     _run(
@@ -668,9 +675,25 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
         choice = BASES.find(root)
         print(f"census-repin: base {choice.commit or 'none'} ({choice.source}): {choice.reason}")
         return 0
-    merged = resolve_merge(root)
+    merged = 0 if args.confirm_port else resolve_merge(root)
     if merged:
         say(f"census-repin: resolved {merged} derived conflict hunk(s) and committed the merge")
+    try:
+        drift = port_pins.check_and_confirm(root, args.confirm_port)
+    except (ValueError, OSError) as error:
+        refuse(str(error))
+    for report in drift:
+        print(f"census-repin: {report}", file=sys.stderr)
+    if drift or args.confirm_port:
+        return int(bool(drift))
+    before = {path: (root / path).read_bytes() if (root / path).is_file() else None for path in tracked_changes(root)}
+    # Restate the committed ledger before an expensive measurement. This also
+    # refuses stale attribution before any instrumented build starts.
+    if (root / REGIONS / "golden-reach.tsv").is_file():
+        try:
+            reach_document.rewrite(root, REACH, _load("census_repin_handwritten", "handwritten-fixtures.py"))
+        except (ValueError, OSError) as error:
+            refuse(str(error))
     dirty = dirty_inputs(root)
     if dirty:
         refuse(
@@ -680,7 +703,6 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
     python = census_python(root)
     choice = BASES.find(root)
     say(f"census-repin: base: {choice.reason}")
-    before = {path: (root / path).read_bytes() if (root / path).is_file() else None for path in tracked_changes(root)}
     moves = reanchor_all(root, choice.commit)
     rewritten = {p.relative_to(root).as_posix() for p in rewrite_specs(root, moves)} if moves else set()
     for old, new in moves.items():
@@ -729,6 +751,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--verbose", action="store_true", help="also name each re-anchored site, each re-run and why, on stderr"
+    )
+    parser.add_argument(
+        "--confirm-port",
+        action="append",
+        default=[],
+        metavar="NAME",
+        help="confirm a re-read Rust port and update only its digest (repeatable; measures nothing)",
     )
     args = parser.parse_args(argv)
     for pattern in (args.tests, args.fixtures):

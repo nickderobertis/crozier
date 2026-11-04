@@ -2976,7 +2976,7 @@ unreached by any Fern-accepted document.
 | 28 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 29 | `anyof-array-variant-composed-item` | `schemas` | **1** | **18** | **1** | owned — first-pass search record below |
 | 30 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **18** | **4** | open — real-specification witness search remains open |
-| 31 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — no real witness reaches the operation-scoped map-value arm; see the named gaps |
+| 31 | `property-map-value-oneof` | `schemas` | **1** | **18** | **10** | open — real-specification witness search remains open |
 | 32 | `annotated-ref-target-anyof` | `schemas` | **1** | **17** | **1** | open — real-specification witness search remains open |
 | 33 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **14** | **5** | open — real-specification witness search remains open |
 | 34 | `anyof-allof-variant` | `schemas` | **1** | **13** | **4** | owned — first-pass search record below |
@@ -3603,6 +3603,13 @@ witnesses in corpus rows 301 (`ideaconsult-enanomapper`) and 302
 |---|---|---|
 
 #### Golden rows resting only on residual goldens
+
+`just census-repin` generates this table and the other ledger-derived reach
+sections. Its measured file attribution comes from the versioned
+[`residual-attribution.json`](openapi-surface/residual-attribution.json), pinned
+to the golden output and generator inputs. Missing or stale attribution refuses
+by key and names `just residual-attribution` to remeasure it; repin never generates
+an SDK to invent an attribution cell.
 
 Two golden tests byte-compare their golden with a measured `unmatched`
 residual: `komga` (corpus row 130, 16 files) and `webflow-v2` (row 132, 119
@@ -4465,14 +4472,18 @@ added.
 of `src/ir.rs`, and nothing used to fail when one of those functions grew a
 branch, lost one or had one edited — an enumeration whose honesty rests on nobody
 having touched the code is exactly the failure this document exists to avoid. So
-each function's body carries a digest in that same table, over the body with
-blank lines and whole-line comments dropped and each remaining line's whitespace
-collapsed, and the offline check recomputes it. **What it catches** is all three
-changes: any of them moves the body. **What it does not catch** is *which* case
-moved — the digest names the function and nothing finer — and it fires on a
-change that moves no branch at all, a renamed local or a reordered `&&` included.
-That is over-reporting rather than under-reporting, and re-deriving the function's
-rows is what clears it.
+each untested port reading has a `PORT_PINS` record naming its Python port,
+Rust function, what to confirm, and a digest of its normalized Rust tokens.
+Whitespace, rustfmt reflow and comments leave it unchanged; any token change
+requires rereading the named decision before `just census-repin --confirm-port
+<name>` updates that record alone. The flag is repeatable. Without confirmation,
+the verb reports every drifted reading and exits non-zero without rewriting a
+digest. Naming outputs and deburr/UUID predicates are compared with compiled Rust over
+the same inputs; untested branch-trace and pre-sanitization readings retain pins.
+A digest cannot identify the changed case, and a local rename or reordered `&&`
+still fires even if no branch decision changed: that is the remaining
+over-reporting limit. The six `CASES` readings keep their ordered case meaning.
+
 
 A case number carrying a letter is one arm read at the grain the selectors need.
 Two things put a letter on a row. A branch reached through `x.or(y)` is two cases
@@ -5434,20 +5445,20 @@ against each run's exports:
 
 | file | function | without | with | |
 |---|---|---:|---:|---:|
-| `src/ir.rs` | `add_named` | 16 | 1 | −15 |
-| `src/ir.rs` | `field_type_ref` | 79 | 66 | −13 |
-| `src/ir.rs` | `variant_ref` | 75 | 64 | −11 |
-| `src/ir.rs` | `build_enum` | 3 | 0 | −3 |
-| `src/ir.rs` | `fastapi_endpoint_name` | 2 | 0 | −2 |
-| `src/ir.rs` | `is_declared_empty_object`, `python`, top level | 10 | 5 | −5 |
-| `src/ir.rs` | **union** | **472** | **423** | **−49** |
-| `src/openapi.rs` | `inline_schema_pointers` | 27 | 1 | −26 |
-| `src/openapi.rs` | `normalize_security_scheme_refs` | 18 | 2 | −16 |
-| `src/openapi.rs` | `normalize_unlisted_required` | 11 | 0 | −11 |
-| `src/openapi.rs` | `schema_pointer_target`, `visit_map`, `de_required` | 12 | 7 | −5 |
-| `src/openapi.rs` | **union** | **201** | **143** | **−58** |
-| `src/emit.rs` | `named_value_inner`, `client_wrapper_file` | 14 | 10 | −4 |
-| `src/emit.rs` | **union** | **304** | **300** | **−4** |
+| `src/ir.rs` | `add_named` | 16 | 1 | −15 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `field_type_ref` | 79 | 66 | −13 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `variant_ref` | 75 | 64 | −11 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `build_enum` | 3 | 0 | −3 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `fastapi_endpoint_name` | 2 | 0 | −2 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | `is_declared_empty_object`, `python`, top level | 10 | 5 | −5 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | **union** | **472** | **423** | **−49** 89 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `inline_schema_pointers` | 27 | 1 | −26 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `normalize_security_scheme_refs` | 18 | 2 | −16 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `normalize_unlisted_required` | 11 | 0 | −11 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | `schema_pointer_target`, `visit_map`, `de_required` | 12 | 7 | −5 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | **union** | **201** | **143** | **−58** 1 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/emit.rs` | `named_value_inner`, `client_wrapper_file` | 14 | 10 | −4 7 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/emit.rs` | **union** | **304** | **300** | **−4** 7 of [the 100 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 
 **None of the six blind functions moved.** `hoist_union_variant` holds 52,
 `resolve_schema_pointer` 49, `ref_to_class` 12, `prop_type_ref` 9,

@@ -10,11 +10,11 @@
   "targets": {
     "test-census": {
       "metadata": {
-        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 219 s (measured with `just nx run surface-census:test-census --skipNxCache`). The repin suites (reach_store_test, repin_base_test, repin_merge_test, repin_messages_test) hold to the same: scratch git histories, merges and a local clone, python3, and a loopback stand-in for GitHub. A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, just, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 219 s (measured with `just nx run surface-census:test-census --skipNxCache`). The repin suites (reach_store_test, repin_base_test, repin_merge_test, repin_messages_test) hold to the same: scratch git histories, merges and a local clone, python3, and a loopback stand-in for GitHub. A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-census/tests/surface_census_test.py tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-census/tests/surface_census_test.py tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py tools/surface-census/tests/reach_document_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/surface-census/test-census/.coverage"
         }
