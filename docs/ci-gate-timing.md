@@ -4,7 +4,9 @@
 
 **The existing jobs exceed both timing lines. This baseline does not prove that all tests fit four lanes, 30 minutes per job, or an hour outside.** No workflow, suite, platform, corpus case, or enforcement threshold changes here.
 
-Inventory tree: `afe5f8c0bc88aacc4792d8fb301338c946ac6c69` (freshly fetched main). Calculation implementation: `750f1eccc`. Observation began 2026-11-04T01:35:44.674Z. The snapshot was finalized with that commit's exported calculations over the same immutable responses; this measures main CI independently of release-plz/gallery jobs, preserves every required-context attempt, and marks inconsistent job clocks unknown.
+Inventory tree: `afe5f8c0bc88aacc4792d8fb301338c946ac6c69` (main at observation). Calculation implementation: `750f1eccc`. Observation began 2026-11-04T01:35:44.674Z. The snapshot was finalized with that commit's exported calculations over the same immutable responses; this measures main CI independently of release-plz/gallery jobs, preserves every required-context attempt, and marks inconsistent job clocks unknown.
+
+Final main refresh: `8f2b78e9344751bab709d7bff6be0c5748d88385` landed during this dispatch. Its changes add generator/parity proof and fixtures; `.github/`, project definitions, `nx.json`, `justfile`, dependency manifests and the toolchain pin are unchanged from the inventory tree. The workflow inventory and graph selection therefore remain applicable, but historical durations do not measure the added test work. Downstream must refresh costs after concurrent proof changes land; no new runtime or feasibility claim follows from this refresh.
 
 ### Reproduce and interpret
 
