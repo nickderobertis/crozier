@@ -295,6 +295,49 @@ class ReportTests(unittest.TestCase):
         text = (self.repo / "docs" / "openapi-surface" / "demo.md").read_text(encoding="utf-8")
         return {cells[0].strip("`"): cells for cells in golden_reach.region_rows(text)}
 
+    def test_report_refuses_step_provenance_from_another_measurement_and_recovers(self) -> None:
+        rs = golden_reach.RS
+        tree = rs.read_tree(self.repo)
+        commit = "a" * 40
+        functions = rs.universe_table(tree, {"src/demo.rs": UNIVERSE})
+        store = {
+            "schema": rs.SCHEMA,
+            "commit": commit,
+            "rustc": "1.96.0 abc",
+            "llvm": "22.1.2",
+            "full_at": commit,
+            "steps_since_full": 0,
+            "measured_at": rs.now_iso(),
+            "tests": {
+                path.stem: {
+                    "commit": commit,
+                    "regions": rs.entry_regions(tree, functions, json.loads(path.read_text(encoding="utf-8"))),
+                }
+                for path in (self.measurement / "tests").glob("*.json")
+            },
+            "fixtures": {},
+            "functions": functions,
+        }
+        rs.save(store, self.measurement / golden_reach.STORE_FILE)
+        good = {"commit": commit, "tests": 2, "run": 2, "carried": 0, "base": None, "full": "full"}
+        provenance = self.measurement / "provenance.json"
+        provenance.write_text(json.dumps(good), encoding="utf-8")
+        written = self.run_report("--write")
+        self.assertEqual(written.returncode, 0, written.stderr)
+        ledger = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        expected = ledger.read_bytes()
+        for fields in ({"run": 1}, {"commit": "b" * 40}, {"tests": 3}):
+            with self.subTest(fields=fields):
+                provenance.write_text(json.dumps(good | fields), encoding="utf-8")
+                refused = self.run_report("--write")
+                self.assertNotEqual(refused.returncode, 0, "stale provenance must not be published")
+                self.assertIn("just census-repin", refused.stderr)
+                self.assertEqual(ledger.read_bytes(), expected)
+        provenance.write_text(json.dumps(good), encoding="utf-8")
+        recovered = self.run_report("--write")
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual(ledger.read_bytes(), expected)
+
     def test_report_writes_the_ranked_ledger_and_every_golden_rows_reach_cell(self) -> None:
         run = self.run_report("--write")
         self.assertEqual(0, run.returncode, run.stderr)

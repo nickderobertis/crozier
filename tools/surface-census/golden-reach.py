@@ -2004,6 +2004,16 @@ def provenance_line(out: Path, commit: str, tests: int) -> str:
         or not (full is None or isinstance(full, str))
     ):
         fail(f"{out / 'provenance.json'} does not record a step's counts, base and reason; run `{REPIN}`")
+    if (
+        recorded.get("commit") != commit
+        or type(recorded.get("tests")) is not int
+        or recorded["tests"] != tests
+        or run + carried != tests
+    ):
+        fail(
+            f"{out / 'provenance.json'} does not describe the loaded measurement at {commit[:12]} "
+            f"over {tests} golden tests; run `{REPIN}`"
+        )
     origin = f"base {base[:12]}" if base and not full else "base none (full)"
     return f"{line}; {origin}: {run} run at {commit[:12]}, {carried} carried"
 
