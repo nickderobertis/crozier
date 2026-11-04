@@ -202,9 +202,62 @@ fn remeasure_group_placement_carries_synthetic_children_but_not_other_components
         .any(|(path, _)| path == "src/fern/types/depot_record_status.py"));
 }
 
+fn generate_control(
+    work: &std::path::Path,
+    label: &str,
+    document: &serde_json::Value,
+) -> std::path::PathBuf {
+    let spec = work.join(format!("{label}.json"));
+    let out = work.join(label);
+    std::fs::write(&spec, serde_json::to_string_pretty(document).unwrap()).unwrap();
+    probe_command(&spec, &out).assert().success();
+    out
+}
+
 #[test]
 fn remeasure_datetime_override_preserves_the_declared_temporal_type() {
-    let (_work, case, out) = generate("x-fern-type-extension");
+    let (work, case, out) = generate("x-fern-type-extension");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(case.join("openapi.yml")).unwrap()).unwrap();
+    for (label, canonical, temporal) in [
+        ("canonical-datetime", "datetime", true),
+        ("unsupported-canonical", "unsupported", false),
+        ("boolean-canonical", "literal<false>", false),
+    ] {
+        let mut document = original.clone();
+        for name in ["capturedAt", "queuedAt"] {
+            let field = document
+                .pointer_mut(&format!("/components/schemas/Scan/properties/{name}"))
+                .unwrap()
+                .as_object_mut()
+                .unwrap();
+            field.insert("x-crozier-type".into(), canonical.into());
+            if temporal {
+                field.insert("x-fern-type".into(), "literal<true>".into());
+            }
+        }
+        let generated = generate_control(work.path(), label, &document);
+        let model = std::fs::read_to_string(generated.join("src/fern/types/scan.py")).unwrap();
+        assert_eq!(
+            model.matches("typing.Optional[dt.datetime]").count(),
+            if temporal { 2 } else { 0 },
+            "{label}"
+        );
+        if temporal {
+            let failures = golden_tree_failures(
+                label,
+                "canonical datetime wins over the conflicting legacy value",
+                &departure_ledger()
+                    .golden(&format!("{DIR}/x-fern-type-extension/fern-expected"), &[])
+                    .unwrap(),
+                &case.join("fern-expected"),
+                &generated,
+            );
+            assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+        } else {
+            assert_eq!(model.matches("typing.Optional[str]").count(), 2, "{label}");
+        }
+    }
     let path = out.join("src/fern/types/scan.py");
     let model = std::fs::read_to_string(&path).unwrap();
     assert_eq!(model.matches("typing.Optional[dt.datetime]").count(), 2);
@@ -224,7 +277,54 @@ fn remeasure_datetime_override_preserves_the_declared_temporal_type() {
 
 #[test]
 fn remeasure_declared_enum_casing_preserves_digit_separators() {
-    let (_work, case, out) = generate("enum-member-digit-separator");
+    let (work, case, out) = generate("enum-member-digit-separator");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(case.join("openapi.yml")).unwrap()).unwrap();
+    for (label, canonical, member, visitor) in [
+        (
+            "canonical-casing",
+            serde_json::json!({
+                "grow-2-7-leaf": {"casing": {"snake": "canonical_leaf", "screamingSnake": "CANONICAL_LEAF"}}
+            }),
+            "CANONICAL_LEAF",
+            "canonical_leaf",
+        ),
+        (
+            "canonical-name-without-casing",
+            serde_json::json!({"grow-2-7-leaf": {"name": "CANONICAL_MEMBER"}}),
+            "CANONICAL_MEMBER",
+            "canonical_member",
+        ),
+        (
+            "canonical-empty-map",
+            serde_json::json!({}),
+            "GROW27LEAF",
+            "grow27leaf",
+        ),
+    ] {
+        let mut document = original.clone();
+        document
+            .pointer_mut("/components/schemas/DeliveryModel")
+            .unwrap()
+            .as_object_mut()
+            .unwrap()
+            .insert("x-crozier-enum".into(), canonical);
+        let generated = generate_control(work.path(), label, &document);
+        let model =
+            std::fs::read_to_string(generated.join("src/fern/types/delivery_model.py")).unwrap();
+        assert!(
+            model.contains(&format!("{member} = \"grow-2-7-leaf\"")),
+            "{label}: {member}"
+        );
+        assert!(
+            model.contains(&format!("{visitor}: typing.Callable")),
+            "{label}: {visitor}"
+        );
+        assert!(
+            !model.contains("GROW2_7_LEAF"),
+            "{label}: legacy casing leaked"
+        );
+    }
     let path = out.join("src/fern/types/delivery_model.py");
     let model = std::fs::read_to_string(&path).unwrap();
     assert!(model.contains("GROW2_7_LEAF = \"grow-2-7-leaf\""));

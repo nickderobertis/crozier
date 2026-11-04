@@ -1628,15 +1628,15 @@ pub struct Components {
     pub security_schemes: IndexMap<String, SecurityScheme>,
 }
 
-/// Supported Boolean literal overrides, with unknown spellings kept as overrides.
+/// Supported SDK type overrides, with unknown spellings kept as overrides.
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-#[serde(from = "String")]
+#[serde(from = "String")] // llmlint: ignore-block[names_match_behavior] Retain the frozen deserialized field and accessor type name for compatibility while the same wire field gains datetime support.
 pub(crate) enum LiteralTypeOverride {
     True,
     False,
     Datetime,
     Unsupported,
-}
+} // llmlint: ignore-end[names_match_behavior]
 
 impl From<String> for LiteralTypeOverride {
     fn from(value: String) -> Self {

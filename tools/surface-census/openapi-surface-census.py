@@ -5161,6 +5161,7 @@ SCALAR_PORT_DIGESTS = {
     ("src/ir.rs", "number_prim"): "1b2664ec7ba49051",
     ("src/ir.rs", "int_prim"): "1f5450ca73084537",
     ("src/openapi.rs", "bool_literal"): "1ddf77335cc52a3f",
+    ("src/openapi.rs", "has_datetime_type_override"): "ca7728fcb7b874c0",
     ("src/openapi.rs", "LiteralTypeOverride::from"): "3c967be70a520263",
 }
 

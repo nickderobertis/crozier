@@ -152,7 +152,7 @@ mod emission_parity;
 mod handed_off_type_declarations;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys, including their enum-mode overlays, took 0.63 s together, require no network or SDK installation, and exercise the existing real-binary boundary rather than introducing expensive setup.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These nine local generator journeys and their canonical-header controls generate small SDKs without network access or SDK installation; they exercise the existing real-binary boundary and introduce no promoted-tier setup.
 #[path = "e2e/remeasure.rs"]
 mod remeasure;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
@@ -30723,11 +30723,13 @@ const REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn remeasured_grafikart_filemanager_element_e36a74ce_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE);
     overlay_goldens::assert_literals_match(&REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 /// Complete remeasurement witness, corpus row 5051.
 const REMEASURED_ARAWA_WORKSPACE_0C8259F6: Corpus = Corpus {
     api: "remeasured-arawa-workspace-0c8259f6",
@@ -30740,11 +30742,13 @@ const REMEASURED_ARAWA_WORKSPACE_0C8259F6: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn remeasured_arawa_workspace_0c8259f6_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_ARAWA_WORKSPACE_0C8259F6);
     overlay_goldens::assert_literals_match(&REMEASURED_ARAWA_WORKSPACE_0C8259F6);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 /// Complete remeasurement witness, corpus row 5052.
 const REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38: Corpus = Corpus {
     api: "remeasured-clencyc-mozillafestivalbackend-b2264b38",
@@ -30757,11 +30761,13 @@ const REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn remeasured_clencyc_mozillafestivalbackend_b2264b38_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38);
     overlay_goldens::assert_literals_match(&REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 /// Complete remeasurement witness, corpus row 5053.
 const REMEASURED_HASHICORP_EDGECASE: Corpus = Corpus {
     api: "remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c",
@@ -30774,11 +30780,13 @@ const REMEASURED_HASHICORP_EDGECASE: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn remeasured_hashicorp_terraform_plugin_codegen_openapi_1f6aea4c_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_HASHICORP_EDGECASE);
     overlay_goldens::assert_literals_match(&REMEASURED_HASHICORP_EDGECASE);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 /// Complete remeasurement witness, corpus row 5054.
 const REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA: Corpus = Corpus {
     api: "remeasured-membrane-api-gateway-8340f5da",
@@ -30791,8 +30799,10 @@ const REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] An earlier run measured all five both-mode corpus replays at 5.4 s; they make no network or install calls. Their required registration uses the shared e2eReads edge; splitting it is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[test]
 fn remeasured_membrane_api_gateway_8340f5da_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
     overlay_goldens::assert_literals_match(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
