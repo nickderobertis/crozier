@@ -14742,9 +14742,11 @@ fn cyclonedx_transparency_exchange_matches_fern_output() {
     assert_committed_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This existing corpus journey now proves its interaction witness in both enum modes through the shared overlay engine. All corpus golden comparisons use this project's established edge (crates/crozier-e2e/AGENTS.md); splitting the whole family is outside this operation-combination proof.
 #[test]
 fn adyen_capital_matches_fern_output() {
     assert_committed_corpus_matches(&ADYEN_CAPITAL);
+    overlay_goldens::assert_literals_match(&ADYEN_CAPITAL);
 }
 
 #[test]

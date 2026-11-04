@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "key": "combo-octet-stream-body-header-param",
+  "handlers": [
+    "src/ir.rs::resolve_request_body",
+    "src/ir.rs::build_endpoint"
+  ],
+  "counts": {
+    "first": 618,
+    "second": 508,
+    "both": 658
+  },
+  "both_only": [
+    [
+      "src/ir.rs",
+      4024,
+      50,
+      4024,
+      51
+    ],
+    [
+      "src/ir.rs",
+      4025,
+      9,
+      4025,
+      52
+    ],
+    [
+      "src/ir.rs",
+      4029,
+      5,
+      4029,
+      6
+    ],
+    [
+      "src/ir.rs",
+      4780,
+      47,
+      4780,
+      56
+    ]
+  ],
+  "singles_only": [
+    [
+      "src/ir.rs",
+      4781,
+      24,
+      4781,
+      47
+    ],
+    [
+      "src/ir.rs",
+      4782,
+      24,
+      4782,
+      48
+    ],
+    [
+      "src/ir.rs",
+      4783,
+      24,
+      4783,
+      49
+    ],
+    [
+      "src/ir.rs",
+      4787,
+      8,
+      4787,
+      16
+    ],
+    [
+      "src/ir.rs",
+      4789,
+      5,
+      4789,
+      6
+    ]
+  ]
+}

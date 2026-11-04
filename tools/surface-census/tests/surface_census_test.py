@@ -813,6 +813,8 @@ NAMED_COMBINATIONS_HEADING = "#### Unproven combinations, named"
 COMBINATION_PREFIX = "combo-"
 COMBINATIONS_LIST = Path("docs") / "openapi-surface" / "combinations.md"
 COMBINATION_COLUMNS = ("key", "selector", "region", "seam", "owner", "why")
+# Owners opt in when their classified audit lands; unconverted siblings retain their previous bar.
+ENFORCED_COMBINATION_OWNERS = frozenset({"prove-operation-combinations"})
 COMBINATION_OWNERS = {
     "examples": "prove-schema-combinations",
     "models-unions-refs": "prove-schema-combinations",
@@ -1317,10 +1319,23 @@ def combination_proof_failures(
     rows = combination_rows(root)
     audit, found = cooccurrence_audit(root)
     failures += found
+    selected, found = combination_list(root)
+    failures += found
+    enforced = {row.key for row in selected if row.owner in ENFORCED_COMBINATION_OWNERS}
     for key, row in audit.items():
+        if row.proof_class is None and key in enforced:
+            failures.append(f"{key}: its audit must declare class:interaction, independent, handwritten or open")
+        if row.proof_class in {"interaction", "handwritten"} and key in table and table[key].cooccurrence:
+            failures.append(f"{key}: {row.proof_class} proof needs an exclusive interaction site, not co-occurrence")
         if row.proof_class in {"open", "handwritten"}:
             state = CombinationSearchState.OPEN if row.proof_class == "open" else CombinationSearchState.EXHAUSTED
-            failures += combination_search_failures(root, key, row.search_record, state)
+            failures += combination_search_failures(
+                root,
+                key,
+                row.search_record,
+                state,
+                require_handed_off=key in rows and rows[key].cells[3].strip("`") == "handwritten",
+            )
     independent = {key: row for key, row in audit.items() if row.proof_class == "independent"}
     if independent:
         reader = load_script("tools/surface-census/combination-independence.py")
@@ -1465,9 +1480,15 @@ def combination_proof_failures(
     return failures
 
 
+class CombinationCandidateState(StrEnum):
+    DECIDED = "decided"
+    OUTSTANDING = "outstanding"
+
+
 class CombinationSearchCandidate(NamedTuple):
     document: str
-    outcome: str
+    state: CombinationCandidateState
+    reason: str
 
 
 class CombinationSearchState(StrEnum):
@@ -1497,11 +1518,26 @@ def combination_search_candidates(
             raise ValueError(f"census.tsv line {number} has an extra or missing cell")
         if any(not row[column].strip() for column in required):
             raise ValueError(f"census.tsv line {number} has an empty key, document or outcome")
-        rows.setdefault(row["key"], []).append(CombinationSearchCandidate(row["document"], row["outcome"]))
+        raw_state, separator, reason = row["outcome"].partition(":")
+        try:
+            state = CombinationCandidateState(raw_state)
+        except ValueError as error:
+            choices = "|".join(CombinationCandidateState)
+            raise ValueError(f"census.tsv line {number} has unsupported candidate state; expected {choices}") from error
+        if not separator or not reason.strip():
+            raise ValueError(f"census.tsv line {number} candidate outcome needs a non-empty reason after its state")
+        rows.setdefault(row["key"], []).append(CombinationSearchCandidate(row["document"], state, reason.strip()))
     return {key: tuple(candidates) for key, candidates in rows.items()}
 
 
-def combination_search_failures(root: Path, key: str, record: str | None, state: CombinationSearchState) -> list[str]:
+def combination_search_failures(
+    root: Path,
+    key: str,
+    record: str | None,
+    state: CombinationSearchState,
+    *,
+    require_handed_off: bool = False,
+) -> list[str]:
     """Hold incomplete and exhausted searches to their different candidate obligations."""
     if record is None:
         return [f"{key}: a searched combination needs its bounded search record"]
@@ -1522,16 +1558,12 @@ def combination_search_failures(root: Path, key: str, record: str | None, state:
     names = [row.document for row in rows]
     if not rows or not all(names) or len(set(names)) != len(names):
         failures.append(f"{key}: its bounded search must name each candidate once")
-    outstanding = [row for row in rows if row.outcome.startswith("outstanding:")]
-    if state is CombinationSearchState.OPEN and (
-        not outstanding or any(not row.outcome.partition(":")[2].strip() for row in outstanding)
-    ):
+    outstanding = [row for row in rows if row.state is CombinationCandidateState.OUTSTANDING]
+    if state is CombinationSearchState.OPEN and not outstanding:
         failures.append(f"{key}: an open search must name outstanding candidates and why they were not screened")
-    if state is CombinationSearchState.EXHAUSTED:
-        if outstanding or any(
-            not row.outcome.startswith("decided:") or not row.outcome.partition(":")[2].strip() for row in rows
-        ):
-            failures.append(f"{key}: an exhausted search must decide every candidate and leave none outstanding")
+    if state is CombinationSearchState.EXHAUSTED and outstanding:
+        failures.append(f"{key}: an exhausted search must decide every candidate and leave none outstanding")
+    if state is CombinationSearchState.EXHAUSTED or require_handed_off:
         handed_off = Path("docs/fern-measurements/handed-off")
         authority = root if (root / handed_off / "documents.tsv").is_file() else REPO
         try:
@@ -1557,7 +1589,7 @@ def combination_search_failures(root: Path, key: str, record: str | None, state:
         missing = required - set(names)
         if missing:
             failures.append(
-                f"{key}: its exhausted search omits newly admitted or registered handed-off documents: {sorted(missing)}"
+                f"{key}: its renewed search omits newly admitted or registered handed-off documents: {sorted(missing)}"
             )
     return failures
 
@@ -12900,6 +12932,47 @@ class CombinationClassReaderTests(unittest.TestCase):
 
 
 class CombinationSearchRecordTests(unittest.TestCase):
+    def test_every_candidate_state_and_reason_is_validated_even_in_an_open_search(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = "docs/search/README.md"
+            record = root / relative
+            record.parent.mkdir(parents=True)
+            key = "combo-sample"
+            record.write_text(f"| `{key}` | `search-incomplete` | 2 |\n")
+            census = record.with_name("census.tsv")
+            prefix = f"key\tdocument\toutcome\n{key}\tfirst\toutstanding: source unavailable\n{key}\tsecond\t"
+            valid = prefix + "decided: source does not declare combination\n"
+            census.write_text(valid)
+            self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.OPEN))
+            for invalid in ("unknown: unexplained", "decided:", "outstanding:", "decided"):
+                with self.subTest(outcome=invalid):
+                    census.write_text(prefix + invalid + "\n")
+                    failures = combination_search_failures(root, key, relative, CombinationSearchState.OPEN)
+                    self.assertTrue(
+                        any(
+                            "unsupported candidate state" in failure or "non-empty reason" in failure
+                            for failure in failures
+                        )
+                    )
+            census.write_text(valid)
+            self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.OPEN))
+
+    def test_committed_operation_search_has_reproducible_compressed_bytes(self) -> None:
+        path = REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz"
+        committed = path.read_bytes()
+        reader = csv.reader(io.StringIO(gzip.decompress(committed).decode("utf-8")), delimiter="\t")
+        header, *rows = reader
+        self.assertEqual(["key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome"], header)
+        text = io.StringIO(newline="")
+        writer = csv.writer(text, delimiter="\t", lineterminator="\n")
+        writer.writerow(header)
+        writer.writerows(sorted(rows))
+        encoded = io.BytesIO()
+        with gzip.GzipFile(filename="", mode="wb", fileobj=encoded, mtime=0) as stream:
+            stream.write(text.getvalue().encode("utf-8"))
+        self.assertEqual(committed, encoded.getvalue(), "the search census must be reproducible on every host")
+
     def test_compressed_searches_preserve_open_and_exhausted_obligations(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -12931,6 +13004,23 @@ class CombinationSearchRecordTests(unittest.TestCase):
             header = "key\tdocument\toutcome\n"
             census.write_bytes(gzip.compress((header + "".join(rows)).encode(), mtime=0))
             self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.EXHAUSTED))
+            open_rows = "".join(rows).replace("decided: not-declarer", "outstanding: arm comparison unfinished", 1)
+            record.write_text(f"| `{key}` | `search-incomplete` | {len(documents)} |\n")
+            census.write_bytes(gzip.compress((header + open_rows).encode(), mtime=0))
+            self.assertEqual(
+                [],
+                combination_search_failures(root, key, relative, CombinationSearchState.OPEN, require_handed_off=True),
+            )
+            census.write_bytes(gzip.compress((header + open_rows.split("\n", 1)[1]).encode(), mtime=0))
+            self.assertTrue(
+                any(
+                    "omits newly admitted" in failure
+                    for failure in combination_search_failures(
+                        root, key, relative, CombinationSearchState.OPEN, require_handed_off=True
+                    )
+                )
+            )
+            record.write_text(f"| `{key}` | `exhausted` | {len(documents)} |\n")
             census.write_bytes(
                 gzip.compress(
                     (
@@ -13117,8 +13207,9 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [
             path.relative_to(REPO)
             for record in (REPO / surface).glob("witness-search-*/README.md")
-            if record.with_name("census.tsv").is_file()
-            for path in (record, record.with_name("census.tsv"))
+            for census in (record.with_name("census.tsv"), record.with_name("census.tsv.gz"))
+            if census.is_file()
+            for path in (record, census)
             if path.parent.name != "witness-search-unproven-features"
         ]
         copies += [
@@ -13137,6 +13228,34 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
 
+    def test_classification_is_required_only_for_an_enforced_owner(self) -> None:
+        key = "combo-query-param-ref-string-enum"
+        table = self.root / "docs/openapi-surface/golden-reach-sites.tsv"
+        lines = table.read_text().splitlines()
+        for index, line in enumerate(lines):
+            fields = line.split("\t")
+            if fields[0] == key:
+                fields[2] = "co-occurrence"
+                lines[index] = "\t".join(fields)
+        table.write_text("\n".join(lines) + "\n")
+        audit = self.root / COOCCURRENCE_AUDIT
+        original = audit.read_text(encoding="utf-8")
+        line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
+        fields = line.split("\t")
+        fields[4] = fields[4].partition("; ")[2]
+        audit.write_text(original.replace(line, "\t".join(fields), 1), encoding="utf-8")
+        failures = finished_state_failures(self.root)
+        self.assertTrue(any(key in failure and "must declare class:" in failure for failure in failures))
+        listing = self.root / COMBINATIONS_LIST
+        selected = next(line for line in listing.read_text().splitlines() if line.startswith(f"| `{key}` |"))
+        listing.write_text(
+            listing.read_text().replace(
+                selected, selected.replace("`prove-operation-combinations`", "`deferred-combination-proof`"), 1
+            )
+        )
+        failures = finished_state_failures(self.root)
+        self.assertEqual([], [failure for failure in failures if key in failure])
+
     def test_open_class_requires_a_counted_search_with_outstanding_candidate_reasons(self) -> None:
         key = "combo-query-param-ref-string-enum"
         audit = self.root / COOCCURRENCE_AUDIT
@@ -13154,8 +13273,8 @@ class FinishedStateGateTests(unittest.TestCase):
         census.write_text(f"key\tdocument\toutcome\n{key}\tadyen-capital\toutstanding: certified generation queued\n")
         self.assertEqual([], [f for f in finished_state_failures(self.root) if key in f])
         census.write_text(f"key\tdocument\toutcome\n{key}\tadyen-capital\toutstanding:\n")
-        self.assertTrue(any("why they were not screened" in f for f in finished_state_failures(self.root)))
-        census.write_text(f"key\tdocument\toutcome\n{key}\tadyen-capital\tdecided\n")
+        self.assertTrue(any("non-empty reason" in f for f in finished_state_failures(self.root)))
+        census.write_text(f"key\tdocument\toutcome\n{key}\tadyen-capital\tdecided: no declaration\n")
         self.assertTrue(any("outstanding candidates" in f for f in finished_state_failures(self.root)))
         path.write_text(path.read_text().replace("| 1 |", "| 2 |"))
         self.assertTrue(any("count every census candidate" in f for f in finished_state_failures(self.root)))
@@ -13169,6 +13288,14 @@ class FinishedStateGateTests(unittest.TestCase):
         # is independent: its real region-union and certified-tree replay remain
         # separate gates. The copied reference trees are genuine certified output.
         key = "combo-query-param-ref-string-enum"
+        site_table = self.root / "docs/openapi-surface/golden-reach-sites.tsv"
+        site_lines = site_table.read_text().splitlines()
+        for index, site_line in enumerate(site_lines):
+            fields = site_line.split("\t")
+            if fields[0] == key:
+                fields[2] = "co-occurrence"
+                site_lines[index] = "\t".join(fields)
+        site_table.write_text("\n".join(site_lines) + "\n")
         audit = self.root / COOCCURRENCE_AUDIT
         original = audit.read_text()
         line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
@@ -20784,7 +20911,7 @@ class CoverageRestatementTests(unittest.TestCase):
                     r"byte-matched .*? interaction branch, \*\*(\d+)\*\* (?:has|have) independent handling, "
                     r".*? \*\*(\d+)\*\* (?:is|are) compared .*? \*\*(\d+)\*\* rest on "
                     r".*? \(\d+ of them witness-blocked, \d+ of them co-occurrences proven on the fixture\), "
-                    r"\*\*(\d+)\*\* remains? unproven \(\d+ left "
+                    r"\*\*(\d+)\*\* remains? open \(unproven\) \(\d+ left "
                     r"unproven by the user's ruling\), and \*\*(\d+)\*\* (?:is|are) decided output-insensitive: "
                     r"[\d +]+ = (\d+)\.",
                     flat,
@@ -20937,11 +21064,16 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         original = self.index.read_text(encoding="utf-8")
         blocked, together, ruled = subtotals()
+        audit, failures = cooccurrence_audit(self.root)
+        self.assertEqual([], failures)
+        open_keys = {key for key, row in audit.items() if row.proof_class == "open"}
         handwritten = sorted(
             line.split(" | ")[0].removeprefix("| ").strip("`")
             for path in sorted(surface.glob("*.md"))
             for line in path.read_text(encoding="utf-8").splitlines()
-            if line.startswith("| combo-") and " | handwritten | " in line
+            if line.startswith("| combo-")
+            and " | handwritten | " in line
+            and line.split(" | ")[0].removeprefix("| ").strip("`") not in open_keys
         )
         self.assertTrue(handwritten, "the staged tree carries no hand-written combination row")
         sites = surface / "golden-reach-sites.tsv"
@@ -21018,6 +21150,31 @@ class CoverageRestatementTests(unittest.TestCase):
         original = self.index.read_text(encoding="utf-8")
         named = matched(re.search(r"(?m)^\| `combo-[^`]+` \| `[^`]+` \| (`[^`]+`) — ", original))
         moves(self.index, named[0], named[0].replace(named[1], "`user ruling`"), [blocked, together, ruled + 1])
+
+    def test_an_independent_proof_replaces_a_historical_fixture_proof(self) -> None:
+        # This is a tally-input variation, not an independence admission. The
+        # separate source, region-union and SDK gates still certify actual rows.
+        def stated() -> list[int]:
+            flat = " ".join(self.index.read_text(encoding="utf-8").split())
+            found = matched(re.search(r"\*\*Combinations by proof\.\*\*.*?: ([\d +]+) = (\d+)\.", flat))
+            return [int(count) for count in found[1].split(" + ")]
+
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        before = stated()
+        audit = self.root / COOCCURRENCE_AUDIT
+        original = audit.read_text(encoding="utf-8")
+        key = "combo-annotated-ref-property-example"
+        line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
+        fields = line.split("\t")
+        fields[4] = (
+            "class:independent; A source-checked three-document proof replaces the prior fixture classification."
+        )
+        audit.write_text(original.replace(line, "\t".join(fields), 1), encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        expected = before.copy()
+        expected[1] += 1
+        expected[3] -= 1
+        self.assertEqual(expected, stated())
 
     def test_combination_restating_refuses_a_row_the_region_parser_would_drop(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")

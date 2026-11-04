@@ -3,7 +3,7 @@
 
 use super::*;
 
-#[derive(Clone, Copy, Debug, serde::Deserialize)]
+#[derive(Clone, Copy, Debug, serde::Deserialize, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
 enum Mode {
     PythonEnums,
@@ -70,18 +70,12 @@ fn read_proofs(root: &Path) -> Vec<Proof> {
     serde_json::from_slice(&reader.stdout).expect("validated independence records")
 }
 
-#[test]
-fn a_populated_independence_manifest_crosses_the_python_rust_boundary() {
-    let scratch = tempfile::tempdir().unwrap();
-    let manifest = scratch
-        .path()
-        .join("docs/openapi-surface/combination-independence.toml");
+fn write_manifest(root: &Path, key: &str, modes: &[Mode]) {
+    let manifest = root.join("docs/openapi-surface/combination-independence.toml");
     std::fs::create_dir_all(manifest.parent().unwrap()).unwrap();
     let mut text = String::from(
         r#"schema_version = 1
 [[combinations]]
-key = "combo-parser-boundary"
-modes = ["python_enums", "literals"]
 [[combinations.conditions]]
 feature = "first"
 handler = "src/ir.rs::error_response_entries"
@@ -93,12 +87,36 @@ condition = ".find(|schema| !is_unknown(schema))"
 [combinations.documents]
 "#,
     );
+    text = text.replacen(
+        "[[combinations]]\n",
+        &format!(
+            "[[combinations]]\nkey = {}\nmodes = {}\n",
+            serde_json::to_string(key).unwrap(),
+            serde_json::to_string(modes).unwrap()
+        ),
+        1,
+    );
     for label in ["first", "second", "both"] {
+        let literals = if modes.iter().any(|mode| matches!(mode, Mode::Literals)) {
+            format!(", literals = \"cases/{label}/literals\"")
+        } else {
+            String::new()
+        };
         text.push_str(&format!(
-            "{label} = {{document = \"cases/{label}/openapi.yml\", python_enums = \"cases/{label}/enums\", literals = \"cases/{label}/literals\"}}\n"
+            "{label} = {{document = \"cases/{label}/openapi.yml\", python_enums = \"cases/{label}/enums\"{literals}}}\n"
         ));
     }
     std::fs::write(&manifest, text).unwrap();
+}
+
+#[test]
+fn a_populated_independence_manifest_crosses_the_python_rust_boundary() {
+    let scratch = tempfile::tempdir().unwrap();
+    write_manifest(
+        scratch.path(),
+        "combo-parser-boundary",
+        &[Mode::PythonEnums, Mode::Literals],
+    );
     let proofs = read_proofs(scratch.path());
     assert_eq!(proofs.len(), 1);
     let proof = &proofs[0];
@@ -129,8 +147,46 @@ condition = ".find(|schema| !is_unknown(schema))"
 // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This complete-tree replay belongs to the existing compiled-binary golden suite (crates/crozier-e2e/AGENTS.md), alongside corpus and hand-written replays using the same parity engine; splitting that family's graph edge is the existing generator-replay follow-up rather than a separate boundary introduced for this one comparison.
 #[test]
 fn independent_combination_documents_match_certified_trees() {
-    let root = repo_root();
-    let proofs = read_proofs(root);
+    replay_protocol_smoke();
+    replay_proofs(repo_root(), read_proofs(repo_root()));
+}
+
+/// Exercise the replay protocol even while the selected manifest is empty.
+/// These are semantic media controls, not an independence claim: the source
+/// audit and instrumented union admission are separate gates.
+fn replay_protocol_smoke() {
+    let scratch = tempfile::tempdir().unwrap();
+    let root = scratch.path();
+    write_manifest(root, "combo-replay-boundary", &[Mode::PythonEnums]);
+    for label in ["first", "second", "both"] {
+        let source = repo_root().join(format!(
+            "docs/fern-measurements/operation-independence/error-multiple-media-{label}"
+        ));
+        let target = root.join(format!("cases/{label}"));
+        std::fs::create_dir_all(&target).unwrap();
+        std::fs::copy(source.join("openapi.yml"), target.join("openapi.yml")).unwrap();
+        copy_dir(&source.join("fern-expected"), &target.join("enums"));
+    }
+    replay_proofs(root, read_proofs(root));
+    // A valid document bound to another document's untouched certified tree
+    // must fail at the byte comparison, then recover when its source is restored.
+    let first = root.join("cases/first/openapi.yml");
+    let original = std::fs::read(&first).unwrap();
+    std::fs::copy(root.join("cases/second/openapi.yml"), &first).unwrap();
+    let failure = std::panic::catch_unwind(|| replay_proofs(root, read_proofs(root)))
+        .expect_err("a mismatched document/tree binding must fail");
+    let message = failure
+        .downcast_ref::<String>()
+        .expect("comparison diagnostic");
+    assert!(
+        message.contains("combo-replay-boundary first (PythonEnums)"),
+        "{message}"
+    );
+    std::fs::write(&first, original).unwrap();
+    replay_proofs(root, read_proofs(root));
+}
+
+fn replay_proofs(root: &Path, proofs: Vec<Proof>) {
     for proof in proofs {
         for mode in proof.modes {
             for (label, document) in [

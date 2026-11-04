@@ -3878,6 +3878,7 @@ tests/fixtures/adyen-capital/expected	src/fern/core/client_wrapper.py	37	sdk-ide
 tests/fixtures/adyen-capital/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/adyen-capital/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/adyen-capital/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/adyen-capital/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/adyen-managed-risk-notification/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/adyen-managed-risk-notification/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/adyen-managed-risk-notification/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix

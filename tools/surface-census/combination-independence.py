@@ -158,6 +158,9 @@ def source_failures(root: Path, proof: IndependenceProof, handlers: list[str]) -
 
 
 def main() -> int:
+    """Print JSON on success (exit 0); report manifest/input errors on stderr
+    (exit 1). Argparse reports invalid command usage on stderr with exit 2.
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[2])
     parser.add_argument(

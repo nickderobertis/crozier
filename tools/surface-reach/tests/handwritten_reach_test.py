@@ -1891,7 +1891,9 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
     def test_referenced_query_string_enum_has_an_exclusive_region(self) -> None:
         reach = _module("golden_reach_query_enum", "golden-reach.py")
         handwritten = _module("handwritten_query_enum", "handwritten-fixtures.py")
-        branch = r"src/ir.rs::build_endpoint[if string_enum_values\(referenced_query_schema\)\.is_some\(\) \{]"
+        sites = reach.read_sites_table()["combo-query-param-ref-string-enum"].sites
+        self.assertEqual(1, len(sites))
+        branch = sites[0]
         # Resolve before building, so a removed or pooled branch fails directly.
         reach.resolve_site(branch)
         crozier = handwritten.instrumented_crozier(REPO, reach)
@@ -1908,12 +1910,82 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
                 False,
             ),
         )
-        for label, paths, expected in cases:
-            with self.subTest(document=label), tempfile.TemporaryDirectory() as temporary:
-                _package, universe, hit = self.generate(
-                    Path(temporary), operation_document(paths, "  schemas:\n" + EXAMPLED_CRAFT), reach, crozier
+        for mode in ("python-enums", "literals"):
+            for label, paths, expected in cases:
+                with self.subTest(document=label, mode=mode), tempfile.TemporaryDirectory() as temporary:
+                    _package, universe, hit = self.generate(
+                        Path(temporary),
+                        operation_document(paths, "  schemas:\n" + EXAMPLED_CRAFT),
+                        reach,
+                        crozier,
+                        mode,
+                    )
+                    self.assertEqual(expected, self.ran(reach, branch, universe, hit))
+
+    def test_registered_query_enum_witness_executes_its_interaction_region(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("handwritten_query_enum_witness", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        source = REPO / "tests/fixtures/corpus-sources/adyen-capital/openapi.json"
+        with tempfile.TemporaryDirectory() as temporary:
+            _package, universe, hit = self.generate(Path(temporary), source.read_text(encoding="utf-8"), reach, crozier)
+        self.assertTrue(
+            self.ran(
+                reach,
+                reach.read_sites_table()["combo-query-param-ref-string-enum"].sites[0],
+                universe,
+                hit,
+            )
+        )
+
+    def test_open_control_union_reports_replay_against_the_real_generator(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("handwritten_open_unions", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        controls = REPO / "docs/openapi-surface/witness-search-operation-combinations/controls"
+        reports = sorted(controls.glob("*/region-union.json"))
+        self.assertEqual(10, len(reports), "each completed failed-union experiment is replayed")
+        audit, failures = reach.read_cooccurrence()
+        self.assertEqual([], failures)
+        for path in reports:
+            expected = json.loads(path.read_text(encoding="utf-8"))
+            with self.subTest(key=expected["key"]):
+                self.assertEqual("open", audit[expected["key"]].proof_class)
+                self.assertEqual(set(expected["handlers"]), set(cooccurrence_handlers(expected["key"])))
+                sites = [reach.resolve_site(handler) for handler in expected["handlers"]]
+                observed = {}
+                for label in ("first", "second", "both"):
+                    with tempfile.TemporaryDirectory() as temporary:
+                        _package, _universe, hit = self.generate(
+                            Path(temporary),
+                            (path.parent / label / "openapi.yml").read_text(encoding="utf-8"),
+                            reach,
+                            crozier,
+                        )
+                    observed[label] = {
+                        (site.file, *region)
+                        for site in sites
+                        for region in hit.get(site.file, [])
+                        if site.holds(tuple(region))
+                    }
+                union = observed["first"] | observed["second"]
+                self.assertNotEqual(union, observed["both"], "a passing union requires reclassification")
+                if os.environ.get("CROZIER_UPDATE_COMBINATION_CONTROLS") == "1":
+                    expected = {
+                        "schema_version": 1,
+                        "key": expected["key"],
+                        "handlers": expected["handlers"],
+                        "counts": {label: len(regions) for label, regions in observed.items()},
+                        "both_only": [list(region) for region in sorted(observed["both"] - union)],
+                        "singles_only": [list(region) for region in sorted(union - observed["both"])],
+                    }
+                    path.write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
+                self.assertEqual(1, expected["schema_version"])
+                self.assertEqual(expected["counts"], {label: len(regions) for label, regions in observed.items()})
+                self.assertEqual(expected["both_only"], [list(region) for region in sorted(observed["both"] - union)])
+                self.assertEqual(
+                    expected["singles_only"], [list(region) for region in sorted(union - observed["both"])]
                 )
-                self.assertEqual(expected, self.ran(reach, branch, universe, hit))
 
     def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
         reach = _module("golden_reach_outcomes", "golden-reach.py")

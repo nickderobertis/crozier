@@ -1021,6 +1021,11 @@
     "tests/fixtures/ably-sdk-test-proxy/expected": {},
     "tests/fixtures/adyen-acs-notification/expected": {},
     "tests/fixtures/adyen-capital/expected": {},
+    "tests/fixtures/adyen-capital/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/adyen-managed-risk-notification/expected": {},
     "tests/fixtures/adyen-report-notification/expected": {},
     "tests/fixtures/agco-ats/expected": {},

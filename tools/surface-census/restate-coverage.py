@@ -299,15 +299,13 @@ def combination_proofs(root: Path) -> ProofSplit:
             ):
                 split["unproven"] += 1
                 continue
+            if proof is not None and proof.proof_class == "independent":
+                # Its three-document proof replaces the historical category;
+                # it needs no registered interaction witness when no branch joins the features.
+                valid_shape = key in table and table[key].cooccurrence and category in {"golden", "handwritten"}
+                split["independent" if valid_shape else "unproven"] += 1
+                continue
             match category:
-                case "golden" if (
-                    reach is not None
-                    and reach.witnesses
-                    and reach.cooccurrence
-                    and proof is not None
-                    and proof.proof_class == "independent"
-                ):
-                    split["independent"] += 1
                 case "golden" if reach is not None and reach.witnesses and reach.sites and not reach.unreached_sites:
                     split["real"] += 1
                 case "golden":
@@ -358,7 +356,7 @@ def restate_combinations(root: Path, text: str) -> str:
         f"non-generation, **{split.handwritten}** rest on a hand-written fixture "
         f"({split.blocked} of them witness-blocked, {split.together} of them co-occurrences proven on the "
         f"fixture), **{split.unproven}** "
-        f"{'remains' if split.unproven == 1 else 'remain'}\nunproven "
+        f"{'remains' if split.unproven == 1 else 'remain'}\nopen (unproven) "
         f"({split.ruled} left unproven by the user's ruling), and **{split.decided}** "
         f"{'is' if split.decided == 1 else 'are'} decided output-insensitive: "
         f"{' + '.join(map(str, split.classes))} = {sum(split.classes)}.",
