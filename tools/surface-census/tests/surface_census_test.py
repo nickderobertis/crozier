@@ -3847,9 +3847,13 @@ fn following() { let other = 42; }
                         self.assertTrue(case.residual, "a residual publishes a sentence")
 
     def test_the_case_table_is_a_reading_of_the_functions_it_names(self) -> None:
-        import port_pins
-
-        self.assertEqual([], port_pins.check_and_confirm(REPO))
+        checked = subprocess.run(
+            [sys.executable, str(SCRIPT.with_name("port_pins.py")), "--repo-root", str(REPO)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        self.assertEqual(0, checked.returncode, checked.stdout + checked.stderr)
 
     def test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table(self) -> None:
         """`schema.example:schema-shaped` without the Rust helper it ported.
