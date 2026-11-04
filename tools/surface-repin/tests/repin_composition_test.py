@@ -12,12 +12,15 @@ import gzip
 import importlib.util
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
 import textwrap
 from pathlib import Path
 from typing import Any
+
+import pytest
 
 REPO = Path(__file__).resolve().parents[3]
 PYTHON = str(Path(sys.executable).absolute())
@@ -285,8 +288,40 @@ def exercise(root: Path, tmp_path: Path) -> None:
         run(PYTHON, "tools/surface-census/golden-reach.py", "measure", "--jobs", "1", *args)
         return store(root)
 
+    selector = root / "scripts/census-python.sh"
+    selected = selector.read_bytes()
+    for bad_script in ("exit 7\n", "exit 0\n"):
+        before = store(root) if (root / ".local/golden-reach/store.json.gz").exists() else None
+        selector.write_text(bad_script, encoding="utf-8")
+        refused = run("just", "census-repin", "--jobs", "1", success=False)
+        assert "interpreter selector scripts/census-python.sh" in refused.stderr and "just bootstrap" in refused.stderr
+        assert "Traceback" not in refused.stderr
+        if before is None:
+            assert not (root / ".local/golden-reach/store.json.gz").exists()
+        else:
+            assert store(root) == before, "interpreter selection is validated before measuring"
+        selector.write_bytes(selected)
+        run("just", "census-repin", "--jobs", "1")
+    commit(root, "record interpreter recovery tables")
     c0 = git(root, "rev-parse", "HEAD")
     base = measure()
+    out = root / ".local/golden-reach"
+    for flag in ("--tests", "--fixtures"):
+        before = {path: path.read_bytes() for path in out.rglob("*") if path.is_file()}
+        if flag == "--tests":
+            refused = run(
+                PYTHON, "tools/surface-census/golden-reach.py", "measure", "--tests", "^absent$", success=False
+            )
+            assert "no golden test is selected" in refused.stderr
+        else:
+            refused = run("just", "census-repin", flag, "^absent$", success=False)
+            assert "matches no measured hand-written fixture" in refused.stderr
+        assert {path: path.read_bytes() for path in out.rglob("*") if path.is_file()} == before
+        if flag == "--tests":
+            measure("--tests", f"^{ALPHA}$")
+        else:
+            run("just", "census-repin", flag, "^configured$")
+    base = store(root)
     assert set(base["tests"]) == {ALPHA, BETA}
     assert base["fixtures"]["configured"]["control"], "the fixture's unset-audience control executed code"
     original_beta = json.loads((root / f".local/golden-reach/tests/{BETA}.json").read_text(encoding="utf-8"))
@@ -437,6 +472,21 @@ def exercise(root: Path, tmp_path: Path) -> None:
             assert recovered["fixtures"]["configured"]["commit"] == changed != previous
             assert recovered["tests"] == saved["tests"], "only the fixture with the vanished control counter executes"
 
+    saved = store(root)
+    saved["functions"]["src/lib.rs::beta"]["regions"][0] = [0, 10, 1, 0]
+    for destination in (
+        root / ".local/golden-reach/store.json.gz",
+        tmp_path / "bases" / saved["commit"] / "base.json.gz",
+    ):
+        with gzip.open(destination, "wt", encoding="utf-8") as handle:
+            json.dump(saved, handle)
+    refused_base = run(PYTHON, "tools/surface-census/golden-reach.py", "measure", "--incremental", "--jobs", "1")
+    assert "unusable counter regions" in refused_base.stdout and "starts after its end" in refused_base.stdout
+    repaired = store(root)
+    assert repaired["steps_since_full"] == 0
+    assert all(entry["commit"] == repaired["commit"] for entry in repaired["tests"].values())
+    assert repaired["fixtures"]["configured"]["control"]
+
 
 def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: Path) -> None:
     """A real executable supplies malformed rustc output at the process boundary."""
@@ -483,3 +533,26 @@ def test_measure_refuses_incomplete_compiler_identity_before_building(tmp_path: 
         assert "install the pinned toolchain" in result.stderr
         assert not marker.exists(), "an unidentified compiler cannot start an instrumented build"
         assert not (root / ".local/golden-reach/store.json.gz").exists()
+
+
+@pytest.mark.parametrize("failure", ["exit", "empty", "missing_bash"])
+def test_interpreter_selection_refuses_failure_and_recovers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, failure: str
+) -> None:
+    root = tmp_path / "repo"
+    write(root, "scripts/census-python.sh", "exit 7\n" if failure == "exit" else "exit 0\n")
+    spec = importlib.util.spec_from_file_location(
+        "repin_interpreter_boundary", REPO / "tools/surface-census/census-repin.py"
+    )
+    assert spec and spec.loader
+    verb = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = verb
+    spec.loader.exec_module(verb)
+    with monkeypatch.context() as environment:
+        if failure == "missing_bash":
+            environment.setenv("PATH", "")
+        with pytest.raises(SystemExit) as refused:
+            verb.census_python(root)
+    assert "interpreter selector" in str(refused.value) and "just bootstrap" in str(refused.value)
+    write(root, "scripts/census-python.sh", "printf '%s\\n' " + shlex.quote(PYTHON) + "\n")
+    assert verb.census_python(root) == PYTHON

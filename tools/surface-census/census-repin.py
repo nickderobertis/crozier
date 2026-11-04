@@ -513,8 +513,17 @@ def reanchor_all(root: Path, base_commit: str | None) -> dict[str, str]:
 
 
 def census_python(root: Path) -> str:
-    run = subprocess.run(["bash", "scripts/census-python.sh"], cwd=root, capture_output=True, text=True)
-    return run.stdout.strip() if run.returncode == 0 and run.stdout.strip() else sys.executable
+    try:
+        run = subprocess.run(["bash", "scripts/census-python.sh"], cwd=root, capture_output=True, text=True)
+    except OSError as error:
+        refuse(
+            f"cannot run the interpreter selector scripts/census-python.sh ({error}); run `just bootstrap` and repair the selector"
+        )
+    if run.returncode != 0 or not run.stdout.strip():
+        refuse(
+            f"interpreter selector scripts/census-python.sh exited {run.returncode} or printed no interpreter: {run.stderr.strip()[-500:]}; run `just bootstrap` and repair the selector"
+        )
+    return run.stdout.strip()
 
 
 def _run(root: Path, argv: list[str], what: str, stdout: Path | None = None) -> None:
@@ -525,14 +534,14 @@ def _run(root: Path, argv: list[str], what: str, stdout: Path | None = None) -> 
         stdout.write_text(run.stdout, encoding="utf-8")
 
 
-def regenerate(root: Path, store: Store, out: Path, scoped: bool = False) -> list[str]:
+def regenerate(root: Path, store: Store, out: Path, scoped: bool = False, python: str | None = None) -> list[str]:
     """Every derived file, each from its own generator, in dependency order; return what was skipped.
 
     A scoped measurement (`--tests`/`--fixtures`) holds a subset of the witnesses,
     so the sections restating the whole population — the arm sections and the
     coverage headline — are left for an unscoped run.
     """
-    python = census_python(root)
+    python = python or census_python(root)
     tools = root / "tools" / "surface-census"
     census = out / "census.json"
     out.mkdir(parents=True, exist_ok=True)
@@ -607,6 +616,7 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
             f"{len(dirty)} measured input(s) differ from HEAD ({', '.join(dirty[:5])}); commit them first, "
             "so the measurement names the commit it measured"
         )
+    python = census_python(root)
     choice = BASES.find(root)
     say(f"census-repin: base: {choice.reason}")
     before = {path: (root / path).read_bytes() if (root / path).is_file() else None for path in tracked_changes(root)}
@@ -629,7 +639,7 @@ def repin(args: argparse.Namespace, say: Callable[[str], None]) -> int:
         say(f"census-repin: re-ran {subject}: {reason}")
     REACH.write_views(step, out, root)
     BASES.publish(step.store)
-    skipped = regenerate(root, step.store, out, scoped=bool(args.tests or args.fixtures))
+    skipped = regenerate(root, step.store, out, scoped=bool(args.tests or args.fixtures), python=python)
     after = tracked_changes(root)
     for path in after:
         current = (root / path).read_bytes() if (root / path).is_file() else None
