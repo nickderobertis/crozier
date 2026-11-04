@@ -46,7 +46,7 @@ from collections.abc import Callable, Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
-from typing import Any, ClassVar, NamedTuple, Protocol
+from typing import Any, ClassVar, NamedTuple, ParamSpec, Protocol
 from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
@@ -1450,16 +1450,19 @@ REPIN_THEN_RESTATE = (
 )
 
 
-def names_the_repin(hint: str = REPIN) -> Callable[[Callable[..., None]], Callable[..., None]]:
+_RepinArgs = ParamSpec("_RepinArgs")
+
+
+def names_the_repin(hint: str = REPIN) -> Callable[[Callable[_RepinArgs, None]], Callable[_RepinArgs, None]]:
     """Append `hint` to a census check's assertion failure, so the failure names its fix.
 
     A failure a `subTest` records never reaches the method, so a check that uses
     one names the verb in its own messages instead.
     """
 
-    def wrap(test: Callable[..., None]) -> Callable[..., None]:
+    def wrap(test: Callable[_RepinArgs, None]) -> Callable[_RepinArgs, None]:
         @functools.wraps(test)
-        def run(*args: Any, **kwargs: Any) -> None:
+        def run(*args: _RepinArgs.args, **kwargs: _RepinArgs.kwargs) -> None:
             try:
                 test(*args, **kwargs)
             except AssertionError as error:
