@@ -345,7 +345,7 @@ refuses. Both keep Fern's logs under
 - **The generator's own crashes** are classes too, measured in `fern generate`
   after a clean check: `generator-lint-failure` (the generated package fails
   `ruff check`, e.g. two union variants or a method and a sub-client given one
-  Python name), `generator-missing-type` (a `KeyError` over a type Fern named
+  Python name, or a quote/multiline property alias; [#679 measurement](../fern-measurements/handed-off/follow-up-tickets/679/README.md)), `generator-missing-type` (a `KeyError` over a type Fern named
   but never emitted, e.g. an inline enum header), and
   `generated-file-name-too-long`. The `Failed to format …` lines printed before
   a lint failure only say which snippet did not parse; they were never seen

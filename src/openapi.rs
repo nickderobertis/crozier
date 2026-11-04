@@ -3490,6 +3490,46 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
 /// component alias, an object property and an array item, from one `null`
 /// alternative or several, exactly as it does for a plain `type: null`.
 fn normalize_null_only_compositions(doc: &mut OpenApi) {
+    // A oneOf of a null-only anyOf and a multi-null oneOf keeps the latter's
+    // named identity. Fern drops the parent and retargets its references (#696).
+    let bare_null = Schema {
+        ty: Some(TypeField::Single("null".to_string())),
+        ..Schema::default()
+    };
+    let renames: IndexMap<String, String> = doc
+        .components
+        .schemas
+        .iter()
+        .filter_map(|(name, schema)| {
+            let [zero, one] = schema.one_of.as_deref()? else {
+                return None;
+            };
+            let any = zero.any_of.as_deref()?;
+            let nested = one.one_of.as_deref()?;
+            let is_bare_composition = |node: &Schema| {
+                let mut plain = node.clone();
+                plain.one_of = None;
+                plain.any_of = None;
+                plain == Schema::default()
+            };
+            let target = format!("{name}One");
+            (is_bare_composition(schema)
+                && is_bare_composition(zero)
+                && is_bare_composition(one)
+                && !any.is_empty()
+                && any.iter().all(|member| *member == bare_null)
+                && nested.len() > 1
+                && nested.iter().all(|member| *member == bare_null)
+                && !doc.components.schemas.contains_key(&target))
+            .then(|| (name.clone(), target))
+        })
+        .collect();
+    for name in renames.keys() {
+        doc.components
+            .schemas
+            .insert(name.clone(), bare_null.clone());
+    }
+    rename_component_schemas(doc, &renames);
     for_each_root_schema(doc, &mut |schema| {
         for_each_schema_in(schema, &mut fold_null_only)
     });
@@ -7311,6 +7351,32 @@ components:
         );
         let nested = &doc.components.schemas["Wrapper"].properties["handler"];
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
+    }
+
+    #[test]
+    fn mixed_null_compositions_keep_the_nested_type_identity() {
+        let source = std::fs::read_to_string(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/fern-measurements/handed-off/follow-up-tickets/696/openapi.yml"),
+        )
+        .unwrap();
+        let mut doc = parse(&source);
+        normalize_null_only_compositions(&mut doc);
+        assert!(!doc.components.schemas.contains_key("Silence"));
+        assert_eq!(
+            doc.components.schemas["SilenceOne"].ty,
+            Some(TypeField::Single("null".into()))
+        );
+        assert_eq!(
+            doc.components.schemas["Reading"].properties["silence"]
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/SilenceOne")
+        );
+        let mut control = parse(&source.replace("oneOf", "anyOf"));
+        normalize_null_only_compositions(&mut control);
+        assert!(control.components.schemas.contains_key("Silence"));
+        assert!(!control.components.schemas.contains_key("SilenceOne"));
     }
 
     /// The `dormant-sensor-unions` fixture (Fern CLI 5.163.1): a

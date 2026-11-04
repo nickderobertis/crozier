@@ -1,0 +1,108 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Sensor fleets",
+    "version": "1.0"
+  },
+  "paths": {
+    "/fleets": {
+      "post": {
+        "x-fern-sdk-group-name": [
+          "fleets"
+        ],
+        "x-fern-sdk-method-name": "create",
+        "operationId": "create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sensors": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "title": "Fixed Sensor",
+                          "x-fern-type-name": "Fixed Sensor",
+                          "properties": {
+                            "station": {
+                              "type": "string"
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "title": "Mobile Sensor",
+                          "x-fern-type-name": "Mobile Sensor",
+                          "properties": {
+                            "route": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved"
+          }
+        }
+      }
+    },
+    "/fleets/sensors": {
+      "post": {
+        "x-fern-sdk-group-name": [
+          "fleets",
+          "sensors"
+        ],
+        "x-fern-sdk-method-name": "create",
+        "operationId": "create",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "title": "Fixed Sensor",
+                    "x-fern-type-name": "Fixed Sensor",
+                    "properties": {
+                      "station": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "title": "Mobile Sensor",
+                    "x-fern-type-name": "Mobile Sensor",
+                    "properties": {
+                      "route": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Saved"
+          }
+        }
+      }
+    }
+  }
+}
