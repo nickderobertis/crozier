@@ -1488,9 +1488,7 @@ class HandwrittenReachRow(NamedTuple):
 # says to run it (docs/openapi-surface-coverage.md, "Golden reach, row by row").
 REPIN = "run `just census-repin`, which re-anchors moved sites and regenerates the measured tables"
 # A section no generator writes is restated by hand from the ledger the verb writes.
-REPIN_THEN_RESTATE = (
-    "run `just census-repin`, then restate this section from the golden-reach.tsv it writes (no generator owns it)"
-)
+REPIN_THEN_RESTATE = "run `just census-repin`, which regenerates this section from its ledger"
 
 
 _RepinArgs = ParamSpec("_RepinArgs")
@@ -3145,7 +3143,8 @@ class RecipeWiringTests(unittest.TestCase):
             f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
             "tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py "
             "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py "
-            "tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py",
+            "tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py "
+            "tools/surface-census/tests/reach_document_test.py",
             project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
@@ -3359,6 +3358,8 @@ class GrammarContractTests(unittest.TestCase):
                 scripts.mkdir(parents=True)
                 (root / "tools" / "corpus").mkdir()
                 shutil.copyfile(script, scripts / script.name)
+                for dependency in ("port_pins.py", "reach_store.py"):
+                    shutil.copy2(source.parent / dependency, scripts / dependency)
                 shutil.copyfile(
                     REPO / "tools/corpus/corpus_remote_ref_pins.py", root / "tools/corpus/corpus_remote_ref_pins.py"
                 )
@@ -3392,6 +3393,8 @@ class GrammarContractTests(unittest.TestCase):
                 scripts.mkdir(parents=True)
                 (root / "tools" / "corpus").mkdir()
                 shutil.copyfile(script, scripts / script.name)
+                for dependency in ("port_pins.py", "reach_store.py"):
+                    shutil.copy2(source.parent / dependency, scripts / dependency)
                 shutil.copyfile(
                     REPO / "tools/corpus/corpus_remote_ref_pins.py", root / "tools/corpus/corpus_remote_ref_pins.py"
                 )
@@ -3813,16 +3816,6 @@ class GrammarContractTests(unittest.TestCase):
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         return rust_function_body(lines, name)
 
-    @classmethod
-    def function_digest(cls, name: str) -> str:
-        """One function body's digest: blank lines and `//` lines dropped, runs collapsed."""
-        kept = [
-            " ".join(line.split())
-            for line in cls.function_body(name)
-            if line.strip() and not line.strip().startswith("//")
-        ]
-        return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
-
     def test_function_body_ignores_literal_and_comment_braces(self) -> None:
         source = """fn held<'a>(value: &'a str) {
     let text = "{";
@@ -3902,26 +3895,13 @@ fn following() { let other = 42; }
                         self.assertTrue(case.residual, "a residual publishes a sentence")
 
     def test_the_case_table_is_a_reading_of_the_functions_it_names(self) -> None:
-        """The honesty check: a branch added, removed or edited without re-derivation.
-
-        The table is a reading of six functions of `src/ir.rs` and nothing else
-        ties it to them, so each function's normalized body carries a digest in
-        the table. Any of the three changes moves the body and fails here; what
-        the digest cannot do is say which case moved, and it fires on a change
-        that moves no branch at all. Both limits are stated in
-        `docs/openapi-surface-coverage.md` rather than left implicit.
-        """
-        self.assertEqual(set(self.BLIND_FUNCTIONS), set(census.BLIND_FUNCTION_DIGESTS))
-        for name in self.BLIND_FUNCTIONS:
-            with self.subTest(function=name):
-                self.assertEqual(
-                    census.BLIND_FUNCTION_DIGESTS[name],
-                    self.function_digest(name),
-                    f"src/ir.rs's {name} changed; re-derive its rows of the case "
-                    "table in tools/surface-census/openapi-surface-census.py and of the case "
-                    "analysis in docs/openapi-surface-coverage.md, then re-pin "
-                    "the digest",
-                )
+        checked = subprocess.run(
+            [sys.executable, str(SCRIPT.with_name("port_pins.py")), "--repo-root", str(REPO)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        self.assertEqual(0, checked.returncode, checked.stdout + checked.stderr)
 
     def test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table(self) -> None:
         """`schema.example:schema-shaped` without the Rust helper it ported.
@@ -3944,23 +3924,6 @@ fn following() { let other = 42; }
         for keyword in ("type", "$ref", "properties", "allOf", "oneOf", "anyOf"):
             with self.subTest(keyword=keyword):
                 self.assertTrue(census.example_is_schema_definition({"field": {keyword: {}}}))
-
-    def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
-        """The check above, proved against a branch this case adds and removes.
-
-        A digest nobody has seen fail is a digest that might be computed over
-        the wrong span, so this one takes the real `nested_array_element` body,
-        inserts one branch into it, and asserts the digest is not the pinned
-        one — the failure the check exists to produce, induced on purpose.
-        """
-        lines = self.function_body("nested_array_element")
-        self.assertTrue(lines[0].strip().startswith("fn nested_array_element"))
-        edited = [lines[0], "        if items.pattern.is_some() { return None; }", *lines[1:]]
-        kept = [" ".join(line.split()) for line in edited if line.strip() and not line.strip().startswith("//")]
-        self.assertNotEqual(
-            census.BLIND_FUNCTION_DIGESTS["nested_array_element"],
-            hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-        )
 
     def test_the_case_analysis_states_the_totals_its_own_rows_add_up_to(self) -> None:
         """The paragraph a reader takes the size of this instrument from.
@@ -8131,6 +8094,8 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             patched = root / "tools" / "surface-census" / "patched-census.py"
             patched.parent.mkdir(parents=True)
             patched.write_text(patched_source, encoding="utf-8", newline="\n")
+            for dependency in ("port_pins.py", "reach_store.py"):
+                shutil.copy2(SCRIPT.parent / dependency, patched.parent / dependency)
             (root / "tools" / "corpus").mkdir(parents=True)
             shutil.copy2(REPO / "tools" / "corpus" / "corpus_remote_ref_pins.py", root / "tools" / "corpus")
             spec = importlib.util.spec_from_file_location("patched_census", patched)
@@ -15491,28 +15456,15 @@ class NamingMirrorTests(unittest.TestCase):
                     identifier += "_"
                 self.assertEqual(expected, identifier)
 
-    def test_enum_port_tracks_its_rust_functions_and_deburr_table(self) -> None:
-        lines = self.NAMING.read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.NAMING_PORT_DIGESTS.items():
-            if name == "DEBURRED_LATIN":
-                body = self.NAMING.read_text(encoding="utf-8").split("const DEBURRED_LATIN:", 1)[1].split("];", 1)[0]
-                actual = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
-                entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
-                exceptions = {
-                    char: folded
-                    for char, folded in entries
-                    if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8") != folded
-                }
-                self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
-            else:
-                kept = [
-                    " ".join(line.split())
-                    for line in rust_function_body(lines, name)
-                    if line.strip() and not line.strip().startswith("//")
-                ]
-                actual = hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
-            with self.subTest(name=name):
-                self.assertEqual(pinned, actual, f"re-derive {name}'s enum predicates from src/naming.rs")
+    def test_deburr_exceptions_match_the_rust_table(self) -> None:
+        body = self.NAMING.read_text(encoding="utf-8").split("const DEBURRED_LATIN:", 1)[1].split("];", 1)[0]
+        entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
+        exceptions = {
+            char: folded
+            for char, folded in entries
+            if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8") != folded
+        }
+        self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
 
     def test_the_method_name_port_reproduces_croziers_own_expectations(self) -> None:
         """`src/ir.rs` pins `endpoint_method_name` against Fern's measured names;
@@ -15539,84 +15491,6 @@ class NamingMirrorTests(unittest.TestCase):
                 self.assertIsNotNone(derived)
                 self.assertEqual(expected, derived[0])
 
-    def test_the_method_name_port_tracks_its_rust_functions(self) -> None:
-        """`operation.operationId:digit-leading-method` ports `endpoint_method_name`.
-
-        Each ported function of `src/ir.rs` is pinned by the same normalized-body
-        digest the enum port uses, so an arm edited there fails here until the
-        port is read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.METHOD_NAME_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
-                )
-
-    def test_the_extension_accessor_ports_track_their_rust_functions(self) -> None:
-        """`sdk_group_segments` and `sdk_method_named` port `Operation`'s accessors.
-
-        Pinned by the same normalized-body digest the other ports use, read from
-        `src/openapi.rs`, so an edit to either accessor's precedence or blank
-        handling fails here until the port is read again.
-        """
-        for (path, name), pinned in census.EXTENSION_ACCESSOR_PORT_DIGESTS.items():
-            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            if start is None:
-                self.fail(f"{path} declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
-            kept = [
-                " ".join(line.split())
-                for line in lines[start : end + 1]
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census port of {path}'s {name}",
-                )
-
-    def test_the_example_ports_track_their_rust_functions(self) -> None:
-        """`deprecated_member` and `fern_reads_date_time` port crozier's own functions.
-
-        Each is pinned by the same normalized-body digest the other ports use,
-        read from the file that declares it, so an edit to the Rust arm fails
-        here until the port is read again. The refusal ports of
-        `operation.requestBody:get-union-member` are pinned the same way.
-        """
-        for (path, name), pinned in {**census.EXAMPLE_PORT_DIGESTS, **census.REFUSAL_PORT_DIGESTS}.items():
-            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's port of {path}'s {name}",
-                )
-
     def test_an_inferred_tag_is_read_off_a_composed_members_last_alternative(self) -> None:
         """`inferred_discriminant_property_with` maps each member through `last_composed_variant`."""
 
@@ -15642,75 +15516,6 @@ class NamingMirrorTests(unittest.TestCase):
         nullable = {"oneOf": [{"type": "null"}, tagged("b")]}
         self.assertEqual(0, census.census_document(document(nullable)).get(selector, 0))
 
-    def test_the_union_ports_track_their_rust_functions(self) -> None:
-        """The unrequired-tag clause and `components.schemas:same-primitive-union`.
-
-        Each function of `src/ir.rs` the two ports read is pinned by the same
-        normalized-body digest, so an edit there fails here until the port is
-        read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.UNION_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's union port of src/ir.rs's {name}",
-                )
-
-    def test_the_scalar_ports_track_their_rust_helpers(self) -> None:
-        """`number_prim` and the Boolean literal override behind `same_primitive_unions`.
-
-        Each helper is pinned by the same normalized-body digest, read from the
-        file that declares it, so an edit there fails here until the port is read
-        again. `Type::method` is bounded inside `impl ... for Type`.
-        """
-        for (path, name), pinned in census.SCALAR_PORT_DIGESTS.items():
-            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            owner, _, method = name.rpartition("::")
-            if owner:
-                start = next(
-                    index
-                    for index, line in enumerate(lines)
-                    if re.match(rf"impl\b.*\bfor {re.escape(owner)}\s*\{{", line)
-                )
-                body = rust_function_body(lines[start:], method)
-            else:
-                body = rust_function_body(lines, name)
-            kept = [" ".join(line.split()) for line in body if line.strip() and not line.strip().startswith("//")]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's scalar port of {path}'s {name}",
-                )
-
-    def test_the_schema_and_response_ports_track_their_rust_functions(self) -> None:
-        """Closed object and success selection ports.
-
-        Each function of `src/ir.rs` the schema and response ports read is pinned by the same
-        normalized-body digest, so an edit there fails here until the port is
-        read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's schema or response port of src/ir.rs's {name}",
-                )
-
     def test_the_success_status_port_matches_the_rust_constant(self) -> None:
         """The census reads the same success statuses, in the same order, as `src/ir.rs`."""
         source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
@@ -15722,27 +15527,6 @@ class NamingMirrorTests(unittest.TestCase):
             census.FERN_SUCCESS_STATUSES,
             "re-read the census's success statuses from src/ir.rs's FERN_SUCCESS_STATUSES",
         )
-
-    def test_the_parameter_ports_track_their_rust_functions(self) -> None:
-        """The parameter predicates' ports of the items-union hoist and promotion.
-
-        Each function of `src/ir.rs` the predicate reads is pinned by the same
-        normalized-body digest, so an edit there fails here until the port is
-        read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.PARAMETER_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's parameter port of src/ir.rs's {name}",
-                )
 
     def table_cases(self, function: str, minimum: int) -> list[tuple[str, str]]:
         """The `(wire, expected)` rows of every `for (key, class) in [...]` table
@@ -19155,6 +18939,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "update-predicate-grammar.py": ("\u2014",),
         "witness-search-region-keys.py": ("\u2014",),
         "census-repin.py": ("--tests", "("),
+        "port_pins.py": ("\u2014",),
     }
     LEGACY: ClassVar[dict[str, str]] = {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
 
