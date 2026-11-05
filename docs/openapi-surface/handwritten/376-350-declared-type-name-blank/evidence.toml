@@ -1,0 +1,9 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "0e137ac0e0c7e7a2eab46b321611d138a5e1192e8e8bd314ce6ec5efe788657c"
+
+[[covers]]
+key = "schema-type-name-component"
+search = "docs/openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-ledger-remainders/README.md"

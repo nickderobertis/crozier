@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.159](https://github.com/nickderobertis/crozier/compare/v0.0.158...v0.0.159) - 2026-11-04
+
+### Other
+
+- *(parity)* re-measure the handed-off documents and register the new real witnesses ([#759](https://github.com/nickderobertis/crozier/pull/759))
+
 ## [0.0.158](https://github.com/nickderobertis/crozier/compare/v0.0.157...v0.0.158) - 2026-11-04
 
 ### Fixed

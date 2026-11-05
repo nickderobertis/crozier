@@ -130,6 +130,10 @@ class _Line:
     text: str
 
 
+class _YamlTimestamp(str):
+    """A plain timestamp-like scalar, preserving spelling and quoted-string distinction."""
+
+
 class _YamlReader:
     """A strict reader for the block-YAML subset OpenAPI documents are written in."""
 
@@ -746,6 +750,8 @@ class _YamlReader:
             return int(text)
         if _FLOAT.match(text) or _EXP.match(text):
             return float(text)
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}.*)?", text):
+            return _YamlTimestamp(text)
         return text
 
 
@@ -1198,6 +1204,15 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "schema.$ref:unresolved-nested-local": "one per local component-schema reference with a tail whose complete pointer does not resolve",
+    "schema.$ref:defs-member": "one per local component-schema reference through a $defs member whose complete pointer resolves",
+    "operation.operationId:tag-only": "one per operation whose identifier is its first tag followed by underscores, with no method name",
+    "schema.x-fern-type-name:component": "one per component schema carrying a declared type name, including a blank override",
+    "schema.properties:construct-name": "one per object schema declaring a property literally named construct, which collides with the model API",
+    "schema.$ref:properties-copy": "one per schema reference containing properties whose complete local component pointer resolves",
+    "schema.oneOf:properties-copy-type-variant": "one per union containing a properties-copy reference to an object with a required string type tag",
+    "schema.oneOf:properties-copy-inferred-type": "one per union containing properties-copy references with distinct required string type tags and no explicit discriminator",
+    "parameter.example:optional-nontemporal-yaml-timestamp": "one per optional string query parameter with a plain YAML timestamp example and no date or date-time format",
     "operation.operationId:camel-case-tag-prefix": "one per operation with an upper-camel multiword tag and lower-camel dotted operationId starting with that tag, ignoring case",
     "operation.requestBody:optional-nullable-enum-multipart-part": "one per operation with an optional, defaulted multipart part whose anyOf is a string-enum component reference beside null",
     "operation.requestBody:titled-array-component-oas-three-one": "one per OpenAPI 3.1 operation whose JSON body references a titled, described array component",
@@ -1827,6 +1842,12 @@ PREDICATES = {
 # Predicates that read document context rather than one object-model node.
 # GrammarContractTests independently reconciles this partition and its prose.
 DOCUMENT_COMPARING_PREDICATES = (
+    "schema.$ref:unresolved-nested-local",
+    "schema.$ref:defs-member",
+    "schema.x-fern-type-name:component",
+    "schema.$ref:properties-copy",
+    "schema.oneOf:properties-copy-type-variant",
+    "schema.oneOf:properties-copy-inferred-type",
     "operation.requestBody:optional-nullable-enum-multipart-part",
     "operation.requestBody:titled-array-component-oas-three-one",
     "operation.operationId:duplicate",
@@ -4080,6 +4101,108 @@ COMBINATIONS += (
     ),
 )
 
+COMBINATIONS += (
+    Combination(
+        "combo-header-array-accepted-placements",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.type=array",
+        "one per declaring anchor of combo-header-array-accepted-placements",
+    ),
+    Combination(
+        "combo-header-string-default",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.default",
+        "one per declaring anchor of combo-header-string-default",
+    ),
+    Combination(
+        "combo-property-defs-pointer",
+        "schemas.md",
+        "schema.properties>schema.$ref:defs-member",
+        "one per declaring anchor of combo-property-defs-pointer",
+    ),
+    Combination(
+        "combo-property-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.properties>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-property-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-array-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.type=array&schema.items>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-array-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-map-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.type=object&schema.additionalProperties>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-map-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-allof-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.allOf>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-allof-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-request-unresolved-nested-pointer",
+        "document-paths.md",
+        "operation.requestBody>requestBody.content>mediaType.schema>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-request-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-response-unresolved-nested-pointer",
+        "bodies-media.md",
+        "response.content>mediaType.schema>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-response-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-tag-only-operation-id",
+        "document-paths.md",
+        "operation.operationId:tag-only&operation.tags",
+        "one per declaring anchor of combo-tag-only-operation-id",
+    ),
+    Combination(
+        "combo-nullable-allof-parent-own-property",
+        "schemas.md",
+        "schema.type:primary=object&schema.allOf>schema.$ref~>schema.nullable",
+        "one per declaring anchor of combo-nullable-allof-parent-own-property",
+    ),
+    Combination(
+        "combo-property-anyof-composed-sibling",
+        "schemas.md",
+        "schema.properties>schema.anyOf:several-non-null-members&schema.anyOf>schema.oneOf",
+        "one per declaring anchor of combo-property-anyof-composed-sibling",
+    ),
+    Combination(
+        "combo-required-query-array-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued",
+        "one per declaring anchor of combo-required-query-array-enum-items",
+    ),
+    Combination(
+        "combo-unrequired-tag-oneof-reference",
+        "schemas.md",
+        "schema.oneOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued",
+        "one per declaring anchor of combo-unrequired-tag-oneof-reference",
+    ),
+    Combination(
+        "combo-unrequired-tag-anyof-reference",
+        "schemas.md",
+        "schema.anyOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued",
+        "one per declaring anchor of combo-unrequired-tag-anyof-reference",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-array-defs-pointer",
+        "schemas.md",
+        "schema.type:primary=array&schema.items>schema.$ref:defs-member",
+        "one per declaring anchor of combo-array-defs-pointer",
+    ),
+)
+
 CONJUNCTIONS.update({combination.selector: combination.counts for combination in COMBINATIONS})
 
 for _spelling in CONJUNCTIONS:
@@ -5368,6 +5491,80 @@ def _composition_members(value: Any) -> list[Any] | None:
             return None
         indexed.append((int(key), member))
     return [member for _, member in sorted(indexed, key=lambda pair: pair[0])]
+
+
+def local_schema_pointer_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Resolve a complete local component-schema pointer."""
+    if not isinstance(reference, str) or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+        return None
+    parts = [
+        part.replace("~1", "/").replace("~0", "~") for part in reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")
+    ]
+    node: Any = schemas.get(parts[0])
+    index = 1
+    while index < len(parts) and isinstance(node, dict):
+        field = parts[index]
+        match field:
+            case "properties" | "$defs":
+                if index + 1 >= len(parts):
+                    return None
+                entries = node.get(field)
+                node = entries.get(parts[index + 1]) if isinstance(entries, dict) else None
+                index += 2
+            case "items" | "additionalProperties":
+                node = node.get(field)
+                index += 1
+            case "oneOf" | "anyOf" | "allOf":
+                if index + 1 >= len(parts) or not _USIZE.fullmatch(parts[index + 1]):
+                    return None
+                members = node.get(field)
+                member = int(parts[index + 1])
+                node = members[member] if isinstance(members, list) and member < len(members) else None
+                index += 2
+            case _:
+                return None
+    return node if index == len(parts) and isinstance(node, dict) else None
+
+
+def properties_copy_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Only references whose spelling selects copying, rather than naming."""
+    return (
+        local_schema_pointer_target(reference, schemas)
+        if isinstance(reference, str) and "properties" in reference
+        else None
+    )
+
+
+def properties_copy_union_predicates(node: dict[Any, Any], schemas: dict[Any, Any]) -> list[str]:
+    """Count copied union variants and distinct inferred type tags separately."""
+    members = union_members(node)
+    if not members:
+        return []
+    targets = [
+        properties_copy_target(member.get("$ref"), schemas) if isinstance(member, dict) else None for member in members
+    ]
+    if not any(target is not None for target in targets):
+        return []
+    targets = [target if target is not None else member for target, member in zip(targets, members, strict=True)]
+    values = []
+    for target in targets:
+        if not isinstance(target, dict) or "type" not in required_names(target):
+            continue
+        properties = target.get("properties")
+        field = properties.get("type") if isinstance(properties, dict) else None
+        if isinstance(field, dict) and primary_type(field.get("type")) == "string":
+            value = discriminant_value(field)
+            if value is not None:
+                values.append(value)
+    found = ["schema.oneOf:properties-copy-type-variant"] if values else []
+    if (
+        "discriminator" not in node
+        and not _undiscriminated(node)
+        and len(values) == len(members)
+        and len(set(values)) == len(values)
+    ):
+        found.append("schema.oneOf:properties-copy-inferred-type")
+    return found
 
 
 def pointer_walk_predicates(reference: str, schemas: dict[Any, Any]) -> list[str]:
@@ -6991,6 +7188,13 @@ class Census:
                 and operation_id.split(".", 1)[0].lower() == tag.lower()
             ):
                 found.append("operation.operationId:camel-case-tag-prefix")
+            if (
+                isinstance(operation_id, str)
+                and isinstance(tag, str)
+                and operation_id.endswith("_")
+                and operation_id.rstrip("_").lower() == tag.lower()
+            ):
+                found.append("operation.operationId:tag-only")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
             if (
@@ -7050,6 +7254,16 @@ class Census:
             if not parameter_schema_is_scalar(schema):
                 found.append("parameter.example:non-scalar-query")
         if kind_name == "parameter":
+            schema = self.resolved_schema(node.get("schema"))
+            if (
+                node.get("in") == "query"
+                and node.get("required") is not True
+                and isinstance(schema, dict)
+                and primary_type(schema.get("type")) == "string"
+                and schema.get("format") not in ("date", "date-time")
+                and isinstance(node.get("example", schema.get("example")), _YamlTimestamp)
+            ):
+                found.append("parameter.example:optional-nontemporal-yaml-timestamp")
             found += self.parameter_shape_predicates(node)
         return found
 
@@ -8010,6 +8224,13 @@ class Census:
         by `pointer_target_predicates`, and never followed to what it addresses.
         """
         found: list[str] = []
+        if ("x-fern-type-name" in node or "x-crozier-type-name" in node) and any(
+            node is value for value in self.component_schemas.values()
+        ):
+            found.append("schema.x-fern-type-name:component")
+        properties = node.get("properties")
+        if isinstance(properties, dict) and "construct" in properties:
+            found.append("schema.properties:construct-name")
         primary = primary_type(node.get("type"))
         if primary == "array":
             found.append("schema.type:primary=array")
@@ -8058,6 +8279,7 @@ class Census:
         if annotated_all_of_ref(node):
             found.append("schema.allOf:annotated-ref")
         found += self.discriminated_union_predicates(node)
+        found += properties_copy_union_predicates(node, self.component_schemas)
         reference = node.get("$ref")
         if isinstance(reference, str) and selected_example_kind(node) is not None:
             target = self.component_target(reference)
@@ -8065,6 +8287,14 @@ class Census:
             if kind is not None:
                 found.append(f"schema.example:on-ref-to-{kind}")
         if isinstance(reference, str):
+            if reference.startswith(_COMPONENT_SCHEMAS_PREFIX) and "/" in reference[len(_COMPONENT_SCHEMAS_PREFIX) :]:
+                target = local_schema_pointer_target(reference, self.component_schemas)
+                if target is None:
+                    found.append("schema.$ref:unresolved-nested-local")
+                elif "/$defs/" in reference:
+                    found.append("schema.$ref:defs-member")
+            if properties_copy_target(reference, self.component_schemas) is not None:
+                found.append("schema.$ref:properties-copy")
             found += pointer_form_predicates(reference)
             found += self.pointer_target_predicates(reference)
             found += self.resolving_target_predicates(reference)
