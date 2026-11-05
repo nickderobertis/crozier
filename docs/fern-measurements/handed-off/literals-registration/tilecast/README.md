@@ -18,4 +18,4 @@ phase. The base golden has 233 files including provenance, 2,363,405 bytes.
 
 The [comparison record](../../comparisons/832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce.txt)
 retains the successful normalized comparison. The source’s grant remains in
-NOTICE; see [the corpus rules](../../../../corpus-licensing.md).
+NOTICE.
