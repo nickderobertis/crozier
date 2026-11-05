@@ -132,6 +132,10 @@ def read(root: Path) -> dict[str, Attribution]:
                 for item in raw[name]
             ):
                 raise ValueError(f"{raw['key']}: invalid attribution files; re-measure with `{REMEASURE}`")
+            if len(raw[name]) != len(set(raw[name])):
+                raise ValueError(f"{raw['key']}: duplicate attribution files; re-measure with `{REMEASURE}`")
+        if set(raw["byte_matched"]) & set(raw["unmatched"]):
+            raise ValueError(f"{raw['key']}: contradictory attribution files; re-measure with `{REMEASURE}`")
         row = Attribution(**raw)
         if row.key in rows:
             raise ValueError(f"{row.key}: duplicate attribution; re-measure with `{REMEASURE}`")

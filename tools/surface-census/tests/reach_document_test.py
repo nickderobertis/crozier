@@ -129,3 +129,24 @@ def test_attribution_config_inputs_match_rust_discovery_names() -> None:
     declaration = re.search(r"pub const CONFIG_NAMES:.*?=\s*&\[(.*?)\];", source, re.S)
     assert declaration is not None
     assert tuple(re.findall(r'"([^"\n]+)"', declaration[1])) == attribution.CONFIG_NAMES
+
+
+@pytest.mark.parametrize("fault", ["duplicate-matched", "duplicate-unmatched", "overlap"])
+def test_attribution_files_refuse_duplicate_or_contradictory_classifications(tmp_path: Path, fault: str) -> None:
+    row = synthetic(tmp_path)
+    attribution.write(tmp_path, {row.key: row})
+    path = tmp_path / attribution.RECORD
+    saved = path.read_text(encoding="utf-8")
+    payload = json.loads(saved)
+    raw = payload["rows"][0]
+    if fault == "duplicate-matched":
+        raw["byte_matched"] *= 2
+    elif fault == "duplicate-unmatched":
+        raw["unmatched"] = ["other.py", "other.py"]
+    else:
+        raw["unmatched"] = raw["byte_matched"][:]
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="feature: .*attribution files.*just residual-attribution"):
+        attribution.read(tmp_path)
+    path.write_text(saved, encoding="utf-8")
+    assert attribution.read(tmp_path) == {row.key: row}
