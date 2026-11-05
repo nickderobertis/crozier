@@ -18699,6 +18699,68 @@ class ParityProofIndexTests(unittest.TestCase):
         self.assert_index(index)
 
 
+def stage_residual_null_proof(root: Path) -> None:
+    """Stage the residual-only case independently of the growing real corpus."""
+    fixture = "harbor-signal-null"
+    regions = root / "docs/openapi-surface"
+    regions.mkdir(parents=True, exist_ok=True)
+    for relative in (
+        "docs/openapi-surface/schemas.md",
+        "crates/crozier-e2e/tests/e2e.rs",
+        "docs/openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json",
+    ):
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        source = (REPO / relative).read_bytes()
+        target.write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+    destination = regions / "handwritten" / fixture
+    destination.mkdir(parents=True)
+    shutil.copyfile(REPO / "docs/openapi-surface/probes" / f"{fixture}.yml", destination / "openapi.yml")
+    shutil.copytree(REPO / "docs/openapi-surface/probe-expected" / fixture, destination / "fern-expected")
+    with (REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv").open(encoding="utf-8", newline="") as handle:
+        digest = next(row["digest"] for row in csv.DictReader(handle, delimiter="\t") if row["key"] == fixture)
+    (destination / "evidence.toml").write_text(
+        f'fern_cli_version = "{CERTIFIED["cliVersion"]}"\n'
+        f'fern_python_sdk_version = "{CERTIFIED["generatorVersion"]}"\n'
+        f'digest = "{digest}"\n\n'
+        '[[covers]]\nkey = "schema-example-null"\n'
+        'search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"\n'
+        'verdict = "search-incomplete"\n'
+        'renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"\n',
+        encoding="utf-8",
+        newline="\r\n",
+    )
+    (regions / "residual-handwritten.toml").write_text(
+        'version = 1\n\n[[proofs]]\nkey = "schema-example-null"\n'
+        f'fixture = "{fixture}"\nfile = "src/fern/client.py"\n'
+        'test = "residual_null_example_is_absent_from_matching_request_snippets"\nmode = "absence"\n',
+        encoding="utf-8",
+        newline="\r\n",
+    )
+    reach = load_script("tools/surface-census/golden-reach.py")
+    row = next(row for _rank, row in reach.read_ledger() if row.key == "schema-example-null")
+    # The complete new witnesses correctly supersede the committed supplement.
+    # This fixture retains a residual witness and its output-insensitive neighbor.
+    residual = row._replace(witnesses=("rs-server", "webflow-v2"), outside=())
+    (regions / "golden-reach.tsv").write_text(
+        reach.ledger_text([residual], "isolated residual-proof contract fixture"), encoding="utf-8", newline="\r\n"
+    )
+    with (REPO / "docs/openapi-surface/witness-search-keys.tsv").open(encoding="utf-8", newline="") as handle:
+        keys = [row for row in csv.DictReader(handle, delimiter="\t") if row["key"] != "schema-example-null"]
+    keys.append(
+        {
+            "key": "schema-example-null",
+            "selector": "schema.example=null",
+            "region": "schemas.md",
+            "census_status": "supported",
+        }
+    )
+    with (regions / "witness-search-keys.tsv").open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=list(keys[0]), delimiter="\t", lineterminator="\r\n")
+        writer.writeheader()
+        writer.writerows(sorted(keys, key=lambda row: row["key"]))
+
+
 class ResidualWitnessKeyProducerTests(unittest.TestCase):
     """The selector producer propagates supplemental-proof boundary failures."""
 
@@ -18711,6 +18773,7 @@ class ResidualWitnessKeyProducerTests(unittest.TestCase):
             for name in names:
                 source = (REPO / "docs/openapi-surface" / name).read_bytes()
                 (regions / name).write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+            stage_residual_null_proof(regions.parents[1])
 
             def run() -> subprocess.CompletedProcess[str]:
                 return subprocess.run(
@@ -18770,11 +18833,7 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
                 f"docs/openapi-surface/handwritten/{fixture}/fern-expected/src/fern/client.py",
                 "docs/openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json",
             ]
-            for relative in paths:
-                target = root / relative
-                target.parent.mkdir(parents=True, exist_ok=True)
-                source = (REPO / relative).read_bytes()
-                target.write_bytes(source.replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+            stage_residual_null_proof(root)
             registry = root / paths[0]
             test = root / paths[3]
             removals = root / paths[6]

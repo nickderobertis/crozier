@@ -241,7 +241,7 @@ The following fixtures keep their unchanged source bytes and certified trees
 as probes, with manifest digests and their regression test paths updated:
 `byte-text-response`, `byte-text-response-controls`, `harbor-signal-null`, `json-binary-path`, `meadow-tag-code`, `shelf-labels-map-variants`.
 
-Two values have no checked-in generator. Under planner ruling 230,
+Three values have no checked-in generator. Under planner ruling 230,
 `apply-retirements.py` in this dispatch’s scratch directory derives them from
 the native census payload: the script docstring’s corpus/source split is
 360/391, and duplicate operation IDs occupy 44 sites across six sources.
@@ -267,8 +267,8 @@ to derive 69 ranking rows and 90 unreached arms: 80 in `src/ir.rs`, six in
 `src/emit.rs`, one in `src/openapi.rs`, and three in `src/naming.rs`. No shared
 parser or enforcement code changed. The separate census-port-fingerprints-r1
 change (crozier pull request 767) adds generators for these ranking and
-per-file arm-count sections; the new follow-up covers only the two remaining
-census-derived prose values above.
+per-file arm-count sections; the new follow-up covers the census source counts,
+duplicate-ID cell, and remaining-scenario summary.
 
 The census follow-up selection is `surface_census_test.py` plus
 `apis_guru_gap_screen_test.py`: every failed assertion is in the former, which
@@ -276,4 +276,12 @@ reads the changed census, coverage, handwritten-proof, probe and handed-off
 records; the latter reads the changed region records. The remaining census
 suite modules exercise isolated reach stores and repin fixtures and read no
 changed repository data. This rerun changes no shared parser or enforcement
-code, following planner ruling 229.
+code, following planner rulings 229 and 248.
+
+The remaining-scenario summary is derived in scratch by
+`derive-remaining-scenarios.py`: 110 features and 87 arms rely on handwritten
+proof. The proof index now names the relocated binary-JSON golden. Residual
+contract tests stage an isolated positive proof from the unchanged probe bytes,
+so their malformed-input and recovery cases remain independent of which
+publisher documents the corpus subsequently registers. All assertions and
+adversarial cases are preserved.
