@@ -1,0 +1,121 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.ApnS8RWx7Q/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk git.yml -> types -> GitCreateTreeRequestTreeItemMode
+                  git.yml
+                  [error] Enum value 100644 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 100755 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 040000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 160000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  [error] Enum value 120000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::git.yml -> types -> GitCreateTreeRequestTreeItemMode%0Agit.yml%0A[error] Enum value 100644 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names%0A[error] Enum value 100755 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names%0A[error] Enum value 040000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names%0A[error] Enum value 160000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names%0A[error] Enum value 120000 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk __package__.yml -> types -> IntegrationPermissions
+                  __package__.yml
+                  [error] IntegrationPermissions is already declared in apps.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> IntegrationPermissions%0A__package__.yml%0A[error] IntegrationPermissions is already declared in apps.yml
+[api]: python-sdk __package__.yml -> types -> ReactionContent
+                  __package__.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ReactionContent%0A__package__.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForCommitCommentRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForCommitCommentRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForIssueCommentRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForIssueCommentRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForIssueRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForIssueRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForPullRequestReviewCommentRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForPullRequestReviewCommentRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForReleaseRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForReleaseRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForTeamDiscussionCommentInOrgRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForTeamDiscussionCommentInOrgRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForTeamDiscussionCommentLegacyRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForTeamDiscussionCommentLegacyRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForTeamDiscussionInOrgRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForTeamDiscussionInOrgRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsCreateForTeamDiscussionLegacyRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsCreateForTeamDiscussionLegacyRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForCommitCommentRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForCommitCommentRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForIssueCommentRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForIssueCommentRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForIssueRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForIssueRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForPullRequestReviewCommentRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForPullRequestReviewCommentRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForReleaseRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForReleaseRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForTeamDiscussionCommentInOrgRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForTeamDiscussionCommentInOrgRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForTeamDiscussionCommentLegacyRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForTeamDiscussionCommentLegacyRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForTeamDiscussionInOrgRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForTeamDiscussionInOrgRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk reactions.yml -> types -> ReactionsListForTeamDiscussionLegacyRequestContent
+                  reactions.yml
+                  [error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::reactions.yml -> types -> ReactionsListForTeamDiscussionLegacyRequestContent%0Areactions.yml%0A[error] Enum name 1 for value +1 is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk Found 25 errors and 65 warnings in 1.983 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 25 errors and 65 warnings in 1.983 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

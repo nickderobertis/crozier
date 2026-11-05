@@ -1,0 +1,29 @@
+compare: found config <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml
+compare: <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml python: reference command finished in 0.03s (exit 0)
+compare: <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml python: crozier generation finished in 3.15s
+compare: <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml python: mismatched
+
+crozier compare report
+
+<scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml
+  python: mismatched (layout packaged, 149 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (5):
+      README.md
+      reference.md
+      src/fern/files/client.py
+      src/fern/transcripts/raw_client.py
+      src/fern/transcripts/types/transcript_list_item.py
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    timing: reference 0.03s, crozier 3.15s, speed-up 0.01x, saved -3.12s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.03s, crozier 3.15s, speed-up 0.01x, saved -3.12s
+Result: 1 generator(s) mismatched the reference (exit 3)

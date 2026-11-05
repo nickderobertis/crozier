@@ -46,8 +46,10 @@ split five ways:
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Of the `handwritten` rows,
-  58 have a search record that reads `exhausted`: every candidate is decided and
-  none is registrable. 53 read `search-incomplete`. Of those,
+  78 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 33 read `search-incomplete`. Exhaustion refers to each
+  record's assigned populations; a continuation does not complete earlier
+  truncated search windows. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -113,6 +115,13 @@ split five ways:
   and changes no generated output. The
   [earlier search](openapi-surface/witness-search-fixture-only-bodies-paths/README.md)
   records its own acquired populations and registrations.
+  The current `schemas` rows cite their
+  [bounded continuation](openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#verdicts).
+  It screens the previous record's named outstanding candidates and the seven
+  newly admitted documents, ranking only retained bytes under the per-target
+  bound. It names missing-byte candidates and earlier measured differences
+  separately. Its current verdicts supersede the historical schema-search
+  descriptions above; it makes no new code search and changes no generated output.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   544 and never count as a real-specification match.

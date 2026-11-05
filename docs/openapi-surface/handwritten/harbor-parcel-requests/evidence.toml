@@ -10,6 +10,5 @@ renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extension
 
 [[covers]]
 key = "combo-annotated-ref-property-example"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-35-combo-annotated-ref-property-example"
+verdict = "exhausted"

@@ -10438,6 +10438,7 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &EQIVO_APOSTROPHE_ENUMS,
     &REMEASURED_GRAFIKART_FILEMANAGER_ELEMENT_E36A74CE,
     &REMEASURED_ARAWA_WORKSPACE_0C8259F6,
     &REMEASURED_CLENCYC_MOZILLAFESTIVALBACKEND_B2264B38,
@@ -30831,5 +30832,25 @@ const REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA: Corpus = Corpus {
 fn remeasured_membrane_api_gateway_8340f5da_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
     overlay_goldens::assert_literals_match(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// Corpus row 5300: apostrophes in Eqivo's response enum wire values.
+const EQIVO_APOSTROPHE_ENUMS: Corpus = Corpus {
+    api: "eqivo-apostrophe-enums",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus must use the existing real-binary golden and literals-overlay gates, as tests/fixtures/AGENTS.md requires. It installs nothing and opens no socket; moving the entire golden family to a narrower project edge is separate work.
+#[test]
+fn eqivo_apostrophe_enums_matches_fern_output() {
+    assert_committed_corpus_matches(&EQIVO_APOSTROPHE_ENUMS);
+    overlay_goldens::assert_literals_match(&EQIVO_APOSTROPHE_ENUMS);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

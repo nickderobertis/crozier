@@ -1,0 +1,13 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.N5tGoz2IjP/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk environments -> environments -> environments -> [0] -> urlVariables -> [1] -> default: Expected string. Received 1234.
+::error title=[api]%3A python-sdk fernapi/fern-python-sdk::environments -> environments -> environments -> [0] -> urlVariables -> [1] -> default: Expected string. Received 1234.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

@@ -1,0 +1,27 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.L1OPD4nvsK/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk quiz.yml -> service -> endpoints -> getQuizId
+                  quiz.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::quiz.yml -> service -> endpoints -> getQuizId%0Aquiz.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk user.yml -> service -> endpoints -> getRestricted
+                  user.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::user.yml -> service -> endpoints -> getRestricted%0Auser.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk quiz.yml -> service -> endpoints -> postQuiz
+                  quiz.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::quiz.yml -> service -> endpoints -> postQuiz%0Aquiz.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk Found 3 errors and 0 warnings in 0.375 seconds.
+::error title=[api]%3A python-sdk::Found 3 errors and 0 warnings in 0.375 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

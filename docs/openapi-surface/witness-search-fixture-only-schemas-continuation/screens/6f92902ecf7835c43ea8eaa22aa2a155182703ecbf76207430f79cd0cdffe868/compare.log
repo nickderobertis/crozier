@@ -1,0 +1,12 @@
+compare: found config <scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/compare.yml
+compare: <scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/compare.yml python: could_not_check (crozier could not read the generator's settings: could not resolve remote $ref `../../openapi.yaml#/components/parameters/pagination_limit` in <scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/openapi.yaml: could not read <scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/../../openapi.yaml: No such file or directory (os error 2))
+
+crozier compare report
+
+<scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/compare.yml
+  python: could_not_check
+    reason: crozier could not read the generator's settings: could not resolve remote $ref `../../openapi.yaml#/components/parameters/pagination_limit` in <scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/openapi.yaml: could not read <scratch>/screen-runs/6f92902ecf7835c43ea8eaa22aa2a155182703ecbf76207430f79cd0cdffe868/../../openapi.yaml: No such file or directory (os error 2)
+
+Totals: 0 matched, 0 mismatched, 1 could not check
+Timing totals: no generator ran both sides
+Result: no mismatch, but 1 could not be checked (exit 4)

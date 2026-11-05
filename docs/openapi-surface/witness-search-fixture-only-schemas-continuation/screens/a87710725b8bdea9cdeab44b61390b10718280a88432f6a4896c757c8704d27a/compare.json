@@ -1,0 +1,130 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml"
+  ],
+  "exit_code": 0,
+  "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.045483328,
+    "crozier_seconds": 4.208733497,
+    "speedup": 0.010806891914734131,
+    "saved_seconds": -4.1632501689999994
+  },
+  "results": [
+    {
+      "status": "matched",
+      "config_file": "<scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml",
+      "generator": "python",
+      "spec": "<scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/openapi.json",
+      "reference": {
+        "command": "cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 231,
+        "differing": [],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "schema-rejected-array-length-example",
+            "file": "reference.md",
+            "line": 3816
+          },
+          {
+            "id": "schema-rejected-array-length-example",
+            "file": "reference.md",
+            "line": 3913
+          },
+          {
+            "id": "init-type-checking-import-order",
+            "file": "src/fern/__init__.py",
+            "line": 190
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/client.py",
+            "line": 48
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/client.py",
+            "line": 87
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/client.py",
+            "line": 289
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/client.py",
+            "line": 328
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 14
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 39
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 40
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 43
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 70
+          },
+          {
+            "id": "empty-root-security-optional-credential",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 104
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.045483328,
+        "crozier_seconds": 4.208733497,
+        "speedup": 0.010806891914734131,
+        "saved_seconds": -4.1632501689999994
+      },
+      "reason": null
+    }
+  ]
+}

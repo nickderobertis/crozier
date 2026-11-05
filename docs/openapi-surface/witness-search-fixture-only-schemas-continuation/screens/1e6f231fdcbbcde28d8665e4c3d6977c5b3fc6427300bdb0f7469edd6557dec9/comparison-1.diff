@@ -1,0 +1,183 @@
+# crozier compare: <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (3305 unchanged line(s))
+  <dd>
+  
+  ```python
+- from fern import FernApi, GeneticEnergyManagementParameters, SolarPanelBatteryParameters, InverterParameters, ElectricVehicleParameters
++ from fern import FernApi, GeneticEnergyManagementParameters
+  
+  client = FernApi(
+      base_url="https://yourhost.com/path/to/api",
+      ⋮ (15 unchanged line(s))
+              1.1
+          ],
+      ),
+-     pv_akku=SolarPanelBatteryParameters(
+-         device_id="battery1",
+-         capacity_wh=8000,
+-     ),
+-     inverter=InverterParameters(
+-         device_id="inverter1",
+-         max_power_wh=10000,
+-     ),
+-     eauto=ElectricVehicleParameters(
+-         device_id="ev1",
+-         capacity_wh=8000,
+-     ),
++     pv_akku=None,
++     inverter=None,
++     eauto=None,
+  )
+  
+  ```
+      ⋮ (137 unchanged line(s))
+
+Unexplained original crozier line(s): 3309, 3331, 3332, 3333
+
+--- reference/src/fern/measurement/raw_client.py
++++ crozier/src/fern/measurement/raw_client.py
+      ⋮ (8 unchanged line(s))
+  from ..core.parse_error import ParsingError
+  from ..core.pydantic_utilities import parse_obj_as
+  from ..core.request_options import RequestOptions
+- from ..core.serialization import convert_and_respect_annotation_metadata
+  from ..errors.unprocessable_entity_error import UnprocessableEntityError
+  from ..types.http_validation_error import HttpValidationError
+  from ..types.pydantic_date_time_data import PydanticDateTimeData
+      ⋮ (353 unchanged line(s))
+          _response = self._client_wrapper.httpx_client.request(
+              "v1/measurement/data",
+              method="PUT",
+-             json=convert_and_respect_annotation_metadata(
+-                 object_=request, annotation=PydanticDateTimeData, direction="write"
+-             ),
++             json=request,
+              headers={
+                  "content-type": "application/json",
+              },
+      ⋮ (379 unchanged line(s))
+          _response = await self._client_wrapper.httpx_client.request(
+              "v1/measurement/data",
+              method="PUT",
+-             json=convert_and_respect_annotation_metadata(
+-                 object_=request, annotation=PydanticDateTimeData, direction="write"
+-             ),
++             json=request,
+              headers={
+                  "content-type": "application/json",
+              },
+      ⋮ (34 unchanged line(s))
+
+Unexplained original crozier line(s): 371, 757
+
+--- reference/src/fern/optimize/client.py
++++ crozier/src/fern/optimize/client.py
+      ⋮ (86 unchanged line(s))
+  
+          Examples
+          --------
+-         from fern import (
+-             ElectricVehicleParameters,
+-             FernApi,
+-             GeneticEnergyManagementParameters,
+-             InverterParameters,
+-             SolarPanelBatteryParameters,
+-         )
++         from fern import FernApi, GeneticEnergyManagementParameters
+  
+          client = FernApi(
+              base_url="https://yourhost.com/path/to/api",
+      ⋮ (6 unchanged line(s))
+                  preis_euro_pro_wh_akku=1.1,
+                  gesamtlast=[1.1],
+              ),
+-             pv_akku=SolarPanelBatteryParameters(
+-                 device_id="battery1",
+-                 capacity_wh=8000,
+-             ),
+-             inverter=InverterParameters(
+-                 device_id="inverter1",
+-                 max_power_wh=10000.0,
+-             ),
+-             eauto=ElectricVehicleParameters(
+-                 device_id="ev1",
+-                 capacity_wh=8000,
+-             ),
+          )
+          """
+          _response = self._raw_client.fastapi_optimize(
+      ⋮ (99 unchanged line(s))
+          --------
+          import asyncio
+  
+-         from fern import (
+-             AsyncFernApi,
+-             ElectricVehicleParameters,
+-             GeneticEnergyManagementParameters,
+-             InverterParameters,
+-             SolarPanelBatteryParameters,
+-         )
++         from fern import AsyncFernApi, GeneticEnergyManagementParameters
+  
+          client = AsyncFernApi(
+              base_url="https://yourhost.com/path/to/api",
+      ⋮ (8 unchanged line(s))
+                      einspeiseverguetung_euro_pro_wh=[1.1],
+                      preis_euro_pro_wh_akku=1.1,
+                      gesamtlast=[1.1],
+-                 ),
+-                 pv_akku=SolarPanelBatteryParameters(
+-                     device_id="battery1",
+-                     capacity_wh=8000,
+-                 ),
+-                 inverter=InverterParameters(
+-                     device_id="inverter1",
+-                     max_power_wh=10000.0,
+-                 ),
+-                 eauto=ElectricVehicleParameters(
+-                     device_id="ev1",
+-                     capacity_wh=8000,
+                  ),
+              )
+  
+      ⋮ (32 unchanged line(s))
+
+Unexplained original crozier line(s): 90, 208
+
+--- reference/src/fern/prediction/types/fastapi_prediction_import_provider_v1prediction_import_provider_id_put_request_body.py
++++ crozier/src/fern/prediction/types/fastapi_prediction_import_provider_v1prediction_import_provider_id_put_request_body.py
+      ⋮ (5 unchanged line(s))
+  from ...types.pydantic_date_time_data_frame import PydanticDateTimeDataFrame
+  
+  FastapiPredictionImportProviderV1PredictionImportProviderIdPutRequestBody = typing.Union[
+-     PydanticDateTimeDataFrame, PydanticDateTimeData, typing.Dict[str, typing.Any]
++     PydanticDateTimeDataFrame, PydanticDateTimeData, typing.Dict[str, typing.Any], typing.Any
+  ]
+
+Unexplained original crozier line(s): 9
+
+--- reference/src/fern/types/pydantic_date_time_data_value.py
++++ crozier/src/fern/types/pydantic_date_time_data_value.py
+      ⋮ (3 unchanged line(s))
+  
+  from .pydantic_date_time_data_value_one_item import PydanticDateTimeDataValueOneItem
+  
+- PydanticDateTimeDataValue = typing.Union[str, typing.List[typing.Optional[PydanticDateTimeDataValueOneItem]]]
++ PydanticDateTimeDataValue = typing.Union[str, typing.List[PydanticDateTimeDataValueOneItem]]
+
+Unexplained original crozier line(s): 7
+
+--- reference/src/fern/types/pydantic_date_time_data_value_one_item.py
++++ crozier/src/fern/types/pydantic_date_time_data_value_one_item.py
+      ⋮ (1 unchanged line(s))
+  
+  import typing
+  
+- PydanticDateTimeDataValueOneItem = typing.Union[float, int, str]
++ PydanticDateTimeDataValueOneItem = typing.Union[float, int, str, typing.Any]
+
+Unexplained original crozier line(s): 5

@@ -1,0 +1,50 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.iLeOcGocJc/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk openapi/openapi.yml -> paths -> /fake/parameter-name-mapping -> get
+                  openapi/openapi.yml
+                  [error] Parameters header parameter '_type', query parameter 'type', header parameter 'type_' all normalize to 'type' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+                  
+::error title=[api]%3A python-sdk::openapi/openapi.yml -> paths -> /fake/parameter-name-mapping -> get%0Aopenapi/openapi.yml%0A[error] Parameters header parameter '_type', query parameter 'type', header parameter 'type_' all normalize to 'type' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
+[api]: python-sdk fake.yml -> service -> endpoints -> getParameterNameMapping
+                  fake.yml
+                  [error] Multiple request properties have the name type. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Endpoint header "_type"
+                    - Endpoint header "type_"
+                    - Query Parameter "type"
+                  
+::error title=[api]%3A python-sdk::fake.yml -> service -> endpoints -> getParameterNameMapping%0Afake.yml%0A[error] Multiple request properties have the name type. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.%0A  - Endpoint header "_type"%0A  - Endpoint header "type_"%0A  - Query Parameter "type"
+[api]: python-sdk __package__.yml -> types -> Cat -> extends -> Address
+                  __package__.yml
+                  [error] Objects can only extend other objects, and Address is not an object.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> Cat -> extends -> Address%0A__package__.yml%0A[error] Objects can only extend other objects, and Address is not an object.
+[api]: python-sdk __package__.yml -> types -> EnumArraysJustSymbol
+                  __package__.yml
+                  [error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> EnumArraysJustSymbol%0A__package__.yml%0A[error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk __package__.yml -> types -> TestEnumParametersRequestEnumFormStringArrayItem
+                  __package__.yml
+                  [error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> TestEnumParametersRequestEnumFormStringArrayItem%0A__package__.yml%0A[error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk fake.yml -> types -> TestEnumParametersRequestEnumHeaderStringArrayItem
+                  fake.yml
+                  [error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::fake.yml -> types -> TestEnumParametersRequestEnumHeaderStringArrayItem%0Afake.yml%0A[error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk fake.yml -> types -> TestEnumParametersRequestEnumQueryStringArrayItem
+                  fake.yml
+                  [error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+                  
+::error title=[api]%3A python-sdk::fake.yml -> types -> TestEnumParametersRequestEnumQueryStringArrayItem%0Afake.yml%0A[error] Enum name  for value $ is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+[api]: python-sdk Found 7 errors and 7 warnings in 0.484 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 7 errors and 7 warnings in 0.484 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

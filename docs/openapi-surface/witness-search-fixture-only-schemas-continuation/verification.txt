@@ -1,0 +1,32 @@
+Verification in progress
+========================
+Screening and final checks have not yet finished. This file is replaced with
+finished-tree evidence before closeout; it is not a completion claim.
+
+Completed so far
+----------------
+- Native census: 980 selectors, 1,421,601 declaration sites, 319 registered
+  sources (31 original, 288 corpus); snapshot drift check passes.
+- The updated hand-written fixture contract reports no failures.
+- Scenario proof index and coverage restatement drift checks pass.
+- Before the search-reference metadata edits, the real
+  handwritten_fixtures_match_fern_goldens subprocess gate passed.
+- Isaacus removal sensitivity: all 127 crozier files unchanged after removal
+  of all nine null-first schema examples; see isaacus-removal.json.
+
+Earlier-state evidence
+----------------------
+The first hand-written subprocess gate ran before the required CLI build and
+failed for the missing binary. It passed after building the binary; the final
+metadata state will be checked again. The first census invocation was cancelled
+while queued on the host measurement lock, before it started a test process.
+The screening driver was interrupted only while waiting on the Fern lock, with
+no generation child active, to apply the manager's stopping and immutable-ref
+rules. Those interrupted driver invocations are not failed parity screens.
+
+The initial inventory expanded six arm-specific entries too broadly. The
+corrected inventory has 15,553 candidate-target entries, not the provisional
+15,559; the 69 selected documents and their target membership are unchanged.
+A transcribed KORT revision in the follow-up draft was corrected immediately to
+the recorded 94b48d9400e77bc6db147a358d176707f6548e1d; the pinned screening data
+and comparisons always use that revision.

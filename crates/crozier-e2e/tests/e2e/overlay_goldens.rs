@@ -103,6 +103,8 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This literal overlay belongs to the existing corpus golden inventory required by the fixture contract; one inventory entry cannot define a separate project edge.
+            "eqivo-apostrophe-enums",
             "remeasured-arawa-workspace-0c8259f6",
             "remeasured-clencyc-mozillafestivalbackend-b2264b38",
             "remeasured-grafikart-filemanager-element-e36a74ce",

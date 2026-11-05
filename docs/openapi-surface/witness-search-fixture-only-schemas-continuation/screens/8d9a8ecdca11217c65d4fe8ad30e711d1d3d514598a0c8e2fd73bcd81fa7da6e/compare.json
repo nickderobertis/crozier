@@ -1,0 +1,88 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/screen-runs/8d9a8ecdca11217c65d4fe8ad30e711d1d3d514598a0c8e2fd73bcd81fa7da6e/compare.yml"
+  ],
+  "exit_code": 3,
+  "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.080664664,
+    "crozier_seconds": 9.53843764,
+    "speedup": 0.00845680047869978,
+    "saved_seconds": -9.457772976
+  },
+  "results": [
+    {
+      "status": "mismatched",
+      "config_file": "<scratch>/screen-runs/8d9a8ecdca11217c65d4fe8ad30e711d1d3d514598a0c8e2fd73bcd81fa7da6e/compare.yml",
+      "generator": "python",
+      "spec": "<scratch>/screen-runs/8d9a8ecdca11217c65d4fe8ad30e711d1d3d514598a0c8e2fd73bcd81fa7da6e/openapi.json",
+      "reference": {
+        "command": "cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/8d9a8ecdca11217c65d4fe8ad30e711d1d3d514598a0c8e2fd73bcd81fa7da6e/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 327,
+        "differing": [
+          "reference.md",
+          "src/fern/browser/raw_client.py"
+        ],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "init-type-checking-import-order",
+            "file": "src/fern/__init__.py",
+            "line": 252
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 34
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 35
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          },
+          {
+            "id": "multipart-object-required-file-example",
+            "file": "src/fern/file/client.py",
+            "line": 526
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.080664664,
+        "crozier_seconds": 9.53843764,
+        "speedup": 0.00845680047869978,
+        "saved_seconds": -9.457772976
+      },
+      "reason": null
+    }
+  ]
+}

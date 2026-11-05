@@ -958,3 +958,10 @@ Handed-off remeasurement witnesses:
     https://raw.githubusercontent.com/membrane/api-gateway/c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c/core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml
     Apache-2.0 (repository LICENSE at the pinned revision); corpus row 5054 retains the publisher's immutable document
     (SHA-256 8340f5da585023194c7154cb6e72a111e5643bb9cd3364cb75e0eacb0b1fcb89).
+
+Eqivo telephony API specification and generated SDK golden:
+    Publisher origin: https://eqivo.org/openapi.yaml
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/github.com/v0.1/openapi.yaml
+    CC0-1.0 through the aggregation's grant (the document declares no info.license).
+    Corpus row 5300 retains the immutable source and both certified enum-mode trees,
+    with Python comments stripped. SHA-256 55ee4066528bb30b032bced3d919a18512babd89ff6845ae4a346efb4e43c7a3.

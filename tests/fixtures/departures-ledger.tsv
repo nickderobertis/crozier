@@ -7232,6 +7232,12 @@ tests/fixtures/eozilla/expected	src/fern/core/client_wrapper.py	35	sdk-identity-
 tests/fixtures/eozilla/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/eozilla/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/eozilla/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/eqivo-apostrophe-enums/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/eqivo-apostrophe-enums/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/eqivo-apostrophe-enums/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/eqivo-apostrophe-enums/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+tests/fixtures/eqivo-apostrophe-enums/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/eqivo-apostrophe-enums/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/ere-ps-app/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 tests/fixtures/ere-ps-app/expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 tests/fixtures/ere-ps-app/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

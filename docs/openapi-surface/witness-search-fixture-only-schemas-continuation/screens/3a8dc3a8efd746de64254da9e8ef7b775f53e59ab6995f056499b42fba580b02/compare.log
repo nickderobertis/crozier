@@ -1,0 +1,30 @@
+compare: found config <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml
+crozier: warning: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/openapi.yaml#/paths/~1v1~1apps~1{appGuid}~1metrics/parameters/0/schema: $ref `./shared_definitions.yaml#/schemas/GUID` names <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/shared_definitions.yaml, which does not exist; that schema is typed as unknown (`typing.Any`), as Fern types it
+compare: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml python: reference command finished in 0.03s (exit 0)
+compare: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml python: crozier generation starting
+crozier: warning: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/openapi.yaml#/paths/~1v1~1apps~1{appGuid}~1metrics/parameters/0/schema: $ref `./shared_definitions.yaml#/schemas/GUID` names <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/shared_definitions.yaml, which does not exist; that schema is typed as unknown (`typing.Any`), as Fern types it
+crozier: warning: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/openapi.yaml#/paths/~1v1~1apps~1{appGuid}~1metrics/parameters/0/schema: $ref `./shared_definitions.yaml#/schemas/GUID` names <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/shared_definitions.yaml, which does not exist; that schema is typed as unknown (`typing.Any`), as Fern types it
+compare: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml python: crozier generation finished in 0.17s
+compare: <scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml python: mismatched
+
+crozier compare report
+
+<scratch>/screen-runs/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/compare.yml
+  python: mismatched (layout packaged, 40 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (3):
+      README.md
+      reference.md
+      src/fern/custom_metrics_api_v1/client.py
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:41 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:42 sdk-identity-header-prefix
+    timing: reference 0.03s, crozier 0.17s, speed-up 0.18x, saved -0.14s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.03s, crozier 0.17s, speed-up 0.18x, saved -0.14s
+Result: 1 generator(s) mismatched the reference (exit 3)

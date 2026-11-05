@@ -4,12 +4,11 @@ digest = "e2e7e1f85d15edf4e395cf5ca67295bf31645c7d407a58e3e5755e663c7f3814"
 
 [[covers]]
 key = "number-format-uint64-typed-int"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-69-number-format-uint64-typed-int"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"
 
 [[covers]]
 key = "string-json-format-typed-any"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-121-string-json-format-typed-any"
+verdict = "exhausted"

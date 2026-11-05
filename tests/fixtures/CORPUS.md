@@ -2134,3 +2134,9 @@ These rows carry complete certified-pair trees and freshly generated literals ov
 | 5052 | `remeasured-clencyc-mozillafestivalbackend-b2264b38` | github-raw | https://raw.githubusercontent.com/clencyc/MozillaFestivalBackend/e70f0150f414d216743311be79d005d900ab81f1/openapi.yaml | `e70f0150f414d216743311be79d005d900ab81f1` | MIT (repository LICENSE at the pinned revision) | committed | readme-endpoint-choice |
 | 5053 | `remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c` | github-raw | https://raw.githubusercontent.com/hashicorp/terraform-plugin-codegen-openapi/55b2a49774f094d0d8aff834bce5eabe9e8a7345/internal/cmd/testdata/edgecase/openapi_spec.yml | `55b2a49774f094d0d8aff834bce5eabe9e8a7345` | MPL (repository LICENSE at the pinned revision) | committed | map-value-union-hoisting |
 | 5054 | `remeasured-membrane-api-gateway-8340f5da` | github-raw | https://raw.githubusercontent.com/membrane/api-gateway/c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c/core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml | `c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c` | Apache-2.0 (repository LICENSE at the pinned revision) | committed |  |
+
+## Schema continuation witness
+
+| # | name | source | source URL | pinned ref | licence | cache | shapes |
+|---:|---|---|---|---|---|---|---|
+| 5300 | `eqivo-apostrophe-enums` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/github.com/v0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the aggregation's grant; the document declares no info.license) | committed | Eqivo's published telephony API (info.x-origin names https://eqivo.org/openapi.yaml), whose BulkCallResponse.Message, GroupCallResponse.Message and SoundTouchResponse.Message enums contain apostrophes; both enum modes retain those wire values as valid Python strings |

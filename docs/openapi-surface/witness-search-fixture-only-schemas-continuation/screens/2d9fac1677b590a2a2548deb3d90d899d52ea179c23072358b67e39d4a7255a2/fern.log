@@ -1,0 +1,37 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.ehxVEBUum2/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> CollectionExtent
+                  __package__.yml
+                  [error] CollectionExtent is already declared in dataProcessing.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> CollectionExtent%0A__package__.yml%0A[error] CollectionExtent is already declared in dataProcessing.yml
+[api]: python-sdk __package__.yml -> types -> CollectionExtentSpatial
+                  __package__.yml
+                  [error] CollectionExtentSpatial is already declared in dataProcessing.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> CollectionExtentSpatial%0A__package__.yml%0A[error] CollectionExtentSpatial is already declared in dataProcessing.yml
+[api]: python-sdk __package__.yml -> types -> CollectionExtentTemporal
+                  __package__.yml
+                  [error] CollectionExtentTemporal is already declared in dataProcessing.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> CollectionExtentTemporal%0A__package__.yml%0A[error] CollectionExtentTemporal is already declared in dataProcessing.yml
+[api]: python-sdk __package__.yml -> types -> CollectionSummariesValue
+                  __package__.yml
+                  [error] CollectionSummariesValue is already declared in dataProcessing.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> CollectionSummariesValue%0A__package__.yml%0A[error] CollectionSummariesValue is already declared in dataProcessing.yml
+[api]: python-sdk __package__.yml -> types -> CollectionType
+                  __package__.yml
+                  [error] CollectionType is already declared in dataProcessing.yml
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> CollectionType%0A__package__.yml%0A[error] CollectionType is already declared in dataProcessing.yml
+[api]: python-sdk Found 5 errors and 0 warnings in 42.695 seconds.
+::error title=[api]%3A python-sdk::Found 5 errors and 0 warnings in 42.695 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

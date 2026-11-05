@@ -1,0 +1,18 @@
+compare: found config <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml
+compare: <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml python: reference command finished in 0.02s (exit 0)
+compare: <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml python: crozier generation failed in 0.10s
+compare: <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml python: mismatched (crozier could not generate: invalid OpenAPI document <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/openapi.yaml: unresolved-reference: paths//redirect/test/get/responses/307/headers/redirectHeader: #/components/parameters/redirectHeader)
+
+crozier compare report
+
+<scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml
+  python: mismatched
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: crozier could not generate: invalid OpenAPI document <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/openapi.yaml: unresolved-reference: paths//redirect/test/get/responses/307/headers/redirectHeader: #/components/parameters/redirectHeader
+    timing: reference 0.02s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals: no generator ran both sides
+Result: 1 generator(s) mismatched the reference (exit 3)

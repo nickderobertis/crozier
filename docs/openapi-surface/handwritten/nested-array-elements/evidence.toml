@@ -5,5 +5,5 @@ digest = "6424850f2c34c858623f80a7de8518668dc0597ada251971ac8e137bde94f3ed"
 [[covers]]
 key = "array-item-empty-object"
 arm = 'src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-empty-object.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-27-array-item-empty-object"
 verdict = "exhausted"

@@ -4,6 +4,5 @@ digest = "884b2a779174094f14e77f2da164695a3ab0e845c38a049d20d9b05fb9c74c29"
 
 [[covers]]
 key = "array-item-pointer-walk-oneof"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-renewed/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-33-array-item-pointer-walk-oneof"
+verdict = "exhausted"

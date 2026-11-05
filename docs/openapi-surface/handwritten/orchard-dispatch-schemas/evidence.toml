@@ -4,12 +4,12 @@ digest = "ff10db77be36534ce16ba5486661bef4dfee3665a35d3fe21e888641ca56f5ee"
 
 [[covers]]
 key = "combo-anyof-beside-properties"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-36-combo-anyof-beside-properties"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"
 
 [[covers]]
 key = "combo-oneof-beside-properties"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-37-combo-oneof-beside-properties"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"

@@ -1,0 +1,180 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.d6NaDEMfwL/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Skipping cookie parameter, _me_sess, in POST /auth/logout
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in POST /auth/logout
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /user
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /user
+[api]: python-sdk Skipping cookie parameter, _me_sess, in DELETE /user
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in DELETE /user
+[api]: python-sdk Skipping cookie parameter, _me_sess, in PATCH /user
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in PATCH /user
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /user/usage
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /user/usage
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /tenant/settings
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /tenant/settings
+[api]: python-sdk Skipping cookie parameter, _me_sess, in PATCH /tenant/settings
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in PATCH /tenant/settings
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /websites
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /websites
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /websites/{hostname}
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /websites/{hostname}
+[api]: python-sdk Skipping cookie parameter, _me_sess, in DELETE /websites/{hostname}
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in DELETE /websites/{hostname}
+[api]: python-sdk Skipping cookie parameter, _me_sess, in PATCH /websites/{hostname}
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in PATCH /websites/{hostname}
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/summary
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/summary
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/pages
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/pages
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/time
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/time
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/referrers
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/referrers
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/sources
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/sources
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/mediums
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/mediums
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/campaigns
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/campaigns
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/browsers
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/browsers
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/os
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/os
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/devices
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/devices
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/countries
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/countries
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/languages
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/languages
+[api]: python-sdk Skipping cookie parameter, _me_sess, in GET /website/{hostname}/properties
+::warning title=[api]%3A python-sdk::Skipping cookie parameter, _me_sess, in GET /website/{hostname}/properties
+[api]: python-sdk user.yml -> service -> endpoints -> delete-user
+                  user.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::user.yml -> service -> endpoints -> delete-user%0Auser.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk website.yml -> service -> endpoints -> delete-websites-id
+                  website.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::website.yml -> service -> endpoints -> delete-websites-id%0Awebsite.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk settings.yml -> service -> endpoints -> get-tenant-settings
+                  settings.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::settings.yml -> service -> endpoints -> get-tenant-settings%0Asettings.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk user.yml -> service -> endpoints -> get-user
+                  user.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::user.yml -> service -> endpoints -> get-user%0Auser.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk user.yml -> service -> endpoints -> get-user-usage
+                  user.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::user.yml -> service -> endpoints -> get-user-usage%0Auser.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-browsers
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-browsers%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-campaigns
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-campaigns%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-country
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-country%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-device
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-device%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-language
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-language%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-mediums
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-mediums%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-os
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-os%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-pages
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-pages%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-properties
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-properties%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-referrers
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-referrers%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-sources
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-sources%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-summary
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-summary%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk stats.yml -> service -> endpoints -> get-website-id-time
+                  stats.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stats.yml -> service -> endpoints -> get-website-id-time%0Astats.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk website.yml -> service -> endpoints -> get-websites
+                  website.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::website.yml -> service -> endpoints -> get-websites%0Awebsite.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk website.yml -> service -> endpoints -> get-websites-id
+                  website.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::website.yml -> service -> endpoints -> get-websites-id%0Awebsite.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk settings.yml -> service -> endpoints -> patch-tenant-settings
+                  settings.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::settings.yml -> service -> endpoints -> patch-tenant-settings%0Asettings.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk user.yml -> service -> endpoints -> patch-user
+                  user.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::user.yml -> service -> endpoints -> patch-user%0Auser.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk website.yml -> service -> endpoints -> patch-websites-id
+                  website.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::website.yml -> service -> endpoints -> patch-websites-id%0Awebsite.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk website.yml -> service -> endpoints -> post-websites
+                  website.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::website.yml -> service -> endpoints -> post-websites%0Awebsite.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk Found 24 errors and 0 warnings in 0.648 seconds.
+::error title=[api]%3A python-sdk::Found 24 errors and 0 warnings in 0.648 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

@@ -17,13 +17,13 @@ verdict = "exhausted"
 [[covers]]
 key = "format-binary"
 arm = 'src/ir.rs::scalar_body[=Some\("binary"\)]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-45-format-binary"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"
 
 [[covers]]
 key = "format-binary"
 arm = 'src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-44-format-binary"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"

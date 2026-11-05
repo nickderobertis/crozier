@@ -1205,6 +1205,12 @@
     "tests/fixtures/eos.local-extra-fields-forbid/expected-flat": {},
     "tests/fixtures/eos.local/expected": {},
     "tests/fixtures/eozilla/expected": {},
+    "tests/fixtures/eqivo-apostrophe-enums/expected": {},
+    "tests/fixtures/eqivo-apostrophe-enums/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ere-ps-app/expected": {},
     "tests/fixtures/error-responses/expected": {},
     "tests/fixtures/esp32-streamline-bridge/expected": {},

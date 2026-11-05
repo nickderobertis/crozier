@@ -1,0 +1,9 @@
+{
+  "source_sha256": "a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a",
+  "removed_paths": [
+    "/components/schemas/SearchPostRequest/properties/sortby",
+    "/components/schemas/SearchPostRequest/properties/filter"
+  ],
+  "files_compared": 231,
+  "different_files": []
+}

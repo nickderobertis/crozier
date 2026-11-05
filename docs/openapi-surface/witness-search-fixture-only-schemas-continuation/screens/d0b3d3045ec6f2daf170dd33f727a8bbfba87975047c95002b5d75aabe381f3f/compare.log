@@ -1,0 +1,18 @@
+compare: found config <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml
+compare: <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml python: reference command finished in 0.02s (exit 0)
+compare: <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml python: crozier generation failed in 0.00s
+compare: <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml python: mismatched (crozier could not generate: invalid OpenAPI document <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/openapi.json: heap-exhausted: components/schemas/X)
+
+crozier compare report
+
+<scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/compare.yml
+  python: mismatched
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    reason: crozier could not generate: invalid OpenAPI document <scratch>/screen-runs/d0b3d3045ec6f2daf170dd33f727a8bbfba87975047c95002b5d75aabe381f3f/openapi.json: heap-exhausted: components/schemas/X
+    timing: reference 0.02s; crozier produced no SDK, so no speed-up
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals: no generator ran both sides
+Result: 1 generator(s) mismatched the reference (exit 3)

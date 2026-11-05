@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.qD6QktGic5/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk itemSearch.yml -> service -> endpoints -> getItemSearch -> request -> query-parameters -> intersects
+                  itemSearch.yml
+                  [error] optional<root.GeometryGeoJson> is not a valid type for a query parameter
+                  
+::error title=[api]%3A python-sdk::itemSearch.yml -> service -> endpoints -> getItemSearch -> request -> query-parameters -> intersects%0AitemSearch.yml%0A[error] optional<root.GeometryGeoJson> is not a valid type for a query parameter
+[api]: python-sdk Found 1 errors and 0 warnings in 0.421 seconds.
+::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.421 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

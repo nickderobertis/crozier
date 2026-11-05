@@ -1,0 +1,47 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .conference_list_response_message import ConferenceListResponseMessage
+
+
+class ConferenceListResponse(UniversalBaseModel):
+    list_: typing_extensions.Annotated[
+        typing.Dict[str, typing.Any],
+        FieldMetadata(alias="List"),
+        pydantic.Field(alias="List", description="List of established conferences"),
+    ]
+    """
+    List of established conferences
+    """
+
+    message: typing_extensions.Annotated[
+        ConferenceListResponseMessage,
+        FieldMetadata(alias="Message"),
+        pydantic.Field(alias="Message", description="Response message"),
+    ]
+    """
+    Response message
+    """
+
+    success: typing_extensions.Annotated[
+        bool,
+        FieldMetadata(alias="Success"),
+        pydantic.Field(alias="Success", description="Whether the request was successful or not"),
+    ]
+    """
+    Whether the request was successful or not
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

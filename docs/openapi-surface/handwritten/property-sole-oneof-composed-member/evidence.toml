@@ -4,6 +4,5 @@ digest = "879103e566b9020a5ea672119edbe2f4129bb46e18466dfa354262040b471e91"
 
 [[covers]]
 key = "property-sole-oneof-composed-member"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-renewed/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-96-property-sole-oneof-composed-member"
+verdict = "exhausted"

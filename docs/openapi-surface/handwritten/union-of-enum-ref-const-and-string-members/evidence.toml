@@ -4,6 +4,5 @@ digest = "bfad5dce4df4935e6c606e7e1079a02242fa0781a89d253201e5b4addb02e30f"
 
 [[covers]]
 key = "union-of-enum-ref-const-and-string-members"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-124-union-of-enum-ref-const-and-string-members"
+verdict = "exhausted"

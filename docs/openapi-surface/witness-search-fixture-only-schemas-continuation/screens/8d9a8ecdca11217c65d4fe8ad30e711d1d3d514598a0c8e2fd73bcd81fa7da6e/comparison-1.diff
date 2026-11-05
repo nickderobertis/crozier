@@ -1,0 +1,148 @@
+# crozier compare: <scratch>/screen-runs/8d9a8ecdca11217c65d4fe8ad30e711d1d3d514598a0c8e2fd73bcd81fa7da6e/compare.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/reference.md
++++ crozier/reference.md
+  # Reference
+- ## Sandbox
++ ## sandbox
+  <details><summary><code>client.sandbox.<a href="src/fern/sandbox/client.py">get_context</a>() -> SandboxResponse</code></summary>
+  <dl>
+  <dd>
+      ⋮ (905 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Shell
++ ## shell
+  <details><summary><code>client.shell.<a href="src/fern/shell/client.py">exec_command</a>(...) -> ResponseShellCommandResult</code></summary>
+  <dl>
+  <dd>
+      ⋮ (945 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Bash
++ ## bash
+  <details><summary><code>client.bash.<a href="src/fern/bash/client.py">exec</a>(...) -> ResponseBashExecResult</code></summary>
+  <dl>
+  <dd>
+      ⋮ (658 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## File
++ ## file
+  <details><summary><code>client.file.<a href="src/fern/file/client.py">read_file</a>(...) -> ResponseUnionFileReadResultFileOperationError</code></summary>
+  <dl>
+  <dd>
+      ⋮ (1663 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Jupyter
++ ## jupyter
+  <details><summary><code>client.jupyter.<a href="src/fern/jupyter/client.py">execute_code</a>(...) -> ResponseJupyterExecuteResponse</code></summary>
+  <dl>
+  <dd>
+      ⋮ (442 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Nodejs
++ ## nodejs
+  <details><summary><code>client.nodejs.<a href="src/fern/nodejs/client.py">execute_code</a>(...) -> ResponseNodeJsExecuteResponse</code></summary>
+  <dl>
+  <dd>
+      ⋮ (874 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Browser
++ ## browser
+  <details><summary><code>client.browser.<a href="src/fern/browser/client.py">get_info</a>() -> ResponseBrowserInfoResult</code></summary>
+  <dl>
+  <dd>
+      ⋮ (3896 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Code
++ ## code
+  <details><summary><code>client.code.<a href="src/fern/code/client.py">execute_code</a>(...) -> ResponseCodeExecuteResponse</code></summary>
+  <dl>
+  <dd>
+      ⋮ (169 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Util
++ ## util
+  <details><summary><code>client.util.<a href="src/fern/util/client.py">convert_to_markdown</a>(...) -> Response</code></summary>
+  <dl>
+  <dd>
+      ⋮ (65 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Skills
++ ## skills
+  <details><summary><code>client.skills.<a href="src/fern/skills/client.py">register_skills</a>(...) -> ResponseSkillRegistrationResult</code></summary>
+  <dl>
+  <dd>
+      ⋮ (283 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Proxy
++ ## proxy
+  <details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">list_mappings</a>() -> ResponseListProxyMappingRoute</code></summary>
+  <dl>
+  <dd>
+      ⋮ (744 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Display
++ ## display
+  <details><summary><code>client.display.<a href="src/fern/display/client.py">record</a>(...) -> ResponseDisplayRecordResult</code></summary>
+  <dl>
+  <dd>
+      ⋮ (117 unchanged line(s))
+  </dl>
+  </details>
+  
+- ## Auth
++ ## auth
+  <details><summary><code>client.auth.<a href="src/fern/auth/client.py">create_ticket</a>() -> typing.Dict[str, typing.Any]</code></summary>
+  <dl>
+  <dd>
+      ⋮ (125 unchanged line(s))
+
+Unexplained original crozier line(s): 2, 914, 1866, 2531, 4201, 4650, 5531, 9434, 9610, 9682, 9972, 10723, 10847
+
+--- reference/src/fern/browser/raw_client.py
++++ crozier/src/fern/browser/raw_client.py
+      ⋮ (296 unchanged line(s))
+              json=convert_and_respect_annotation_metadata(
+                  object_=request, annotation=typing.Optional[RestartRequest], direction="write"
+              ),
++             headers={
++                 "content-type": "application/json",
++             },
+              request_options=request_options,
+              omit=OMIT,
+          )
+      ⋮ (330 unchanged line(s))
+              json=convert_and_respect_annotation_metadata(
+                  object_=request, annotation=typing.Optional[RestartRequest], direction="write"
+              ),
++             headers={
++                 "content-type": "application/json",
++             },
+              request_options=request_options,
+              omit=OMIT,
+          )
+      ⋮ (61 unchanged line(s))
+
+Unexplained original crozier line(s): 300, 301, 302, 639, 640, 641

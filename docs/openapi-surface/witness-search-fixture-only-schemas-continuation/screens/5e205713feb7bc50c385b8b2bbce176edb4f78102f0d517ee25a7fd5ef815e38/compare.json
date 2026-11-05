@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/screen-runs/5e205713feb7bc50c385b8b2bbce176edb4f78102f0d517ee25a7fd5ef815e38/compare.yml"
+  ],
+  "exit_code": 0,
+  "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.043253607,
+    "crozier_seconds": 3.551830725,
+    "speedup": 0.012177834572901837,
+    "saved_seconds": -3.508577118
+  },
+  "results": [
+    {
+      "status": "matched",
+      "config_file": "<scratch>/screen-runs/5e205713feb7bc50c385b8b2bbce176edb4f78102f0d517ee25a7fd5ef815e38/compare.yml",
+      "generator": "python",
+      "spec": "<scratch>/screen-runs/5e205713feb7bc50c385b8b2bbce176edb4f78102f0d517ee25a7fd5ef815e38/openapi.yaml",
+      "reference": {
+        "command": "cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/5e205713feb7bc50c385b8b2bbce176edb4f78102f0d517ee25a7fd5ef815e38/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 183,
+        "differing": [],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 39
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 40
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.043253607,
+        "crozier_seconds": 3.551830725,
+        "speedup": 0.012177834572901837,
+        "saved_seconds": -3.508577118
+      },
+      "reason": null
+    }
+  ]
+}

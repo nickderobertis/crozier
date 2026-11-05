@@ -1,0 +1,125 @@
+key	kind	arm	covers	prior_verdict	verdict	outstanding_entries	anchor
+additional-properties-schema	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	survey-map-value-union	search-incomplete	search-incomplete	1301	target-1-additional-properties-schema
+allof	arm	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	union-sample	search-incomplete	search-incomplete	1144	target-2-allof
+allof	arm	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	harbour-window, measurement-phase	search-incomplete	search-incomplete	1144	target-3-allof
+allof	arm	src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]	kiln-variant-trigger	search-incomplete	search-incomplete	1165	target-4-allof
+allof-base-in-cycle-imported-after-class	feature	-	circuit-readings	search-incomplete	search-incomplete	5	target-5-allof-base-in-cycle-imported-after-class
+allof-child-of-cyclic-base-imports-base-deferred	feature	-	garden-crown	search-incomplete	search-incomplete	4	target-6-allof-child-of-cyclic-base-imports-base-deferred
+allof-enum-ref-narrowed-by-scalar-member	feature	-	measurement-phase	search-incomplete	exhausted	0	target-7-allof-enum-ref-narrowed-by-scalar-member
+allof-extends-oneof-object-refused	feature	-	union-sample	search-incomplete	search-incomplete	2	target-8-allof-extends-oneof-object-refused
+allof-overlapping-ref-parents-flattened	feature	-	artefact-catalogue	search-incomplete	search-incomplete	38	target-9-allof-overlapping-ref-parents-flattened
+allof-union-branch-not-schema-overrides-property	feature	-	sampling-branches	search-incomplete	search-incomplete	1	target-10-allof-union-branch-not-schema-overrides-property
+annotated-ref-shape	arm	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]	inline-oneof-variants	exhausted	exhausted	0	target-11-annotated-ref-shape
+annotated-ref-target-anyof	arm	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	inline-property-unions	exhausted	exhausted	0	target-12-annotated-ref-target-anyof
+annotated-ref-target-inheritance-union	feature	-	glaze-ledger-coats	exhausted	exhausted	0	target-13-annotated-ref-target-inheritance-union
+annotated-ref-target-string-const	feature	-	inline-property-unions	exhausted	exhausted	0	target-14-annotated-ref-target-string-const
+anyof-allof-variant	arm	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]	inline-anyof-variants	exhausted	exhausted	0	target-15-anyof-allof-variant
+anyof-array-variant-annotated-ref-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]	inline-anyof-variants	exhausted	exhausted	0	target-16-anyof-array-variant-annotated-ref-item
+anyof-array-variant-anyof-nullable-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	inline-anyof-variants	exhausted	exhausted	0	target-17-anyof-array-variant-anyof-nullable-item
+anyof-array-variant-closed-object-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	inline-anyof-variants	exhausted	exhausted	0	target-18-anyof-array-variant-closed-object-item
+anyof-array-variant-composed-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	inline-anyof-variants	exhausted	exhausted	0	target-19-anyof-array-variant-composed-item
+anyof-array-variant-inline-enum-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(list\) = self\.hoist_array_item_enum\(&variant_name, variant\) \{]	kiln-array-mode	search-incomplete	search-incomplete	1	target-20-anyof-array-variant-inline-enum-item
+anyof-array-variant-oneof-nullable-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	inline-anyof-variants	exhausted	exhausted	0	target-21-anyof-array-variant-oneof-nullable-item
+anyof-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	exhausted	exhausted	0	target-22-anyof-discriminated-union
+anyof-map-variant-anyof-value	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	survey-map-value-union	search-incomplete	search-incomplete	9	target-23-anyof-map-variant-anyof-value
+anyof-map-variant-oneof-value	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	survey-map-value-union	search-incomplete	search-incomplete	2	target-24-anyof-map-variant-oneof-value
+anyof-oneof-variant	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	inline-anyof-variants	exhausted	exhausted	0	target-25-anyof-oneof-variant
+array-item-anyof-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	exhausted	exhausted	0	target-26-array-item-anyof-discriminated-union
+array-item-empty-object	arm	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	nested-array-elements	exhausted	exhausted	0	target-27-array-item-empty-object
+array-item-inheritance-union	feature	-	array-item-inheritance-union	search-incomplete	exhausted	0	target-28-array-item-inheritance-union
+array-item-oneof-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	exhausted	exhausted	0	target-29-array-item-oneof-discriminated-union
+array-item-pointer-walk-allof	arm	"src/ir.rs::resolve_schema_pointer[^\s*""allOf"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-30-array-item-pointer-walk-allof
+array-item-pointer-walk-anyof	arm	"src/ir.rs::resolve_schema_pointer[^\s*""anyOf"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-31-array-item-pointer-walk-anyof
+array-item-pointer-walk-items	arm	"src/ir.rs::resolve_schema_pointer[^\s*""items"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-32-array-item-pointer-walk-items
+array-item-pointer-walk-oneof	feature	-	array-item-pointer-walk-oneof	search-incomplete	exhausted	0	target-33-array-item-pointer-walk-oneof
+array-item-pointer-walk-properties	arm	"src/ir.rs::resolve_schema_pointer[^\s*""properties"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-34-array-item-pointer-walk-properties
+combo-annotated-ref-property-example	feature	-	harbor-parcel-requests	search-incomplete	exhausted	0	target-35-combo-annotated-ref-property-example
+combo-anyof-beside-properties	feature	-	orchard-dispatch-schemas	search-incomplete	search-incomplete	3	target-36-combo-anyof-beside-properties
+combo-oneof-beside-properties	feature	-	orchard-dispatch-schemas	search-incomplete	search-incomplete	4	target-37-combo-oneof-beside-properties
+discriminated-variant-date-value-snippet	feature	-	discriminated-variant-date-value-snippet	search-incomplete	exhausted	0	target-38-discriminated-variant-date-value-snippet
+discriminator-mapping	arm	src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]	tidepool-survey-log	exhausted	exhausted	0	target-39-discriminator-mapping
+discriminator-mapping	arm	src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]	kitchen-nested-mapping-target	search-incomplete	search-incomplete	179	target-40-discriminator-mapping
+discriminator-mapping	arm	src/ir.rs::Builder::discriminated_union[if union_target \{]	tidepool-survey-log	exhausted	exhausted	0	target-41-discriminator-mapping
+enum	arm	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	harbour-window, measurement-phase	search-incomplete	search-incomplete	1848	target-42-enum
+enum-value-description-extension-dropped	feature	-	compass-member-notes	search-incomplete	search-incomplete	2	target-43-enum-value-description-extension-dropped
+format-binary	arm	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	json-binary-path, json-request-shapes	search-incomplete	search-incomplete	440	target-44-format-binary
+format-binary	arm	"src/ir.rs::scalar_body[=Some\(""binary""\)]"	json-binary-path, json-request-shapes	search-incomplete	search-incomplete	442	target-45-format-binary
+format-byte	arm	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	byte-text-response, byte-text-response-controls	search-incomplete	search-incomplete	228	target-46-format-byte
+format-email	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-47-format-email
+format-hostname	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-48-format-hostname
+format-idn-hostname	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-49-format-idn-hostname
+format-int64	arm	src/ir.rs::bounded_example_literal[=^ {16}exact$]	odometer-reading	search-incomplete	search-incomplete	624	target-50-format-int64
+format-ipv4	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-51-format-ipv4
+format-iri	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-52-format-iri
+format-json-pointer	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-53-format-json-pointer
+format-password	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-54-format-password
+format-regex	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-55-format-regex
+format-time	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-56-format-time
+format-uri	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-57-format-uri
+format-uri-reference	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-58-format-uri-reference
+format-uri-template	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-59-format-uri-template
+format-uuid	arm	"src/ir.rs::scalar_body[=Some\(""uuid"" \x7c ""byte""\)]"	meadow-tag-code	search-incomplete	search-incomplete	473	target-60-format-uuid
+forward-refs-omit-hoisted-variant-models	feature	-	woven-thread	search-incomplete	exhausted	0	target-61-forward-refs-omit-hoisted-variant-models
+inheritance-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	exhausted	exhausted	0	target-62-inheritance-discriminated-union
+integer-example-beyond-double-precision	feature	-	odometer-reading	search-incomplete	search-incomplete	23	target-63-integer-example-beyond-double-precision
+literal-enum-value-quote-escaping	feature	-	literal-enum-value-quote-escaping	search-incomplete	search-incomplete	48	target-64-literal-enum-value-quote-escaping
+literal-example-dollar-escaped-in-docstring	feature	-	prompt-variable	search-incomplete	exhausted	0	target-65-literal-example-dollar-escaped-in-docstring
+literal-type-extension-ignored	feature	-	verified-seal	exhausted	exhausted	0	target-66-literal-type-extension-ignored
+model-property-construct	feature	-	376-354-model-property-construct	search-incomplete	exhausted	0	target-67-model-property-construct
+nullable-anyof-member-description-dropped	feature	-	nullable-observer-notes	search-incomplete	search-incomplete	9	target-68-nullable-anyof-member-description-dropped
+number-format-uint64-typed-int	feature	-	material-register	search-incomplete	search-incomplete	1	target-69-number-format-uint64-typed-int
+oneof	arm	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	quiz-nullable-response-union	search-incomplete	search-incomplete	803	target-70-oneof
+oneof	arm	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	error-body-shapes	search-incomplete	search-incomplete	803	target-71-oneof
+oneof-anyof-variant	arm	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	kiln-array-mode	search-incomplete	search-incomplete	18	target-72-oneof-anyof-variant
+oneof-anyof-variant	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	inline-oneof-variants	exhausted	exhausted	0	target-73-oneof-anyof-variant
+oneof-anyof-variant	arm	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	kiln-nested-reason	search-incomplete	search-incomplete	18	target-74-oneof-anyof-variant
+oneof-array-variant-annotated-ref-item	feature	-	inline-oneof-variants	exhausted	exhausted	0	target-75-oneof-array-variant-annotated-ref-item
+oneof-array-variant-anyof-discriminated-union-item	feature	-	inline-oneof-variants	exhausted	exhausted	0	target-76-oneof-array-variant-anyof-discriminated-union-item
+oneof-array-variant-anyof-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	inline-oneof-variants	exhausted	exhausted	0	target-77-oneof-array-variant-anyof-item
+oneof-array-variant-anyof-nullable-item	feature	-	inline-oneof-variants	exhausted	exhausted	0	target-78-oneof-array-variant-anyof-nullable-item
+oneof-array-variant-closed-object-item	arm	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	inline-oneof-variants	exhausted	exhausted	0	target-79-oneof-array-variant-closed-object-item
+oneof-array-variant-inline-const-item	feature	-	kiln-array-variants	search-incomplete	exhausted	0	target-80-oneof-array-variant-inline-const-item
+oneof-bare-object-example-variant	feature	-	inline-oneof-variants	exhausted	exhausted	0	target-81-oneof-bare-object-example-variant
+oneof-closed-empty-object-variant	arm	src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]	inline-oneof-variants	exhausted	exhausted	0	target-82-oneof-closed-empty-object-variant
+oneof-discriminated-union	arm	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]	library-union-shared-fields	search-incomplete	search-incomplete	275	target-83-oneof-discriminated-union
+oneof-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	search-incomplete	search-incomplete	266	target-84-oneof-discriminated-union
+oneof-map-variant-anyof-value	feature	-	survey-map-value-union	search-incomplete	exhausted	0	target-85-oneof-map-variant-anyof-value
+oneof-map-variant-oneof-value	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	survey-map-value-union	search-incomplete	search-incomplete	1	target-86-oneof-map-variant-oneof-value
+property-anyof-sole-string-enum-member	feature	-	dormant-sensor-unions	search-incomplete	exhausted	0	target-87-property-anyof-sole-string-enum-member
+property-map-value-oneof	arm	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	shelf-labels-map-variants	search-incomplete	search-incomplete	29	target-88-property-map-value-oneof
+property-oneof-residual	arm	src/ir.rs::untagged_inline_discriminator[if untagged \{]	atlas-untagged-inline-discriminator	search-incomplete	search-incomplete	358	target-89-property-oneof-residual
+property-oneof-sole-string-enum-member	feature	-	dormant-sensor-unions	search-incomplete	search-incomplete	2	target-90-property-oneof-sole-string-enum-member
+property-ref-to-nullable-component-annotation	feature	-	reservoir-ledger	search-incomplete	search-incomplete	11	target-91-property-ref-to-nullable-component-annotation
+property-sole-anyof-closed-object-member	arm	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	inline-property-unions	exhausted	exhausted	0	target-92-property-sole-anyof-closed-object-member
+property-sole-anyof-composed-member	feature	-	property-sole-anyof-composed-member	search-incomplete	exhausted	0	target-93-property-sole-anyof-composed-member
+property-sole-anyof-empty-object-member	feature	-	property-sole-anyof-empty-object-member	search-incomplete	exhausted	0	target-94-property-sole-anyof-empty-object-member
+property-sole-anyof-struct-member	arm	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	inline-property-unions	exhausted	exhausted	0	target-95-property-sole-anyof-struct-member
+property-sole-oneof-composed-member	feature	-	property-sole-oneof-composed-member	search-incomplete	exhausted	0	target-96-property-sole-oneof-composed-member
+property-sole-oneof-empty-object-member	feature	-	property-sole-oneof-empty-object-member	search-incomplete	exhausted	0	target-97-property-sole-oneof-empty-object-member
+ref-into-component-response-schema-named-by-last-segment	feature	-	parcel-response	search-incomplete	search-incomplete	7	target-98-ref-into-component-response-schema-named-by-last-segment
+ref-pointer-composition-index	arm	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	composition-index-pointer	exhausted	exhausted	0	target-99-ref-pointer-composition-index
+ref-pointer-composition-index	arm	"src/ir.rs::resolve_schema_pointer[^\s*""allOf"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-100-ref-pointer-composition-index
+ref-pointer-composition-index	arm	"src/ir.rs::resolve_schema_pointer[^\s*""anyOf"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-101-ref-pointer-composition-index
+ref-pointer-composition-index	arm	"src/ir.rs::resolve_schema_pointer[^\s*""oneOf"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-102-ref-pointer-composition-index
+ref-pointer-nested-items	arm	"src/ir.rs::ref_to_class[""items"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-103-ref-pointer-nested-items
+ref-pointer-nested-items	arm	"src/ir.rs::resolve_schema_pointer[^\s*""items"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-104-ref-pointer-nested-items
+ref-pointer-nested-properties	arm	"src/ir.rs::ref_to_class[""properties"" if index]"	ref-pointer-walk	exhausted	exhausted	0	target-105-ref-pointer-nested-properties
+ref-pointer-nested-properties	arm	"src/ir.rs::resolve_schema_pointer[^\s*""properties"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-106-ref-pointer-nested-properties
+ref-pointer-undeclared-component-head	arm	src/ir.rs::Builder::discriminated_union[if all_dangling \{]	ferry-mapping-outside-schemas	search-incomplete	search-incomplete	24	target-107-ref-pointer-undeclared-component-head
+ref-pointer-undeclared-component-head	arm	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	ref-pointer-ignored-head	search-incomplete	search-incomplete	24	target-108-ref-pointer-undeclared-component-head
+ref-with-nullable-sibling-made-optional	feature	-	required-marker-point	search-incomplete	search-incomplete	23	target-109-ref-with-nullable-sibling-made-optional
+reference-literal-single-quote-escaped	feature	-	fortune-cookie-const	search-incomplete	exhausted	0	target-110-reference-literal-single-quote-escaped
+remote-document-local-pointer-resolved-against-root	feature	-		search-incomplete	search-incomplete	379	target-111-remote-document-local-pointer-resolved-against-root
+remote-ref-at-use-site-inlined	feature	-		search-incomplete	search-incomplete	379	target-112-remote-ref-at-use-site-inlined
+schema-example-array-null-element	feature	-	lunar-null-labels	search-incomplete	search-incomplete	30	target-113-schema-example-array-null-element
+schema-example-null	feature	-	harbor-signal-null	search-incomplete	search-incomplete	12	target-114-schema-example-null
+schema-example-outside-enum	arm	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	enum-media-selection	search-incomplete	search-incomplete	46	target-115-schema-example-outside-enum
+schema-example-temporal-duplicate-element	feature	-	observatory-example-arrays	search-incomplete	exhausted	0	target-116-schema-example-temporal-duplicate-element
+schema-example-union-ref-sentinel	feature	-	observatory-example-arrays	search-incomplete	exhausted	0	target-117-schema-example-union-ref-sentinel
+schema-sdk-group-name	feature	-	vineyard-cellar-glossary	search-incomplete	search-incomplete	2	target-118-schema-sdk-group-name
+schema-type-name-component	feature	-	376-350-declared-type-name, 376-350-declared-type-name-blank, 376-350-declared-type-name-shared, 376-350-declared-type-name-slash, 376-350-declared-type-name-tilde	search-incomplete	exhausted	0	target-119-schema-type-name-component
+schema-type-name-inline-property	feature	-	film-shot-planner	exhausted	exhausted	0	target-120-schema-type-name-inline-property
+string-json-format-typed-any	feature	-	material-register	search-incomplete	exhausted	0	target-121-string-json-format-typed-any
+type-single	arm	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	verified-seal	search-incomplete	search-incomplete	2095	target-122-type-single
+undiscriminated-ref-oneof-sibling-properties-dropped	feature	-	undiscriminated-ref-oneof-sibling-properties-dropped	search-incomplete	search-incomplete	56	target-123-undiscriminated-ref-oneof-sibling-properties-dropped
+union-of-enum-ref-const-and-string-members	feature	-	union-of-enum-ref-const-and-string-members	search-incomplete	exhausted	0	target-124-union-of-enum-ref-const-and-string-members

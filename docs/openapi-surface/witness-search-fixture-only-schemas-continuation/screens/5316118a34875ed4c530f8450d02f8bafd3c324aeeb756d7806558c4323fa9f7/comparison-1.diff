@@ -1,0 +1,284 @@
+# crozier compare: <scratch>/screen-runs/5316118a34875ed4c530f8450d02f8bafd3c324aeeb756d7806558c4323fa9f7/compare.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (34 unchanged line(s))
+  Instantiate and use the client with the following:
+  
+  ```python
+- from fern import FernApi
++ from fern import FernApi, TranslationRequestBody, TranslationRequestBodyTranslation
++ from fern.transcripts import TranscriptCustomSpelling, RedactPiiAudioQuality, PiiPolicy, SubstitutionPolicy, TranscriptOptionalParamsSpeechUnderstanding
+  
+  client = FernApi(
+      api_key="<value>",
+  )
+  
+- client.files.upload()
++ client.transcripts.submit(
++     audio_end_at=280,
++     audio_start_from=10,
++     auto_highlights=True,
++     content_safety=True,
++     custom_spelling=[
++         TranscriptCustomSpelling(
++             from_=[
++                 "dicarlo"
++             ],
++             to="Decarlo",
++         )
++     ],
++     disfluencies=False,
++     entity_detection=True,
++     filter_profanity=True,
++     format_text=True,
++     iab_categories=True,
++     language_confidence_threshold=0.7,
++     language_detection=True,
++     multichannel=True,
++     punctuate=True,
++     redact_pii=True,
++     redact_pii_audio=True,
++     redact_pii_audio_quality=RedactPiiAudioQuality.MP3,
++     redact_pii_policies=[
++         PiiPolicy.US_SOCIAL_SECURITY_NUMBER,
++         PiiPolicy.CREDIT_CARD_NUMBER
++     ],
++     redact_pii_sub=SubstitutionPolicy.HASH,
++     sentiment_analysis=True,
++     speaker_labels=True,
++     speakers_expected=2,
++     speech_threshold=0.5,
++     speech_understanding=TranscriptOptionalParamsSpeechUnderstanding(
++         request=TranslationRequestBody(
++             translation=TranslationRequestBodyTranslation(
++                 target_languages=[
++                     "es",
++                     "de"
++                 ],
++                 formal=True,
++                 match_original_utterance=True,
++             ),
++         ),
++     ),
++     webhook_auth_header_name="webhook-secret",
++     webhook_auth_header_value="webhook-secret-value",
++     webhook_url="https://your-webhook-url/path",
++     audio_url="https://assembly.ai/wildfires.mp3",
++ )
+  ```
+  
+  ## Environments
+      ⋮ (15 unchanged line(s))
+  
+  ```python
+  import asyncio
++ from fern.transcripts import TranscriptCustomSpelling, RedactPiiAudioQuality, PiiPolicy, SubstitutionPolicy, TranscriptOptionalParamsSpeechUnderstanding
+  
+  from fern import AsyncFernApi
+  
+      ⋮ (3 unchanged line(s))
+  
+  
+  async def main() -> None:
+-     await client.files.upload()
++     await client.transcripts.submit(
++         audio_end_at=280,
++         audio_start_from=10,
++         auto_highlights=True,
++         content_safety=True,
++         custom_spelling=[
++             TranscriptCustomSpelling(
++                 from_=[
++                     "dicarlo"
++                 ],
++                 to="Decarlo",
++             )
++         ],
++         disfluencies=False,
++         entity_detection=True,
++         filter_profanity=True,
++         format_text=True,
++         iab_categories=True,
++         language_confidence_threshold=0.7,
++         language_detection=True,
++         multichannel=True,
++         punctuate=True,
++         redact_pii=True,
++         redact_pii_audio=True,
++         redact_pii_audio_quality=RedactPiiAudioQuality.MP3,
++         redact_pii_policies=[
++             PiiPolicy.US_SOCIAL_SECURITY_NUMBER,
++             PiiPolicy.CREDIT_CARD_NUMBER
++         ],
++         redact_pii_sub=SubstitutionPolicy.HASH,
++         sentiment_analysis=True,
++         speaker_labels=True,
++         speakers_expected=2,
++         speech_threshold=0.5,
++         speech_understanding=TranscriptOptionalParamsSpeechUnderstanding(
++             request=TranslationRequestBody(
++                 translation=TranslationRequestBodyTranslation(
++                     target_languages=[
++                         "es",
++                         "de"
++                     ],
++                     formal=True,
++                     match_original_utterance=True,
++                 ),
++             ),
++         ),
++         webhook_auth_header_name="webhook-secret",
++         webhook_auth_header_value="webhook-secret-value",
++         webhook_url="https://your-webhook-url/path",
++         audio_url="https://assembly.ai/wildfires.mp3",
++     )
+  
+  
+  asyncio.run(main())
+      ⋮ (8 unchanged line(s))
+  from fern.core.api_error import ApiError
+  
+  try:
+-     client.files.upload(...)
++     client.transcripts.submit(...)
+  except ApiError as e:
+      print(e.status_code)
+      print(e.body)
+      ⋮ (10 unchanged line(s))
+  from fern import FernApi
+  
+  client = FernApi(...)
+- response = client.files.with_raw_response.upload(...)
++ response = client.transcripts.with_raw_response.submit(...)
+  print(response.headers)  # access the response headers
+  print(response.status_code)  # access the response status code
+  print(response.data)  # access the underlying object
+      ⋮ (24 unchanged line(s))
+  Use the `max_retries` request option to configure this behavior.
+  
+  ```python
+- client.files.upload(..., request_options={
++ client.transcripts.submit(..., request_options={
+      "max_retries": 1
+  })
+  ```
+      ⋮ (8 unchanged line(s))
+  client = FernApi(..., timeout=20.0)
+  
+  # Override timeout for a specific method
+- client.files.upload(..., request_options={
++ client.transcripts.submit(..., request_options={
+      "timeout": 1
+  })
+  ```
+      ⋮ (28 unchanged line(s))
+
+Unexplained original crozier line(s): 38, 39, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 117, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 192, 209, 240, 255
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (29 unchanged line(s))
+  <dd>
+  
+  ```python
+- from fern import FernApi
+- from fern.environment import FernApiEnvironment
+- 
+- client = FernApi(
+-     api_key="<value>",
+-     environment=FernApiEnvironment.DEFAULT,
+- )
+- 
+- client.files.upload()
+- 
++ client.files.upload(...)
+  ```
+  </dd>
+  </dl>
+      ⋮ (1257 unchanged line(s))
+
+Unexplained original crozier line(s): 33
+
+--- reference/src/fern/files/client.py
++++ crozier/src/fern/files/client.py
+      ⋮ (48 unchanged line(s))
+          -------
+          UploadedFile
+              Media file uploaded successfully
+- 
+-         Examples
+-         --------
+-         from fern import FernApi
+- 
+-         client = FernApi(
+-             api_key="YOUR_API_KEY",
+-         )
+-         client.files.upload()
+          """
+          _response = self._raw_client.upload(request=request, request_options=request_options)
+          return _response.data
+      ⋮ (37 unchanged line(s))
+          -------
+          UploadedFile
+              Media file uploaded successfully
+- 
+-         Examples
+-         --------
+-         import asyncio
+- 
+-         from fern import AsyncFernApi
+- 
+-         client = AsyncFernApi(
+-             api_key="YOUR_API_KEY",
+-         )
+- 
+- 
+-         async def main() -> None:
+-             await client.files.upload()
+- 
+- 
+-         asyncio.run(main())
+          """
+          _response = await self._raw_client.upload(request=request, request_options=request_options)
+          return _response.data
+
+--- reference/src/fern/transcripts/raw_client.py
++++ crozier/src/fern/transcripts/raw_client.py
+      ⋮ (530 unchanged line(s))
+                  "speech_model": speech_model,
+                  "topics": topics,
+              },
+-             headers={
+-                 "content-type": "application/json",
+-             },
+              request_options=request_options,
+              omit=OMIT,
+          )
+      ⋮ (1441 unchanged line(s))
+                  "custom_topics": custom_topics,
+                  "speech_model": speech_model,
+                  "topics": topics,
+-             },
+-             headers={
+-                 "content-type": "application/json",
+              },
+              request_options=request_options,
+              omit=OMIT,
+      ⋮ (964 unchanged line(s))
+
+--- reference/src/fern/transcripts/types/transcript_list_item.py
++++ crozier/src/fern/transcripts/types/transcript_list_item.py
+      ⋮ (28 unchanged line(s))
+      The date and time the transcript was created
+      """
+  
+-     completed: typing.Optional[dt.datetime] = pydantic.Field(default=None)
++     completed: typing.Optional[str] = pydantic.Field(default=None)
+      """
+      The date and time the transcript was completed
+      """
+      ⋮ (19 unchanged line(s))
+
+Unexplained original crozier line(s): 32

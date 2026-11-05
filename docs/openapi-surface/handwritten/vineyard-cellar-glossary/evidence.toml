@@ -4,6 +4,6 @@ digest = "7fadb32c75eaaebf963da4afb8eba219e4eb87f88fb98fc748d15fa84b2a694c"
 
 [[covers]]
 key = "schema-sdk-group-name"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-118-schema-sdk-group-name"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"

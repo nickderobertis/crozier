@@ -1,0 +1,41 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.iSGshI81LW/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk models.yml -> service -> endpoints -> getModel -> examples[0] -> response
+                  models.yml
+                  [error] "model" is not a valid example for this enum. Enum values are:
+                    - llm
+                    - embedding
+                    - rerank
+                  
+::error title=[api]%3A python-sdk::models.yml -> service -> endpoints -> getModel -> examples[0] -> response%0Amodels.yml%0A[error] "model" is not a valid example for this enum. Enum values are:%0A  - llm%0A  - embedding%0A  - rerank
+[api]: python-sdk batches.yml -> service
+                  batches.yml
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::batches.yml -> service%0Abatches.yml%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.%0A[error] Service requires auth, but no auth is defined.
+[api]: python-sdk Found 18 errors and 0 warnings in 0.933 seconds.
+::error title=[api]%3A python-sdk::Found 18 errors and 0 warnings in 0.933 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

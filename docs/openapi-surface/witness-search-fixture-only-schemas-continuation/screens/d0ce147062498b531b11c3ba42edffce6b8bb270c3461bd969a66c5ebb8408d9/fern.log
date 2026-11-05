@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.neeps5kjow/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk positionData.yml -> service -> endpoints -> subscribePositions -> examples[0] -> response
+                  positionData.yml
+                  [error] Expected example to be an integer. Example is: 0.7
+                  
+::error title=[api]%3A python-sdk::positionData.yml -> service -> endpoints -> subscribePositions -> examples[0] -> response%0ApositionData.yml%0A[error] Expected example to be an integer. Example is: 0.7
+[api]: python-sdk Found 1 errors and 0 warnings in 0.319 seconds.
+::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.319 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

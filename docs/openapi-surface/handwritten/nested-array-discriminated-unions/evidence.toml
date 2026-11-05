@@ -5,30 +5,30 @@ digest = "9489764d75ce4c6d2595fc2b206bd2bba916d4b13c3497acf7b1104bbded0fee"
 [[covers]]
 key = "anyof-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-discriminated-union.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-22-anyof-discriminated-union"
 verdict = "exhausted"
 
 [[covers]]
 key = "array-item-oneof-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-oneof-discriminated-union.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-29-array-item-oneof-discriminated-union"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-84-oneof-discriminated-union"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"
 
 [[covers]]
 key = "array-item-anyof-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-anyof-discriminated-union.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-26-array-item-anyof-discriminated-union"
 verdict = "exhausted"
 
 [[covers]]
 key = "inheritance-discriminated-union"
 arm = 'src/ir.rs::Builder::nested_array_element[^\s*\) \{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/inheritance-discriminated-union.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-62-inheritance-discriminated-union"
 verdict = "exhausted"

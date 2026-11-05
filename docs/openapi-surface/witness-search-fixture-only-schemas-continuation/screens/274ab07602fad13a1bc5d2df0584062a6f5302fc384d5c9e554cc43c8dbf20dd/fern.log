@@ -1,0 +1,25 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.8VWelRPzow/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> cancelBatch
+                  __package__.yml
+                  [error] Path parameter is unreferenced in endpoint: batchId.
+                  [error] Multiple request properties resolve to the same generated name batchId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
+                    - Path parameter "batch_id" (name: "batch_id")
+                    - Path parameter "batchId" (name: "batchId")
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> cancelBatch%0A__package__.yml%0A[error] Path parameter is unreferenced in endpoint: batchId.%0A[error] Multiple request properties resolve to the same generated name batchId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.%0A  - Path parameter "batch_id" (name: "batch_id")%0A  - Path parameter "batchId" (name: "batchId")
+[api]: python-sdk __package__.yml -> types -> BadRquestData -> properties -> code -> type
+                  __package__.yml
+                  [error] Default value 'false' is not a valid integer
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> BadRquestData -> properties -> code -> type%0A__package__.yml%0A[error] Default value 'false' is not a valid integer
+[api]: python-sdk Found 3 errors and 0 warnings in 0.446 seconds.
+::error title=[api]%3A python-sdk::Found 3 errors and 0 warnings in 0.446 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

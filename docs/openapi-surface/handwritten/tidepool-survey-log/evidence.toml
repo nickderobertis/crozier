@@ -5,11 +5,11 @@ digest = "67a43d9928815a579b564fe8ff9ff8feacc6bccded2b8d591833bed0f2c5944b"
 [[covers]]
 key = "discriminator-mapping"
 arm = 'src/ir.rs::Builder::discriminated_union[if union_target \{]'
-search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-41-discriminator-mapping"
 verdict = "exhausted"
 
 [[covers]]
 key = "discriminator-mapping"
 arm = 'src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]'
-search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-39-discriminator-mapping"
 verdict = "exhausted"
