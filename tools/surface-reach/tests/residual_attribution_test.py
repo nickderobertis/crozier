@@ -195,11 +195,16 @@ def test_record_publication_runs_the_cli_and_preserves_unselected_rows(tmp_path:
     published = json.loads(record.read_text(encoding="utf-8"))
     assert published["version"] == 1
     assert next(row for row in published["rows"] if row["key"] == "unselected") == kept
-    measured = json.loads(run.stdout)
+    assert run.stdout == "residual-attribution: wrote docs/openapi-surface/residual-attribution.json\n"
     selected = next(row for row in published["rows"] if row["key"] == "boolean-schema-true")
-    assert {name: selected[name] for name in measured} == measured
+    assert selected["fixture"] == "webflow-v2"
+    assert selected["byte_matched"] == []
     assert selected["unmatched"] == ["src/fern/types/thing.py"]
     assert len(selected["golden_digest"]) == len(selected["inputs_digest"]) == 64
+    diagnostic = subprocess.run(argv[:-1], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert diagnostic.returncode == 0, diagnostic.stderr
+    measured = json.loads(diagnostic.stdout)
+    assert {name: selected[name] for name in measured} == measured
     import residual_attribution_record as record_model
 
     loaded = record_model.read(tmp_path)

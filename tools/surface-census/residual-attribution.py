@@ -192,19 +192,21 @@ def main(argv: list[str] | None = None) -> int:
         measured[key] = record.Attribution(
             key, fixture, matched, [name for name in moved if name in unmatched], golden_digest, inputs_digest
         )
-        print(
-            json.dumps(
-                {
-                    "key": key,
-                    "fixture": fixture,
-                    "byte_matched": matched,
-                    "unmatched": [name for name in moved if name in unmatched],
-                },
-                sort_keys=True,
+        if not args.write_record:
+            print(
+                json.dumps(
+                    {
+                        "key": key,
+                        "fixture": fixture,
+                        "byte_matched": matched,
+                        "unmatched": [name for name in moved if name in unmatched],
+                    },
+                    sort_keys=True,
+                )
             )
-        )
     if args.write_record:
         record.write(REPO, measured)
+        print(f"residual-attribution: wrote {record.RECORD.as_posix()}")
     return 0
 
 
