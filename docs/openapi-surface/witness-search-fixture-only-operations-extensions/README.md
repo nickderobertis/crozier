@@ -1,5 +1,15 @@
 # Witness search for the fixture-only parameter, security and extension proofs
 
+## Current schema-combination classification
+
+For the schema-owned `combo-param-example-beside-ref-schema`, the current
+[co-occurrence audit](../combination-cooccurrence.tsv) and
+[retained-population search](../witness-search-schema-interactions/README.md)
+leave the row open. The added own-example/reference guard repeated the generic
+result and was removed; its HSE hit is withdrawn as interaction proof. The
+unexhausted search admits no hand-written fallback. Harbor remains an unchanged
+complete-tree diagnostic. This update does not change other owners' rows.
+
 Every target of the region files [`parameters.md`](../parameters.md), [`security.md`](../security.md) and [`oas31-extensions.md`](../oas31-extensions.md) whose proof, at this node's base (`1748b7946`), was a hand-written fixture: their `handwritten` feature rows, their one `handwritten` combination row, and every arm-level hand-written cover of one of their `golden` rows that [`../handwritten-reach.tsv`](../handwritten-reach.tsv) listed. None of their `golden` rows rested on a residual-only supplement (the one supplement, `schema-example-null`, is a `schemas.md` row). Each target was searched once, against the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3), for a real specification whose complete golden crozier byte-matches.
 
 **Outcome.** 8 feature targets now rest on a registered real witness and 4 arm targets are executed by one; 32 targets are `exhausted`; 20 remain `search-incomplete`, each with its reason below. Seven corpus rows carry the witnesses: registered row 3001 `formbricks`, reused, and rows 4400 to 4405, added by this record.

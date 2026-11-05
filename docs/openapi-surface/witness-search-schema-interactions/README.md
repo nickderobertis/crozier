@@ -57,15 +57,15 @@ control test and registered certified comparison.
 | `combo-annotated-ref-to-nullable-target` | `search-incomplete` | 3456 | 3343 |
 | `combo-anyof-beside-properties` | `search-incomplete` | 3586 | 3476 |
 | `combo-anyof-schema-example` | `search-incomplete` | 3493 | 3381 |
-| `combo-map-beside-anyof` | `search-incomplete` | 3534 | 3420 |
-| `combo-map-beside-oneof` | `search-incomplete` | 3503 | 3396 |
+| `combo-map-beside-anyof` | `search-incomplete` | 3534 | 3419 |
+| `combo-map-beside-oneof` | `search-incomplete` | 3503 | 3390 |
 | `combo-map-of-nullable-values` | `search-incomplete` | 3550 | 3440 |
 | `combo-media-example-on-inline-allof-body` | `search-incomplete` | 3477 | 3367 |
 | `combo-media-example-on-ref-allof-body` | `search-incomplete` | 3470 | 3356 |
 | `combo-media-example-on-ref-union-body` | `search-incomplete` | 3462 | 3348 |
 | `combo-oneof-beside-properties` | `search-incomplete` | 3648 | 3547 |
 | `combo-param-example-beside-ref-schema` | `search-incomplete` | 3500 | 3388 |
-| `combo-properties-beside-additional-properties` | `search-incomplete` | 4085 | 4015 |
+| `combo-properties-beside-additional-properties` | `search-incomplete` | 4085 | 4014 |
 | `combo-property-ref-to-nullable-target` | `search-incomplete` | 3725 | 3620 |
 | `combo-property-ref-to-read-only-target` | `search-incomplete` | 3598 | 3487 |
 
@@ -101,3 +101,77 @@ Other open rows need a registered specification executing their interaction arm
 and byte-matching, or an exhausted search admitting a hand-written fallback.
 The outstanding TSV names every candidate and reason; it is not a claim that
 every candidate was screened.
+
+## Pooled anyOf example consumer
+
+`combo-anyof-schema-example` remains open. In
+`src/emit.rs::ExampleCtx::value_from_example`,
+`if let TypeRef::Union(variants) = t` and
+`if self.example_matches_type(variant, &value)` handle both union origins.
+Neither condition distinguishes anyOf from oneOf. An early anyOf-plus-own-example
+shortcut in the schema literal reader returned the generic path's literal and
+was removed; its execution was not interaction evidence. Settlement requires
+an anyOf-specific consumer arm whose output differs from the single-feature
+controls, executed by a registered specification that byte-matches. The search
+population and outstanding candidates above remain applicable.
+
+## Earlier-state arm measurements and withdrawn claims
+
+[arm-measurements.tsv](arm-measurements.tsv) retains nine arm readings from
+seven instrumented real `crozier compare` runs, with exact source and document
+digests. These readings concern the earlier source identified in the file,
+not the finished source. All seven specifications byte-matched the complete
+fresh certified tree. The `interpretation` column withdraws decorative guards
+from proof even where their counters executed.
+
+Only map-first routing and the properties/schema-valued-additional-properties
+value-hoist suppression are genuine splits. Hasura executes map/anyOf and
+Braintrust executes the properties/additional-properties arm. MockServer
+executes no map/oneOf arm region; its five co-occurring declarations all set
+`additionalProperties: false` and declare properties. Qredence's two
+declarations do the same. Map/oneOf stays open.
+
+Six guards were removed because they repeated the generic path result for
+the same input: allOf/required, annotated-reference/nullable-target,
+parameter-example/reference, referenced-allOf/media-example,
+referenced-oneOf/media-example and inline-allOf/media-example. The former
+claim of seven interaction proofs is corrected to two. In particular HSE's
+earlier counter hit is not interaction proof. Its old Harbor fallback remains
+an unchanged complete-tree diagnostic, with an open search. No golden bytes
+were edited.
+
+[guard-removal-comparisons.tsv](guard-removal-comparisons.tsv) records each
+guard's source fingerprints and its registered specification: Adyen Capital,
+Braintrust, HSE, Dashy (two guards), and FarmVibes. Before and after removal,
+the real CLI comparisons byte-match the same fresh certified tree through the
+catalogued departures. The full overlay golden comparison passes in both
+states, including each specification's literal overlay. These comparisons
+show that removing the guards preserves the SDK output; they do not establish
+a conjunctive arm for any of the six open rows. The earlier anyOf/own-example
+shortcut was removed on the same principle, with AhaSend still byte-matching.
+
+The initially considered Conjur document is already dropped from the corpus:
+the certified run reports a parse failure despite exit zero and writes only
+the 35-file scaffold. Crozier refuses it in both modes under
+`empty-sdk-refused`; it is a decided refusal, not a witness.
+
+## Open ledger shape
+
+All sixteen open schema combinations use shape A: a registered real document
+declares the pair, the region row retains the `golden` declaration category,
+and the audit records `class:open` with this search or the failed-union search.
+The class-aware coverage index counts each as unproven before considering the
+region category. The declaration category is not an interaction proof.
+
+The former fallback-only rows now name registered declarers: Zulip for
+annotated-reference/property-example, AhaSend for anyOf/properties, MockServer
+for oneOf/properties, and HSE for parameter-example/reference. Their documents
+declare the pairs; none supplies the missing genuine interaction decision.
+The retired Harbor and Orchard trees remain diagnostic only. No audit row is
+removed and no schema combination uses shape B's separate named-gap form.
+
+[open-shapes.tsv](open-shapes.tsv) records each of the sixteen shape-A rows,
+its registered declarer, exact source digest, positive declaration count and
+source pointer. It uses the canonical audit reader and region parser; the
+canonical coverage splitter classifies `open` as unproven before reading the
+`golden` category. This is declaration evidence, not interaction proof.

@@ -843,7 +843,7 @@ FORMAT_OPERAND = BINARY + r'[=^ {28}&& schema\.format\.as_deref\(\) == Some\("bi
 TEXT_OPERAND = BINARY + r"[=is_text_response_media\(media_type\)$]"
 PASSED_WHOLE = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c passed_whole$]"
 INLINE_MAP = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c is_map\(schema\)$]"
-TARGET_NULLABLE = "src/ir.rs::annotated_reference_accepts_none"
+TARGET_NULLABLE = r"src/ir.rs::Builder::collect_fields[=\.is_some_and\(\x7ctarget\x7c schema_accepts_none\(target, self\.schemas\)\);$]"
 NOT_REQUIRED = r"src/ir.rs::Builder::collect_fields[=!spec_required;$]"
 SCHEMA_EXAMPLE = r"src/ir.rs::parameter_example_value[=parameter\.schema\.as_ref\(\)\.and_then\(typed_schema_example\)]"
 URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}&& !hoister\.reaches_url_as_scalars\(&type_ref\),$]"
@@ -1029,7 +1029,7 @@ UNION_BODY_SUFFIX = r"src/ir.rs::resolve_request_body[^ {8}let request_body_name
 COMPOSED_MEDIA_EXAMPLE = (
     r"src/emit.rs::build_example_inner[let mut example_fields: Vec<&BodyField> = if composed_request_media_example \{]"
 )
-FALLBACKS_ONLY = r"src/ir.rs::resolve_request_body[let component_examples = if target\.all_of\.is_some\(\) && media\.example\.is_some\(\)]"
+FALLBACKS_ONLY = r"src/ir.rs::resolve_request_body[=Some\(_\) => ComponentExamplePolicy::PropertyFallbacksOnly,]"
 UNION_EXAMPLE = r"src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::Union\(variants\) = t \{]"
 MATCHED_VARIANT = r"src/emit.rs::ExampleCtx::value_from_example[if self\.example_matches_type\(variant, &value\) \{]"
 MULTIPART_CLAIMS = r"src/ir.rs::rename_claimed_path_params[Some\(RequestBody::Form\(form\)\) if form\.multipart => \{]"
@@ -1858,6 +1858,19 @@ class SchemaInteractionControl(NamedTuple):
     documents: dict[DocumentRole, Path]
 
 
+class ControlFeatures(NamedTuple):
+    first: str
+    second: str
+
+
+SCHEMA_CONTROL_FEATURES = {
+    "combo-map-beside-anyof": ControlFeatures("schema.additionalProperties", "schema.anyOf"),
+    "combo-properties-beside-additional-properties": ControlFeatures(
+        "schema.additionalProperties", "schema.properties:non-empty"
+    ),
+}
+
+
 class SourceCondition(NamedTuple):
     handler: str
     condition: str
@@ -2090,6 +2103,7 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
         path = REPO / "docs/openapi-surface/combination-interaction-controls/controls.json"
         controls = schema_interaction_controls(path)
         self.assertEqual(len(controls), len({record.key for record in controls}))
+        self.assertEqual(set(SCHEMA_CONTROL_FEATURES), {record.key for record in controls})
         sites = reach.read_sites_table()
         audited, failures = reach.read_cooccurrence()
         self.assertEqual([], failures)
@@ -2107,8 +2121,22 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             for role, relative in record.documents.items():
                 with self.subTest(key=record.key, document=role), tempfile.TemporaryDirectory() as temporary:
                     document = REPO / relative
-                    declared = census.census_document(census.load_document(document))
-                    self.assertEqual(int(role is DocumentRole.BOTH), declared.get(sites[record.key].selectors[0], 0))
+                    features = SCHEMA_CONTROL_FEATURES[record.key]
+                    combination = sites[record.key].selectors[0]
+                    declared = census.census_document(
+                        census.load_document(document),
+                        conjunctions={
+                            selector: census.compile_conjunction(selector)
+                            for selector in (combination, features.first, features.second)
+                        },
+                    )
+                    self.assertEqual(int(role is DocumentRole.BOTH), declared.get(combination, 0))
+                    # Scaffolding may use a feature elsewhere; the zero conjunction
+                    # above holds the single-feature controls to the interaction context.
+                    if role is not DocumentRole.SECOND:
+                        self.assertGreater(declared.get(features.first, 0), 0, features.first)
+                    if role is not DocumentRole.FIRST:
+                        self.assertGreater(declared.get(features.second, 0), 0, features.second)
                     _package, universe, hit = self.generate(
                         Path(temporary), document.read_text(encoding="utf-8"), reach, crozier
                     )
@@ -2134,6 +2162,38 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
                             "counts: typing.Optional[typing.Dict[str, int]]",
                             (package / "types/tally.py").read_text(encoding="utf-8"),
                         )
+
+    def test_synthesized_type_array_union_does_not_witness_a_written_anyof(self) -> None:
+        document = {
+            "openapi": "3.1.0",
+            "info": {"title": "Reading archive", "version": "1.0.0"},
+            "paths": {
+                "/readings": {
+                    "get": {
+                        "operationId": "readReadings",
+                        "responses": {
+                            "200": {
+                                "description": "Reading",
+                                "content": {
+                                    "application/json": {"schema": {"$ref": "#/components/schemas/ReadingValue"}}
+                                },
+                            }
+                        },
+                    }
+                }
+            },
+            "components": {"schemas": {"ReadingValue": {"type": ["string", "integer"], "additionalProperties": True}}},
+        }
+        census = _module("synthesized_union_census", "openapi-surface-census.py")
+        self.assertEqual(0, census.census_document(document).get("schema.anyOf", 0))
+        reach = golden_reach()
+        handwritten = _module("synthesized_union_handwritten", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        with tempfile.TemporaryDirectory() as temporary:
+            _package, universe, hit = self.generate(Path(temporary), json.dumps(document), reach, crozier)
+            self.assertTrue(self.ran(reach, "src/ir.rs::prefer_map_to_union", universe, hit))
+            self.assertFalse(self.ran(reach, MAP_ANY_OF, universe, hit))
+            self.assertFalse(self.ran(reach, MAP_ONE_OF, universe, hit))
 
     def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
         reach = _module("golden_reach_outcomes", "golden-reach.py")

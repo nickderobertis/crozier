@@ -5484,19 +5484,7 @@ fn parameter_example_value<'a>(
         // `codes` declaring `example: [PLY, FAL]` passes `codes=["PLY", "FAL"]`
         // (measured in docs/fern-measurements/handed-off/example-values/example-value-source/).
         .filter(|example| {
-            let keep_declared =
-                declared == Some("string") || declared == Some("array") && example.is_array();
-            // Preserve the own-example/reference rejection as a distinct reach arm.
-            if parameter.example.is_some()
-                && parameter
-                    .schema
-                    .as_ref()
-                    .is_some_and(|schema| schema.reference.is_some())
-                && !keep_declared
-            {
-                return false;
-            }
-            keep_declared
+            declared == Some("string") || declared == Some("array") && example.is_array()
         })
         .or_else(|| parameter.schema.as_ref().and_then(typed_schema_example))
         .or_else(|| {
@@ -6107,31 +6095,26 @@ fn resolved_schema_example_literal(
     schema: &Schema,
     schemas: Option<&IndexMap<String, Schema>>,
 ) -> Option<String> {
-    let own_example = typed_schema_example(schema)
-        .and_then(|value| bounded_example_literal(value, declares_int64(schema)));
-    // Keep a declared anyOf example distinct from array-item example fallbacks.
-    if schema.any_of.is_some()
-        && schema.example.is_some()
-        && schema.reference.is_none()
-        && !schema.multi_type_union
-    {
-        if let Some(example) = own_example {
-            return Some(example);
-        }
-    }
-    own_example.or_else(|| {
-        let items = schema.items.as_deref()?;
-        // Resolve before choosing the item example: a sibling example
-        // does not annotate the target, but the target's own example does.
-        let item = match items.reference.as_deref() {
-            Some(reference) => {
-                let schemas = schemas?;
-                referenced_example_literal(resolve_ref_from_schemas(schemas, reference)?, schemas)?
-            }
-            None => bounded_example_literal(typed_schema_example(items)?, declares_int64(items))?,
-        };
-        Some(format!("[{item}]"))
-    })
+    typed_schema_example(schema)
+        .and_then(|value| bounded_example_literal(value, declares_int64(schema)))
+        .or_else(|| {
+            let items = schema.items.as_deref()?;
+            // Resolve before choosing the item example: a sibling example
+            // does not annotate the target, but the target's own example does.
+            let item = match items.reference.as_deref() {
+                Some(reference) => {
+                    let schemas = schemas?;
+                    referenced_example_literal(
+                        resolve_ref_from_schemas(schemas, reference)?,
+                        schemas,
+                    )?
+                }
+                None => {
+                    bounded_example_literal(typed_schema_example(items)?, declares_int64(items))?
+                }
+            };
+            Some(format!("[{item}]"))
+        })
 }
 
 /// Whether a schema bounds its integers to a signed 64-bit range.
@@ -7649,17 +7632,8 @@ fn resolve_request_body(
                 single.convert = !bare_name_mapped_union(target);
                 single.content_type_override =
                     (media_type == "*/*").then(|| media_type.to_string());
-                // Retain the referenced oneOf's singular media-example arm.
-                single.example = if target.one_of.is_some() && media.example.is_some() {
-                    media
-                        .example
-                        .as_ref()
-                        .map(|example| BodyExample::Literal(example.to_string()))
-                } else {
-                    media_example(doc, media)
-                        .map(serde_json::Value::to_string)
-                        .map(BodyExample::Literal)
-                };
+                single.example = (media_example(doc, media).map(serde_json::Value::to_string))
+                    .map(BodyExample::Literal);
             }
             return Some(body);
         }
@@ -7692,14 +7666,9 @@ fn resolve_request_body(
         }
         // A `$ref` to a plain object is inlined field-by-field.
         if target.properties.declared() || target.all_of.is_some() {
-            // This arm records the allOf/media-example policy independently of plain objects.
-            let component_examples = if target.all_of.is_some() && media.example.is_some() {
-                ComponentExamplePolicy::PropertyFallbacksOnly
-            } else {
-                match media_example(doc, media) {
-                    Some(_) => ComponentExamplePolicy::PropertyFallbacksOnly,
-                    None => ComponentExamplePolicy::Include,
-                }
+            let component_examples = match media_example(doc, media) {
+                Some(_) => ComponentExamplePolicy::PropertyFallbacksOnly,
+                None => ComponentExamplePolicy::Include,
             };
             return hoist_fields_with_component_examples(&class, types, component_examples).map(
                 |mut fields| {
@@ -8020,12 +7989,7 @@ fn resolve_request_body(
             // schema — so both are applied here in the same order the `$ref` path
             // above uses: the schema's own example first, the media's over it.
             apply_body_example(&mut fields, schema_example(schema), false);
-            // Inline allOf examples have their own application counter.
-            if schema.all_of.is_some() && media.example.is_some() {
-                apply_body_example(&mut fields, media.example.as_ref(), true);
-            } else {
-                apply_body_example(&mut fields, media_example(doc, media), true);
-            }
+            apply_body_example(&mut fields, media_example(doc, media), true);
             RequestBody::Inline(fields)
         });
     }
@@ -15257,7 +15221,9 @@ impl Builder<'_> {
                 && !referenced_read_only;
             let referenced_nullable = prop_schema.reference.is_some()
                 && referenced_schema_accepts_none(prop_schema, self.schemas)
-                || annotated_reference_accepts_none(prop_schema, self.schemas);
+                || described_all_of_ref(prop_schema)
+                    .and_then(|(reference, _)| resolve_ref_from_schemas(self.schemas, reference))
+                    .is_some_and(|target| schema_accepts_none(target, self.schemas));
             let optional = is_optional(prop_schema) || referenced_nullable || !spec_required;
             let type_ref = self.field_type_ref(owner, prop, prop_schema);
             // Only an unwrapped field: an optional one's wrapper carries the
@@ -18579,21 +18545,12 @@ fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<S
             &mut required,
         );
     }
-    // Preserve the composition's own requirement list as a distinct reach arm.
-    if schema.all_of.is_some() && !schema.required.is_empty() {
-        append_required_names(&mut required, &schema.required);
-        return required;
-    }
-    append_required_names(&mut required, &schema.required);
-    required
-}
-
-fn append_required_names(required: &mut Vec<String>, names: &[String]) {
-    for name in names {
+    for name in schema.required.iter() {
         if !required.contains(name) {
             required.push(name.clone());
         }
     }
+    required
 }
 
 /// Whether Fern's importer keeps an `allOf` member when it converts the
@@ -19055,25 +19012,6 @@ fn schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Schema>) -> b
     is_optional(schema) || referenced_schema_accepts_none(schema, schemas)
 }
 
-fn annotated_reference_accepts_none(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
-    let Some((reference, _)) = described_all_of_ref(schema) else {
-        return false;
-    };
-    let Some(target) = resolve_ref_from_schemas(schemas, reference) else {
-        return false;
-    };
-    let nullable = schema_accepts_none(target, schemas);
-    // Keep declared nullability apart from synthesized reference/union flags in reach.
-    if nullable
-        && target.nullable == Some(true)
-        && !target.reference_nullable
-        && !target.multi_type_union
-    {
-        return true;
-    }
-    nullable
-}
-
 fn referenced_schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
     let mut current = schema;
     let mut seen = std::collections::HashSet::new();
@@ -19102,10 +19040,12 @@ fn prefer_map_to_union(schema: &Schema) -> bool {
     if schema.one_of.is_some() {
         return true;
     }
-    if schema.any_of.is_some() {
+    if schema.any_of.is_some() && !schema.multi_type_union {
         return true;
     }
-    false
+    // A normalized type list keeps its map preference without witnessing a
+    // written anyOf keyword.
+    schema.any_of.is_some()
 }
 
 /// Map a schema to its base type expression, never adding a top-level

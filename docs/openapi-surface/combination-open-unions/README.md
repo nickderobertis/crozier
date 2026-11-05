@@ -62,7 +62,7 @@ validates each quoted source operand, each control's declarations and the exact
 recorded region differences. Run it under the host's instrumented-measurement
 lock. `CROZIER_UPDATE_OPEN_UNIONS=1` refreshes only the derived region lists;
 the unchanged union inequality must still hold. The
-[`harbor-parcel-requests`](../handwritten/harbor-parcel-requests/) fixture and its
+[`harbor-parcel-requests`](../../fern-measurements/combination-diagnostics/harbor-parcel-requests/) fixture and its
 certified tree remain diagnostic output evidence, not proof of an independently
 handled combination or a registered interaction arm.
 
@@ -101,5 +101,5 @@ list is [outstanding-candidates.tsv](../witness-search-schema-interactions/outst
 
 | Combination | State | Candidates | Outstanding |
 |---|---|---:|---:|
-| `combo-allof-schema-example` | `search-incomplete` | 3566 | 3460 |
-| `combo-annotated-ref-property-example` | `search-incomplete` | 3463 | 3352 |
+| `combo-allof-schema-example` | `search-incomplete` | 3567 | 3460 |
+| `combo-annotated-ref-property-example` | `search-incomplete` | 3464 | 3352 |

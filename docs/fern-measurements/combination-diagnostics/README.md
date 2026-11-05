@@ -15,8 +15,10 @@ continues to compare the complete tree in both modes, and the departure ledger
 continues to inventory this diagnostic tree. The move creates no new golden.
 
 The harbor-parcel-requests document and its complete Python-enums tree also
-remain unchanged here after HSE supplies the registered parameter/example and
-reference interaction witness. Its canonical tree digest remains
+remain unchanged here after its unexhausted fallback is retired. The initially
+reported HSE guard execution is withdrawn as interaction proof: the removed
+guard repeated the generic result. The parameter/example and reference
+combination has an open search until a genuine arm is located and witnessed. Its canonical tree digest remains
 `def28383c4e105fe07381211f1ceeb199ceaaa20ce3ae25e095fb27d6d779078`.
 `unions::retired_parameter_reference_matches_complete_golden` compares the full
 tree through the catalog, retaining the declared string examples departure.

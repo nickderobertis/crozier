@@ -218,8 +218,8 @@ fn tree_failures(
 }
 
 /// The retired parameter/reference fallback retains its complete certified tree
-/// after HSE supplies the registered interaction witness.
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This retained diagnostic uses the existing crozier-e2e golden-comparison binary and its shared e2eReads edge. Splitting that family into generator-only graph edges affects all golden journeys, beyond this schema-proof change; the drafted follow-up "Give generator replay diagnostics a narrower Nx dependency edge" owns that refactor. The complete-tree comparison remains on the existing required edge.
+/// after its unexhausted fallback is retired; it remains diagnostic evidence.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This diagnostic shares the golden-comparison binary's e2eReads edge. The family-wide graph split is tracked by the drafted follow-up "Give generator replay diagnostics a narrower Nx dependency edge".
 #[test]
 fn retired_parameter_reference_matches_complete_golden() {
     let root = repo_root().join(PARAMETER_DIAGNOSTIC_DIR);

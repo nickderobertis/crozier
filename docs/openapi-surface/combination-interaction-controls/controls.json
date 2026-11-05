@@ -2,84 +2,12 @@
   "schema_version": 1,
   "combinations": [
     {
-      "key": "combo-allof-with-required",
-      "region": "src/ir.rs::all_of_required[if schema\\.all_of\\.is_some\\(\\) && !schema\\.required\\.is_empty\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-allof-with-required/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-allof-with-required/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-allof-with-required/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-annotated-ref-to-nullable-target",
-      "region": "src/ir.rs::annotated_reference_accepts_none[if nullable]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-annotated-ref-to-nullable-target/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-annotated-ref-to-nullable-target/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-annotated-ref-to-nullable-target/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-anyof-schema-example",
-      "region": "src/ir.rs::resolved_schema_example_literal[if schema\\.any_of\\.is_some\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-anyof-schema-example/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-anyof-schema-example/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-anyof-schema-example/both/openapi.yml"
-      }
-    },
-    {
       "key": "combo-map-beside-anyof",
       "region": "src/ir.rs::prefer_map_to_union[if schema\\.any_of\\.is_some\\(\\)]",
       "documents": {
         "first": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-anyof/first/openapi.yml",
         "second": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-anyof/second/openapi.yml",
         "both": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-anyof/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-map-beside-oneof",
-      "region": "src/ir.rs::prefer_map_to_union[if schema\\.one_of\\.is_some\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-oneof/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-media-example-on-inline-allof-body",
-      "region": "src/ir.rs::resolve_request_body[if schema\\.all_of\\.is_some\\(\\) && media\\.example\\.is_some\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-inline-allof-body/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-inline-allof-body/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-inline-allof-body/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-media-example-on-ref-allof-body",
-      "region": "src/ir.rs::resolve_request_body[let component_examples = if target\\.all_of\\.is_some\\(\\) && media\\.example\\.is_some\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-ref-allof-body/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-ref-allof-body/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-ref-allof-body/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-media-example-on-ref-union-body",
-      "region": "src/ir.rs::resolve_request_body[single\\.example = if target\\.one_of\\.is_some\\(\\) && media\\.example\\.is_some\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-ref-union-body/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-ref-union-body/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-media-example-on-ref-union-body/both/openapi.yml"
-      }
-    },
-    {
-      "key": "combo-param-example-beside-ref-schema",
-      "region": "src/ir.rs::parameter_example_value[if parameter\\.example\\.is_some\\(\\)]",
-      "documents": {
-        "first": "docs/openapi-surface/combination-interaction-controls/combo-param-example-beside-ref-schema/first/openapi.yml",
-        "second": "docs/openapi-surface/combination-interaction-controls/combo-param-example-beside-ref-schema/second/openapi.yml",
-        "both": "docs/openapi-surface/combination-interaction-controls/combo-param-example-beside-ref-schema/both/openapi.yml"
       }
     },
     {

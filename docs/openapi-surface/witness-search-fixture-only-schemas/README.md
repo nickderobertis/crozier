@@ -1,5 +1,15 @@
 # Witness search for the fixture-only `schemas` rows
 
+## Current schema-combination classification
+
+The current schema-combination classification is held in the
+[co-occurrence audit](../combination-cooccurrence.tsv) and the
+[retained-population search](../witness-search-schema-interactions/README.md).
+The formerly hand-written annotated-reference/example and two union/properties
+combinations are open. Their unexhausted searches do not admit fallback proof;
+Harbor and Orchard remain unchanged complete-tree diagnostics. Earlier search
+verdicts below record their historical readings, not current proof classes.
+
 The rows of [`../schemas.md`](../schemas.md) whose only proof, at this node's base `1748b7946` (crozier's own history: `1748b794688900b67e630cad6f606f421bb14b3a`), was a hand-written fixture: every `handwritten` row (72, five of them combinations), every arm-level hand-written cover of a `golden` row (80 distinct key and arm pairs), and the one residual-only supplement (`schema-example-null`). The certified pair is Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3. The first pass of this search (committed at `43b1bde19`) read the on-host populations and registered corpus row 4000; this pass screened their declarers against the certified pair, probed the code-search and Sourcegraph declarers, ran GitHub code search, and registered corpus rows 4001 to 4016.
 
 ## Outcome
