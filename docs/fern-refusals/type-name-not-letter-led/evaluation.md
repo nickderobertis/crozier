@@ -27,7 +27,7 @@ The numeric boundary is measured: [9999 is accepted](evidence/type-numeric-9999.
 A declared type name (`x-fern-type-name` or `x-crozier-type-name`) replaces the
 key Fern checks, so a hinted `123456` generates as its declared name (the
 authored probe
-[`376-350-declared-type-name`](../../openapi-surface/authored-probes/376-350-declared-type-name/)).
+[`376-350-declared-type-name`](../../openapi-surface/handwritten/376-350-declared-type-name/)).
 A blank declaration declares nothing: Fern falls back to the key and refuses it
 ([probe](evidence/376-350-declared-type-name-blank-digit-led.yml),
 [pinned Fern](evidence/376-350-declared-type-name-blank-digit-led.pinned-fern.log)),

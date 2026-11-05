@@ -1,0 +1,999 @@
+# crozier compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-4/webflow-compare/crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (5883 unchanged line(s))
+      sku_id="5e8518516e147040726cc415",
+      sku=UpdateSkuProductsRequestSku(
+          field_data=UpdateSkuProductsRequestSkuFieldData(
+-             name="Colorful T-shirt - Default",
+-             slug="colorful-t-shirt-default",
+-             price=UpdateSkuProductsRequestSkuFieldDataPrice(
+-                 value=2499,
+-                 unit="USD",
+-                 currency="USD",
+-             ),
++             name="Blue T-shirt",
++             slug="t-shirt-blue",
++             price=UpdateSkuProductsRequestSkuFieldDataPrice(),
+          ),
+      ),
+  )
+      ⋮ (962 unchanged line(s))
+      start_time=datetime.datetime.fromisoformat("2026-04-01T00:00:00+00:00"),
+      end_time=datetime.datetime.fromisoformat("2026-04-08T00:00:00+00:00"),
+      metric_scope=TrafficReportsRequestMetricScope.SESSION,
+-     bucket_time_zone="America/New_York",
++     bucket_time_zone="UTC",
+      country="US",
+      page_path="/towels",
+      traffic_source="SO",
+      ⋮ (1618 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
++ from fern.collections.items import SingleItem, SingleItemFieldData
+  
+  client = FernApi(
+      token="<token>",
+      ⋮ (2 unchanged line(s))
+  
+  client.collections.items.create_item(
+      collection_id="580e63fc8c9a982ac9b8b745",
++     request=SingleItem(
++         is_archived=False,
++         is_draft=False,
++         field_data=SingleItemFieldData(
++             name="The Hitchhiker\'s Guide to the Galaxy",
++             slug="hitchhikers-guide-to-the-galaxy",
++         ),
++     ),
+  )
+  
+  ```
+      ⋮ (620 unchanged line(s))
+  ```python
+  from fern import FernApi
+  from fern.environment import FernApiEnvironment
++ from fern.collections.items import SingleLiveItem, SingleLiveItemFieldData
+  
+  client = FernApi(
+      token="<token>",
+      ⋮ (2 unchanged line(s))
+  
+  client.collections.items.create_item_live(
+      collection_id="580e63fc8c9a982ac9b8b745",
++     request=SingleLiveItem(
++         is_archived=False,
++         is_draft=False,
++         field_data=SingleLiveItemFieldData(
++             name="The Hitchhiker\'s Guide to the Galaxy",
++             slug="hitchhikers-guide-to-the-galaxy",
++         ),
++     ),
+  )
+  
+  ```
+      ⋮ (2198 unchanged line(s))
+              ],
+          )
+      ],
++     sitemap="https://heartofgold.ship/sitemap.xml",
+  )
+  
+  ```
+      ⋮ (2331 unchanged line(s))
+
+Unexplained original crozier line(s): 5887, 5888, 5889, 6858, 8483, 8492, 8493, 8494, 8495, 8496, 8497, 8498, 8499, 9126, 9135, 9136, 9137, 9138, 9139, 9140, 9141, 9142, 11347
+
+--- reference/src/fern/analyze/reports/client.py
++++ crozier/src/fern/analyze/reports/client.py
+      ⋮ (152 unchanged line(s))
+                  "2026-04-08 00:00:00+00:00",
+              ),
+              metric_scope=TrafficReportsRequestMetricScope.SESSION,
+-             bucket_time_zone="America/New_York",
++             bucket_time_zone="UTC",
+              country="US",
+              page_path="/towels",
+              traffic_source="SO",
+      ⋮ (705 unchanged line(s))
+                      "2026-04-08 00:00:00+00:00",
+                  ),
+                  metric_scope=TrafficReportsRequestMetricScope.SESSION,
+-                 bucket_time_zone="America/New_York",
++                 bucket_time_zone="UTC",
+                  country="US",
+                  page_path="/towels",
+                  traffic_source="SO",
+      ⋮ (611 unchanged line(s))
+
+Unexplained original crozier line(s): 156, 868
+
+--- reference/src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py
++++ crozier/src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py
+      ⋮ (14 unchanged line(s))
+  
+  
+  class GetContentComponentsResponseNodesItemComponentInstancePropertyOverridesItem(UniversalBaseModel):
+-     """
+-     A text-based component property containing raw text and HTML representation.
+-     """
+- 
+      property_id: typing_extensions.Annotated[
+          str,
+          FieldMetadata(alias="propertyId"),
+      ⋮ (29 unchanged line(s))
+
+--- reference/src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py
++++ crozier/src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py
+      ⋮ (14 unchanged line(s))
+  
+  
+  class GetContentPagesResponseNodesItemComponentInstancePropertyOverridesItem(UniversalBaseModel):
+-     """
+-     A text-based component property containing raw text and HTML representation.
+-     """
+- 
+      property_id: typing_extensions.Annotated[
+          str,
+          FieldMetadata(alias="propertyId"),
+      ⋮ (29 unchanged line(s))
+
+--- reference/src/fern/products/client.py
++++ crozier/src/fern/products/client.py
+      ⋮ (460 unchanged line(s))
+              sku_id="5e8518516e147040726cc415",
+              sku=UpdateSkuProductsRequestSku(
+                  field_data=UpdateSkuProductsRequestSkuFieldData(
+-                     name="Colorful T-shirt - Default",
+-                     slug="colorful-t-shirt-default",
+-                     price=UpdateSkuProductsRequestSkuFieldDataPrice(
+-                         value=2499.0,
+-                         unit="USD",
+-                         currency="USD",
+-                     ),
++                     name="Blue T-shirt",
++                     slug="t-shirt-blue",
++                     price=UpdateSkuProductsRequestSkuFieldDataPrice(),
+                  ),
+              ),
+          )
+      ⋮ (484 unchanged line(s))
+                  sku_id="5e8518516e147040726cc415",
+                  sku=UpdateSkuProductsRequestSku(
+                      field_data=UpdateSkuProductsRequestSkuFieldData(
+-                         name="Colorful T-shirt - Default",
+-                         slug="colorful-t-shirt-default",
+-                         price=UpdateSkuProductsRequestSkuFieldDataPrice(
+-                             value=2499.0,
+-                             unit="USD",
+-                             currency="USD",
+-                         ),
++                         name="Blue T-shirt",
++                         slug="t-shirt-blue",
++                         price=UpdateSkuProductsRequestSkuFieldDataPrice(),
+                      ),
+                  ),
+              )
+      ⋮ (8 unchanged line(s))
+
+Unexplained original crozier line(s): 464, 465, 466, 957, 958, 959
+
+--- reference/src/fern/products/types/create_products_request_product.py
++++ crozier/src/fern/products/types/create_products_request_product.py
+      ⋮ (12 unchanged line(s))
+      field_data: typing_extensions.Annotated[
+          typing.Optional[CreateProductsRequestProductFieldData],
+          FieldMetadata(alias="fieldData"),
+-         pydantic.Field(
+-             alias="fieldData",
+-             description="Contains content-specific details for a product, covering both standard (e.g., title, description) and custom fields tailored to the product setup.",
+-         ),
++         pydantic.Field(alias="fieldData"),
+      ] = None
+-     """
+-     Contains content-specific details for a product, covering both standard (e.g., title, description) and custom fields tailored to the product setup.
+-     """
+  
+      if IS_PYDANTIC_V2:
+          model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      ⋮ (6 unchanged line(s))
+
+Unexplained original crozier line(s): 16
+
+--- reference/src/fern/sites/robots_txt/client.py
++++ crozier/src/fern/sites/robots_txt/client.py
+      ⋮ (178 unchanged line(s))
+                      disallows=["/bubbles"],
+                  )
+              ],
++             sitemap="https://heartofgold.ship/sitemap.xml",
+          )
+          """
+          _response = self._raw_client.delete(site_id, rules=rules, sitemap=sitemap, request_options=request_options)
+      ⋮ (243 unchanged line(s))
+                          disallows=["/bubbles"],
+                      )
+                  ],
++                 sitemap="https://heartofgold.ship/sitemap.xml",
+              )
+  
+  
+      ⋮ (72 unchanged line(s))
+
+Unexplained original crozier line(s): 182, 432
+
+--- reference/src/fern/workspaces/__init__.py
++++ crozier/src/fern/workspaces/__init__.py
+      ⋮ (3 unchanged line(s))
+  if typing.TYPE_CHECKING:
+      from . import audit_logs
+      from .audit_logs import (
+-         CustomRole,
+          GetWorkspaceAuditLogsAuditLogsRequestEventType,
+          GetWorkspaceAuditLogsAuditLogsRequestSortOrder,
+          GetWorkspaceAuditLogsAuditLogsResponse,
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItem,
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType,
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting,
+          GetWorkspaceAuditLogsAuditLogsResponsePagination,
+-         SettingChange,
+-         SettingChangeMethod,
+-         SettingChangeSetting,
+-         SiteMembership,
+-         SiteMembershipGranularAccess,
+-         SiteMembershipGranularAccessType,
+-         SiteMembershipMethod,
+-         SiteMembershipSite,
+-         SiteMembershipTargetUser,
+-         SiteMembershipUserType,
+-         UserAccess,
+-         UserAccessMethod,
+-         WorkspaceInvitation,
+-         WorkspaceInvitationMethod,
+-         WorkspaceInvitationTargetUser,
+-         WorkspaceInvitationTargetUsersItem,
+-         WorkspaceInvitationUserType,
+-         WorkspaceMembership,
+-         WorkspaceMembershipMethod,
+-         WorkspaceMembershipTargetUser,
+-         WorkspaceMembershipUserType,
+      )
+  _dynamic_imports: typing.Dict[str, str] = {
+-     "CustomRole": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsRequestEventType": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsRequestSortOrder": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsResponse": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItem": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership": ".audit_logs",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting": ".audit_logs",
+      "GetWorkspaceAuditLogsAuditLogsResponsePagination": ".audit_logs",
+-     "SettingChange": ".audit_logs",
+-     "SettingChangeMethod": ".audit_logs",
+-     "SettingChangeSetting": ".audit_logs",
+-     "SiteMembership": ".audit_logs",
+-     "SiteMembershipGranularAccess": ".audit_logs",
+-     "SiteMembershipGranularAccessType": ".audit_logs",
+-     "SiteMembershipMethod": ".audit_logs",
+-     "SiteMembershipSite": ".audit_logs",
+-     "SiteMembershipTargetUser": ".audit_logs",
+-     "SiteMembershipUserType": ".audit_logs",
+-     "UserAccess": ".audit_logs",
+-     "UserAccessMethod": ".audit_logs",
+-     "WorkspaceInvitation": ".audit_logs",
+-     "WorkspaceInvitationMethod": ".audit_logs",
+-     "WorkspaceInvitationTargetUser": ".audit_logs",
+-     "WorkspaceInvitationTargetUsersItem": ".audit_logs",
+-     "WorkspaceInvitationUserType": ".audit_logs",
+-     "WorkspaceMembership": ".audit_logs",
+-     "WorkspaceMembershipMethod": ".audit_logs",
+-     "WorkspaceMembershipTargetUser": ".audit_logs",
+-     "WorkspaceMembershipUserType": ".audit_logs",
+      "audit_logs": ".audit_logs",
+  }
+  
+      ⋮ (20 unchanged line(s))
+  
+  
+  __all__ = [
+-     "CustomRole",
+      "GetWorkspaceAuditLogsAuditLogsRequestEventType",
+      "GetWorkspaceAuditLogsAuditLogsRequestSortOrder",
+      "GetWorkspaceAuditLogsAuditLogsResponse",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItem",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting",
+      "GetWorkspaceAuditLogsAuditLogsResponsePagination",
+-     "SettingChange",
+-     "SettingChangeMethod",
+-     "SettingChangeSetting",
+-     "SiteMembership",
+-     "SiteMembershipGranularAccess",
+-     "SiteMembershipGranularAccessType",
+-     "SiteMembershipMethod",
+-     "SiteMembershipSite",
+-     "SiteMembershipTargetUser",
+-     "SiteMembershipUserType",
+-     "UserAccess",
+-     "UserAccessMethod",
+-     "WorkspaceInvitation",
+-     "WorkspaceInvitationMethod",
+-     "WorkspaceInvitationTargetUser",
+-     "WorkspaceInvitationTargetUsersItem",
+-     "WorkspaceInvitationUserType",
+-     "WorkspaceMembership",
+-     "WorkspaceMembershipMethod",
+-     "WorkspaceMembershipTargetUser",
+-     "WorkspaceMembershipUserType",
+      "audit_logs",
+  ]
+
+--- reference/src/fern/workspaces/audit_logs/__init__.py
++++ crozier/src/fern/workspaces/audit_logs/__init__.py
+      ⋮ (2 unchanged line(s))
+  
+  if typing.TYPE_CHECKING:
+      from .types import (
+-         CustomRole,
+          GetWorkspaceAuditLogsAuditLogsRequestEventType,
+          GetWorkspaceAuditLogsAuditLogsRequestSortOrder,
+          GetWorkspaceAuditLogsAuditLogsResponse,
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItem,
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType,
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting,
+          GetWorkspaceAuditLogsAuditLogsResponsePagination,
+-         SettingChange,
+-         SettingChangeMethod,
+-         SettingChangeSetting,
+-         SiteMembership,
+-         SiteMembershipGranularAccess,
+-         SiteMembershipGranularAccessType,
+-         SiteMembershipMethod,
+-         SiteMembershipSite,
+-         SiteMembershipTargetUser,
+-         SiteMembershipUserType,
+-         UserAccess,
+-         UserAccessMethod,
+-         WorkspaceInvitation,
+-         WorkspaceInvitationMethod,
+-         WorkspaceInvitationTargetUser,
+-         WorkspaceInvitationTargetUsersItem,
+-         WorkspaceInvitationUserType,
+-         WorkspaceMembership,
+-         WorkspaceMembershipMethod,
+-         WorkspaceMembershipTargetUser,
+-         WorkspaceMembershipUserType,
+      )
+  _dynamic_imports: typing.Dict[str, str] = {
+-     "CustomRole": ".types",
+      "GetWorkspaceAuditLogsAuditLogsRequestEventType": ".types",
+      "GetWorkspaceAuditLogsAuditLogsRequestSortOrder": ".types",
+      "GetWorkspaceAuditLogsAuditLogsResponse": ".types",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItem": ".types",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType": ".types",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership": ".types",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting": ".types",
+      "GetWorkspaceAuditLogsAuditLogsResponsePagination": ".types",
+-     "SettingChange": ".types",
+-     "SettingChangeMethod": ".types",
+-     "SettingChangeSetting": ".types",
+-     "SiteMembership": ".types",
+-     "SiteMembershipGranularAccess": ".types",
+-     "SiteMembershipGranularAccessType": ".types",
+-     "SiteMembershipMethod": ".types",
+-     "SiteMembershipSite": ".types",
+-     "SiteMembershipTargetUser": ".types",
+-     "SiteMembershipUserType": ".types",
+-     "UserAccess": ".types",
+-     "UserAccessMethod": ".types",
+-     "WorkspaceInvitation": ".types",
+-     "WorkspaceInvitationMethod": ".types",
+-     "WorkspaceInvitationTargetUser": ".types",
+-     "WorkspaceInvitationTargetUsersItem": ".types",
+-     "WorkspaceInvitationUserType": ".types",
+-     "WorkspaceMembership": ".types",
+-     "WorkspaceMembershipMethod": ".types",
+-     "WorkspaceMembershipTargetUser": ".types",
+-     "WorkspaceMembershipUserType": ".types",
+  }
+  
+  
+      ⋮ (19 unchanged line(s))
+  
+  
+  __all__ = [
+-     "CustomRole",
+      "GetWorkspaceAuditLogsAuditLogsRequestEventType",
+      "GetWorkspaceAuditLogsAuditLogsRequestSortOrder",
+      "GetWorkspaceAuditLogsAuditLogsResponse",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItem",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting",
+      "GetWorkspaceAuditLogsAuditLogsResponsePagination",
+-     "SettingChange",
+-     "SettingChangeMethod",
+-     "SettingChangeSetting",
+-     "SiteMembership",
+-     "SiteMembershipGranularAccess",
+-     "SiteMembershipGranularAccessType",
+-     "SiteMembershipMethod",
+-     "SiteMembershipSite",
+-     "SiteMembershipTargetUser",
+-     "SiteMembershipUserType",
+-     "UserAccess",
+-     "UserAccessMethod",
+-     "WorkspaceInvitation",
+-     "WorkspaceInvitationMethod",
+-     "WorkspaceInvitationTargetUser",
+-     "WorkspaceInvitationTargetUsersItem",
+-     "WorkspaceInvitationUserType",
+-     "WorkspaceMembership",
+-     "WorkspaceMembershipMethod",
+-     "WorkspaceMembershipTargetUser",
+-     "WorkspaceMembershipUserType",
+  ]
+
+--- reference/src/fern/workspaces/audit_logs/types/__init__.py
++++ crozier/src/fern/workspaces/audit_logs/types/__init__.py
+      ⋮ (1 unchanged line(s))
+  from importlib import import_module
+  
+  if typing.TYPE_CHECKING:
+-     from .custom_role import CustomRole
+      from .get_workspace_audit_logs_audit_logs_request_event_type import GetWorkspaceAuditLogsAuditLogsRequestEventType
+      from .get_workspace_audit_logs_audit_logs_request_sort_order import GetWorkspaceAuditLogsAuditLogsRequestSortOrder
+      from .get_workspace_audit_logs_audit_logs_response import GetWorkspaceAuditLogsAuditLogsResponse
+-     from .get_workspace_audit_logs_audit_logs_response_items_item import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting,
+-     )
++     from .get_workspace_audit_logs_audit_logs_response_items_item import GetWorkspaceAuditLogsAuditLogsResponseItemsItem
+      from .get_workspace_audit_logs_audit_logs_response_items_item_actor import (
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor,
+      )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_custom_role import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_custom_role_event_sub_type import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_site_membership import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_site_membership_event_sub_type import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_user_access import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_user_access_event_sub_type import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType,
+-     )
+      from .get_workspace_audit_logs_audit_logs_response_items_item_workspace import (
+          GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace,
+      )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation_event_sub_type import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership_event_sub_type import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting,
+-     )
+-     from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting_event_sub_type import (
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType,
+-     )
+      from .get_workspace_audit_logs_audit_logs_response_pagination import (
+          GetWorkspaceAuditLogsAuditLogsResponsePagination,
+      )
+-     from .setting_change import SettingChange
+-     from .setting_change_method import SettingChangeMethod
+-     from .setting_change_setting import SettingChangeSetting
+-     from .site_membership import SiteMembership
+-     from .site_membership_granular_access import SiteMembershipGranularAccess
+-     from .site_membership_granular_access_type import SiteMembershipGranularAccessType
+-     from .site_membership_method import SiteMembershipMethod
+-     from .site_membership_site import SiteMembershipSite
+-     from .site_membership_target_user import SiteMembershipTargetUser
+-     from .site_membership_user_type import SiteMembershipUserType
+-     from .user_access import UserAccess
+-     from .user_access_method import UserAccessMethod
+-     from .workspace_invitation import WorkspaceInvitation
+-     from .workspace_invitation_method import WorkspaceInvitationMethod
+-     from .workspace_invitation_target_user import WorkspaceInvitationTargetUser
+-     from .workspace_invitation_target_users_item import WorkspaceInvitationTargetUsersItem
+-     from .workspace_invitation_user_type import WorkspaceInvitationUserType
+-     from .workspace_membership import WorkspaceMembership
+-     from .workspace_membership_method import WorkspaceMembershipMethod
+-     from .workspace_membership_target_user import WorkspaceMembershipTargetUser
+-     from .workspace_membership_user_type import WorkspaceMembershipUserType
+  _dynamic_imports: typing.Dict[str, str] = {
+-     "CustomRole": ".custom_role",
+      "GetWorkspaceAuditLogsAuditLogsRequestEventType": ".get_workspace_audit_logs_audit_logs_request_event_type",
+      "GetWorkspaceAuditLogsAuditLogsRequestSortOrder": ".get_workspace_audit_logs_audit_logs_request_sort_order",
+      "GetWorkspaceAuditLogsAuditLogsResponse": ".get_workspace_audit_logs_audit_logs_response",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItem": ".get_workspace_audit_logs_audit_logs_response_items_item",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor": ".get_workspace_audit_logs_audit_logs_response_items_item_actor",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole": ".get_workspace_audit_logs_audit_logs_response_items_item_custom_role",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType": ".get_workspace_audit_logs_audit_logs_response_items_item_custom_role_event_sub_type",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership": ".get_workspace_audit_logs_audit_logs_response_items_item_site_membership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType": ".get_workspace_audit_logs_audit_logs_response_items_item_site_membership_event_sub_type",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess": ".get_workspace_audit_logs_audit_logs_response_items_item_user_access",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType": ".get_workspace_audit_logs_audit_logs_response_items_item_user_access_event_sub_type",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation_event_sub_type",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership_event_sub_type",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType": ".get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting_event_sub_type",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole": ".get_workspace_audit_logs_audit_logs_response_items_item",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership": ".get_workspace_audit_logs_audit_logs_response_items_item",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess": ".get_workspace_audit_logs_audit_logs_response_items_item",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation": ".get_workspace_audit_logs_audit_logs_response_items_item",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership": ".get_workspace_audit_logs_audit_logs_response_items_item",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting": ".get_workspace_audit_logs_audit_logs_response_items_item",
+      "GetWorkspaceAuditLogsAuditLogsResponsePagination": ".get_workspace_audit_logs_audit_logs_response_pagination",
+-     "SettingChange": ".setting_change",
+-     "SettingChangeMethod": ".setting_change_method",
+-     "SettingChangeSetting": ".setting_change_setting",
+-     "SiteMembership": ".site_membership",
+-     "SiteMembershipGranularAccess": ".site_membership_granular_access",
+-     "SiteMembershipGranularAccessType": ".site_membership_granular_access_type",
+-     "SiteMembershipMethod": ".site_membership_method",
+-     "SiteMembershipSite": ".site_membership_site",
+-     "SiteMembershipTargetUser": ".site_membership_target_user",
+-     "SiteMembershipUserType": ".site_membership_user_type",
+-     "UserAccess": ".user_access",
+-     "UserAccessMethod": ".user_access_method",
+-     "WorkspaceInvitation": ".workspace_invitation",
+-     "WorkspaceInvitationMethod": ".workspace_invitation_method",
+-     "WorkspaceInvitationTargetUser": ".workspace_invitation_target_user",
+-     "WorkspaceInvitationTargetUsersItem": ".workspace_invitation_target_users_item",
+-     "WorkspaceInvitationUserType": ".workspace_invitation_user_type",
+-     "WorkspaceMembership": ".workspace_membership",
+-     "WorkspaceMembershipMethod": ".workspace_membership_method",
+-     "WorkspaceMembershipTargetUser": ".workspace_membership_target_user",
+-     "WorkspaceMembershipUserType": ".workspace_membership_user_type",
+  }
+  
+  
+      ⋮ (19 unchanged line(s))
+  
+  
+  __all__ = [
+-     "CustomRole",
+      "GetWorkspaceAuditLogsAuditLogsRequestEventType",
+      "GetWorkspaceAuditLogsAuditLogsRequestSortOrder",
+      "GetWorkspaceAuditLogsAuditLogsResponse",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItem",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRole",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccess",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType",
+      "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSetting",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership",
+-     "GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting",
+      "GetWorkspaceAuditLogsAuditLogsResponsePagination",
+-     "SettingChange",
+-     "SettingChangeMethod",
+-     "SettingChangeSetting",
+-     "SiteMembership",
+-     "SiteMembershipGranularAccess",
+-     "SiteMembershipGranularAccessType",
+-     "SiteMembershipMethod",
+-     "SiteMembershipSite",
+-     "SiteMembershipTargetUser",
+-     "SiteMembershipUserType",
+-     "UserAccess",
+-     "UserAccessMethod",
+-     "WorkspaceInvitation",
+-     "WorkspaceInvitationMethod",
+-     "WorkspaceInvitationTargetUser",
+-     "WorkspaceInvitationTargetUsersItem",
+-     "WorkspaceInvitationUserType",
+-     "WorkspaceMembership",
+-     "WorkspaceMembershipMethod",
+-     "WorkspaceMembershipTargetUser",
+-     "WorkspaceMembershipUserType",
+  ]
+
+Unexplained original crozier line(s): 11
+
+Only in reference: src/fern/workspaces/audit_logs/types/custom_role.py
+
+--- reference/src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item.py
++++ crozier/src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item.py
+  
+  
+- from __future__ import annotations
+- 
+  import datetime as dt
+  import typing
+  
+  import pydantic
+- import typing_extensions
+  from ....core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+- from ....core.serialization import FieldMetadata
+- from .custom_role import CustomRole
+  from .get_workspace_audit_logs_audit_logs_response_items_item_actor import (
+      GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor,
+  )
+- from .get_workspace_audit_logs_audit_logs_response_items_item_custom_role_event_sub_type import (
+-     GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType,
+- )
+- from .get_workspace_audit_logs_audit_logs_response_items_item_site_membership_event_sub_type import (
+-     GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType,
+- )
+- from .get_workspace_audit_logs_audit_logs_response_items_item_user_access_event_sub_type import (
+-     GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType,
+- )
+  from .get_workspace_audit_logs_audit_logs_response_items_item_workspace import (
+      GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace,
+  )
+- from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation_event_sub_type import (
+-     GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType,
+- )
+- from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership_event_sub_type import (
+-     GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType,
+- )
+- from .get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting_event_sub_type import (
+-     GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType,
+- )
+- from .setting_change import SettingChange
+- from .site_membership import SiteMembership
+- from .user_access import UserAccess
+- from .workspace_invitation import WorkspaceInvitation
+- from .workspace_membership import WorkspaceMembership
+  
+  
+- class Base(UniversalBaseModel):
++ class GetWorkspaceAuditLogsAuditLogsResponseItemsItem(UniversalBaseModel):
+      timestamp: typing.Optional[dt.datetime] = None
+      actor: typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemActor] = None
+      workspace: typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspace] = None
+      ⋮ (6 unchanged line(s))
+              frozen = True
+              smart_union = True
+              extra = pydantic.Extra.allow
+- 
+- 
+- class GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess(Base):
+-     event_type: typing_extensions.Annotated[
+-         typing.Literal["user_access"], FieldMetadata(alias="eventType"), pydantic.Field(alias="eventType")
+-     ] = "user_access"
+-     event_sub_type: typing_extensions.Annotated[
+-         typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemUserAccessEventSubType],
+-         FieldMetadata(alias="eventSubType"),
+-         pydantic.Field(alias="eventSubType"),
+-     ] = None
+-     payload: typing.Optional[UserAccess] = None
+- 
+-     if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+-     else:
+- 
+-         class Config:
+-             frozen = True
+-             smart_union = True
+-             extra = pydantic.Extra.allow
+- 
+- 
+- class GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole(Base):
+-     event_type: typing_extensions.Annotated[
+-         typing.Literal["custom_role"], FieldMetadata(alias="eventType"), pydantic.Field(alias="eventType")
+-     ] = "custom_role"
+-     event_sub_type: typing_extensions.Annotated[
+-         typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemCustomRoleEventSubType],
+-         FieldMetadata(alias="eventSubType"),
+-         pydantic.Field(alias="eventSubType"),
+-     ] = None
+-     payload: typing.Optional[CustomRole] = None
+- 
+-     if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+-     else:
+- 
+-         class Config:
+-             frozen = True
+-             smart_union = True
+-             extra = pydantic.Extra.allow
+- 
+- 
+- class GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership(Base):
+-     event_type: typing_extensions.Annotated[
+-         typing.Literal["workspace_membership"], FieldMetadata(alias="eventType"), pydantic.Field(alias="eventType")
+-     ] = "workspace_membership"
+-     event_sub_type: typing_extensions.Annotated[
+-         typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceMembershipEventSubType],
+-         FieldMetadata(alias="eventSubType"),
+-         pydantic.Field(alias="eventSubType"),
+-     ] = None
+-     payload: typing.Optional[WorkspaceMembership] = None
+- 
+-     if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+-     else:
+- 
+-         class Config:
+-             frozen = True
+-             smart_union = True
+-             extra = pydantic.Extra.allow
+- 
+- 
+- class GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership(Base):
+-     event_type: typing_extensions.Annotated[
+-         typing.Literal["site_membership"], FieldMetadata(alias="eventType"), pydantic.Field(alias="eventType")
+-     ] = "site_membership"
+-     event_sub_type: typing_extensions.Annotated[
+-         typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemSiteMembershipEventSubType],
+-         FieldMetadata(alias="eventSubType"),
+-         pydantic.Field(alias="eventSubType"),
+-     ] = None
+-     payload: typing.Optional[SiteMembership] = None
+- 
+-     if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+-     else:
+- 
+-         class Config:
+-             frozen = True
+-             smart_union = True
+-             extra = pydantic.Extra.allow
+- 
+- 
+- class GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation(Base):
+-     event_type: typing_extensions.Annotated[
+-         typing.Literal["workspace_invitation"], FieldMetadata(alias="eventType"), pydantic.Field(alias="eventType")
+-     ] = "workspace_invitation"
+-     event_sub_type: typing_extensions.Annotated[
+-         typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceInvitationEventSubType],
+-         FieldMetadata(alias="eventSubType"),
+-         pydantic.Field(alias="eventSubType"),
+-     ] = None
+-     payload: typing.Optional[WorkspaceInvitation] = None
+- 
+-     if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+-     else:
+- 
+-         class Config:
+-             frozen = True
+-             smart_union = True
+-             extra = pydantic.Extra.allow
+- 
+- 
+- class GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting(Base):
+-     event_type: typing_extensions.Annotated[
+-         typing.Literal["workspace_setting"], FieldMetadata(alias="eventType"), pydantic.Field(alias="eventType")
+-     ] = "workspace_setting"
+-     event_sub_type: typing_extensions.Annotated[
+-         typing.Optional[GetWorkspaceAuditLogsAuditLogsResponseItemsItemWorkspaceSettingEventSubType],
+-         FieldMetadata(alias="eventSubType"),
+-         pydantic.Field(alias="eventSubType"),
+-     ] = None
+-     payload: typing.Optional[SettingChange] = None
+- 
+-     if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+-     else:
+- 
+-         class Config:
+-             frozen = True
+-             smart_union = True
+-             extra = pydantic.Extra.allow
+- 
+- 
+- GetWorkspaceAuditLogsAuditLogsResponseItemsItem = typing_extensions.Annotated[
+-     typing.Union[
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_UserAccess,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_CustomRole,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_SiteMembership,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceInvitation,
+-         GetWorkspaceAuditLogsAuditLogsResponseItemsItem_WorkspaceSetting,
+-     ],
+-     pydantic.Field(discriminator="event_type"),
+- ]
+
+Unexplained original crozier line(s): 16
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_custom_role.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_custom_role_event_sub_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_site_membership.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_site_membership_event_sub_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_user_access.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_user_access_event_sub_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_invitation_event_sub_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_membership_event_sub_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item_workspace_setting_event_sub_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/setting_change.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/setting_change_method.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/setting_change_setting.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership_granular_access.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership_granular_access_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership_method.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership_site.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership_target_user.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/site_membership_user_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/user_access.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/user_access_method.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_invitation.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_invitation_method.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_invitation_target_user.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_invitation_target_users_item.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_invitation_user_type.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_membership.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_membership_method.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_membership_target_user.py
+
+Only in reference: src/fern/workspaces/audit_logs/types/workspace_membership_user_type.py
