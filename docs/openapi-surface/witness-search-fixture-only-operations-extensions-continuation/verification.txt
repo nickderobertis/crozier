@@ -1,0 +1,16 @@
+Registration checks completed before the first proof measurement
+=============================================================
+Clean crozier compare: HappyHamster and Seldon wrapper match their complete
+untouched certified-pair cache trees. Their python-enums source pins are checked
+against the cache document.sha256 before reuse. Both literals trees are generated
+at the same pair and installed through the standard stripper and overlay reducer.
+
+The first HappyHamster golden gate correctly rejected missing compared-goldens
+registration. An initial inventory-writer retry did not repair the omitted
+central CORPORA entry and the same finding recurred; work stopped for the manager's
+ruling. After adding that entry, the existing writer and the golden recording
+run pass. This is superseded earlier-state registration evidence, not a current
+failure. No comparison normalization or enforcement setting changes.
+
+The final proof measurement, cover retirement and final checks follow in the
+next committed piece. Generator source and templates are unchanged.

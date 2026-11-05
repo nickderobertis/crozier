@@ -1,0 +1,24 @@
+compare: found config <scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml
+compare: <scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml python: reference command starting: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+compare: <scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml python: reference command finished in 0.03s (exit 0)
+compare: <scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml python: crozier generation starting
+compare: <scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml python: crozier generation finished in 0.81s
+compare: <scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml python: matched
+
+crozier compare report
+
+<scratch>/compare/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/crozier.yml
+  python: matched (layout packaged, 78 file(s) compared)
+    reference command: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+    intended departures applied (6):
+      reference.md:67 nullable-items-docs
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    timing: reference 0.03s, crozier 0.81s, speed-up 0.04x, saved -0.78s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.03s, crozier 0.81s, speed-up 0.04x, saved -0.78s
+Result: every checked generator matched the reference (1 of 1, exit 0)

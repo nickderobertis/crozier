@@ -388,6 +388,8 @@ inventory=(
   microsoft_adme_crs_converter_matches_fern_output
   wiim_httpapi_matches_fern_output
   loonfs_matches_fern_output
+  happy_hamster_matches_fern_output
+  seldon_wrapper_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

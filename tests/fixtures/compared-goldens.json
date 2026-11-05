@@ -1263,6 +1263,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/happy-hamster/expected": {},
+    "tests/fixtures/happy-hamster/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/hasura-metadata/expected": {},
     "tests/fixtures/helios-verifiable-api/expected": {},
     "tests/fixtures/helixdb-http-api/expected": {},
@@ -1588,6 +1594,12 @@
     },
     "tests/fixtures/sac-backend/expected": {},
     "tests/fixtures/schema-constraints/expected": {},
+    "tests/fixtures/seldon-wrapper/expected": {},
+    "tests/fixtures/seldon-wrapper/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/servers-webhooks/expected": {},
     "tests/fixtures/sftpgo/expected": {},
     "tests/fixtures/short-io/expected": {},
