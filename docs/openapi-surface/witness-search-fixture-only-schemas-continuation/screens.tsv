@@ -61,7 +61,16 @@ cbd66881599cf308c4dddca27116c37819ecc1b6bc98e3051de7d6d3d1b5190f	Let-s-Science/a
 a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f	the-momentum/open-wearables:docs/openapi.json@b47932b53282cedbb720880466b7ebed8f3897c6	549160	generated	0	3	differs
 ad7ea1e9ad9a044b49947597e16bcc6576caa5458d1284723cd4c80470124fe9	Apitomy/apitomy-data-models:data-models/src/test/resources/fixtures/validation/openapi/3.0/required-property.json@3753011d5d272366b42c4a9936fe9819ae51bc6f	4153	generated	1	-	certified-pair-refusal
 11248209cf8c3bf13cd7dd67aa96846ea926dd8341b00d60d795c0dbef1fdb49	stac-utils/stac-server:src/lambdas/api/openapi.yaml@db694c756bfd7dcf19dbf040f363d55bae6dbfd2	75214	not generated	-	-	corpus-refused-mutable-remote-ref
-7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13	DigitaleDeltaOrg/DigitaleDelta.ToolKit.V3:DigitaleDelta.DdApiV3ToolKit/Templates/openapi.yaml@2a4659109db553e2e04904c6f76a46e7046ac919	23962	generated	0	4	comparison-incomplete
+7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13	DigitaleDeltaOrg/DigitaleDelta.ToolKit.V3:DigitaleDelta.DdApiV3ToolKit/Templates/openapi.yaml@2a4659109db553e2e04904c6f76a46e7046ac919	23962	generated	0	4	"search-incomplete: crozier could not read the generator's settings: could not parse OpenAPI document <scratch>/screen-runs/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/openapi.yaml: error: line 122 column 9: too many consecutive comments before resolving collection entry
+   --> <input>:122:9
+    |
+120 |         # authorizationCode:
+121 |         #   authorizationUrl: https://auth.example.com/oauth2/authorize
+122 |         #   tokenUrl: https://auth.example.com/oauth2/token
+    |         ^ too many consecutive comments before resolving collection entry
+123 |         #   scopes:
+124 |         #     read:observations: Read access to observations
+    |"
 64d368bdcdb2ab6920376296e71a0c78b9163114923dd80a2071a322b8e878cf	APIs/github.com/ghes-3.4/1.1.4/openapi.yaml	3142488	generated	1	-	certified-pair-refusal
 5e205713feb7bc50c385b8b2bbce176edb4f78102f0d517ee25a7fd5ef815e38	ballerina-platform/openapi-connectors:openapi/spotto/openapi.yml@81158a45a86fa9a85de4e7fbd7cdc2a529d50743	126853	generated	0	0	byte-match-without-target-behavior
 973264cf22d339ee1f88127812a2c3672bdf10ef42e9a98969bdccbb483a6dff	jquirossoto/node-typescript-express-ecs:openapi.json@358075745ec23ed16c1786934f1b11a048414484	22877	generated	1	-	certified-pair-refusal

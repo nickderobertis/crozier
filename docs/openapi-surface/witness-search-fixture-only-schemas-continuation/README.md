@@ -110,7 +110,7 @@ SwaggerHub route was used. Certified-tree reuse is not a response-cache hit.
 ## Verdicts
 
 Current totals: 75 `exhausted`, 49
-`search-incomplete`, no new registered witness. Exhaustion is restricted to
+`search-incomplete`; no target is promoted in this provisional ledger yet. Exhaustion is restricted to
 these two assigned populations; it makes no claim about previously truncated
 search pages. [`census.tsv`](census.tsv) names every outstanding candidate for
 each key and arm and gives its current reason beside its prior reading.
@@ -969,6 +969,28 @@ Files: `reference.md`. [Comparison](screens/8d9a8ecdca11217c65d4fe8ad30e711d1d3d
 `chloepriceless/DV-EOS:openapi.json@e2fca78146c468f1ef4a4b540ebe608c11ad47c2`, SHA-256 `1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9`. The reference converts and respects annotation metadata for PydanticDateTimeData; crozier sends the request value directly.
 
 Files: `src/fern/measurement/raw_client.py`. [Comparison](screens/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.json).
+
+## Reach carry audit
+
+[`carry-audit.json`](carry-audit.json) compares the saved 319-test, 54-fixture
+store at `5d88a471fe004818ed8d541d8afc646214d62339` with the registered tree.
+Production sources, templates, assets, crate sources/manifests, toolchain,
+configuration and corpus reader code have an empty diff. The root Cargo files
+differ only in crozier's own version, under `reach_store.release_only`.
+Every carried golden source/tree is unchanged. The only reachable Rust changes
+are the Eqivo `CORPORA` member, its new constant and the overlay `KINDS` entry.
+The unrelated in-process journey's earlier path relocation is outside these runs.
+
+All 54 fixture documents are byte-identical. Parsed evidence has identical
+digests, certified versions, audiences, cover keys and arms; only search,
+verdict and renewal bookkeeping differs. `read_evidence` parses and validates
+that bookkeeping, but `fixture_plan` selects only keys/arms and
+`measured_fixtures` supplies audiences; `measure_fixture` passes only the spec,
+package, project and audiences to crozier. No changed proof field enters the
+Rust profile. Manager rulings 289, 290 and 292 approve carrying those existing
+exports, preserving each original commit, with Eqivo's fresh scoped export.
+The ordinary carry planner asks for a full pass because the registry constant
+changed; no enforcement rule is changed to avoid it.
 
 ## Verification
 
