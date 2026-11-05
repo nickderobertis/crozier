@@ -15423,6 +15423,8 @@ const LOONFS: Corpus = Corpus {
 fn loonfs_matches_fern_output() {
     assert_committed_corpus_matches(&LOONFS);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 /// HappyHamster's publisher API description — corpus row 5370. Required
 /// Coordinates query objects exercise form-query object serialization.
 const HAPPY_HAMSTER: Corpus = Corpus {
@@ -15436,6 +15438,7 @@ const HAPPY_HAMSTER: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Corpus registration requires this real golden replay in the existing crozier-e2e and corpus-match inventories (tests/fixtures/AGENTS.md); splitting their shared e2eReads family is a separate graph change, outside this witness search.
 #[test]
 fn happy_hamster_matches_fern_output() {
     assert_committed_corpus_matches(&HAPPY_HAMSTER);
@@ -15453,11 +15456,11 @@ const SELDON_WRAPPER: Corpus = Corpus {
     unmatched: &[],
 };
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Corpus registration requires this real golden replay in the existing crozier-e2e and corpus-match inventories (tests/fixtures/AGENTS.md); splitting their shared e2eReads family is a separate graph change, outside this witness search.
 #[test]
 fn seldon_wrapper_matches_fern_output() {
     assert_committed_corpus_matches(&SELDON_WRAPPER);
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn letta_matches_fern_output() {

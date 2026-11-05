@@ -5,6 +5,5 @@ digest = "d881cc7bea13210187292f1b8713e78e7be9c006725b383cfe8f4671bda15bfc"
 [[covers]]
 key = "parameter-schema"
 arm = 'src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]'
-search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#arm-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/README.md#arm-verdicts"
+verdict = "exhausted"

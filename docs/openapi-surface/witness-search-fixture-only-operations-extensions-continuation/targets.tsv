@@ -1,7 +1,7 @@
 key	kind	region	arm	cover_at_base	verdict
 client-header-date-format	feature	parameters	-	observatory-client-date	exhausted
 nullable-array-query-explode-false	feature	parameters	-	observatory-nullable-query	exhausted
-nullable-query-array-items	feature	parameters	-	observatory-nullable-query	exhausted
+nullable-query-array-items	feature	parameters	-	observatory-nullable-query	search-incomplete
 parameter-default-extension	feature	parameters	-	observatory-query-extensions	exhausted
 parameter-ignore-extension	feature	parameters	-	observatory-query-extensions	exhausted
 parameter-name-extension	feature	parameters	-	declared-rename-control;observatory-query-extensions	exhausted
@@ -39,7 +39,6 @@ base-path-extension	feature	oas31-extensions	-	base-path-client-argument;observa
 discriminated-extension	feature	oas31-extensions	-	greenhouse-undiscriminated-unions	exhausted
 discriminator-property-name-extension	feature	oas31-extensions	-	telescope-renamed-discriminant	exhausted
 parameter-in-path	arm	parameters	src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	base-path-client-argument	exhausted
-combo-param-example-beside-ref-schema	combination	parameters	src/ir.rs::parameter_example_value		corpus row 5371
 http-dpop	arm	security	src/ir.rs::auth_model[=_ => Auth::None,]	http-dpop-unrequired	exhausted
 http-mutual	arm	security	src/ir.rs::auth_model[=_ => Auth::None,]	http-mutual-unrequired	exhausted
 http-negotiate	arm	security	src/ir.rs::auth_model[=_ => Auth::None,]	http-negotiate-unrequired	exhausted
@@ -47,7 +46,7 @@ parameter-schema	arm	parameters	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*
 parameter-in-header	arm	parameters	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	observatory-client-date	exhausted
 parameter-in-path	arm	parameters	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	observatory-client-variable	exhausted
 parameter-in-query	arm	parameters	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	observatory-query-extensions	exhausted
-parameter-style-form-query-object	arm	parameters	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	ore-bin-screen	pending registered arm measurement
+parameter-style-form-query-object	arm	parameters	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	ore-bin-screen	corpus rows 5370 and 5371
 parameter-schema	arm	parameters	src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]	sensor-batch-query	exhausted
 fern-streaming-extension	arm	oas31-extensions	src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]	stream-condition-union-body	exhausted
 fern-streaming-extension	arm	oas31-extensions	src/emit.rs::sse_end[=\x7cend\x7c format!]	streaming-extension-terminator	exhausted

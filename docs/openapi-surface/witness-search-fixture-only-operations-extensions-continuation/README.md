@@ -2,9 +2,11 @@
 
 Base: `92be4edfa6378d3e509c775f8f9796de40cb9b54`. [`targets.tsv`](targets.tsv) freezes every fixture-only
 feature, combination and remaining authored arm cover in `parameters`,
-`security` and `oas31-extensions`: 39 feature/combination targets and 13 arm
+`security` and `oas31-extensions`: 39 feature/combination targets and 12 arm
 targets. No generator behavior changes. Corpus rows 5370 and 5371 register
 HappyHamster and Seldon's wrapper; rows 5372–5399 remain unused.
+The 51 targets finish as two real-witness proofs, 47 exhausted searches within
+the assigned populations, and two incomplete searches with outstanding candidates.
 
 ## Populations screened
 
@@ -13,8 +15,8 @@ HappyHamster and Seldon's wrapper; rows 5372–5399 remain unused.
    immutable revision, recovered or newly established SHA-256, byte size,
    preliminary decision and generation selection is in [`candidates.tsv`](candidates.tsv).
    Source-hash-only identities without a recoverable locator remain explicitly
-   incomplete; there is no acquisition to rediscover them. Earlier committed
-   refusal measurements are reused as named decisions, not claimed as new runs.
+   incomplete; there is no acquisition to rediscover them. Only handed-off decisions are reused. Other historical refusals are not
+   current-pair decisions; their outstanding candidates remain unscreened.
 2. Exactly the seven [newly admitted documents](../../fern-measurements/handed-off/README.md#newly-admitted-documents).
    [`newly-admitted.tsv`](newly-admitted.tsv) lists their committed paths, byte
    sizes and verified digests, smallest first. All seven digests equal the
@@ -32,7 +34,7 @@ query enum-or-array union, a required query object with an array member, a
 const-member query union, or a nullable union item array. Nixtla and the two
 publisher tooling resources have no query parameters of these shapes. The
 tracked extension/security predicates and the example-beside-ref conjunction
-are zero. The base's complete golden measurement executes none of the 13
+are zero. The base's complete golden measurement executes none of the 12
 remaining target arms, so these seven supply no new arm witness.
 
 Already-screened handed-off documents stay outside this continuation, under
@@ -75,9 +77,8 @@ The initial comparisons also used the wrong distribution name; final comparisons
 use package `fern`, distribution `default_package_name`. Those preliminary
 results are superseded and are not handoffs. Final cache trees have no enclosing
 Git metadata and are untouched complete generated output. Their digest and
-successful exit status are checked before reuse. The final screening covers
-nine distinct documents: six generated completely (three match, three differ)
-and three refused. The two registered witnesses also have certified literals
+successful exit status are checked before reuse. The final current-pair screening results are recorded document by document
+in `generation-order.tsv`; older refusal measurements do not decide them. The two registered witnesses also have certified literals
 trees, generated through the existing `fern-references.run_fern` API under the
 same lock and reduced with `golden_overlay.reduce` after the normal Python
 comment stripping. The manager approved this path to avoid a release build
@@ -89,29 +90,30 @@ No GitHub code search was made. No GitHub request was made outside the guard.
 Every live request is the exact-commit fetch of a candidate the earlier record
 names; no license file, tree, code-search, GraphQL, Sourcegraph, Postman or
 SwaggerHub request was made. The guard's own call, wait and cache-hit logs are
-committed under [`guard`](guard/). The 88 raw-lane waits are pacing,
-not primary-quota waits. The response cache supplied 211 answers,
+committed under [`guard`](guard/). The 92 raw-lane waits are pacing,
+not primary-quota waits. The response cache supplied 223 answers,
 including cached licence reads; these spend no live request.
 
 | bucket | live requests |
 |---|---:|
 | code_search | 0 |
 | core | 0 |
-| raw candidate fetch | 89 |
+| raw candidate fetch | 95 |
 
 ## Verdicts
 
 `exhausted` decides only the two assigned populations. It does not claim a
 new unbounded public search or erase a known handed-off residual. A registered
 witness settles its target even where other individually listed candidates
-remain unscreened. Persona's eight versions are the outstanding candidates
-for the remaining incomplete feature, each with its reason in `candidates.tsv`.
+remain unscreened. Persona's eight versions remain outstanding for the header-extension feature;
+five recovered nullable-array candidates remain at the screening bound. Each
+identity and reason is recorded in `candidates.tsv` and below.
 
 | key | verdict | cover at base |
 |---|---|---|
 | `client-header-date-format` | `exhausted` | `observatory-client-date` |
 | `nullable-array-query-explode-false` | `exhausted` | `observatory-nullable-query` |
-| `nullable-query-array-items` | `exhausted` | `observatory-nullable-query` |
+| `nullable-query-array-items` | `search-incomplete` | `observatory-nullable-query` |
 | `parameter-default-extension` | `exhausted` | `observatory-query-extensions` |
 | `parameter-ignore-extension` | `exhausted` | `observatory-query-extensions` |
 | `parameter-name-extension` | `exhausted` | `declared-rename-control;observatory-query-extensions` |
@@ -148,7 +150,6 @@ for the remaining incomplete feature, each with its reason in `candidates.tsv`.
 | `base-path-extension` | `exhausted` | `base-path-client-argument;observatory-base-path` |
 | `discriminated-extension` | `exhausted` | `greenhouse-undiscriminated-unions` |
 | `discriminator-property-name-extension` | `exhausted` | `telescope-renamed-discriminant` |
-| `combo-param-example-beside-ref-schema` | `corpus row 5371` | `` |
 
 ## Arm verdicts
 
@@ -162,7 +163,7 @@ for the remaining incomplete feature, each with its reason in `candidates.tsv`.
 | `parameter-in-header` | `exhausted` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | `observatory-client-date` |
 | `parameter-in-path` | `exhausted` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | `observatory-client-variable` |
 | `parameter-in-query` | `exhausted` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | `observatory-query-extensions` |
-| `parameter-style-form-query-object` | `pending registered arm measurement` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | `ore-bin-screen` |
+| `parameter-style-form-query-object` | `corpus rows 5370 and 5371` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | `ore-bin-screen` |
 | `parameter-schema` | `exhausted` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | `sensor-batch-query` |
 | `fern-streaming-extension` | `exhausted` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | `stream-condition-union-body` |
 | `fern-streaming-extension` | `exhausted` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | `streaming-extension-terminator` |
@@ -184,6 +185,20 @@ The Seldon `/predict` query declares an example beside a referenced schema.
 Its combination proof is co-occurrence, following the existing declaration in
 `combination-cooccurrence.tsv`; no new interaction branch is claimed.
 
+Both new golden runs execute 26 of 30 measured regions in the required-query
+object conversion arm; [arm-execution.tsv](arm-execution.tsv) records the exact
+site. Their implicit default-form objects need named-fixture selector overrides
+in the existing reach declaration. The sole authored cover for this arm is
+retired in full; the authored example-beside-ref combination cover is removed
+while its fixture's other cover remains.
+
+The joined reach store contains 321 real tests (two newly measured and 319
+carried) and 53 retained authored fixtures. The manager approved the carry after
+the [input audit](carry-input-audit.txt): carried source bytes, golden trees and
+generation inputs are unchanged, except the release-only package-version bump.
+Each carried entry retains its original measured commit; this is not a claim
+that those 319 tests were instrumented again here.
+
 ## Handed-off differences
 
 Crozier output is unchanged for every declarer here. New clean comparisons
@@ -199,6 +214,8 @@ made in this search-only stream.
 | `inherited-example-field-order` | Cortexware agent-trace, same hash | reference.md: worked ingestion-event fields `id` and `timestamp` precede `body` in crozier and follow it in the certified pair. |
 | `empty-object-example-omitted` | Cortexware agent-trace, same hash | reference.md and OpenTelemetry client: crozier omits the certified pair's worked `status={}` member. |
 
+Cloudfoundry also names an unacquired relative `shared_definitions.yaml`; its comparison is over the assigned root bytes, with both generators treating that unresolved schema as unknown. It is not a registration candidate without that reference closure, and no extra file is fetched here.
+
 Previously known declarers and remaining root causes are listed separately in
 [`known-declarers.tsv`](known-declarers.tsv). Refusal and registration statuses
 are preserved as base evidence; none is relabelled as a new byte difference.
@@ -209,3 +226,39 @@ them is outside this search.
 
 Final commands, results, derived-file reproduction and suppression accounting
 are recorded in [`verification.txt`](verification.txt).
+
+## Renewed incomplete search
+
+| key | outcome | outstanding candidates |
+|---|---|---|
+| `security-scheme-header-extension-named` | `none-registrable` | Eight pinned Persona versions in candidates.tsv need their unacquired relative-reference trees; the authorized population contains only the named root documents. |
+
+## Late recovery of nullable-array candidates
+
+An intermediate `exhausted` verdict for `nullable-query-array-items` incorrectly
+rested on historical refusals outside the handed-off set. That verdict is
+withdrawn. Thirty source-hash-only rows had been misclassified as decided. Those
+historical decisions are withdrawn: one receives the current-pair screen below,
+and the other 29 remain unscreened. Nothing more is screened for their already
+witnessed targets. Six
+nullable-array candidates have immutable locators in earlier committed refusal
+records. Those locators were recovered late; all six sources were fetched
+through the guard and their exact recorded SHA-256 digests verified. They are
+larger than Cellengine and Cortexware, the target's first two current-pair
+selections. Under the manager's corrective ruling, the smallest admissible
+recovered document takes the target's third and last slot. The remaining five
+are individually named in candidates.tsv as incomplete at the bound; an older
+refusal is not substituted for a new certified-pair screen.
+
+| key | outcome | outstanding candidates |
+|---|---|---|
+| `nullable-query-array-items` | `none-registrable` | The recovered candidate table below names the selected document and each remaining document beyond the three-document bound; the handed-off Unicourt residual stays outside this search. |
+
+| source SHA-256 | bytes | immutable locator | current-pair decision |
+|---|---:|---|---|
+| `5ce68565710ca03a17792aaccccb4949d135632e69898d665aa349dbf710385a` | 1882714 | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/probely.com/main/1.2.0/meta/import/input-bundled.json | selected in the third slot; certified CLI refuses it (two enum-name errors) |
+| `6bcb5d3a66421190f4cb701cd5ddd04eaff6426e5a1c0cd2794ec8724ea34ed4` | 1883132 | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/probely.com/main/1.2.0/meta/import/input-entry.json | search-incomplete: beyond the three-document target bound |
+| `e9e3e8c2e24db88e950ae00c1faf5cb82e43bd7853ac70d16757ac91dfd7bf45` | 5647749 | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/gcore.com/main/1.0.0/meta/import/input-bundle.json | search-incomplete: beyond the three-document target bound |
+| `b8a3425257222511aa6b955b982cf481dad1b77f03614ea3b768b6aa2a770b31` | 18238873 | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-entry.json | search-incomplete: beyond the three-document target bound |
+| `007fc39ac57873d75305243cee61e5d358c12b975bfbbee6ba0894126e820b0e` | 18238942 | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cloudflare.com/main/4.0.0/openapi.json | search-incomplete: beyond the three-document target bound |
+| `38b1209900e52de20213b0f486937f022f51b9ed814ae19bbdf661e89454a1b7` | 18238953 | https://raw.githubusercontent.com/jentic/jentic-public-apis/eb9d12a2684b0fbcb5aecf51e8ae54dba0929743/apis/openapi/cloudflare.com/main/4.0.0/meta/import/input-bundle.json | search-incomplete: beyond the three-document target bound |
