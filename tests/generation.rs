@@ -15033,7 +15033,7 @@ fn worked_example_goldens_match_in_process() {
             Layout::Packaged,
         ),
         (
-            "docs/openapi-surface/handwritten/request-example-deprecated",
+            "docs/fern-measurements/superseded-fixtures/request-example-deprecated",
             "openapi.yml",
             "fern-expected",
             "fern",

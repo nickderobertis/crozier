@@ -4,6 +4,5 @@ digest = "9d6dc52ddb1d42729c6b754cffe83858b27347fa8a71595977f707068975f0d6"
 
 [[covers]]
 key = "group-path-ending-in-api-nested-package"
-search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts"
+verdict = "exhausted"

@@ -624,6 +624,7 @@
     "docs/fern-measurements/superseded-fixtures/poster-upload/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/pottery-commission/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/request-alias/fern-expected": {},
+    "docs/fern-measurements/superseded-fixtures/request-example-deprecated/fern-expected": {},
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
@@ -831,7 +832,6 @@
     "docs/openapi-surface/handwritten/quiz-nullable-response-union/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected": {},
-    "docs/openapi-surface/handwritten/request-example-deprecated/fern-expected": {},
     "docs/openapi-surface/handwritten/request-media-methods/fern-expected": {},
     "docs/openapi-surface/handwritten/required-marker-point/fern-expected": {},
     "docs/openapi-surface/handwritten/required-param-and-body-defaults-ignored/fern-expected": {},
