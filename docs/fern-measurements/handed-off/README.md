@@ -211,3 +211,69 @@ sources.
 
 The [follow-up ticket area](follow-up-tickets/README.md) reconciles its ticket-URL
 rows as its own causes: each cause is the issue number in its source URL.
+
+## Proof retired by the registrations
+
+The fresh 391-test byte-match and per-test coverage exports supersede the
+following handwritten covers and residual supplement. Each named witness
+passed its corpus gate in both enum modes; its scoped export reaches the named
+arm. The supplement’s witness declares the key and has no corpus residual.
+
+| Retired fixture | Key | Arm or supplement | Registered witness |
+|---|---|---|---|
+| `byte-text-response` | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | `registered-literals-apis-guru-openapi-directory-a0bd29a9` |
+| `byte-text-response-controls` | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | `registered-literals-apis-guru-openapi-directory-a0bd29a9` |
+| `json-binary-path` | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `json-binary-path` | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `json-request-shapes` | `request-body-content` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | `registered-literals-codosseum-org-backend-9fa232be` |
+| `json-request-shapes` | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `json-request-shapes` | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `meadow-tag-code` | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `shelf-labels-map-variants` | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `registered-literals-apis-guru-openapi-directory-9031af6a` |
+| `harbor-signal-null` | `schema-example-null` | `residual supplement` | `registered-literals-bytedance-sandboxfusion-0b64b21d` |
+
+The nine retired arm covers remove exactly nine rows from
+`handwritten-reach.tsv`; the remaining rows and every configuration-gate row
+keep their measured counts. `json-request-shapes` retains its unrelated
+optional-body cover. No combination row or co-occurrence audit changed.
+
+The following fixtures keep their unchanged source bytes and certified trees
+as probes, with manifest digests and their regression test paths updated:
+`byte-text-response`, `byte-text-response-controls`, `harbor-signal-null`, `json-binary-path`, `meadow-tag-code`, `shelf-labels-map-variants`.
+
+Two values have no checked-in generator. Under planner ruling 230,
+`apply-retirements.py` in this dispatch’s scratch directory derives them from
+the native census payload: the script docstring’s corpus/source split is
+360/391, and duplicate operation IDs occupy 44 sites across six sources.
+`GrammarContractTests` and `DocumentPathsSnapshotTests` reconcile those values
+against the census’s own walk. A generator follow-up records both gaps.
+
+The following reach-ranking rows are now fully reached and leave that ranking;
+each still exists in the reach ledger. The surviving ranking rows retain their
+owner/boundary cells verbatim. The new witnesses reaching their formerly
+unreached sites are:
+
+| Key | New registered witnesses |
+|---|---|
+| `format-uuid` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `mutually-recursive-graph` | `registered-literals-rd-alliance-metadata-catalog-v2-c5da87bb` |
+| `property-map-value-oneof` | `registered-literals-apis-guru-openapi-directory-9031af6a` |
+| `recursive-graph` | `registered-literals-rd-alliance-metadata-catalog-v2-c5da87bb` |
+| `format-binary` | `registered-literals-hey-api-hey-api-30fbd0e5` |
+| `format-byte` | `registered-literals-apis-guru-openapi-directory-a0bd29a9` |
+
+The scratch `derive-coverage-sections.py` uses the existing reach-ledger reader
+to derive 69 ranking rows and 90 unreached arms: 80 in `src/ir.rs`, six in
+`src/emit.rs`, one in `src/openapi.rs`, and three in `src/naming.rs`. No shared
+parser or enforcement code changed. The separate census-port-fingerprints-r1
+change (crozier pull request 767) adds generators for these ranking and
+per-file arm-count sections; the new follow-up covers only the two remaining
+census-derived prose values above.
+
+The census follow-up selection is `surface_census_test.py` plus
+`apis_guru_gap_screen_test.py`: every failed assertion is in the former, which
+reads the changed census, coverage, handwritten-proof, probe and handed-off
+records; the latter reads the changed region records. The remaining census
+suite modules exercise isolated reach stores and repin fixtures and read no
+changed repository data. This rerun changes no shared parser or enforcement
+code, following planner ruling 229.

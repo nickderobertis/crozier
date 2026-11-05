@@ -12,6 +12,8 @@ anyof-sole-member	absent-tree	measured	docs/openapi-surface/probe-expected/anyof
 apiKey-query	absent-tree	discards	docs/openapi-surface/probe-expected/apiKey-query	—	fc688e9518543b81973ed9493c33104bd436562519b0c9b4314704393f5940ab
 array-item-pointer-walk-anyof	absent-tree	measured	docs/openapi-surface/probe-expected/array-item-pointer-walk-anyof	—	884b2a779174094f14e77f2da164695a3ab0e845c38a049d20d9b05fb9c74c29
 boolean-schema-true	differential	coincidence	docs/openapi-surface/probe-expected/boolean-schema-true	boolean-schema-true-control	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
+byte-text-response	absent-tree	measured	docs/openapi-surface/probe-expected/byte-text-response	—	eeb35e3d7553639d6004c00428fa51369578782901689daf44195ffeb8d65d23
+byte-text-response-controls	absent-tree	measured	docs/openapi-surface/probe-expected/byte-text-response-controls	—	3507268281c0f87734513555350c1de37a1d9805c98b3384f7e3526834b10f76
 components-pathItems	absent-tree	discards	docs/openapi-surface/probe-expected/components-pathItems	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
 const-boolean	absent-tree	discards	docs/openapi-surface/probe-expected/const-boolean	—	b04fd33416def51bca1f661dc84b9081c55cc075a17653a8f1b68a5bd8d19748
 const-integer	absent-tree	discards	docs/openapi-surface/probe-expected/const-integer	—	66e933bb1db5aa13314cd97de771c3e763a4d899be5d6f0075c1517e91a38aa8
@@ -56,6 +58,7 @@ format-iri	absent-tree	discards	docs/openapi-surface/probe-expected/format-iri	�
 format-iri-reference	absent-tree	discards	docs/openapi-surface/probe-expected/format-iri-reference	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
 format-relative-json-pointer	absent-tree	discards	docs/openapi-surface/probe-expected/format-relative-json-pointer	—	31c98f9b37ddc9845d53a5ba2d1728b8d25d8993e9abef7cc418fc7d3b918cc8
 harbor-nullable-inline-object	absent-tree	measured	docs/openapi-surface/probe-expected/harbor-nullable-inline-object	—	58a20481c757955214a6a50683a0f006030209ab086eb6fd78007b97507f11c2
+harbor-signal-null	absent-tree	measured	docs/openapi-surface/probe-expected/harbor-signal-null	—	24b849f045c8b6a298154244b62b19ef9a1870b74f9d4d1dc330daec0a7fbe9e
 header-allow-reserved	absent-tree	discards	docs/openapi-surface/probe-expected/header-allow-reserved	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 header-array	refusal	refuses	docs/openapi-surface/probe-expected/header-array.fern-refusal.txt	—	a4231021e8b933cf51b6172e64f195e6ec37b6680023a5951d529300c1d58933
 header-deprecated	absent-tree	discards	docs/openapi-surface/probe-expected/header-deprecated	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
@@ -69,6 +72,7 @@ http-privatetoken	absent-tree	discards	docs/openapi-surface/probe-expected/http-
 http-scram-sha-1	absent-tree	discards	docs/openapi-surface/probe-expected/http-scram-sha-1	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
 http-scram-sha-256	absent-tree	discards	docs/openapi-surface/probe-expected/http-scram-sha-256	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
 http-vapid	absent-tree	discards	docs/openapi-surface/probe-expected/http-vapid	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
+json-binary-path	absent-tree	measured	docs/openapi-surface/probe-expected/json-binary-path	—	2e7fa2e64facc075f027e1c1e4ba00d2092e4302a4fc0022d44712dd0855a67d
 label-array-or-object	absent-tree	discards	docs/openapi-surface/probe-expected/label-array-or-object	—	7f01f7fc61b0777671261466638efb62ac5de274af609dafc0cd22674f6c8b34
 link-description	absent-tree	discards	docs/openapi-surface/probe-expected/link-description	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
 link-requestBody	absent-tree	discards	docs/openapi-surface/probe-expected/link-requestBody	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
@@ -76,6 +80,7 @@ link-server	absent-tree	discards	docs/openapi-surface/probe-expected/link-server
 matrix-array	absent-tree	discards	docs/openapi-surface/probe-expected/matrix-array	—	7f01f7fc61b0777671261466638efb62ac5de274af609dafc0cd22674f6c8b34
 matrix-object	absent-tree	discards	docs/openapi-surface/probe-expected/matrix-object	—	42e81d75e9faf5800e84c7c78de9bb313be62f4da2fb8339b85957448a9bfd4b
 max-contains	absent-tree	discards	docs/openapi-surface/probe-expected/max-contains	—	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
+meadow-tag-code	absent-tree	measured	docs/openapi-surface/probe-expected/meadow-tag-code	—	4211b745c34394fb5eca3a1dafe9cdd0579a416d37195b9ddf44cd3fbf9d9f66
 min-contains	absent-tree	discards	docs/openapi-surface/probe-expected/min-contains	—	e436024c488d65b110582d33671c637dd01a8766fac2b4c0a6179b3308dc689a
 multiple-of	absent-tree	discards	docs/openapi-surface/probe-expected/multiple-of	—	5b30ee96cd8bd64fbe827ffbd4898306e2dcf6f0a33f696bf3c8b29f2a4e0eb3
 museum-titled-array-items	absent-tree	measured	docs/openapi-surface/probe-expected/museum-titled-array-items	—	c5ec63b780b86d729a5da424b8185bdd608dadbd6bee73ca335b42ba668547a2
@@ -120,6 +125,7 @@ schema-example-on-ref-to-union	differential	ignores	docs/openapi-surface/probe-e
 schema-example-on-ref-to-union-no-example-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-on-ref-to-union-no-example-control	—	251c839f48bb19fa089c24f7bd1d692c9b708a12e7b94f451b60890f2fca8fe3
 server-description-multiword	absent-tree	discards	docs/openapi-surface/probe-expected/server-description-multiword	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 servers-three-levels	absent-tree	discards	docs/openapi-surface/probe-expected/servers-three-levels	—	260673c2ef2063ccc6e69d6850422ddbff593df192fcb4bba1fa991c35e601de
+shelf-labels-map-variants	absent-tree	measured	docs/openapi-surface/probe-expected/shelf-labels-map-variants	—	7d69c8fb6d193d11376de2f33cfbd6ca23fec8200c5eef4e1fcf714a4a028286
 spaceDelimited-object	absent-tree	discards	docs/openapi-surface/probe-expected/spaceDelimited-object	—	40385b2cd0f0da666d23940a1d640e04eb5c3e7a73c1a5339594057ec3c57928
 thermostat-nullable-member	absent-tree	measured	docs/openapi-surface/probe-expected/thermostat-nullable-member	—	a19f11f60bf80b07d900a30d9d3a2ebd2af6465f7ba7d3d4df23d1d8911eb46c
 trace-operation	absent-tree	discards	docs/openapi-surface/probe-expected/trace-operation	—	03acc136df6799cee89c895188ebb9a087b9b90a9aac2834ad0eee80a4788e75

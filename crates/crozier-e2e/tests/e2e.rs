@@ -3176,8 +3176,8 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
         ),
         (
             "shelf-labels-map-variants",
-            "docs/openapi-surface/handwritten/shelf-labels-map-variants/openapi.yml",
-            "docs/openapi-surface/handwritten/shelf-labels-map-variants/fern-expected",
+            "docs/openapi-surface/probes/shelf-labels-map-variants.yml",
+            "docs/openapi-surface/probe-expected/shelf-labels-map-variants",
             "remaining-examples/shelf-labels-map-variants-control",
             "/paths/~1labels/put/requestBody/content/application~1json/schema/properties/labels/additionalProperties",
             "oneOf",
@@ -3291,20 +3291,20 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
 fn residual_null_example_is_absent_from_matching_request_snippets() {
     let (_, failures) = handwritten_documents(repo_root());
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-signal-null");
-    let spec = fixture.join("openapi.yml");
+    let fixture = repo_root().join("docs/openapi-surface/probe-expected/harbor-signal-null");
+    let spec = repo_root().join("docs/openapi-surface/probes/harbor-signal-null.yml");
     let failures = filtered_tree_failures(
         "schema-example-null",
-        "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected",
+        "docs/openapi-surface/probe-expected/harbor-signal-null",
         &spec,
-        &fixture.join("fern-expected"),
+        &fixture,
         &[],
     );
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     let temp = tempfile::tempdir().unwrap();
     let output = temp.path().join("sdk");
     probe_command(&spec, &output).assert().success();
-    for tree in [fixture.join("fern-expected"), output] {
+    for tree in [fixture.clone(), output] {
         let text = std::fs::read_to_string(tree.join("src/fern/client.py")).unwrap();
         for (prefix, end) in [
             ("\n        client.submit_signal(", "\n        )"),
@@ -4288,8 +4288,7 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
 #[test]
 fn byte_text_response_matches_certified_output_in_both_enum_modes() {
     let root = repo_root();
-    let golden = "docs/openapi-surface/handwritten/byte-text-response/fern-expected";
-    let fixture = root.join("docs/openapi-surface/handwritten/byte-text-response");
+    let golden = "docs/openapi-surface/probe-expected/byte-text-response";
     for (mode, golden) in [
         ("python-enums", golden),
         (
@@ -4316,7 +4315,7 @@ fn byte_text_response_matches_certified_output_in_both_enum_modes() {
         let out = tempfile::tempdir().expect("output");
         crozier_clean_env()
             .args(["--no-config", "generate", "python", "--spec"])
-            .arg(fixture.join("openapi.yml"))
+            .arg(repo_root().join("docs/openapi-surface/probes/byte-text-response.yml"))
             .arg("--output")
             .arg(out.path())
             .args([
@@ -4414,12 +4413,12 @@ components:
 #[test]
 fn byte_text_response_dispatch_controls_match_certified_output() {
     let root = repo_root();
-    let fixture = root.join("docs/openapi-surface/handwritten/byte-text-response-controls");
+    let fixture = root.join("docs/openapi-surface/probe-expected/byte-text-response-controls");
     let failures = filtered_tree_failures(
         "byte text response controls",
-        "docs/openapi-surface/handwritten/byte-text-response-controls/fern-expected",
-        &fixture.join("openapi.yml"),
-        &fixture.join("fern-expected"),
+        "docs/openapi-surface/probe-expected/byte-text-response-controls",
+        &repo_root().join("docs/openapi-surface/probes/byte-text-response-controls.yml"),
+        &fixture,
         &[],
     );
     assert!(failures.is_empty(), "{}", failures.join("\n"));
@@ -6003,7 +6002,11 @@ fn json_request_shapes_match_certified_output_in_both_enum_modes() {
         let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
         for mode in ["python-enums", "literals"] {
             let golden = if mode == "python-enums" {
-                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                if shape == "json-binary-path" {
+                    format!("docs/openapi-surface/probe-expected/{shape}")
+                } else {
+                    format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+                }
             } else {
                 format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
             };
@@ -6025,7 +6028,12 @@ fn json_request_shapes_match_certified_output_in_both_enum_modes() {
             let out = tempfile::tempdir().unwrap();
             crozier_clean_env()
                 .args(["--no-config", "generate", "python", "--spec"])
-                .arg(fixture.join("openapi.yml"))
+                .arg(if shape == "json-binary-path" {
+                    root.join("docs/openapi-surface/probes")
+                        .join(format!("{shape}.yml"))
+                } else {
+                    fixture.join("openapi.yml")
+                })
                 .arg("--output")
                 .arg(out.path())
                 .args([
@@ -6093,15 +6101,12 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
             let out = tempfile::tempdir().unwrap();
             crozier_clean_env()
                 .args(["--no-config", "generate", "python", "--spec"])
-                .arg(
-                    root.join(if shape == "poster-upload" {
-                        SUPERSEDED_FIXTURES_DIR
-                    } else {
-                        HANDWRITTEN_DIR
-                    })
-                    .join(shape)
-                    .join("openapi.yml"),
-                )
+                .arg(if shape == "json-binary-path" {
+                    root.join("docs/openapi-surface/probes")
+                        .join(format!("{shape}.yml"))
+                } else {
+                    root.join(HANDWRITTEN_DIR).join(shape).join("openapi.yml")
+                })
                 .arg("--output")
                 .arg(out.path())
                 .args([
