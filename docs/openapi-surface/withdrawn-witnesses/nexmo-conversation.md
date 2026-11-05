@@ -69,22 +69,18 @@ is a site `golden-reach-sites.tsv` declares.
 | An unquoted YAML timestamp is no example for an optional, non-temporal string query parameter, which then goes unshown | `src/emit.rs`, the query-parameter example loop's `yaml_unquoted_timestamps` arm | hand-written `ref-pointer-walk` (`listRoutes`' `since`) | `search-incomplete`. **Open gap:** no real specification is known to witness it |
 
 These are hand-written evidence, a lower level of proof than a real
-specification. They count toward no real-specification match. The fixture's
-Fern tree was regenerated with Fern CLI 5.67.1 and `fernapi/fern-python-sdk`
-5.20.0, unedited, and crozier byte-matches it (`handwritten_fixtures_match_fern_goldens`).
+specification. They count toward no real-specification match. The withdrawal measurement used Fern CLI 5.67.1 and Python SDK 5.20.0.
+The fixture now carries the certified pair and digest in its
+[`evidence.toml`](../handwritten/ref-pointer-walk/evidence.toml), and the
+`handwritten_fixtures_match_fern_goldens` gate compares its current tree.
 Its arm-level covers stand unchanged, since `just handwritten-reach` measures
 them as before.
 
-Each search reads `search-incomplete` because no search was run for these
-regions. The committed arm searches for
-[`ref-pointer-nested-properties`](../golden-reach-witnesses/searches/ref-pointer-nested-properties.md)
-and [`ref-pointer-composition-index`](../golden-reach-witnesses/searches/ref-pointer-composition-index.md)
-found the documents declaring `$ref` pointers through `properties` or a
-composition index. But they probed each declarer only for the pointer-walk sites
-they name, never for these. No census selector reads an unquoted YAML timestamp
-as an example at all. A real-specification search for each behaviour, by
-Contract B, is still owed. It needs census selectors and declared sites for
-these branches first, and the run's planner assigned it outside this
-withdrawal: the selectors and sites to the coverage restatement (#361), the
-searches to a follow-up. Until those land, the four behaviours rest only on
-hand-written evidence, and the YAML-timestamp drop is an open gap.
+The [renewed bounded search](../witness-search-ledger-remainders/README.md#verdicts)
+now gives each behaviour a census selector. Each remains `search-incomplete`:
+the retained archive and acquired pools are unavailable, and only part of the
+handed-off population could be recovered. The record names the inputs read,
+the broader pointer-copy declarers, and the outstanding populations. No real
+witness for the optional non-temporal timestamp drop was found, including in
+the pinned Cyoda document, whose timestamps are temporal. These behaviours
+continue to rest on hand-written evidence.

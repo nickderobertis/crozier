@@ -1,32 +1,21 @@
-# Authored-probe measurements
+# Authored combination measurements
 
-Documents written to isolate one shape, each with what pinned Fern (CLI 5.67.1,
-`fernapi/fern-python-sdk` 5.20.0) generated from it, that crozier is byte-gated
-against. A case is **neither** a [hand-written fixture](../handwritten/AGENTS.md)
-nor real-specification evidence: no real-specification search was run for its
-shape, so its evidence tier is undecided. It names no region row, census
-selector, golden-reach site or search record, and no count treats it as a match.
-What it proves is narrower: on this document, crozier emits what Fern emits.
+The [tier matrix](evidence-tiers.tsv) decides all 31 original authored cases:
+six naming cases have moved to `../handwritten/` with their covers and certified
+trees; the remaining 25 are **open combinations**, not undecided tiers. The
+[bounded search](../witness-search-ledger-remainders/README.md#authored-verdicts)
+names each missing population and every unscreened real declarer. Ruling
+`exhausted-combination-fallback` keeps those combinations open until their
+search finishes. They are neither admitted hand-written covers nor limitations.
 
-## Layout
+Each remaining case holds `openapi.yml`, `fern.log` and `fern-expected/`.
+The log records the certified pair's check and generation exits. The complete
+comment-stripped tree is generated through `just fern-references authored-probes --version 5.41.3` at the certified pair in `assets/scaffolding/metadata.json`.
+Nothing in the expected tree is edited to repair a difference.
 
-One directory per case, `<ticket>-<shape>/`, holding:
-
-- `openapi.yml`: the authored document.
-- `fern.log`: Fern's measurement, opening `Fern CLI 5.67.1, python-sdk 5.20.0`
-  and recording `check exit:` and `generate exit:` with each command's output.
-- `fern-expected/`: the complete comment-stripped tree Fern generated, in the
-  workspace [`../probes/AGENTS.md`](../probes/AGENTS.md#re-running-one)
-  prescribes. A document Fern refuses is no case here: it belongs to the
-  [refusal registry](../../fern-refusals/README.md).
-
-Nothing in a case is edited after the measurement. A divergence is repaired in
-`src/`.
-
-## The gate
-
-`authored_probe_measurements_match_fern` in
-[`../../../crates/crozier-e2e/tests/e2e.rs`](../../../crates/crozier-e2e/tests/e2e.rs) lists this directory, holds
-each case to the layout above, and byte-compares crozier's output over its
-`openapi.yml` (`--package-name fern`) against `fern-expected/` under the
-corpus gate's normalization.
+`authored_probe_measurements_match_fern` drives the real CLI and byte-compares
+each remaining case against that tree. It proves only the measured document's
+output, not real-specification evidence or an admitted combination fixture.
+The census suite validates the versioned matrix, each source's SHA-256 and
+selector, and the open-case counts in the coverage report. The hand-written
+gate separately proves the six moved naming cases.
