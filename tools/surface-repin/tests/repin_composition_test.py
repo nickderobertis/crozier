@@ -79,6 +79,17 @@ components:
 """
 
 
+GENERATED_INDEX = """\
+import runpy
+import sys
+from pathlib import Path
+
+verb = runpy.run_path("tools/surface-census/census-repin.py", run_name="composition_expected_index")
+handwritten = verb["_load"]("composition_expected_handwritten", "handwritten-fixtures.py")
+sys.stdout.write(verb["reach_document"].generated(Path.cwd(), verb["REACH"], handwritten))
+"""
+
+
 def write(root: Path, name: str, text: str) -> None:
     path = root / name
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -434,7 +445,16 @@ def exercise(root: Path, tmp_path: Path) -> None:
     index = root / "docs/openapi-surface-coverage.md"
     protected = index.read_bytes()
     run("just", "census-repin", "--jobs", "1", "--tests", f"^{ALPHA}$", "--fixtures", "^configured$")
-    assert index.read_bytes() == protected, "a scoped repin cannot restate the arm sections or headline"
+    scoped_index = index.read_bytes()
+    scoped_text = index.read_text(encoding="utf-8")
+    # Generate from the old template and new ledger: only ledger-derived sections
+    # may change; the population-wide arm sections and headline stay protected.
+    index.write_bytes(protected)
+    try:
+        expected_index = run(PYTHON, "-c", GENERATED_INDEX).stdout
+    finally:
+        index.write_bytes(scoped_index)
+    assert scoped_text == expected_index, "a scoped repin must restate its ledger sections and preserve the rest"
     run("just", "census-repin", "--jobs", "1")
     commit(root, "record regenerated synthetic tables")
     ledger_path = root / "docs/openapi-surface/golden-reach.tsv"
