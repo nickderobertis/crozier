@@ -129,9 +129,8 @@ assertion. Regenerate those reports from the current source with:
 ```sh
 CROZIER_UPDATE_COMBINATION_CONTROLS=1 \
 flock "${XDG_CACHE_HOME:-$HOME/.cache}/crozier/instrumented-measurement.lock" \
-uv run --locked --all-packages pytest \
-  tools/surface-reach/tests/handwritten_reach_test.py \
-  -q -k test_open_control_union_reports
+just nx run surface-reach:test-handwritten-reach --skipNxCache \
+  --args="-q -k test_open_control_union_reports"
 ```
 
 The enum-array experiment first encountered a refused header control, including
