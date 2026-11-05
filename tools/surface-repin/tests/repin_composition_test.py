@@ -330,7 +330,7 @@ def exercise(root: Path, tmp_path: Path) -> None:
     }
 
     def run(*args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
-        result = subprocess.run(args, cwd=root, env=env, capture_output=True, text=True, timeout=180)
+        result = subprocess.run(args, cwd=root, env=env, capture_output=True, text=True, encoding="utf-8", timeout=180)
         if success:
             assert result.returncode == 0, result.stdout + result.stderr
         else:
