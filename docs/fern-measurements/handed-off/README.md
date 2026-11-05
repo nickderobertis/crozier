@@ -235,7 +235,9 @@ arm. The supplement’s witness declares the key and has no corpus residual.
 The nine retired arm covers remove exactly nine rows from
 `handwritten-reach.tsv`; the remaining rows and every configuration-gate row
 keep their measured counts. `json-request-shapes` retains its unrelated
-optional-body cover. No combination row or co-occurrence audit changed.
+optional-body cover. Combination categories and co-occurrence audits are
+unchanged; their derived reach cells were regenerated with the other golden
+rows.
 
 The following fixtures keep their unchanged source bytes and certified trees
 as probes, with manifest digests and their regression test paths updated:
@@ -275,8 +277,8 @@ The census follow-up selection is `surface_census_test.py` plus
 reads the changed census, coverage, handwritten-proof, probe and handed-off
 records; the latter reads the changed region records. The remaining census
 suite modules exercise isolated reach stores and repin fixtures and read no
-changed repository data. This rerun changes no shared parser or enforcement
-code, following planner rulings 229 and 248.
+changed repository data. No shared parser, assertion, or enforcement setting changed, following planner
+rulings 229 and 248.
 
 The remaining-scenario summary is derived in scratch by
 `derive-remaining-scenarios.py`: 110 features and 87 arms rely on handwritten
