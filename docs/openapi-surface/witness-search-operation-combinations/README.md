@@ -106,8 +106,14 @@ for each candidate and the reason its screening is unfinished.
 [interaction-region-review.tsv](interaction-region-review.tsv) lists every open
 row, its current site declaration, and every registered golden declarer selected
 from the fresh source census. A declaration alone is not an interaction witness.
-The path/body-name row has a declared arm to check in the one incremental
-measurement. The nullable-response declarations pool the two union keywords;
+The refreshed reach store contains all 319 registered golden tests. The
+[path/body-name arm screen](registered-arm-screen.tsv) checks all 30 registered
+declarers against that store; none executes its exclusive arm. The store records
+commit `daa26ba3013e2c6158e22a63a857ed65d0c8871e`. The refresh started from
+the complete saved base, but the tool selected full measurement because its
+change attribution considered the new `Document::tree` test helper reachable
+from golden tests. No declaration was promoted from a pooled hit.
+The nullable-response declarations pool the two union keywords;
 the inline-readOnly predicate pools writable fields. Its pruning helper also
 pools dropped and kept fields in one closure. The historical co-occurrence
 audit identifies the pooled operands or absence of a conjunctive condition for

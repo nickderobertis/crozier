@@ -19615,6 +19615,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
     # Each entry point's arguments that make it echo an em dash on stderr before it does any work.
     ECHOED: ClassVar[dict[str, tuple[str, ...]]] = {
         "apis-guru-gap-screen.py": ("\u2014",),
+        "combination-independence.py": ("--json", "\u2014"),
         "fixtures-coverage-report.py": ("--repo-root", ".", "--tier", ".", "--golden-tier", ".", "\u2014"),
         "golden-reach-search.py": ("\u2014",),
         "golden-reach.py": ("\u2014",),
