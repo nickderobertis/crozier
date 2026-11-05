@@ -108,9 +108,11 @@ const KINDS: &[Kind] = &[
             "remeasured-grafikart-filemanager-element-e36a74ce",
             "remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c",
             "remeasured-membrane-api-gateway-8340f5da",
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literal-mode proofs use the shared golden replay binary. The family-wide graph split is tracked by the drafted follow-up "Give generator replay diagnostics a narrower Nx dependency edge".
             "adyen-capital",
             "braintrust-dev",
             "hasura-metadata",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             "enum-name-sanitization",
             "groupe-psa",
             "enum-query-param",
