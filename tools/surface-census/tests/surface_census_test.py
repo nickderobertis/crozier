@@ -22302,10 +22302,6 @@ class RequestBodyReadingTests(unittest.TestCase):
                 self.assertIn("is not one of the predicate selectors", completed.stderr)
 
 
-if __name__ == "__main__":
-    unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
-
-
 class OperationContextCompositionTests(unittest.TestCase):
     """Drive status, document and media readings through the census CLI."""
 
@@ -23267,3 +23263,7 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
             path.write_text("".join(lines), encoding="utf-8")
             with self.assertRaisesRegex(AssertionError, "missing causes:.*" + re.escape(removed)):
                 reconcile_handed_off(root)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
