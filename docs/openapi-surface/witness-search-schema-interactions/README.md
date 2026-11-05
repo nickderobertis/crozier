@@ -157,24 +157,30 @@ the 35-file scaffold. Crozier refuses it in both modes under
 
 ## Open ledger shape
 
-All sixteen open schema combinations use shape A: a registered real document
-declares the pair, the region row retains the `golden` declaration category,
-and the audit records `class:open` with this search or the failed-union search.
-The class-aware coverage index counts each as unproven before considering the
-region category. The declaration category is not an interaction proof.
+Fourteen open audit rows use shape A: a registered real document declares the
+pair, the region row retains the golden declaration category, and the audit
+records class:open with this search or the failed-union search. The
+class-aware coverage index counts each as unproven before considering the
+region category. A declaration category is not an interaction proof.
 
-The former fallback-only rows now name registered declarers: Zulip for
+The anyOf/properties and oneOf/properties combinations retain their real
+Builder::discriminated_union interaction sites. Every registered witness
+misses that arm. Under manager ruling269, those two region rows are gaps with
+no audit entries, and their named-unproven reasons are rendered verbatim by
+golden-reach.py from the measured sites and witnesses. Their search remains
+search-incomplete. This supersedes the earlier all-sixteen-shape-A account.
+The canonical gate and both real arm definitions are unchanged.
+
+The former fallback-only combinations name registered declarers: Zulip for
 annotated-reference/property-example, AhaSend for anyOf/properties, MockServer
-for oneOf/properties, and HSE for parameter-example/reference. Their documents
-declare the pairs; none supplies the missing genuine interaction decision.
-The retired Harbor and Orchard trees remain diagnostic only. No audit row is
-removed and no schema combination uses shape B's separate named-gap form.
+for oneOf/properties, and HSE for parameter-example/reference. These
+declarations do not establish the missing interaction proof. Harbor and
+Orchard remain diagnostics only.
 
-[open-shapes.tsv](open-shapes.tsv) records each of the sixteen shape-A rows,
-its registered declarer, exact source digest, positive declaration count and
-source pointer. It uses the canonical audit reader and region parser; the
-canonical coverage splitter classifies `open` as unproven before reading the
-`golden` category. This is declaration evidence, not interaction proof.
+[open-shapes.tsv](open-shapes.tsv) records the fourteen shape-A rows and the
+two named-unreached combinations, with each registered declarer, exact source
+digest, positive declaration count and source pointer. All sixteen remain
+unproven; none rests on an exhausted hand-written fallback.
 
 ## Nondecorative written-anyOf decision
 

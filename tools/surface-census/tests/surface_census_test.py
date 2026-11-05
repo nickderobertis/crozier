@@ -21090,6 +21090,75 @@ class CoverageRestatementTests(unittest.TestCase):
             return [int(found[n]) for n in range(1, 4)]
 
         surface = self.root / "docs/openapi-surface"
+        # These are tally inputs, not fixture admissions; their classes and
+        # covers must not depend on which proofs the live repository retains.
+        staged = {
+            "combo-body-property-named-as-header-param": "co-occurrence",
+            "combo-success-oneof-nullable": "src/ir.rs::base_type_ref",
+        }
+        for region in surface.glob("*.md"):
+            lines = region.read_text(encoding="utf-8").splitlines(keepends=True)
+            for index, line in enumerate(lines):
+                cells = line.split(" | ")
+                if cells[0].strip("| " + chr(96)) in staged and len(cells) == 8:
+                    cells[3] = "handwritten"
+                    lines[index] = " | ".join(cells)
+            region.write_text("".join(lines), encoding="utf-8")
+        site_path = surface / "golden-reach-sites.tsv"
+        lines = site_path.read_text(encoding="utf-8").splitlines()
+        for index, line in enumerate(lines):
+            cells = line.split("\t")
+            if cells[0] in staged:
+                cells[2] = staged[cells[0]]
+                lines[index] = "\t".join(cells)
+        site_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        ledger_path = surface / "golden-reach.tsv"
+        ledger_path.write_text(
+            "\n".join(
+                line
+                for line in ledger_path.read_text(encoding="utf-8").splitlines()
+                if line.split("\t")[1:2] not in ([key] for key in staged)
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        audit_path = self.root / COOCCURRENCE_AUDIT
+        lines = audit_path.read_text(encoding="utf-8").splitlines()
+        rows = {line.split("\t")[0]: line for line in lines[1:]}
+        for key in staged:
+            rows[key] = "\t".join(
+                (
+                    key,
+                    "subtotal-staging",
+                    "/components/schemas/Parcel",
+                    "first: src/ir.rs::build_endpoint ; second: src/emit.rs::generate",
+                    "class:handwritten search:docs/openapi-surface/search/README.md; Staged subtotal fixture.",
+                )
+            )
+        audit_path.write_text(lines[0] + "\n" + "\n".join(rows[key] for key in sorted(rows)) + "\n", encoding="utf-8")
+        for evidence in (surface / "handwritten").glob("*/evidence.toml"):
+            prefix, *covers = evidence.read_text(encoding="utf-8").split("[[covers]]")
+            kept = [cover for cover in covers if tomllib.loads("[[covers]]" + cover)["covers"][0]["key"] not in staged]
+            if kept:
+                evidence.write_text(prefix + "".join("[[covers]]" + cover for cover in kept), encoding="utf-8")
+            else:
+                evidence.unlink()
+        directory = surface / "handwritten/subtotal-staging"
+        directory.mkdir()
+        pair = json.loads((REPO / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
+        header = (
+            f'fern_cli_version = "{pair["cliVersion"]}"\n'
+            f'fern_python_sdk_version = "{pair["generatorVersion"]}"\n'
+            f'digest = "{"0" * 64}"\n'
+        )
+        covers = "".join(
+            f'\n[[covers]]\nkey = "{key}"\n'
+            'search = "docs/openapi-surface/search/README.md"\n'
+            'verdict = "search-incomplete"\n'
+            'renewed = "docs/openapi-surface/search/README.md"\n'
+            for key in staged
+        )
+        (directory / "evidence.toml").write_text(header + covers, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         original = self.index.read_text(encoding="utf-8")
         blocked, together, ruled = subtotals()

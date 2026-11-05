@@ -1,5 +1,5 @@
 //! The union shapes the hand-written union fixtures prove, driven through the
-//! real binary: each fixture's complete certified tree in both enum modes, the
+//! real binary: each fixture's complete certified tree in both enum modes,
 //! a retired parameter/reference diagnostic, the two union extensions under
 //! both spellings and with conflicting values, and
 //! the refusals beside the shapes that now generate.
