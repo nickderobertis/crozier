@@ -224,6 +224,7 @@ superseded-fixtures/patch-inline-nullable-unrequired-props-omit	docs/fern-measur
 superseded-fixtures/poster-upload	docs/fern-measurements/superseded-fixtures/poster-upload/openapi.yml	python-enums	packaged	-
 superseded-fixtures/pottery-commission	docs/fern-measurements/superseded-fixtures/pottery-commission/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-alias	docs/fern-measurements/superseded-fixtures/request-alias/openapi.yml	python-enums	packaged	-
+superseded-fixtures/request-example-deprecated	docs/fern-measurements/superseded-fixtures/request-example-deprecated/openapi.yml	python-enums	packaged	-
 superseded-fixtures/request-example-nulls	docs/fern-measurements/superseded-fixtures/request-example-nulls/openapi.yml	python-enums	packaged	-
 handed-off/type-declarations/digit-leading-schema-name	docs/fern-measurements/handed-off/type-declarations/digit-leading-schema-name/openapi.yml	python-enums	packaged	-
 handed-off/type-declarations/number-uint32-format	docs/fern-measurements/handed-off/type-declarations/number-uint32-format/openapi.yml	python-enums	packaged	-

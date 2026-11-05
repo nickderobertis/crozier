@@ -193,7 +193,6 @@ ref-with-nullable-sibling-made-optional	schema.$ref	schemas.md	supported
 reference-literal-single-quote-escaped	schema.const	schemas.md	supported
 remote-document-local-pointer-resolved-against-root	schema.$ref:cross-document	schemas.md	supported
 remote-ref-at-use-site-inlined	schema.$ref:cross-document	schemas.md	supported
-request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
 required-nullable-query-scalar	parameter.schema:required-nullable-scalar-oas-three-zero	parameters.md	supported
 required-param-and-body-defaults-ignored	schema.default	parameters.md	supported
 required-query-array-nullable-union-items	parameter.schema	parameters.md	supported

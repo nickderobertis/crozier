@@ -1,0 +1,26 @@
+Configuration: spec=<repo>/tests/fixtures/corpus-sources/nixtla-timegpt/openapi.json; package-name=fern; project-name=default_package_name
+Command: <repo>/target/debug/crozier compare <scratch>/nixtla-compare.yml --json <scratch>/nixtla-compare.json
+Exit: 0
+compare: found config <scratch>/nixtla-compare.yml
+compare: <scratch>/nixtla-compare.yml python: reference command starting: cp -R <cache>/crozier/certified-trees/fern-5.163.1_python-5.41.3/9165e7b94aa026f4924cc6bd8bc627719680fc028af864e0c2649168ded7705b/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/nixtla-compare.yml python: reference command finished in 0.02s (exit 0)
+compare: <scratch>/nixtla-compare.yml python: crozier generation starting
+compare: <scratch>/nixtla-compare.yml python: crozier generation finished in 0.81s
+compare: <scratch>/nixtla-compare.yml python: matched
+
+crozier compare report
+
+<scratch>/nixtla-compare.yml
+  python: matched (layout packaged, 61 file(s) compared)
+    reference command: cp -R <cache>/crozier/certified-trees/fern-5.163.1_python-5.41.3/9165e7b94aa026f4924cc6bd8bc627719680fc028af864e0c2649168ded7705b/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    timing: reference 0.02s, crozier 0.81s, speed-up 0.03x, saved -0.79s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.02s, crozier 0.81s, speed-up 0.03x, saved -0.79s
+Result: every checked generator matched the reference (1 of 1, exit 0)
