@@ -344,3 +344,7 @@ handed-off/remeasure/enum-member-digit-separator	docs/fern-measurements/handed-o
 handed-off/remeasure/enum-member-digit-separator/expected-literals	docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/fern-expected
 handed-off/remeasure/typed-single-ref-allof-alias	docs/fern-measurements/handed-off/remeasure/typed-single-ref-allof-alias/openapi.yml	python-enums	packaged	-
 handed-off/remeasure/ignored-multipart-query-collision	docs/fern-measurements/handed-off/remeasure/ignored-multipart-query-collision/openapi.yml	python-enums	packaged	-
+operation-independence/error-multiple-media-first	docs/fern-measurements/operation-independence/error-multiple-media-first/openapi.yml	python-enums	packaged	-
+operation-independence/error-multiple-media-second	docs/fern-measurements/operation-independence/error-multiple-media-second/openapi.yml	python-enums	packaged	-
+operation-independence/error-multiple-media-both	docs/fern-measurements/operation-independence/error-multiple-media-both/openapi.yml	python-enums	packaged	-
+operation-independence/header-array-enum-second	docs/fern-measurements/operation-independence/header-array-enum-second/openapi.yml	python-enums	packaged	-

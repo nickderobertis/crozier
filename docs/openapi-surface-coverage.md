@@ -132,25 +132,26 @@ split five ways:
 ([the list](openapi-surface/combinations.md)): 12 are `gap`, 70 are `golden` and 9 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
-**Combinations by proof.** A combination is proven only where the run that byte-matches Fern
-executes the branch where its two features meet. `finished_state_failures` in
-[the census suite](../tools/surface-census/tests/surface_census_test.py) holds that bar, with
+**Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
+at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
+[the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**18** are byte-matched against a registered real specification at their
-interaction branch, **52** are byte-matched co-occurrences, where no measured crozier branch joins both features
+**19** are byte-matched against a registered real specification at their
+interaction branch, **0** have independent handling, checked against the source,
+instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **9** rest on a hand-written fixture (1 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **0** remain
-unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 18 + 52 + 0 + 9 + 0 + 12 = 91.
+non-generation, **4** rest on a hand-written fixture (0 of them witness-blocked, 2 of them co-occurrences proven on the fixture), **56** remain
+open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 19 + 0 + 0 + 4 + 56 + 12 = 91.
 None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 614 `golden` rows declare 1072 handling sites in
+same way. The 614 `golden` rows declare 1073 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **974 are reached by a registered real specification.** Its scoped
+- **975 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **93 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 93 is still one of the 98 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -163,7 +164,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-974 + 93 + 5 + 0 + 0 = 1072. Fourteen sites left the table with the two functions
+975 + 93 + 5 + 0 + 0 = 1073. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the

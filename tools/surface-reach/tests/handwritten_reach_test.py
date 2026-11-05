@@ -24,14 +24,16 @@ import csv
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from dataclasses import asdict, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
-from typing import IO, NamedTuple, Protocol
+from typing import IO, Literal, NamedTuple, Protocol
 
 REPO = Path(__file__).resolve().parents[3]
 # The certified Fern pair, from its one declaration: the pair a fixture's evidence names.
@@ -922,7 +924,6 @@ FLATTEN_ALL = r"src/ir.rs::Builder::add_object[let inlined_by_base = if flatten_
 PROMOTED = r"src/ir.rs::promote_required_parent_properties[if !required && !read_only \{]"
 MAP_ARM = r"src/ir.rs::base_type_ref[^ {4}if is_map\(schema\) \{]"
 MAP_ANY_OF = r"src/ir.rs::prefer_map_to_union[if schema\.any_of\.is_some\(\)]"
-MAP_ONE_OF = r"src/ir.rs::prefer_map_to_union[if schema\.one_of\.is_some\(\)]"
 NULLABLE_VALUES = r"src/ir.rs::base_type_ref[if is_optional\(schema\) \x7c\x7c is_optional\(value\) \{]"
 VALUE_HOIST = r"src/ir.rs::Builder::field_type_ref[if let Some\(value\) = inline_value\.filter]"
 VALUE_PROPERTIES = r"src/ir.rs::Builder::field_type_ref[let inline_value = if !prop_schema\.properties\.is_empty\(\)]"
@@ -1846,6 +1847,452 @@ OUTCOMES = (
 )
 
 
+class ReachedRegion(NamedTuple):
+    file: str
+    start_line: int
+    start_column: int
+    end_line: int
+    end_column: int
+
+
+@dataclass(frozen=True)
+class ControlRegionCounts:
+    first: int
+    second: int
+    both: int
+
+
+@dataclass(frozen=True)
+class RegionUnionReport:
+    schema_version: Literal[1]
+    key: str
+    handlers: tuple[str, ...]
+    counts: ControlRegionCounts
+    both_only: tuple[ReachedRegion, ...]
+    singles_only: tuple[ReachedRegion, ...]
+
+    @classmethod
+    def read(cls, path: Path, handler_pattern: str) -> RegionUnionReport:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(raw, dict) or set(raw) != {field.name for field in fields(cls)}:
+            raise ValueError(f"{path}: expected the version-1 region report fields")
+        if type(raw["schema_version"]) is not int or raw["schema_version"] != 1:
+            raise ValueError(f"{path}: expected schema_version = 1")
+        key = raw["key"]
+        if not isinstance(key, str) or key != path.parent.name or not key.startswith("combo-"):
+            raise ValueError(f"{path}: report key must name its combination directory")
+
+        def number(value: object) -> int:
+            if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+                raise ValueError(f"{path}: region coordinates and counts must be non-negative integers")
+            return value
+
+        handlers = raw["handlers"]
+        if not isinstance(handlers, list) or not handlers:
+            raise ValueError(f"{path}: handlers must be a nonempty list")
+        parsed_handlers: list[str] = []
+        for handler in handlers:
+            if not isinstance(handler, str) or re.fullmatch(handler_pattern, handler) is None:
+                raise ValueError(f"{path}: invalid handler {handler!r}")
+            parsed_handlers.append(handler)
+        if len(set(parsed_handlers)) != len(parsed_handlers):
+            raise ValueError(f"{path}: duplicate handlers")
+        counts = raw["counts"]
+        if not isinstance(counts, dict) or set(counts) != {field.name for field in fields(ControlRegionCounts)}:
+            raise ValueError(f"{path}: counts must name first, second and both")
+
+        def regions(value: object) -> tuple[ReachedRegion, ...]:
+            if not isinstance(value, list):
+                raise ValueError(f"{path}: regions must be a list")
+            parsed = []
+            for region in value:
+                if not isinstance(region, list) or len(region) != len(ReachedRegion._fields):
+                    raise ValueError(f"{path}: a region needs its source file and four coordinates")
+                file, start_line, start_column, end_line, end_column = region
+                if (
+                    not isinstance(file, str)
+                    or not file.startswith("src/")
+                    or not file.endswith(".rs")
+                    or any(part in {"", ".", ".."} for part in file.split("/"))
+                    or "\\" in file
+                    or ":" in file
+                ):
+                    raise ValueError(f"{path}: region file must be a repository-relative Rust source")
+                parsed.append(
+                    ReachedRegion(file, number(start_line), number(start_column), number(end_line), number(end_column))
+                )
+            if parsed != sorted(set(parsed)):
+                raise ValueError(f"{path}: regions must be sorted and unique")
+            return tuple(parsed)
+
+        return cls(
+            1,
+            key,
+            tuple(parsed_handlers),
+            ControlRegionCounts(number(counts["first"]), number(counts["second"]), number(counts["both"])),
+            regions(raw["both_only"]),
+            regions(raw["singles_only"]),
+        )
+
+
+class RegionUnionReportTest(unittest.TestCase):
+    def test_typed_reports_round_trip_every_committed_report_without_changing_its_schema(self) -> None:
+        reports = sorted(
+            (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
+        )
+        self.assertEqual(10, len(reports))
+        pattern = golden_reach().HANDLER_SPEC
+        for path in reports:
+            with self.subTest(report=path.parent.name):
+                report = RegionUnionReport.read(path, pattern)
+                self.assertEqual(path.read_text(encoding="utf-8"), json.dumps(asdict(report), indent=2) + "\n")
+
+    def test_report_fields_are_validated_before_replay_and_recover_after_repair(self) -> None:
+        source = next(
+            (REPO / "docs/openapi-surface/witness-search-operation-combinations/controls").glob("*/region-union.json")
+        )
+        pattern = golden_reach().HANDLER_SPEC
+        original = source.read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / source.parent.name / source.name
+            path.parent.mkdir()
+            path.write_text(original, encoding="utf-8")
+            self.assertEqual(source.parent.name, RegionUnionReport.read(path, pattern).key)
+            variants = []
+            raw = json.loads(original)
+            raw["schema_version"] = 2
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["counts"]["first"] = True
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["counts"]["extra"] = 0
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["both_only"] = [["src/ir.rs", 1]]
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["handlers"] = ["not-a-handler"]
+            variants.append(raw)
+            for broken in variants:
+                with self.subTest(record=broken):
+                    path.write_text(json.dumps(broken), encoding="utf-8")
+                    with self.assertRaises(ValueError):
+                        RegionUnionReport.read(path, pattern)
+            path.write_text(original, encoding="utf-8")
+            self.assertEqual(source.parent.name, RegionUnionReport.read(path, pattern).key)
+
+
+class CooccurrenceOutcomeTest(unittest.TestCase):
+    """Each outcome-proven co-occurrence row, run through the instrumented crozier."""
+
+    def generate(
+        self, scratch: Path, document: str, reach: ReachMeasurement, crozier: Path, mode: str = "python-enums"
+    ) -> tuple[Path, dict, dict]:
+        """(the generated package, every production region, the executed ones) for one document."""
+        spec = scratch / "openapi.yml"
+        spec.write_text(document, encoding="utf-8")
+        raw = scratch / "profile"
+        raw.mkdir()
+        run = subprocess.run(
+            [
+                *(str(crozier), "generate", "python", "--spec", str(spec), "--output", str(scratch / "sdk")),
+                *("--package-name", "fern", "--project-name", "default_package_name"),
+                "--enum-type",
+                mode,
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            env=dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
+        )
+        self.assertEqual(0, run.returncode, run.stderr)
+        merged, export = raw / "merged.profdata", raw / "export.json"
+        reach.run_llvm(
+            [reach._llvm_tool("llvm-profdata"), "merge", "-sparse", *map(str, raw.glob("*.profraw")), "-o", str(merged)]
+        )
+        with export.open("w", encoding="utf-8") as sink:
+            reach.run_llvm(
+                [reach._llvm_tool("llvm-cov"), "export", "-format=text", f"-instr-profile={merged}", str(crozier)],
+                stdout=sink,
+            )
+        universe, hit = reach._covered(export, REPO)
+        return scratch / "sdk" / "src" / "fern", universe, hit
+
+    def ran(self, reach: ReachMeasurement, spec: str, universe: dict, hit: dict) -> bool:
+        """Whether the run executed any counter region of the site `spec` names."""
+        site = reach.resolve_site(spec)
+        regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(tuple(r))}
+        self.assertTrue(regions, f"{spec} spans no counter region")
+        return bool(regions & {tuple(r) for r in hit.get(site.file, [])})
+
+    def test_referenced_query_string_enum_has_an_exclusive_region(self) -> None:
+        reach = _module("golden_reach_query_enum", "golden-reach.py")
+        handwritten = _module("handwritten_query_enum", "handwritten-fixtures.py")
+        sites = reach.read_sites_table()["combo-query-param-ref-string-enum"].sites
+        self.assertEqual(1, len(sites))
+        branch = sites[0]
+        # Resolve before building, so a removed or pooled branch fails directly.
+        reach.resolve_site(branch)
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        cases = (
+            ("both", craft_query("Rig"), True),
+            ("query alone", craft_query("Tag"), False),
+            ("referenced enum alone", craft_header("Rig"), False),
+            (
+                "inline query enum",
+                craft_query("Rig").replace(
+                    '            $ref: "#/components/schemas/Rig"\n',
+                    "            type: string\n            enum: [glider, balloon]\n",
+                ),
+                False,
+            ),
+        )
+        for mode in ("python-enums", "literals"):
+            for label, paths, expected in cases:
+                with self.subTest(document=label, mode=mode), tempfile.TemporaryDirectory() as temporary:
+                    _package, universe, hit = self.generate(
+                        Path(temporary),
+                        operation_document(paths, "  schemas:\n" + EXAMPLED_CRAFT),
+                        reach,
+                        crozier,
+                        mode,
+                    )
+                    self.assertEqual(expected, self.ran(reach, branch, universe, hit))
+
+    def test_registered_query_enum_witness_executes_its_interaction_region(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("handwritten_query_enum_witness", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        source = REPO / "tests/fixtures/corpus-sources/adyen-capital/openapi.json"
+        with tempfile.TemporaryDirectory() as temporary:
+            _package, universe, hit = self.generate(Path(temporary), source.read_text(encoding="utf-8"), reach, crozier)
+        self.assertTrue(
+            self.ran(
+                reach,
+                reach.read_sites_table()["combo-query-param-ref-string-enum"].sites[0],
+                universe,
+                hit,
+            )
+        )
+
+    def test_open_control_union_reports_replay_against_the_real_generator(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("handwritten_open_unions", "handwritten-fixtures.py")
+        controls = REPO / "docs/openapi-surface/witness-search-operation-combinations/controls"
+        reports = [
+            (path, RegionUnionReport.read(path, reach.HANDLER_SPEC))
+            for path in sorted(controls.glob("*/region-union.json"))
+        ]
+        self.assertEqual(10, len(reports), "each completed failed-union experiment is replayed")
+        audit, failures = reach.read_cooccurrence()
+        self.assertEqual([], failures)
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for path, expected in reports:
+            with self.subTest(key=expected.key):
+                self.assertEqual("open", audit[expected.key].proof_class)
+                self.assertEqual(set(expected.handlers), set(cooccurrence_handlers(expected.key)))
+                sites = [reach.resolve_site(handler) for handler in expected.handlers]
+                observed = {}
+                for label in ("first", "second", "both"):
+                    with tempfile.TemporaryDirectory() as temporary:
+                        _package, _universe, hit = self.generate(
+                            Path(temporary),
+                            (path.parent / label / "openapi.yml").read_text(encoding="utf-8"),
+                            reach,
+                            crozier,
+                        )
+                    observed[label] = {
+                        ReachedRegion(site.file, *region)
+                        for site in sites
+                        for region in hit.get(site.file, [])
+                        if site.holds(tuple(region))
+                    }
+                union = observed["first"] | observed["second"]
+                self.assertNotEqual(union, observed["both"], "a passing union requires reclassification")
+                if os.environ.get("CROZIER_UPDATE_COMBINATION_CONTROLS") == "1":
+                    expected = RegionUnionReport(
+                        1,
+                        expected.key,
+                        expected.handlers,
+                        ControlRegionCounts(len(observed["first"]), len(observed["second"]), len(observed["both"])),
+                        tuple(sorted(observed["both"] - union)),
+                        tuple(sorted(union - observed["both"])),
+                    )
+                    path.write_text(json.dumps(asdict(expected), indent=2) + "\n", encoding="utf-8")
+                self.assertEqual(
+                    expected.counts,
+                    ControlRegionCounts(len(observed["first"]), len(observed["second"]), len(observed["both"])),
+                )
+                self.assertEqual(expected.both_only, tuple(sorted(observed["both"] - union)))
+                self.assertEqual(expected.singles_only, tuple(sorted(union - observed["both"])))
+
+    def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
+        reach = _module("golden_reach_outcomes", "golden-reach.py")
+        handwritten = _module("handwritten_fixtures_outcomes", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        audited, _failures = reach.read_cooccurrence()
+        for outcome in OUTCOMES:
+            self.assertIn(outcome.key, audited, "an outcome-proven row is not a co-occurrence row")
+            self.assertIn(
+                type(self).__name__, audited[outcome.key].why_no_branch, "its audit row cites no outcome proof"
+            )
+            for label, expected in (("both features", outcome.both), ("one feature", outcome.control)):
+                with self.subTest(key=outcome.key, document=label), tempfile.TemporaryDirectory() as temporary:
+                    package, universe, hit = self.generate(Path(temporary), expected.document, reach, crozier)
+                    for spec in expected.ran:
+                        self.assertTrue(self.ran(reach, spec, universe, hit), f"{spec} did not run")
+                    for spec in expected.skipped:
+                        self.assertFalse(self.ran(reach, spec, universe, hit), f"{spec} ran")
+                    for name, text in expected.holds:
+                        self.assertIn(text, (package / name).read_text(encoding="utf-8"), name)
+                    for name, text in expected.lacks:
+                        self.assertNotIn(text, (package / name).read_text(encoding="utf-8"), name)
+
+    def test_schema_interaction_controls_reach_their_region_only_with_both_features(self) -> None:
+        reach = golden_reach()
+        census = _module("schema_interaction_census", "openapi-surface-census.py")
+        handwritten = _module("schema_interaction_handwritten", "handwritten-fixtures.py")
+        path = REPO / "docs/openapi-surface/combination-interaction-controls/controls.json"
+        controls = schema_interaction_controls(path)
+        self.assertEqual(len(controls), len({record.key for record in controls}))
+        self.assertEqual(set(SCHEMA_CONTROL_FEATURES), {record.key for record in controls})
+        sites = reach.read_sites_table()
+        audited, failures = reach.read_cooccurrence()
+        self.assertEqual([], failures)
+        owned = {
+            line.split("|")[1].strip().strip("`")
+            for line in (REPO / "docs/openapi-surface/combinations.md").read_text(encoding="utf-8").splitlines()
+            if "| `prove-schema-combinations` |" in line
+        }
+        required = {key for key, row in audited.items() if key in owned and row.proof_class == "interaction"}
+        self.assertLessEqual(required, {record.key for record in controls})
+        self.assertLessEqual({record.key for record in controls}, owned)
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for record in controls:
+            self.assertIn(record.region, sites[record.key].sites)
+            for role, relative in record.documents.items():
+                with self.subTest(key=record.key, document=role), tempfile.TemporaryDirectory() as temporary:
+                    document = REPO / relative
+                    features = SCHEMA_CONTROL_FEATURES[record.key]
+                    combination = sites[record.key].selectors[0]
+                    declared = census.census_document(
+                        census.load_document(document),
+                        conjunctions={
+                            selector: census.compile_conjunction(selector)
+                            for selector in (combination, features.first, features.second)
+                        },
+                    )
+                    self.assertEqual(int(role is DocumentRole.BOTH), declared.get(combination, 0))
+                    # Scaffolding may use a feature elsewhere; the zero conjunction
+                    # above holds the single-feature controls to the interaction context.
+                    if role is not DocumentRole.SECOND:
+                        self.assertGreater(declared.get(features.first, 0), 0, features.first)
+                    if role is not DocumentRole.FIRST:
+                        self.assertGreater(declared.get(features.second, 0), 0, features.second)
+                    _package, universe, hit = self.generate(
+                        Path(temporary), document.read_text(encoding="utf-8"), reach, crozier
+                    )
+                    self.assertEqual(role is DocumentRole.BOTH, self.ran(reach, record.region, universe, hit))
+
+    def test_maps_beside_unions_reach_a_keyword_specific_region_only_with_both_features(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("map_union_handwritten", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for keyword, region, other in (("oneOf", MAP_ONE_OF, MAP_ANY_OF), ("anyOf", MAP_ANY_OF, MAP_ONE_OF)):
+            union = PICK.replace("anyOf", keyword)
+            for label, document in (
+                ("both", counts(VALUES + union)),
+                ("map alone", counts(VALUES)),
+                ("union alone", counts(union)),
+            ):
+                with self.subTest(keyword=keyword, document=label), tempfile.TemporaryDirectory() as temporary:
+                    package, universe, hit = self.generate(Path(temporary), document, reach, crozier)
+                    self.assertEqual(label == "both", self.ran(reach, region, universe, hit))
+                    self.assertFalse(self.ran(reach, other, universe, hit))
+                    if label == "both":
+                        self.assertIn(
+                            "counts: typing.Optional[typing.Dict[str, int]]",
+                            (package / "types/tally.py").read_text(encoding="utf-8"),
+                        )
+
+    def test_synthesized_type_array_union_does_not_witness_a_written_anyof(self) -> None:
+        document = {
+            "openapi": "3.1.0",
+            "info": {"title": "Reading archive", "version": "1.0.0"},
+            "paths": {
+                "/readings": {
+                    "get": {
+                        "operationId": "readReadings",
+                        "responses": {
+                            "200": {
+                                "description": "Reading",
+                                "content": {
+                                    "application/json": {"schema": {"$ref": "#/components/schemas/ReadingValue"}}
+                                },
+                            }
+                        },
+                    }
+                }
+            },
+            "components": {"schemas": {"ReadingValue": {"type": ["string", "integer"], "additionalProperties": True}}},
+        }
+        census = _module("synthesized_union_census", "openapi-surface-census.py")
+        self.assertEqual(0, census.census_document(document).get("schema.anyOf", 0))
+        reach = golden_reach()
+        handwritten = _module("synthesized_union_handwritten", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        with tempfile.TemporaryDirectory() as temporary:
+            _package, universe, hit = self.generate(Path(temporary), json.dumps(document), reach, crozier)
+            self.assertTrue(self.ran(reach, "src/ir.rs::prefer_map_to_union", universe, hit))
+            self.assertFalse(self.ran(reach, MAP_ANY_OF, universe, hit))
+            self.assertFalse(self.ran(reach, MAP_ONE_OF, universe, hit))
+
+
+class IndependentCombinationTest(unittest.TestCase):
+    def test_each_independent_combination_is_the_union_of_its_feature_only_runs(self) -> None:
+        independence = _module("combination_independence", "combination-independence.py")
+        reach = golden_reach()
+        records, failures = independence.read_records(REPO)
+        self.assertEqual([], failures)
+        audit, failures = reach.read_cooccurrence()
+        self.assertEqual([], failures)
+        independent = {key: row for key, row in audit.items() if row.proof_class == "independent"}
+        self.assertEqual(set(independent), set(records), "independent audit rows and three-document proofs must agree")
+        if not records:
+            return
+        handwritten = _module("handwritten_independence", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        driver = CooccurrenceOutcomeTest()
+        for key, proof in records.items():
+            handlers = reach.handler_specs(independent[key].handlers)
+            self.assertEqual([], independence.source_failures(REPO, proof, handlers))
+            for condition in proof.conditions:
+                self.assertIn(f"`{condition.condition}`", independent[key].why_no_branch)
+            sites = [reach.resolve_site(handler) for handler in handlers]
+            for mode in proof.modes:
+                hits = {}
+                for label, document in proof.documents.items():
+                    with self.subTest(key=key, mode=mode, document=label), tempfile.TemporaryDirectory() as temporary:
+                        _package, _universe, hit = driver.generate(
+                            Path(temporary),
+                            (REPO / document.document).read_text(encoding="utf-8"),
+                            reach,
+                            crozier,
+                            mode.replace("_", "-"),
+                        )
+                        hits[label] = {
+                            (site.file, *region)
+                            for site in sites
+                            for region in hit.get(site.file, [])
+                            if site.holds(tuple(region))
+                        }
+                self.assertEqual(hits["first"] | hits["second"], hits["both"], f"{key} ({mode}) has an interaction")
+
+
+MAP_ONE_OF = r"src/ir.rs::prefer_map_to_union[if schema\.one_of\.is_some\(\)]"
+
+
 class DocumentRole(StrEnum):
     FIRST = "first"
     SECOND = "second"
@@ -2054,168 +2501,6 @@ class SchemaProofManifestReaderTest(unittest.TestCase):
                 encoding="utf-8",
             )
             self.assertEqual(records, open_union_evidence(path))
-
-
-class CooccurrenceOutcomeTest(unittest.TestCase):
-    """Each outcome-proven co-occurrence row, run through the instrumented crozier."""
-
-    def generate(self, scratch: Path, document: str, reach: ReachMeasurement, crozier: Path) -> tuple[Path, dict, dict]:
-        """(the generated package, every production region, the executed ones) for one document."""
-        spec = scratch / "openapi.yml"
-        spec.write_text(document, encoding="utf-8")
-        raw = scratch / "profile"
-        raw.mkdir()
-        run = subprocess.run(
-            [
-                *(str(crozier), "generate", "python", "--spec", str(spec), "--output", str(scratch / "sdk")),
-                *("--package-name", "fern", "--project-name", "default_package_name"),
-                *("--enum-type", "python-enums"),
-            ],
-            cwd=REPO,
-            capture_output=True,
-            text=True,
-            env=dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
-        )
-        self.assertEqual(0, run.returncode, run.stderr)
-        merged, export = raw / "merged.profdata", raw / "export.json"
-        reach.run_llvm(
-            [reach._llvm_tool("llvm-profdata"), "merge", "-sparse", *map(str, raw.glob("*.profraw")), "-o", str(merged)]
-        )
-        with export.open("w", encoding="utf-8") as sink:
-            reach.run_llvm(
-                [reach._llvm_tool("llvm-cov"), "export", "-format=text", f"-instr-profile={merged}", str(crozier)],
-                stdout=sink,
-            )
-        universe, hit = reach._covered(export, REPO)
-        return scratch / "sdk" / "src" / "fern", universe, hit
-
-    def ran(self, reach: ReachMeasurement, spec: str, universe: dict, hit: dict) -> bool:
-        """Whether the run executed any counter region of the site `spec` names."""
-        site = reach.resolve_site(spec)
-        regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(tuple(r))}
-        self.assertTrue(regions, f"{spec} spans no counter region")
-        return bool(regions & {tuple(r) for r in hit.get(site.file, [])})
-
-    def test_schema_interaction_controls_reach_their_region_only_with_both_features(self) -> None:
-        reach = golden_reach()
-        census = _module("schema_interaction_census", "openapi-surface-census.py")
-        handwritten = _module("schema_interaction_handwritten", "handwritten-fixtures.py")
-        path = REPO / "docs/openapi-surface/combination-interaction-controls/controls.json"
-        controls = schema_interaction_controls(path)
-        self.assertEqual(len(controls), len({record.key for record in controls}))
-        self.assertEqual(set(SCHEMA_CONTROL_FEATURES), {record.key for record in controls})
-        sites = reach.read_sites_table()
-        audited, failures = reach.read_cooccurrence()
-        self.assertEqual([], failures)
-        owned = {
-            line.split("|")[1].strip().strip("`")
-            for line in (REPO / "docs/openapi-surface/combinations.md").read_text(encoding="utf-8").splitlines()
-            if "| `prove-schema-combinations` |" in line
-        }
-        required = {key for key, row in audited.items() if key in owned and row.proof_class == "interaction"}
-        self.assertLessEqual(required, {record.key for record in controls})
-        self.assertLessEqual({record.key for record in controls}, owned)
-        crozier = handwritten.instrumented_crozier(REPO, reach)
-        for record in controls:
-            self.assertIn(record.region, sites[record.key].sites)
-            for role, relative in record.documents.items():
-                with self.subTest(key=record.key, document=role), tempfile.TemporaryDirectory() as temporary:
-                    document = REPO / relative
-                    features = SCHEMA_CONTROL_FEATURES[record.key]
-                    combination = sites[record.key].selectors[0]
-                    declared = census.census_document(
-                        census.load_document(document),
-                        conjunctions={
-                            selector: census.compile_conjunction(selector)
-                            for selector in (combination, features.first, features.second)
-                        },
-                    )
-                    self.assertEqual(int(role is DocumentRole.BOTH), declared.get(combination, 0))
-                    # Scaffolding may use a feature elsewhere; the zero conjunction
-                    # above holds the single-feature controls to the interaction context.
-                    if role is not DocumentRole.SECOND:
-                        self.assertGreater(declared.get(features.first, 0), 0, features.first)
-                    if role is not DocumentRole.FIRST:
-                        self.assertGreater(declared.get(features.second, 0), 0, features.second)
-                    _package, universe, hit = self.generate(
-                        Path(temporary), document.read_text(encoding="utf-8"), reach, crozier
-                    )
-                    self.assertEqual(role is DocumentRole.BOTH, self.ran(reach, record.region, universe, hit))
-
-    def test_maps_beside_unions_reach_a_keyword_specific_region_only_with_both_features(self) -> None:
-        reach = golden_reach()
-        handwritten = _module("map_union_handwritten", "handwritten-fixtures.py")
-        crozier = handwritten.instrumented_crozier(REPO, reach)
-        for keyword, region, other in (("oneOf", MAP_ONE_OF, MAP_ANY_OF), ("anyOf", MAP_ANY_OF, MAP_ONE_OF)):
-            union = PICK.replace("anyOf", keyword)
-            for label, document in (
-                ("both", counts(VALUES + union)),
-                ("map alone", counts(VALUES)),
-                ("union alone", counts(union)),
-            ):
-                with self.subTest(keyword=keyword, document=label), tempfile.TemporaryDirectory() as temporary:
-                    package, universe, hit = self.generate(Path(temporary), document, reach, crozier)
-                    self.assertEqual(label == "both", self.ran(reach, region, universe, hit))
-                    self.assertFalse(self.ran(reach, other, universe, hit))
-                    if label == "both":
-                        self.assertIn(
-                            "counts: typing.Optional[typing.Dict[str, int]]",
-                            (package / "types/tally.py").read_text(encoding="utf-8"),
-                        )
-
-    def test_synthesized_type_array_union_does_not_witness_a_written_anyof(self) -> None:
-        document = {
-            "openapi": "3.1.0",
-            "info": {"title": "Reading archive", "version": "1.0.0"},
-            "paths": {
-                "/readings": {
-                    "get": {
-                        "operationId": "readReadings",
-                        "responses": {
-                            "200": {
-                                "description": "Reading",
-                                "content": {
-                                    "application/json": {"schema": {"$ref": "#/components/schemas/ReadingValue"}}
-                                },
-                            }
-                        },
-                    }
-                }
-            },
-            "components": {"schemas": {"ReadingValue": {"type": ["string", "integer"], "additionalProperties": True}}},
-        }
-        census = _module("synthesized_union_census", "openapi-surface-census.py")
-        self.assertEqual(0, census.census_document(document).get("schema.anyOf", 0))
-        reach = golden_reach()
-        handwritten = _module("synthesized_union_handwritten", "handwritten-fixtures.py")
-        crozier = handwritten.instrumented_crozier(REPO, reach)
-        with tempfile.TemporaryDirectory() as temporary:
-            _package, universe, hit = self.generate(Path(temporary), json.dumps(document), reach, crozier)
-            self.assertTrue(self.ran(reach, "src/ir.rs::prefer_map_to_union", universe, hit))
-            self.assertFalse(self.ran(reach, MAP_ANY_OF, universe, hit))
-            self.assertFalse(self.ran(reach, MAP_ONE_OF, universe, hit))
-
-    def test_each_outcome_proven_cooccurrence_reaches_its_outcome_only_with_both_features(self) -> None:
-        reach = _module("golden_reach_outcomes", "golden-reach.py")
-        handwritten = _module("handwritten_fixtures_outcomes", "handwritten-fixtures.py")
-        crozier = handwritten.instrumented_crozier(REPO, reach)
-        audited, _failures = reach.read_cooccurrence()
-        for outcome in OUTCOMES:
-            self.assertIn(outcome.key, audited, "an outcome-proven row is not a co-occurrence row")
-            self.assertIn(
-                type(self).__name__, audited[outcome.key].why_no_branch, "its audit row cites no outcome proof"
-            )
-            for label, expected in (("both features", outcome.both), ("one feature", outcome.control)):
-                with self.subTest(key=outcome.key, document=label), tempfile.TemporaryDirectory() as temporary:
-                    package, universe, hit = self.generate(Path(temporary), expected.document, reach, crozier)
-                    for spec in expected.ran:
-                        self.assertTrue(self.ran(reach, spec, universe, hit), f"{spec} did not run")
-                    for spec in expected.skipped:
-                        self.assertFalse(self.ran(reach, spec, universe, hit), f"{spec} ran")
-                    for name, text in expected.holds:
-                        self.assertIn(text, (package / name).read_text(encoding="utf-8"), name)
-                    for name, text in expected.lacks:
-                        self.assertNotIn(text, (package / name).read_text(encoding="utf-8"), name)
 
 
 class CooccurrenceOpenUnionTest(unittest.TestCase):

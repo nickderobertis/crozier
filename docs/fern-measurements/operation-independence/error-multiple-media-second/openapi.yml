@@ -1,0 +1,31 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Harbor inspection",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/cargo": {
+      "get": {
+        "operationId": "inspectCargo",
+        "responses": {
+          "200": {
+            "description": "Cargo information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

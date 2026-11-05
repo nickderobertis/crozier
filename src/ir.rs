@@ -4207,12 +4207,17 @@ fn build_endpoint(
             // is rendered from the enum's first member — eNanoMapper's `type`,
             // exampled `bystudytype`, is `BYINVESTIGATION`.
             let string_enum = p.schema.as_ref().is_some_and(|schema| {
-                let resolved = schema
+                if let Some(referenced_query_schema) = schema
                     .reference
                     .as_deref()
                     .and_then(|reference| resolve_ref(doc, reference))
-                    .unwrap_or(schema);
-                string_enum_values(resolved).is_some()
+                {
+                    if string_enum_values(referenced_query_schema).is_some() {
+                        return true;
+                    }
+                    return false;
+                }
+                string_enum_values(schema).is_some()
             });
             // An optional parameter whose declared example Fern discards (a
             // numeric example on a `type: string` parameter) leaves the call
@@ -19040,12 +19045,15 @@ fn prefer_map_to_union(schema: &Schema) -> bool {
     if schema.one_of.is_some() {
         return true;
     }
-    if schema.any_of.is_some() && !schema.multi_type_union {
-        return true;
-    }
     // A normalized type list keeps its map preference without witnessing a
     // written anyOf keyword.
-    schema.any_of.is_some()
+    if schema.multi_type_union {
+        return schema.any_of.is_some();
+    }
+    if schema.any_of.is_some() {
+        return true;
+    }
+    false
 }
 
 /// Map a schema to its base type expression, never adding a top-level

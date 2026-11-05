@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "key": "combo-oas31-grouped-response",
+  "handlers": [
+    "src/ir.rs::build",
+    "src/ir.rs::build_endpoint",
+    "src/document_refusals.rs::check_version",
+    "src/ir.rs::endpoint_module",
+    "src/ir.rs::success_response_schema",
+    "src/ir.rs::success_response_doc",
+    "src/emit.rs::raw_docstring"
+  ],
+  "counts": {
+    "first": 700,
+    "second": 792,
+    "both": 793
+  },
+  "both_only": [],
+  "singles_only": [
+    [
+      "src/emit.rs",
+      5885,
+      5,
+      5885,
+      6
+    ],
+    [
+      "src/ir.rs",
+      4713,
+      14,
+      4713,
+      30
+    ],
+    [
+      "src/ir.rs",
+      4713,
+      31,
+      4713,
+      42
+    ],
+    [
+      "src/ir.rs",
+      11544,
+      39,
+      11544,
+      40
+    ]
+  ]
+}

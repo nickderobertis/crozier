@@ -175,3 +175,32 @@ its registered declarer, exact source digest, positive declaration count and
 source pointer. It uses the canonical audit reader and region parser; the
 canonical coverage splitter classifies `open` as unproven before reading the
 `golden` category. This is declaration evidence, not interaction proof.
+
+## Nondecorative written-anyOf decision
+
+The intermediate helper at source commit 1b5c45105 returned the same value from
+its written-anyOf guard and its final fallback. That guard's counter hit is
+withdrawn as interaction evidence. The helper now handles normalized type
+lists first, then returns true for a written anyOf and false otherwise, under
+the existing map guard. Its written-keyword arm selects map behavior over
+union behavior.
+
+An induced source mutation changed only that arm's result to false. The real
+hasura_metadata_matches_fern_output journey failed at
+src/fern/types/big_query_conn_source_config.py: service_account changed from
+typing.Dict[str, typing.Any] to typing.Union[FromEnv, BigQueryServiceAccount, str].
+Restoring the arm made that complete golden test pass. This is deliberately
+earlier-state mutation evidence, not an unexplained mismatch in the restored
+tree. The keyword-specific instrumented controls and the registered golden
+reach remain separate proof obligations.
+
+## Registered map/oneOf sweep
+
+[The saved-profile sweep](map-oneof-registered-reach.tsv) reads every one of the
+288 real registered golden tests in the full measurement of commit 1b5c45105.
+None executes the genuine map/oneOf return arm. The table binds each result to
+that source commit and its SHA-256; its test names and source names identify
+the registrations. The oneOf arm is unchanged by the later written-anyOf
+restructuring. This is supplementary earlier-state search evidence, not a
+claim that the bounded search is exhausted: the outstanding candidate index
+and search-incomplete verdict remain in force.

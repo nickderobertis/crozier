@@ -350,13 +350,12 @@ def read_cooccurrence(path: Path = COOCCURRENCE_AUDIT) -> tuple[dict[str, Cooccu
         except ValueError as error:
             failures.append(f"{cells[0]}: {path.name}'s handlers cell {error}")
             continue
-        row = CooccurrenceAudit(*cells)
         try:
-            cooccurrence_proof(row.why_no_branch)
+            cooccurrence_proof(cells[4])
         except ValueError as error:
-            failures.append(f"{cells[0]}: {path.name}'s {error}")
+            failures.append(f"{cells[0]}: {path.name}'s why_no_branch cell {error}")
             continue
-        rows[cells[0]] = row
+        rows[cells[0]] = CooccurrenceAudit(*cells)
     if keys != sorted(keys):
         failures.append(f"{path.name}: rows are not sorted by key")
     return rows, failures
