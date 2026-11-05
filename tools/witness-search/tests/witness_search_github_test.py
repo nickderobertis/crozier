@@ -1182,8 +1182,9 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
         self.assertEqual(2, len(security_queries["sourcegraph"]))
         self.assertTrue(all("$ref" in q for q in security_queries["sourcegraph"]))
         # A request-body Media Type shape names the request body and its own field.
-        # `request-example-nested-null` is `golden` now, so no longer a derived
-        # key; its selector still exercises the `null` phrasing.
+        # The deprecated-property and nested-null examples are now golden, so
+        # their selectors exercise query phrasing without requiring search keys.
+        self.assertNotIn("request-example-deprecated-property", keys)
         for key, selector, fields, phrase in (
             (
                 "allof-parent-request-body",
@@ -1193,7 +1194,7 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
             ),
             (
                 "request-example-deprecated-property",
-                keys["request-example-deprecated-property"]["selector"],
+                "mediaType.example:deprecated-property",
                 ("requestBody", "example", "deprecated"),
                 None,
             ),
