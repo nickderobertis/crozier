@@ -1,0 +1,124 @@
+{
+  "changes": 8,
+  "changes_with_pr": 12,
+  "merged": 12,
+  "ci_runs": 24,
+  "ci_failed": 9,
+  "other_failures": 3,
+  "attempts": 18,
+  "redispatches": 15,
+  "census": {
+    "failures": 6,
+    "changes_hit": 6,
+    "runner_min": 90,
+    "elapsed_min": 60,
+    "wait_min": 120,
+    "attempts": 9,
+    "redispatches": 6,
+    "median_cycle_min": 90,
+    "ci_retry_unresolved": 3,
+    "publications": 6,
+    "pub_wait_min": 36,
+    "pub_unresolved": 3,
+    "pub_observed": 3,
+    "median_pub_wait_min": 36
+  },
+  "conflicts": {
+    "derived": 3,
+    "changes_hit": 3,
+    "code": 6,
+    "mixed": 3,
+    "wait_min": 24,
+    "redispatches": 3,
+    "median_wait_min": 24
+  },
+  "by_kind": {
+    "site-anchor": {
+      "events": 6,
+      "runner_min": 36,
+      "elapsed_min": 18,
+      "wait_min": 24,
+      "changes": 6,
+      "redispatches": 3,
+      "attempts": 6,
+      "pub_observed": 3,
+      "pub_unresolved": 3,
+      "pub_wait_min": 12,
+      "cycle_min": 42
+    },
+    "port-digest": {
+      "events": 6,
+      "runner_min": 36,
+      "elapsed_min": 18,
+      "wait_min": 24,
+      "changes": 6,
+      "redispatches": 3,
+      "attempts": 6,
+      "pub_observed": 3,
+      "pub_unresolved": 3,
+      "pub_wait_min": 12,
+      "cycle_min": 42
+    },
+    "measured-count": {
+      "events": 6,
+      "runner_min": 36,
+      "elapsed_min": 18,
+      "wait_min": 24,
+      "changes": 6,
+      "redispatches": 3,
+      "attempts": 6,
+      "pub_observed": 3,
+      "pub_unresolved": 3,
+      "pub_wait_min": 12,
+      "cycle_min": 42
+    },
+    "derived-conflict": {
+      "events": 6,
+      "runner_min": 36,
+      "elapsed_min": 18,
+      "wait_min": 24,
+      "changes": 6,
+      "redispatches": 3,
+      "attempts": 6,
+      "pub_observed": 3,
+      "pub_unresolved": 3,
+      "pub_wait_min": 12,
+      "cycle_min": 42
+    },
+    "other-artifact:docs/openapi-surface/witness-search-registries/outstanding.tsv": {
+      "events": 6,
+      "runner_min": 36,
+      "elapsed_min": 18,
+      "wait_min": 24,
+      "changes": 6,
+      "redispatches": 3,
+      "attempts": 6,
+      "pub_observed": 3,
+      "pub_unresolved": 3,
+      "pub_wait_min": 12,
+      "cycle_min": 42
+    }
+  },
+  "artifacts_outside_census": [
+    {
+      "artifact": "docs/openapi-surface/witness-search-registries/outstanding.tsv",
+      "ci_failures": 3,
+      "conflicts": 6,
+      "changes": 6,
+      "cycle_min": 42,
+      "runner_min": 36
+    }
+  ],
+  "github": {
+    "uncached_calls": 0,
+    "cache_hits": 6
+  },
+  "window": {
+    "spec": "base-carries:first,second",
+    "until": "2026-01-02T00:00:00Z",
+    "base_carries": [
+      "first",
+      "second"
+    ]
+  }
+}

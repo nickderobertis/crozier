@@ -1,0 +1,75 @@
+{
+  "name": "repin-cost",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 -m unittest discover -s tools/repin-cost/tests -p \"*_test.py\""
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "pythonTooling"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    }
+  }
+}
