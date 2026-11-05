@@ -1,5 +1,5 @@
 sha256: 832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce
-result: byte-matches
+result: differs
 command: /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-abffdbdc71d4/worktree/target/release/crozier compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce/diffs
 crozier binary sha256: cf94cc7be3eff0d48a5915d2ffab59850c93d18f21fe4dcfeb482587c9d9728f
 compare exit: 0
@@ -8,6 +8,7 @@ certified cache document sha256: 832b9080645151da0612125abdb82afeb90c6dd0b33da87
 enum mode: literals (python_enums byte-match retained from the preceding measurement)
 
 differing files:
+- corpus replay
 
 compare log:
 compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce/crozier.yml
@@ -475,3 +476,8 @@ Licence/provenance evidence (rule: docs/corpus-licensing.md):
 info.license: 'AGPL-3.0-only' -> AGPL
 licence file (none) -> None
 outcome: passed: info.license 'AGPL-3.0-only' reads as AGPL, which the corpus rule admits
+
+Finished-tree replay: 08b9ee650, cargo test -p crozier-e2e --test e2e registered_literals_.
+71 other tests passed; Tilecast was stopped at 1805.75 seconds from thread creation.
+Root cause: corpus test does not complete within 30 minutes.
+Earlier matching replay: 1400.57 seconds normal; 974.31 seconds instrumented.

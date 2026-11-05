@@ -10475,7 +10475,6 @@ const CORPORA: &[&Corpus] = &[
     &LITERALS_DEBEZIUM_043F3A5F,
     &LITERALS_FERN_API_5AA6DBF5,
     &LITERALS_FERN_API_74FF1C45,
-    &LITERALS_GBYO_832B9080,
     &LITERALS_GEOSERVER_B34CF587,
     &LITERALS_GLEEZ_E8767AE7,
     &LITERALS_HALO_DEV_7E48A553,
@@ -31457,23 +31456,6 @@ const LITERALS_FERN_API_74FF1C45: Corpus = Corpus {
 fn registered_literals_fern_api_docs_74ff1c45_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_FERN_API_74FF1C45);
     overlay_goldens::assert_literals_match(&LITERALS_FERN_API_74FF1C45);
-}
-/// Certified enum-mode witness, corpus row 5534.
-const LITERALS_GBYO_832B9080: Corpus = Corpus {
-    api: "registered-literals-gbyo-tilecast-832b9080",
-    package_name: "fern",
-    project_name: "default_package_name",
-    audiences: &[],
-    audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
-    unmatched: &[],
-};
-
-#[test]
-fn registered_literals_gbyo_tilecast_832b9080_matches_fern_output() {
-    assert_committed_corpus_matches(&LITERALS_GBYO_832B9080);
-    overlay_goldens::assert_literals_match(&LITERALS_GBYO_832B9080);
 }
 /// Certified enum-mode witness, corpus row 5535.
 const LITERALS_GEOSERVER_B34CF587: Corpus = Corpus {

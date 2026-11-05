@@ -1146,7 +1146,7 @@ Certified literals-overlay witnesses:
 
   gbyo/tilecast: docs/openapi.yaml
     https://raw.githubusercontent.com/gbyo/tilecast/9b731f41de1c1387ebd7a7f74c3c783510aa67a0/docs/openapi.yaml
-    AGPL-3.0-only; corpus row 5534 retains the publisher's immutable document
+    AGPL-3.0-only; the handed-off Tilecast measurement retains the publisher's immutable document
     (SHA-256 832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce).
 
   geoserver/geoserver: src/extension/ogcapi/ogcapi-features/src/main/resources/org/geoserver/ogcapi/v1/features/openapi.yaml

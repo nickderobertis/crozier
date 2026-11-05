@@ -136,7 +136,6 @@ const KINDS: &[Kind] = &[
             "registered-literals-debezium-debezium-platform-043f3a5f",
             "registered-literals-fern-api-docs-5aa6dbf5",
             "registered-literals-fern-api-docs-74ff1c45",
-            "registered-literals-gbyo-tilecast-832b9080",
             "registered-literals-geoserver-geoserver-b34cf587",
             "registered-literals-gleez-nats-http-gateway-e8767ae7",
             "registered-literals-halo-dev-halo-7e48a553",

@@ -43,9 +43,9 @@ A registration residual names `expected-literals/`, rather than claiming a file
 already differs. Newly named residual causes describe missing behavior in their
 note; they are repair work, not undecided triage verdicts.
 
-The four disjoint outcomes are **79 registered**,
+The four disjoint outcomes are **78 registered**,
 **36 decided** (26 `refused-by-ruling`, 10 `byte-matches-not-admissible`),
-**30 listed residuals** (30 `differs`, 0 `registration-incomplete`), and
+**31 listed residuals** (31 `differs`, 0 `registration-incomplete`), and
 **1 could-not-check** (lolesports' evaluated valid-OpenAPI exception: its useful
 crozier SDK cannot byte-match the certified pair's empty scaffold). They sum to
 146. Each comparison record names the exact command and source digest; refusals
@@ -54,7 +54,7 @@ is retained beside the measurement, with the rule stated only in
 [`docs/corpus-licensing.md`](../../corpus-licensing.md).
 
 The missing-overlay batch's 74 normalized `literals` comparisons all match.
-Of these, 72 documents now have both-mode corpus registrations. Two remain
+Of these, 71 documents now have both-mode corpus registrations. Two remain
 `differs` because the stricter corpus example-inventory gate rejects their
 evidence, rather than because the normalized CLI comparison finds a byte delta:
 `crystalshards/monorepo` applies `schema-rejected-name-example` without a
@@ -62,13 +62,17 @@ corresponding repaired inventory value, and `gk0wk/openapi-thrift` records an
 empty Fern value where `declared-example-over-placeholder` replaces a named
 placeholder. Their comparison records retain the successful CLI comparisons
 and the rejecting corpus diagnostics; `residuals.tsv` names every rejected file
-under `remeasure` for the residual-repair pass. No missing-overlay case remains.
+under `remeasure` for the residual-repair pass. Tilecast is the third `differs` document: its corpus replay did not complete within 30 minutes on the merged tree, so its registration was removed under the manager’s ruling. No missing-overlay case remains.
 
-The Tilecast both-mode recording replay passed in approximately 23 minutes
-21 seconds of wall time (1400.57 seconds from test-thread creation, polled once
-per second on this shared host). Its base golden has 233 files including
-provenance, totaling 2,363,405 bytes. Its matching proof remains registered;
-the timing is recorded for a separate performance follow-up.
+The Tilecast both-mode recording replay previously passed in 1400.57 seconds
+(about 23 minutes 21 seconds), and its instrumented replay passed in 974.31
+seconds (about 16 minutes 14 seconds). On merged tree `08b9ee650`, its normal
+corpus replay remained active after 1805.75 seconds from test-thread creation
+and was stopped at the manager’s 30-minute bound; the other 71 replays passed.
+The document is now `differs` with `corpus test does not complete within 30
+minutes`, retaining its byte-matching comparison and [certified artifacts](literals-registration/tilecast/README.md).
+Its former registration is removed pending performance repair. The base golden
+has 233 files including provenance, totaling 2,363,405 bytes.
 
 The comparison binary was copied before the behavior-preserving boolean
 simplification clippy requested in `name_refusals`; the nine focused SDK
@@ -165,7 +169,6 @@ sources.
 - `debezium/debezium-platform:openapi/openapi.yaml@20fd16bf12ac02e750bb770fc4b986afdf824507` | `043f3a5f2fe283197741850d02964865211d10e2af271aa9b344ee7a84507de6` | 5531 (registered-literals-debezium-debezium-platform-043f3a5f)
 - `fern-api/docs:fern/apis/fai/openapi.json@6f9d392f0d7f48e9a86f3ead50ba72340567bd62` | `5aa6dbf5778778503f76e63dea7f13313434d0d883f25a93792190fba0a6f621` | 5532 (registered-literals-fern-api-docs-5aa6dbf5)
 - `fern-api/docs:fern/apis/fai/openapi.json@e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2` | `74ff1c45451650d7c723802727cea799f18174e9e72291777a5b81f013c678a4` | 5533 (registered-literals-fern-api-docs-74ff1c45)
-- `gbyo/tilecast:docs/openapi.yaml@9b731f41de1c1387ebd7a7f74c3c783510aa67a0` | `832b9080645151da0612125abdb82afeb90c6dd0b33da87dcdcd5edc1d3178ce` | 5534 (registered-literals-gbyo-tilecast-832b9080)
 - `geoserver/geoserver:src/extension/ogcapi/ogcapi-features/src/main/resources/org/geoserver/ogcapi/v1/features/openapi.yaml@e5096dda80eea70d21167f01b08e543019852a7e` | `b34cf5872fab13f73c2d67ff639e8cecaf9260e545e2fb2061bc12d07dcce430` | 5535 (registered-literals-geoserver-geoserver-b34cf587)
 - `gleez/nats-http-gateway:openapi.json@cfc5b22883fe4deb88933f9e39d04128a53b6156` | `e8767ae79ab54774728dc226ffc0db0014c32c99b341e019cbbcf3d700def8a0` | 5536 (registered-literals-gleez-nats-http-gateway-e8767ae7)
 - `halo-dev/halo:api-docs/openapi/v3_0/apis_console.api_v1alpha1.json@ead7adfb0ca1da810a6a080cf8aeed476668db64` | `7e48a5530dfce8d110f78a1fabd4cb186e93d3008ef4ae95ca0d15dc2325b173` | 5537 (registered-literals-halo-dev-halo-7e48a553)

@@ -1645,12 +1645,6 @@
         ".crozier-overlay.json"
       ]
     },
-    "tests/fixtures/registered-literals-gbyo-tilecast-832b9080/expected": {},
-    "tests/fixtures/registered-literals-gbyo-tilecast-832b9080/expected-literals": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
     "tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected": {},
     "tests/fixtures/registered-literals-geoserver-geoserver-b34cf587/expected-literals": {
       "excluded": [
