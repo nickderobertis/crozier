@@ -1,0 +1,41 @@
+key	kind	region	arm	cover_at_base	verdict
+media-type-event-stream-binary-schema	feature	bodies-media	-	event-stream-binary-download	exhausted
+media-type-event-stream-inline-const-union	feature	bodies-media	-	event-stream-const-tagged-union	exhausted
+media-type-event-stream-item-schema	feature	bodies-media	-	event-stream-item-schema	exhausted
+response-status-space-suffixed	feature	bodies-media	-	suffixed-status-keys	exhausted
+get-request-body-union-member	feature	bodies-media	-	bakery-get-body-member	exhausted
+allof-parent-request-body	feature	bodies-media	-	allof-parent-body-order	exhausted
+request-example-deprecated-property	feature	bodies-media	-	request-example-deprecated	corpus row 4301
+enum-union-body-example-first-member-value	feature	bodies-media	-	enum-union-body-example-first-member-value	exhausted
+multipart-inline-object-part-json-encoded	feature	bodies-media	-	multipart-inline-object-part-json-encoded	exhausted
+multipart-part-encoding-charset-tuple	feature	bodies-media	-	multipart-part-encoding-charset-tuple	exhausted
+stream-error-status-raises-typed-error	feature	bodies-media	-	stream-error-status-raises-typed-error	exhausted
+string-body-example-backslash-escaped	feature	bodies-media	-	string-body-example-backslash-escaped	exhausted
+binary-download-with-body-has-no-example	feature	bodies-media	-	seismic-trace-export	exhausted
+example-imports-case-insensitive-order	feature	bodies-media	-	avionics-booking	exhausted
+readme-multipart-optional-file-params	feature	bodies-media	-	passport-scan	exhausted
+readme-streaming-snippet-omits-type-import	feature	bodies-media	-	weather-radar-stream	exhausted
+text-response-drops-request-example	feature	bodies-media	-	invoice-renderer	exhausted
+multipart-optional-enum-part-plain-field	feature	bodies-media	-	transcript-format-part	exhausted
+combo-inline-body-read-only-property	feature	bodies-media	-	harbor-relay-registration	exhausted
+server-default-url-templated	feature	document-paths	-	harbour-pilot-regions	exhausted
+server-name-several	feature	document-paths	-	orbit-ground-stations	exhausted
+operation-servers-named	feature	document-paths	-	locker-archive-hosts	exhausted
+operation-id-all-caps-tag-split-prefix	feature	document-paths	-	rfid-door-panel	exhausted
+operation-empty-tag	feature	document-paths	-	lamp-room-log	exhausted
+empty-path-segment-double-slash-kept	feature	document-paths	-	empty-path-segment-double-slash-kept	exhausted
+group-path-ending-in-api-nested-package	feature	document-paths	-	group-path-ending-in-api-nested-package	exhausted
+readme-endpoint-prefers-argless-non-get	feature	document-paths	-	greenhouse-vents	exhausted
+readme-nested-group-post-preferred	feature	document-paths	-	water-pump-station	exhausted
+combo-body-property-named-as-path-param	feature	document-paths	-	beacon-signal-results	exhausted
+combo-body-property-named-as-header-param	feature	document-paths	-	ferry-desk-header-collision	exhausted
+combo-success-oneof-nullable	feature	document-paths	-	beacon-signal-results	exhausted
+combo-success-anyof-nullable	feature	document-paths	-	beacon-signal-results	exhausted
+request-body-content	arm	bodies-media	src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]	inline-body-readonly-own-overlap	exhausted
+request-body-content	arm	bodies-media	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	json-request-shapes	exhausted
+request-body-content	arm	bodies-media	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	json-request-shapes	exhausted
+media-type-multipart	arm	bodies-media	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	multipart-alias-object	exhausted
+media-type-multipart	arm	bodies-media	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	multipart-json-module	exhausted
+request-body-content	arm	bodies-media	src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]	request-media-methods	exhausted
+request-body-content	arm	bodies-media	src/openapi.rs::Operation::with_sdk_method_name	request-media-methods	exhausted
+media-type-malformed-key	arm	bodies-media	src/ir.rs::has_dispatchable_media[=^ {16}return true;$]	slashless-json-response	exhausted

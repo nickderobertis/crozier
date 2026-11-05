@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 726 features. By category, 544 are `golden`, 56
-`limitations`, 112 `handwritten` and 14 `gap`. Taken back from the region files,
+The walk enumerates 726 features. By category, 545 are `golden`, 56
+`limitations`, 111 `handwritten` and 14 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 726
 split five ways:
 
-- **543 carry byte-match evidence against a registered real-world
+- **544 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,7 +38,7 @@ split five ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **113 rest on a hand-written fixture, a weaker proof than a real
+- **112 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows and the residual-only golden
   supplements below. For the `handwritten` rows, no registered real
   specification declares the feature. For supplements, no qualifying real
@@ -46,8 +46,8 @@ split five ways:
   found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Of the `handwritten` rows,
-  36 have a search record that reads `exhausted`: every candidate is decided and
-  none is registrable. 76 read `search-incomplete`. Of those,
+  58 have a search record that reads `exhausted`: every candidate is decided and
+  none is registrable. 53 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -102,19 +102,20 @@ split five ways:
   read the APIs.guru archive and every registered document and found each
   `none-registrable`, while registering the real witnesses of two neighbours
   (corpus rows 2200 and 2201).
-  The 33 `handwritten` rows of `bodies-media` and `document-paths` cite the
-  [fixture-only bodies and paths search](openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts):
-  4 read `exhausted`, 28 `search-incomplete` with each unscreened candidate's
-  reason named, and 1 `witness-blocked`. A `search-incomplete` row whose
-  admissible declarers the certified pair generates names each one and the
-  root causes it is handed off under, crozier's differences from it left
-  unrepaired for a separate plan. It read the acquired pools and a
-  bounded live code search, and registered real witnesses (corpus rows 4200 to
-  4212) that, with the reused row 2801, moved ten of those regions' rows to
-  `golden` and retired seven of their arm-level covers and one outside them.
+  The remaining `handwritten` rows of `bodies-media` and `document-paths` cite the
+  [bounded continuation](openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts).
+  Its two assigned populations are exhausted: the prior record's unscreened
+  candidates concern a target already proven by corpus row 5052, and the seven
+  newly admitted documents add corpus row 4301 as the real proof of
+  `request-example-deprecated-property`. The continuation names earlier known
+  declarers pending repair separately; it makes no claim that the earlier
+  truncated search windows have been completed. It makes no GitHub request
+  and changes no generated output. The
+  [earlier search](openapi-surface/witness-search-fixture-only-bodies-paths/README.md)
+  records its own acquired populations and registrations.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  543 and never count as a real-specification match.
+  544 and never count as a real-specification match.
 - **0 are decided output-insensitive.** Deleting the feature leaves both generators'
   complete trees byte-identical, as [the shared
   table](openapi-surface/output-insensitive.tsv) records for the whole key; such a `gap`
@@ -126,7 +127,7 @@ split five ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-543 + 70 + 113 + 0 + 0 = 726.
+544 + 70 + 112 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
 ([the list](openapi-surface/combinations.md)): 28 are `gap`, 70 are `golden` and 9 are `handwritten`.
@@ -139,22 +140,22 @@ executes the branch where its two features meet. `finished_state_failures` in
 **18** are byte-matched against a registered real specification at their
 interaction branch, **52** are byte-matched co-occurrences, where no measured crozier branch joins both features
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **9** rest on a hand-written fixture (1 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **16** remain
+non-generation, **9** rest on a hand-written fixture (0 of them witness-blocked, 3 of them co-occurrences proven on the fixture), **16** remain
 unproven, each named below (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 18 + 52 + 0 + 9 + 16 + 12 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 614 `golden` rows declare 1072 handling sites in
+same way. The 615 `golden` rows declare 1074 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **974 are reached by a registered real specification.** Its scoped
+- **976 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **93 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 93 is still one of the 98 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 54 read `exhausted`, 39 read `search-incomplete` and 0 read `config-gated`.
+  The cited records of 62 read `exhausted`, 31 read `search-incomplete` and 0 read `config-gated`.
 - **5 are reachable only by a document Fern refuses**, leaving no
   successful complete tree to byte-match. Their refused documents and controls
   are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).
@@ -163,7 +164,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-974 + 93 + 5 + 0 + 0 = 1072. Fourteen sites left the table with the two functions
+976 + 93 + 5 + 0 + 0 = 1074. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -233,7 +234,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (113 features, 93
+- **Features and arms resting on hand-written fixtures only (112 features, 93
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
@@ -2172,7 +2173,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | invalid-datetime-example | Invalid and negative-offset date-time example fallback | Fern behaviour | `fix-examples-docs` | docs/fern-measurements/examples-docs/unread-date-time-examples/fern-expected | `examples_docs_measurements_match_fern` | — |
 | allof-example-property-order | Own and inherited request-example property order | Fern behaviour | `fix-examples-docs` | docs/openapi-surface/handwritten/allof-parent-body-order/fern-expected | `handwritten_fixtures_match_fern_goldens` | — |
 | example-null-values | Null request-example values interpreted by requiredness and output location | Fern behaviour | `fix-examples-docs` | tests/fixtures/dystore-api/expected | `dystore_api_matches_fern_output` | — |
-| example-datetime-values | Deprecated optional request-example properties omitted; required ones retained | Fern behaviour | `fix-examples-docs` | docs/openapi-surface/handwritten/request-example-deprecated/fern-expected | `handwritten_fixtures_match_fern_goldens` | — |
+| example-datetime-values | Deprecated optional request-example properties omitted; required ones retained | Fern behaviour | `fix-examples-docs` | tests/fixtures/nixtla-timegpt/expected; docs/fern-measurements/superseded-fixtures/request-example-deprecated/fern-expected | `nixtla_timegpt_matches_fern_output; worked_example_goldens_match_in_process` | — |
 | x-fern-base-path | Document-level base-path arguments lifted to clients; broken constructor and method examples corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/base-path-client-argument/fern-expected | `handwritten_fixtures_match_fern_goldens` | `lifted-base-path-docs-examples` |
 | plain-string-map-request-body-example | Plain string-map body examples use key/value placeholders | Fern behaviour | `fix-string-map-example` | tests/fixtures/confluent-kafka-connect/expected | `confluent_kafka_connect_matches_fern_output` | — |
 | query-union-with-date-member-not-converted | Date/date-time members in query unions converted on the wire | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected | `parameter_lowering_measurements_match_fern` | — |
@@ -2486,14 +2487,14 @@ for either; each bullet below says where its number comes from.
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 93 | 57 | 19 | 17 | 0 | 0 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 344 | 277 | 18 | 47 | 2 | 0 | 0 | 2 |
-| [`bodies-media`](openapi-surface/bodies-media.md) | 78 | 55 | 5 | 18 | 0 | 0 | 0 | 0 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 78 | 56 | 5 | 17 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 44 | 9 | 3 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 84 | 72 | 3 | 9 | 0 | 0 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 39 | 2 | 18 | 12 | 0 | 0 | 12 |
-| **total** | **726** | **544** | **56** | **112** | **14** | **0** | **0** | **14** |
+| **total** | **726** | **545** | **56** | **111** | **14** | **0** | **0** | **14** |
 
 The walk enumerated **726** features and landed each in exactly one category:
-**544** `golden`, **56** `limitations`, **112** `handwritten`, **14** `gap`. The `gap` column splits by
+**545** `golden`, **56** `limitations`, **111** `handwritten`, **14** `gap`. The `gap` column splits by
 settlement class into **0** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2932,7 +2933,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **539** golden rows reach every handling site and tie below every row
+then key. **540** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3153,8 +3154,8 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **539** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **75** carry at least one handling site no golden-only witness executes: 98 unreached arms in all. By the verdict each arm's linked record states, 59 read `exhausted`, 39 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
+The golden rows split in two. **540** reach every handling site their
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **75** carry at least one handling site no golden-only witness executes: 98 unreached arms in all. By the verdict each arm's linked record states, 67 read `exhausted`, 31 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources or, for an arm no arm-search
@@ -3264,11 +3265,11 @@ why. The changes that took the arm off:
 <!-- BEGIN GENERATED ARM TABLE: run `just golden-reach-arms` -->
 | rank | key | unreached site | regions | search verdict | hand-written cover |
 |---|---|---|---|---|---|
-| 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | 1 | `search-incomplete` | `json-request-shapes` |
-| 1 | `request-body-content` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | 27 | `search-incomplete` | `json-request-shapes` |
-| 1 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]` | 4 | `search-incomplete` | `request-media-methods` |
-| 1 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `search-incomplete` | `request-media-methods` |
-| 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `search-incomplete` | `inline-body-readonly-own-overlap` |
+| 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | 1 | `exhausted` | `json-request-shapes` |
+| 1 | `request-body-content` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | 27 | `exhausted` | `json-request-shapes` |
+| 1 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]` | 4 | `exhausted` | `request-media-methods` |
+| 1 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `exhausted` | `request-media-methods` |
+| 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `exhausted` | `inline-body-readonly-own-overlap` |
 | 2 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
 | 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 2 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
@@ -3296,8 +3297,8 @@ why. The changes that took the arm off:
 | 11 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
 | 12 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
 | 12 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
-| 13 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `search-incomplete` | `multipart-alias-object` |
-| 13 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `search-incomplete` | `multipart-json-module` |
+| 13 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `exhausted` | `multipart-alias-object` |
+| 13 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `exhausted` | `multipart-json-module` |
 | 14 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 14 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 15 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `search-incomplete` | `json-binary-path`, `json-request-shapes` |
@@ -3338,7 +3339,7 @@ why. The changes that took the arm off:
 | 49 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 50 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
 | 51 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
-| 52 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `search-incomplete` | `slashless-json-response` |
+| 52 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `exhausted` | `slashless-json-response` |
 | 53 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 54 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
 | 55 | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `search-incomplete` | `meadow-tag-code` |
@@ -3540,7 +3541,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**89** golden rows rest on one document: a single golden-only witness declares
+**90** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -3624,6 +3625,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `ref-pointer-unnamed-segment` | `schemas` | `auto-agent-protocol` |
 | `request-body-described-inline-scalar` | `bodies-media` | `tuxedo-dapp` |
 | `request-body-property-closed-empty-object` | `schemas` | `remeasured-membrane-api-gateway-8340f5da` |
+| `request-example-deprecated-property` | `bodies-media` | `nixtla-timegpt` |
 | `request-example-nested-null` | `bodies-media` | `dystore-api` |
 | `request-media-named-beside-example` | `bodies-media` | `mockserver` |
 | `response-contentless-200-with-created` | `bodies-media` | `osparc-director-v2` |
@@ -4223,19 +4225,15 @@ there, VTEX's Marketplace Protocol, is corpus row 3479, so the row reads `golden
 and its hand-written fixture is retired
 ([`vtex-output-parity.md`](vtex-output-parity.md)).
 
-Four more joined with the worked-example repairs, `handwritten` from the start
-in the same way: `unread-date-time-example` here, and three `bodies-media` rows
+Four more joined with the worked-example repairs, `handwritten` from the start:
+`unread-date-time-example` here, and three `bodies-media` rows
 (`allof-parent-request-body`, `request-example-nested-null`,
-`request-example-deprecated-property`). Their
-[hand-written fixtures](openapi-surface/handwritten/AGENTS.md) are the
-measurement, each line reads `search-incomplete` because no declared source has
-been walked or queried for it, and their
-[renewed search](openapi-surface/witness-search-example-shapes/README.md) read
-941 documents a bounded code search returned and found none registrable. The
-table below names `unread-date-time-example`'s candidates; the three
-`bodies-media` keys' lines, and the candidates each search found, are under
-[`bodies-media.md`'s Witness search (exhaustive)](openapi-surface/bodies-media.md#witness-search-exhaustive)
-and in that record.
+`request-example-deprecated-property`). The latter two now have registered real
+witnesses, corpus rows 2801 and 4301. The bodies and paths
+[continuation](openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md)
+names the remaining bounded search population and its decisions; the
+[earlier example search](openapi-surface/witness-search-example-shapes/README.md)
+retains its original measurements.
 
 **Five read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its

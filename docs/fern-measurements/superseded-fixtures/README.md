@@ -23,4 +23,5 @@ the cases overlaying it keep a refreshed base.
 | `patch-inline-nullable-unrequired-props-omit` | `patch-inline-nullable-unrequired-props-omit` | corpus row 4209, `blufiles-api` |
 | `pottery-commission` | `allof-body-example-id-field-order` | corpus row 4205, `jobster-api` |
 | `request-alias` | `request-body-content`'s `resolve_form_object_alias` arm | corpus row 4203, `openiap-opencore` |
+| `request-example-deprecated` | `request-example-deprecated-property` | corpus row 4301, `nixtla-timegpt` |
 | `request-example-nulls` | `request-example-nested-null` | corpus row 2801, `dystore-api` |
