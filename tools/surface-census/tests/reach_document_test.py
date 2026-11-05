@@ -139,12 +139,13 @@ def test_attribution_files_refuse_duplicate_or_contradictory_classifications(tmp
     saved = path.read_text(encoding="utf-8")
     payload = json.loads(saved)
     raw = payload["rows"][0]
-    if fault == "duplicate-matched":
-        raw["byte_matched"] *= 2
-    elif fault == "duplicate-unmatched":
-        raw["unmatched"] = ["other.py", "other.py"]
-    else:
-        raw["unmatched"] = raw["byte_matched"][:]
+    match fault:
+        case "duplicate-matched":
+            raw["byte_matched"] *= 2
+        case "duplicate-unmatched":
+            raw["unmatched"] = ["other.py", "other.py"]
+        case "overlap":
+            raw["unmatched"] = raw["byte_matched"][:]
     path.write_text(json.dumps(payload), encoding="utf-8")
     with pytest.raises(ValueError, match="feature: .*attribution files.*just residual-attribution"):
         attribution.read(tmp_path)
