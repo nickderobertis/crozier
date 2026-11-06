@@ -332,6 +332,8 @@ def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, n
             isinstance(payload["paths"], list) and all(isinstance(path, str) for path in payload["paths"])
         ):
             raise ValueError("a sync conflict needs a list of paths")
+        case "push" if not isinstance(payload.get("accepted"), bool):
+            raise ValueError(f"a push's accepted must be true or false, got {payload.get('accepted')!r}")
         # llmlint: ignore[boundary_inputs_validated] An accepted push with no head is real (dozens in this host's journals) and records nothing to read, so the method falls back to the pull request's head; only a head that is present must be a sha.
         case "push" if payload.get("head") is not None and not COMMIT_RE.fullmatch(str(payload["head"])):
             raise ValueError(f"a push's head must be a commit sha, got {payload['head']!r}")

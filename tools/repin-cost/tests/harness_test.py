@@ -1038,6 +1038,7 @@ class HarnessTest(unittest.TestCase):
             ("change-merged", {"sha": "not-a-sha"}),
             ("change-merged", {"sha": "a" * 40, "url": "https://github.com/o/r/pull/0"}),
             ("push", {"accepted": True, "head": "not-a-sha"}),
+            ("push", {"accepted": "true", "head": "a" * 40}),
             ("sync-conflict", {"paths": [3]}),
             (
                 "gate-run",
@@ -1221,6 +1222,8 @@ class ComparisonTest(unittest.TestCase):
                 "kind 'x' must hold": lambda d: d["by_kind"].update(x={"events": 1}),
                 "malformed artifact": lambda d: d["artifacts_outside_census"].append({}),
                 "window metadata": lambda d: d["window"].update(spec=""),
+                "metadata": lambda d: d["window"].update(until="not-a-time"),
+                "malformed window": lambda d: d["window"].update(base_carries=["short"]),
             }
             for expected, change in cases.items():
                 with self.subTest(expected=expected):

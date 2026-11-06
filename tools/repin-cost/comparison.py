@@ -4,8 +4,10 @@
 from __future__ import annotations
 
 import csv
+import datetime as dt
 import json
 import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -137,15 +139,26 @@ def load_totals(path: Path) -> Totals:
             raise ValueError(f"{path}: artifact {artifact['artifact']!r} must hold {sorted(ARTIFACT_FIELDS)}")
         numbers(path, {k: v for k, v in artifact.items() if k != "artifact"}, artifact["artifact"])
         require_counts(path, artifact, ARTIFACT_COUNTS, artifact["artifact"])
-    window = data.get("window")
-    if (
-        not isinstance(window, dict)
-        or not all(isinstance(window.get(key), str) and window[key] for key in ("spec", "until"))
-        or not isinstance(window.get("base_carries"), list)
-        or not all(isinstance(sha, str) and sha for sha in window["base_carries"])
-    ):
+    if not valid_window(data.get("window")):
         raise ValueError(f"{path}: malformed window metadata")
     return data
+
+
+def valid_window(window: object) -> bool:
+    if not isinstance(window, dict):
+        return False
+    spec, until, carries = window.get("spec"), window.get("until"), window.get("base_carries")
+    if not isinstance(spec, str) or not spec.startswith(("runs:", "base-carries:")) or not isinstance(until, str):
+        return False
+    try:
+        cutoff = dt.datetime.fromisoformat(until.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return (
+        cutoff.tzinfo is not None
+        and isinstance(carries, list)
+        and all(isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha) for sha in carries)
+    )
 
 
 def numbers(path: Path, values: dict[str, object], label: str) -> None:

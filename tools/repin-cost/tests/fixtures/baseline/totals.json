@@ -114,11 +114,9 @@
     "cache_hits": 2
   },
   "window": {
-    "spec": "base-carries:first,second",
+    "spec": "runs:earlier-run",
     "until": "2026-01-02T00:00:00Z",
-    "base_carries": [
-      "first",
-      "second"
-    ]
+    "runs": [],
+    "base_carries": []
   }
 }
