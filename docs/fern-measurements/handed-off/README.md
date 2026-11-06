@@ -54,15 +54,18 @@ is retained beside the measurement, with the rule stated only in
 [`docs/corpus-licensing.md`](../../corpus-licensing.md).
 
 The missing-overlay batch's 74 normalized `literals` comparisons all match.
-Of these, 71 documents now have both-mode corpus registrations. Two remain
-`differs` because the stricter corpus example-inventory gate rejects their
-evidence, rather than because the normalized CLI comparison finds a byte delta:
-`crystalshards/monorepo` applies `schema-rejected-name-example` without a
-corresponding repaired inventory value, and `gk0wk/openapi-thrift` records an
-empty Fern value where `declared-example-over-placeholder` replaces a named
-placeholder. Their comparison records retain the successful CLI comparisons
-and the rejecting corpus diagnostics; `residuals.tsv` names every rejected file
-under `remeasure` for the residual-repair pass. Tilecast is the third `differs` document: its corpus replay did not complete within 30 minutes on the merged tree, so its registration was removed under the manager’s ruling. No missing-overlay case remains.
+Of these, 71 documents now have both-mode corpus registrations. Under the
+manager's ruling the other three stay `differs` for a named cause that is not a
+`literals` byte difference. `crystalshards/monorepo` fails the corpus
+example-inventory gate because `reference.md:320-321` carry
+`schema-rejected-name-example` with no repaired inventory value at those lines.
+`gk0wk/openapi-thrift` fails the same gate on the inventory recorder, which
+records the declared `""` as Fern's value where Fern writes its placeholder.
+Their comparison records retain the successful CLI comparisons and the rejecting
+corpus diagnostics; `residual-differences-repair` owns both and registers them in
+corpus rows 5600-5699 once each journey passes in both modes. Tilecast's corpus
+replay did not complete within the 30-minute bound on the merged tree, so its
+registration is out until performance repair. No missing-overlay case remains.
 
 The Tilecast both-mode recording replay previously passed in 1400.57 seconds
 (about 23 minutes 21 seconds), and its instrumented replay passed in 974.31
