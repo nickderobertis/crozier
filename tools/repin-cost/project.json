@@ -28,7 +28,12 @@
         "{workspaceRoot}/tools/repin-cost/**",
         "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
         "pythonTooling"
-      ]
+      ],
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/repin-cost"
+        }
+      }
     },
     "lint-ruff": {
       "executor": "nx:run-commands",

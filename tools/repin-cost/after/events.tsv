@@ -1,1 +1,2 @@
 pr	branch	source	at	kind	tier	artifact	ci_run	runner_min	elapsed_min	wait_min	ci_next_run	pub_status	pub_end	next_pub_start	pub_wait_min	fix_files	tasks	excerpt
+776	nick/715/combinations-schema-interaction	ci	2026-11-06T05:12:52+00:00	census-unattributed	census		42158486485	205.5	87.0		unresolved	unresolved	2026-11-06T05:13:18.044000+00:00				crozier:test;fern-goldens:test;fern-references-check:test;surface-reach:test-ports	E       AssertionError: assert [['1', '`requ...*121**'], ...] == [['1', '`requ...*121**'], ...]
