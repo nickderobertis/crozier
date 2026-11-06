@@ -1,0 +1,3 @@
+corpus_row	test	arm	regions_executed	regions	measured_commit
+5370	happy_hamster_matches_fern_output	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30	10ace0821bc9e7a159f21d412c6616cded4f17d6
+5371	seldon_wrapper_matches_fern_output	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30	10ace0821bc9e7a159f21d412c6616cded4f17d6

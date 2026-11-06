@@ -103,7 +103,11 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
-            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These registrations are permanent corpus proof the user requires on every pull request. Moving them behind a narrower Nx edge belongs to the crozier gate-time work (the gate-under-an-hour run's slowest-suites step), tracked by the existing follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literals proofs extend the existing corpus overlay inventory and subprocess gate; this task cannot split the shared e2eReads family into another project.
+            "happy-hamster",
+            "seldon-wrapper",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
             "registered-literals-amrc-factoryplus-documentation-be5e3789",
             "registered-literals-apis-guru-openapi-directory-2f8c36b9",
             "registered-literals-apis-guru-openapi-directory-9031af6a",

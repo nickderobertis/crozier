@@ -959,6 +959,19 @@ Handed-off remeasurement witnesses:
     Apache-2.0 (repository LICENSE at the pinned revision); corpus row 5054 retains the publisher's immutable document
     (SHA-256 8340f5da585023194c7154cb6e72a111e5643bb9cd3364cb75e0eacb0b1fcb89).
 
+HappyHamster HTTP API description and generated SDK golden:
+    https://raw.githubusercontent.com/happy-hamster/documentation/1d48c6c5fa2d957f0c56814462b853b1cdc25cfb/api/v2/openapi.yaml
+    Apache-2.0 (the publisher document's info.license). Corpus row 5370
+    retains the unmodified source alongside the generated SDK, with Python
+    comments stripped.
+
+Seldon Core prediction wrapper description and generated SDK golden:
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/seldon.local/wrapper/0.1/openapi.yaml
+    The archive identifies SeldonIO/seldon-core's wrapper as its origin.
+    CC0 (the pinned archive LICENSE, retained in licenses/seldon-wrapper-CC0.txt).
+    Corpus row 5371 retains the unmodified source alongside the generated SDK,
+    with Python comments stripped.
+
 Certified literals-overlay witnesses:
 
   AMRC-FactoryPlus/documentation: static/spec/cluster-manager.yaml

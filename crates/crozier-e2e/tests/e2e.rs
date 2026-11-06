@@ -8706,7 +8706,7 @@ components:
     // Its arm-level cover owes the measured pair, with the setting and without.
     fixture.assert_refused(
         "handwritten-config-gates.tsv",
-        "with setting `audiences=public` — run `just handwritten-reach`",
+        "with setting `audiences=public` — run `just census-repin`",
     );
     fixture.write_gates(&format!(
         "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t1\t1\n\
@@ -8743,6 +8743,7 @@ fn handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger() 
         "handwritten-config-gates.tsv",
         "names no live arm-level cover of a fixture declaring that setting",
     );
+    fixture.assert_refused("handwritten-config-gates.tsv", "run `just census-repin`");
     fixture.write_gates(&format!("{row}{row}"));
     fixture.assert_refused("handwritten-config-gates.tsv", "rows are not sorted");
     fixture.write_gates("sample-fixture\tsample-golden\n");
@@ -10803,6 +10804,8 @@ const CORPORA: &[&Corpus] = &[
     &MICROSOFT_ADME_CRS_CONVERTER,
     &WIIM_HTTPAPI,
     &LOONFS,
+    &HAPPY_HAMSTER,
+    &SELDON_WRAPPER,
 ];
 
 #[test]
@@ -15498,6 +15501,43 @@ fn loonfs_matches_fern_output() {
     assert_committed_corpus_matches(&LOONFS);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// HappyHamster's publisher API description — corpus row 5370. Required
+/// Coordinates query objects exercise form-query object serialization.
+const HAPPY_HAMSTER: Corpus = Corpus {
+    api: "happy-hamster",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Corpus registration requires this real golden replay in the existing crozier-e2e and corpus-match inventories (tests/fixtures/AGENTS.md); splitting their shared e2eReads family is a separate graph change, outside this witness search.
+#[test]
+fn happy_hamster_matches_fern_output() {
+    assert_committed_corpus_matches(&HAPPY_HAMSTER);
+}
+/// Seldon Core's published wrapper description — corpus row 5371. The
+/// predict query carries a parameter example beside its referenced schema.
+const SELDON_WRAPPER: Corpus = Corpus {
+    api: "seldon-wrapper",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Corpus registration requires this real golden replay in the existing crozier-e2e and corpus-match inventories (tests/fixtures/AGENTS.md); splitting their shared e2eReads family is a separate graph change, outside this witness search.
+#[test]
+fn seldon_wrapper_matches_fern_output() {
+    assert_committed_corpus_matches(&SELDON_WRAPPER);
+}
 
 #[test]
 fn letta_matches_fern_output() {

@@ -51,10 +51,17 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
             "!schema.example:schema-shaped&!schema.properties:non-empty&"
             "schema.example=object&schema.type:primary=object"
         )
-        sources = census.registered_sources(
-            REPO / "tests" / "fixtures", REPO / "tests" / "fixtures" / "corpus-sources", False
+        fixtures = REPO / "tests" / "fixtures"
+        sources = census.registered_sources(fixtures, fixtures / "corpus-sources", False)
+        # "Every registered source" is every committed golden tree, whatever the
+        # corpus has grown to: a tree the census drops would pass the search below
+        # unmeasured, so this names the fixture rather than pinning a count.
+        aliases = census.corpus_aliases(fixtures)
+        self.assertEqual(
+            sorted(path.parent.name for path in fixtures.glob("*/expected") if path.is_dir()),
+            sorted(aliases.get(source.fixture, source.fixture) for source in sources),
         )
-        self.assertEqual(319, len(sources))
+        self.assertTrue(sources)
         declared: list[str] = []
         for offset in range(0, len(sources), 30):
             fixture_args = list(

@@ -27,9 +27,6 @@ harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::Builder::
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::described_all_of_ref	30	33
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::resolved_schema_example_literal	10	37
 harbor-parcel-requests	combo-annotated-ref-property-example	src/ir.rs::schema_example	7	7
-harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example	32	52
-harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::parameter_example_value	19	71
-harbor-parcel-requests	combo-param-example-beside-ref-schema	src/ir.rs::resolve_ref	8	9
 harbor-relay-registration	combo-inline-body-read-only-property	src/ir.rs::resolve_request_body[=\.is_none_or\(\x7cproperty\x7c property\.read_only != Some\(true\)\)]	3	3
 harbour-window	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
 harbour-window	enum	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	2	2
@@ -78,7 +75,6 @@ orchard-dispatch-schemas	combo-anyof-beside-properties	src/ir.rs::Builder::add_n
 orchard-dispatch-schemas	combo-anyof-beside-properties	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]	10	10
 orchard-dispatch-schemas	combo-oneof-beside-properties	src/ir.rs::Builder::add_named_shape[for \(prop, prop_schema\) in &schema\.properties \{]	6	6
 orchard-dispatch-schemas	combo-oneof-beside-properties	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)$]	10	10
-ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
 quiz-nullable-response-union	oneof	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
 ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
 ref-pointer-walk	array-item-pointer-walk-allof	src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]	7	11

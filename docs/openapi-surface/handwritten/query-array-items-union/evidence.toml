@@ -4,6 +4,5 @@ digest = "052e584d28903648c3edbde6d0af9cae65e50434f5fc4555b67ef567dc11ebc3"
 
 [[covers]]
 key = "query-array-items-union"
-search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/README.md#verdicts"
+verdict = "exhausted"
