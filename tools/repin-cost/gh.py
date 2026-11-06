@@ -61,7 +61,7 @@ class GitHub:
         self.calls = 0
         self.hits = 0
 
-    def get(self, path: str) -> tuple[int, bytes]:
+    def get(self, path: str, *, json_body: bool = False) -> tuple[int, bytes]:
         url = path if path.startswith("http") else f"{API}{path}"
         if not rlg.is_github_api_url(url):
             raise ValueError("GitHub read must use the validated API origin; refusing to attach credentials")
@@ -95,6 +95,12 @@ class GitHub:
         if not isinstance(status, int):
             raise RuntimeError("GitHub returned no HTTP status")
         self._log(url, status, False)
+        if json_body and status == 200:
+            try:
+                json.loads(body)
+            except ValueError as error:
+                # Checked before caching: a stored bad answer would repeat on every later run.
+                raise SystemExit(f"GitHub answered {path} with invalid JSON; re-run the harness") from error
         rlg.cache_store("GET", url, headers, status, response.headers, body)
         return status, body
 
@@ -103,7 +109,7 @@ class GitHub:
             handle.write(json.dumps({"url": url, "status": status, "cache_hit": hit}) + "\n")
 
     def json(self, path: str):
-        status, body = self.get(path)
+        status, body = self.get(path, json_body=True)
         if status != 200:
             # Never read a refusal or a transient failure as "nothing there": that undercounts silently.
             raise SystemExit(

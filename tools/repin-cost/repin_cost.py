@@ -57,6 +57,18 @@ ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orch
 # llmlint: ignore[contracts_have_one_source_or_a_drift_gate] The census tier is the spike method's fixed definition, frozen so a re-take stays comparable with the baseline; following a later target rename here would change what is counted, and `comparison.md` states the one target this leaves out.
 CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surface-census:test-reach-portable")
 # llmlint: ignore[contracts_have_one_source_or_a_drift_gate] As with the journal's other fields, the orchestrator owns these names, outside this repository; a verdict not listed stops the run rather than being misread.
+CONCLUSIONS = (
+    None,
+    "success",
+    "failure",
+    "neutral",
+    "cancelled",
+    "skipped",
+    "timed_out",
+    "action_required",
+    "stale",
+    "startup_failure",
+)
 VERDICTS = ("passed", "failed", "no-verdict", "passed-with-skipped")
 UNAVAILABLE_OUTCOME = "unavailable (node retired; not in current results)"
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
@@ -480,6 +492,9 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
         },
     )
     # llmlint: ignore[boundary_inputs_validated] Ordering is not checked: GitHub reports completed_at before started_at on real jobs of the baseline's runs, and the method's runner minutes carry them as they read; only a blank or offset-free time, which would read as zero minutes, stops the run.
+    unknown = [c for c in (run["conclusion"], *(j["conclusion"] for j in jobs)) if c not in CONCLUSIONS]
+    if unknown:
+        raise ValueError(f"CI run {run['id']} has conclusion {unknown[0]!r}, which this harness cannot count")
     if not COMMIT_RE.fullmatch(run["head_sha"]):
         raise ValueError(f"CI run {run['id']} names head {run['head_sha']!r}, not a commit sha")
     for job in jobs:
@@ -712,7 +727,7 @@ def main() -> int:
             if not head:
                 excluded.append({**examined, "reason": f"refs/pull/{b['pr']}/head not fetchable"})
                 continue
-            base = git("merge-base", "refs/repin-cost/main", head, check=False).strip()
+            base = git("merge-base", "refs/repin-cost/main", head).strip()
             examined.update(base=base[:12], head=head[:12])
             missing = [c for c in carries if not is_ancestor(c, base)]
             if missing:
@@ -920,7 +935,7 @@ def main() -> int:
         if landed:
             row["rewrote"] = sorted(pinned_changes(None, landed))
         elif head:
-            base = git("merge-base", "refs/repin-cost/main", head, check=False).strip() or None
+            base = git("merge-base", "refs/repin-cost/main", head).strip() or None
             row["rewrote"] = sorted(pinned_changes(base, head)) if base else []
         for key in (
             "census_runner_min",

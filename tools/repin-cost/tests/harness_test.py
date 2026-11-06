@@ -72,6 +72,7 @@ class HarnessTest(unittest.TestCase):
         self.requests = []
         self.responses = {}
         self.redirects = {}
+        self.dropped = set()
         self.auth = {}
         self.quota = "ok"
         owner = self
@@ -83,6 +84,9 @@ class HarnessTest(unittest.TestCase):
             def do_GET(self):
                 owner.requests.append(self.path)
                 owner.auth[self.path] = self.headers.get("Authorization")
+                if self.path in owner.dropped:
+                    self.close_connection = True
+                    return
                 if self.path in owner.redirects:
                     self.send_response(302)
                     self.send_header("Location", owner.redirects[self.path])
@@ -866,6 +870,43 @@ class HarnessTest(unittest.TestCase):
         self.assertIn("Census-tier CI failures: 0 (0.00 per change, 0 changes hit)", summary)
         self.assertIn("Derived-table conflicts: 0 (0 changes)", summary)
         self.assertIn("1 whose base lacks a required commit", summary)
+
+    def test_a_dropped_connection_and_invalid_json_stop_and_recover(self):
+        branch, _ = self.change(1, self.main)
+        path = f"/repos/nickderobertis/crozier/actions/runs?branch={branch}&per_page=100&page=1"
+        self.dropped.add(path)
+        done = subprocess.run(self.command(out="dropped"), env=self.env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertNotIn("Traceback", done.stderr)
+        self.assertFalse((self.root / "dropped/totals.json").exists())
+        self.dropped.clear()
+        self.responses[path] = (200, b"<html>not json</html>")
+        done = subprocess.run(self.command(out="garbled"), env=self.env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("invalid JSON", done.stderr)
+        self.assertFalse((self.root / "garbled/totals.json").exists())
+        self.responses[path] = (200, {"workflow_runs": []})
+        self.invoke(out="recovered")
+
+    def test_an_unknown_conclusion_and_an_unreadable_base_stop(self):
+        branch, head = self.change(1, self.main)
+        self.serve_runs(branch, [self.ci_run(7, 1, head, "mystery")], {})
+        done = subprocess.run(self.command(out="odd"), env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("conclusion 'mystery'", done.stderr)
+        self.assertNotIn("Traceback", done.stderr)
+        self.serve_runs(branch, [], {})
+        # A head with no history in common with main has no base to judge it by.
+        self.git("checkout", "--orphan", "unrelated")
+        unrelated = self.commit("unrelated")
+        self.git("checkout", "main")
+        self.git("update-ref", "refs/pull/2/head", unrelated)
+        self.event("change-opened", "elsewhere", {"id": 2})
+        self.event("push", "elsewhere", {"accepted": True, "head": unrelated})
+        env = {**self.env, "CROZIER_GITHUB_CACHE_DIR": str(self.root / "fresh")}
+        done = subprocess.run(self.command(out="orphan"), env=env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("merge-base", done.stderr)
 
     def test_a_collection_longer_than_the_page_limit_stops(self):
         branch, head = self.change(1, self.main)
