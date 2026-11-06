@@ -2517,7 +2517,7 @@ class CooccurrenceOpenUnionTest(unittest.TestCase):
                 key
                 for key, row in audit.items()
                 if row.proof_class == "open"
-                and row.search_record == "docs/openapi-surface/combination-open-unions/README.md"
+                and f"docs/openapi-surface/combination-open-unions/evidence.json under {key}" in row.why_no_branch
             },
         )
         sites_table = reach.read_sites_table()
