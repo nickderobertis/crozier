@@ -1,24 +1,23 @@
 // One compile of crozier per profile within a job, through the commands the gate
-// and the suites really run. The compile is a scratch copy's, in its own target
-// directory; its dependencies come from the real manifests and lock, so a feature
-// split between `crozier:build` and a suite's build fails here.
+// and the suites really run. The real tree's builds are the job's own, so this adds
+// no compile of crozier; a changed input is proved on a scratch workspace of the
+// same names, which those same commands drive verbatim.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { after, before, test } from "node:test";
+import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 const SHARE = join(ROOT, "scripts/share-instrumented-build.mjs");
-const COPIED = ["Cargo.toml", "Cargo.lock", "rust-toolchain.toml", ".cargo", "src", "templates", "assets", "crates/crozier-e2e", "tests/support", "tests/nested-discriminator/golden", "pool-maintenance", "tools/ci", "tools/ci-journeys", "tools/github-action", "README.md", "LICENSE", "NOTICE", "licenses"];
 
 function target(project, name) {
   return JSON.parse(readFileSync(join(ROOT, project, "project.json"), "utf8")).targets[name].options;
 }
 
-/** A target's cargo command, split, with `extra` before any `--` it does not have. */
+/** A target's cargo command, split, with `extra` after it. */
 function cargoArgs(command, ...extra) {
   const words = command.match(/"[^"]*"|\S+/g).map((word) => word.replace(/^"|"$/g, ""));
   assert.equal(words[0], "cargo", command);
@@ -45,40 +44,57 @@ function crozierUnits(stdout) {
   return units;
 }
 
-const build = (cwd) => crozierUnits(cargo(cwd, cargoArgs(target("src", "build").command, "--message-format=json")).stdout);
+const build = (cwd, env) => crozierUnits(cargo(cwd, cargoArgs(target("src", "build").command, "--message-format=json"), env).stdout);
 const suiteBuild = (cwd) => crozierUnits(cargo(cwd, cargoArgs(target("crates/crozier-e2e", "test").command, "--no-run", "--cargo-message-format", "json")).stdout);
 // The build tests/corpus_match/match.sh starts with; `corpus-match` is a tier, so this project cannot read it.
 const matchBuild = (cwd) => crozierUnits(cargo(cwd, ["build", "--locked", "--quiet", "-p", "crozier", "--bin", "crozier", "--message-format=json"]).stdout);
+const binaryIn = (root) => join(root, "target/debug", `crozier${process.platform === "win32" ? ".exe" : ""}`);
 
-let scratch;
-before(() => {
-  scratch = mkdtempSync(join(tmpdir(), "crozier-build-reuse-"));
-  for (const path of COPIED) cpSync(join(ROOT, path), join(scratch, path), { recursive: true });
-  // The real manifest and so the real feature resolution; the suite's sources embed
-  // committed documents and take minutes to compile, and what they say is not at stake.
-  writeFileSync(join(scratch, "crates/crozier-e2e/tests/e2e.rs"), "#[test]\nfn compiles() {}\n");
-});
-after(() => rmSync(scratch, { recursive: true, force: true }));
-
-test("a later step uses the build the first produced, and a changed source rebuilds it for both", () => {
-  assert.deepEqual(build(scratch), { lib: true, bin: true }, "the first step compiles crozier");
-  const binary = join(scratch, "target/debug", `crozier${process.platform === "win32" ? ".exe" : ""}`);
-  const built = statSync(binary).mtimeMs;
-  assert.deepEqual(suiteBuild(scratch), { lib: false }, "a suite's build reuses crozier's library rather than compiling its own");
-  assert.deepEqual(matchBuild(scratch), { lib: false, bin: false }, "the corpus recipe reuses crozier");
-  assert.deepEqual(build(scratch), { lib: false, bin: false }, "a later `crozier:build` still answers from the first");
-  assert.equal(statSync(binary).mtimeMs, built, "no later step rewrote the binary");
-
-  appendFileSync(join(scratch, "src/lib.rs"), "\n// a changed input\n");
-  assert.deepEqual(suiteBuild(scratch), { lib: true }, "a changed source reaches the suite's build");
-  assert.deepEqual(build(scratch), { lib: false, bin: true }, "and the binary links the rebuilt library, once");
-  assert.notEqual(statSync(binary).mtimeMs, built);
+test("in the real tree, every later step uses the build the first produced", () => {
+  // `crozier:build` compiles here only if nothing in this job has yet; whichever
+  // step came first, nothing after this line may compile crozier again.
+  build(ROOT);
+  const built = statSync(binaryIn(ROOT)).mtimeMs;
+  assert.deepEqual(suiteBuild(ROOT), { lib: false }, "a suite's build reuses crozier's library rather than compiling its own");
+  assert.deepEqual(matchBuild(ROOT), { lib: false, bin: false }, "the corpus recipe reuses crozier");
+  assert.deepEqual(build(ROOT), { lib: false, bin: false }, "a later `crozier:build` still answers from the first");
+  assert.equal(statSync(binaryIn(ROOT)).mtimeMs, built, "no later step rewrote the binary");
 });
 
-test("other compiler flags compile their own build instead of taking this one", () => {
-  build(scratch);
-  const flags = crozierUnits(cargo(scratch, cargoArgs(target("src", "build").command, "--message-format=json"), { RUSTFLAGS: "--cfg crozier_reuse_probe" }).stdout);
-  assert.deepEqual(flags, { lib: true, bin: true });
+/** A workspace laid out and named like the real one, so the real commands run on it unchanged. */
+function namesakeWorkspace() {
+  const root = mkdtempSync(join(tmpdir(), "crozier-build-reuse-"));
+  const files = {
+    "Cargo.toml": '[workspace]\nmembers = [".", "crates/crozier-e2e"]\nresolver = "2"\n\n[package]\nname = "crozier"\nversion = "0.0.0"\nedition = "2021"\n',
+    "src/lib.rs": "pub const LIT: bool = true;\n",
+    "src/main.rs": "fn main() {\n    assert!(crozier::LIT);\n}\n",
+    "crates/crozier-e2e/Cargo.toml": '[package]\nname = "crozier-e2e"\nversion = "0.0.0"\nedition = "2021"\n\n[dev-dependencies]\ncrozier = { path = "../.." }\n',
+    "crates/crozier-e2e/src/lib.rs": "",
+    "crates/crozier-e2e/tests/e2e.rs": "#[test]\nfn lit() {\n    assert!(crozier::LIT);\n}\n",
+  };
+  for (const [path, text] of Object.entries(files)) {
+    mkdirSync(dirname(join(root, path)), { recursive: true });
+    writeFileSync(join(root, path), text);
+  }
+  cpSync(join(ROOT, "rust-toolchain.toml"), join(root, "rust-toolchain.toml"));
+  cargo(root, ["generate-lockfile", "--offline"]);
+  return root;
+}
+
+test("a changed source rebuilds for every step, and other compiler flags take no old build", () => {
+  const root = namesakeWorkspace();
+  try {
+    assert.deepEqual(build(root), { lib: true, bin: true }, "the first step compiles");
+    assert.deepEqual(suiteBuild(root), { lib: false }, "the next uses it");
+
+    appendFileSync(join(root, "src/lib.rs"), "\n// a changed input\n");
+    assert.deepEqual(suiteBuild(root), { lib: true }, "a changed source reaches the suite's build");
+    assert.deepEqual(build(root), { lib: false, bin: true }, "and the binary links the rebuilt library, once");
+
+    assert.deepEqual(build(root, { RUSTFLAGS: "--cfg crozier_reuse_probe" }), { lib: true, bin: true }, "other flags compile their own build");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
 
 function miniWorkspace() {

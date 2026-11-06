@@ -80,38 +80,39 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
 class OfflineCorpusRecipes(unittest.TestCase):
     def test_warmed_build_needs_no_network_from_a_cold_registry(self) -> None:
         # CI's runner starts with no crates cached; a denied recipe then failed
-        # resolving static.crates.io. Reproduce that cold registry here.
+        # resolving static.crates.io. Reproduce that cold registry here. Cargo
+        # resolves and downloads the suite's whole graph before compiling, and
+        # `check` compiles and runs every proc macro and build script a build does,
+        # so a network need in any of them fails this. Only codegen and linking,
+        # which open no socket, are left out: those would compile crozier a second
+        # time, since a different CARGO_HOME defeats the job's own fingerprints.
         with tempfile.TemporaryDirectory(dir=REPO / ".local") as cold:
-            # Its own target directory: a build from another CARGO_HOME replaces the
-            # fingerprints it shares with the job's normal builds, which would then
-            # all compile crozier over again.
             env = {
                 **os.environ,
                 "CARGO_HOME": cold,
                 "CARGO_TARGET_DIR": str(Path(cold) / "target"),
                 "RUSTC_WRAPPER": "",
             }
+            denied_check = [
+                sys.executable,
+                str(Path(__file__).resolve()),
+                "--deny-network",
+                "cargo",
+                "check",
+                "--locked",
+                "-p",
+                "crozier-e2e",
+                "--test",
+                "e2e",
+            ]
+            # The control: unwarmed, the same command does reach for the network.
+            unwarmed = subprocess.run(denied_check, cwd=REPO, env=env, capture_output=True, text=True)
+            self.assertNotEqual(0, unwarmed.returncode, unwarmed.stderr)
+            self.assertIn("crates.io", unwarmed.stderr)
             warm_dependencies(self, env)
-            build = subprocess.run(
-                [
-                    sys.executable,
-                    str(Path(__file__).resolve()),
-                    "--deny-network",
-                    "cargo",
-                    "test",
-                    "--locked",
-                    "--no-run",
-                    "-p",
-                    "crozier-e2e",
-                    "--test",
-                    "e2e",
-                ],
-                cwd=REPO,
-                env=env,
-                capture_output=True,
-                text=True,
-            )
+            build = subprocess.run(denied_check, cwd=REPO, env=env, capture_output=True, text=True)
             self.assertEqual(0, build.returncode, build.stderr)
+            self.assertNotIn("Downloading", build.stderr)
 
     def test_real_recipes_without_network_or_cache(self) -> None:
         # The registered corpus cache, and the cache the census-fallback samples
