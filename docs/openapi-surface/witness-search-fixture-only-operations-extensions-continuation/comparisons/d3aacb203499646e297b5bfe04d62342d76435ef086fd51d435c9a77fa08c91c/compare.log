@@ -1,0 +1,31 @@
+compare: found config <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml
+compare: <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml python: reference command starting: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+compare: <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml python: reference command finished in 0.02s (exit 0)
+compare: <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml python: crozier generation starting
+compare: <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml python: crozier generation finished in 0.43s
+compare: <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml python: mismatched
+
+crozier compare report
+
+<scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml
+  python: mismatched (layout packaged, 50 file(s) compared)
+    reference command: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+    differing (3):
+      README.md
+      reference.md
+      src/fern/client.py
+    intended departures applied (8):
+      reference.md:475 schema-rejected-number-example
+      src/fern/client.py:324 schema-rejected-number-example
+      src/fern/client.py:708 schema-rejected-number-example
+      src/fern/core/client_wrapper.py:34 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:35 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+    diff: <repo>/docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/comparisons/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_3319628-17_compare_d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c_crozier.yml-python.diff
+    timing: reference 0.02s, crozier 0.43s, speed-up 0.05x, saved -0.41s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.02s, crozier 0.43s, speed-up 0.05x, saved -0.41s
+Result: 1 generator(s) mismatched the reference (exit 3)

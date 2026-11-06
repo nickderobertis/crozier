@@ -19,6 +19,7 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[3]
 HERE = REPO / "tools" / "surface-census"
+sys.path.insert(0, str(HERE))
 INDEX = "docs/openapi-surface/scenario-proof-index.tsv"
 COVERAGE = "docs/openapi-surface-coverage.md"
 

@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml"
+  ],
+  "exit_code": 0,
+  "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.014543297,
+    "crozier_seconds": 0.566741659,
+    "speedup": 0.02566124577053546,
+    "saved_seconds": -0.5521983619999999
+  },
+  "results": [
+    {
+      "status": "matched",
+      "config_file": "<scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml",
+      "generator": "python",
+      "spec": "<scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/openapi.yml",
+      "reference": {
+        "command": "cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT/\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 57,
+        "differing": [],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 34
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 35
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.014543297,
+        "crozier_seconds": 0.566741659,
+        "speedup": 0.02566124577053546,
+        "saved_seconds": -0.5521983619999999
+      },
+      "reason": null
+    }
+  ]
+}

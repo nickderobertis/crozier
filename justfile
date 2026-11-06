@@ -351,7 +351,7 @@ golden-reach-arms:
 # `check`: it needs a built crozier and ruff.
 residual-attribution:
     cargo build --locked -q
-    python3 tools/surface-census/residual-attribution.py
+    python3 tools/surface-census/residual-attribution.py --write-record
 
 # Per arm-level cover of a hand-written fixture (docs/openapi-surface/handwritten/AGENTS.md),
 # and per interaction site of its feature-level cover on a combination key:

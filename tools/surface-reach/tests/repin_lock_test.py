@@ -35,6 +35,10 @@ def git(root: Path, *args: str) -> str:
 
 def small_inputs(root: Path) -> None:
     """Keep lock coverage independent of the size of crozier's measured sources."""
+    # This lock fixture replaces the measured crate with lock_target alone;
+    # it carries no Python ports of that synthetic function.
+    census = root / "tools/surface-census/openapi-surface-census.py"
+    census.write_text(census.read_text(encoding="utf-8") + "\nPORT_PINS = ()\n", encoding="utf-8")
     shutil.rmtree(root / "src")
     (root / "src").mkdir()
     (root / "src/lib.rs").write_text("pub fn lock_target() -> u8 { 1 }\n", encoding="utf-8")
@@ -82,6 +86,23 @@ def clone(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Path]:
         else:
             shutil.copy2(source, target)
     small_inputs(root)
+    # The six entry points share this fixture. Restate its synthetic ledger
+    # before committing so repin's offline preflight leaves it clean for the others.
+    subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import runpy, sys; from pathlib import Path; "
+            "sys.path.insert(0, 'tools/surface-census'); "
+            "m = runpy.run_path('tools/surface-census/census-repin.py'); "
+            "m['reach_document'].rewrite(Path.cwd(), m['REACH'], "
+            "m['_load']('census_repin_handwritten', 'handwritten-fixtures.py'))",
+        ],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     git(root, "add", "-A")
     git(root, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "tooling")
     git(root, "remote", "remove", "origin")

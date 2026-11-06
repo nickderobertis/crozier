@@ -1,0 +1,4 @@
+rule docs/corpus-licensing.md sha256 54117abbd630cc68b7becd631b84beb10689df035b5fa37dc6d58fba47659ef2: admits Apache-2.0, MIT, BSD, CC0, GPL, AGPL, LGPL, MPL, EPL, CC-BY, CC-BY-SA, CC-BY-ND
+info.license: 'MIT / https://github.com/cu-devs-collective/open-cu-services-sdk/blob/master/LICENSE' -> MIT
+licence file (none) -> None
+outcome: passed: info.license 'MIT / https://github.com/cu-devs-collective/open-cu-services-sdk/blob/master/LICENSE' reads as MIT, which the corpus rule admits

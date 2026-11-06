@@ -708,27 +708,23 @@ def read_gate_ledger(path: Path) -> tuple[list[tuple[str, str, str, str, int, in
     """`handwritten-config-gates.tsv`: its header, its rows and their order."""
     name = path.name
     if not path.is_file():
-        return [], [
-            f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"
-        ]
+        return [], [f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just census-repin`"]
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != GATE_HEADER:
-        return [], [
-            f"{name}: the header line must be exactly {'<TAB>'.join(GATE_HEADER)}; run `just handwritten-reach`"
-        ]
+        return [], [f"{name}: the header line must be exactly {'<TAB>'.join(GATE_HEADER)}; run `just census-repin`"]
     rows, failures = [], []
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
         if len(fields) != len(GATE_HEADER) or not fields[4].isdigit() or not fields[5].isdigit():
             failures.append(
-                f"{name} line {number}: not six tab-separated fields ending in two counts; run `just handwritten-reach`"
+                f"{name} line {number}: not six tab-separated fields ending in two counts; run `just census-repin`"
             )
             continue
         rows.append((fields[0], fields[1], fields[2], fields[3], int(fields[4]), int(fields[5])))
     keys = [row[:4] for row in rows]
     if keys != sorted(keys) or len(keys) != len(set(keys)):
         failures.append(
-            f"{name}: rows are not sorted by fixture, key, site and setting with none twice; run `just handwritten-reach`"
+            f"{name}: rows are not sorted by fixture, key, site and setting with none twice; run `just census-repin`"
         )
     return rows, failures
 
@@ -755,12 +751,12 @@ def gate_ledger_failures(fixtures: dict[str, Fixture], rows: list[tuple[str, str
     for missing in sorted(expected - measured):
         failures.append(
             f"handwritten-config-gates.tsv: no row for `{missing[0]}` `{missing[1]}` `{missing[2]}` with setting "
-            f"`{missing[3]}` — run `just handwritten-reach`"
+            f"`{missing[3]}` — run `just census-repin`"
         )
     for extra in sorted(measured - expected):
         failures.append(
             f"handwritten-config-gates.tsv: the row `{extra[0]}` `{extra[1]}` `{extra[2]}` `{extra[3]}` names no "
-            "live arm-level cover of a fixture declaring that setting — run `just handwritten-reach`"
+            "live arm-level cover of a fixture declaring that setting — run `just census-repin`"
         )
     return failures
 

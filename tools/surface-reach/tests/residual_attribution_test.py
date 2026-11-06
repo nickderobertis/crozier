@@ -25,7 +25,10 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+import pytest
+
 REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(REPO / "tools" / "surface-census"))
 sys.path.insert(0, str(REPO / "tools" / "surface-census" / "tests"))
 
 from surface_census_test import residual_attributions  # noqa: E402 - sys.path must name its directory first
@@ -100,6 +103,116 @@ class AMissingWitnessSource(unittest.TestCase):
             module.main([])
         self.assertIn("some-row's witness no-such-witness has no committed source", str(refused.exception))
         self.assertIn("`just lint-corpus-sources` names what is missing", str(refused.exception))
+
+
+def test_record_publication_runs_the_cli_and_preserves_unselected_rows(tmp_path: Path) -> None:
+    """The real binary measures a small document; only the selected record changes."""
+    for directory in ("src", "templates", "assets"):
+        shutil.copytree(REPO / directory, tmp_path / directory)
+    for name in (
+        "Cargo.toml",
+        "Cargo.lock",
+        "rust-toolchain.toml",
+        ".ruff-version",
+        ".cargo/config.toml",
+        "pyproject.toml",
+    ):
+        target = tmp_path / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(REPO / name, target)
+    scripts = tmp_path / "tools/surface-census"
+    scripts.mkdir(parents=True)
+    for source in SCRIPT.parent.glob("*.py"):
+        shutil.copy2(source, scripts / source.name)
+    corpus = tmp_path / "tools/corpus"
+    corpus.mkdir()
+    shutil.copy2(REPO / "tools/corpus/corpus_remote_ref_pins.py", corpus)
+    binary = tmp_path / "target/debug" / BINARY.name
+    binary.parent.mkdir(parents=True)
+    shutil.copy2(BINARY, binary)
+    document = tmp_path / "tests/fixtures/corpus-sources/webflow-v2/openapi.json"
+    document.parent.mkdir(parents=True)
+    document.write_text(
+        json.dumps(
+            {
+                "openapi": "3.1.0",
+                "info": {"title": "Record", "version": "1"},
+                "paths": {},
+                "components": {"schemas": {"Thing": {"type": "object", "properties": {"value": True}}}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    golden = tmp_path / "tests/fixtures/webflow-v2/expected"
+    generated = subprocess.run(
+        [
+            str(binary),
+            "generate",
+            "--spec",
+            str(document),
+            "--output",
+            str(golden),
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=120,
+    )
+    assert generated.returncode == 0, generated.stderr
+    registry = tmp_path / "crates/crozier-e2e/tests/e2e.rs"
+    registry.parent.mkdir(parents=True)
+    registry.write_text(
+        'const DEMO: Corpus = Corpus {\n    api: "webflow-v2",\n'
+        '    unmatched: &["src/fern/types/thing.py"],\n};\n'
+        "fn demo_matches_fern_output() { assert_committed_corpus_matches(&DEMO); }\n",
+        encoding="utf-8",
+    )
+    record = tmp_path / "docs/openapi-surface/residual-attribution.json"
+    record.parent.mkdir(parents=True)
+    argv = [sys.executable, str(scripts / SCRIPT.name), "--key", "boolean-schema-true", "--write-record"]
+    record.write_text("{broken", encoding="utf-8")
+    refused = subprocess.run(argv, cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert refused.returncode != 0
+    assert "residual-attribution.json: cannot read attribution" in refused.stderr
+    assert "just residual-attribution" in refused.stderr
+    assert "Traceback" not in refused.stderr
+    assert record.read_text(encoding="utf-8") == "{broken"
+    kept = {
+        "key": "unselected",
+        "fixture": "other",
+        "byte_matched": [],
+        "unmatched": [],
+        "golden_digest": "0" * 64,
+        "inputs_digest": "0" * 64,
+    }
+    record.write_text(json.dumps({"version": 1, "rows": [kept]}), encoding="utf-8")
+    run = subprocess.run(argv, cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert run.returncode == 0, run.stderr
+    published = json.loads(record.read_text(encoding="utf-8"))
+    assert published["version"] == 1
+    assert next(row for row in published["rows"] if row["key"] == "unselected") == kept
+    assert run.stdout == "residual-attribution: wrote docs/openapi-surface/residual-attribution.json\n"
+    selected = next(row for row in published["rows"] if row["key"] == "boolean-schema-true")
+    assert selected["fixture"] == "webflow-v2"
+    assert selected["byte_matched"] == []
+    assert selected["unmatched"] == ["src/fern/types/thing.py"]
+    assert len(selected["golden_digest"]) == len(selected["inputs_digest"]) == 64
+    diagnostic = subprocess.run(argv[:-1], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert diagnostic.returncode == 0, diagnostic.stderr
+    measured = json.loads(diagnostic.stdout)
+    assert {name: selected[name] for name in measured} == measured
+    import residual_attribution_record as record_model
+
+    loaded = record_model.read(tmp_path)
+    record_model.require(tmp_path, selected["key"], selected["fixture"], loaded)
+    reader = scripts / "openapi-surface-census.py"
+    reader.write_bytes(reader.read_bytes() + b"\n# A changed measurement reader.\n")
+    with pytest.raises(ValueError, match="boolean-schema-true: stale residual attribution"):
+        record_model.require(tmp_path, selected["key"], selected["fixture"], loaded)
 
 
 if __name__ == "__main__":

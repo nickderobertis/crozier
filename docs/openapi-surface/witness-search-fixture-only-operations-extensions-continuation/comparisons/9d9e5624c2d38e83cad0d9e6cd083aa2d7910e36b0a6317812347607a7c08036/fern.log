@@ -1,0 +1,157 @@
+--- check ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 37 errors
+    [error]
+        path: accountCategories.yml -> types -> AppAccountingCategoriesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: accounts.yml -> types -> AppAccountingAccountsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: accounts.yml -> types -> AppAccountingEmployeesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: applications.yml -> types -> AppApikeysListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: applications.yml -> types -> AppApipartnersListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: applications.yml -> types -> AppListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: attachments.yml -> types -> AppAttachmentsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: bankDetails.yml -> types -> AppDocumentsSalesBankdetailsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: entries.yml -> types -> AppAccountingEntriesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: establishments.yml -> service -> endpoints -> appContactsEstablishmentsDeleteContact
+        issue: Path parameter is unreferenced in endpoint: id.
+
+    [error]
+        path: exports.yml -> types -> AppAccountingExportListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: forecast.yml -> types -> AppAccountingForecastelementListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppCashflowLogsautoreconciliationsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppCatalogCategoriesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppDocumentsSalesModelsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppDocumentsSalesRecurringinvoicesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppPoliciesInvitationsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppPoliciesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: hidden.yml -> types -> AppRulesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: invoices.yml -> types -> AppDocumentsSalesInvoicesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: invoices.yml -> types -> AppDocumentsSalesInvoicesStatisticsRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: organizations.yml -> types -> AppContactsOrganizationsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: partners.yml -> types -> AppPartnersListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: payments.yml -> types -> AppPaymentsPaymentsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: payments.yml -> types -> AppPaymentsSepamandatesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: persons.yml -> types -> AppContactsPersonsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: products.yml -> types -> AppCatalogProductsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: purchases.yml -> types -> AppDocumentsPurchasesPurchasesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: purchases.yml -> types -> AppDocumentsPurchasesPurchasesStatisticsRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: quotes.yml -> types -> AppDocumentsSalesQuotesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: quotes.yml -> types -> AppDocumentsSalesQuotesStatisticsRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: relationships.yml -> types -> AppContactsRelationshipsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: sources.yml -> types -> AppCashflowCashflowsourcesListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: statistics.yml -> service -> endpoints -> appStatisticsTimetablePurchases -> request -> query-parameters -> groups -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: statistics.yml -> service -> endpoints -> appStatisticsTimetableSales -> request -> query-parameters -> groups -> type
+        issue: Default value for list type must be an array
+
+    [error]
+        path: stocks.yml -> types -> AppCatalogStocksListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+    [error]
+        path: transactions.yml -> types -> AppCashflowTransactionsListRequestFiltersItemComparator
+        issue: Enum name  for value <=> is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
+
+Found 37 errors and 83 warnings in 0.008 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 37 errors and 83 warnings in 0.008 seconds. Run fern check --warnings to print out the warnings not shown.
+

@@ -2140,3 +2140,26 @@ These rows carry complete certified-pair trees and freshly generated literals ov
 | # | name | source | source URL | pinned ref | licence | cache | shapes |
 |---:|---|---|---|---|---|---|---|
 | 5300 | `eqivo-apostrophe-enums` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/github.com/v0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0-1.0 (the aggregation's grant; the document declares no info.license) | committed | Eqivo's published telephony API (info.x-origin names https://eqivo.org/openapi.yaml), whose BulkCallResponse.Message, GroupCallResponse.Message and SoundTouchResponse.Message enums contain apostrophes; both enum modes retain those wire values as valid Python strings |
+
+## HappyHamster query-object serialization
+
+The publisher's API description declares required Coordinates objects on query
+parameters. Its complete certified-pair SDK byte-matches crozier; the registered
+golden measures the form-query object conversion arm. The source's own
+`info.license` grants redistribution under the [corpus rule](../../docs/corpus-licensing.md).
+
+| # | API | source | URL | ref | licence | decision | feature |
+|---|---|---|---|---|---|---|---|
+| 5370 | `happy-hamster` | github-raw | https://raw.githubusercontent.com/happy-hamster/documentation/1d48c6c5fa2d957f0c56814462b853b1cdc25cfb/api/v2/openapi.yaml | `1d48c6c5fa2d957f0c56814462b853b1cdc25cfb` | Apache-2.0 (document info.license) | committed | Form-query object serialization |
+
+## Seldon prediction wrapper
+
+The pinned archive records Seldon Core as publisher and its wrapper description
+as origin. Its `/predict` query parameter declares an example beside a schema
+reference. The complete certified-pair SDK byte-matches crozier. Redistribution
+is covered by the archive grant at that same revision, retained in
+`licenses/seldon-wrapper-CC0.txt`, under the [corpus rule](../../docs/corpus-licensing.md).
+
+| # | API | source | URL | ref | licence | decision | feature |
+|---|---|---|---|---|---|---|---|
+| 5371 | `seldon-wrapper` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/seldon.local/wrapper/0.1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | CC0 (pinned archive LICENSE) | committed | Parameter example beside a referenced schema; query-object serialization |

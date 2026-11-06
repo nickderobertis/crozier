@@ -8,6 +8,7 @@ crozier's corpus. No measurement, planner or writer is replaced.
 
 from __future__ import annotations
 
+import ast
 import gzip
 import importlib.util
 import json
@@ -78,6 +79,17 @@ components:
 """
 
 
+GENERATED_INDEX = """\
+import runpy
+import sys
+from pathlib import Path
+
+verb = runpy.run_path("tools/surface-census/census-repin.py", run_name="composition_expected_index")
+handwritten = verb["_load"]("composition_expected_handwritten", "handwritten-fixtures.py")
+sys.stdout.write(verb["reach_document"].generated(Path.cwd(), verb["REACH"], handwritten))
+"""
+
+
 def write(root: Path, name: str, text: str) -> None:
     path = root / name
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -103,6 +115,22 @@ def fixture(root: Path) -> None:
     """The real readers' smallest catalogs, with the coverage document as their template."""
     for name in ("surface-census", "witness-search", "corpus"):
         shutil.copytree(REPO / "tools" / name, root / "tools" / name, ignore=shutil.ignore_patterns("__pycache__"))
+    # This synthetic crate has no Rust decisions mirrored by the census's Python
+    # ports. Its catalog is empty; real-source port drift belongs to test-ports.
+    census_path = root / "tools/surface-census/openapi-surface-census.py"
+    source = census_path.read_text(encoding="utf-8")
+    table = next(
+        node
+        for node in ast.parse(source).body
+        if isinstance(node, ast.Assign)
+        and any(isinstance(target, ast.Name) and target.id == "PORT_PINS" for target in node.targets)
+    )
+    assert table.end_lineno is not None
+    lines = source.splitlines(keepends=True)
+    census_path.write_text(
+        "".join(lines[: table.lineno - 1]) + "PORT_PINS = ()\n" + "".join(lines[table.end_lineno :]),
+        encoding="utf-8",
+    )
     for name in ("justfile", "rust-toolchain.toml", "scripts/census-python.sh", "assets/scaffolding/metadata.json"):
         target = root / name
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -257,6 +285,22 @@ def fixture(root: Path) -> None:
     commit(root, "synthetic measurement workspace")
 
 
+def test_composition_tree_passes_port_checks_before_refusing_a_broken_selector(tmp_path: Path) -> None:
+    fixture(tmp_path)
+    (tmp_path / "scripts/census-python.sh").write_text("exit 7\n", encoding="utf-8")
+    result = subprocess.run(
+        ["just", "census-repin", "--jobs", "1"],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    assert result.returncode != 0
+    assert "interpreter selector scripts/census-python.sh" in result.stderr
+    assert "just bootstrap" in result.stderr
+    assert "Traceback" not in result.stderr
+
+
 def test_real_measurement_carries_persists_merges_and_repins_with_recovery(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     root.mkdir()
@@ -286,7 +330,7 @@ def exercise(root: Path, tmp_path: Path) -> None:
     }
 
     def run(*args: str, success: bool = True) -> subprocess.CompletedProcess[str]:
-        result = subprocess.run(args, cwd=root, env=env, capture_output=True, text=True, timeout=180)
+        result = subprocess.run(args, cwd=root, env=env, capture_output=True, text=True, encoding="utf-8", timeout=180)
         if success:
             assert result.returncode == 0, result.stdout + result.stderr
         else:
@@ -401,7 +445,16 @@ def exercise(root: Path, tmp_path: Path) -> None:
     index = root / "docs/openapi-surface-coverage.md"
     protected = index.read_bytes()
     run("just", "census-repin", "--jobs", "1", "--tests", f"^{ALPHA}$", "--fixtures", "^configured$")
-    assert index.read_bytes() == protected, "a scoped repin cannot restate the arm sections or headline"
+    scoped_index = index.read_bytes()
+    scoped_text = index.read_text(encoding="utf-8")
+    # Generate from the old template and new ledger: only ledger-derived sections
+    # may change; the population-wide arm sections and headline stay protected.
+    index.write_bytes(protected)
+    try:
+        expected_index = run(PYTHON, "-c", GENERATED_INDEX).stdout
+    finally:
+        index.write_bytes(scoped_index)
+    assert scoped_text == expected_index, "a scoped repin must restate its ledger sections and preserve the rest"
     run("just", "census-repin", "--jobs", "1")
     commit(root, "record regenerated synthetic tables")
     ledger_path = root / "docs/openapi-surface/golden-reach.tsv"
