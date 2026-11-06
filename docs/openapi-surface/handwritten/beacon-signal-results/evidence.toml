@@ -4,18 +4,15 @@ digest = "c51bd44630742c41f5e5e7a22be575e2c5787a77c3adfb8936626bf540dc1ec8"
 
 [[covers]]
 key = "combo-success-oneof-nullable"
-search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts"
+verdict = "exhausted"
 
 [[covers]]
 key = "combo-success-anyof-nullable"
-search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts"
+verdict = "exhausted"
 
 [[covers]]
 key = "combo-body-property-named-as-path-param"
-search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md#verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-bodies-paths/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts"
+verdict = "exhausted"

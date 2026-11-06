@@ -1055,6 +1055,47 @@ def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None
         return False
 
 
+def counted_combination_search(root: Path, key: str, reason: str) -> bool:
+    """The amended open-combination tier keeps the counted bounded-search bar.
+
+    Zero candidates is allowed only with a named, unavailable input population;
+    a missing census, a drifted count or an unnamed candidate never qualifies.
+    This helper is separate from the shared combination classification rules.
+    """
+    if bounded_incomplete_search(root, key, reason):
+        return True
+    match = re.fullmatch(
+        r"`search incomplete` — \[bounded search\]\(([^)#]+)(?:#[^)]*)?\); "
+        r"outstanding candidates: \[named census\]\(([^)]+)\)",
+        reason,
+    )
+    if not match:
+        return False
+    if any("\\" in value for value in match.groups()):
+        return False
+    paths = [pathlib.PurePosixPath(value) for value in match.groups()]
+    if any(path.is_absolute() or ".." in path.parts or pathlib.PureWindowsPath(path).drive for path in paths):
+        return False
+    record, census_path = [root / "docs" / path for path in paths]
+    if record.name != "README.md" or census_path != record.with_name("census.tsv"):
+        return False
+    try:
+        text = record.read_text(encoding="utf-8")
+        if not re.search(rf"^\| `{re.escape(key)}` \| `search-incomplete` \| 0 \|", text, re.M):
+            return False
+        section = text.partition("\n## Missing populations\n")[2].partition("\n## ")[0]
+        missing = re.findall(rf"^\| `{re.escape(key)}` \| ([^|]+) \| ([^|]+) \|$", section, re.M)
+        if not any(population.strip() and "not retained" in why.lower() for population, why in missing):
+            return False
+        with census_path.open(encoding="utf-8", newline="") as stream:
+            rows = csv.DictReader(stream, delimiter="\t")
+            if not {"key", "source", "document"}.issubset(rows.fieldnames or ()):
+                return False
+            return not any(row.get("key") == key for row in rows)
+    except (OSError, UnicodeError, csv.Error, ValueError):
+        return False
+
+
 def witness_blocked(root: Path, key: str, reason: str) -> bool:
     """Admit a searched combination whose admissible witnesses unrelated residuals block.
 
@@ -1608,9 +1649,7 @@ class HandwrittenReachRow(NamedTuple):
 # says to run it (docs/openapi-surface-coverage.md, "Golden reach, row by row").
 REPIN = "run `just census-repin`, which re-anchors moved sites and regenerates the measured tables"
 # A section no generator writes is restated by hand from the ledger the verb writes.
-REPIN_THEN_RESTATE = (
-    "run `just census-repin`, then restate this section from the golden-reach.tsv it writes (no generator owns it)"
-)
+REPIN_THEN_RESTATE = "run `just census-repin`, which regenerates this section from its ledger"
 
 
 _RepinArgs = ParamSpec("_RepinArgs")
@@ -1777,6 +1816,7 @@ def finished_state_failures(root: Path) -> list[str]:
             named_combinations[key].why.startswith(NOT_SEARCHED)
             or user_ruling(named_combinations[key].why)
             or witness_blocked(root, key, named_combinations[key].why)
+            or counted_combination_search(root, key, named_combinations[key].why)
         ):
             failures.append(unadmitted_combination_reason(key))
     for key in sorted(set(named_combinations) - set(gap_combinations)):
@@ -3264,7 +3304,8 @@ class RecipeWiringTests(unittest.TestCase):
             f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
             "tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py "
             "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py "
-            "tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py",
+            "tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py "
+            "tools/surface-census/tests/reach_document_test.py",
             project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
@@ -3478,6 +3519,8 @@ class GrammarContractTests(unittest.TestCase):
                 scripts.mkdir(parents=True)
                 (root / "tools" / "corpus").mkdir()
                 shutil.copyfile(script, scripts / script.name)
+                for dependency in ("port_pins.py", "reach_store.py"):
+                    shutil.copy2(source.parent / dependency, scripts / dependency)
                 shutil.copyfile(
                     REPO / "tools/corpus/corpus_remote_ref_pins.py", root / "tools/corpus/corpus_remote_ref_pins.py"
                 )
@@ -3511,6 +3554,8 @@ class GrammarContractTests(unittest.TestCase):
                 scripts.mkdir(parents=True)
                 (root / "tools" / "corpus").mkdir()
                 shutil.copyfile(script, scripts / script.name)
+                for dependency in ("port_pins.py", "reach_store.py"):
+                    shutil.copy2(source.parent / dependency, scripts / dependency)
                 shutil.copyfile(
                     REPO / "tools/corpus/corpus_remote_ref_pins.py", root / "tools/corpus/corpus_remote_ref_pins.py"
                 )
@@ -3642,6 +3687,12 @@ class GrammarContractTests(unittest.TestCase):
     # node-local unless it is here.
     DOCUMENT_COMPARING_PREDICATES = frozenset(
         {
+            "schema.$ref:unresolved-nested-local",
+            "schema.$ref:defs-member",
+            "schema.x-fern-type-name:component",
+            "schema.$ref:properties-copy",
+            "schema.oneOf:properties-copy-type-variant",
+            "schema.oneOf:properties-copy-inferred-type",
             "operation.operationId:duplicate",
             "openapi.paths:normalized-collision",
             "components.schemas:normalized-collision",
@@ -3926,16 +3977,6 @@ class GrammarContractTests(unittest.TestCase):
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         return rust_function_body(lines, name)
 
-    @classmethod
-    def function_digest(cls, name: str) -> str:
-        """One function body's digest: blank lines and `//` lines dropped, runs collapsed."""
-        kept = [
-            " ".join(line.split())
-            for line in cls.function_body(name)
-            if line.strip() and not line.strip().startswith("//")
-        ]
-        return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
-
     def test_function_body_ignores_literal_and_comment_braces(self) -> None:
         source = """fn held<'a>(value: &'a str) {
     let text = "{";
@@ -4015,26 +4056,13 @@ fn following() { let other = 42; }
                         self.assertTrue(case.residual, "a residual publishes a sentence")
 
     def test_the_case_table_is_a_reading_of_the_functions_it_names(self) -> None:
-        """The honesty check: a branch added, removed or edited without re-derivation.
-
-        The table is a reading of six functions of `src/ir.rs` and nothing else
-        ties it to them, so each function's normalized body carries a digest in
-        the table. Any of the three changes moves the body and fails here; what
-        the digest cannot do is say which case moved, and it fires on a change
-        that moves no branch at all. Both limits are stated in
-        `docs/openapi-surface-coverage.md` rather than left implicit.
-        """
-        self.assertEqual(set(self.BLIND_FUNCTIONS), set(census.BLIND_FUNCTION_DIGESTS))
-        for name in self.BLIND_FUNCTIONS:
-            with self.subTest(function=name):
-                self.assertEqual(
-                    census.BLIND_FUNCTION_DIGESTS[name],
-                    self.function_digest(name),
-                    f"src/ir.rs's {name} changed; re-derive its rows of the case "
-                    "table in tools/surface-census/openapi-surface-census.py and of the case "
-                    "analysis in docs/openapi-surface-coverage.md, then re-pin "
-                    "the digest",
-                )
+        checked = subprocess.run(
+            [sys.executable, str(SCRIPT.with_name("port_pins.py")), "--repo-root", str(REPO)],
+            capture_output=True,
+            text=True,
+            timeout=60,
+        )
+        self.assertEqual(0, checked.returncode, checked.stdout + checked.stderr)
 
     def test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table(self) -> None:
         """`schema.example:schema-shaped` without the Rust helper it ported.
@@ -4057,23 +4085,6 @@ fn following() { let other = 42; }
         for keyword in ("type", "$ref", "properties", "allOf", "oneOf", "anyOf"):
             with self.subTest(keyword=keyword):
                 self.assertTrue(census.example_is_schema_definition({"field": {keyword: {}}}))
-
-    def test_the_digest_moves_when_a_branch_of_a_named_function_moves(self) -> None:
-        """The check above, proved against a branch this case adds and removes.
-
-        A digest nobody has seen fail is a digest that might be computed over
-        the wrong span, so this one takes the real `nested_array_element` body,
-        inserts one branch into it, and asserts the digest is not the pinned
-        one — the failure the check exists to produce, induced on purpose.
-        """
-        lines = self.function_body("nested_array_element")
-        self.assertTrue(lines[0].strip().startswith("fn nested_array_element"))
-        edited = [lines[0], "        if items.pattern.is_some() { return None; }", *lines[1:]]
-        kept = [" ".join(line.split()) for line in edited if line.strip() and not line.strip().startswith("//")]
-        self.assertNotEqual(
-            census.BLIND_FUNCTION_DIGESTS["nested_array_element"],
-            hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-        )
 
     def test_the_case_analysis_states_the_totals_its_own_rows_add_up_to(self) -> None:
         """The paragraph a reader takes the size of this instrument from.
@@ -4774,6 +4785,25 @@ class ConjunctionCensusTests(unittest.TestCase):
             "nexmo-messages": 1,
         },
         "operation.context:document-security-declared&operation.security": {},
+        "operation.operationId:tag-only&operation.tags": {},
+        "operation.requestBody>requestBody.content>mediaType.schema>schema.$ref:unresolved-nested-local": {},
+        "parameter.in=header&parameter.schema>schema.default": {},
+        "parameter.in=header&parameter.schema>schema.type=array": {},
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued": {},
+        "response.content>mediaType.schema>schema.$ref:unresolved-nested-local": {},
+        "schema.allOf>schema.$ref:unresolved-nested-local": {},
+        "schema.anyOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued": {},
+        "schema.oneOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued": {
+            "discriminated-unions": 1,
+            "recursive-types": 1,
+        },
+        "schema.properties>schema.$ref:defs-member": {},
+        "schema.properties>schema.$ref:unresolved-nested-local": {},
+        "schema.properties>schema.anyOf:several-non-null-members&schema.anyOf>schema.oneOf": {},
+        "schema.type:primary=array&schema.items>schema.$ref:defs-member": {},
+        "schema.type:primary=object&schema.allOf>schema.$ref~>schema.nullable": {},
+        "schema.type=array&schema.items>schema.$ref:unresolved-nested-local": {},
+        "schema.type=object&schema.additionalProperties>schema.$ref:unresolved-nested-local": {},
     }
 
     # A conjunction no selected source declares, asserted as absent rather than as
@@ -6185,6 +6215,19 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - PARAMETER_EXTENSION_SHAPE_PREDICATES
         - BODY_AND_RESPONSE_PREDICATES
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
+        # Independently discriminated by the dedicated remainder selector tests
+        # below, rather than this older arm table.
+        - {
+            "schema.$ref:unresolved-nested-local",
+            "operation.operationId:tag-only",
+            "schema.$ref:properties-copy",
+            "schema.properties:construct-name",
+            "schema.$ref:defs-member",
+            "schema.x-fern-type-name:component",
+            "schema.oneOf:properties-copy-inferred-type",
+            "schema.oneOf:properties-copy-type-variant",
+            "parameter.example:optional-nontemporal-yaml-timestamp",
+        }
     )
 
     @classmethod
@@ -8212,6 +8255,8 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             patched = root / "tools" / "surface-census" / "patched-census.py"
             patched.parent.mkdir(parents=True)
             patched.write_text(patched_source, encoding="utf-8", newline="\n")
+            for dependency in ("port_pins.py", "reach_store.py"):
+                shutil.copy2(SCRIPT.parent / dependency, patched.parent / dependency)
             (root / "tools" / "corpus").mkdir(parents=True)
             shutil.copy2(REPO / "tools" / "corpus" / "corpus_remote_ref_pins.py", root / "tools" / "corpus")
             spec = importlib.util.spec_from_file_location("patched_census", patched)
@@ -10444,9 +10489,8 @@ class RankedBacklogTests(unittest.TestCase):
         }
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
         handwritten = sum(1 for _region, cells in self.entries.values() if cells[3].strip("`") == "handwritten")
-        probes = sorted(
-            path.name for path in (self.REGIONS / "authored-probes").iterdir() if (path / "openapi.yml").is_file()
-        )
+        tier_counts = load_script("tools/surface-census/restate-coverage.py").authored_tier_counts(REPO)
+        assert tier_counts is not None
         remaining = " ".join(
             self.section("**Every remaining unproven scenario, named.**", "Where crozier deliberately differs").split()
         )
@@ -10455,7 +10499,7 @@ class RankedBacklogTests(unittest.TestCase):
             r"\*\*Output of a proven row that lands in an `unmatched` file \((\d+)\):\*\*(.*?)"
             r"\*\*Arms no proof covers \((\d+)\):\*\*.*?"
             r"\*\*Features and arms resting on hand-written fixtures only \((\d+) features, (\d+) arms\):\*\*.*?"
-            r"\*\*Authored-probe gaps \((\d+)\):\*\*(.*)",
+            r"\*\*Authored-probe evidence tiers \((\d+) decided, 0 undecided\):\*\*(.*)",
             remaining,
         )
         self.assertIsNotNone(stated, "the list of every remaining unproven scenario no longer states its counts")
@@ -10467,7 +10511,7 @@ class RankedBacklogTests(unittest.TestCase):
                 len(set(named_gap_arms(REPO)) & unreached),
                 handwritten + len(supplemental),
                 len(covered),
-                len(probes),
+                tier_counts.total(),
             ],
             [int(stated.group(index)) for index in (1, 2, 4, 5, 6, 7)],
             "a count of the remaining-scenario list is not its ledger's",
@@ -10475,10 +10519,9 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(
             split_rows, sorted(key for key in split_rows if f"`{key}`" in stated.group(3)), "a split row is unnamed"
         )
-        self.assertEqual(
-            probes,
-            sorted(set(re.findall(r"\(openapi-surface/authored-probes/([^/)]+)/\)", stated.group(8)))),
-            "the authored-probe list does not link exactly the committed probes",
+        self.assertIn("openapi-surface/authored-probes/evidence-tiers.tsv", stated.group(8))
+        self.assertIn(
+            f"{tier_counts['open']} combination cases remain explicitly **open and unproven**", stated.group(8)
         )
 
     @names_the_repin(REPIN_THEN_RESTATE)
@@ -10572,10 +10615,10 @@ class RankedBacklogTests(unittest.TestCase):
             owners[cells[2]] = owners.get(cells[2], 0) + 1
         shared = {loc: count for loc, count in owners.items() if count > 1}
         flat = " ".join(self.section("**Each feature is classified exactly once.**", "**Nothing is left").split())
-        stated = re.search(r"(\w+) spec locations carry more than one row", flat)
+        stated = re.search(r"(\d+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
         assert stated is not None
-        self.assertEqual(len(shared), {"Fifteen": 15, "Eighteen": 18}.get(stated.group(1)))
+        self.assertEqual(len(shared), int(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
             if f"`{location}`" not in flat:
@@ -15991,28 +16034,15 @@ class NamingMirrorTests(unittest.TestCase):
                     identifier += "_"
                 self.assertEqual(expected, identifier)
 
-    def test_enum_port_tracks_its_rust_functions_and_deburr_table(self) -> None:
-        lines = self.NAMING.read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.NAMING_PORT_DIGESTS.items():
-            if name == "DEBURRED_LATIN":
-                body = self.NAMING.read_text(encoding="utf-8").split("const DEBURRED_LATIN:", 1)[1].split("];", 1)[0]
-                actual = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
-                entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
-                exceptions = {
-                    char: folded
-                    for char, folded in entries
-                    if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8") != folded
-                }
-                self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
-            else:
-                kept = [
-                    " ".join(line.split())
-                    for line in rust_function_body(lines, name)
-                    if line.strip() and not line.strip().startswith("//")
-                ]
-                actual = hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
-            with self.subTest(name=name):
-                self.assertEqual(pinned, actual, f"re-derive {name}'s enum predicates from src/naming.rs")
+    def test_deburr_exceptions_match_the_rust_table(self) -> None:
+        body = self.NAMING.read_text(encoding="utf-8").split("const DEBURRED_LATIN:", 1)[1].split("];", 1)[0]
+        entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
+        exceptions = {
+            char: folded
+            for char, folded in entries
+            if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8") != folded
+        }
+        self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
 
     def test_the_method_name_port_reproduces_croziers_own_expectations(self) -> None:
         """`src/ir.rs` pins `endpoint_method_name` against Fern's measured names;
@@ -16039,84 +16069,6 @@ class NamingMirrorTests(unittest.TestCase):
                 self.assertIsNotNone(derived)
                 self.assertEqual(expected, derived[0])
 
-    def test_the_method_name_port_tracks_its_rust_functions(self) -> None:
-        """`operation.operationId:digit-leading-method` ports `endpoint_method_name`.
-
-        Each ported function of `src/ir.rs` is pinned by the same normalized-body
-        digest the enum port uses, so an arm edited there fails here until the
-        port is read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.METHOD_NAME_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
-                )
-
-    def test_the_extension_accessor_ports_track_their_rust_functions(self) -> None:
-        """`sdk_group_segments` and `sdk_method_named` port `Operation`'s accessors.
-
-        Pinned by the same normalized-body digest the other ports use, read from
-        `src/openapi.rs`, so an edit to either accessor's precedence or blank
-        handling fails here until the port is read again.
-        """
-        for (path, name), pinned in census.EXTENSION_ACCESSOR_PORT_DIGESTS.items():
-            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            if start is None:
-                self.fail(f"{path} declares no fn {name}")
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
-            kept = [
-                " ".join(line.split())
-                for line in lines[start : end + 1]
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census port of {path}'s {name}",
-                )
-
-    def test_the_example_ports_track_their_rust_functions(self) -> None:
-        """`deprecated_member` and `fern_reads_date_time` port crozier's own functions.
-
-        Each is pinned by the same normalized-body digest the other ports use,
-        read from the file that declares it, so an edit to the Rust arm fails
-        here until the port is read again. The refusal ports of
-        `operation.requestBody:get-union-member` are pinned the same way.
-        """
-        for (path, name), pinned in {**census.EXAMPLE_PORT_DIGESTS, **census.REFUSAL_PORT_DIGESTS}.items():
-            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's port of {path}'s {name}",
-                )
-
     def test_an_inferred_tag_is_read_off_a_composed_members_last_alternative(self) -> None:
         """`inferred_discriminant_property_with` maps each member through `last_composed_variant`."""
 
@@ -16142,75 +16094,6 @@ class NamingMirrorTests(unittest.TestCase):
         nullable = {"oneOf": [{"type": "null"}, tagged("b")]}
         self.assertEqual(0, census.census_document(document(nullable)).get(selector, 0))
 
-    def test_the_union_ports_track_their_rust_functions(self) -> None:
-        """The unrequired-tag clause and `components.schemas:same-primitive-union`.
-
-        Each function of `src/ir.rs` the two ports read is pinned by the same
-        normalized-body digest, so an edit there fails here until the port is
-        read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.UNION_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's union port of src/ir.rs's {name}",
-                )
-
-    def test_the_scalar_ports_track_their_rust_helpers(self) -> None:
-        """`number_prim` and the Boolean literal override behind `same_primitive_unions`.
-
-        Each helper is pinned by the same normalized-body digest, read from the
-        file that declares it, so an edit there fails here until the port is read
-        again. `Type::method` is bounded inside `impl ... for Type`.
-        """
-        for (path, name), pinned in census.SCALAR_PORT_DIGESTS.items():
-            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            owner, _, method = name.rpartition("::")
-            if owner:
-                start = next(
-                    index
-                    for index, line in enumerate(lines)
-                    if re.match(rf"impl\b.*\bfor {re.escape(owner)}\s*\{{", line)
-                )
-                body = rust_function_body(lines[start:], method)
-            else:
-                body = rust_function_body(lines, name)
-            kept = [" ".join(line.split()) for line in body if line.strip() and not line.strip().startswith("//")]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's scalar port of {path}'s {name}",
-                )
-
-    def test_the_schema_and_response_ports_track_their_rust_functions(self) -> None:
-        """Closed object and success selection ports.
-
-        Each function of `src/ir.rs` the schema and response ports read is pinned by the same
-        normalized-body digest, so an edit there fails here until the port is
-        read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's schema or response port of src/ir.rs's {name}",
-                )
-
     def test_the_success_status_port_matches_the_rust_constant(self) -> None:
         """The census reads the same success statuses, in the same order, as `src/ir.rs`."""
         source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
@@ -16222,27 +16105,6 @@ class NamingMirrorTests(unittest.TestCase):
             census.FERN_SUCCESS_STATUSES,
             "re-read the census's success statuses from src/ir.rs's FERN_SUCCESS_STATUSES",
         )
-
-    def test_the_parameter_ports_track_their_rust_functions(self) -> None:
-        """The parameter predicates' ports of the items-union hoist and promotion.
-
-        Each function of `src/ir.rs` the predicate reads is pinned by the same
-        normalized-body digest, so an edit there fails here until the port is
-        read again.
-        """
-        lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for name, pinned in census.PARAMETER_PORT_DIGESTS.items():
-            kept = [
-                " ".join(line.split())
-                for line in rust_function_body(lines, name)
-                if line.strip() and not line.strip().startswith("//")
-            ]
-            with self.subTest(name=name):
-                self.assertEqual(
-                    pinned,
-                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
-                    f"re-read the census's parameter port of src/ir.rs's {name}",
-                )
 
     def table_cases(self, function: str, minimum: int) -> list[tuple[str, str]]:
         """The `(wire, expected)` rows of every `for (key, class) in [...]` table
@@ -19656,6 +19518,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "update-predicate-grammar.py": ("\u2014",),
         "witness-search-region-keys.py": ("\u2014",),
         "census-repin.py": ("--tests", "("),
+        "port_pins.py": ("\u2014",),
     }
     LEGACY: ClassVar[dict[str, str]] = {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
 
@@ -20883,6 +20746,130 @@ class CoverageRestatementTests(unittest.TestCase):
                 self.assertEqual(unclassified.independent + change, classified.independent)
                 self.assertEqual(unclassified.unproven - change, classified.unproven)
                 self.assertEqual(sum(unclassified.classes), sum(classified.classes))
+
+    def test_authored_inventory_rendering_refuses_truncation_and_recovers(self) -> None:
+        matrix = self.root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+        matrix.parent.mkdir(parents=True)
+        source = self.root / "case.yml"
+        source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
+        row = f"1\tcase\topen\tcombo-header-string-default\tcase.yml\t{digest}\tsearch.md\n"
+        matrix.write_text(header + row, encoding="utf-8")
+        for invalid in (
+            header.replace("schema_version", "wrong_header") + row,
+            header + row.replace("1\tcase", "2\tcase"),
+            header + row.replace("\topen\t", "\tunknown\t"),
+            header + row + row,
+            header + row.replace("case.yml", "../case.yml"),
+            header + row.replace("case.yml", "..\\case.yml"),
+        ):
+            matrix.write_text(invalid, encoding="utf-8")
+            refused = self.run_restater("--write")
+            self.assertEqual(1, refused.returncode)
+            self.assertIn("repair the named input", refused.stderr)
+            self.assertNotIn("Traceback", refused.stderr)
+            matrix.write_text(header + row, encoding="utf-8")
+            recovered = self.run_restater("--write")
+            self.assertEqual(0, recovered.returncode, recovered.stderr)
+        initial = self.run_restater("--write")
+        self.assertEqual(0, initial.returncode, initial.stderr)
+        rendered = self.index.read_text(encoding="utf-8")
+        self.assertIn("1 decided, 0 undecided", rendered)
+        self.assertIn("1 combination cases remain", rendered)
+        self.assertIn("| `combo-header-string-default` | `parameters` | `search incomplete`", rendered)
+        unrelated = next(line for line in rendered.splitlines() if line.startswith("| `combo-tag-only-operation-id` |"))
+        matrix.write_text(header + row.replace("\topen\t", "\thandwritten\t"), encoding="utf-8")
+        changed = self.run_restater("--write")
+        self.assertEqual(0, changed.returncode, changed.stderr)
+        self.assertIn("1 naming cases now", self.index.read_text(encoding="utf-8"))
+        self.assertIn(unrelated, self.index.read_text(encoding="utf-8"))
+        matrix.write_text(header + "1\tcase\topen\n", encoding="utf-8")
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("incomplete authored tier row", refused.stderr)
+        self.assertNotIn("Traceback", refused.stderr)
+        matrix.write_text(header + row, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--write").returncode)
+        valid = self.index.read_text(encoding="utf-8")
+        self.index.write_text(
+            valid.replace("- **Authored-probe evidence tiers", "- **Missing-template"), encoding="utf-8"
+        )
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("authored tier statement", refused.stderr)
+        self.index.write_text(valid, encoding="utf-8")
+        self.assertEqual(0, self.run_restater().returncode)
+
+    def test_authored_snapshot_gap_counts_preserve_cells_and_recover(self) -> None:
+        payload = {
+            "sources": [{"fixture": "sample", "origin": "corpus"}],
+            "rows": [
+                {"selector": "openapi.paths", "fixture": "sample", "count": 1},
+                {"selector": "operation.operationId:digit-leading-method", "fixture": "sample", "count": 1},
+                {"selector": "parameter.in=header&parameter.schema>schema.default", "fixture": "sample", "count": 3},
+            ],
+        }
+        snapshot = self.root / "snapshot.json"
+        snapshot.write_text(json.dumps(payload), encoding="utf-8")
+        region = self.root / "docs/openapi-surface/parameters.md"
+        key = "| combo-header-string-default |"
+        original = next(line for line in region.read_text(encoding="utf-8").splitlines() if line.startswith(key))
+        written = self.run_restater("--snapshot-json", str(snapshot), "--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        positive = next(line for line in region.read_text(encoding="utf-8").splitlines() if line.startswith(key))
+        self.assertIn("3 declarations across 1 registered golden sources", positive)
+        self.assertEqual(original.split("|")[:5], positive.split("|")[:5])
+        self.assertEqual(original.split("|")[6:], positive.split("|")[6:])
+        payload["rows"] = [
+            row for row in payload["rows"] if row["selector"] != "parameter.in=header&parameter.schema>schema.default"
+        ]
+        snapshot.write_text(json.dumps(payload), encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--snapshot-json", str(snapshot), "--write").returncode)
+        valid = region.read_text(encoding="utf-8")
+        self.assertIn("0 declarations across 0 registered golden sources", valid)
+        region.write_text(
+            valid.replace("census `parameter.in=header&parameter.schema>schema.default`", "missing selector"),
+            encoding="utf-8",
+        )
+        refused = self.run_restater("--snapshot-json", str(snapshot), "--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("authored gap has no census selector", refused.stderr)
+        region.write_text(valid, encoding="utf-8")
+        recovered = self.run_restater("--snapshot-json", str(snapshot))
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+
+    def test_shared_location_count_is_derived_and_missing_statement_recovers(self) -> None:
+        region = self.root / "docs/openapi-surface/schemas.md"
+        original = region.read_text(encoding="utf-8")
+        written = self.run_restater("--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        pattern = r"(\d+) spec\s+locations carry more than one row"
+        before = matched(re.search(pattern, self.index.read_text(encoding="utf-8")))
+        region.write_text(
+            original.replace(
+                "Schema Object.x-fern-type-name (component declaration)",
+                "Schema Object.properties (model API construct name)",
+            ),
+            encoding="utf-8",
+        )
+        drifted = self.run_restater()
+        self.assertEqual(1, drifted.returncode)
+        self.assertIn("derived tables differ", drifted.stderr)
+        changed = self.run_restater("--write")
+        self.assertEqual(0, changed.returncode, changed.stderr)
+        after = matched(re.search(pattern, self.index.read_text(encoding="utf-8")))
+        self.assertEqual(int(before[1]) + 1, int(after[1]))
+        self.assertEqual(0, self.run_restater().returncode)
+        region.write_text(original, encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--write").returncode)
+        valid = self.index.read_text(encoding="utf-8")
+        self.index.write_text(re.sub(pattern, "missing shared-location count", valid), encoding="utf-8")
+        refused = self.run_restater("--write")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("repair the named input", refused.stderr)
+        self.index.write_text(valid, encoding="utf-8")
+        self.assertEqual(0, self.run_restater().returncode)
 
     def test_combination_only_restating_rejects_category_drift_and_recovers(self) -> None:
         restater = load_script("tools/surface-census/restate-coverage.py")
@@ -23380,6 +23367,335 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
             path.write_text("".join(lines), encoding="utf-8")
             with self.assertRaisesRegex(AssertionError, "missing causes:.*" + re.escape(removed)):
                 reconcile_handed_off(root)
+
+
+class WithdrawnWitnessSelectorTests(unittest.TestCase):
+    """The withdrawn witness's four shapes remain independently searchable."""
+
+    def test_pointer_copies_and_inferred_type_tags(self) -> None:
+        path = REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml"
+        source = path.read_text(encoding="utf-8")
+        selectors = (
+            "schema.$ref:properties-copy",
+            "schema.oneOf:properties-copy-type-variant",
+            "schema.oneOf:properties-copy-inferred-type",
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in ((source, True), (source.replace("properties", "attributes"), False)):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                counts = census.census_document(census.load_document(path))
+                for selector in selectors:
+                    with self.subTest(selector=selector, expected=expected):
+                        self.assertEqual(counts.get(selector, 0) > 0, expected)
+
+    def test_union_tag_conditions_are_independent(self) -> None:
+        member = {"type": "object", "required": ["type"], "properties": {"type": {"type": "string", "enum": ["first"]}}}
+        other = {"type": "object", "required": ["type"], "properties": {"type": {"type": "string", "enum": ["second"]}}}
+        original = {
+            "openapi": "3.0.3",
+            "info": {"title": "copy controls", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {
+                    "variant_properties": member,
+                    "Union": {"oneOf": [{"$ref": "#/components/schemas/variant_properties"}, other]},
+                }
+            },
+        }
+        controls = []
+        for name in (
+            "plain",
+            "optional",
+            "non-string",
+            "duplicate",
+            "discriminator",
+            "undiscriminated",
+            "canonical-undiscriminated",
+        ):
+            document = json.loads(json.dumps(original))
+            schemas = document["components"]["schemas"]
+            union = schemas["Union"]
+            targets = [schemas["variant_properties"], union["oneOf"][1]]
+            match name:
+                case "optional":
+                    for target in targets:
+                        target["required"] = []
+                case "non-string":
+                    for target in targets:
+                        target["properties"]["type"]["type"] = "integer"
+                case "duplicate":
+                    targets[1]["properties"]["type"]["enum"] = ["first"]
+                case "discriminator":
+                    union["discriminator"] = {"propertyName": "type"}
+                case "undiscriminated" | "canonical-undiscriminated":
+                    union[("x-crozier-" if name.startswith("canonical") else "x-fern-") + "discriminated"] = False
+            controls.append((name, document))
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in controls:
+                write_json_fixture(root, name, document)
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            actual = {(row["fixture"], row["selector"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
+            for name, _ in controls:
+                self.assertEqual(
+                    int(name not in ("optional", "non-string")),
+                    actual.get((name, "schema.oneOf:properties-copy-type-variant"), 0),
+                    name,
+                )
+                self.assertEqual(
+                    int(name == "plain"), actual.get((name, "schema.oneOf:properties-copy-inferred-type"), 0), name
+                )
+
+    def test_parameter_example_overrides_schema_timestamp(self) -> None:
+        source = (REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml").read_text(encoding="utf-8")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, text, expected in (
+                ("schema-fallback", source, 1),
+                (
+                    "parameter-timestamp",
+                    source.replace("required: false", "required: false\n          example: 2020-02-03"),
+                    1,
+                ),
+                (
+                    "parameter-string",
+                    source.replace("required: false", 'required: false\n          example: "2020-02-03"'),
+                    0,
+                ),
+                ("parameter-null", source.replace("required: false", "required: false\n          example: null"), 0),
+            ):
+                path = root / "case" / "openapi.yml"
+                path.parent.mkdir(exist_ok=True)
+                path.write_text(text, encoding="utf-8")
+                completed = run(
+                    "--vendored-only",
+                    "--fixtures-root",
+                    str(root),
+                    "--selector",
+                    "parameter.example:optional-nontemporal-yaml-timestamp",
+                    "--json",
+                )
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertEqual(expected, sum(row["count"] for row in json.loads(completed.stdout)["rows"]), name)
+
+    def test_timestamp_style_requiredness_location_and_format(self) -> None:
+        source = (REPO / "docs/openapi-surface/handwritten/ref-pointer-walk/openapi.yml").read_text(encoding="utf-8")
+        selector = "parameter.example:optional-nontemporal-yaml-timestamp"
+        controls = (
+            source.replace("2018-01-01 10:00:00", '"2018-01-01 10:00:00"'),
+            source.replace("required: false", "required: true"),
+            source.replace("format: dateTime", "format: date-time"),
+            source.replace("in: query", "in: header"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in (
+                (source, 1),
+                (source.replace("2018-01-01 10:00:00", "2018-01-01"), 1),
+                (source.replace("2018-01-01 10:00:00", "2018-01-01T10:00"), 1),
+                *((control, 0) for control in controls),
+            ):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                counts = census.census_document(census.load_document(path))
+                self.assertEqual(counts.get(selector, 0), expected)
+
+
+class ModelApiPropertySelectorTests(unittest.TestCase):
+    def test_construct_property_and_adjacent_name(self) -> None:
+        source = (REPO / "docs/openapi-surface/handwritten/376-354-model-property-construct/openapi.yml").read_text(
+            encoding="utf-8"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in ((source, 1), (source.replace("construct:", "construction:"), 0)):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                counts = census.census_document(census.load_document(path))
+                self.assertEqual(counts.get("schema.properties:construct-name", 0), expected)
+
+
+class ComponentTypeNameSelectorTests(unittest.TestCase):
+    def test_component_override_and_property_control(self) -> None:
+        for path in sorted((REPO / "docs/openapi-surface/handwritten").glob("376-350-*/openapi.yml")):
+            with self.subTest(case=path.parent.name):
+                doc = census.load_document(path)
+                self.assertGreater(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
+                canonical = json.loads(json.dumps(doc).replace('"x-fern-type-name"', '"x-crozier-type-name"'))
+                self.assertGreater(census.census_document(canonical).get("schema.x-fern-type-name:component", 0), 0)
+
+        doc = {
+            "openapi": "3.0.3",
+            "components": {
+                "schemas": {
+                    "Container": {
+                        "type": "object",
+                        "properties": {"value": {"type": "string", "x-fern-type-name": "Label"}},
+                    }
+                }
+            },
+        }
+        self.assertEqual(census.census_document(doc).get("schema.x-fern-type-name:component", 0), 0)
+
+
+class AuthoredPointerAndTagSelectorTests(unittest.TestCase):
+    def test_missing_pointer_and_resolved_neighbor(self) -> None:
+        source = (REPO / "docs/openapi-surface/authored-probes/358-absent-property/openapi.yml").read_text(
+            encoding="utf-8"
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for text, expected in (
+                (source, 1),
+                (source.replace("/properties/absent", "/properties/label"), 0),
+                (source.replace("/properties/absent", "/properties"), 1),
+            ):
+                path = Path(directory) / "openapi.yml"
+                path.write_text(text, encoding="utf-8")
+                self.assertEqual(
+                    census.census_document(census.load_document(path)).get("schema.$ref:unresolved-nested-local", 0),
+                    expected,
+                )
+
+    def test_defs_pointer_and_tag_only_operation(self) -> None:
+        source = REPO / "docs/openapi-surface/authored-probes"
+        cases = (
+            ("356-defs-property", "schema.$ref:defs-member", "/$defs/", "/properties/"),
+            ("376-357-tag-only-operation-id", "operation.operationId:tag-only", "Search_", "Search_find"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for name, selector, old, new in cases:
+                text = (source / name / "openapi.yml").read_text(encoding="utf-8")
+                for body, expected in ((text, 1), (text.replace(old, new), 0)):
+                    path = Path(directory) / "openapi.yml"
+                    path.write_text(body, encoding="utf-8")
+                    with self.subTest(case=name, expected=expected):
+                        self.assertEqual(census.census_document(census.load_document(path)).get(selector, 0), expected)
+
+
+class AuthoredEvidenceTierTests(unittest.TestCase):
+    def test_every_authored_case_has_a_decided_counted_tier(self) -> None:
+        matrix = REPO / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+        with matrix.open(encoding="utf-8", newline="") as stream:
+            entries = list(csv.DictReader(stream, delimiter="\t"))
+        self.assertEqual(len(entries), 31)
+        self.assertEqual(Counter(row["tier"] for row in entries), {"open": 25, "handwritten": 6})
+        seen = set()
+        selected = {item.key: item.selector for item in census.COMBINATIONS}
+        selected |= {
+            "schema-type-name-component": "schema.x-fern-type-name:component",
+            "model-property-construct": "schema.properties:construct-name",
+        }
+        for row in entries:
+            with self.subTest(case=row["case"]):
+                self.assertEqual(row["schema_version"], "1")
+                self.assertNotIn(row["case"], seen)
+                seen.add(row["case"])
+                path = REPO / row["source"]
+                self.assertEqual(path.parent.name, row["case"])
+                self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), row["sha256"])
+                counts = census.census_document(census.load_document(path))
+                for key in row["keys"].split(";"):
+                    self.assertGreater(counts.get(selected[key], 0), 0, key)
+                self.assertIn(row["tier"], ("open", "handwritten"))
+                self.assertIn("/handwritten/" if row["tier"] == "handwritten" else "/authored-probes/", row["source"])
+        remaining = {path.parent.name for path in (matrix.parent).glob("*/openapi.yml")}
+        self.assertEqual(remaining, {row["case"] for row in entries if row["tier"] == "open"})
+
+    def test_tier_inventory_rejects_source_drift_and_recovers(self) -> None:
+        restate = load_script("tools/surface-census/restate-coverage.py")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            target = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+            target.parent.mkdir(parents=True)
+            source = root / "source.yml"
+            source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            target.write_text(
+                "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n1\tcase\topen\tcombo-case\tsource.yml\t"
+                + digest
+                + "\trecord.md#search\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(restate.authored_tier_counts(root), {"open": 1})
+            source.write_text("changed\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "SHA-256 drifted"):
+                restate.authored_tier_counts(root)
+            source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            self.assertEqual(restate.authored_tier_counts(root), {"open": 1})
+
+
+class CountedOpenCombinationTests(unittest.TestCase):
+    def test_zero_requires_the_census_and_named_missing_population(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            record = root / "docs/openapi-surface/search/README.md"
+            record.parent.mkdir(parents=True)
+            census_path = record.with_name("census.tsv")
+            reason = "`search incomplete` — [bounded search](openapi-surface/search/README.md#verdicts); outstanding candidates: [named census](openapi-surface/search/census.tsv)"
+            text = "## Verdicts\n\n| `combo-sample` | `search-incomplete` | 0 | no candidate |\n\n## Missing populations\n\n| `combo-sample` | archive | Inputs not retained on this host. |\n"
+            record.write_text(text, encoding="utf-8")
+            census_path.write_text("key\tsource\tdocument\n", encoding="utf-8")
+            self.assertTrue(counted_combination_search(root, "combo-sample", reason))
+            escaped = reason.replace("openapi-surface/search/", "..\\outside/")
+            self.assertFalse(counted_combination_search(root, "combo-sample", escaped))
+            record.write_text(text.split("\n## Missing populations")[0], encoding="utf-8")
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+            record.write_text(text, encoding="utf-8")
+            census_path.unlink()
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+            census_path.write_text("key\tsource\tdocument\ncombo-sample\tregistered\tapi\n", encoding="utf-8")
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+            record.write_text(text.replace("| 0 |", "| 1 |"), encoding="utf-8")
+            self.assertTrue(counted_combination_search(root, "combo-sample", reason))
+            census_path.write_text("key\tsource\tdocument\ncombo-sample\tregistered\t\n", encoding="utf-8")
+            self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+
+
+class CompletePointerTraversalTests(unittest.TestCase):
+    def test_pointer_segments_and_invalid_neighbors_through_census(self) -> None:
+        target = {"type": "string"}
+        base = {
+            "items": target,
+            "additionalProperties": target,
+            "oneOf": [target],
+            "anyOf": [target],
+            "allOf": [target],
+        }
+        paths = [
+            ("items", False),
+            ("additionalProperties", False),
+            ("oneOf/0", False),
+            ("anyOf/0", False),
+            ("allOf/0", False),
+            ("oneOf/-1", True),
+            ("oneOf/1", True),
+            ("oneOf/no", True),
+            ("oneOf", True),
+            ("unsupported", True),
+            ("items/unknown", True),
+        ]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for index, (suffix, _unresolved) in enumerate(paths):
+                name = f"pointer-{index}"
+                document = {
+                    "openapi": "3.0.3",
+                    "info": {"title": name, "version": "1"},
+                    "paths": {},
+                    "components": {"schemas": {"Base": base, "Use": {"$ref": "#/components/schemas/Base/" + suffix}}},
+                }
+                write_json_fixture(root, name, document)
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.$ref:unresolved-nested-local",
+                "--json",
+            )
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            actual = {row["fixture"] for row in json.loads(completed.stdout)["rows"]}
+            self.assertEqual({f"pointer-{i}" for i, (_, unresolved) in enumerate(paths) if unresolved}, actual)
 
 
 if __name__ == "__main__":

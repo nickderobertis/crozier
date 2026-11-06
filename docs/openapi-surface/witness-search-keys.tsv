@@ -19,15 +19,18 @@ combo-allof-nullable-member	schema.allOf>schema.nullable	schemas.md	supported
 combo-allof-oneof-member	schema.allOf>schema.oneOf	schemas.md	supported
 combo-allof-ref-scalar-default	schema.default&schema.allOf>schema.$ref~>schema.type:primary-scalar	schemas.md	supported
 combo-allof-schema-example	schema.allOf&schema.example	schemas.md	supported
+combo-allof-unresolved-nested-pointer	schema.allOf>schema.$ref:unresolved-nested-local	schemas.md	supported
 combo-allof-with-required	schema.allOf&schema.required	schemas.md	supported
 combo-annotated-ref-property-example	schema.properties>schema.allOf:annotated-ref&schema.example	schemas.md	supported
 combo-annotated-ref-to-nullable-target	schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.nullable	schemas.md	supported
 combo-anyof-beside-discriminator	schema.anyOf&schema.discriminator	schemas.md	supported
 combo-anyof-beside-properties	schema.anyOf&schema.properties:non-empty	schemas.md	supported
 combo-anyof-schema-example	schema.anyOf&schema.example	schemas.md	supported
+combo-array-defs-pointer	schema.type:primary=array&schema.items>schema.$ref:defs-member	schemas.md	supported
 combo-array-item-anyof-titled-member	schema.items>schema.anyOf>schema.title	schemas.md	supported
 combo-array-item-oneof-titled-member	schema.items>schema.oneOf>schema.title	schemas.md	supported
 combo-array-of-nullable-unknown-item	schema.items>!schema.type&schema.nullable	schemas.md	supported
+combo-array-unresolved-nested-pointer	schema.type=array&schema.items>schema.$ref:unresolved-nested-local	schemas.md	supported
 combo-basic-auth-document-requirement	openapi.security&openapi.components>components.securitySchemes>securityScheme.scheme=basic	document-paths.md	supported
 combo-basic-auth-operation-requirement	operation.context:basic-auth-scheme&operation.security	document-paths.md	supported
 combo-body-property-named-as-header-param	operation.requestBody&operation.requestBody:property-named-as-header-parameter	document-paths.md	supported
@@ -48,7 +51,9 @@ combo-errors-shared-ref	operation.context:errors-shared-ref&operation.responses	
 combo-form-urlencoded-beside-json-body	operation.requestBody:form-urlencoded-media&operation.requestBody:json-media	document-paths.md	supported
 combo-form-urlencoded-body-with-params	operation.parameters&operation.requestBody:form-urlencoded-media	document-paths.md	supported
 combo-form-urlencoded-union-body	!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf	document-paths.md	supported
+combo-header-array-accepted-placements	parameter.in=header&parameter.schema>schema.type=array	parameters.md	supported
 combo-header-param-ref-string-enum	parameter.in=header&parameter.schema>schema.$ref~>schema.enum:string-valued	parameters.md	supported
+combo-header-string-default	parameter.in=header&parameter.schema>schema.default	parameters.md	supported
 combo-inline-body-read-only-property	requestBody.content>mediaType.schema>schema.properties>schema.readOnly	bodies-media.md	supported
 combo-map-beside-anyof	schema.additionalProperties&schema.anyOf	schemas.md	supported
 combo-map-beside-oneof	schema.additionalProperties&schema.oneOf	schemas.md	supported
@@ -56,6 +61,7 @@ combo-map-of-anyof	schema.additionalProperties>schema.anyOf	schemas.md	supported
 combo-map-of-discriminated-union	schema.additionalProperties>schema.oneOf:discriminated-union	schemas.md	supported
 combo-map-of-nullable-values	schema.additionalProperties>schema.nullable	schemas.md	supported
 combo-map-of-oneof	schema.additionalProperties>schema.oneOf	schemas.md	supported
+combo-map-unresolved-nested-pointer	schema.type=object&schema.additionalProperties>schema.$ref:unresolved-nested-local	schemas.md	supported
 combo-media-example-beside-component-example	mediaType.example&mediaType.schema>schema.$ref~>schema.example	bodies-media.md	supported
 combo-media-example-on-inline-allof-body	mediaType.example&mediaType.schema>schema.allOf	bodies-media.md	supported
 combo-media-example-on-ref-allof-body	mediaType.example&mediaType.schema>schema.$ref~>schema.allOf	bodies-media.md	supported
@@ -63,6 +69,7 @@ combo-media-example-on-ref-union-body	mediaType.example&mediaType.schema>schema.
 combo-multipart-beside-json-body	operation.requestBody:json-media&operation.requestBody:multipart-form-media	document-paths.md	supported
 combo-multipart-body-with-params	operation.parameters&operation.requestBody:multipart-form-media	document-paths.md	supported
 combo-no-content-beside-body-response	operation.context:response-204&operation.context:success-content	document-paths.md	supported
+combo-nullable-allof-parent-own-property	schema.type:primary=object&schema.allOf>schema.$ref~>schema.nullable	schemas.md	supported
 combo-nullable-map	schema.additionalProperties&schema.nullable	schemas.md	supported
 combo-oas31-grouped-response	operation.context:grouped-client&operation.context:oas-three-one&operation.context:success-content	document-paths.md	supported
 combo-oas31-root-response	operation.context:oas-three-one&operation.context:root-client&operation.context:success-content	document-paths.md	supported
@@ -78,8 +85,11 @@ combo-params-beside-inline-oneof-body	operation.parameters&operation.requestBody
 combo-path-param-ref-pattern	parameter.in=path&parameter.schema>schema.$ref~>schema.pattern	parameters.md	supported
 combo-path-param-ref-string-enum	parameter.in=path&parameter.schema>schema.$ref~>schema.enum:string-valued	parameters.md	supported
 combo-properties-beside-additional-properties	schema.additionalProperties&schema.properties:non-empty	schemas.md	supported
+combo-property-anyof-composed-sibling	schema.properties>schema.anyOf:several-non-null-members&schema.anyOf>schema.oneOf	schemas.md	supported
+combo-property-defs-pointer	schema.properties>schema.$ref:defs-member	schemas.md	supported
 combo-property-ref-to-nullable-target	schema.properties>schema.$ref~>schema.nullable	schemas.md	supported
 combo-property-ref-to-read-only-target	schema.properties>schema.$ref~>schema.readOnly	schemas.md	supported
+combo-property-unresolved-nested-pointer	schema.properties>schema.$ref:unresolved-nested-local	schemas.md	supported
 combo-query-param-anyof	parameter.in=query&parameter.schema>schema.anyOf	parameters.md	supported
 combo-query-param-array-default	parameter.in=query&parameter.schema>schema.default&schema.type:primary=array	parameters.md	supported
 combo-query-param-array-inline-enum-items	parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.enum:string-valued	parameters.md	supported
@@ -92,6 +102,9 @@ combo-query-param-ref-object	parameter.in=query&parameter.schema>schema.$ref~>sc
 combo-query-param-ref-string-enum	parameter.in=query&parameter.schema>schema.$ref~>schema.enum:string-valued	parameters.md	supported
 combo-range-beside-concrete-success	operation.context:success-content&operation.context:success-range	document-paths.md	supported
 combo-ref-body-read-only-property	requestBody.content>mediaType.schema>schema.$ref~>schema.properties>schema.readOnly	bodies-media.md	supported
+combo-request-unresolved-nested-pointer	operation.requestBody>requestBody.content>mediaType.schema>schema.$ref:unresolved-nested-local	document-paths.md	supported
+combo-required-query-array-enum-items	parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued	parameters.md	supported
+combo-response-unresolved-nested-pointer	response.content>mediaType.schema>schema.$ref:unresolved-nested-local	bodies-media.md	supported
 combo-root-oas30-binary-schema	operation.context:oas-three-zero&operation.context:root-client&operation.context:success-binary-schema	document-paths.md	supported
 combo-root-oas30-download	operation.context:oas-three-zero&operation.context:root-client&operation.context:success-download	document-paths.md	supported
 combo-streaming-method-name	operation.x-fern-sdk-method-name&operation.x-fern-streaming	document-paths.md	supported
@@ -103,7 +116,10 @@ combo-success-oneof	operation.context:success-content&operation.context:success-
 combo-success-oneof-nullable	operation.context:success-nullable&operation.context:success-oneof	document-paths.md	supported
 combo-success-statuses-mixed-media	operation.context:success-content&operation.context:success-statuses-mixed-media	document-paths.md	supported
 combo-success-text-beside-download	operation.context:success-download&operation.context:success-text	document-paths.md	supported
+combo-tag-only-operation-id	operation.operationId:tag-only&operation.tags	document-paths.md	supported
 combo-tagged-group-and-method-name	operation.tags&operation.x-fern-sdk-group-name&operation.x-fern-sdk-method-name	document-paths.md	supported
+combo-unrequired-tag-anyof-reference	schema.anyOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued	schemas.md	supported
+combo-unrequired-tag-oneof-reference	schema.oneOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued	schemas.md	supported
 discriminated-extension	schema.x-fern-discriminated	oas31-extensions.md	supported
 discriminated-variant-date-value-snippet	schema.format=date	schemas.md	supported
 discriminator-property-name-extension	schema.discriminator.x-fern-property-name	oas31-extensions.md	supported
@@ -128,6 +144,7 @@ literal-type-extension-ignored	schema.type=boolean	schemas.md	supported
 media-type-event-stream-binary-schema	operation.responses:event-stream-binary	bodies-media.md	supported
 media-type-event-stream-inline-const-union	operation.responses:event-stream-inline-const-union	bodies-media.md	supported
 media-type-event-stream-item-schema	operation.responses:event-stream-item-schema-ref	bodies-media.md	supported
+model-property-construct	schema.properties:construct-name	schemas.md	supported
 multipart-inline-object-part-json-encoded	requestBody.content	bodies-media.md	supported
 multipart-optional-enum-part-plain-field	operation.requestBody:optional-nullable-enum-multipart-part	bodies-media.md	supported
 multipart-part-encoding-charset-tuple	mediaType.encoding.contentType	bodies-media.md	supported
@@ -176,7 +193,6 @@ ref-with-nullable-sibling-made-optional	schema.$ref	schemas.md	supported
 reference-literal-single-quote-escaped	schema.const	schemas.md	supported
 remote-document-local-pointer-resolved-against-root	schema.$ref:cross-document	schemas.md	supported
 remote-ref-at-use-site-inlined	schema.$ref:cross-document	schemas.md	supported
-request-example-deprecated-property	mediaType.example:deprecated-property	bodies-media.md	supported
 required-nullable-query-scalar	parameter.schema:required-nullable-scalar-oas-three-zero	parameters.md	supported
 required-param-and-body-defaults-ignored	schema.default	parameters.md	supported
 required-query-array-nullable-union-items	parameter.schema	parameters.md	supported
@@ -186,6 +202,7 @@ schema-example-null	schema.example=null	schemas.md	supported
 schema-example-temporal-duplicate-element	schema.example:temporal-duplicate-element	schemas.md	supported
 schema-example-union-ref-sentinel	schema.example:union-ref-sentinel	schemas.md	supported
 schema-sdk-group-name	schema.x-fern-sdk-group-name:component	schemas.md	supported
+schema-type-name-component	schema.x-fern-type-name:component	schemas.md	supported
 schema-type-name-inline-property	schema.x-fern-type-name:inline-property	schemas.md	supported
 sdk-variable-parameter-extension	parameter.x-fern-sdk-variable	parameters.md	supported
 sdk-variables-extension	openapi.x-fern-sdk-variables	parameters.md	supported

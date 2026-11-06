@@ -1,12 +1,3 @@
-Fern CLI 5.163.1, python-sdk 5.41.3
-check exit: 0
-Warnings for generators.yml:
-::warning::Warnings for generators.yml:
-	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-All checks passed
-
-generate exit: 0
 Warnings for generators.yml:
 ::warning::Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.

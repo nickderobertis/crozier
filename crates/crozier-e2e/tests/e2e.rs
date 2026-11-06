@@ -2536,11 +2536,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     ),
 ];
 
-/// The naming tickets' (#350, #354, #357) authored probes are the case
-/// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
-/// byte-compares each against Fern's tree by default. A document Fern refused
-/// is no authored probe: it is an `evidence/376-*` probe of the registry class
-/// crozier refuses it under.
+/// The naming tickets' (#350, #354, #357) inputs use `376-<ticket>-<shape>`
+/// directories: admitted naming fixtures live under `handwritten`, and the
+/// open tag/identifier combination remains under `authored-probes`. Each
+/// directory's golden gate holds its certified tree. Refused inputs live in
+/// the registry class's `evidence/376-*` directory.
 const NAMING_TICKETS: [&str; 3] = ["376-350-", "376-354-", "376-357-"];
 
 /// Every naming input Fern refused: the registry class crozier refuses it under,
@@ -2565,15 +2565,24 @@ const NAMING_REFUSALS: [(&str, &str, &str); 3] = [
     ),
 ];
 
-/// How the ledger names the authored-probe tree `tree`: by its case directory,
-/// whichever copy of the case `tree` sits in.
+/// How the ledger names a naming tree, preserving its decided evidence tier
+/// even when a regression test compares a temporary copy.
 fn authored_golden(tree: &Path) -> String {
     let case = tree
         .parent()
         .and_then(Path::file_name)
         .map(|case| case.to_string_lossy().into_owned())
         .unwrap_or_default();
-    format!("{AUTHORED_PROBES_DIR}/{case}/fern-expected")
+    let base = if repo_root()
+        .join("docs/openapi-surface/handwritten")
+        .join(&case)
+        .is_dir()
+    {
+        "docs/openapi-surface/handwritten"
+    } else {
+        AUTHORED_PROBES_DIR
+    };
+    format!("{base}/{case}/fern-expected")
 }
 
 /// Where pinned Fern generated, crozier byte-matches its tree over `probe` in
@@ -2645,23 +2654,29 @@ fn authored_probe_refusal_failures(
 #[test]
 fn naming_authored_probes_match_pinned_fern() {
     let root = repo_root();
-    let mut cases: Vec<String> = std::fs::read_dir(root.join(AUTHORED_PROBES_DIR))
-        .expect("the authored probes")
-        .filter_map(Result::ok)
-        .filter(|entry| entry.path().is_dir())
-        .map(|entry| entry.file_name().to_string_lossy().into_owned())
-        .filter(|case| NAMING_TICKETS.iter().any(|ticket| case.starts_with(ticket)))
-        .collect();
+    let mut cases: Vec<(String, PathBuf)> =
+        [AUTHORED_PROBES_DIR, "docs/openapi-surface/handwritten"]
+            .into_iter()
+            .flat_map(|base| std::fs::read_dir(root.join(base)).expect("the naming cases"))
+            .filter_map(Result::ok)
+            .filter(|entry| entry.path().is_dir())
+            .map(|entry| {
+                (
+                    entry.file_name().to_string_lossy().into_owned(),
+                    entry.path(),
+                )
+            })
+            .filter(|(case, _)| NAMING_TICKETS.iter().any(|ticket| case.starts_with(ticket)))
+            .collect();
     cases.sort();
     for ticket in NAMING_TICKETS {
         assert!(
-            cases.iter().any(|case| case.starts_with(ticket)),
+            cases.iter().any(|(case, _)| case.starts_with(ticket)),
             "no authored probe for {ticket}"
         );
     }
     let mut failures = Vec::new();
-    for case in &cases {
-        let dir = root.join(AUTHORED_PROBES_DIR).join(case);
+    for (case, dir) in &cases {
         failures.extend(authored_probe_tree_failures(
             case,
             &dir.join("openapi.yml"),
@@ -2802,7 +2817,7 @@ fn inline_declared_type_name_collisions_refuse_and_identical_ones_merge() {
 fn canonical_type_name_hint_names_components_like_fern_spelling() {
     let root = repo_root();
     let probe = std::fs::read_to_string(
-        root.join(AUTHORED_PROBES_DIR)
+        root.join("docs/openapi-surface/handwritten")
             .join("376-350-declared-type-name/openapi.yml"),
     )
     .expect("the declared type-name probe");
@@ -2826,7 +2841,7 @@ fn canonical_type_name_hint_names_components_like_fern_spelling() {
             name,
             &spec,
             &root
-                .join(AUTHORED_PROBES_DIR)
+                .join("docs/openapi-surface/handwritten")
                 .join("376-350-declared-type-name/fern-expected"),
         ));
     }
@@ -8693,7 +8708,7 @@ components:
     // Its arm-level cover owes the measured pair, with the setting and without.
     fixture.assert_refused(
         "handwritten-config-gates.tsv",
-        "with setting `audiences=public` — run `just handwritten-reach`",
+        "with setting `audiences=public` — run `just census-repin`",
     );
     fixture.write_gates(&format!(
         "{HANDWRITTEN_FIXTURE}\tsample-golden\t{HANDWRITTEN_ARM}\t-\t1\t1\n\
@@ -8730,6 +8745,7 @@ fn handwritten_gate_refuses_a_malformed_or_orphaned_configuration_gate_ledger() 
         "handwritten-config-gates.tsv",
         "names no live arm-level cover of a fixture declaring that setting",
     );
+    fixture.assert_refused("handwritten-config-gates.tsv", "run `just census-repin`");
     fixture.write_gates(&format!("{row}{row}"));
     fixture.assert_refused("handwritten-config-gates.tsv", "rows are not sorted");
     fixture.write_gates("sample-fixture\tsample-golden\n");

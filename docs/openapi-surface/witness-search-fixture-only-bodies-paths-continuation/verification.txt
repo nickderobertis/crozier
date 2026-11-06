@@ -1,0 +1,77 @@
+Verification scope
+==================
+This is a proof/catalog change. No generator code, template, departure rule,
+or published SDK bytes change. No witness-search or census Python test changes.
+The existing in-process regression changes only its retained input path.
+
+Completed checks
+----------------
+- Native surface census: 980 selectors, 1,421,601 sites, 319 registered sources
+  (31 original, 288 corpus). All seven newly admitted source digests verified.
+- crozier compare against Nixtla's certified-pair cache tree: matched, 61 files,
+  five catalogued SDK identity-header departures, exit 0 (nixtla-compare.log).
+- cargo test -p crozier-e2e --test e2e nixtla_timegpt_matches_fern_output: passed.
+- cargo test -p crozier-e2e --test e2e overlay_goldens_match_fern_output: passed.
+- cargo test -p crozier-e2e --test e2e handwritten_fixtures_match_fern_goldens:
+  passed after correcting evidence cells to their existing exact grammar.
+- cargo test --test generation worked_example_goldens_match_in_process: passed.
+- cargo test -p crozier-e2e --test e2e departures_ledger_gate:
+  15 passed, one regeneration helper ignored.
+- cargo fmt --all -- --check: passed.
+
+Regeneration
+------------
+The native census's JSON feeds restate-coverage.py --snapshot-json --write.
+The source-identical saved 5d88a471fe004818ed8d541d8afc646214d62339 reach store
+is decoded with golden-reach.py's write_views and checked for stale functions.
+No instrumented build or run is added. Its report --keys
+request-example-deprecated-property --write adds the new row and reranks the
+existing rows through the writer. handwritten-fixtures.py report rejoins the
+same saved fixture executions: the arm inputs and code are unchanged, and the
+retired feature-only cover contributed no arm row.
+golden-reach.py arms --headline restates the arm summary and per-arm verdicts.
+scenario-proof-index.py write, witness-search-region-keys.py,
+golden-reach-search.py outstanding, witness-search-registries-index.py and
+restate-coverage.py --write regenerate their existing outputs.
+
+The compared-goldens inventory is regenerated with its existing update test.
+The departure ledger's existing ignored writer drops the retired location and
+records the five observed identity-header departures of the unchanged tree at
+its retained location. Every other departure row remains identical. The retained
+tree's whole-tree crozier compare and the in-process regression both pass.
+The added sites-table row has two reached handling sites (8/8 counter regions)
+under Nixtla's saved golden-only run. No retained authored input is a witness
+or cover in the census or hand-written ledgers.
+
+The full census suite (just test-surface-census) reported 800 passed, one
+skipped and two stale arm-summary failures against its earlier table snapshot.
+After golden-reach.py arms --headline regenerated that section, these exact
+RankedBacklogTests passed in a focused retry (2 passed):
+- test_every_unreached_arm_is_named_with_its_search_verdict
+- test_the_headline_totals_are_the_region_files_own
+The unaffected cases were not repeated. Final derived-file drift checks passed.
+Judged diff lint (just lint-llm-diff 04aeff07e) passed both batches; focused
+judged passes also passed over the final edited record and coverage documents.
+The full census run also reported cleanup warnings for an older shared pytest
+scratch directory; the focused retry used this dispatch's own temporary root
+and reported no warnings. All command logs are in the dispatch scratch directory.
+
+Earlier-state evidence, superseded
+---------------------------------
+The first Nixtla test failed because the binary had not yet been built; it
+passed after the normal build. Two setup attempts at crozier compare omitted
+the corpus's package/project naming settings; the comparison above uses both
+and passes. The first sites-table check rejected a literal pipe in its regex;
+its corrected literal uses the existing \x7c grammar and the check passes.
+The first authored-fixture gate rejected prose appended to its exact evidence
+cell grammar; the cells now use the required grammar and that gate passes.
+
+Shell backticks in a manager question accidentally invoked just
+departures-ledger. That broad invocation ran against an intermediate retirement
+state, reported failures, and was terminated using only its own identified
+process PIDs. It is not passing evidence. The manager approved the scoped
+writer and checks above instead; the normal broad recipe was not repeated.
+
+GitHub: zero code_search, zero core, zero raw fetch requests; zero guard waits
+and zero response-cache hits. No request outside the guard. Suppressions added,
+moved or rewritten, or standing over changed lines: none.

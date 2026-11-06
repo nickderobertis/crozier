@@ -59,7 +59,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any, NamedTuple, NoReturn, TypeAlias
 from urllib.parse import unquote
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
@@ -128,6 +128,10 @@ class _Line:
     index: int
     indent: int
     text: str
+
+
+class _YamlTimestamp(str):
+    """A plain timestamp-like scalar, preserving spelling and quoted-string distinction."""
 
 
 class _YamlReader:
@@ -746,6 +750,8 @@ class _YamlReader:
             return int(text)
         if _FLOAT.match(text) or _EXP.match(text):
             return float(text)
+        if re.fullmatch(r"\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}.*)?", text):
+            return _YamlTimestamp(text)
         return text
 
 
@@ -1198,6 +1204,15 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "schema.$ref:unresolved-nested-local": "one per local component-schema reference with a tail whose complete pointer does not resolve",
+    "schema.$ref:defs-member": "one per local component-schema reference through a $defs member whose complete pointer resolves",
+    "operation.operationId:tag-only": "one per operation whose identifier is its first tag followed by underscores, with no method name",
+    "schema.x-fern-type-name:component": "one per component schema carrying a declared type name, including a blank override",
+    "schema.properties:construct-name": "one per object schema declaring a property literally named construct, which collides with the model API",
+    "schema.$ref:properties-copy": "one per schema reference containing properties whose complete local component pointer resolves",
+    "schema.oneOf:properties-copy-type-variant": "one per union containing a properties-copy reference to an object with a required string type tag",
+    "schema.oneOf:properties-copy-inferred-type": "one per union containing properties-copy references with distinct required string type tags and no explicit discriminator",
+    "parameter.example:optional-nontemporal-yaml-timestamp": "one per optional string query parameter with a plain YAML timestamp example and no date or date-time format",
     "operation.operationId:camel-case-tag-prefix": "one per operation with an upper-camel multiword tag and lower-camel dotted operationId starting with that tag, ignoring case",
     "operation.requestBody:optional-nullable-enum-multipart-part": "one per operation with an optional, defaulted multipart part whose anyOf is a string-enum component reference beside null",
     "operation.requestBody:titled-array-component-oas-three-one": "one per OpenAPI 3.1 operation whose JSON body references a titled, described array component",
@@ -1827,6 +1842,12 @@ PREDICATES = {
 # Predicates that read document context rather than one object-model node.
 # GrammarContractTests independently reconciles this partition and its prose.
 DOCUMENT_COMPARING_PREDICATES = (
+    "schema.$ref:unresolved-nested-local",
+    "schema.$ref:defs-member",
+    "schema.x-fern-type-name:component",
+    "schema.$ref:properties-copy",
+    "schema.oneOf:properties-copy-type-variant",
+    "schema.oneOf:properties-copy-inferred-type",
     "operation.requestBody:optional-nullable-enum-multipart-part",
     "operation.requestBody:titled-array-component-oas-three-one",
     "operation.operationId:duplicate",
@@ -2079,7 +2100,7 @@ CONJUNCTIONS = {
 # * `residual` — the sentence the composed selector is published with. Only the
 #   sentence is written here; the spelling is composed by `residual_selector`.
 #
-# `BLIND_FUNCTION_DIGESTS` is what ties this reading to the code it reads. See
+# `PORT_PINS` is what ties this reading to the code it reads. See
 # `tools/surface-census/tests/surface_census_test.py`, which recomputes them.
 
 
@@ -2599,31 +2620,493 @@ CASES: dict[str, tuple[Case, ...]] = {
 }
 
 
-# What ties the table above to the code it is a reading of.
-#
-# The table is a reading of six functions of `src/ir.rs`, and until this was
-# recorded nothing in the tree failed when one of those functions grew a branch,
-# lost one, or had one edited: an enumeration whose honesty rests on nobody
-# having touched the code is the failure `docs/openapi-surface-coverage.md`
-# exists to avoid. Each value below is the SHA-256 (first 16 hex digits) of one
-# function's body with blank lines and whole-line `//` comments dropped and each
-# remaining line's internal whitespace collapsed, which is a normalization
-# `tools/surface-census/tests/surface_census_test.py` recomputes and compares.
-#
-# It catches all three changes the coverage document names — a branch added,
-# removed or edited — because any of them moves the body. What it deliberately
-# does **not** do is say *which* case moved, and it fires on a change that moves
-# no branch at all: a renamed local, a reordered `&&`, a trailing comment. That
-# is over-reporting rather than under-reporting, and re-deriving the table is
-# what clears it. The coverage document states the limit.
-BLIND_FUNCTION_DIGESTS: dict[str, str] = {
-    "resolve_schema_pointer": "39ffff07e088a992",
-    "nested_array_element": "b1ae386423853dff",
-    "hoist_union_variant": "9aa75d1d1442af43",
-    "prop_type_ref": "7d0df0c66b41cbe6",
-    "ref_to_class": "45d0e7ca7b0473f4",
-    "path_group": "3730d67e0c2f068d",
-}
+PortName: TypeAlias = str
+PythonPort: TypeAlias = str
+RustFunction: TypeAlias = str
+TokenDigest: TypeAlias = str
+
+
+class PortPin(NamedTuple):
+    name: PortName
+    port: PythonPort
+    rust: RustFunction
+    confirm: str
+    digest: TokenDigest
+
+    def report(self) -> str:
+        return (
+            f"{self.port} mirrors {self.rust}: confirm {self.confirm}; "
+            f"after re-reading, run `just census-repin --confirm-port {self.name}`"
+        )
+
+
+# Token digests guard readings without a differential test against real Rust.
+# A local rename still asks for a rereading; layout and comments do not.
+# `CASES` records retain the ordered blind-function case readings above.
+PORT_PINS = (
+    PortPin(
+        "CASES.resolve_schema_pointer",
+        "CASES",
+        "src/ir.rs::resolve_schema_pointer",
+        "that the ordered resolve_schema_pointer case reading still covers the same gates, arms and fallthroughs",
+        "e057c569f4ba5f9c",
+    ),
+    PortPin(
+        "CASES.nested_array_element",
+        "CASES",
+        "src/ir.rs::nested_array_element",
+        "that the ordered nested_array_element case reading still covers the same gates, arms and fallthroughs",
+        "147e1c1d1e99a74a",
+    ),
+    PortPin(
+        "CASES.hoist_union_variant",
+        "CASES",
+        "src/ir.rs::hoist_union_variant",
+        "that the ordered hoist_union_variant case reading still covers the same gates, arms and fallthroughs",
+        "998bfae7abc02baf",
+    ),
+    PortPin(
+        "CASES.prop_type_ref",
+        "CASES",
+        "src/ir.rs::prop_type_ref",
+        "that the ordered prop_type_ref case reading still covers the same gates, arms and fallthroughs",
+        "b22264803a67c3f9",
+    ),
+    PortPin(
+        "CASES.ref_to_class",
+        "CASES",
+        "src/ir.rs::ref_to_class",
+        "that the ordered ref_to_class case reading still covers the same gates, arms and fallthroughs",
+        "bde874dc34457e35",
+    ),
+    PortPin(
+        "CASES.path_group",
+        "CASES",
+        "src/ir.rs::path_group",
+        "that the ordered path_group case reading still covers the same gates, arms and fallthroughs",
+        "e26839016a4db99f",
+    ),
+    PortPin(
+        "enum_words",
+        "enum_member_predicates",
+        "src/naming.rs::enum_words",
+        "that prefix, letter-run and alphanumeric-join selector traces still correspond to the same normalization arms",
+        "8a75b286eff0f4f0",
+    ),
+    PortPin(
+        "numeric_enum_identifier",
+        "_numeric_range",
+        "src/naming.rs::numeric_enum_identifier",
+        "that numeric-small, numeric-tens, numeric-hundreds and numeric-thousands still describe the Rust arithmetic ranges",
+        "580da0ecde6ca234",
+    ),
+    PortPin(
+        "uuid_enum_identifier",
+        "enum_member_predicates",
+        "src/naming.rs::uuid_enum_identifier",
+        "that the UUID digit-word predicate still selects the single-digit leading-run arm",
+        "4de528fdaf5cfe40",
+    ),
+    PortPin(
+        "class_name",
+        "Census.class_name_sanitizations",
+        "src/naming.rs::class_name",
+        "that the schema-name predicate still applies the same pre-sanitization Pascal-casing decision",
+        "2599e090f3e05b7d",
+    ),
+    PortPin(
+        "finalize_enum_ident",
+        "enum_member_predicates",
+        "src/naming.rs::finalize_enum_ident",
+        "that empty, digit-leading and reserved enum identifiers still select the same predicates",
+        "25a769dbf17935f1",
+    ),
+    PortPin(
+        "endpoint_method_name",
+        "_id_method_name",
+        "src/ir.rs::endpoint_method_name",
+        "that operation IDs still follow the same extension, tag and route precedence",
+        "e4020b03e196e627",
+    ),
+    PortPin(
+        "tag_spelling_id",
+        "_id_method_name",
+        "src/ir.rs::tag_spelling_id",
+        "that a tag-only ID still loses exactly one trailing underscore",
+        "89525d18fd9aaac9",
+    ),
+    PortPin(
+        "operation_id_matches_tag_spelling",
+        "_matches_tag_spelling",
+        "src/ir.rs::operation_id_matches_tag_spelling",
+        "that operation IDs matching tag spellings still take the same branch",
+        "ec74d1fdd9ead057",
+    ),
+    PortPin(
+        "dotted_id_names_a_group",
+        "_id_method_name",
+        "src/ir.rs::dotted_id_names_a_group",
+        "that dotted IDs still distinguish groups from camel-case names",
+        "bbe94aa052ec9e66",
+    ),
+    PortPin(
+        "dotted_tag_group_method",
+        "_dotted_tag_group_method",
+        "src/ir.rs::dotted_tag_group_method",
+        "that a dotted group matching the tag still yields its method suffix",
+        "830dabc86f414891",
+    ),
+    PortPin(
+        "method_from_dotted_id",
+        "_id_method_name",
+        "src/ir.rs::method_from_dotted_id",
+        "that dotted IDs still strip only a matching group",
+        "e79e67e3e2ceee79",
+    ),
+    PortPin(
+        "method_from_groupless_id",
+        "_groupless_method",
+        "src/ir.rs::method_from_groupless_id",
+        "that groupless IDs still select the same tag placement and reserved-name suffix",
+        "38db49ee61b6aa18",
+    ),
+    PortPin(
+        "tag_location",
+        "_tag_location",
+        "src/ir.rs::tag_location",
+        "that matching and prefixed tag tokens still select root, whole or stripped placement",
+        "8ca51bb9e93041d6",
+    ),
+    PortPin(
+        "camel_join",
+        "_camel_join",
+        "src/ir.rs::camel_join",
+        "that tag tokens still join with only subsequent initials capitalized",
+        "963cfcff43023ba0",
+    ),
+    PortPin(
+        "id_spells_tag",
+        "_tag_location",
+        "src/ir.rs::id_spells_tag",
+        "that the same token sequences still identify an ID spelling its tag",
+        "d9ed0a6ca1a087b0",
+    ),
+    PortPin(
+        "fastapi_endpoint_name",
+        "_fastapi_endpoint_name",
+        "src/ir.rs::fastapi_endpoint_name",
+        "that route and HTTP-method suffixes are still stripped under the same conditions",
+        "ef03c70b83afea6b",
+    ),
+    PortPin(
+        "method_from_grouped_id",
+        "_id_method_name",
+        "src/ir.rs::method_from_grouped_id",
+        "that underscore-grouped IDs still choose the same tag and route stripping branches",
+        "3027ee8de92dbe51",
+    ),
+    PortPin(
+        "group_prefix_is_tag",
+        "_group_prefix_is_tag",
+        "src/ir.rs::group_prefix_is_tag",
+        "that a grouped prefix still matches the tag token sequence",
+        "6a771051aac40421",
+    ),
+    PortPin(
+        "first_segment_is_tag",
+        "_id_method_name",
+        "src/ir.rs::first_segment_is_tag",
+        "that a multi-segment ID still strips a first segment matching the tag",
+        "d96d54f3eee37b47",
+    ),
+    PortPin(
+        "fern_location_tokens",
+        "_fern_location_tokens",
+        "src/ir.rs::fern_location_tokens",
+        "that location tokens still use the same camel-case and separator rules",
+        "f2c752a1a7530ed5",
+    ),
+    PortPin(
+        "is_fern_camel_case",
+        "_fern_camel",
+        "src/ir.rs::is_fern_camel_case",
+        "that the same ASCII byte patterns still qualify as camel case",
+        "807ca402eda38e91",
+    ),
+    PortPin(
+        "method_after_tag_tokens",
+        "_id_method_name",
+        "src/ir.rs::method_after_tag_tokens",
+        "that a matching multiword tag prefix still leaves the same method tokens",
+        "cbf29bdbfab69191",
+    ),
+    PortPin(
+        "method_after_first_segment",
+        "_id_method_name",
+        "src/ir.rs::method_after_first_segment",
+        "that stripping the first ID segment still leaves the same method",
+        "735c06fd79994ca9",
+    ),
+    PortPin(
+        "alnum_lower",
+        "_alnum_lower",
+        "src/ir.rs::alnum_lower",
+        "that tag comparisons still discard non-ASCII alphanumerics",
+        "992e3b131e426b5b",
+    ),
+    PortPin(
+        "first_tag",
+        "_first_tag",
+        "src/ir.rs::first_tag",
+        "that tag inference still takes the first nonblank trimmed tag",
+        "f12608a12d02e7a4",
+    ),
+    PortPin(
+        "sdk_group_name",
+        "sdk_group_segments",
+        "src/openapi.rs::Operation::sdk_group_name",
+        "that canonical extension precedence and blank group segment filtering remain the same",
+        "129c06786539d81b",
+    ),
+    PortPin(
+        "sdk_method_name",
+        "sdk_method_named",
+        "src/openapi.rs::Operation::sdk_method_name",
+        "that canonical extension precedence and blank method names remain the same",
+        "3a76e122a2296ac1",
+    ),
+    PortPin(
+        "de_sdk_method_name",
+        "sdk_method_named",
+        "src/openapi.rs::de_sdk_method_name",
+        "that a string sequence still joins into a comma-separated method name",
+        "cc12749e4f5fadc3",
+    ),
+    PortPin(
+        "inferred_discriminant_property",
+        "_candidate_tag_values",
+        "src/ir.rs::inferred_discriminant_property",
+        "that tag inference still applies the same required-property exceptions for referenced and inline members",
+        "542f37ec0b505cab",
+    ),
+    PortPin(
+        "untyped_enum_tag",
+        "untyped_enum_tag",
+        "src/ir.rs::untyped_enum_tag",
+        "that a declared enum without a string type still selects the untyped-tag branch",
+        "d65cd682ae25aba7",
+    ),
+    PortPin(
+        "untyped_const_tag",
+        "untyped_const_tag",
+        "src/ir.rs::untyped_const_tag",
+        "that a const without an enum or string type still selects the untyped-tag branch",
+        "db7feed87266b54f",
+    ),
+    PortPin(
+        "inferred_union_discriminant_property",
+        "_inferred_union_discriminant_property",
+        "src/ir.rs::inferred_union_discriminant_property",
+        "that fallback type tags still require the same inline and required-property conditions",
+        "4ba2d77ee4b247bb",
+    ),
+    PortPin(
+        "same_primitive_union_last",
+        "Census.same_primitive_unions",
+        "src/ir.rs::same_primitive_union_last",
+        "that only multi-member unions converting to one primitive still qualify",
+        "2dd5ebc5cc7a1653",
+    ),
+    PortPin(
+        "base_type_ref",
+        "Census.same_primitive_unions",
+        "src/ir.rs::base_type_ref",
+        "that scalar union members still convert to the same primitive kinds",
+        "2ed5d7c0ead13fa7",
+    ),
+    PortPin(
+        "last_composed_variant",
+        "_last_composed_variant",
+        "src/ir.rs::last_composed_variant",
+        "that composition descent still selects the last alternative",
+        "2ae1f6cddebc7a6e",
+    ),
+    PortPin(
+        "is_composed_member",
+        "_last_composed_variant",
+        "src/ir.rs::is_composed_member",
+        "that maps and simple nullable members still stop composition descent",
+        "a2526c1a6f2a6961",
+    ),
+    PortPin(
+        "is_map",
+        "_is_map",
+        "src/ir.rs::is_map",
+        "that additionalProperties still distinguishes maps from object members",
+        "491cd765372af526",
+    ),
+    PortPin(
+        "simple_nullable_member",
+        "_simple_nullable_member",
+        "src/ir.rs::simple_nullable_member",
+        "that exactly one null and one non-null member still form a nullable pair",
+        "0da4311b71610f30",
+    ),
+    PortPin(
+        "number_prim",
+        "Census.same_primitive_unions",
+        "src/ir.rs::number_prim",
+        "that integer number formats still map to the same integer kinds",
+        "65b0900561ee56f5",
+    ),
+    PortPin(
+        "int_prim",
+        "Census.same_primitive_unions",
+        "src/ir.rs::int_prim",
+        "that int64 and uint64 still select the long integer kind",
+        "db6c0167d20fb4fa",
+    ),
+    PortPin(
+        "bool_literal",
+        "Census.same_primitive_unions",
+        "src/openapi.rs::bool_literal",
+        "that canonical Boolean literal overrides still take precedence",
+        "b2831dcdfb9bcb98",
+    ),
+    PortPin(
+        "has_datetime_type_override",
+        "Census.same_primitive_unions",
+        "src/openapi.rs::has_datetime_type_override",
+        "that canonical datetime overrides still take precedence over the legacy spelling and string format",
+        "725af43232ef8a05",
+    ),
+    PortPin(
+        "LiteralTypeOverride::from",
+        "Census.same_primitive_unions",
+        "src/openapi.rs::<LiteralTypeOverride as From>::from",
+        "that the same literal and datetime override spellings still select primitive kinds",
+        "d560f3ebb3112f41",
+    ),
+    PortPin(
+        "is_closed_empty_object",
+        "is_closed_empty_object",
+        "src/ir.rs::is_closed_empty_object",
+        "that explicit empty object schemas still meet the same closure conditions",
+        "f393f2bc0afc90f1",
+    ),
+    PortPin(
+        "is_object_type",
+        "is_closed_empty_object",
+        "src/ir.rs::is_object_type",
+        "that explicit object types and typeless additionalProperties still qualify as object schemas",
+        "7a2f4f9f7273fbc3",
+    ),
+    PortPin(
+        "success_response_key",
+        "Census.success_entry",
+        "src/ir.rs::success_response_key",
+        "that contentful, dispatchable and default responses retain their precedence",
+        "f610b05f0c880e1a",
+    ),
+    PortPin(
+        "success_response_with_content",
+        "Census.success_entry",
+        "src/ir.rs::success_response_with_content",
+        "that a dispatchable response with content still precedes a contentless success",
+        "cfe1a9687b41587f",
+    ),
+    PortPin(
+        "has_dispatchable_media",
+        "Census.success_entry",
+        "src/ir.rs::has_dispatchable_media",
+        "that empty content, bare JSON-like media and valid type/subtype media still qualify",
+        "49d0ef178e5cca5a",
+    ),
+    PortPin(
+        "fern_success_responses",
+        "Census.success_entry",
+        "src/ir.rs::fern_success_responses",
+        "that success responses are still tried in the declared status order",
+        "795b90593c19b03d",
+    ),
+    PortPin(
+        "fern_default_response",
+        "Census.success_entry",
+        "src/ir.rs::fern_default_response",
+        "that default is still considered only when no read success status is declared",
+        "a5999e2828235e23",
+    ),
+    PortPin(
+        "hoist_param_enum",
+        "Census.parameter_shape_predicates",
+        "src/ir.rs::hoist_param_enum",
+        "that parameter item unions still satisfy the same hoisting conditions",
+        "f4713f3e306e34ec",
+    ),
+    PortPin(
+        "global_headers",
+        "Census.parameter_shape_predicates",
+        "src/ir.rs::global_headers",
+        "that defaulted string headers still promote only when declared on a subset of operations",
+        "a657793b55d46596",
+    ),
+    PortPin(
+        "is_transport_managed_header",
+        "UNPROMOTED_HEADERS",
+        "src/ir.rs::is_transport_managed_header",
+        "that transport-owned header names still compare case-insensitively",
+        "015cd7d274dcf26e",
+    ),
+    PortPin(
+        "is_transport_managed_parameter",
+        "UNPROMOTED_HEADERS",
+        "src/ir.rs::is_transport_managed_parameter",
+        "that transport-owned parameter names still suppress promotion",
+        "f4d3a7a438bea6cd",
+    ),
+    PortPin(
+        "is_promotion_reserved_header",
+        "UNPROMOTED_HEADERS",
+        "src/ir.rs::is_promotion_reserved_header",
+        "that Authorization still suppresses header promotion",
+        "2a1d1a193a46c0d9",
+    ),
+    PortPin(
+        "is_auth_managed_header",
+        "Census.__init__",
+        "src/ir.rs::is_auth_managed_header",
+        "that apiKey header schemes still suppress promotion by wire name",
+        "bcb49ca94e6e4d7d",
+    ),
+    PortPin(
+        "own_deprecated",
+        "deprecated_member",
+        "src/ir.rs::own_deprecated",
+        "that deprecated properties still exclude references and allOf schemas",
+        "57afd8bb4c10e57f",
+    ),
+    PortPin(
+        "read_datetime",
+        "fern_reads_date_time",
+        "src/emit.rs::read_datetime",
+        "that rewritten date-time strings still accept the same date, time and zone forms",
+        "6550989f43311959",
+    ),
+    PortPin(
+        "refusal-inferred_discriminant",
+        "Census.tagged_union_members",
+        "src/document_refusals/type_not_defined.rs::inferred_discriminant",
+        "that common singleton string enum or const properties still identify component union members",
+        "beddb6a421208501",
+    ),
+    PortPin(
+        "refusal-body_member_union",
+        "Census.body_and_response_predicates",
+        "src/document_refusals/type_not_defined.rs::body_member_union",
+        "that GET bodies are still excluded from the union-member refusal reading",
+        "f241ea1396dee606",
+    ),
+)
 
 
 # The two descent operators, and the only place either spelling is written.
@@ -3618,6 +4101,108 @@ COMBINATIONS += (
     ),
 )
 
+COMBINATIONS += (
+    Combination(
+        "combo-header-array-accepted-placements",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.type=array",
+        "one per declaring anchor of combo-header-array-accepted-placements",
+    ),
+    Combination(
+        "combo-header-string-default",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.default",
+        "one per declaring anchor of combo-header-string-default",
+    ),
+    Combination(
+        "combo-property-defs-pointer",
+        "schemas.md",
+        "schema.properties>schema.$ref:defs-member",
+        "one per declaring anchor of combo-property-defs-pointer",
+    ),
+    Combination(
+        "combo-property-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.properties>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-property-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-array-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.type=array&schema.items>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-array-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-map-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.type=object&schema.additionalProperties>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-map-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-allof-unresolved-nested-pointer",
+        "schemas.md",
+        "schema.allOf>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-allof-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-request-unresolved-nested-pointer",
+        "document-paths.md",
+        "operation.requestBody>requestBody.content>mediaType.schema>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-request-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-response-unresolved-nested-pointer",
+        "bodies-media.md",
+        "response.content>mediaType.schema>schema.$ref:unresolved-nested-local",
+        "one per declaring anchor of combo-response-unresolved-nested-pointer",
+    ),
+    Combination(
+        "combo-tag-only-operation-id",
+        "document-paths.md",
+        "operation.operationId:tag-only&operation.tags",
+        "one per declaring anchor of combo-tag-only-operation-id",
+    ),
+    Combination(
+        "combo-nullable-allof-parent-own-property",
+        "schemas.md",
+        "schema.type:primary=object&schema.allOf>schema.$ref~>schema.nullable",
+        "one per declaring anchor of combo-nullable-allof-parent-own-property",
+    ),
+    Combination(
+        "combo-property-anyof-composed-sibling",
+        "schemas.md",
+        "schema.properties>schema.anyOf:several-non-null-members&schema.anyOf>schema.oneOf",
+        "one per declaring anchor of combo-property-anyof-composed-sibling",
+    ),
+    Combination(
+        "combo-required-query-array-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.required&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued",
+        "one per declaring anchor of combo-required-query-array-enum-items",
+    ),
+    Combination(
+        "combo-unrequired-tag-oneof-reference",
+        "schemas.md",
+        "schema.oneOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued",
+        "one per declaring anchor of combo-unrequired-tag-oneof-reference",
+    ),
+    Combination(
+        "combo-unrequired-tag-anyof-reference",
+        "schemas.md",
+        "schema.anyOf>schema.$ref~>schema.properties>!schema.discriminator&schema.enum:string-valued",
+        "one per declaring anchor of combo-unrequired-tag-anyof-reference",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-array-defs-pointer",
+        "schemas.md",
+        "schema.type:primary=array&schema.items>schema.$ref:defs-member",
+        "one per declaring anchor of combo-array-defs-pointer",
+    ),
+)
+
 CONJUNCTIONS.update({combination.selector: combination.counts for combination in COMBINATIONS})
 
 for _spelling in CONJUNCTIONS:
@@ -3730,7 +4315,7 @@ def split_words(text: str) -> list[str]:
     current = ""
     chars = list(text)
     for index, char in enumerate(chars):
-        if char in "_- .:":
+        if char in "_- .:/+":
             if current:
                 words.append(current)
                 current = ""
@@ -3966,28 +4551,9 @@ _ENUM_DEBURR_EXCEPTIONS = dict(
 )
 
 # The enum-member and reserved-method predicates mirror these Rust functions. The offline tier
-# recomputes each normalized-body digest and the DEBURRED_LATIN table digest,
-# so an upstream branch or mapping edit requires a fresh case reading here.
-NAMING_PORT_DIGESTS = {
-    "sanitize_identifier": "9da64b4ddcfd04c9",
-    "digit_word": "4d705bf2bae3d676",
-    "enum_words": "c736aefc54fe1755",
-    "whole_value_enum_words": "baffe48e924ec4a3",
-    "numeric_enum_identifier": "34ad46d37aed1b81",
-    "finalize_enum_ident": "2c40bdccda3bcf5f",
-    "uuid_enum_identifier": "17b81a4e21fde4fe",
-    "enum_identifier": "796740d7c0aea104",
-    "is_uuid": "91c78d64735a36ee",
-    "deburr": "fe8fc4199682035d",
-    "deburr_letter": "f5488da97d3f0dde",
-    "collapse_digit_boundaries": "24c31560b089ab63",
-    "split_words": "225b4ae99e3ce99a",
-    "to_snake_case": "3c9366b3588a08c6",
-    "class_name": "45a755959a66dc41",
-    "spelled_leading_number": "3ca496ba58796f20",
-    "DEBURRED_LATIN": "0a6e4bed130d170a",
-    "is_reserved_method": "6c7d2d1e00b4d9a6",
-}
+# compares these ports with the compiled Rust naming source, including the
+# deburr table. Untested branch-trace and pre-sanitization readings retain pins;
+# equal naming output alone does not compare those readings.
 
 
 _WHOLE_VALUE_ENUM_WORDS = {
@@ -4193,32 +4759,9 @@ def numeric_enum_name(value: int) -> str:
 # suffix or a template before the name reaches `sanitize_identifier`, so whether
 # the prefix fires is decided by which of its arms the id takes. The arms are
 # ported below, each named for the Rust function it mirrors; the offline tier
-# recomputes each one's normalized-body digest (`METHOD_NAME_PORT_DIGESTS`), so a
+# recomputes each one's token digest (`PORT_PINS`), so a
 # branch edited in `src/ir.rs` fails until it is read again here.
 
-METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "dffd1341d0b7e6d4",
-    "tag_spelling_id": "f1c4b306fa5fbeda",
-    "operation_id_matches_tag_spelling": "f272f8b33d154d30",
-    "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
-    "dotted_tag_group_method": "4f8b8852f85ba4ee",
-    "method_from_dotted_id": "9b5cc4e4625b43d2",
-    "method_from_groupless_id": "9705da23999b970f",
-    "tag_location": "64147a5ed95cff9e",
-    "camel_join": "26c8731a5875e8e3",
-    "id_spells_tag": "ff9848048b239c23",
-    "fastapi_endpoint_name": "00ebd39bf3393e58",
-    "method_from_grouped_id": "9a11a75c28c3f3a0",
-    "group_prefix_is_tag": "78ed5d765ae5f67f",
-    "first_segment_is_tag": "bf92317b81b95eff",
-    "fern_location_tokens": "e26dd8f74b3d5c03",
-    "is_fern_camel_case": "7d911765a9cc2c34",
-    "method_after_tag_tokens": "af8a264218349d19",
-    "method_after_first_segment": "308f21e2613e97e9",
-    "alnum_lower": "8cd0862ada69b572",
-    "module_from_grouped_id": "bf86b1b040ed87b3",
-    "first_tag": "3b8dc95ae8810543",
-}
 
 _ASCII_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -4258,11 +4801,6 @@ def _matches_tag_spelling(text: str, tag: str) -> bool:
 
 def _alnum_lower(text: str) -> str:
     return "".join(char.lower() for char in text if _is_ascii_alnum(char))
-
-
-def _module_from_grouped_id(text: str) -> str:
-    prefix = text.rsplit("_", 1)[0] if "_" in text else text
-    return to_snake_case(prefix) if "_" in prefix else prefix.lower()
 
 
 def _group_prefix_is_tag(text: str, tag: str) -> bool:
@@ -4372,13 +4910,8 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
 
 # `sdk_group_segments` and `sdk_method_named` port `Operation` accessors, and the
 # method-name deserializer, of `src/openapi.rs`; NamingMirrorTests recomputes each
-# one's normalized-body digest, so an accessor edited there fails until its port is
+# one's token digest, so an accessor edited there fails until its port is
 # read again here.
-EXTENSION_ACCESSOR_PORT_DIGESTS = {
-    ("src/openapi.rs", "sdk_group_name"): "4c285625fb40715e",
-    ("src/openapi.rs", "sdk_method_name"): "05643ea13596fa87",
-    ("src/openapi.rs", "de_sdk_method_name"): "3cee342419e818ec",
-}
 
 
 def sdk_group_segments(operation: dict[Any, Any]) -> list[str]:
@@ -4960,6 +5493,80 @@ def _composition_members(value: Any) -> list[Any] | None:
     return [member for _, member in sorted(indexed, key=lambda pair: pair[0])]
 
 
+def local_schema_pointer_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Resolve a complete local component-schema pointer."""
+    if not isinstance(reference, str) or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+        return None
+    parts = [
+        part.replace("~1", "/").replace("~0", "~") for part in reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")
+    ]
+    node: Any = schemas.get(parts[0])
+    index = 1
+    while index < len(parts) and isinstance(node, dict):
+        field = parts[index]
+        match field:
+            case "properties" | "$defs":
+                if index + 1 >= len(parts):
+                    return None
+                entries = node.get(field)
+                node = entries.get(parts[index + 1]) if isinstance(entries, dict) else None
+                index += 2
+            case "items" | "additionalProperties":
+                node = node.get(field)
+                index += 1
+            case "oneOf" | "anyOf" | "allOf":
+                if index + 1 >= len(parts) or not _USIZE.fullmatch(parts[index + 1]):
+                    return None
+                members = node.get(field)
+                member = int(parts[index + 1])
+                node = members[member] if isinstance(members, list) and member < len(members) else None
+                index += 2
+            case _:
+                return None
+    return node if index == len(parts) and isinstance(node, dict) else None
+
+
+def properties_copy_target(reference: Any, schemas: dict[Any, Any]) -> dict[Any, Any] | None:
+    """Only references whose spelling selects copying, rather than naming."""
+    return (
+        local_schema_pointer_target(reference, schemas)
+        if isinstance(reference, str) and "properties" in reference
+        else None
+    )
+
+
+def properties_copy_union_predicates(node: dict[Any, Any], schemas: dict[Any, Any]) -> list[str]:
+    """Count copied union variants and distinct inferred type tags separately."""
+    members = union_members(node)
+    if not members:
+        return []
+    targets = [
+        properties_copy_target(member.get("$ref"), schemas) if isinstance(member, dict) else None for member in members
+    ]
+    if not any(target is not None for target in targets):
+        return []
+    targets = [target if target is not None else member for target, member in zip(targets, members, strict=True)]
+    values = []
+    for target in targets:
+        if not isinstance(target, dict) or "type" not in required_names(target):
+            continue
+        properties = target.get("properties")
+        field = properties.get("type") if isinstance(properties, dict) else None
+        if isinstance(field, dict) and primary_type(field.get("type")) == "string":
+            value = discriminant_value(field)
+            if value is not None:
+                values.append(value)
+    found = ["schema.oneOf:properties-copy-type-variant"] if values else []
+    if (
+        "discriminator" not in node
+        and not _undiscriminated(node)
+        and len(values) == len(members)
+        and len(set(values)) == len(values)
+    ):
+        found.append("schema.oneOf:properties-copy-inferred-type")
+    return found
+
+
 def pointer_walk_predicates(reference: str, schemas: dict[Any, Any]) -> list[str]:
     """The arms `resolve_schema_pointer` enters walking this `$ref` through this document.
 
@@ -5125,8 +5732,8 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # neither necessary nor sufficient for any of the three arms these predicates
 # name.
 #
-# Three union rules are ported with a normalized-body digest of the Rust each
-# reads, recomputed by the offline tier as `METHOD_NAME_PORT_DIGESTS` is, so an
+# Three union rules are ported with a token digest of the Rust each
+# reads, recomputed by the offline tier as the other `PORT_PINS` are, so an
 # edit to any of those functions fails until the port is read again: the
 # unrequired-tag clause of `_candidate_tag_values` reads
 # `inferred_discriminant_property`, the untyped-tag rule it and
@@ -5137,18 +5744,6 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # `_last_composed_variant` ports `last_composed_variant` and the
 # `is_composed_member` test it loops on, through `_is_map` and
 # `_simple_nullable_member`, which port `is_map` and `simple_nullable_member`.
-UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property": "91706bec95881063",
-    "untyped_enum_tag": "f71e35908e2aed73",
-    "untyped_const_tag": "df10174704350956",
-    "inferred_union_discriminant_property": "a1a3229b10970d85",
-    "same_primitive_union_last": "46bacd9b81edeea4",
-    "base_type_ref": "5ac752a3919eaaa2",
-    "last_composed_variant": "3ac394950dc70c7f",
-    "is_composed_member": "ea34dd7fa128f6b3",
-    "is_map": "ce58b2f1f60a3f18",
-    "simple_nullable_member": "1aaafcb17ac8d8a2",
-}
 
 
 # `Census.same_primitive_unions`'s scalar arms also port helpers `base_type_ref`
@@ -5156,27 +5751,10 @@ UNION_PORT_DIGESTS = {
 # formats, and which of them is a long), and the Boolean literal and datetime overrides, read
 # through `Schema::bool_literal` and the spellings `LiteralTypeOverride::from`
 # accepts. The offline tier pins each by the same
-# normalized-body digest; `Type::method` names the method of `impl ... for Type`.
-SCALAR_PORT_DIGESTS = {
-    ("src/ir.rs", "number_prim"): "1b2664ec7ba49051",
-    ("src/ir.rs", "int_prim"): "1f5450ca73084537",
-    ("src/openapi.rs", "bool_literal"): "1ddf77335cc52a3f",
-    ("src/openapi.rs", "has_datetime_type_override"): "ca7728fcb7b874c0",
-    ("src/openapi.rs", "LiteralTypeOverride::from"): "3c967be70a520263",
-}
+# token digest; `Type::method` names the method of `impl ... for Type`.
 
 
 # Schema and response ports share the Rust-body drift gate used by the union ports.
-SCHEMA_RESPONSE_PORT_DIGESTS = {
-    "is_closed_empty_object": "eb83d5799078bfd2",
-    "is_object_type": "94e34f083d5e67d8",
-    "success_response_entry": "4e8ef88915e3ca45",
-    "success_response_key": "3d340d826e0150bc",
-    "success_response_with_content": "f60c706986edea69",
-    "has_dispatchable_media": "1778b0cd46695752",
-    "fern_success_responses": "8dffaf40eced2bbd",
-    "fern_default_response": "88e8c6aeaf057b17",
-}
 
 # `FERN_SUCCESS_STATUSES` of `src/ir.rs`: the only success statuses Fern reads a
 # method's response from, in the order it tries them. The census test holds the
@@ -6018,18 +6596,10 @@ UNPROMOTED_HEADERS = frozenset(
 # promotion rule of `global_headers` — the three-quarters threshold, the string
 # default, the headers it never takes and the apiKey scheme names
 # `is_auth_managed_header` reads. Each function they read is pinned by the
-# normalized-body digest the offline tier recomputes, as `UNION_PORT_DIGESTS`
+# token digest the offline tier recomputes, as the union records in `PORT_PINS`
 # are: an edit there fails until the port is read again. Whether a union
 # element keeps a `null` member's optionality on the list's item is no part of
 # the port: it decides the element's annotation, not which parameters hoist.
-PARAMETER_PORT_DIGESTS = {
-    "hoist_param_enum": "759dfe47ff365b8c",
-    "global_headers": "dfc5358f962e3b3f",
-    "is_transport_managed_header": "c0b5057117ba1977",
-    "is_transport_managed_parameter": "390fcb123906c067",
-    "is_promotion_reserved_header": "b353ea53022d5e0f",
-    "is_auth_managed_header": "eb1879f6314209d6",
-}
 
 
 def header_operation_counts(document: Any) -> tuple[dict[str, int], int]:
@@ -6127,24 +6697,16 @@ def request_body_media(document: Any) -> set[int]:
 # The two Rust functions the worked-example predicates port: `own_deprecated` of
 # `src/ir.rs` (`deprecated_member`) and `read_datetime` of `src/emit.rs`
 # (`fern_reads_date_time`). `tools/surface-census/tests/surface_census_test.py` recomputes each one's
-# normalized-body digest, so an arm edited there fails until the port is read
+# token digest, so an arm edited there fails until the port is read
 # again here.
-EXAMPLE_PORT_DIGESTS = {
-    ("src/ir.rs", "own_deprecated"): "453b400276e22e0a",
-    ("src/emit.rs", "read_datetime"): "17d1f36be9e0d0c2",
-}
 
 
 # The two functions of `src/document_refusals/type_not_defined.rs` the
 # `operation.requestBody:get-union-member` predicate ports:
 # `Census.tagged_union_members` reads `inferred_discriminant`, and the predicate's
 # `GET`-only reading is `body_member_union`'s skip of `GET` bodies. Pinned by the
-# same normalized-body digest, so an edit to either fails until the port is read
+# same token digest, so an edit to either fails until the port is read
 # again.
-REFUSAL_PORT_DIGESTS = {
-    ("src/document_refusals/type_not_defined.rs", "inferred_discriminant"): "1b487088a2e0d3fa",
-    ("src/document_refusals/type_not_defined.rs", "body_member_union"): "37369bfaf17f86ea",
-}
 
 
 # A test of one example member: its declared property schema, its value, whether
@@ -6626,6 +7188,13 @@ class Census:
                 and operation_id.split(".", 1)[0].lower() == tag.lower()
             ):
                 found.append("operation.operationId:camel-case-tag-prefix")
+            if (
+                isinstance(operation_id, str)
+                and isinstance(tag, str)
+                and operation_id.endswith("_")
+                and operation_id.rstrip("_").lower() == tag.lower()
+            ):
+                found.append("operation.operationId:tag-only")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
             if (
@@ -6685,6 +7254,16 @@ class Census:
             if not parameter_schema_is_scalar(schema):
                 found.append("parameter.example:non-scalar-query")
         if kind_name == "parameter":
+            schema = self.resolved_schema(node.get("schema"))
+            if (
+                node.get("in") == "query"
+                and node.get("required") is not True
+                and isinstance(schema, dict)
+                and primary_type(schema.get("type")) == "string"
+                and schema.get("format") not in ("date", "date-time")
+                and isinstance(node.get("example", schema.get("example")), _YamlTimestamp)
+            ):
+                found.append("parameter.example:optional-nontemporal-yaml-timestamp")
             found += self.parameter_shape_predicates(node)
         return found
 
@@ -7645,6 +8224,13 @@ class Census:
         by `pointer_target_predicates`, and never followed to what it addresses.
         """
         found: list[str] = []
+        if ("x-fern-type-name" in node or "x-crozier-type-name" in node) and any(
+            node is value for value in self.component_schemas.values()
+        ):
+            found.append("schema.x-fern-type-name:component")
+        properties = node.get("properties")
+        if isinstance(properties, dict) and "construct" in properties:
+            found.append("schema.properties:construct-name")
         primary = primary_type(node.get("type"))
         if primary == "array":
             found.append("schema.type:primary=array")
@@ -7693,6 +8279,7 @@ class Census:
         if annotated_all_of_ref(node):
             found.append("schema.allOf:annotated-ref")
         found += self.discriminated_union_predicates(node)
+        found += properties_copy_union_predicates(node, self.component_schemas)
         reference = node.get("$ref")
         if isinstance(reference, str) and selected_example_kind(node) is not None:
             target = self.component_target(reference)
@@ -7700,6 +8287,14 @@ class Census:
             if kind is not None:
                 found.append(f"schema.example:on-ref-to-{kind}")
         if isinstance(reference, str):
+            if reference.startswith(_COMPONENT_SCHEMAS_PREFIX) and "/" in reference[len(_COMPONENT_SCHEMAS_PREFIX) :]:
+                target = local_schema_pointer_target(reference, self.component_schemas)
+                if target is None:
+                    found.append("schema.$ref:unresolved-nested-local")
+                elif "/$defs/" in reference:
+                    found.append("schema.$ref:defs-member")
+            if properties_copy_target(reference, self.component_schemas) is not None:
+                found.append("schema.$ref:properties-copy")
             found += pointer_form_predicates(reference)
             found += self.pointer_target_predicates(reference)
             found += self.resolving_target_predicates(reference)
