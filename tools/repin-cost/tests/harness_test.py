@@ -721,7 +721,6 @@ class HarnessTest(unittest.TestCase):
         # Another repository's event on a branch of the same name is not this change's.
         self.event("node-dispatched", branch, {"attempt": 9})
         self.journal[-1]["labels"]["identity"] = "github.com/someone/else"
-        # Past the cutoff.
         self.event("node-dispatched", branch, {"attempt": 10}, "2026-01-03T00:00:00Z")
         overlapped = self.ci_run(1, 1, head)
         overlapped["updated_at"] = "2026-01-01T02:30:00Z"
@@ -742,6 +741,69 @@ class HarnessTest(unittest.TestCase):
         )
         event = self.rows(out, "events.tsv")[0]
         self.assertEqual((event["ci_next_run"], event["wait_min"]), ("unresolved", ""))
+
+    @unittest.skipIf(os.name == "nt", "the stand-in gh is a POSIX script")
+    def test_with_no_token_in_the_environment_gh_supplies_it(self):
+        self.change(1, self.main)
+        fake = self.root / "bin"
+        fake.mkdir()
+        gh = fake / "gh"
+        gh.write_text("#!/bin/sh\necho from-gh\n", encoding="utf-8")
+        gh.chmod(0o755)
+        env = {k: v for k, v in self.env.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")}
+        env["PATH"] = f"{fake}{os.pathsep}{env['PATH']}"
+        done = subprocess.run(self.command(), env=env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assertEqual(
+            self.auth["/repos/nickderobertis/crozier/actions/runs?branch=change-1&per_page=100&page=1"],
+            "Bearer from-gh",
+        )
+
+    def test_a_branch_name_is_quoted_in_the_run_query(self):
+        self.change(1, self.main)
+        odd = "odd&name#1"
+        for event in self.journal:
+            event["payload"]["branch"] = odd
+        self.invoke()
+        self.assertIn(
+            "/repos/nickderobertis/crozier/actions/runs?branch=odd%26name%231&per_page=100&page=1", self.requests
+        )
+
+    def test_a_missing_journal_and_a_bad_results_command_stop_and_recover(self):
+        self.change(1, self.main)
+        command = self.command(window="runs:absent")
+        done = subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("no journal for run 'absent'", done.stderr)
+        (self.runs / "absent").mkdir()
+        (self.runs / "absent" / "events.jsonl").write_text("", encoding="utf-8")
+        done = subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 0, done.stderr)
+        for value in ("[]", '"results"', '[""]'):
+            env = {**self.env, "ONEPIPELINE_RESULTS_COMMAND": value}
+            done = subprocess.run(self.command(), env=env, capture_output=True, text=True, timeout=20)
+            self.assertEqual(done.returncode, 1, done.stderr)
+            self.assertIn("ONEPIPELINE_RESULTS_COMMAND must be", done.stderr)
+
+    def test_a_ci_time_or_head_that_cannot_be_trusted_stops(self):
+        branch, head = self.change(1, self.main)
+        run = self.ci_run(7, 1, head)
+        good = {"id": 7, "name": "check", "conclusion": "failure", "started_at": run["run_started_at"]}
+        jobs = "/repos/nickderobertis/crozier/actions/runs/7/jobs?filter=latest&per_page=100&page=1"
+        cases = (
+            (run, dict(good, completed_at=None), "None"),
+            (run, dict(good, completed_at="2026-01-01T01:10:00"), "with an offset"),
+            (dict(run, head_sha="not-a-sha"), dict(good, completed_at=run["updated_at"]), "not a commit sha"),
+            (dict(run, run_started_at=""), dict(good, completed_at=run["updated_at"]), "with an offset"),
+        )
+        for i, (served, job, expected) in enumerate(cases):
+            self.serve_runs(branch, [served], {})
+            self.responses[jobs] = (200, {"jobs": [job]})
+            env = {**self.env, "CROZIER_GITHUB_CACHE_DIR": str(self.root / f"times-{i}")}
+            done = subprocess.run(self.command(out=f"times-{i}"), env=env, capture_output=True, text=True, timeout=20)
+            self.assertEqual(done.returncode, 1, done.stderr)
+            self.assertIn(expected, done.stderr)
+            self.assertNotIn("Traceback", done.stderr)
 
     def test_a_redirect_off_the_api_and_a_wrong_identifier_stop(self):
         branch, head = self.change(1, self.main)

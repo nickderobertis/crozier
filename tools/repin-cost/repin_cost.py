@@ -42,6 +42,7 @@ import os
 import re
 import subprocess
 import sys
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,7 @@ IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
 # llmlint: ignore[contracts_have_one_source_or_a_drift_gate] The census tier is the spike method's fixed definition, frozen so a re-take stays comparable with the baseline; following a later target rename here would change what is counted, and `comparison.md` states the one target this leaves out.
 CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surface-census:test-reach-portable")
+# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] As with the journal's other fields, the orchestrator owns these names, outside this repository; a verdict not listed stops the run rather than being misread.
 VERDICTS = ("passed", "failed", "no-verdict", "passed-with-skipped")
 UNAVAILABLE_OUTCOME = "unavailable (node retired; not in current results)"
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
@@ -448,7 +450,7 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
 
 def ci_runs(hub: gh.GitHub, branch: str, until: dt.datetime) -> list[dict]:
     runs = hub.paged(
-        f"/repos/{gh.OWNER_REPO}/actions/runs?branch={branch}",
+        f"/repos/{gh.OWNER_REPO}/actions/runs?branch={urllib.parse.quote(branch, safe='/')}",
         "workflow_runs",
         fields={
             "id": int,
@@ -479,8 +481,10 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
         },
     )
     # llmlint: ignore[boundary_inputs_validated] Ordering is not checked: GitHub reports completed_at before started_at on real jobs of the baseline's runs, and the method's runner minutes carry them as they read; only a blank or offset-free time, which would read as zero minutes, stops the run.
+    if not COMMIT_RE.fullmatch(run["head_sha"]):
+        raise ValueError(f"CI run {run['id']} names head {run['head_sha']!r}, not a commit sha")
     for job in jobs:
-        if job["completed_at"]:
+        if job["completed_at"] or job["conclusion"]:
             aware(job["completed_at"])
             aware(job["started_at"])
     runner = sum(minutes(ts(j["started_at"]), ts(j["completed_at"])) for j in jobs if j["completed_at"])
