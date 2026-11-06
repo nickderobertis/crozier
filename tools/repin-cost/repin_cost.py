@@ -986,6 +986,17 @@ def median(values: list[float]) -> float:
     return round(ordered[mid] if len(ordered) % 2 else (ordered[mid - 1] + ordered[mid]) / 2, 1)
 
 
+def artifact_figure(value: set | float | int) -> float | int:
+    """An artifact tally as totals.json holds it: a set by its size, minutes to one decimal."""
+    match value:
+        case set():
+            return len(value)
+        case float():
+            return round(value, 1)
+        case _:
+            return value
+
+
 def summarise(changes: list[dict], events: list[dict]) -> dict:
     census_cycles: dict[int, float] = {}
     for e in events:
@@ -1076,10 +1087,7 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         (
             {
                 "artifact": a,
-                **{
-                    k: (len(v) if isinstance(v, set) else round(v, 1) if isinstance(v, float) else v)
-                    for k, v in s.items()
-                },
+                **{k: artifact_figure(v) for k, v in s.items()},
             }
             for a, s in artifacts.items()
         ),
@@ -1137,8 +1145,6 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
         handle.write("\t".join(cols) + "\n")
         for c in changes:
             handle.write("\t".join(";".join(v) if isinstance(v := c[k], list) else str(v) for k in cols) + "\n")
-    for c in changes:
-        c["kind_attempts"], c["kind_redispatches"] = dict(c["kind_attempts"]), dict(c["kind_redispatches"])
     ecols = [
         "pr",
         "branch",
