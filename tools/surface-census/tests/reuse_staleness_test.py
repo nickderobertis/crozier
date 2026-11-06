@@ -12,6 +12,7 @@ collected cases are pinned (`tools/ci/suite-cases/`).
 from __future__ import annotations
 
 import importlib.util
+import os
 import shutil
 import sys
 import tempfile
@@ -115,11 +116,14 @@ class ScriptLoadingTests(unittest.TestCase):
         root = Path(self.enterContext(tempfile.TemporaryDirectory()))
         script = root / "tool.py"
         script.write_text("ANSWER = 1\n", encoding="utf-8")
+        stamp = script.stat().st_mtime_ns
         with mock.patch.object(suite, "REPO", root):
             first = suite.load_script("tool.py")
             self.assertIs(first, suite.load_script("tool.py"))
-            script.write_text("ANSWER = 22\n", encoding="utf-8")
-            self.assertEqual(22, suite.load_script("tool.py").ANSWER)
+            # One size and one timestamp: all cached bytecode would validate against.
+            script.write_text("ANSWER = 2\n", encoding="utf-8")
+            os.utime(script, ns=(stamp, stamp))
+            self.assertEqual(2, suite.load_script("tool.py").ANSWER)
         self.assertEqual(1, first.ANSWER)
 
     def test_a_script_a_case_rebinds_is_its_own_copy(self) -> None:

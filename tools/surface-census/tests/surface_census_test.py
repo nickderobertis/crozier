@@ -47,7 +47,7 @@ from dataclasses import asdict, dataclass
 from dataclasses import fields as dataclass_fields
 from enum import StrEnum
 from pathlib import Path, PureWindowsPath
-from types import ModuleType
+from types import CodeType, ModuleType
 from typing import Any, ClassVar, NamedTuple, ParamSpec, Protocol
 from unittest import mock
 
@@ -736,15 +736,27 @@ FROZEN_SEARCH_CONTRACT = REPO / "docs" / "openapi-surface" / "witness-search-red
 HANDWRITTEN = REPO / "docs" / "openapi-surface" / "handwritten"
 
 
-def fresh_script(path: str):
-    """A tooling module by repository-relative path, executed anew: a case that rebinds its globals owns this copy."""
+@functools.cache
+def _script_code(path: Path, source: bytes) -> CodeType:
+    """`source` compiled, by those bytes: never bytecode a file's size and timestamp would pass as current."""
+    return compile(source, str(path), "exec", dont_inherit=True)
+
+
+def _executed_script(path: str, source: bytes) -> Any:
+    """A new module holding exactly `source`, the bytes of the tooling script at repository-relative `path`."""
     name = Path(path).name
-    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", REPO / path)
-    assert spec and spec.loader
+    location = REPO / path
+    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", location)
+    assert spec
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    exec(_script_code(location, source), module.__dict__)  # noqa: S102 -- the repository's own script, as an import would run it
     return module
+
+
+def fresh_script(path: str) -> Any:
+    """A tooling module executed anew: a case that rebinds its globals owns this copy."""
+    return _executed_script(path, (REPO / path).read_bytes())
 
 
 _LOADED_SCRIPTS: dict[tuple[str, bytes], ModuleType] = {}
@@ -755,12 +767,14 @@ def load_script(path: str):
 
     Executed once per file content, so the memos a script keeps by content (the
     site resolver's above all) outlive the call; no case rebinds this copy's
-    globals, and one that must takes `fresh_script`.
+    globals, and one that must takes `fresh_script`. The bytes that key the memo
+    are the bytes executed.
     """
-    key = (path, (REPO / path).read_bytes())
+    source = (REPO / path).read_bytes()
+    key = (path, source)
     module = _LOADED_SCRIPTS.get(key)
     if module is None:
-        module = _LOADED_SCRIPTS[key] = fresh_script(path)
+        module = _LOADED_SCRIPTS[key] = _executed_script(path, source)
     return module
 
 
