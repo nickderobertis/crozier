@@ -1656,7 +1656,7 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
                 {
                     return false;
                 }
-                // An operation's own list replaces the one the document declares.
+                // An arm of its own: the reach ledger measures where the two lists meet.
                 (Some(own), Some(_)) => Some(own),
                 (own, document) => own.or(document),
             };
@@ -7463,7 +7463,7 @@ fn resolve_request_body(
                     } else {
                         request_ctx.to_string()
                     };
-                    // The union is the media schema itself, or the component it names.
+                    // The same schema either way: this arm lets the ledger measure a written `oneOf`.
                     let obj = if schema.reference.is_none() && schema.one_of.is_some() {
                         schema
                     } else {

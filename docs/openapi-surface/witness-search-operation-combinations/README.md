@@ -84,7 +84,7 @@ candidate. It is also the open-row list for the completion report.
 | `combo-query-param-oneof` | `search-incomplete` | 3007 | 2902 |
 | `combo-query-param-ref-date-time` | `interaction-proven` | 2965 | 0 |
 | `combo-query-param-ref-object` | `interaction-proven` | 3009 | 0 |
-| `combo-query-param-ref-string-enum` | `search-incomplete` | 3189 | 3091 |
+| `combo-query-param-ref-string-enum` | `interaction-proven` | 3189 | 0 |
 | `combo-streaming-method-name` | `interaction-proven` | 2984 | 0 |
 | `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2868 |
 | `combo-success-json-beside-binary-schema` | `interaction-proven` | 3009 | 0 |

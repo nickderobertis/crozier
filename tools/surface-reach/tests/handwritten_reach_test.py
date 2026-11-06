@@ -2108,11 +2108,16 @@ def reference(target: str) -> str:
     return f'            $ref: "#/components/schemas/{target}"\n'
 
 
+class InteractionArm(NamedTuple):
+    both: str
+    controls: dict[str, str]
+
+
 # Each exclusive interaction arm: the document with both features, and the controls that
 # may each hold at most one of them. Where one feature entails the other, no valid
 # document has the entailing feature alone, so the controls hold the entailed one.
-INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
-    "combo-header-param-ref-string-enum": (
+INTERACTION_ARMS: dict[str, InteractionArm] = {
+    "combo-header-param-ref-string-enum": InteractionArm(
         operation_document(craft_header("Rig"), CRAFT_SCHEMAS),
         {
             "header alone": operation_document(craft_header("Tag"), CRAFT_SCHEMAS),
@@ -2123,7 +2128,7 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
             ),
         },
     ),
-    "combo-path-param-ref-string-enum": (
+    "combo-path-param-ref-string-enum": InteractionArm(
         operation_document(craft_path_schema(reference("Rig")), CRAFT_SCHEMAS),
         {
             "path alone": operation_document(craft_path_schema(reference("Tag")), CRAFT_SCHEMAS),
@@ -2131,7 +2136,7 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
             "inline path enum": operation_document(craft_path_schema(INLINE_RIG), CRAFT_SCHEMAS),
         },
     ),
-    "combo-query-param-ref-date-time": (
+    "combo-query-param-ref-date-time": InteractionArm(
         operation_document(craft_query("Landed"), CRAFT_SCHEMAS),
         {
             "query alone": operation_document(craft_query("Tag"), CRAFT_SCHEMAS),
@@ -2139,7 +2144,7 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
             "referenced date": operation_document(craft_query("Docked"), CRAFT_SCHEMAS),
         },
     ),
-    "combo-query-param-ref-object": (
+    "combo-query-param-ref-object": InteractionArm(
         operation_document(survey_query(reference("Survey")), SURVEY_SCHEMAS),
         {
             "query alone": operation_document(survey_query(reference("Label")), SURVEY_SCHEMAS),
@@ -2152,7 +2157,7 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
             ),
         },
     ),
-    "combo-form-urlencoded-union-body": (
+    "combo-form-urlencoded-union-body": InteractionArm(
         operation_document(
             form_body("application/x-www-form-urlencoded", GRANT_UNION.format(keyword="oneOf")), GRANT_SCHEMAS
         ),
@@ -2176,21 +2181,21 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
             ),
         },
     ),
-    "combo-success-json-beside-download": (
+    "combo-success-json-beside-download": InteractionArm(
         operation_document(responses(media(("image/png", ""), ("application/json", JSON_ANSWER)))),
         {
             "download alone": operation_document(responses(media(("image/png", "")))),
             "json alone": operation_document(responses(media(("application/json", JSON_ANSWER)))),
         },
     ),
-    "combo-success-text-beside-download": (
+    "combo-success-text-beside-download": InteractionArm(
         operation_document(responses(media(("text/plain", PLAIN_TEXT), ("image/png", "")))),
         {
             "download alone": operation_document(responses(media(("image/png", "")))),
             "text alone": operation_document(responses(media(("text/plain", PLAIN_TEXT)))),
         },
     ),
-    "combo-success-json-beside-binary-schema": (
+    "combo-success-json-beside-binary-schema": InteractionArm(
         operation_document(responses(media(("application/json", JSON_ANSWER), ("application/zip", BINARY_ANSWER)))),
         {
             "binary schema alone": operation_document(responses(media(("application/zip", BINARY_ANSWER)))),
@@ -2199,7 +2204,7 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
     ),
     # `operation.context:error-object` entails `operation.responses`: the entailed
     # feature alone is an operation answering no inline error object.
-    "combo-error-object": (
+    "combo-error-object": InteractionArm(
         operation_document(failing_call(REFUSAL_OBJECT), REFUSAL_SCHEMAS),
         {
             "responses alone": operation_document(gated_call()),
@@ -2212,42 +2217,42 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
             ),
         },
     ),
-    "combo-document-security-security-empty": (
+    "combo-document-security-security-empty": InteractionArm(
         operation_document(gated_call(NO_GATE), BEARER_SCHEME, ROOT_GATE),
         {
             "document requirement alone": operation_document(gated_call(), BEARER_SCHEME, ROOT_GATE),
             "empty list alone": operation_document(gated_call(NO_GATE), BEARER_SCHEME),
         },
     ),
-    "combo-document-operation-security": (
+    "combo-document-operation-security": InteractionArm(
         operation_document(gated_call(OWN_GATE), BEARER_SCHEME, ROOT_GATE),
         {
             "document requirement alone": operation_document(gated_call(), BEARER_SCHEME, ROOT_GATE),
             "operation requirement alone": operation_document(gated_call(OWN_GATE), BEARER_SCHEME),
         },
     ),
-    "combo-echo-body-effective-oauth2": (
+    "combo-echo-body-effective-oauth2": InteractionArm(
         operation_document(echo_call(OWN_GATE), WAYBILL_SCHEMAS + OAUTH_SCHEME),
         {
             "echo alone": operation_document(echo_call(), WAYBILL_SCHEMAS),
             "oauth2 alone": operation_document(echo_call(OWN_GATE, "Receipt"), WAYBILL_SCHEMAS + OAUTH_SCHEME),
         },
     ),
-    "combo-echo-body-effective-non-oauth-required": (
+    "combo-echo-body-effective-non-oauth-required": InteractionArm(
         operation_document(echo_call(OWN_GATE), WAYBILL_SCHEMAS + KEY_SCHEME),
         {
             "echo alone": operation_document(echo_call(), WAYBILL_SCHEMAS),
             "required key alone": operation_document(echo_call(OWN_GATE, "Receipt"), WAYBILL_SCHEMAS + KEY_SCHEME),
         },
     ),
-    "combo-echo-body-effective-anonymous": (
+    "combo-echo-body-effective-anonymous": InteractionArm(
         operation_document(echo_call(), WAYBILL_SCHEMAS),
         {
             "echo under a required key": operation_document(echo_call(OWN_GATE), WAYBILL_SCHEMAS + KEY_SCHEME),
             "anonymous alone": operation_document(echo_call("", "Receipt"), WAYBILL_SCHEMAS),
         },
     ),
-    "combo-streaming-method-name": (
+    "combo-streaming-method-name": InteractionArm(
         operation_document(streamed_call(True, True), QUOTE_SCHEMAS),
         {
             "method name alone": operation_document(streamed_call(True, False), QUOTE_SCHEMAS),
@@ -2311,12 +2316,12 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             reach.resolve_site(sites[0])
         census = _module("census_interaction_arms", "openapi-surface-census.py")
         crozier = handwritten.instrumented_crozier(REPO, reach)
-        for key, (both, controls) in INTERACTION_ARMS.items():
+        for key, arm in INTERACTION_ARMS.items():
             selector = table[key].selectors[0]
             conjunctions = {selector: census.compile_conjunction(selector)}
             for label, document, expected in (
-                ("both", both, True),
-                *((label, control, False) for label, control in controls.items()),
+                ("both", arm.both, True),
+                *((label, control, False) for label, control in arm.controls.items()),
             ):
                 with self.subTest(key=key, document=label), tempfile.TemporaryDirectory() as temporary:
                     scratch = Path(temporary)
