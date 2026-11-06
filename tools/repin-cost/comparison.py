@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -12,18 +13,71 @@ def numeric_rows(data: dict[str, Any], prefix: str = "") -> dict[str, float]:
     rows: dict[str, float] = {}
     for key, value in data.items():
         label = f"{prefix}.{key}" if prefix else key
-        if isinstance(value, (int, float)) and not isinstance(value, bool):
-            rows[label] = value
-        elif isinstance(value, dict):
-            rows.update(numeric_rows(value, label))
+        match value:
+            case bool():
+                continue
+            case int() | float():
+                rows[label] = value
+            case dict():
+                rows.update(numeric_rows(value, label))
     return rows
 
 
+def load_totals(path: Path) -> dict[str, Any]:
+    """Reject incomplete or nonnumeric evidence instead of reporting missing cost as zero."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path}: totals must be an object")
+    required = {
+        "census": {"failures", "elapsed_min", "wait_min", "redispatches"},
+        "conflicts": {"redispatches"},
+        "github": {"uncached_calls", "cache_hits"},
+        "window": {"spec", "until", "base_carries"},
+        "by_kind": set(),
+    }
+    for group, keys in required.items():
+        if not isinstance(data.get(group), dict) or not keys <= data[group].keys():
+            raise ValueError(f"{path}: missing or malformed {group} fields: {sorted(keys)}")
+
+    def numbers(values: dict, label: str) -> None:
+        for key, value in values.items():
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+                raise ValueError(f"{path}: {label}.{key} must be a finite nonnegative number")
+
+    if not isinstance(data.get("changes"), int) or isinstance(data["changes"], bool) or data["changes"] < 0:
+        raise ValueError(f"{path}: changes must be a nonnegative integer")
+    for group in ("census", "conflicts", "github"):
+        numbers(data[group], group)
+    ignored = {"census", "conflicts", "github", "window", "by_kind", "artifacts_outside_census", "excluded", "rewrote"}
+    numbers({k: v for k, v in data.items() if k not in ignored}, "totals")
+    for kind, values in data["by_kind"].items():
+        if not isinstance(kind, str) or not isinstance(values, dict):
+            raise ValueError(f"{path}: malformed repin kind")
+        numbers(values, kind)
+    artifacts = data.get("artifacts_outside_census")
+    if not isinstance(artifacts, list):
+        raise ValueError(f"{path}: artifacts_outside_census must be a list")
+    for artifact in artifacts:
+        if not isinstance(artifact, dict) or not isinstance(artifact.get("artifact"), str):
+            raise ValueError(f"{path}: malformed artifact record")
+        numbers({k: v for k, v in artifact.items() if k != "artifact"}, artifact["artifact"])
+    window = data["window"]
+    if not all(isinstance(window[key], str) and window[key] for key in ("spec", "until")) or not isinstance(window["base_carries"], list) or not all(isinstance(sha, str) and sha for sha in window["base_carries"]):
+        raise ValueError(f"{path}: malformed window metadata")
+    return data
+
+
 def comparison(baseline: Path, after: Path) -> str:
-    before = json.loads((baseline / "totals.json").read_text(encoding="utf-8"))
-    current = json.loads((after / "totals.json").read_text(encoding="utf-8"))
+    before = load_totals(baseline / "totals.json")
+    current = load_totals(after / "totals.json")
     with (after / "changes.tsv").open(encoding="utf-8", newline="") as handle:
-        prs = [f"#{row['pr']}" for row in csv.DictReader(handle, delimiter="\t")]
+        reader = csv.DictReader(handle, delimiter="\t")
+        if not reader.fieldnames or "pr" not in reader.fieldnames:
+            raise ValueError(f"{after}/changes.tsv: missing pr column")
+        records = list(reader)
+        if len(records) != current["changes"] or any(not row["pr"] or not row["pr"].isdigit() or int(row["pr"]) < 1 for row in records):
+            raise ValueError(f"{after}/changes.tsv: PR rows must match totals.changes and contain positive PR numbers")
+        prs = [f"#{row['pr']}" for row in records]
     n, m = before["changes"], current["changes"]
     window = current["window"]
     lines = [

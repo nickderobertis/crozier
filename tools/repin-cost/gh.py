@@ -58,6 +58,8 @@ class GitHub:
 
     def get(self, path: str, *, raw: bool = False) -> tuple[int, bytes]:
         url = path if path.startswith("http") else f"{API}{path}"
+        if not rlg.is_github_api_url(url):
+            raise ValueError("GitHub read must use the validated API origin; refusing to attach credentials")
         headers = {
             "User-Agent": "crozier-repin-cost-spike",
             "Accept": "application/vnd.github+json",
@@ -111,7 +113,9 @@ class GitHub:
             data = self.json(f"{path}{sep}per_page=100&page={page}")
             if not data:
                 break
-            items = data.get(key, [])
+            if not isinstance(data, dict) or not isinstance(data.get(key), list) or not all(isinstance(item, dict) for item in data[key]):
+                raise SystemExit(f"GitHub returned a malformed {key} collection for {path}; restore complete evidence before measuring")
+            items = data[key]
             out.extend(items)
             if len(items) < 100:
                 break

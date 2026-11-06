@@ -43,7 +43,7 @@ HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 
-import gh  # noqa: E402
+import gh  # noqa: E402 -- sibling adapter must follow the runtime script-directory path setup.
 
 IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
@@ -51,7 +51,6 @@ CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surf
 UNAVAILABLE_OUTCOME = "unavailable (node retired; not in current results)"
 KINDS = ("site-anchor", "port-digest", "measured-count", "derived-conflict")
 
-# ---------------------------------------------------------------- classification
 
 
 def artifact_kind(path: str) -> tuple[str, str] | None:
@@ -194,7 +193,6 @@ def classify_failure(log: str) -> dict:
     }
 
 
-# ---------------------------------------------------------------- helpers
 
 
 def ts(value: str | None) -> dt.datetime | None:
@@ -221,6 +219,8 @@ def onepipeline_results(run: str) -> dict:
         if "ONEPIPELINE_RESULTS_COMMAND" in os.environ
         else [str(binary)]
     )
+    if not isinstance(command, list) or not command or not all(isinstance(arg, str) and arg for arg in command):
+        raise SystemExit("ONEPIPELINE_RESULTS_COMMAND must be a nonempty JSON array of nonempty argv strings")
     done = subprocess.run(
         [*command, "results", run, "--json"],
         capture_output=True,
@@ -228,13 +228,17 @@ def onepipeline_results(run: str) -> dict:
         check=False,
         cwd=ORCH if ORCH.exists() else REPO_ROOT,
     )
+    if done.returncode:
+        raise SystemExit(f"onepipeline results {run}: exited {done.returncode}: {done.stderr.strip()}; restore the results provider")
     try:
-        return json.loads(done.stdout)
-    except json.JSONDecodeError:
-        return {"nodes": []}
+        data = json.loads(done.stdout)
+    except json.JSONDecodeError as error:
+        raise SystemExit(f"onepipeline results {run}: invalid JSON; restore the results provider") from error
+    if not isinstance(data, dict) or not isinstance(data.get("nodes"), list) or any(not isinstance(node, dict) or not isinstance(node.get("id"), str) or not all(node.get(key) is None or isinstance(node[key], str) for key in ("status", "outcome")) for node in data["nodes"]):
+        raise SystemExit(f"onepipeline results {run}: expected an object containing nodes with string ids and status/outcome values")
+    return data
 
 
-# ---------------------------------------------------------------- journals
 
 
 def crozier_runs(root: Path) -> list[str]:
@@ -335,7 +339,6 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
     return branches
 
 
-# ---------------------------------------------------------------- CI
 
 
 def ci_runs(hub: gh.GitHub, branch: str, until: dt.datetime) -> list[dict]:
@@ -390,7 +393,6 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
     return info
 
 
-# ---------------------------------------------------------------- git
 
 
 def fetch_pr(pr: int) -> str | None:
@@ -460,7 +462,6 @@ def worker_pinned(a: str, b: str) -> dict[str, str]:
     return out
 
 
-# ---------------------------------------------------------------- main
 
 
 def parse_window(spec: str, root: Path) -> tuple[list[str], list[str]]:
@@ -482,7 +483,11 @@ def main() -> int:
         parser.add_argument("after", type=Path)
         args = parser.parse_args(sys.argv[2:])
         target = args.after / "comparison.md"
-        target.write_text(comparison(args.baseline, args.after), encoding="utf-8")
+        try:
+            rendered = comparison(args.baseline, args.after)
+            target.write_text(rendered, encoding="utf-8")
+        except (OSError, ValueError, KeyError, TypeError) as error:
+            raise SystemExit(f"repin-cost compare: {error}; provide complete measurement output directories") from error
         print(f"repin-cost: comparison -> {target}")
         return 0
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
@@ -703,13 +708,11 @@ def main() -> int:
                             "excerpt": run["excerpt"],
                         }
                     )
-        # --- Publication attempts per kind (matched above).
         for _g, decided in gate_match:
             if decided and decided["census"]:
                 row["census_attempts"] += 1
             if decided:
                 row["kind_attempts"].update(run_kinds.get(decided["id"], []))
-        # --- Conflicts.
         for c in conflicts:
             pinned = {p: artifact_kind(p) for p in c["paths"]}
             derived = sorted(p for p, k in pinned.items() if k)
