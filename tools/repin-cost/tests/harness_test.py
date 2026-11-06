@@ -1141,6 +1141,9 @@ class ComparisonTest(unittest.TestCase):
                 "conflicts must hold": lambda d: d["conflicts"].pop("mixed"),
                 "cannot exceed": lambda d: d.update(merged=d["changes"] + 1),
                 "every count": lambda d: d["census"].update(attempts=1.5),
+                "census.extra": lambda d: d["census"].update(extra=-1),
+                "totals.extra": lambda d: d.update(extra=float("inf")),
+                "counts must be integers": lambda d: next(iter(d["by_kind"].values())).update(events=0.5),
                 "listed twice": lambda d: d["artifacts_outside_census"].extend(
                     [d["artifacts_outside_census"][0], d["artifacts_outside_census"][0]]
                 ),

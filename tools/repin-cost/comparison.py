@@ -62,7 +62,19 @@ KIND_FIELDS = {
     "pub_unresolved",
     "pub_wait_min",
 }
+KIND_COUNTS = KIND_FIELDS - {"runner_min", "elapsed_min", "wait_min", "cycle_min", "pub_wait_min"}
 ARTIFACT_FIELDS = {"ci_failures", "conflicts", "changes", "cycle_min", "runner_min"}
+ARTIFACT_COUNTS = {"ci_failures", "conflicts", "changes"}
+STRUCTURAL_FIELDS = {
+    "census",
+    "conflicts",
+    "github",
+    "by_kind",
+    "artifacts_outside_census",
+    "window",
+    "rewrote",
+    "excluded",
+}
 
 
 def numeric_rows(data: Totals, prefix: str = "") -> dict[str, float]:
@@ -87,10 +99,10 @@ def load_totals(path: Path) -> Totals:
     for group, fields in (("census", CENSUS_FIELDS), ("conflicts", CONFLICT_FIELDS), ("github", GITHUB_FIELDS)):
         if not isinstance(data.get(group), dict) or not fields <= data[group].keys():
             raise ValueError(f"{path}: {group} must hold {sorted(fields)}")
-        numbers(path, {field: data[group][field] for field in fields}, group)
+        numbers(path, data[group], group)
     if not data.keys() >= TOP_FIELDS:
         raise ValueError(f"{path}: totals must hold {sorted(TOP_FIELDS)}")
-    numbers(path, {field: data[field] for field in TOP_FIELDS}, "totals")
+    numbers(path, {key: value for key, value in data.items() if key not in STRUCTURAL_FIELDS}, "totals")
     counts = [
         *(data[field] for field in TOP_FIELDS),
         *(data["census"][field] for field in CENSUS_COUNTS),
@@ -111,6 +123,7 @@ def load_totals(path: Path) -> Totals:
         if not isinstance(values, dict) or not values.keys() >= KIND_FIELDS:
             raise ValueError(f"{path}: kind {kind!r} must hold {sorted(KIND_FIELDS)}")
         numbers(path, values, kind)
+        require_counts(path, values, KIND_COUNTS, kind)
     artifacts = data.get("artifacts_outside_census")
     if not isinstance(artifacts, list):
         raise ValueError(f"{path}: artifacts_outside_census must be a list")
@@ -123,6 +136,7 @@ def load_totals(path: Path) -> Totals:
         if not artifact.keys() >= ARTIFACT_FIELDS:
             raise ValueError(f"{path}: artifact {artifact['artifact']!r} must hold {sorted(ARTIFACT_FIELDS)}")
         numbers(path, {k: v for k, v in artifact.items() if k != "artifact"}, artifact["artifact"])
+        require_counts(path, artifact, ARTIFACT_COUNTS, artifact["artifact"])
     window = data.get("window")
     if (
         not isinstance(window, dict)
@@ -138,6 +152,11 @@ def numbers(path: Path, values: dict[str, object], label: str) -> None:
     for key, value in values.items():
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
             raise ValueError(f"{path}: {label}.{key} must be a finite nonnegative number")
+
+
+def require_counts(path: Path, values: Totals, fields: set[str], label: str) -> None:
+    if not all(isinstance(values[field], int) for field in fields):
+        raise ValueError(f"{path}: {label}'s counts must be integers")
 
 
 def change_rows(directory: Path, totals: Totals) -> list[dict[str, str]]:

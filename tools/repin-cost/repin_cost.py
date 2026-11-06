@@ -759,8 +759,6 @@ def main() -> int:
         failure_marks: list[tuple[dt.datetime, str, tuple[str, ...]]] = []
         run_kinds: dict[int, list[str]] = {}
         row["kind_attempts"], row["kind_redispatches"] = collections.Counter(), collections.Counter()
-        # --- Journal publication attempts, each matched to the failed CI run that decided it, and the
-        # wall clock from its recorded end to the next attempt's recorded start on this branch.
         gate_match: list[tuple[dict, dict | None]] = []
         publication: dict[int, dict] = {}
         for gi, g in enumerate(gates):
@@ -782,7 +780,6 @@ def main() -> int:
                     "next_pub_start": nxt_pub["start"].isoformat() if nxt_pub else "",
                     "pub_wait_min": minutes(g["end"], nxt_pub["start"]) if nxt_pub else None,
                 }
-        # --- CI failures, each with its fix and the wait to the next CI run on this branch.
         for i, run in enumerate(runs_ci):
             if run["conclusion"] != "failure":
                 continue
@@ -906,7 +903,6 @@ def main() -> int:
                 row["code_conflicts"] += 1
             elif len(derived) < len(c["paths"]):
                 row["mixed_conflicts"] += 1
-        # --- Re-dispatches, attributed to the latest failure before each.
         previous = None
         for d in dispatches:
             before = [m for m in failure_marks if m[0] <= d["at"] and (previous is None or m[0] > previous)]
@@ -920,7 +916,6 @@ def main() -> int:
                         row["census_redispatches"] += 1
                     case "conflict":
                         row["conflict_redispatches"] += 1
-        # --- What the change rewrote: its squash commit, else its head against main.
         landed = b["merged"] if b["merged"] and has_commit(b["merged"]) else None
         if landed:
             row["rewrote"] = sorted(pinned_changes(None, landed))
