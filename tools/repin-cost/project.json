@@ -8,6 +8,9 @@
   ],
   "targets": {
     "test": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing and runs in under a minute (measured with `just nx run repin-cost:test --skipNxCache`). A case that adds an install or a real network reach belongs in a split project."
+      },
       "executor": "nx:run-commands",
       "options": {
         "command": "python3 -m unittest discover -s tools/repin-cost/tests -p \"*_test.py\""

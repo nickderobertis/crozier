@@ -15,6 +15,11 @@ files preserve the spike's classification and interval rules. `compare` writes
 `<after>/comparison.md`; append transcript-reviewed recipe-versus-hand counts
 after running it. Re-running `compare` replaces that file.
 
+Exit codes: 0 when the outputs were written; 1 when the measurement stopped on evidence it
+could not read or trust; 2 for a wrong command line. `base-carries:` takes full commit shas
+this checkout holds, and `--until` needs a UTC offset or `Z`. `compare` derives both reference
+rates from the baseline directory it is given.
+
 `baseline/` preserves the spike's committed measurement. `selection-journeys/`
 preserves its historical evidence; portable replacements run with
 `just nx run repin-cost:test` against scratch journals, repositories and a guarded

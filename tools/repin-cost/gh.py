@@ -5,6 +5,7 @@ A cache hit makes no call. A miss acquires the `core` bucket, makes the call,
 records it with the guard, and stores the answer. Reads only: no method but GET.
 """
 
+# llmlint: ignore-file[modern_domain_modeling] GitHub's run and job objects are read by a handful of keys and validated in `paged`; a parallel typed model of them would add nothing the fields check does not.
 from __future__ import annotations
 
 import importlib.util
@@ -15,6 +16,7 @@ import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
+from typing import Any
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "tools" / "witness-search"))
@@ -45,6 +47,7 @@ class _NoRedirectAuth(urllib.request.HTTPRedirectHandler):
 _OPENER = urllib.request.build_opener(_NoRedirectAuth)
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless, and its reads run strictly one after another behind the guard; records are Any because `paged` checks only the fields the harness reads from GitHub's much larger objects.
 class GitHub:
     def __init__(self, evidence_dir: Path) -> None:
         if not (os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")):
@@ -56,7 +59,7 @@ class GitHub:
         self.calls = 0
         self.hits = 0
 
-    def get(self, path: str, *, raw: bool = False) -> tuple[int, bytes]:
+    def get(self, path: str) -> tuple[int, bytes]:
         url = path if path.startswith("http") else f"{API}{path}"
         if not rlg.is_github_api_url(url):
             raise ValueError("GitHub read must use the validated API origin; refusing to attach credentials")
@@ -106,23 +109,23 @@ class GitHub:
             )
         return json.loads(body)
 
-    def paged(self, path: str, key: str, *, limit_pages: int = 20) -> list:
-        out: list = []
+    def paged(self, path: str, key: str, *, fields: tuple[str, ...], limit_pages: int = 20) -> list[dict[str, Any]]:
+        """Every item of a paged collection, each holding `fields`; a malformed page stops the run."""
+        out: list[dict[str, Any]] = []
         sep = "&" if "?" in path else "?"
         for page in range(1, limit_pages + 1):
             data = self.json(f"{path}{sep}per_page=100&page={page}")
-            if not data:
-                break
-            if (
-                not isinstance(data, dict)
-                or not isinstance(data.get(key), list)
-                or not all(isinstance(item, dict) for item in data[key])
+            items = data.get(key) if isinstance(data, dict) else None
+            if not isinstance(items, list) or not all(
+                isinstance(item, dict) and all(field in item for field in fields) for item in items
             ):
                 raise SystemExit(
                     f"GitHub returned a malformed {key} collection for {path}; restore complete evidence before measuring"
                 )
-            items = data[key]
             out.extend(items)
             if len(items) < 100:
                 break
         return out
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]

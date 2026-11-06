@@ -24,8 +24,14 @@ branch, run nodes):
 Writes <out>/changes.tsv, <out>/events.tsv, <out>/totals.json and <out>/summary.md;
 prints one line. Runs no measurement, no golden test, no generation; never writes to
 GitHub.
+
+Exit codes: 0 when the outputs were written; 1 when the measurement stopped on evidence it
+could not read or trust (a GitHub answer other than 200, a malformed journal, GitHub record
+or output directory, a failed git or results read), naming the cause on stderr; 2 when the
+command line is wrong (a bad --window, --until or --runs-root).
 """
 
+# llmlint: ignore-file[modern_domain_modeling] The measurement's rows and totals stay keyed records: every output file's columns are the frozen contract with the committed baseline and serialise by those names, and retyping about 1,000 lines of a method held to the spike's would risk the figures it must reproduce; the journeys pin the outputs instead.
 from __future__ import annotations
 
 import argparse
@@ -47,11 +53,10 @@ import gh  # noqa: E402 -- sibling adapter must follow the runtime script-direct
 
 IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
+# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] The census tier is the spike method's fixed definition, frozen so a re-take stays comparable with the baseline; following a later target rename here would change what is counted, and `comparison.md` states the one target this leaves out.
 CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surface-census:test-reach-portable")
 UNAVAILABLE_OUTCOME = "unavailable (node retired; not in current results)"
 KINDS = ("site-anchor", "port-digest", "measured-count", "derived-conflict")
-
-# ---------------------------------------------------------------- classification
 
 
 def artifact_kind(path: str) -> tuple[str, str] | None:
@@ -194,9 +199,6 @@ def classify_failure(log: str) -> dict:
     }
 
 
-# ---------------------------------------------------------------- helpers
-
-
 def ts(value: str | None) -> dt.datetime | None:
     if not value:
         return None
@@ -214,6 +216,7 @@ def git(*args: str, check: bool = True) -> str:
     return done.stdout
 
 
+# llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless; one short-lived results read per run, one after another, gains nothing from an async client.
 def onepipeline_results(run: str) -> dict:
     binary = ORCH / "node_modules" / ".bin" / "onepipeline"
     command = (
@@ -254,20 +257,61 @@ def onepipeline_results(run: str) -> dict:
     return data
 
 
-# ---------------------------------------------------------------- journals
-
-
 def crozier_runs(root: Path) -> list[str]:
     out = []
     for plan in sorted(root.glob("*/plan.json")):
         try:
-            if "nickderobertis/crozier" in plan.read_text(encoding="utf-8", errors="replace"):
-                out.append(plan.parent.name)
-        except OSError:
-            continue
+            text = plan.read_text(encoding="utf-8", errors="replace")
+        except OSError as error:
+            raise SystemExit(f"cannot read {plan}: {error}; an unread plan would drop its run's changes") from error
+        # llmlint: ignore[boundary_inputs_validated] A run "worked crozier" when its plan names the repository anywhere: the spike's selection rule, kept so this window matches the baseline's; the plan's schema is the orchestrator's.
+        if "nickderobertis/crozier" in text:
+            out.append(plan.parent.name)
     return out
 
 
+def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, node: str | None) -> None:
+    match kind:
+        case "change-opened":
+            b["pr"] = int(payload["id"])
+        case "change-merged":
+            b["merged"] = payload.get("sha")
+            m = re.search(r"/pull/(\d+)", payload.get("url", ""))
+            if m:
+                b["pr"] = int(m.group(1))
+        case "gate-run":
+            key = (labels.get("session"), payload.get("started_at"))
+            b["gates"][key] = {
+                "start": ts(payload.get("started_at")),
+                "end": ts(payload.get("ended_at")),
+                "verdict": payload.get("verdict"),
+                "failed_checks": [
+                    c["name"] for c in payload.get("checks", []) if c.get("conclusion") not in ("success", None)
+                ],
+                "node": node,
+            }
+        case "node-dispatched":
+            attempt = payload.get("attempt", 1)
+            retry = bool(re.search(r"-r\d+$", node or ""))
+            if attempt > 1 or retry:
+                b["dispatches"].append({"at": ts(event["ts"]), "node": node, "attempt": attempt})
+        case "sync-conflict":
+            key = (labels.get("session"), event["ts"])
+            b["conflicts"][key] = {"at": ts(event["ts"]), "paths": payload.get("paths", []), "node": node}
+        case "push" if payload.get("accepted") and payload.get("head"):
+            b["pushes"].append((ts(event["ts"]), payload["head"]))
+        case "node-settled":
+            b["settles"].append(
+                {
+                    "at": ts(event["ts"]),
+                    "node": node,
+                    "status": payload.get("status"),
+                    "outcome": payload.get("outcome"),
+                }
+            )
+
+
+# llmlint: ignore-block[contracts_have_one_source_or_a_drift_gate] The journal's event names and fields belong to the orchestrator, outside this repository, so nothing here can reconcile against them; an event missing a field it needs stops the run instead.
 def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
     """Per branch: nodes, PR, gate attempts, dispatches, conflicts, settles."""
     branches: dict[str, dict] = collections.defaultdict(
@@ -291,15 +335,24 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
         for line in handle:
             try:
                 event = json.loads(line)
+            # llmlint: ignore[boundary_inputs_validated] An interrupted writer leaves a torn line in a live journal; it records no completed event, and refusing it would make every run that was ever killed unmeasurable.
             except json.JSONDecodeError:
                 continue
+            if (
+                not isinstance(event, dict)
+                or not isinstance(event.get("labels", {}), dict)
+                or not isinstance(event.get("payload") or {}, dict)
+            ):
+                raise SystemExit(
+                    f"{path}: an event is not an object with object labels and payload; repair the journal"
+                )
             when = ts(event.get("ts"))
             if when is None or when > until:
                 continue
             labels, payload = event.get("labels", {}), event.get("payload") or {}
             if labels.get("identity") not in (None, IDENTITY):
                 continue
-            branch = payload.get("branch") if isinstance(payload, dict) else None
+            branch = payload.get("branch")
             if branch and labels.get("session"):
                 session_branch[labels["session"]] = branch
             if branch and labels.get("node"):
@@ -315,51 +368,22 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
         b["runs"].add(run)
         if node:
             b["nodes"].add(node)
-        if kind == "change-opened":
-            b["pr"] = int(payload["id"])
-        elif kind == "change-merged":
-            b["merged"] = payload.get("sha")
-            m = re.search(r"/pull/(\d+)", payload.get("url", ""))
-            if m:
-                b["pr"] = int(m.group(1))
-        elif kind == "gate-run":
-            key = (labels.get("session"), payload.get("started_at"))
-            b["gates"][key] = {
-                "start": ts(payload.get("started_at")),
-                "end": ts(payload.get("ended_at")),
-                "verdict": payload.get("verdict"),
-                "failed_checks": [
-                    c["name"] for c in payload.get("checks", []) if c.get("conclusion") not in ("success", None)
-                ],
-                "node": node,
-            }
-        elif kind == "node-dispatched":
-            attempt = payload.get("attempt", 1)
-            retry = bool(re.search(r"-r\d+$", node or ""))
-            if attempt > 1 or retry:
-                b["dispatches"].append({"at": ts(event["ts"]), "node": node, "attempt": attempt})
-        elif kind == "sync-conflict":
-            key = (labels.get("session"), event["ts"])
-            b["conflicts"][key] = {"at": ts(event["ts"]), "paths": payload.get("paths", []), "node": node}
-        elif kind == "push" and payload.get("accepted") and payload.get("head"):
-            b["pushes"].append((ts(event["ts"]), payload["head"]))
-        elif kind == "node-settled":
-            b["settles"].append(
-                {
-                    "at": ts(event["ts"]),
-                    "node": node,
-                    "status": payload.get("status"),
-                    "outcome": payload.get("outcome"),
-                }
-            )
+        try:
+            record_event(b, kind, event, labels, payload, node)
+        except (KeyError, TypeError, ValueError, AttributeError) as error:
+            raise SystemExit(f"{path}: {kind} event at {event.get('ts')}: {error!r}; repair the journal") from error
     return branches
 
 
-# ---------------------------------------------------------------- CI
+# llmlint: ignore-end[contracts_have_one_source_or_a_drift_gate]
 
 
 def ci_runs(hub: gh.GitHub, branch: str, until: dt.datetime) -> list[dict]:
-    runs = hub.paged(f"/repos/{gh.OWNER_REPO}/actions/runs?branch={branch}", "workflow_runs")
+    runs = hub.paged(
+        f"/repos/{gh.OWNER_REPO}/actions/runs?branch={branch}",
+        "workflow_runs",
+        fields=("id", "name", "event", "head_sha", "run_started_at", "updated_at", "conclusion"),
+    )
     out = [
         r
         for r in runs
@@ -372,7 +396,11 @@ def ci_runs(hub: gh.GitHub, branch: str, until: dt.datetime) -> list[dict]:
 
 
 def analyse_run(hub: gh.GitHub, run: dict) -> dict:
-    jobs = hub.paged(f"/repos/{gh.OWNER_REPO}/actions/runs/{run['id']}/jobs?filter=latest", "jobs")
+    jobs = hub.paged(
+        f"/repos/{gh.OWNER_REPO}/actions/runs/{run['id']}/jobs?filter=latest",
+        "jobs",
+        fields=("id", "name", "conclusion"),
+    )
     runner = sum(minutes(ts(j.get("started_at")), ts(j.get("completed_at"))) for j in jobs if j.get("completed_at"))
     info = {
         "id": run["id"],
@@ -410,9 +438,6 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
     return info
 
 
-# ---------------------------------------------------------------- git
-
-
 def fetch_pr(pr: int) -> str | None:
     ref = f"refs/repin-cost/pull/{pr}"
     done = subprocess.run(
@@ -446,6 +471,7 @@ def has_commit(sha: str) -> bool:
     )
 
 
+# llmlint: ignore-block[boundary_inputs_validated] A failed read here means an intermediate head was force-pushed away, so its fix attribution is empty: the limit the spike's method states and the baseline carries.
 def pinned_changes(a: str | None, b: str) -> dict[str, str]:
     """artifact -> kind for each pinned or derived file b rewrote relative to a (a=None: b against its first parent)."""
     names = git("diff", "--name-only", *([a, b] if a else [f"{b}^", b]), check=False).split()
@@ -480,17 +506,32 @@ def worker_pinned(a: str, b: str) -> dict[str, str]:
     return out
 
 
-# ---------------------------------------------------------------- main
+# llmlint: ignore-end[boundary_inputs_validated]
 
 
 def parse_window(spec: str, root: Path) -> tuple[list[str], list[str]]:
+    """The runs a window reads and the commits it requires; ValueError names what is wrong with it."""
     kind, _, value = spec.partition(":")
     items = [v for v in value.split(",") if v]
     if kind == "runs" and items:
+        bad = [v for v in items if v in (".", "..") or "/" in v or "\\" in v]
+        if bad:
+            raise ValueError(f"--window names run {bad[0]!r}, which is not a directory name under the runs root")
         return items, []
     if kind == "base-carries" and items:
+        unknown = [v for v in items if not re.fullmatch(r"[0-9a-f]{40}", v) or not has_commit(v)]
+        if unknown:
+            raise ValueError(f"--window needs full commit shas this checkout holds; {unknown[0]!r} is not one")
         return crozier_runs(root), items
-    raise SystemExit(f"--window must be runs:<run>[,...] or base-carries:<sha>[,...], got {spec!r}")
+    raise ValueError(f"--window must be runs:<run>[,...] or base-carries:<sha>[,...], got {spec!r}")
+
+
+def parse_cutoff(value: str) -> dt.datetime:
+    """--until as an aware time, since the journal and CI times it is compared with all are."""
+    cutoff = ts(value)
+    if cutoff is None or cutoff.tzinfo is None:
+        raise ValueError(f"--until must carry a UTC offset or Z, got {value!r}")
+    return cutoff
 
 
 def main() -> int:
@@ -517,12 +558,15 @@ def main() -> int:
     parser.add_argument("--out", required=True, type=Path)
     parser.add_argument("--runs-root", type=Path, default=Path(os.environ.get("ONEPIPELINE_RUNS_DIR", ORCH / "runs")))
     args = parser.parse_args()
-    until = ts(args.until) if args.until else dt.datetime.now(dt.UTC)
-    if until is None:
-        raise SystemExit("--until must name an ISO timestamp")
+    if not args.runs_root.is_dir():
+        parser.error(f"--runs-root {args.runs_root} is not a directory")
+    try:
+        until = parse_cutoff(args.until) if args.until else dt.datetime.now(dt.UTC)
+        runs, carries = parse_window(args.window, args.runs_root)
+    except ValueError as error:
+        parser.error(str(error))
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
-    runs, carries = parse_window(args.window, args.runs_root)
     hub = gh.GitHub(out / "github-evidence")
 
     branches: dict[str, dict] = {}
@@ -549,7 +593,10 @@ def main() -> int:
             else:
                 branches[name] = data
 
-    git("fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/repin-cost/main", check=False)
+    try:
+        git("fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/repin-cost/main")
+    except RuntimeError as error:
+        raise SystemExit(f"{error}; a base cannot be read without main") from error
     changes, events, excluded = [], [], []
     for name, b in sorted(branches.items(), key=lambda kv: (kv[1]["pr"] or 10**9, kv[0])):
         examined = {
@@ -587,6 +634,7 @@ def main() -> int:
         gates = sorted(b["gates"].values(), key=lambda g: g["start"])
         conflicts = sorted(b["conflicts"].values(), key=lambda c: c["at"])
         dispatches = sorted(b["dispatches"], key=lambda d: d["at"])
+        # Any: one TSV row's mixed columns, serialised by name in write_outputs.
         row: dict[str, Any] = {
             "pr": b["pr"],
             "branch": name,
@@ -727,13 +775,11 @@ def main() -> int:
                             "excerpt": run["excerpt"],
                         }
                     )
-        # --- Publication attempts per kind (matched above).
         for _g, decided in gate_match:
             if decided and decided["census"]:
                 row["census_attempts"] += 1
             if decided:
                 row["kind_attempts"].update(run_kinds.get(decided["id"], []))
-        # --- Conflicts.
         for c in conflicts:
             pinned = {p: artifact_kind(p) for p in c["paths"]}
             derived = sorted(p for p, k in pinned.items() if k)
@@ -777,10 +823,11 @@ def main() -> int:
                 latest = max(before, key=lambda m: m[0])
                 last = latest[1]
                 row["kind_redispatches"].update(latest[2])
-                if last == "census":
-                    row["census_redispatches"] += 1
-                elif last == "conflict":
-                    row["conflict_redispatches"] += 1
+                match last:
+                    case "census":
+                        row["census_redispatches"] += 1
+                    case "conflict":
+                        row["conflict_redispatches"] += 1
         # --- What the change rewrote: its squash commit, else its head against main.
         landed = b["merged"] if b["merged"] and has_commit(b["merged"]) else None
         if landed:
@@ -871,12 +918,12 @@ def summarise(changes: list[dict], events: list[dict]) -> dict:
         slot["runner_min"] += e["runner_min"]
         slot["elapsed_min"] += e["elapsed_min"]
         slot["wait_min"] += e["wait_min"]
-        status = e.get("pub_status")
-        if status == "observed":
-            slot["pub_observed"] = slot.get("pub_observed", 0) + 1
-            slot["pub_wait_min"] = slot.get("pub_wait_min", 0.0) + e["pub_wait_min"]
-        elif status == "unresolved":
-            slot["pub_unresolved"] = slot.get("pub_unresolved", 0) + 1
+        match e.get("pub_status"):
+            case "observed":
+                slot["pub_observed"] = slot.get("pub_observed", 0) + 1
+                slot["pub_wait_min"] = slot.get("pub_wait_min", 0.0) + e["pub_wait_min"]
+            case "unresolved":
+                slot["pub_unresolved"] = slot.get("pub_unresolved", 0) + 1
         slot["changes"].add(e["pr"] or e["branch"])
     for c in changes:
         for field, key in (("kind_attempts", "attempts"), ("kind_redispatches", "redispatches")):
@@ -1073,4 +1120,7 @@ def write_outputs(out: Path, changes: list[dict], events: list[dict], totals: di
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except (RuntimeError, ValueError, KeyError, TypeError, OSError) as failure:
+        raise SystemExit(f"repin-cost: {failure!r}; restore the evidence named and re-run") from failure
