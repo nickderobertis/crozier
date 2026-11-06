@@ -1026,6 +1026,15 @@ class HarnessTest(unittest.TestCase):
                 {
                     "started_at": "2026-01-01T02:00:00Z",
                     "ended_at": "2026-01-01T02:10:00Z",
+                    "verdict": "failed",
+                    "checks": [{"name": "gate", "conclusion": "odd"}],
+                },
+            ),
+            (
+                "gate-run",
+                {
+                    "started_at": "2026-01-01T02:00:00Z",
+                    "ended_at": "2026-01-01T02:10:00Z",
                     "verdict": "odd",
                     "checks": [],
                 },

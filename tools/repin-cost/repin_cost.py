@@ -56,7 +56,6 @@ IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
 # llmlint: ignore[contracts_have_one_source_or_a_drift_gate] The census tier is the spike method's fixed definition, frozen so a re-take stays comparable with the baseline; following a later target rename here would change what is counted, and `comparison.md` states the one target this leaves out.
 CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surface-census:test-reach-portable")
-# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] As with the journal's other fields, the orchestrator owns these names, outside this repository; a verdict not listed stops the run rather than being misread.
 CONCLUSIONS = (
     None,
     "success",
@@ -69,6 +68,7 @@ CONCLUSIONS = (
     "stale",
     "startup_failure",
 )
+# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] As with the journal's other fields, the orchestrator owns these names, outside this repository; a verdict not listed stops the run rather than being misread.
 VERDICTS = ("passed", "failed", "no-verdict", "passed-with-skipped")
 UNAVAILABLE_OUTCOME = "unavailable (node retired; not in current results)"
 COMMIT_RE = re.compile(r"[0-9a-f]{40}")
@@ -77,12 +77,13 @@ KINDS = ("site-anchor", "port-digest", "measured-count", "derived-conflict")
 
 def artifact_kind(path: str) -> tuple[str, str] | None:
     """(kind, artifact) for a pinned or derived file; None for authored code or prose."""
-    if path == "docs/openapi-surface/golden-reach-sites.tsv":
-        return "site-anchor", path
-    if path == "tools/surface-census/openapi-surface-census.py":
-        return "port-digest", path
-    if path == "docs/openapi-surface/scenario-proof-index.tsv":
-        return "other-artifact:" + path, path
+    match path:
+        case "docs/openapi-surface/golden-reach-sites.tsv":
+            return "site-anchor", path
+        case "tools/surface-census/openapi-surface-census.py":
+            return "port-digest", path
+        case "docs/openapi-surface/scenario-proof-index.tsv":
+            return "other-artifact:" + path, path
     if path in (
         "docs/openapi-surface/golden-reach.tsv",
         "docs/openapi-surface/handwritten-reach.tsv",
@@ -316,9 +317,7 @@ def valid_publication(payload: dict) -> bool:
         and payload["verdict"] in VERDICTS
         and isinstance(payload["checks"], list)
         and all(
-            isinstance(c, dict)
-            and isinstance(c.get("name"), str)
-            and (c.get("conclusion") is None or isinstance(c["conclusion"], str))
+            isinstance(c, dict) and isinstance(c.get("name"), str) and c.get("conclusion") in CONCLUSIONS
             for c in payload["checks"]
         )
     )
@@ -332,10 +331,9 @@ def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, n
             isinstance(payload["paths"], list) and all(isinstance(path, str) for path in payload["paths"])
         ):
             raise ValueError("a sync conflict needs a list of paths")
-        case "push" if payload.get("accepted") is True and not COMMIT_RE.fullmatch(str(payload.get("head"))):
-            head = payload.get("head")
-            if head is not None:
-                raise ValueError(f"an accepted push's head must be a commit sha, got {head!r}")
+        # llmlint: ignore[boundary_inputs_validated] An accepted push with no head is real (dozens in this host's journals) and records nothing to read, so the method falls back to the pull request's head; only a head that is present must be a sha.
+        case "push" if payload.get("head") is not None and not COMMIT_RE.fullmatch(str(payload["head"])):
+            raise ValueError(f"a push's head must be a commit sha, got {payload['head']!r}")
         case "change-opened":
             b["pr"] = positive_pr(payload["id"])
         case "change-merged":
