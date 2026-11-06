@@ -103,7 +103,7 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
-            // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] The task requires this enum-sensitive real witness in both modes. This inventory entry uses the established overlay engine and corpus project, with no new process or dependency; splitting that whole golden family is outside this proof.
+            // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This enum-sensitive real witness is proven in both modes through the existing overlay engine.
             "adyen-capital",
             "remeasured-arawa-workspace-0c8259f6",
             "remeasured-clencyc-mozillafestivalbackend-b2264b38",

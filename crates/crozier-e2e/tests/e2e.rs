@@ -68,7 +68,7 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These certified-tree replays use the same compiled-binary suite and parity engine as every corpus and hand-written golden comparison (crates/crozier-e2e/AGENTS.md); splitting the shared golden edge belongs to the existing generator-replay graph follow-up, while this declaration keeps the new runner on that established boundary.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These certified-tree replays share the compiled-binary golden suite and parity engine (crates/crozier-e2e/AGENTS.md).
 #[path = "e2e/combination_independence.rs"]
 mod combination_independence;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
@@ -14758,7 +14758,7 @@ fn cyclonedx_transparency_exchange_matches_fern_output() {
     assert_committed_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
 }
 
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This existing corpus journey now proves its interaction witness in both enum modes through the shared overlay engine. All corpus golden comparisons use this project's established edge (crates/crozier-e2e/AGENTS.md); splitting the whole family is outside this operation-combination proof.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This existing corpus journey proves its interaction witness in both enum modes on the corpus golden edge (crates/crozier-e2e/AGENTS.md).
 #[test]
 fn adyen_capital_matches_fern_output() {
     assert_committed_corpus_matches(&ADYEN_CAPITAL);

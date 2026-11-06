@@ -144,7 +144,7 @@ fn a_populated_independence_manifest_crosses_the_python_rust_boundary() {
     }
 }
 
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This complete-tree replay belongs to the existing compiled-binary golden suite (crates/crozier-e2e/AGENTS.md), alongside corpus and hand-written replays using the same parity engine; splitting that family's graph edge is the existing generator-replay follow-up rather than a separate boundary introduced for this one comparison.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This complete-tree replay belongs to the compiled-binary golden suite (crates/crozier-e2e/AGENTS.md).
 #[test]
 fn independent_combination_documents_match_certified_trees() {
     replay_protocol_smoke();
