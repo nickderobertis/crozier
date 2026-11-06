@@ -262,6 +262,18 @@ goldens that byte-match whole, but their
 move no generated file in crozier or the certified pair, so neither proves the
 key and its only other witness remains the residual `webflow-v2`.
 
+The `inline-oneof-variants` cover of `oneof-bare-object-example-variant` stays
+for the same reason. `registered-literals-jentic-jentic-public-apis-a96f8580`
+(row 5542) and `registered-literals-konfig-dev-konfig-614a2b05` (row 5545) are
+the first registered documents to declare that key, in one Ironclad `oneOf`
+member apiece, and both goldens byte-match whole in both enum modes. Their
+[paired removals](../../openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json)
+of that member's `example` move none of 318 and 269 generated files in crozier
+or the certified pair, and `crozier compare` matches each perturbed document
+against the certified tree, so neither supersedes the fixture.
+`tests/corpus_match/corpus_surface_census_test.py` fails on any declarer
+without such a record.
+
 Three values have no checked-in generator. Under planner ruling 230,
 `apply-retirements.py` in this dispatch’s scratch directory derives them from
 the native census payload: the script docstring’s corpus/source split is

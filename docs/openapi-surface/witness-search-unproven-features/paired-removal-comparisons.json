@@ -67,5 +67,51 @@
     "could_not_check": 0
    }
   }
+ },
+ {
+  "key": "oneof-bare-object-example-variant",
+  "fixture": "registered-literals-jentic-jentic-public-apis-a96f8580",
+  "perturbation": "Remove the object-valued example of the bare `type: object` oneOf member at /components/schemas/RecordsGetPredictionsResponse/oneOf/0/example; keep all other document bytes.",
+  "crozier": {
+   "before_files": 318,
+   "after_files": 318,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 318,
+   "after_files": 318,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   }
+  }
+ },
+ {
+  "key": "oneof-bare-object-example-variant",
+  "fixture": "registered-literals-konfig-dev-konfig-614a2b05",
+  "perturbation": "Remove the object-valued example of the bare `type: object` oneOf member at /paths/~1records~1smart-import/get/responses/200/content/application~1json/schema/oneOf/0/example; keep all other document bytes.",
+  "crozier": {
+   "before_files": 269,
+   "after_files": 269,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 269,
+   "after_files": 269,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   }
+  }
  }
 ]
