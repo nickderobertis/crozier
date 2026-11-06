@@ -900,6 +900,12 @@ Files: `no crozier SDK`. [Comparison](screens/d0b3d3045ec6f2daf170dd33f727a8bbfb
 
 Files: `no crozier SDK`. [Comparison](screens/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.json).
 
+### crozier-yaml-consecutive-comment-budget
+
+`DigitaleDeltaOrg/DigitaleDelta.ToolKit.V3:DigitaleDelta.DdApiV3ToolKit/Templates/openapi.yaml@2a4659109db553e2e04904c6f76a46e7046ac919`, SHA-256 `7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13`. The certified pair emits 92 files. Crozier refuses the YAML at a commented OAuth block: too many consecutive comments before resolving collection entry. Compare exits 4 before byte comparison, so this is a document-boundary difference, not an observed file mismatch.
+
+Files: `no crozier SDK`. [Comparison](screens/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/compare.json).
+
 ### declared-map-example-vs-placeholder
 
 `the-momentum/open-wearables:docs/openapi.json@b47932b53282cedbb720880466b7ebed8f3897c6`, SHA-256 `a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f`. Crozier uses the author-declared providers map; the reference writes a key/True placeholder map.
@@ -969,6 +975,7 @@ Files: `reference.md`. [Comparison](screens/8d9a8ecdca11217c65d4fe8ad30e711d1d3d
 `chloepriceless/DV-EOS:openapi.json@e2fca78146c468f1ef4a4b540ebe608c11ad47c2`, SHA-256 `1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9`. The reference converts and respects annotation metadata for PydanticDateTimeData; crozier sends the request value directly.
 
 Files: `src/fern/measurement/raw_client.py`. [Comparison](screens/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.json).
+
 
 ## Reach carry audit
 

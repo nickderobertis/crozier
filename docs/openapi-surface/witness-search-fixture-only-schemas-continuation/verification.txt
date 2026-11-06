@@ -5,7 +5,7 @@ finished-tree evidence before closeout; it is not a completion claim.
 
 Completed so far
 ----------------
-- Native census: 980 selectors, 1,421,601 declaration sites, 320 registered
+- Native census: 980 selectors, 1,424,197 declaration sites, 320 registered
   sources (31 original, 289 corpus) after row 5300; the earlier 319-source
   snapshot drift check passed before registration. Final restatement is pending.
 - The updated hand-written fixture contract reports no failures.
@@ -43,3 +43,15 @@ is an induced earlier-state failure, not the finished golden.
 The prepared branch diff passed judged lint in both batches:
 20261105T101112Z-81005 and 20261105T101250Z-b23b8. Coverage-dependent files will
 be rechecked after the fresh reach measurement and restatement.
+
+Suppression accounting
+----------------------
+- crates/crozier-e2e/tests/e2e.rs, Eqivo test block: the real-binary corpus
+  and literals gates belong to the existing corpus family; moving that family
+  to a separate project edge is outside this registration. The test installs
+  nothing and opens no socket.
+- crates/crozier-e2e/tests/e2e/overlay_goldens.rs, Eqivo inventory entry:
+  this required literal overlay uses the existing corpus golden inventory;
+  one inventory entry cannot define a separate project edge.
+Both narrow directives name expensive_tests_stay_behind_their_own_edge.
+No other directive is added, moved, rewritten, or covers a changed line.
