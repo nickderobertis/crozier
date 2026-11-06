@@ -13002,9 +13002,8 @@ class CombinationSearchRecordTests(unittest.TestCase):
             self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.OPEN))
 
     def test_committed_operation_search_is_canonical_and_host_independent(self) -> None:
-        # The content and the gzip header are the contract, not the deflate stream: the stream a
-        # Windows check rebuilt differed from this one. Inferred, not read from that host: its leading
-        # bytes and length match zlib-ng 2.3.3's level 9, so a different encoder is the likely cause.
+        # The content and the gzip header are the contract, not the deflate stream, which varies by
+        # encoder; see the search record's "Census encoding" section.
         path = REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz"
         committed = path.read_bytes()
         self.assertEqual(b"\x1f\x8b\x08", committed[:3], "the search census must be a deflated gzip member")
