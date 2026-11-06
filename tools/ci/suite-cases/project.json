@@ -1,0 +1,41 @@
+{
+  "name": "suite-cases",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:javascript"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/ci/suite-cases/tests/suite-cases.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling",
+        "{workspaceRoot}/tools/surface-census/project.json",
+        "{workspaceRoot}/tools/surface-census/tests/**/*"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node --check tools/ci/suite-cases/core.mjs",
+          "node --check tools/ci/suite-cases/suite-cases.mjs",
+          "node --check tools/ci/suite-cases/tests/suite-cases.test.mjs",
+          "node scripts/check-project-boundaries.mjs suite-cases"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries"
+      ]
+    }
+  }
+}

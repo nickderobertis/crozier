@@ -1,0 +1,3 @@
+[
+  { "name": "surface-census-test-census", "collector": "pytest", "project": "tools/surface-census", "target": "test-census" }
+]
