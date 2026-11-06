@@ -72,8 +72,22 @@
         "default",
         "pythonTooling",
         {
-          "runtime": "node -p process.platform"
-        }
+          "runtime": "node tools/ci/suite-cases/cache-key.mjs python"
+        },
+        "crateSource",
+        "witnessIndexReads",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
+        "{workspaceRoot}/tools/fern-refusals/sdk_evaluation.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/justfile"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/surface-census/test-reuse"

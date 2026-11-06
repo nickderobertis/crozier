@@ -1,7 +1,8 @@
 // The Nx results this tier's reuse tests cache must not answer for another
-// operating system or other compiler flags. Each case runs a real Nx in a scratch
-// workspace over the real target's real `inputs`, with a stand-in for the suite's
-// command that counts its runs, and a stand-in tool on PATH for the other host.
+// operating system, interpreter or other compiler flags. Each case runs a real Nx
+// in a scratch workspace over the real target's real `inputs`, with a stand-in for
+// the suite's command that counts its runs, and a stand-in tool on PATH for the
+// other host.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -57,8 +58,57 @@ function standIn(root, name, query, output, fallback) {
   writeFileSync(join(bin, name), `#!/bin/sh\nif [ "$1" = "${query}" ]; then\n${sh}\nexit 0\nfi\nexec "${fallback}" "$@"\n`);
   chmodSync(join(bin, name), 0o755);
   writeFileSync(join(bin, `${name}.cmd`), `@echo off\r\nif "%~1"=="${query}" (\r\n${cmd}\r\nexit /b 0\r\n)\r\n"${fallback}" %*\r\n`);
-  const key = Object.keys(process.env).find((candidate) => candidate.toUpperCase() === "PATH") ?? "PATH";
+  const key = pathKey();
   return { [key]: `${bin}${delimiter}${process.env[key]}` };
+}
+
+const pathKey = () => Object.keys(process.env).find((candidate) => candidate.toUpperCase() === "PATH") ?? "PATH";
+
+/** The first `name` on PATH, for a stand-in that defers to the real tool. */
+function onPath(name) {
+  const names = process.platform === "win32" ? [`${name}.exe`, `${name}.cmd`] : [name];
+  const found = process.env[pathKey()].split(delimiter).flatMap((directory) => names.map((candidate) => join(directory, candidate))).find(existsSync);
+  assert.ok(found, `${name} is not on PATH`);
+  return found;
+}
+
+/** PATH where `uv python find` names an interpreter that reports `version`; `uv` itself is otherwise the real one. */
+function otherInterpreter(root, version) {
+  const bin = join(root, "stand-in", "interpreter");
+  mkdirSync(bin, { recursive: true });
+  const python = join(bin, process.platform === "win32" ? "python.cmd" : "python");
+  writeFileSync(python, process.platform === "win32" ? `@echo off\r\necho cpython ${version}\r\n` : `#!/bin/sh\ncat >/dev/null\necho "cpython ${version}"\n`);
+  chmodSync(python, 0o755);
+  return standIn(root, "uv", "python", python, onPath("uv"));
+}
+
+/** PATH where `node` runs the key for real on an operating system that reports `name`. */
+function otherOperatingSystem(root, name) {
+  const bin = join(root, "stand-in", "operating-system");
+  mkdirSync(bin, { recursive: true });
+  const preload = join(bin, "preload.cjs");
+  writeFileSync(preload, `const os = require("node:os");\nos.platform = () => "${name}";\nrequire("node:module").syncBuiltinESMExports();\n`);
+  writeFileSync(join(bin, "node"), `#!/bin/sh\nexec "${process.execPath}" --require "${preload}" "$@"\n`);
+  chmodSync(join(bin, "node"), 0o755);
+  writeFileSync(join(bin, "node.cmd"), `@echo off\r\n"${process.execPath}" --require "${preload}" %*\r\n`);
+  return { [pathKey()]: `${bin}${delimiter}${process.env[pathKey()]}` };
+}
+
+/** The key's output, line by line, in `cwd` under `env`. */
+function keyLines(cwd, env = {}, ...args) {
+  const run = spawnSync(process.execPath, [join(ROOT, KEY), ...args], { cwd, encoding: "utf8", env: { ...process.env, ...env } });
+  assert.equal(run.status, 0, run.stderr);
+  return run.stdout.split("\n").filter(Boolean);
+}
+
+const pythonLine = (lines) => lines.find((line) => line.startsWith("python: "));
+
+/** An installed interpreter of another Python minor than `line` names, or nothing on a host with only the one. */
+function secondInterpreter(line) {
+  const listed = spawnSync("uv", ["python", "list", "--only-installed", "--output-format", "json"], { encoding: "utf8", shell: process.platform === "win32" });
+  if (listed.status !== 0) return undefined;
+  const current = line.match(/^python: \S+ (\d+\.\d+)\./)?.[1];
+  return JSON.parse(listed.stdout).find((entry) => entry.implementation === "cpython" && entry.path && !entry.version.startsWith(`${current}.`))?.path;
 }
 
 const realRustc = (root) => spawnSync("rustc", ["-vV"], { cwd: root, encoding: "utf8", shell: process.platform === "win32" }).stdout.trim();
@@ -92,21 +142,108 @@ test("surface-census:test-reuse replays its result only for the same operating s
   const { root, run } = scratchWorkspace(t, "tools/surface-census", "test-reuse");
   assert.equal(run(), 1);
   assert.equal(run(), 1, "the same operating system replays from cache");
-  const other = process.platform === "win32" ? "linux" : "win32";
-  assert.equal(run(standIn(root, "node", "-p", other, process.execPath)), 2, "another operating system takes no cached result");
+  const other = otherOperatingSystem(root, process.platform === "win32" ? "linux" : "win32");
+  assert.equal(run(other), 2, "another operating system takes no cached result");
+  assert.equal(run(other), 2, "that operating system replays its own result");
   assert.equal(run(), 2, "the original operating system still replays its own result");
 });
 
-test("the key names the operating system and the flags, and survives a missing rustc", () => {
-  const key = (env) => {
-    const run = spawnSync(process.execPath, [join(ROOT, KEY)], { cwd: ROOT, encoding: "utf8", env: { ...process.env, ...env } });
-    assert.equal(run.status, 0, run.stderr);
-    return run.stdout;
+for (const [project, target] of [["tools/ci/suite-cases", "test"], ["tools/surface-census", "test-reuse"]]) {
+  test(`${project}:${target} takes no cached result from another Python interpreter`, (t) => {
+    const { root, run } = scratchWorkspace(t, project, target);
+    assert.equal(run(), 1);
+    assert.equal(run(), 1, "the same interpreter replays from cache");
+    const other = otherInterpreter(root, "3.99.0 (stand-in)");
+    assert.equal(run(other), 2, "another interpreter takes no cached result");
+    assert.equal(run(other), 2, "that interpreter replays its own result");
+    assert.equal(run(otherInterpreter(root, "3.99.1 (stand-in)")), 3, "a patch release of it is another interpreter");
+    assert.equal(run({ PYTHONHASHSEED: "1" }), 4, "a variable the interpreter obeys takes no cached result");
+    assert.equal(run(), 4, "the original interpreter still replays its own result");
+  });
+
+  test(`${project}:${target} takes no cached result from a real second interpreter`, (t) => {
+    const { root, run } = scratchWorkspace(t, project, target);
+    const second = secondInterpreter(pythonLine(keyLines(root)));
+    if (!second) return t.skip("this host has one Python minor; the stand-in case still holds");
+    assert.equal(run(), 1);
+    assert.equal(run({ UV_PYTHON: second }), 2, "uv selecting another installed interpreter takes no cached result");
+    assert.equal(run(), 2, "the original interpreter still replays its own result");
+  });
+}
+
+test("only the interpreter's line moves when the interpreter does", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "crozier-cache-key-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const moved = (env, ...args) => {
+    const [before, after] = [keyLines(root, {}, ...args), keyLines(root, env, ...args)];
+    return after.filter((line) => !before.includes(line));
   };
-  const plain = key({ RUSTFLAGS: "--cfg crozier_cache_probe" });
+  const other = otherInterpreter(root, "3.99.0 (stand-in)");
+  assert.deepEqual(moved(other), ["python: cpython 3.99.0 (stand-in)"]);
+  assert.deepEqual(moved(other, "python"), ["python: cpython 3.99.0 (stand-in)"]);
+});
+
+test("the key names the interpreter `uv run` runs the suites under", () => {
+  const run = spawnSync("uv", ["run", "--locked", "--all-packages", "python", "-c", "import sys; print(sys.implementation.name, sys.version)"], { cwd: ROOT, encoding: "utf8" });
+  assert.equal(run.status, 0, run.stderr);
+  const line = pythonLine(keyLines(ROOT));
+  assert.ok(line.startsWith(`python: ${run.stdout.trim()} `), `${line}\nagainst ${run.stdout}`);
+});
+
+test("a requested interpreter is the one the key names, as `uv run` obeys it", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "crozier-cache-key-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const second = secondInterpreter(pythonLine(keyLines(root)));
+  if (!second) return t.skip("this host has one Python minor");
+  writeFileSync(join(root, "pyproject.toml"), '[project]\nname = "probe"\nversion = "0"\nrequires-python = ">=3.8"\n\n[tool.uv]\npackage = false\n');
+  const env = { ...process.env, UV_PYTHON: second };
+  const run = spawnSync("uv", ["run", "python", "-c", "import sys; print(sys.implementation.name, sys.version)"], { cwd: root, encoding: "utf8", env });
+  assert.equal(run.status, 0, run.stderr);
+  const line = pythonLine(keyLines(root, { UV_PYTHON: second }));
+  assert.ok(line.startsWith(`python: ${run.stdout.trim()} `), `${line}\nagainst ${run.stdout}`);
+});
+
+// A reading the suite makes outside the target's own directory, changed the way a later commit would.
+for (const [project, target, read] of [
+  ["tools/surface-census", "test-reuse", "docs/openapi-surface/handwritten-reach.tsv"],
+  ["tools/surface-census", "test-reuse", "src/openapi.rs"],
+  ["tools/surface-census", "test-reuse", "tests/fixtures/corpus-aliases.tsv"],
+  ["tools/surface-census", "test-reuse", "tools/fern-refusals/sdk_evaluation.py"],
+  ["tools/ci/suite-cases", "test", "tools/surface-census/port_pins.py"],
+  ["tools/ci/suite-cases", "test", "tools/witness-search/witness_screen.py"],
+  ["tools/ci/suite-cases", "test", "docs/fern-limitations.md"],
+  ["tools/ci/suite-cases", "test", "bun.lock"],
+]) {
+  test(`${project}:${target} reruns when ${read} changes`, (t) => {
+    const { root, run } = scratchWorkspace(t, project, target);
+    mkdirSync(dirname(join(root, read)), { recursive: true });
+    // Nx parses a lockfile, so that one stays valid: only trailing bytes differ.
+    const body = read === "bun.lock" ? readFileSync(join(ROOT, read), "utf8") : "";
+    writeFileSync(join(root, read), `${body}\n`);
+    assert.equal(run(), 1);
+    assert.equal(run(), 1, "an unchanged read replays from cache");
+    writeFileSync(join(root, read), `${body}\n\n`);
+    assert.equal(run(), 2, `${read} decides the result, so a change to it takes no cached result`);
+  });
+}
+
+test("the key names the operating system, the interpreter and the flags, and survives missing tools", () => {
+  const key = (env, ...args) => `${keyLines(ROOT, env, ...args).join("\n")}\n`;
+  const plain = key({ RUSTFLAGS: "--cfg crozier_cache_probe", PYTHONPATH: "probe" });
   assert.ok(plain.includes(`os: ${process.platform} ${process.arch}\n`), plain);
+  assert.ok(plain.includes(`node: ${process.version}\n`), plain);
   assert.match(plain, /^RUSTFLAGS=--cfg crozier_cache_probe$/m);
+  assert.match(plain, /^PYTHONPATH=probe$/m);
   assert.match(plain, /^host: /m);
-  const pathKey = Object.keys(process.env).find((candidate) => candidate.toUpperCase() === "PATH") ?? "PATH";
-  assert.match(key({ [pathKey]: "" }), /^rustc: absent$/m, "a host without rustc still hashes: Nx stops the whole run when a runtime input fails");
+  assert.match(plain, /^python: \S+ \d+\.\d+\.\d+/m);
+  assert.match(plain, /^uv: /m);
+
+  const python = key({ RUSTFLAGS: "--cfg crozier_cache_probe", PYTHONPATH: "probe" }, "python");
+  assert.match(python, /^python: \S+ \d+\.\d+\.\d+/m);
+  assert.match(python, /^PYTHONPATH=probe$/m);
+  assert.doesNotMatch(python, /^(rustc|RUSTFLAGS)/m, "a suite that compiles nothing does not rerun for flags");
+
+  const bare = key({ [pathKey()]: "" });
+  assert.match(bare, /^rustc: absent$/m, "a host without rustc still hashes: Nx stops the whole run when a runtime input fails");
+  assert.match(bare, /^python: absent$/m, "nor does a host without uv stop it");
 });

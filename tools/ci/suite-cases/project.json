@@ -33,10 +33,14 @@
         "{workspaceRoot}/tools/github-action/**/*",
         "{workspaceRoot}/tests/nested-discriminator/golden/**/*",
         "{workspaceRoot}/scripts/share-instrumented-build.mjs",
-        "{workspaceRoot}/tools/surface-census/project.json",
-        "{workspaceRoot}/tools/surface-census/tests/**/*",
-        "{workspaceRoot}/tools/surface-reach/project.json",
-        "{workspaceRoot}/tools/surface-reach/tests/**/*"
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/surface-reach/**/*",
+        "{workspaceRoot}/tools/witness-search/witness_screen.py",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/openapi-surface/golden-reach-sites.tsv",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/bun.lock"
       ]
     },
     "lint": {
