@@ -147,12 +147,12 @@ None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 615 `golden` rows declare 1074 handling sites in
+same way. The 617 `golden` rows declare 1077 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **976 are reached by a registered real specification.** Its scoped
+- **979 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **93 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 93 is still one of the 98 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -165,7 +165,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-976 + 93 + 5 + 0 + 0 = 1074. Fourteen sites left the table with the two functions
+979 + 93 + 5 + 0 + 0 = 1077. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -3054,7 +3054,6 @@ unreached by any Fern-accepted document.
 | 74 | `format-uri` | `schemas` | **1** | **1** | **78** | open — real-specification witness search remains open |
 | 75 | `format-uri-reference` | `schemas` | **1** | **1** | **6** | open — real-specification witness search remains open |
 | 76 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 77 | `property-oneof-residual` | `schemas` | **1** | **1** | **43** | open — real-specification witness search remains open |
 | 77 | `property-oneof-residual` | `schemas` | **1** | **1** | **43** | open — real-specification witness search remains open |
 #### The rows this measurement's first pass owned
 

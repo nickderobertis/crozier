@@ -13927,9 +13927,9 @@ class FinishedStateGateTests(unittest.TestCase):
         document = fixture / "openapi.yml"
         original = document.read_text(encoding="utf-8")
         # A renamed operationId renames the generated client method, so crozier's output differs.
-        operation = re.search(r'"operationId": "([^"]+)"', original)
+        operation = re.search(r'^\s*"?operationId"?: "?([^"\n,]+)"?', original, re.M)
         assert operation is not None, "the audited fixture's document declares no operationId"
-        renamed = f'"operationId": "{operation.group(1)}_renamed"'
+        renamed = operation.group(0).replace(operation.group(1), f"{operation.group(1)}_renamed", 1)
         document.write_text(original.replace(operation.group(0), renamed, 1), encoding="utf-8", newline="\n")
         self.assertEqual(tree, certified_tree_digest(fixture / "fern-expected"))
         self.assertIn(
