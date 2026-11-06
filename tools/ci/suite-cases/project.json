@@ -12,7 +12,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test tools/ci/suite-cases/tests/suite-cases.test.mjs tools/ci/suite-cases/tests/build-reuse.test.mjs"
+        "command": "node --test tools/ci/suite-cases/tests/suite-cases.test.mjs tools/ci/suite-cases/tests/build-reuse.test.mjs tools/ci/suite-cases/tests/cache-key.test.mjs"
       },
       "cache": true,
       "inputs": [
@@ -22,6 +22,9 @@
         "crateTests",
         "e2eSource",
         "generator",
+        {
+          "runtime": "node tools/ci/suite-cases/cache-key.mjs"
+        },
         "{workspaceRoot}/src/project.json",
         "{workspaceRoot}/crates/crozier-e2e/project.json",
         "{workspaceRoot}/pool-maintenance/**/*",
@@ -41,9 +44,11 @@
       "options": {
         "commands": [
           "node --check tools/ci/suite-cases/core.mjs",
+          "node --check tools/ci/suite-cases/cache-key.mjs",
           "node --check tools/ci/suite-cases/suite-cases.mjs",
           "node --check tools/ci/suite-cases/tests/suite-cases.test.mjs",
           "node --check tools/ci/suite-cases/tests/build-reuse.test.mjs",
+          "node --check tools/ci/suite-cases/tests/cache-key.test.mjs",
           "node --check scripts/share-instrumented-build.mjs",
           "node scripts/check-project-boundaries.mjs suite-cases"
         ],

@@ -70,7 +70,10 @@
       "cache": true,
       "inputs": [
         "default",
-        "pythonTooling"
+        "pythonTooling",
+        {
+          "runtime": "node -p process.platform"
+        }
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/surface-census/test-reuse"

@@ -14,3 +14,6 @@
   proved on a scratch workspace with the same package names.
 - `corpus-match` is a tier this tooling project may not read, so that suite's pin
   (`checkedBy` in `suites.json`) is checked by its own `test-offline`.
+- `cache-key.mjs` is `test`'s runtime input: Nx does not hash the host, so a variable
+  or file that decides what the suites compile or collect belongs there.
+  `tests/cache-key.test.mjs` proves other hosts and flags take no cached result.
