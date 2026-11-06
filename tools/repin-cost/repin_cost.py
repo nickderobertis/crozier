@@ -625,17 +625,17 @@ def worker_pinned(a: str, b: str) -> dict[str, str]:
 def parse_window(spec: str, root: Path) -> tuple[list[str], list[str]]:
     """The runs a window reads and the commits it requires; ValueError names what is wrong with it."""
     kind, _, value = spec.partition(":")
-    items = [v for v in value.split(",") if v]
+    items = value.split(",")
     if len(set(items)) != len(items):
         # A run read twice would double its list-backed dispatches.
         raise ValueError(f"--window names something twice, got {spec!r}")
     match kind:
-        case "runs" if items:
+        case "runs" if all(items):
             bad = [v for v in items if v in (".", "..") or "/" in v or "\\" in v]
             if bad:
                 raise ValueError(f"--window names run {bad[0]!r}, which is not a directory name under the runs root")
             return items, []
-        case "base-carries" if items:
+        case "base-carries" if all(items):
             unknown = [v for v in items if not COMMIT_RE.fullmatch(v) or not has_commit(v)]
             if unknown:
                 raise ValueError(f"--window needs full commit shas this checkout holds; {unknown[0]!r} is not one")
