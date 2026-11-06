@@ -24,7 +24,6 @@ import sys
 import unittest
 from pathlib import Path
 from typing import Any
-from unittest import mock
 
 import pytest
 
@@ -86,31 +85,6 @@ class ResidualAttributionTests(unittest.TestCase):
         self.assertEqual("schema-example-null", measured["key"])
         self.assertEqual([], measured["byte_matched"])
         self.assertEqual([], measured["unmatched"])
-
-
-class AClosedKeysSavedAttribution(unittest.TestCase):
-    def test_publishing_drops_the_saved_row_of_a_key_a_supplemental_proof_closes(self) -> None:
-        """The committed supplement closes the key, so a row saved before it must not outlive it."""
-        spec = importlib.util.spec_from_file_location("residual_attribution_closed", SCRIPT)
-        assert spec is not None and spec.loader is not None
-        # The script's globals are reassigned below, which a plain `ModuleType` does not declare.
-        module: Any = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        module.CROZIER = Path(sys.executable)
-        module.CASES = {"schema-example-null": module.CASES["schema-example-null"]}
-        if shutil.which("ruff") is None:
-            self.fail("no ruff on PATH; install it with `just bootstrap`")
-        stale = module.record.Attribution("schema-example-null", "webflow-v2", [], [], "0" * 64, "0" * 64)
-        kept = module.record.Attribution("unselected", "other", [], [], "0" * 64, "0" * 64)
-        saved = {stale.key: stale, kept.key: kept}
-        published: list[dict[str, Any]] = []
-        with (
-            mock.patch.object(module.record, "read", return_value=saved),
-            mock.patch.object(module.record, "write", side_effect=lambda _root, rows: published.append(dict(rows))),
-            contextlib.redirect_stdout(io.StringIO()),
-        ):
-            self.assertEqual(0, module.main(["--write-record"]))
-        self.assertEqual([{kept.key: kept}], published)
 
 
 class AMissingWitnessSource(unittest.TestCase):

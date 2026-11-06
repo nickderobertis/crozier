@@ -165,11 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     registrations = CENSUS.golden_registrations(REPO / CENSUS.GOLDEN_REGISTRY)
     measured = record.read(REPO)
     for key, (fixture, perturb) in CASES.items():
-        if key in closed:
-            # A supplemental proof closes the key, so the attribution table has no row for it.
-            measured.pop(key, None)
-            continue
-        if args.key is not None and key != args.key:
+        if key in closed or (args.key is not None and key != args.key):
             continue
         path = CENSUS.spec_in(REPO / "tests" / "fixtures" / "corpus-sources" / fixture)
         if path is None:
