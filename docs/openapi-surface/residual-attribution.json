@@ -21,7 +21,15 @@
       ],
       "unmatched": [],
       "golden_digest": "f17905cb56cc8d81f3b52d30486ed5729c1f5bf4d18158f0cec0210235e9d20c",
-      "inputs_digest": "7bf86c92ead2966a70df5e41daa99ae0e025b9eab0c916087752a8405cda9718"
+      "inputs_digest": "7b1cc4dd186f266c886e3724f1cec7ef172a6e6a28e4216ab8166f3ead7fa161"
+    },
+    {
+      "key": "schema-example-null",
+      "fixture": "webflow-v2",
+      "byte_matched": [],
+      "unmatched": [],
+      "golden_digest": "f17905cb56cc8d81f3b52d30486ed5729c1f5bf4d18158f0cec0210235e9d20c",
+      "inputs_digest": "7b1cc4dd186f266c886e3724f1cec7ef172a6e6a28e4216ab8166f3ead7fa161"
     }
   ]
 }
