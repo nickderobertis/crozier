@@ -153,3 +153,25 @@ Live code_search: 0. Live core: 0. Live raw candidate fetches: 95
 No GitHub request outside rate_limit_guard.py. No live licence acquisition,
 code search, GraphQL, Sourcegraph, Postman or SwaggerHub route.
 The guard's own logs are committed beside this record.
+
+Re-verification after merging main at 8cbca1f51 (tree a5eecfc52)
+----------------------------------------------------------------
+This section supersedes the earlier-state census evidence above. No file of
+src/, templates/ or assets/ moved in the merge, and no Fern generation or
+GitHub request was made for it, so the search results above stand as recorded.
+- The corpus census test now compares its sources with the committed golden
+  trees rather than a carried count; it failed as intended naming an induced
+  extra tree, and that tree was removed.
+- just residual-attribution refreshed one input digest and no attribution.
+- just census-repin: 0 tests and 12 fixtures run, 321 tests and 41 fixtures
+  carried from base 10ace0821, 3 derived files rewritten.
+- just test-corpus-match and just test-corpus-match-strict passed.
+- just test-surface-census: 807 passed, 1 skipped, in one complete run.
+- just test-corpus-offline: its main test passed, then its recovery test errored
+  because this host's PATH began with a relative .venv/bin. With that entry made
+  absolute, the recovery and usage tests passed when run directly. The recipe
+  itself has not passed end to end here.
+- handwritten_fixtures_match_fern_goldens, surface-reach:test-residual-attribution
+  and just lint --projects=corpus-match passed.
+- Judged lint over the diff: 20261106T014553Z-8f146, 20261106T014644Z-25112 and
+  20261106T014735Z-f9f01, zero failed.
