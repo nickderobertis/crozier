@@ -82,6 +82,12 @@ behavior. Prior area reports describe their own repair-node measurements;
 
 ## Coverage measurement provenance
 
+The current ledger is a full golden-only measurement at `5f7c53ebb774`, the
+registration batch merged with `main` at `6c42a7192`: all 392 golden tests and
+48 hand-written fixtures ran, none carried. The census covers 392 sources: 31
+original and 361 corpus sources. The paragraphs below are the earlier
+measurements this one supersedes.
+
 The missing-overlay registration batch supersedes the historical measurement
 below with a fresh full golden-only run at `5d35553914adf9923d647acddf37ab3af76b8f72`:
 391 tests passed, with zero carried exports. This includes the 72 new
