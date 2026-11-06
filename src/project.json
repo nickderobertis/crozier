@@ -67,7 +67,8 @@
       },
       "cache": true,
       "inputs": [
-        "crateTestRun"
+        "crateTestRun",
+        "{workspaceRoot}/scripts/share-instrumented-build.mjs"
       ]
     }
   }
