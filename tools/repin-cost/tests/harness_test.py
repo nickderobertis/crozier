@@ -1057,6 +1057,30 @@ class HarnessTest(unittest.TestCase):
             ("[1]\n", "not an object"),
             ('{"kind": "push", "labels": {}, "payload": {}}\n', "no usable time"),
             ('{"ts": 3, "kind": "push", "labels": {}, "payload": {}}\n', "no usable time"),
+            (
+                json.dumps(
+                    {
+                        "ts": "2026-01-01T02:00:00Z",
+                        "kind": "push",
+                        "labels": {"session": "change-1", "identity": "github.com/nickderobertis/crozier"},
+                        "payload": {"branch": "change-1", "accepted": True, "head": int("1" * 40)},
+                    }
+                )
+                + "\n",
+                "head",
+            ),
+            (
+                json.dumps(
+                    {
+                        "ts": "2026-01-01T02:00:00Z",
+                        "kind": "change-merged",
+                        "labels": {"session": "change-1", "identity": "github.com/nickderobertis/crozier"},
+                        "payload": {"branch": "change-1", "sha": int("1" * 40)},
+                    }
+                )
+                + "\n",
+                "a merge's sha",
+            ),
             ('{"ts": "2026-01-01T02:00:00Z", "kind": 3, "labels": {}, "payload": {}}\n', "string kind"),
             (
                 '{"ts": "2026-01-01T02:00:00Z", "kind": "push", "labels": {"node": 3}, "payload": {}}\n',

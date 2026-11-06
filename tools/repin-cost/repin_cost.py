@@ -328,6 +328,10 @@ def valid_publication(payload: dict) -> bool:
     )
 
 
+def is_commit_sha(value: object) -> bool:
+    return isinstance(value, str) and COMMIT_RE.fullmatch(value) is not None
+
+
 def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, node: str | None) -> None:
     match kind:
         case "gate-run" if not valid_publication(payload):
@@ -339,13 +343,13 @@ def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, n
         case "push" if not isinstance(payload.get("accepted"), bool):
             raise ValueError(f"a push's accepted must be true or false, got {payload.get('accepted')!r}")
         # llmlint: ignore[boundary_inputs_validated] An accepted push with no head is real (dozens in this host's journals) and records nothing to read, so the method falls back to the pull request's head; only a head that is present must be a sha.
-        case "push" if payload.get("head") is not None and not COMMIT_RE.fullmatch(str(payload["head"])):
+        case "push" if payload.get("head") is not None and not is_commit_sha(payload["head"]):
             raise ValueError(f"a push's head must be a commit sha, got {payload['head']!r}")
         case "change-opened":
             b["pr"] = positive_pr(payload["id"])
         case "change-merged":
             sha = payload.get("sha")
-            if sha is not None and not COMMIT_RE.fullmatch(str(sha)):
+            if sha is not None and not is_commit_sha(sha):
                 raise ValueError(f"a merge's sha must be a commit sha, got {sha!r}")
             b["merged"] = sha
             m = re.search(r"/pull/(\d+)", payload.get("url", ""))
