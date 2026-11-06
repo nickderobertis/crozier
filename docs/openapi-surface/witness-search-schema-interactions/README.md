@@ -81,6 +81,12 @@ and per-combination verdict. The earlier retry tables in the
 and [operations/extensions search](../witness-search-fixture-only-operations-extensions/README.md#handed-off-document-retry-2026-11-04)
 record the same checks. No document can witness a combination it does not declare.
 
+Corpus row 5371, `seldon-wrapper`, registered on main after these screens, also
+declares combo-param-example-beside-ref-schema, at
+`/paths/~1predict/get/parameters/0`, and its complete golden byte-matches. It
+leaves the row `open`: the handling stays pooled, so no region's execution
+implies both features for that document to execute.
+
 ## Open proof obstructions
 
 The [union measurements](../combination-open-unions/README.md) record the full
