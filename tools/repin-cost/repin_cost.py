@@ -56,6 +56,7 @@ IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
 # llmlint: ignore[contracts_have_one_source_or_a_drift_gate] The census tier is the spike method's fixed definition, frozen so a re-take stays comparable with the baseline; following a later target rename here would change what is counted, and `comparison.md` states the one target this leaves out.
 CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surface-census:test-reach-portable")
+# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] GitHub's REST documentation is the source and offers nothing an offline gate could read; a conclusion GitHub adds stops the run rather than being counted as a pass, so drift cannot pass unseen.
 CONCLUSIONS = (
     None,
     "success",
@@ -556,12 +557,14 @@ def fetch_pr(pr: int) -> str | None:
 def is_ancestor(ancestor: str, descendant: str) -> bool:
     if not descendant:
         return False
-    return (
-        subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "merge-base", "--is-ancestor", ancestor, descendant], capture_output=True
-        ).returncode
-        == 0
+    done = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "merge-base", "--is-ancestor", ancestor, descendant],
+        capture_output=True,
+        text=True,
     )
+    if done.returncode not in (0, 1):
+        raise RuntimeError(f"git merge-base --is-ancestor {ancestor} {descendant}: {done.stderr.strip()}")
+    return done.returncode == 0
 
 
 def has_commit(sha: str) -> bool:

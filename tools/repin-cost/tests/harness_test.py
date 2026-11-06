@@ -908,6 +908,24 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stderr)
         self.assertIn("merge-base", done.stderr)
 
+    def test_an_unnamed_census_failure_and_a_redispatch_after_a_conflict(self):
+        branch, head = self.change(1, self.main)
+        self.serve_runs(
+            branch,
+            [self.ci_run(1, 1, head)],
+            {1: b"E AssertionError: unrelated words\nFailed tasks:\n - surface-census:test-census\n"},
+        )
+        self.event(
+            "sync-conflict", branch, {"paths": ["docs/openapi-surface/golden-reach.tsv"]}, "2026-01-01T02:00:00Z"
+        )
+        self.event("node-dispatched", branch, {"attempt": 2}, "2026-01-01T02:10:00Z")
+        out = self.invoke(window="runs:sample")
+        self.assertEqual([e["kind"] for e in self.rows(out, "events.tsv")], ["census-unattributed", "derived-conflict"])
+        totals = json.loads((out / "totals.json").read_text())
+        self.assertEqual(totals["by_kind"]["census-unattributed"]["events"], 1)
+        self.assertEqual(totals["by_kind"]["derived-conflict"]["redispatches"], 1)
+        self.assertEqual((totals["conflicts"]["redispatches"], totals["census"]["redispatches"]), (1, 0))
+
     def test_a_collection_longer_than_the_page_limit_stops(self):
         branch, head = self.change(1, self.main)
         page = [dict(self.ci_run(100, 1, head, "success"), name="other") for _ in range(100)]
