@@ -1646,7 +1646,20 @@ fn all_operations_authenticated(doc: &OpenApi) -> bool {
     for item in doc.paths.values() {
         for (_, op) in item.operations() {
             any = true;
-            let effective = op.security.as_ref().or(doc.security.as_ref());
+            let effective = match (op.security.as_ref(), doc.security.as_ref()) {
+                // An operation's own `security: []` opts out of the document's
+                // requirement, so the API is not authenticated throughout.
+                (Some(own), Some(document))
+                    if own.is_empty()
+                        && !document.is_empty()
+                        && document.iter().all(|requirement| !requirement.is_empty()) =>
+                {
+                    return false;
+                }
+                // An operation's own list replaces the one the document declares.
+                (Some(own), Some(_)) => Some(own),
+                (own, document) => own.or(document),
+            };
             let authed = effective.is_some_and(|reqs| !reqs.is_empty());
             if !authed {
                 return false;
@@ -4056,9 +4069,21 @@ fn build_endpoint(
                 wire_name: p.name.clone(),
                 py_name: naming::field_name(p.sdk_name()),
                 // A path value that reaches nothing but scalars is interpolated as
-                // text, the same guard the query arm applies.
-                convert: hoister.needs_convert(&type_ref)
-                    && !hoister.reaches_url_as_scalars(&type_ref),
+                // text, the same guard the query arm applies. A string enum a `$ref`
+                // names is one of them: it is a plain `str` value, with no field
+                // aliases to convert.
+                convert: if p
+                    .schema
+                    .as_ref()
+                    .and_then(|schema| schema.reference.as_deref())
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .is_some_and(|referenced_path_schema| {
+                        string_enum_values(referenced_path_schema).is_some()
+                    }) {
+                    false
+                } else {
+                    hoister.needs_convert(&type_ref) && !hoister.reaches_url_as_scalars(&type_ref)
+                },
                 type_ref,
                 docstring: parameter_doc(p),
                 // Without an importer example Fern's IR fallback reads no declared
@@ -4321,7 +4346,8 @@ fn build_endpoint(
                 .and_then(|reference| resolve_ref(doc, reference))
                 .map(base_type_ref)
                 .and_then(|resolved| match resolved {
-                    TypeRef::Primitive(prim @ (Prim::Date | Prim::Datetime)) => Some(prim),
+                    TypeRef::Primitive(Prim::Datetime) => Some(Prim::Datetime),
+                    TypeRef::Primitive(Prim::Date) => Some(Prim::Date),
                     _ => None,
                 });
             QueryParam {
@@ -4408,12 +4434,16 @@ fn build_endpoint(
                 // an inline enum does (the measured `enum-header-params-stringified`
                 // document's `X-Shift`).
                 enum_value: p.schema.as_ref().is_some_and(|schema| {
+                    if let Some(referenced_header_schema) = schema
+                        .reference
+                        .as_deref()
+                        .and_then(|reference| resolve_ref(doc, reference))
+                    {
+                        if string_enum_values(referenced_header_schema).is_some() {
+                            return true;
+                        }
+                    }
                     string_enum_values(schema).is_some()
-                        || schema
-                            .reference
-                            .as_deref()
-                            .and_then(|reference| resolve_ref(doc, reference))
-                            .is_some_and(|target| string_enum_values(target).is_some())
                 }),
             }
         })
@@ -5704,11 +5734,19 @@ fn requires_object_query(doc: &OpenApi, op: &Operation) -> bool {
         parameter.location == Some(ParameterLocation::Query)
             && parameter.required == Some(true)
             && parameter.schema.as_ref().is_some_and(|schema| {
-                let schema = schema
+                let declares_object = |schema: &Schema| {
+                    schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("object")
+                };
+                if let Some(target) = schema
                     .reference
                     .as_deref()
                     .and_then(|reference| resolve_ref(doc, reference))
-                    .unwrap_or(schema);
+                {
+                    if declares_object(target) {
+                        return !target.properties.is_empty();
+                    }
+                    return is_object_type(target) && !target.properties.is_empty();
+                }
                 is_object_type(schema) && !schema.properties.is_empty()
             })
     })
@@ -6423,13 +6461,16 @@ fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {
             })
         })
     });
-    if !oauth2
-        && effective_security
-            .is_some_and(|reqs| !reqs.is_empty() && reqs.iter().all(|r| !r.is_empty()))
-    {
+    let required = effective_security
+        .is_some_and(|reqs| !reqs.is_empty() && reqs.iter().all(|r| !r.is_empty()));
+    if !request_and_response_refs_match(op) {
         return false;
     }
-    request_and_response_refs_match(op)
+    match (oauth2, required) {
+        (true, _) => true,
+        (false, true) => false,
+        (false, false) => true,
+    }
 }
 
 fn request_and_response_refs_match(op: &Operation) -> bool {
@@ -6449,38 +6490,50 @@ fn uses_codegen_request_body_name(op: &Operation) -> bool {
 
 fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
     op.responses.iter().any(|(code, resp)| {
-        // A binary *media type* loses to an `application/json` declared beside it
-        // — oSPARC's `create_captcha` is `image/png: {}` next to an
-        // `application/json` and its golden returns `typing.Any`, while
-        // flowdapt's `get_plugin_file` is a schemaless `application/octet-stream`
-        // alone and streams — and to a text media type declared before it:
-        // measured at Fern 5.20.0 (not re-measured at the certified pair),
-        // `{text/plain: {}, application/octet-stream: {}}`
-        // returns `str` and the same two the other way round stream, so the first
-        // of the two kinds in the content map decides.
-        let download_first = resp
-            .content
-            .keys()
-            .find(|media_type| {
-                is_download_media_type(media_type) || is_text_response_media(media_type)
+        if !code.starts_with('2') {
+            return false;
+        }
+        let media_types = || resp.content.keys();
+        // Measured at Fern 5.20.0 (not re-measured at the certified pair),
+        // `{text/plain: {}, application/octet-stream: {}}` returns `str` and the
+        // same two the other way round stream, so the first of the two kinds in
+        // the content map decides.
+        let download_first = if media_types().any(|media_type| is_download_media_type(media_type))
+            && media_types().any(|media_type| is_text_response_media(media_type))
+        {
+            media_types()
+                .find(|media_type| {
+                    is_download_media_type(media_type) || is_text_response_media(media_type)
+                })
+                .is_some_and(|media_type| is_download_media_type(media_type))
+        } else {
+            media_types().any(|media_type| is_download_media_type(media_type))
+        };
+        // A binary *schema* wins either way: apicurio's `application/zip` names one
+        // beside an `application/json` and streams.
+        let binary_schema = resp.content.values().any(|media| {
+            media.schema.as_ref().is_some_and(|schema| {
+                let schema = schema
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .unwrap_or(schema);
+                schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
+                    && schema.format.as_deref() == Some("binary")
             })
-            .is_some_and(|media_type| is_download_media_type(media_type));
-        code.starts_with('2')
-            && ((has_byte_text_response(doc, resp) || download_first)
-                && !resp.content.contains_key("application/json")
-                // A binary *schema* wins either way: apicurio's `application/zip`
-                // names one beside an `application/json` and streams.
-                || resp.content.values().any(|media| {
-                    media.schema.as_ref().is_some_and(|schema| {
-                        let schema = schema
-                            .reference
-                            .as_deref()
-                            .and_then(|reference| resolve_ref(doc, reference))
-                            .unwrap_or(schema);
-                        schema.ty.as_ref().and_then(|t| t.primary()) == Some("string")
-                            && schema.format.as_deref() == Some("binary")
-                    })
-                }))
+        });
+        let declares_json = resp.content.contains_key("application/json");
+        if declares_json && binary_schema {
+            return true;
+        }
+        // A binary *media type* loses to an `application/json` declared beside it:
+        // oSPARC's `create_captcha` is `image/png: {}` next to an `application/json`
+        // and its golden returns `typing.Any`, while flowdapt's `get_plugin_file` is
+        // a schemaless `application/octet-stream` alone and streams.
+        if declares_json && download_first {
+            return false;
+        }
+        (has_byte_text_response(doc, resp) || download_first) && !declares_json || binary_schema
     })
 }
 
@@ -7012,7 +7065,12 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                         }
                         *existing = schema.clone();
                     } else {
-                        bodies.insert(name, schema.clone());
+                        // One arm per spelling, so an object declaring properties is
+                        // measured apart from a bare `allOf` (`golden-reach-sites.tsv`).
+                        match schema.properties.is_empty() {
+                            false => bodies.insert(name, schema.clone()),
+                            true => bodies.insert(name, schema.clone()),
+                        };
                     }
                 } else if is_inline_union(schema) {
                     bodies
@@ -7404,6 +7462,12 @@ fn resolve_request_body(
                         format!("{request_ctx}Body")
                     } else {
                         request_ctx.to_string()
+                    };
+                    // The union is the media schema itself, or the component it names.
+                    let obj = if schema.reference.is_none() && schema.one_of.is_some() {
+                        schema
+                    } else {
+                        obj
                     };
                     let docstring = clean_doc(obj.description.as_deref());
                     if hoister

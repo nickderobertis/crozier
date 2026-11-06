@@ -40,8 +40,9 @@ selectors in `contract.tsv`; all recovered bytes were SHA-256 verified first.
 
 ## Verdicts
 
-The interaction row retains its search history here; its proof is its exclusive
-region and the registered Adyen golden run. Every other row is search-incomplete.
+An `interaction-proven` row retains its search history here; its proof is its
+exclusive region and the registered golden run its audit row names, so it has no
+outstanding candidate. Every other row is search-incomplete.
 The complete outstanding list for each row is in
 [outstanding-candidates.tsv](outstanding-candidates.tsv), with every affected combination explicitly listed and one reason per
 candidate. It is also the open-row list for the completion report.
@@ -52,18 +53,18 @@ candidate. It is also the open-row list for the completion report.
 | `combo-basic-auth-operation-requirement` | `search-incomplete` | 3244 | 3138 |
 | `combo-body-property-named-as-header-param` | `search-incomplete` | 2960 | 2847 |
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 3535 | 3438 |
-| `combo-document-operation-security` | `search-incomplete` | 3165 | 3069 |
-| `combo-document-security-security-empty` | `search-incomplete` | 3059 | 2957 |
-| `combo-echo-body-effective-anonymous` | `search-incomplete` | 3123 | 3013 |
-| `combo-echo-body-effective-non-oauth-required` | `search-incomplete` | 3094 | 2990 |
-| `combo-echo-body-effective-oauth2` | `search-incomplete` | 3248 | 3137 |
+| `combo-document-operation-security` | `interaction-proven` | 3165 | 0 |
+| `combo-document-security-security-empty` | `interaction-proven` | 3059 | 0 |
+| `combo-echo-body-effective-anonymous` | `interaction-proven` | 3123 | 0 |
+| `combo-echo-body-effective-non-oauth-required` | `interaction-proven` | 3094 | 0 |
+| `combo-echo-body-effective-oauth2` | `interaction-proven` | 3248 | 0 |
 | `combo-error-multiple-media` | `search-incomplete` | 3084 | 2979 |
-| `combo-error-object` | `search-incomplete` | 3344 | 3256 |
+| `combo-error-object` | `interaction-proven` | 3344 | 0 |
 | `combo-errors-shared-ref` | `search-incomplete` | 3568 | 3499 |
 | `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 3004 | 2894 |
 | `combo-form-urlencoded-body-with-params` | `search-incomplete` | 3129 | 3024 |
-| `combo-form-urlencoded-union-body` | `search-incomplete` | 2973 | 2860 |
-| `combo-header-param-ref-string-enum` | `search-incomplete` | 2975 | 2864 |
+| `combo-form-urlencoded-union-body` | `interaction-proven` | 2973 | 0 |
+| `combo-header-param-ref-string-enum` | `interaction-proven` | 2975 | 0 |
 | `combo-inline-body-read-only-property` | `search-incomplete` | 2990 | 2882 |
 | `combo-multipart-beside-json-body` | `search-incomplete` | 2993 | 2885 |
 | `combo-multipart-body-with-params` | `search-incomplete` | 3186 | 3096 |
@@ -75,22 +76,22 @@ candidate. It is also the open-row list for the completion report.
 | `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2863 |
 | `combo-params-beside-inline-anyof-body` | `search-incomplete` | 3041 | 2933 |
 | `combo-params-beside-inline-oneof-body` | `search-incomplete` | 3058 | 2954 |
-| `combo-path-param-ref-string-enum` | `search-incomplete` | 3010 | 2903 |
+| `combo-path-param-ref-string-enum` | `interaction-proven` | 3010 | 0 |
 | `combo-query-param-anyof` | `search-incomplete` | 3050 | 2946 |
 | `combo-query-param-array-inline-enum-items` | `search-incomplete` | 3171 | 3070 |
 | `combo-query-param-array-ref-enum-items` | `search-incomplete` | 3066 | 2957 |
 | `combo-query-param-inline-object` | `search-incomplete` | 3007 | 2897 |
 | `combo-query-param-oneof` | `search-incomplete` | 3007 | 2902 |
-| `combo-query-param-ref-date-time` | `search-incomplete` | 2965 | 2853 |
-| `combo-query-param-ref-object` | `search-incomplete` | 3009 | 2901 |
+| `combo-query-param-ref-date-time` | `interaction-proven` | 2965 | 0 |
+| `combo-query-param-ref-object` | `interaction-proven` | 3009 | 0 |
 | `combo-query-param-ref-string-enum` | `search-incomplete` | 3189 | 3091 |
-| `combo-streaming-method-name` | `search-incomplete` | 2984 | 2873 |
+| `combo-streaming-method-name` | `interaction-proven` | 2984 | 0 |
 | `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2868 |
-| `combo-success-json-beside-binary-schema` | `search-incomplete` | 3009 | 2908 |
-| `combo-success-json-beside-download` | `search-incomplete` | 2998 | 2891 |
+| `combo-success-json-beside-binary-schema` | `interaction-proven` | 3009 | 0 |
+| `combo-success-json-beside-download` | `interaction-proven` | 2998 | 0 |
 | `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2851 |
 | `combo-success-statuses-mixed-media` | `search-incomplete` | 3139 | 3037 |
-| `combo-success-text-beside-download` | `search-incomplete` | 2969 | 2861 |
+| `combo-success-text-beside-download` | `interaction-proven` | 2969 | 0 |
 
 ## Census encoding
 
@@ -140,6 +141,37 @@ documents and found 44 both-only and 22 single-union-only regions. The certified
 pair also refused the header document, so that screen establishes no refusal
 parity gap. Its document and Contract A result are in
 [the measurement](../../fern-measurements/operation-independence/header-array-enum-second/README.md).
+
+## Registered arm screen
+
+Each `interaction-proven` row below was screened over every golden-only registered
+declarer the reach ledger names, with the instrumented crozier, on 2026-11-06. Its
+witness has an empty `unmatched` list, and its scoped golden test byte-matches.
+
+| Combination | Declarers screened | Executed the arm | Witness |
+|---|---:|---:|---|
+| `combo-document-operation-security` | 47 | 13 | `ahasend-api` |
+| `combo-document-security-security-empty` | 21 | 18 | `billie` |
+| `combo-echo-body-effective-anonymous` | 16 | 16 | `apache.org` |
+| `combo-echo-body-effective-non-oauth-required` | 14 | 14 | `alma-france` |
+| `combo-echo-body-effective-oauth2` | 6 | 6 | `swagger-petstore` |
+| `combo-error-object` | 29 | 28 | `apideck.com-proxy` |
+| `combo-form-urlencoded-union-body` | 1 | 1 | `grantly` |
+| `combo-header-param-ref-string-enum` | 1 | 1 | `ecommerce-ai-skills-runtime` |
+| `combo-path-param-ref-string-enum` | 7 | 7 | `apicurio.local-registry` |
+| `combo-query-param-ref-date-time` | 1 | 1 | `openepcis-dpp-ready` |
+| `combo-query-param-ref-object` | 16 | 2 | `seldon-wrapper` |
+| `combo-streaming-method-name` | 3 | 3 | `truefoundry-trueforge` |
+| `combo-success-json-beside-binary-schema` | 3 | 3 | `apicurio.local-registry` |
+| `combo-success-json-beside-download` | 2 | 2 | `osparc-simcore-webserver` |
+| `combo-success-text-beside-download` | 3 | 3 | `chat-rest-api` |
+
+The same screen ran the three arms below and none executed, so they were removed
+and those rows stay open: a required inline query object over its 3 declarers (none
+declares the parameter required), and each keyword's dropped-`null` response over its 1
+and 3 declarers. A declared-`false` referenced map or union body over 10 and 4 declarers
+did not execute either: each declares `required` nowhere or `true`, which is what the
+selector's `!requestBody.required` measures.
 
 ## Adyen interaction proof
 
