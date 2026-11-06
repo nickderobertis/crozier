@@ -161,10 +161,14 @@ def valid_window(window: object) -> bool:
         cutoff = dt.datetime.fromisoformat(until.replace("Z", "+00:00"))
     except ValueError:
         return False
+    kind, _, value = spec.partition(":")
+    named = value.split(",")
     return (
         cutoff.tzinfo is not None
         and isinstance(carries, list)
         and all(isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha) for sha in carries)
+        and all(named)
+        and carries == (named if kind == "base-carries" else [])
     )
 
 

@@ -980,6 +980,44 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stderr)
         self.assertIn("a base cannot be read without main", done.stderr)
 
+    def test_an_accepted_push_with_no_head_falls_back_to_the_pull_requests_head(self):
+        branch, head = self.change(1, self.main)
+        self.journal = [e for e in self.journal if e["kind"] != "push"]
+        self.event("push", branch, {"accepted": True})
+        self.assertEqual([r["pr"] for r in self.rows(self.invoke(), "changes.tsv")], ["1"])
+        # The fallback decides the base: the same journal with a pull request head lacking the second commit is out.
+        self.git("update-ref", "refs/pull/1/head", self.first)
+        excluded = self.rows(self.invoke(out="older-head"), "excluded.tsv")
+        self.assertEqual([(r["pr"], r["head"]) for r in excluded], [("1", self.first[:12])])
+        self.assertNotEqual(head[:12], excluded[0]["head"])
+
+    def test_a_job_completed_before_it_started_keeps_its_negative_minutes(self):
+        branch, head = self.change(1, self.main)
+        run = self.ci_run(1, 1, head)
+        log = b"E AssertionError: unrelated words\nFailed tasks:\n - surface-census:test-census\n"
+        self.serve_runs(branch, [run], {1: log})
+        reversed_job = {
+            "id": 1,
+            "name": "check",
+            "conclusion": "failure",
+            "started_at": "2026-01-01T01:10:00Z",
+            "completed_at": "2026-01-01T01:00:00Z",
+        }
+        forward_job = {
+            "id": 2,
+            "name": "other",
+            "conclusion": "success",
+            "started_at": "2026-01-01T01:00:00Z",
+            "completed_at": "2026-01-01T01:30:00Z",
+        }
+        self.responses["/repos/nickderobertis/crozier/actions/runs/1/jobs?filter=latest&per_page=100&page=1"] = (
+            200,
+            {"jobs": [reversed_job, forward_job]},
+        )
+        out = self.invoke(window="runs:sample")
+        self.assertEqual(self.rows(out, "events.tsv")[0]["runner_min"], "20.0")
+        self.assertEqual(json.loads((out / "totals.json").read_text())["census"]["runner_min"], 20.0)
+
     def test_a_wrong_command_line_exits_2_and_writes_nothing(self):
         self.change(1, self.main)
         cases = [
@@ -988,6 +1026,8 @@ class HarnessTest(unittest.TestCase):
             (["--window", "base-carries:main"], "full commit shas"),
             (["--window", "runs:../escape"], "not a directory name"),
             (["--window", "commits:" + self.first], "--window must be"),
+            (["--window", "runs:sample,sample"], "names something twice"),
+            (["--window", f"base-carries:{self.first},{self.first}"], "names something twice"),
             (["--until", "2026-01-02T00:00:00"], "UTC offset"),
             (["--until", "not-a-time"], "--until"),
             (["--runs-root", str(self.root / "absent")], "not a directory"),
@@ -1243,6 +1283,16 @@ class ComparisonTest(unittest.TestCase):
                     done = compare()
                     self.assertEqual(done.returncode, 1, done.stderr)
                     self.assertIn("wait_min" if expected == "census.wait_min" else expected, done.stderr)
+            for window in (
+                {"spec": "base-carries:"},
+                {"spec": "base-carries:" + "b" * 40},
+                {"spec": "runs:earlier", "base_carries": ["a" * 40]},
+            ):
+                with self.subTest(window=window):
+                    path.write_text(json.dumps(mutated(lambda d, update=window: d["window"].update(update))))
+                    done = compare()
+                    self.assertEqual(done.returncode, 1, done.stderr)
+                    self.assertIn("malformed window metadata", done.stderr)
             path.write_text(json.dumps(good))
             tsv.write_text("pr\tcensus_failures\truns\nnot-a-number\t0\tr\n")
             done = compare()
