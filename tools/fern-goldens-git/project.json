@@ -84,6 +84,7 @@
         "{workspaceRoot}/tools/llmlint/**/*",
         "{workspaceRoot}/tools/llmlint-resolution/**/*",
         "{workspaceRoot}/tools/python-workspace/**/*",
+        "{workspaceRoot}/tools/repin-cost/**/*",
         "{workspaceRoot}/tools/surface-census/**/*",
         "{workspaceRoot}/tools/surface-reach/**/*",
         "{workspaceRoot}/tools/surface-repin/**/*",
