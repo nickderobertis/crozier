@@ -1,0 +1,31 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sample",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/parcels": {
+      "get": {
+        "operationId": "findParcels",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "example": "param-sample",
+            "schema": {
+              "type": "string",
+              "example": "ref-sample"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    }
+  }
+}

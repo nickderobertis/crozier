@@ -1,5 +1,15 @@
 # Witness search for schema combinations in examples
 
+## Current schema-combination classification
+
+The current classes are the [co-occurrence audit](../combination-cooccurrence.tsv)
+and [retained-population search](../witness-search-schema-interactions/README.md).
+Added composition/example, annotated-nullable and parameter-reference guards
+that repeated the generic result were removed; their earlier counter hits are
+not interaction proof. The affected rows remain open. Harbor and Orchard are
+retained as unchanged complete-tree diagnostics, not unexhausted fallbacks.
+The records below retain the earlier search and output observations.
+
 This bounded search covers the eleven `examples` rows owned by
 `prove-schema-combinations` in [combinations.md](../combinations.md). The
 certified pair is Fern CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3.

@@ -4207,12 +4207,17 @@ fn build_endpoint(
             // is rendered from the enum's first member — eNanoMapper's `type`,
             // exampled `bystudytype`, is `BYINVESTIGATION`.
             let string_enum = p.schema.as_ref().is_some_and(|schema| {
-                let resolved = schema
+                if let Some(referenced_query_schema) = schema
                     .reference
                     .as_deref()
                     .and_then(|reference| resolve_ref(doc, reference))
-                    .unwrap_or(schema);
-                string_enum_values(resolved).is_some()
+                {
+                    if string_enum_values(referenced_query_schema).is_some() {
+                        return true;
+                    }
+                    return false;
+                }
+                string_enum_values(schema).is_some()
             });
             // An optional parameter whose declared example Fern discards (a
             // numeric example on a `type: string` parameter) leaves the call
@@ -16116,7 +16121,13 @@ impl Builder<'_> {
             // union leaves the alias, exactly as it does at a property, and makes
             // the map's value type `Optional`.
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
-                if prop_schema.properties.is_empty() && value.reference.is_none() {
+                // Properties suppress value hoisting independently of a value's reference.
+                let inline_value = if !prop_schema.properties.is_empty() {
+                    None
+                } else {
+                    Some(value)
+                };
+                if let Some(value) = inline_value.filter(|value| value.reference.is_none()) {
                     let value_name = format!("{owner_prop}Value");
                     // One member beside `null` is that member made optional, with
                     // no alias: Sim's `CreateTableImportRequest.mapping` is
@@ -19026,6 +19037,25 @@ fn referenced_schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Sc
     }
 }
 
+// Each keyword retains a conjunctive return arm for the reach measurement.
+fn prefer_map_to_union(schema: &Schema) -> bool {
+    if !is_map(schema) {
+        return false;
+    }
+    if schema.one_of.is_some() {
+        return true;
+    }
+    // A normalized type list keeps its map preference without witnessing a
+    // written anyOf keyword.
+    if schema.multi_type_union {
+        return schema.any_of.is_some();
+    }
+    if schema.any_of.is_some() {
+        return true;
+    }
+    false
+}
+
 /// Map a schema to its base type expression, never adding a top-level
 /// `Optional` (the caller decides optionality for fields).
 fn base_type_ref(schema: &Schema) -> TypeRef {
@@ -19056,7 +19086,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     // A map is a map even where it also writes alternatives: Hasura's
     // `GraphQLValue_Name` is `additionalProperties: true` beside an `anyOf`, and
     // Fern declares `Dict[str, Any]`.
-    let map_first = is_map(schema) && (schema.one_of.is_some() || schema.any_of.is_some());
+    let map_first = prefer_map_to_union(schema);
     if let Some((mut variants, dropped_null)) = union_variants(schema).filter(|_| !map_first) {
         if variants.is_empty() {
             return TypeRef::Primitive(Prim::Any);
@@ -20774,6 +20804,46 @@ fn plain_example_literal(value: &serde_json::Value) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn prefer_map_to_union_keeps_the_dictionary_and_leaves_plain_unions_alone() {
+        for keyword in ["oneOf", "anyOf"] {
+            for map in [false, true] {
+                let mut document = serde_json::json!({"type": "object"});
+                document[keyword] = serde_json::json!([{"type": "string"}, {"type": "integer"}]);
+                if map {
+                    document["additionalProperties"] = serde_json::json!(true);
+                }
+                let schema: crate::openapi::Schema =
+                    serde_json::from_value(document).expect("schema deserializes");
+                assert_eq!(super::prefer_map_to_union(&schema), map, "{keyword}");
+                let lowered = super::base_type_ref(&schema);
+                if map {
+                    assert_eq!(
+                        lowered,
+                        super::TypeRef::Dict(
+                            Box::new(super::TypeRef::Primitive(super::Prim::Str)),
+                            Box::new(super::TypeRef::Primitive(super::Prim::Any)),
+                        ),
+                        "{keyword}"
+                    );
+                } else {
+                    assert_eq!(
+                        lowered,
+                        super::TypeRef::Union(vec![
+                            super::TypeRef::Primitive(super::Prim::Str),
+                            super::TypeRef::Primitive(super::Prim::Int),
+                        ]),
+                        "{keyword}"
+                    );
+                }
+            }
+        }
+        let plain_map: crate::openapi::Schema =
+            serde_json::from_value(serde_json::json!({"additionalProperties": true}))
+                .expect("schema deserializes");
+        assert!(!super::prefer_map_to_union(&plain_map));
+    }
+
     #[test]
     fn digit_leading_operation_context_names_hoisted_types_with_a_word() {
         for (id, expected) in [("1readings", "OneReadings"), ("8readings", "EightReadings")] {

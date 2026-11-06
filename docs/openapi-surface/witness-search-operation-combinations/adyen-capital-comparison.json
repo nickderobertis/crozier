@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.158",
+  "searched_paths": [
+    "<scratch>/adyen-cached-comparison/crozier.yml"
+  ],
+  "exit_code": 0,
+  "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.191504149,
+    "crozier_seconds": 1.216592133,
+    "speedup": 0.15741031345301326,
+    "saved_seconds": -1.025087984
+  },
+  "results": [
+    {
+      "status": "matched",
+      "config_file": "<scratch>/adyen-cached-comparison/crozier.yml",
+      "generator": "python",
+      "spec": "<repo>/tests/fixtures/corpus-sources/adyen-capital/openapi.json",
+      "reference": {
+        "command": "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/bin/python3.14 <scratch>/adyen-cached-comparison/reference.py",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 107,
+        "differing": [],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 39
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 40
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.191504149,
+        "crozier_seconds": 1.216592133,
+        "speedup": 0.15741031345301326,
+        "saved_seconds": -1.025087984
+      },
+      "reason": null
+    }
+  ]
+}
