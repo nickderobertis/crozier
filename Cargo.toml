@@ -80,6 +80,17 @@ fancy-regex = "0.16"
 # Reads a schema `pattern` to construct a worked-example value it matches.
 regex-syntax = "0.8"
 
+# Not called directly. `tempfile` reaches libc without its default features, and
+# `assert_cmd` (the test members) reaches it with them, so without this line
+# `cargo build -p crozier` and every suite's build resolve libc differently and
+# compile crozier twice under one profile. Windows' tree has no such split. A
+# test holds the two builds to one compile: tools/ci/suite-cases/tests.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[package.metadata.cargo-machete]
+ignored = ["libc"]
+
 [dev-dependencies]
 tempfile = { workspace = true }
 toml = "1"

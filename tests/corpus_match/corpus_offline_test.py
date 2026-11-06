@@ -82,7 +82,15 @@ class OfflineCorpusRecipes(unittest.TestCase):
         # CI's runner starts with no crates cached; a denied recipe then failed
         # resolving static.crates.io. Reproduce that cold registry here.
         with tempfile.TemporaryDirectory(dir=REPO / ".local") as cold:
-            env = {**os.environ, "CARGO_HOME": cold, "RUSTC_WRAPPER": ""}
+            # Its own target directory: a build from another CARGO_HOME replaces the
+            # fingerprints it shares with the job's normal builds, which would then
+            # all compile crozier over again.
+            env = {
+                **os.environ,
+                "CARGO_HOME": cold,
+                "CARGO_TARGET_DIR": str(Path(cold) / "target"),
+                "RUSTC_WRAPPER": "",
+            }
             warm_dependencies(self, env)
             build = subprocess.run(
                 [

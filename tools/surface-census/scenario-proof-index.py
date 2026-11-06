@@ -48,6 +48,7 @@ tables; ``hunks DIFF`` prints the hunks of one comparison diff in the form
 from __future__ import annotations
 
 import argparse
+import bisect
 import functools
 import importlib.util
 import io
@@ -511,20 +512,34 @@ class E2e:
         return any(path in target for test in tests for path in self.paths(test) if len(path) > 3)
 
 
+_E2E_READINGS: dict[tuple[str, ...], E2e] = {}
+
+
 def read_e2e(root: Path) -> E2e:
+    """What the e2e suite's sources declare. A pure reading of their text, so each text is read once per process."""
     sources: list[Path] = []
     for entry in E2E_SOURCES:
         path = root / entry
         sources += [path] if path.is_file() else sorted(path.glob("*.rs"))
+    texts = tuple(path.read_text(encoding="utf-8") for path in sources)
+    if texts not in _E2E_READINGS:
+        _E2E_READINGS.clear()
+        _E2E_READINGS[texts] = _read_e2e_sources(texts)
+    return _E2E_READINGS[texts]
+
+
+def _read_e2e_sources(texts: tuple[str, ...]) -> E2e:
     tests: set[TestName] = set()
     bodies: dict[str, str] = {}
     constants: dict[str, str] = {}
     corpus_constants: dict[str, str] = {}
     flat_tests: dict[TestName, str] = {}
-    for path in sources:
-        text = path.read_text(encoding="utf-8")
+    for text in texts:
         constants |= dict(re.findall(r'(?m)^\s*(?:pub(?:\(super\))? )?const (\w+): &str = "([^"]*)";', text))
         lines = text.splitlines()
+        closers: dict[str, list[int]] = {}
+        for index, line in enumerate(lines):
+            closers.setdefault(line.rstrip(), []).append(index)
         attributed, pending_corpus, flat = False, None, False
         for index, line in enumerate(lines):
             stripped = line.strip()
@@ -532,10 +547,9 @@ def read_e2e(root: Path) -> E2e:
                 attributed = True
             elif found := re.match(r"^(\s*)(?:pub(?:\(super\))? )?fn (\w+)\(", line):
                 indent, name = found.group(1), found.group(2)
-                end = next(
-                    (later for later in range(index + 1, len(lines)) if lines[later].rstrip() == f"{indent}}}"),
-                    len(lines) - 1,
-                )
+                same_indent = closers.get(f"{indent}}}", [])
+                position = bisect.bisect_right(same_indent, index)
+                end = same_indent[position] if position < len(same_indent) else len(lines) - 1
                 bodies[name] = "\n".join(lines[index : end + 1])
                 if attributed:
                     tests.add(TestName(name))
