@@ -1277,6 +1277,7 @@ class ComparisonTest(unittest.TestCase):
                 or d["conflicts"].update(changes_hit=0),
                 "kind 'x' must hold": lambda d: d["by_kind"].update(x={"events": 1}),
                 "malformed artifact": lambda d: d["artifacts_outside_census"].append({}),
+                "malformed artifact record": lambda d: d["artifacts_outside_census"].append({"artifact": ["a"]}),
                 "window metadata": lambda d: d["window"].update(spec=""),
                 "metadata": lambda d: d["window"].update(until="not-a-time"),
                 "malformed window": lambda d: d["window"].update(base_carries=["short"]),

@@ -136,12 +136,12 @@ def load_totals(path: Path) -> Totals:
     artifacts = data.get("artifacts_outside_census")
     if not isinstance(artifacts, list):
         raise ValueError(f"{path}: artifacts_outside_census must be a list")
-    names = [artifact.get("artifact") for artifact in artifacts if isinstance(artifact, dict)]
+    if not all(isinstance(artifact, dict) and isinstance(artifact.get("artifact"), str) for artifact in artifacts):
+        raise ValueError(f"{path}: malformed artifact record")
+    names = [artifact["artifact"] for artifact in artifacts]
     if len(names) != len(set(names)):
         raise ValueError(f"{path}: an artifact is listed twice")
     for artifact in artifacts:
-        if not isinstance(artifact, dict) or not isinstance(artifact.get("artifact"), str):
-            raise ValueError(f"{path}: malformed artifact record")
         if not artifact.keys() >= ARTIFACT_FIELDS:
             raise ValueError(f"{path}: artifact {artifact['artifact']!r} must hold {sorted(ARTIFACT_FIELDS)}")
         numbers(path, {k: v for k, v in artifact.items() if k != "artifact"}, artifact["artifact"])
