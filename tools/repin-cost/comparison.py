@@ -62,7 +62,11 @@ def load_totals(path: Path) -> dict[str, Any]:
             raise ValueError(f"{path}: malformed artifact record")
         numbers({k: v for k, v in artifact.items() if k != "artifact"}, artifact["artifact"])
     window = data["window"]
-    if not all(isinstance(window[key], str) and window[key] for key in ("spec", "until")) or not isinstance(window["base_carries"], list) or not all(isinstance(sha, str) and sha for sha in window["base_carries"]):
+    if (
+        not all(isinstance(window[key], str) and window[key] for key in ("spec", "until"))
+        or not isinstance(window["base_carries"], list)
+        or not all(isinstance(sha, str) and sha for sha in window["base_carries"])
+    ):
         raise ValueError(f"{path}: malformed window metadata")
     return data
 
@@ -75,7 +79,9 @@ def comparison(baseline: Path, after: Path) -> str:
         if not reader.fieldnames or "pr" not in reader.fieldnames:
             raise ValueError(f"{after}/changes.tsv: missing pr column")
         records = list(reader)
-        if len(records) != current["changes"] or any(not row["pr"] or not row["pr"].isdigit() or int(row["pr"]) < 1 for row in records):
+        if len(records) != current["changes"] or any(
+            not row["pr"] or not row["pr"].isdigit() or int(row["pr"]) < 1 for row in records
+        ):
             raise ValueError(f"{after}/changes.tsv: PR rows must match totals.changes and contain positive PR numbers")
         prs = [f"#{row['pr']}" for row in records]
     n, m = before["changes"], current["changes"]

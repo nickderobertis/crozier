@@ -283,8 +283,6 @@ class HarnessTest(unittest.TestCase):
         self.assertIn("GitHub answered 503", done.stderr)
         self.assertFalse((self.root / "out/totals.json").exists())
         self.responses[path] = (200, {"workflow_runs": []})
-        if (self.root / "cache").exists():
-            shutil.rmtree(self.root / "cache")
         self.invoke(out="recovered")
 
     def test_missing_job_log_stops(self):
