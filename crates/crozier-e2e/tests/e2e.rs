@@ -30950,7 +30950,7 @@ fn remeasured_membrane_api_gateway_8340f5da_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
-// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These registrations are permanent corpus proof the user requires on every pull request. Moving them behind a narrower Nx edge belongs to the crozier gate-time work (the gate-under-an-hour run's slowest-suites step), tracked by the existing follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
 // Keep identifiers short so rustfmt leaves census-discovered helper calls on one line.
 /// Certified enum-mode witness, corpus row 5500.
 const LITERALS_AMRC_FACTORYPLUS_BE5E3789: Corpus = Corpus {
