@@ -13001,20 +13001,25 @@ class CombinationSearchRecordTests(unittest.TestCase):
             census.write_text(valid)
             self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.OPEN))
 
-    def test_committed_operation_search_has_reproducible_compressed_bytes(self) -> None:
+    def test_committed_operation_search_is_canonical_and_host_independent(self) -> None:
+        # The content and the gzip header are the contract, not the deflate stream: Python 3.14's
+        # Windows builds link zlib-ng, whose level 9 encodes these same bytes differently from zlib.
         path = REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz"
         committed = path.read_bytes()
-        reader = csv.reader(io.StringIO(gzip.decompress(committed).decode("utf-8")), delimiter="\t")
+        self.assertEqual(b"\x1f\x8b\x08", committed[:3], "the search census must be a deflated gzip member")
+        self.assertEqual(
+            0, committed[3], "the search census gzip header must carry no file name or other optional field"
+        )
+        self.assertEqual(b"\0\0\0\0", committed[4:8], "the search census gzip header must carry no timestamp")
+        content = gzip.decompress(committed).decode("utf-8")
+        reader = csv.reader(io.StringIO(content, newline=""), delimiter="\t")
         header, *rows = reader
         self.assertEqual(["key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome"], header)
         text = io.StringIO(newline="")
         writer = csv.writer(text, delimiter="\t", lineterminator="\n")
         writer.writerow(header)
         writer.writerows(sorted(rows))
-        encoded = io.BytesIO()
-        with gzip.GzipFile(filename="", mode="wb", fileobj=encoded, mtime=0) as stream:
-            stream.write(text.getvalue().encode("utf-8"))
-        self.assertEqual(committed, encoded.getvalue(), "the search census must be reproducible on every host")
+        self.assertEqual(text.getvalue(), content, "the search census must hold its sorted canonical rows")
 
     def test_compressed_searches_preserve_open_and_exhausted_obligations(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

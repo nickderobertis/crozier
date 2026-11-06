@@ -96,8 +96,10 @@ candidate. It is also the open-row list for the completion report.
 
 `census.tsv.gz` retains the fixture-only search census columns, sorted by all
 column values, with UTF-8 and LF records. It uses gzip level 9, timestamp 0,
-and an empty original filename. The census suite decodes, sorts, serializes
-and recompresses this committed file and requires identical bytes. The plain
+and an empty original filename. The census suite requires that header and that
+the decoded rows equal their sorted serialization on every host. It does not pin
+the deflate stream, because zlib-ng (Python 3.14's Windows builds) encodes the
+same bytes differently from zlib. The plain
 [outstanding index](outstanding-candidates.tsv) lists every affected combination
 for each candidate and the reason its screening is unfinished.
 
