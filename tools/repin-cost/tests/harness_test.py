@@ -847,6 +847,26 @@ class HarnessTest(unittest.TestCase):
         out = self.invoke(out="blocked")
         self.assertTrue((out / "totals.json").exists())
 
+    def test_a_merged_change_reports_its_squash_commit_and_an_empty_sample_says_so(self):
+        branch, _ = self.change(1, self.main)
+        table = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        table.parent.mkdir(parents=True)
+        table.write_text("landed\n", encoding="utf-8")
+        squash = self.commit("squash")
+        self.event("change-merged", branch, {"sha": squash, "url": "https://github.com/nickderobertis/crozier/pull/1"})
+        out = self.invoke(window="runs:sample")
+        row = self.rows(out, "changes.tsv")[0]
+        self.assertEqual((row["merged"], row["rewrote"]), ("True", "docs/openapi-surface/golden-reach.tsv"))
+
+        # The change's base lacks a commit made after it, so nothing qualifies.
+        out = self.invoke(window=f"base-carries:{squash}", out="empty")
+        self.assertEqual(self.rows(out, "changes.tsv"), [])
+        summary = (out / "summary.md").read_text()
+        self.assertIn("- Changes: 0 (0 with a PR, 0 merged); CI runs 0, failed 0.", summary)
+        self.assertIn("Census-tier CI failures: 0 (0.00 per change, 0 changes hit)", summary)
+        self.assertIn("Derived-table conflicts: 0 (0 changes)", summary)
+        self.assertIn("1 whose base lacks a required commit", summary)
+
     def test_a_collection_longer_than_the_page_limit_stops(self):
         branch, head = self.change(1, self.main)
         page = [dict(self.ci_run(100, 1, head, "success"), name="other") for _ in range(100)]
@@ -1077,6 +1097,8 @@ class ComparisonTest(unittest.TestCase):
             after_path = root / "after/totals.json"
             current = json.loads(after_path.read_text())
             current.update(changes=0, changes_with_pr=0, merged=0)
+            current["census"].update(failures=0, changes_hit=0)
+            current["conflicts"].update(derived=0, changes_hit=0)
             after_path.write_text(json.dumps(current))
             (root / "after/changes.tsv").write_text("pr\n")
             result = subprocess.run(
@@ -1118,6 +1140,13 @@ class ComparisonTest(unittest.TestCase):
                 "must be a finite": lambda d: d["census"].update(failures=True),
                 "conflicts must hold": lambda d: d["conflicts"].pop("mixed"),
                 "cannot exceed": lambda d: d.update(merged=d["changes"] + 1),
+                "every count": lambda d: d["census"].update(attempts=1.5),
+                "listed twice": lambda d: d["artifacts_outside_census"].extend(
+                    [d["artifacts_outside_census"][0], d["artifacts_outside_census"][0]]
+                ),
+                "empty sample": lambda d: d.update(changes=0, changes_with_pr=0, merged=0)
+                or d["census"].update(changes_hit=0)
+                or d["conflicts"].update(changes_hit=0),
                 "kind 'x' must hold": lambda d: d["by_kind"].update(x={"events": 1}),
                 "malformed artifact": lambda d: d["artifacts_outside_census"].append({}),
                 "window metadata": lambda d: d["window"].update(spec=""),
@@ -1129,10 +1158,14 @@ class ComparisonTest(unittest.TestCase):
                     self.assertEqual(done.returncode, 1, done.stderr)
                     self.assertIn("wait_min" if expected == "census.wait_min" else expected, done.stderr)
             path.write_text(json.dumps(good))
-            tsv.write_text("pr\nnot-a-number\n")
+            tsv.write_text("pr\tcensus_failures\truns\nnot-a-number\t0\tr\n")
             done = compare()
             self.assertEqual(done.returncode, 1)
-            self.assertIn("positive PR numbers", done.stderr)
+            self.assertIn("a positive pr", done.stderr)
+            tsv.write_text(rows.replace("\n1\t1\t", "\n1\t2\t"))
+            self.assertIn("disagree with totals.json", compare().stderr)
+            tsv.write_text(rows)
+            tsv.write_text(rows)
             target = root / "after/comparison.md"
             target.unlink(missing_ok=True)
             target.mkdir()
@@ -1142,7 +1175,7 @@ class ComparisonTest(unittest.TestCase):
             target.rmdir()
             self.assertEqual(compare().returncode, 0)
             self.assertTrue(target.is_file())
-            tsv.write_text("pr\n1\n1\n2\n3\n4\n5\n6\n7\n")
+            tsv.write_text(rows.replace("\n2\t1\t", "\n1\t1\t"))
             self.assertIn("appears twice", compare().stderr)
             tsv.write_text(rows)
 
@@ -1155,12 +1188,12 @@ class ComparisonTest(unittest.TestCase):
             before = root / "baseline/totals.json"
             data = json.loads(before.read_text())
             data.update(changes=0, changes_with_pr=0, merged=0)
+            data["census"].update(failures=0, changes_hit=0)
+            data["conflicts"].update(derived=0, changes_hit=0)
             before.write_text(json.dumps(data))
             base_rows = (root / "baseline/changes.tsv").read_text()
             self.assertIn("disagree with totals.json", compare().stderr)
             (root / "baseline/changes.tsv").write_text(base_rows.splitlines()[0] + "\n")
-            data["census"]["failures"] = 0
-            before.write_text(json.dumps(data))
             path.write_text(json.dumps(good))
             self.assertEqual(compare().returncode, 0)
             text = (root / "after/comparison.md").read_text()

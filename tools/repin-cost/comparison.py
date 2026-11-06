@@ -38,7 +38,16 @@ CENSUS_FIELDS = {
     "pub_observed",
     "median_pub_wait_min",
 }
+CENSUS_COUNTS = CENSUS_FIELDS - {
+    "runner_min",
+    "elapsed_min",
+    "wait_min",
+    "median_cycle_min",
+    "pub_wait_min",
+    "median_pub_wait_min",
+}
 CONFLICT_FIELDS = {"derived", "changes_hit", "wait_min", "median_wait_min", "redispatches", "mixed", "code"}
+CONFLICT_COUNTS = CONFLICT_FIELDS - {"wait_min", "median_wait_min"}
 GITHUB_FIELDS = {"uncached_calls", "cache_hits"}
 KIND_FIELDS = {
     "events",
@@ -82,10 +91,20 @@ def load_totals(path: Path) -> Totals:
     if not data.keys() >= TOP_FIELDS:
         raise ValueError(f"{path}: totals must hold {sorted(TOP_FIELDS)}")
     numbers(path, {field: data[field] for field in TOP_FIELDS}, "totals")
-    if not isinstance(data["changes"], int):
-        raise ValueError(f"{path}: changes must be an integer")
-    if max(data["merged"], data["changes_with_pr"]) > data["changes"]:
-        raise ValueError(f"{path}: merged and changes_with_pr cannot exceed changes")
+    counts = [
+        *(data[field] for field in TOP_FIELDS),
+        *(data["census"][field] for field in CENSUS_COUNTS),
+        *(data["conflicts"][field] for field in CONFLICT_COUNTS),
+    ]
+    if not all(isinstance(value, int) for value in counts):
+        raise ValueError(f"{path}: every count must be an integer")
+    if (
+        max(data["merged"], data["changes_with_pr"], data["census"]["changes_hit"], data["conflicts"]["changes_hit"])
+        > data["changes"]
+    ):
+        raise ValueError(f"{path}: merged, changes_with_pr and changes_hit cannot exceed changes")
+    if not data["changes"] and (data["census"]["failures"] or data["conflicts"]["derived"]):
+        raise ValueError(f"{path}: an empty sample cannot have failures or conflicts")
     if not isinstance(data.get("by_kind"), dict):
         raise ValueError(f"{path}: by_kind must be an object")
     for kind, values in data["by_kind"].items():
@@ -95,6 +114,9 @@ def load_totals(path: Path) -> Totals:
     artifacts = data.get("artifacts_outside_census")
     if not isinstance(artifacts, list):
         raise ValueError(f"{path}: artifacts_outside_census must be a list")
+    names = [artifact.get("artifact") for artifact in artifacts if isinstance(artifact, dict)]
+    if len(names) != len(set(names)):
+        raise ValueError(f"{path}: an artifact is listed twice")
     for artifact in artifacts:
         if not isinstance(artifact, dict) or not isinstance(artifact.get("artifact"), str):
             raise ValueError(f"{path}: malformed artifact record")
@@ -118,27 +140,31 @@ def numbers(path: Path, values: dict[str, object], label: str) -> None:
             raise ValueError(f"{path}: {label}.{key} must be a finite nonnegative number")
 
 
-def reference_rates(baseline: Path, totals: Totals) -> list[tuple[str, float | None]]:
-    """Census failures per change the after sample is read against, both from the baseline given."""
-    with (baseline / "changes.tsv").open(encoding="utf-8", newline="") as handle:
+def change_rows(directory: Path, totals: Totals) -> list[dict[str, str]]:
+    """The directory's changes.tsv, held to the totals.json it came with."""
+    path = directory / "changes.tsv"
+    with path.open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    if any(
-        not (row.get("census_failures") or "").isdecimal()
-        or not isinstance(row.get("runs"), str)
-        or not (row.get("pr") or "").isdecimal()
-        or int(row["pr"]) < 1
-        for row in rows
-    ):
-        raise ValueError(
-            f"{baseline}/changes.tsv: needs a positive pr, a census_failures count and a runs cell on every row"
-        )
-    prs = [row.get("pr") for row in rows]
+    for row in rows:
+        if (
+            not (row.get("pr") or "").isdecimal()
+            or int(row["pr"]) < 1
+            or not (row.get("census_failures") or "").isdecimal()
+            or not isinstance(row.get("runs"), str)
+        ):
+            raise ValueError(f"{path}: needs a positive pr, a census_failures count and a runs cell on every row")
+    if len({row["pr"] for row in rows}) != len(rows):
+        raise ValueError(f"{path}: a pull request appears twice")
     if (
         len(rows) != totals["changes"]
-        or len(set(prs)) != len(prs)
         or sum(int(row["census_failures"]) for row in rows) != totals["census"]["failures"]
     ):
-        raise ValueError(f"{baseline}/changes.tsv: its rows disagree with totals.json's changes or census failures")
+        raise ValueError(f"{path}: its rows disagree with totals.json's changes or census failures")
+    return rows
+
+
+def reference_rates(rows: list[dict[str, str]], totals: Totals) -> list[tuple[str, float | None]]:
+    """Census failures per change the after sample is read against, both from the baseline given."""
     live = [row for row in rows if LIVE_RUN in row["runs"].split(";")]
     return [
         ("pooled baseline", totals["census"]["failures"] / totals["changes"] if totals["changes"] else None),
@@ -149,18 +175,7 @@ def reference_rates(baseline: Path, totals: Totals) -> list[tuple[str, float | N
 def comparison(baseline: Path, after: Path) -> str:
     before = load_totals(baseline / "totals.json")
     current = load_totals(after / "totals.json")
-    with (after / "changes.tsv").open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t")
-        if not reader.fieldnames or "pr" not in reader.fieldnames:
-            raise ValueError(f"{after}/changes.tsv: missing pr column")
-        records = list(reader)
-        if len({row["pr"] for row in records}) != len(records):
-            raise ValueError(f"{after}/changes.tsv: a pull request appears twice")
-        if len(records) != current["changes"] or any(
-            not row["pr"] or not row["pr"].isdigit() or int(row["pr"]) < 1 for row in records
-        ):
-            raise ValueError(f"{after}/changes.tsv: PR rows must match totals.changes and contain positive PR numbers")
-        prs = [f"#{row['pr']}" for row in records]
+    prs = [f"#{row['pr']}" for row in change_rows(after, current)]
     n, m = before["changes"], current["changes"]
     window = current["window"]
     lines = [
@@ -208,7 +223,7 @@ def comparison(baseline: Path, after: Path) -> str:
         delta = f"{b / m - a / n:+.2f}" if n and m else "n/a"
         lines.append(f"| `{label}` | {a:.2f} | {ar} | {b:.2f} | {br} | {b - a:+.2f} | {delta} |")
     rate = current["census"]["failures"] / m if m else None
-    references = reference_rates(baseline, before)
+    references = reference_rates(change_rows(baseline, before), before)
     lines += [
         "",
         "| census failures / change reference | reference | after | difference |",

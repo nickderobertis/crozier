@@ -825,28 +825,28 @@ def main() -> int:
             run_kinds[run["id"]] = kinds if tier in ("census", "artifact") else []
             # A failure of a pinned artifact outside the census is a repin event too.
             if tier in ("census", "artifact"):
-                pub = publication.get(run["id"])
-                if pub is None:
-                    pub_fields = {
-                        "pub_status": "no-publication",
-                        "pub_end": "",
-                        "next_pub_start": "",
-                        "pub_wait_min": "",
-                    }
-                elif pub["pub_wait_min"] is None:
-                    pub_fields = {
-                        "pub_status": "unresolved",
-                        "pub_end": pub["pub_end"],
-                        "next_pub_start": "",
-                        "pub_wait_min": "",
-                    }
-                else:
-                    pub_fields = {
-                        "pub_status": "observed",
-                        "pub_end": pub["pub_end"],
-                        "next_pub_start": pub["next_pub_start"],
-                        "pub_wait_min": round(pub["pub_wait_min"] / len(kinds), 1),
-                    }
+                match publication.get(run["id"]):
+                    case None:
+                        pub_fields = {
+                            "pub_status": "no-publication",
+                            "pub_end": "",
+                            "next_pub_start": "",
+                            "pub_wait_min": "",
+                        }
+                    case {"pub_wait_min": None, "pub_end": ended}:
+                        pub_fields = {
+                            "pub_status": "unresolved",
+                            "pub_end": ended,
+                            "next_pub_start": "",
+                            "pub_wait_min": "",
+                        }
+                    case observed:
+                        pub_fields = {
+                            "pub_status": "observed",
+                            "pub_end": observed["pub_end"],
+                            "next_pub_start": observed["next_pub_start"],
+                            "pub_wait_min": round(observed["pub_wait_min"] / len(kinds), 1),
+                        }
                 for k in kinds:
                     events.append(
                         {

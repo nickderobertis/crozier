@@ -1,9 +1,9 @@
-pr
-1
-2
-3
-4
-5
-6
-7
-8
+pr	census_failures	runs
+1	1	some-run
+2	1	some-run
+3	1	some-run
+4	1	some-run
+5	1	some-run
+6	1	some-run
+7	0	some-run
+8	0	some-run
