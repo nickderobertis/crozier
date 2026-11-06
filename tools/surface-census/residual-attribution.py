@@ -36,6 +36,8 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import residual_attribution_record as record
+
 REPO = Path(__file__).resolve().parents[2]
 CROZIER = REPO / "target" / "debug" / ("crozier.exe" if sys.platform == "win32" else "crozier")
 
@@ -136,6 +138,9 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="measure only the original real witness, including keys closed by supplemental proofs",
     )
+    parser.add_argument(
+        "--write-record", action="store_true", help="save the measured attribution and its input digests"
+    )
     args = parser.parse_args(argv)
     spec = importlib.util.spec_from_file_location(
         "residual_handwritten", REPO / "tools/surface-census/handwritten-fixtures.py"
@@ -158,6 +163,7 @@ def main(argv: list[str] | None = None) -> int:
     if shutil.which("ruff") is None:
         sys.exit("residual-attribution: `ruff` is not on PATH; install it with `just bootstrap`")
     registrations = CENSUS.golden_registrations(REPO / CENSUS.GOLDEN_REGISTRY)
+    measured = record.read(REPO)
     for key, (fixture, perturb) in CASES.items():
         if key in closed or (args.key is not None and key != args.key):
             continue
@@ -182,19 +188,30 @@ def main(argv: list[str] | None = None) -> int:
         moved = sorted(name for name in before.keys() | after.keys() if before.get(name) != after.get(name))
         unmatched = set(registrations[fixture].unmatched)
         matched = [name for name in moved if name not in unmatched]
-        print(
-            json.dumps(
-                {
-                    "key": key,
-                    "fixture": fixture,
-                    "byte_matched": matched,
-                    "unmatched": [name for name in moved if name in unmatched],
-                },
-                sort_keys=True,
-            )
+        golden_digest, inputs_digest = record.fingerprints(REPO, fixture)
+        measured[key] = record.Attribution(
+            key, fixture, matched, [name for name in moved if name in unmatched], golden_digest, inputs_digest
         )
+        if not args.write_record:
+            print(
+                json.dumps(
+                    {
+                        "key": key,
+                        "fixture": fixture,
+                        "byte_matched": matched,
+                        "unmatched": [name for name in moved if name in unmatched],
+                    },
+                    sort_keys=True,
+                )
+            )
+    if args.write_record:
+        record.write(REPO, measured)
+        print(f"residual-attribution: wrote {record.RECORD.as_posix()}")
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except (ValueError, OSError) as error:
+        sys.exit(f"residual-attribution: {error}")
