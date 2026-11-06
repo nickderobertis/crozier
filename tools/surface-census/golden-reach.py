@@ -308,13 +308,15 @@ def cooccurrence_proof(cell: str) -> CombinationProof | None:
         or any(p in {"", ".", ".."} for p in search.split("/"))
     ):
         raise ValueError("search record must be a repository-relative path without traversal")
-    if search is not None:
-        if kind == CombinationProofClass.HANDWRITTEN:
+    match CombinationProofClass(kind), search:
+        case CombinationProofClass.HANDWRITTEN, str():
             return SearchedCombinationProof(CombinationProofClass.HANDWRITTEN, search)
-        return SearchedCombinationProof(CombinationProofClass.OPEN, search)
-    if kind == CombinationProofClass.INTERACTION:
-        return UnsearchedCombinationProof(CombinationProofClass.INTERACTION)
-    return UnsearchedCombinationProof(CombinationProofClass.INDEPENDENT)
+        case CombinationProofClass.OPEN, str():
+            return SearchedCombinationProof(CombinationProofClass.OPEN, search)
+        case CombinationProofClass.INTERACTION, None:
+            return UnsearchedCombinationProof(CombinationProofClass.INTERACTION)
+        case _:
+            return UnsearchedCombinationProof(CombinationProofClass.INDEPENDENT)
 
 
 # The file's header is the model's fields, so the two cannot drift apart.
