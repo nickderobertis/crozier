@@ -1,0 +1,95 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml"
+  ],
+  "exit_code": 3,
+  "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.019994018,
+    "crozier_seconds": 0.425447012,
+    "speedup": 0.04699531889061662,
+    "saved_seconds": -0.405452994
+  },
+  "results": [
+    {
+      "status": "mismatched",
+      "config_file": "<scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml",
+      "generator": "python",
+      "spec": "<scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/openapi.yml",
+      "reference": {
+        "command": "cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT/\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 50,
+        "differing": [
+          "README.md",
+          "reference.md",
+          "src/fern/client.py"
+        ],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "schema-rejected-number-example",
+            "file": "reference.md",
+            "line": 475
+          },
+          {
+            "id": "schema-rejected-number-example",
+            "file": "src/fern/client.py",
+            "line": 324
+          },
+          {
+            "id": "schema-rejected-number-example",
+            "file": "src/fern/client.py",
+            "line": 708
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 34
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 35
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          }
+        ],
+        "diff_file": "<repo>/docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/comparisons/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_3319628-17_compare_d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c_crozier.yml-python.diff"
+      },
+      "timing": {
+        "reference_seconds": 0.019994018,
+        "crozier_seconds": 0.425447012,
+        "speedup": 0.04699531889061662,
+        "saved_seconds": -0.405452994
+      },
+      "reason": null,
+      "diff_file": "comparisons/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/comparison.diff"
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+key	kind	region	arm	cover_at_base	verdict
+client-header-date-format	feature	parameters	-	observatory-client-date	exhausted
+nullable-array-query-explode-false	feature	parameters	-	observatory-nullable-query	exhausted
+nullable-query-array-items	feature	parameters	-	observatory-nullable-query	search-incomplete
+parameter-default-extension	feature	parameters	-	observatory-query-extensions	exhausted
+parameter-ignore-extension	feature	parameters	-	observatory-query-extensions	exhausted
+parameter-name-extension	feature	parameters	-	declared-rename-control;observatory-query-extensions	exhausted
+parameter-without-location	feature	parameters	-	observatory-unlocated-parameter	exhausted
+query-date-union-oneof	feature	parameters	-	observatory-nullable-query	exhausted
+required-nullable-query-scalar	feature	parameters	-	observatory-nullable-query	exhausted
+sdk-variable-parameter-extension	feature	parameters	-	observatory-client-variable	exhausted
+sdk-variables-extension	feature	parameters	-	observatory-client-variable	exhausted
+query-array-items-union	feature	parameters	-	query-array-items-union	exhausted
+query-param-ref-to-enum-or-array-union-converted	feature	parameters	-	query-param-ref-to-enum-or-array-union-converted	exhausted
+required-param-and-body-defaults-ignored	feature	parameters	-	kiln-firing-curves;required-param-and-body-defaults-ignored	exhausted
+example-nested-array-two-items	feature	parameters	-	tram-route-query	exhausted
+query-anyof-const-member-example-as-enum-member	feature	parameters	-	ferry-slot-query	exhausted
+required-query-array-nullable-union-items	feature	parameters	-	sensor-batch-query	exhausted
+combo-param-example-beside-ref-schema	combination	parameters	-	harbor-parcel-requests	corpus row 5371
+security-scheme-header-extension-named	feature	security	-	meter-reader-gateway	search-incomplete
+security-scheme-token-variable-name	feature	security	-	grid-valve-console	exhausted
+security-schemes-duplicate-api-key-header	feature	security	-	twin-key-relay	exhausted
+operation-sdk-group-name-leading-underscore	feature	oas31-extensions	-	signal-box-relays	exhausted
+operation-sdk-group-name-without-method-name	feature	oas31-extensions	-	cargo-hold-pallets	exhausted
+operation-sdk-method-name-sequence	feature	oas31-extensions	-	locker-bank-claims	exhausted
+operation-idempotent-with-root-headers	feature	oas31-extensions	-	parcel-courier-desk	exhausted
+operation-webhook-extension	feature	oas31-extensions	-	auction-house-bids	exhausted
+operation-pagination-offset	feature	oas31-extensions	-	ledger-records-offset	exhausted
+operation-pagination-boolean	feature	oas31-extensions	-	beacon-registry-pages	exhausted
+operation-group-types-beside-child-group	feature	oas31-extensions	-	dock-yard-bookings	exhausted
+webhook-inline-json-body-named	feature	oas31-extensions	-	courier-delivery-hooks	exhausted
+fern-streaming-boolean	feature	oas31-extensions	-	streaming-extension-boolean	exhausted
+fern-streaming-condition-ref-body-header	feature	oas31-extensions	-	stream-condition-ref-body-header	exhausted
+fern-streaming-condition-shared-body	feature	oas31-extensions	-	stream-condition-shared-body	exhausted
+fern-streaming-condition-union-body	feature	oas31-extensions	-	stream-condition-union-body	exhausted
+fern-streaming-format-over-json	feature	oas31-extensions	-	streaming-extension-sse-format	exhausted
+fern-streaming-terminator	feature	oas31-extensions	-	streaming-extension-terminator	exhausted
+base-path-extension	feature	oas31-extensions	-	base-path-client-argument;observatory-base-path	exhausted
+discriminated-extension	feature	oas31-extensions	-	greenhouse-undiscriminated-unions	exhausted
+discriminator-property-name-extension	feature	oas31-extensions	-	telescope-renamed-discriminant	exhausted
+parameter-in-path	arm	parameters	src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	base-path-client-argument	exhausted
+http-dpop	arm	security	src/ir.rs::auth_model[=_ => Auth::None,]	http-dpop-unrequired	exhausted
+http-mutual	arm	security	src/ir.rs::auth_model[=_ => Auth::None,]	http-mutual-unrequired	exhausted
+http-negotiate	arm	security	src/ir.rs::auth_model[=_ => Auth::None,]	http-negotiate-unrequired	exhausted
+parameter-schema	arm	parameters	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	nullable-query-union-items	exhausted
+parameter-in-header	arm	parameters	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	observatory-client-date	exhausted
+parameter-in-path	arm	parameters	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	observatory-client-variable	exhausted
+parameter-in-query	arm	parameters	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	observatory-query-extensions	exhausted
+parameter-style-form-query-object	arm	parameters	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	ore-bin-screen	corpus rows 5370 and 5371
+parameter-schema	arm	parameters	src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]	sensor-batch-query	exhausted
+fern-streaming-extension	arm	oas31-extensions	src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]	stream-condition-union-body	exhausted
+fern-streaming-extension	arm	oas31-extensions	src/emit.rs::sse_end[=\x7cend\x7c format!]	streaming-extension-terminator	exhausted
