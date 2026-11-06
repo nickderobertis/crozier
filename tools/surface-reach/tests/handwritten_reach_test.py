@@ -189,30 +189,26 @@ verdict = "exhausted"
 )
 # A combination whose site cell reads `co-occurrence`: no measured branch joins both
 # features, so a fixture covering it is measured at each handling function the
-# committed audit names, over a document declaring security at both levels. The
-# scheme is bearer: a header api key's `required` short-circuits on the document's
-# own `security` before `all_operations_authenticated` runs.
-COOCCURRING = "combo-document-operation-security"
+# committed audit names, over a document whose operation requires a basic scheme.
+COOCCURRING = "combo-basic-auth-operation-requirement"
 SECURITY_DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
   version: 1.0.0
-security:
-  - bearer: []
 paths:
   /ping:
     get:
       operationId: ping
       security:
-        - bearer: []
+        - basic: []
       responses:
         "200":
           description: ok
 components:
   securitySchemes:
-    bearer:
+    basic:
       type: http
-      scheme: bearer
+      scheme: basic
 """
 
 
@@ -493,7 +489,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                     COMBINATION,
                     COMBINATION_DOCUMENT.format(labels=LABELS["array-of-nullable-unknown-items"]),
                 ),
-                ("security-both-levels", COOCCURRING, SECURITY_DOCUMENT),
+                ("basic-operation-requirement", COOCCURRING, SECURITY_DOCUMENT),
             ):
                 directory = base / name
                 directory.mkdir(parents=True)
@@ -508,7 +504,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertEqual(HEADER, rows[0])
             measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
             expected = {("nullable-map-only", COMBINATION, INTERACTION)} | {
-                ("security-both-levels", COOCCURRING, handler) for handler in handlers
+                ("basic-operation-requirement", COOCCURRING, handler) for handler in handlers
             }
             self.assertEqual(expected, set(measured), "a combination-only fixture was not measured at its sites")
             for site, (executed, total) in measured.items():
@@ -838,19 +834,19 @@ class Outcome(NamedTuple):
 
 
 BINARY = "src/ir.rs::is_binary_response"
-JSON_OPERAND = BINARY + r'[=^ {16}&& !resp\.content\.contains_key\("application/json"\)$]'
-SCHEMA_DISJUNCT = BINARY + r"[=^ {16}\x7c\x7c resp\.content\.values\(\)\.any]"
-FORMAT_OPERAND = BINARY + r'[=^ {28}&& schema\.format\.as_deref\(\) == Some\("binary"\)$]'
-TEXT_OPERAND = BINARY + r"[=is_text_response_media\(media_type\)$]"
+JSON_BEATS_DOWNLOAD = BINARY + r"[if declares_json && download_first \{]"
+JSON_BESIDE_BINARY = BINARY + r"[if declares_json && binary_schema \{]"
+FIRST_KIND_DECIDES = BINARY + r"[&& media_types\(\)\.any\(\x7cmedia_type\x7c is_text_response_media\(media_type\)\)]"
 PASSED_WHOLE = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c passed_whole$]"
 INLINE_MAP = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c is_map\(schema\)$]"
 TARGET_NULLABLE = r"src/ir.rs::Builder::collect_fields[=\.is_some_and\(\x7ctarget\x7c schema_accepts_none\(target, self\.schemas\)\);$]"
 NOT_REQUIRED = r"src/ir.rs::Builder::collect_fields[=!spec_required;$]"
 SCHEMA_EXAMPLE = r"src/ir.rs::parameter_example_value[=parameter\.schema\.as_ref\(\)\.and_then\(typed_schema_example\)]"
-URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}&& !hoister\.reaches_url_as_scalars\(&type_ref\),$]"
+URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}hoister\.needs_convert\(&type_ref\) && !hoister\.reaches_url_as_scalars\(&type_ref\)$]"
 NAMED_STREAM = r"src/ir.rs::stream_condition_method_names[if op\.sdk_method_name\(\)\.is_some\(\) \{]"
 ID_STREAM = r"src/ir.rs::stream_condition_method_names[\} else if !id\.is_empty\(\) \{]"
 UNAUTHENTICATED = r"src/ir.rs::all_operations_authenticated[if !authed \{]"
+SECURITY_OPT_OUT = r"src/ir.rs::all_operations_authenticated[&& document\.iter\(\)\.all\(]"
 CLIENT, RAW = "client.py", "raw_client.py"
 STREAMS = "typing.Iterator[bytes]"
 # The constructor's bearer credential, optional; `async_token` is optional always.
@@ -941,15 +937,14 @@ OPTIONAL_ARM = r"src/ir.rs::build_endpoint[=other => optional_type_ref\(other\),
 # The echo guard's last operand, which the anonymous and OAuth2 echo rows audit as
 # their shared condition rather than declare as an interaction site.
 ECHO_ARM = r"src/emit.rs::append_request_call_args[=^ {28}&& !ep\.body_schema_titled$]"
-ECHO_GUARD = r"src/ir.rs::body_response_same_ref[^ {4}\{$]"
+ECHO_GUARD = r"src/ir.rs::body_response_same_ref[=\(false, true\) => false,]"
 BASIC_REQUIRED = r"src/emit.rs::auth_wrapper_parts[=^ {16}format!\(.*httpx\.BasicAuth\(self\._get_]"
 OBJECT_QUERY = r"src/ir.rs::requires_object_query[=!schema\.properties\.is_empty\(\)]"
+REFERENCED_OBJECT_QUERY = r"src/ir.rs::requires_object_query[if declares_object\(target\) \{]"
 HEADER_ENUM_ARM = r"src/emit.rs::append_request_call_args[let value = if header_param\.enum_value]"
 QUERY_EXAMPLE_DROPPED = r"src/ir.rs::build_endpoint[let example = if omit_synthesized_example]"
 QUERY_EXAMPLE_TAKEN = r"src/ir.rs::build_endpoint[=^ {16}query_parameter_example\(doc, p\)$]"
-ALIASED_TEMPORAL = (
-    r"src/ir.rs::build_endpoint[=TypeRef::Primitive\(prim @ \(Prim::Date \x7c Prim::Datetime\)\) => Some\(prim\)]"
-)
+ALIASED_TEMPORAL = r"src/ir.rs::build_endpoint[=TypeRef::Primitive\(Prim::Datetime\) => Some\(Prim::Datetime\),]"
 BODY_COLLISION = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &field\.collision_prefix]"
 QUERY_UNION_GLOBAL = r"src/ir.rs::parameter_union_is_global[=parameter\.required\.unwrap_or\(false\) == nullable]"
 ONE_OR_MANY = r"src/ir.rs::one_or_many_query_schema[=let nullable = non_null\.len\(\) < members\.len\(\)]"
@@ -1136,8 +1131,8 @@ OUTCOMES = (
             lacks=((RAW, '"content-type"'),),
         ),
     ),
-    # A download first beside JSON: `!json` reads false, so the binary-schema
-    # disjunct runs, and the method returns JSON where a download alone streams.
+    # A download first beside JSON: JSON beats it, so its own arm returns and
+    # the method returns JSON where a download alone streams.
     Outcome(
         "combo-success-json-beside-download",
         Run(
@@ -1146,18 +1141,16 @@ OUTCOMES = (
                     "            application/octet-stream: {}\n            application/json:\n              schema:\n                type: object\n"
                 )
             ),
-            ran=(JSON_OPERAND, SCHEMA_DISJUNCT),
+            ran=(JSON_BEATS_DOWNLOAD,),
             lacks=((CLIENT, STREAMS),),
         ),
         Run(
             operation_document(responses("            application/octet-stream: {}\n")),
-            ran=(JSON_OPERAND,),
-            skipped=(SCHEMA_DISJUNCT,),
+            skipped=(JSON_BEATS_DOWNLOAD,),
             holds=((CLIENT, STREAMS),),
         ),
     ),
-    # A binary schema beside JSON: `!json` reads false and the binary-schema
-    # disjunct decides, streaming where the same media without the schema does not.
+    # A binary schema beside JSON streams, where the same media without the schema does not.
     Outcome(
         "combo-success-json-beside-binary-schema",
         Run(
@@ -1166,7 +1159,7 @@ OUTCOMES = (
                     "            application/json:\n              schema:\n                type: object\n            application/octet-stream:\n              schema:\n                type: string\n                format: binary\n"
                 )
             ),
-            ran=(JSON_OPERAND, FORMAT_OPERAND),
+            ran=(JSON_BESIDE_BINARY,),
             holds=((CLIENT, STREAMS),),
         ),
         Run(
@@ -1175,13 +1168,13 @@ OUTCOMES = (
                     "            application/json:\n              schema:\n                type: object\n            application/octet-stream:\n              schema: {}\n"
                 )
             ),
-            ran=(JSON_OPERAND,),
-            skipped=(FORMAT_OPERAND,),
+            ran=(JSON_BEATS_DOWNLOAD,),
+            skipped=(JSON_BESIDE_BINARY,),
             lacks=((CLIENT, STREAMS),),
         ),
     ),
-    # Text first beside a download: the text operand of `download_first` reads it, so
-    # `!json` never runs and the method returns `str` where the download streams.
+    # Text first beside a download: the first of the two kinds decides, so the method
+    # returns `str` where the download streams.
     Outcome(
         "combo-success-text-beside-download",
         Run(
@@ -1190,14 +1183,12 @@ OUTCOMES = (
                     "            text/plain:\n              schema:\n                type: string\n            application/octet-stream: {}\n"
                 )
             ),
-            ran=(TEXT_OPERAND,),
-            skipped=(JSON_OPERAND,),
+            ran=(FIRST_KIND_DECIDES,),
             holds=((CLIENT, "-> str:"),),
         ),
         Run(
             operation_document(responses("            application/octet-stream: {}\n")),
-            ran=(JSON_OPERAND,),
-            skipped=(TEXT_OPERAND,),
+            skipped=(FIRST_KIND_DECIDES,),
             holds=((CLIENT, STREAMS),),
         ),
     ),
@@ -1332,12 +1323,12 @@ OUTCOMES = (
         "combo-document-security-security-empty",
         Run(
             operation_document(secured("      security: []\n"), BEARER, "security:\n  - bearerAuth: []\n"),
-            ran=(UNAUTHENTICATED,),
+            ran=(SECURITY_OPT_OUT,),
             holds=((CLIENT, OPTIONAL_TOKEN),),
         ),
         Run(
             operation_document(secured(""), BEARER, "security:\n  - bearerAuth: []\n"),
-            skipped=(UNAUTHENTICATED,),
+            skipped=(SECURITY_OPT_OUT,),
             lacks=((CLIENT, OPTIONAL_TOKEN),),
         ),
     ),
@@ -1592,7 +1583,7 @@ OUTCOMES = (
             operation_document(
                 tally_query('            $ref: "#/components/schemas/TallyFilter"\n'), "  schemas:\n" + TALLY_FILTER
             ),
-            ran=(OBJECT_QUERY,),
+            ran=(REFERENCED_OBJECT_QUERY,),
             holds=((CLIENT, "filter=TallyFilter(),"),),
             lacks=((CLIENT, 'ids=["ids"]'),),
         ),
@@ -1600,7 +1591,7 @@ OUTCOMES = (
             operation_document(
                 tally_query('            $ref: "#/components/schemas/TallyCode"\n'), "  schemas:\n" + TALLY_FILTER
             ),
-            skipped=(OBJECT_QUERY,),
+            skipped=(REFERENCED_OBJECT_QUERY,),
             holds=((CLIENT, 'ids=["ids"]'),),
         ),
     ),
@@ -2018,7 +2009,7 @@ def gated_call(security: str = "") -> str:
     )
 
 
-def craft_path(schema: str) -> str:
+def craft_path_schema(schema: str) -> str:
     return (
         "  /craft/{kind}:\n    get:\n      operationId: getCraft\n      parameters:\n        - name: kind\n"
         f"          in: path\n          required: true\n          schema:\n{schema}"
@@ -2060,7 +2051,7 @@ GRANT_SCHEMAS = (
     "        - type: object\n          properties:\n            code:\n              type: string\n"
     "        - type: object\n          properties:\n            token:\n              type: string\n"
 )
-BINARY = "              schema:\n                type: string\n                format: binary\n"
+BINARY_ANSWER = "              schema:\n                type: string\n                format: binary\n"
 PLAIN_TEXT = "              schema:\n                type: string\n"
 JSON_ANSWER = "              schema:\n                type: object\n                properties:\n                  id:\n                    type: string\n"
 
@@ -2133,11 +2124,11 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
         },
     ),
     "combo-path-param-ref-string-enum": (
-        operation_document(craft_path(reference("Rig")), CRAFT_SCHEMAS),
+        operation_document(craft_path_schema(reference("Rig")), CRAFT_SCHEMAS),
         {
-            "path alone": operation_document(craft_path(reference("Tag")), CRAFT_SCHEMAS),
+            "path alone": operation_document(craft_path_schema(reference("Tag")), CRAFT_SCHEMAS),
             "referenced enum alone": operation_document(craft_query("Rig"), CRAFT_SCHEMAS),
-            "inline path enum": operation_document(craft_path(INLINE_RIG), CRAFT_SCHEMAS),
+            "inline path enum": operation_document(craft_path_schema(INLINE_RIG), CRAFT_SCHEMAS),
         },
     ),
     "combo-query-param-ref-date-time": (
@@ -2200,9 +2191,9 @@ INTERACTION_ARMS: dict[str, tuple[str, dict[str, str]]] = {
         },
     ),
     "combo-success-json-beside-binary-schema": (
-        operation_document(responses(media(("application/json", JSON_ANSWER), ("application/zip", BINARY)))),
+        operation_document(responses(media(("application/json", JSON_ANSWER), ("application/zip", BINARY_ANSWER)))),
         {
-            "binary schema alone": operation_document(responses(media(("application/zip", BINARY)))),
+            "binary schema alone": operation_document(responses(media(("application/zip", BINARY_ANSWER)))),
             "json alone": operation_document(responses(media(("application/json", JSON_ANSWER)))),
         },
     ),
