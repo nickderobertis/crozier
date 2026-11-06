@@ -120,6 +120,11 @@ class ColdRegistryHandoff(unittest.TestCase):
         with (self.root / "src/lib.rs").open("a", encoding="utf-8") as handle:
             handle.write(f"\npub const COLD_HANDOFF_PROBE_{value}: u8 = {value};\n")
 
+    def edit_suite_only(self, value: int) -> None:
+        """A change the e2e suite's own build sees and crozier's library and binary do not."""
+        with (self.root / "crates/crozier-e2e/tests/e2e.rs").open("a", encoding="utf-8") as handle:
+            handle.write(f"\n#[test]\nfn cold_handoff_probe_{value}() {{}}\n")
+
     def binary_digest(self) -> str:
         return hashlib.sha256((self.root / "target/debug/crozier").read_bytes()).hexdigest()
 
@@ -150,12 +155,34 @@ class ColdRegistryHandoff(unittest.TestCase):
         self.assertNotEqual(recorded, self.record.read_bytes())
         self.assertEqual(set(), self.crozier_build())
 
+        # A mixed result whose reused artifacts are all the recorded ones holds: the
+        # rebuilt suite ran denied, and the library and binary it reuses were recorded.
+        proven = json.loads(self.record.read_text(encoding="utf-8"))["artifacts"]
+        self.edit_suite_only(1)
+        self.assertIn("rebuilt a changed input with sockets denied", self.proof())
+        updated = json.loads(self.record.read_text(encoding="utf-8"))["artifacts"]
+        library = next(path for path in proven if path.endswith(".rlib"))
+        self.assertEqual(proven[library], updated[library])
+
         # One reaching a normal build first is compiled with sockets up, so the proof
         # rejects the handoff and does the cold build itself.
         self.edit_source(2)
         self.assertEqual({"crozier:lib", "crozier:bin"}, self.crozier_build())
         self.assertEqual({"e2e:test"}, self.suite_build())
+        unrecorded = self.record.read_bytes()
         self.assertIn("rejected the handoff", self.proof())
+        self.assertEqual(unrecorded, self.record.read_bytes())
+
+        # Dirtying only the suite now makes the denied run report both: the suite rebuilt,
+        # the library and binary fresh from that sockets-up build. The rebuild proves
+        # nothing about those, so the whole result is rejected and nothing is recorded.
+        self.edit_suite_only(2)
+        mixed = self.proof()
+        self.assertIn("rejected the handoff", mixed)
+        self.assertNotIn("rebuilt a changed input with sockets denied", mixed)
+        self.assertRegex(mixed, r"rejected the handoff; [1-9]\d* artifact\(s\) rebuilt with sockets denied, but")
+        self.assertIn("libcrozier", mixed)
+        self.assertEqual(unrecorded, self.record.read_bytes())
 
 
 if __name__ == "__main__":

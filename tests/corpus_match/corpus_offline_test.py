@@ -126,7 +126,9 @@ def denied_handoff_build() -> tuple[dict[str, bool], str]:
         run = denied(*command, "--message-format=json", env=env)
         if run.returncode != 0:
             return artifacts, run.stderr
-        artifacts |= crozier_artifacts(run.stdout)
+        # The second command sees what the first just compiled as fresh: compiled by either is compiled.
+        for path, compiled in crozier_artifacts(run.stdout).items():
+            artifacts[path] = artifacts.get(path, False) or compiled
     return artifacts, ""
 
 
@@ -140,29 +142,36 @@ def record_handoff(artifacts: Iterable[str]) -> None:
 def handoff_answers(case: unittest.TestCase) -> bool:
     """Whether the build this job's later steps use came from the cold registry with sockets denied.
 
-    Cargo decides what is current. Reporting the record's exact bytes, the proof
-    already ran on them. A compile here ran denied, so it answers too, and is
-    recorded. Current bytes the record does not name came from a build with sockets
-    up, which proves nothing: the caller then proves it from a cold registry itself.
+    Cargo decides what is current, and each current artifact needs its own provenance:
+    one compiled in this denied run has it, and one reused must be the bytes the record
+    names. A single reused artifact outside the record came from a build with sockets up,
+    whatever else was rebuilt beside it, so the caller proves it from a cold registry
+    itself and the record stands unchanged.
     """
     if not handoff_record().is_file() or HANDOFF_ENV not in os.environ:
         return False
-    if json.loads(handoff_record().read_text(encoding="utf-8"))["cargo_home"] != os.environ.get("CARGO_HOME"):
+    record = json.loads(handoff_record().read_text(encoding="utf-8"))
+    if record["cargo_home"] != os.environ.get("CARGO_HOME"):
         return False
     artifacts, failure = denied_handoff_build()
     case.assertEqual("", failure, "the job's build needed the network once its registry was warmed")
-    if any(artifacts.values()):
+    rebuilt = [path for path, compiled in artifacts.items() if compiled]
+    reused = digests(path for path, compiled in artifacts.items() if not compiled)
+    unproven = sorted(path for path, digest in reused.items() if record["artifacts"].get(path) != digest)
+    if unproven:
+        names = ", ".join(Path(path).name for path in unproven)
+        print(
+            f"cold-registry: rejected the handoff; {len(rebuilt)} artifact(s) rebuilt with sockets denied, "
+            f"but these reused ones were not made that way: {names}",
+            file=sys.stderr,
+        )
+        return False
+    if rebuilt:
         record_handoff(artifacts)
         print("cold-registry: rebuilt a changed input with sockets denied", file=sys.stderr)
         return True
-    if digests(artifacts) == json.loads(handoff_record().read_text(encoding="utf-8"))["artifacts"]:
-        print("cold-registry: the job's build is the one made with sockets denied", file=sys.stderr)
-        return True
-    print(
-        "cold-registry: rejected the handoff; the current build is not the one made with sockets denied",
-        file=sys.stderr,
-    )
-    return False
+    print("cold-registry: the job's build is the one made with sockets denied", file=sys.stderr)
+    return True
 
 
 def cold_registry_build() -> int:
