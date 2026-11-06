@@ -75,6 +75,10 @@ members = [
     "tools/surface-repin",
     "tools/witness-search",
     "tools/witness-search-git",
+    # A measurement harness: format, lint and typecheck like the rest, while its
+    # stdlib suite runs bare `python3` so that nothing but its own files and the
+    # guard it imports reruns it, and it stays out of the coverage floor.
+    "tools/repin-cost",
     # Promoted tiers holding Python harnesses: format, lint and typecheck only;
     # their suites keep their own runners (see each one's AGENTS.md).
     "tests/census_fallback",
