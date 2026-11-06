@@ -103,6 +103,10 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literals proofs extend the existing corpus overlay inventory and subprocess gate; this task cannot split the shared e2eReads family into another project.
+            "happy-hamster",
+            "seldon-wrapper",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             "remeasured-arawa-workspace-0c8259f6",
             "remeasured-clencyc-mozillafestivalbackend-b2264b38",
             "remeasured-grafikart-filemanager-element-e36a74ce",

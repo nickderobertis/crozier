@@ -1,0 +1,23 @@
+compare: found config <scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml
+compare: <scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml python: reference command starting: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+compare: <scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml python: reference command finished in 0.01s (exit 0)
+compare: <scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml python: crozier generation starting
+compare: <scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml python: crozier generation finished in 0.57s
+compare: <scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml python: matched
+
+crozier compare report
+
+<scratch>/compare/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/crozier.yml
+  python: matched (layout packaged, 57 file(s) compared)
+    reference command: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/5126e1a45f30a9451dcc92a4451a01df8e2cac89d0775ec1d8592fac1459c866/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:34 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:35 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+    timing: reference 0.01s, crozier 0.57s, speed-up 0.03x, saved -0.55s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.01s, crozier 0.57s, speed-up 0.03x, saved -0.55s
+Result: every checked generator matched the reference (1 of 1, exit 0)

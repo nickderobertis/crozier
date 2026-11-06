@@ -818,7 +818,6 @@
     "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},
     "docs/openapi-surface/handwritten/odometer-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected": {},
-    "docs/openapi-surface/handwritten/ore-bin-screen/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-courier-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-response/fern-expected": {},
     "docs/openapi-surface/handwritten/passport-scan/fern-expected": {},
@@ -1273,6 +1272,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/happy-hamster/expected": {},
+    "tests/fixtures/happy-hamster/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/hasura-metadata/expected": {},
     "tests/fixtures/hasura-metadata/expected-literals": {
       "excluded": [
@@ -1603,6 +1608,12 @@
     },
     "tests/fixtures/sac-backend/expected": {},
     "tests/fixtures/schema-constraints/expected": {},
+    "tests/fixtures/seldon-wrapper/expected": {},
+    "tests/fixtures/seldon-wrapper/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/servers-webhooks/expected": {},
     "tests/fixtures/sftpgo/expected": {},
     "tests/fixtures/short-io/expected": {},

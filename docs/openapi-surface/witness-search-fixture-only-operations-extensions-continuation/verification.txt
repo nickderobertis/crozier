@@ -1,0 +1,177 @@
+Verification of the bounded continuation
+=======================================
+
+Finished data and scope
+-----------------------
+Base: 92be4edfa6378d3e509c775f8f9796de40cb9b54.
+Registration commit: 10ace0821bc9e7a159f21d412c6616cded4f17d6.
+No generator implementation or template changes. No new departure rule,
+enforcement configuration, shared format or census selector grammar.
+
+The base inventory is 51 distinct targets: 39 features/combinations and 12
+genuine authored arm covers. The preliminary count of 52 also counted a
+whole-function co-occurrence measurement as an independent arm; it was corrected.
+Two targets have registered real proofs, 47 are exhausted within the two
+assigned populations, and two remain search-incomplete. The intermediate
+historical-refusal-based nullable-query-array-items exhaustion was withdrawn:
+Probely receives a current-pair refusal screen in its third slot, and the five
+remaining recovered documents are individually incomplete at the screening
+bound. Historical decisions outside the handed-off triage are not current-pair
+screens. Thirty such decisions were withdrawn, one freshly screened and 29
+left unscreened for already witnessed targets.
+
+Ten distinct current-pair document screens: six complete SDK trees (three
+byte-match, three have recorded differences), four refusals. Both newly
+registered witnesses also have certified literals overlays. Preliminary
+comparisons with inherited Git metadata and a wrong distribution name are
+superseded by clean regenerated trees and final comparisons, as README records.
+
+Real boundary checks
+---------------------
+Both happy_hamster_matches_fern_output and seldon_wrapper_matches_fern_output
+passed against their complete certified-pair goldens. Each scoped instrumented
+run also passed and executes 26/30 regions of the required-query-object
+conversion arm (arm-execution.tsv). The full real literals overlay gate passed,
+as did overlay_goldens_are_exactly_the_targeted_sets and
+every_registered_corpus_is_wired_into_the_gate.
+
+The first registration gate correctly rejected a missing compared-goldens
+inventory entry. An inventory retry without the central CORPORA entry repeated
+the finding; work stopped for the manager's ruling, then the omitted entry was
+added and the writer and real replay passed. These are explicitly earlier-state
+failure observations, not failures of the finished registration.
+
+After cover retirement, the existing compared-goldens inventory writer and the
+scoped departure-ledger writer passed. Departure-ledger tests: 15 passed,
+one ignored writer. handwritten_fixtures_match_fern_goldens: one passed,
+46.10 seconds. The existing writers remove the retired tree and its five
+departure pins; the first commit's 14 added witness pins are retained.
+
+Input/derived evidence
+----------------------
+The exact-target/candidate audit passes: 51 base targets, 205 outstanding
+document identities, seven newly admitted source pins, all guarded immutable
+fetch locators and both registered cache modes. All prior available digests are
+verified; new digests are established only from named full revisions with the
+manager's approval.
+
+The complete native census was regenerated from 321 registered sources
+(31 original, 290 corpus): 30,072 rows and 1,422,992 declaration sites.
+Census evidence cells and document snapshot, golden reach and sites,
+handwritten reach, scenario proof index, departure ledger, search keys, search
+registries, outstanding-arm searches, headline and arm summary were regenerated
+through their production readers/writers. The remaining authored-proof
+summary uses those same production readers. No derived conflict was hand-merged.
+
+The joined store has two freshly measured real tests, 319 carried real tests
+and 53 retained authored fixtures. carry-input-audit.txt records the manager-
+approved source-equivalent join and release-only version exception. Original
+entry measurement commits are preserved; 319 carried tests were not newly
+instrumented here. The retired arm fixture is filtered from the store.
+
+Coverage-restatement drift checks (headline and native snapshot) and scenario
+proof-index check passed. git diff --check passed.
+The golden-reach ledger and witness-search keys reproduce byte-for-byte.
+
+The complete census run collected 803 cases and reported 801 passed, one
+skipped, seven failures (six are subtest failures). Its 3028.22-second run
+measured the earlier table state. Progress output showed only one ordinary F;
+earlier progress claims of only one finding are corrected by this final report.
+Findings: two conjunction evidence omissions (existing witness name/count
+syntax and the branch-not-exhausted caveat), four stale per-file blind-spot arm
+count sentences, and the stale reach-ranking table. No implementation defect.
+The headline writer does not regenerate the latter tables. Under
+manager ruling 285 an uncommitted scratch driver derives that table from
+golden-reach.read_ledger, preserving surviving boundary explanations verbatim.
+Only parameter-style-form-query-object leaves: it has no unreached site.
+The table has 74 remaining rows. This automation gap is appended to the
+existing follow-up; census-repin in PR 767 adds the generator for that table.
+Manager ruling 291 extends the same production-reader restatement to the four
+per-file arm-count phrases: ir.rs 87, emit.rs six, openapi.rs one, naming.rs
+three, of 97 total; all surrounding prose is retained. Both conjunction
+omissions are corrected in the new proof row. The existing follow-up has this
+additional missing-writer evidence. The full run's failures are explicitly
+earlier-state evidence. After the full run finished, the existing Nx test target reran:
+- the exact ranking test: one passed, 802 deselected (0.51 seconds);
+- every RankedBacklogTests case: 72 passed, one skipped, 730 deselected
+  (567.71 seconds), zero ordinary or subtest failures.
+These are the corrected-tree checks required by manager rulings 285 and 291.
+The remaining full-run cases passed on the earlier state; the corrections
+change only the specific proof/table fields reconciled by this class.
+
+The initial Nx launch failed before collecting tests because the dispatch's
+long scratch path exceeded socket limits. The successful launch uses the
+runtime NX_ISOLATE_PLUGINS=false environment option; no repository setting
+or enforcement rule changes.
+
+All census findings are fixed and the required corrected-class reruns are green.
+Commands:
+  just test-surface-census
+  just nx run surface-census:test-census --args="-k test_the_reach_ranking_is_every_row_with_an_unreached_site_and_its_boundary"
+  just nx run surface-census:test-census --args="-k RankedBacklogTests"
+The first command is the earlier-state run with the seven findings above,
+not a claim of a second complete 803-case run after the corrections.
+
+Judged lint over the full diff passed all three batches:
+20261105T084138Z-c2d30 (12 passed, zero failed),
+20261105T084332Z-7b090 (four passed, zero failed),
+20261105T084711Z-4778b (ten passed, zero failed).
+Focused final co-occurrence check: 20261105T084939Z-e3340, zero failed.
+Focused corrected headline check: 20261105T090336Z-776c8, zero failed.
+Final census-correction check of headline and parameters:
+20261105T093254Z-da1a2, three passed and zero failed.
+The final evidence-only edits to this .txt file are excluded by the repository's
+existing judged-lint configuration; they do not change its judged inputs.
+
+Other completed scoped checks
+------------------------------
+cargo fmt --all -- --check passed.
+just lint --projects=crozier-e2e,corpus-match passed.
+just lint --projects=surface-census passed.
+No witness-search Python implementation or tests changed.
+
+Suppression accounting
+-----------------------
+Exactly three narrow scopes added for expensive_tests_stay_behind_their_own_edge:
+- crates/crozier-e2e/tests/e2e.rs, directly before
+  happy_hamster_matches_fern_output (line 15441).
+- the same file, directly before seldon_wrapper_matches_fern_output (line 15459).
+  Both registrations are required to use the existing real corpus gate and
+  inventory; splitting their shared e2eReads family is an independently drafted
+  graph follow-up, outside this search.
+- crates/crozier-e2e/tests/e2e/overlay_goldens.rs, lines 106-109: only the two
+  required literals inventory entries. They extend the mandated existing
+  subprocess overlay gate and cannot split its shared project edge here.
+The adjacent existing row-4400-4405 block retains its original scope; the new
+tests sit outside it. No other directive is added, moved, rewritten or stands
+over a line changed by this dispatch.
+
+GitHub request accounting
+--------------------------
+Live code_search: 0. Live core: 0. Live raw candidate fetches: 95
+(94 HTTP 200, one HTTP 404). Cache hits: 223. Raw pacing waits: 92.
+No GitHub request outside rate_limit_guard.py. No live licence acquisition,
+code search, GraphQL, Sourcegraph, Postman or SwaggerHub route.
+The guard's own logs are committed beside this record.
+
+Re-verification after merging main at 8cbca1f51 (tree a5eecfc52)
+----------------------------------------------------------------
+This section supersedes the earlier-state census evidence above. No file of
+src/, templates/ or assets/ moved in the merge, and no Fern generation or
+GitHub request was made for it, so the search results above stand as recorded.
+- The corpus census test now compares its sources with the committed golden
+  trees rather than a carried count; it failed as intended naming an induced
+  extra tree, and that tree was removed.
+- just residual-attribution refreshed one input digest and no attribution.
+- just census-repin: 0 tests and 12 fixtures run, 321 tests and 41 fixtures
+  carried from base 10ace0821, 3 derived files rewritten.
+- just test-corpus-match and just test-corpus-match-strict passed.
+- just test-surface-census: 807 passed, 1 skipped, in one complete run.
+- just test-corpus-offline: its main test passed, then its recovery test errored
+  because this host's PATH began with a relative .venv/bin. With that entry made
+  absolute, the recovery and usage tests passed when run directly. The recipe
+  itself has not passed end to end here.
+- handwritten_fixtures_match_fern_goldens, surface-reach:test-residual-attribution
+  and just lint --projects=corpus-match passed.
+- Judged lint over the diff: 20261106T014553Z-8f146, 20261106T014644Z-25112 and
+  20261106T014735Z-f9f01, zero failed.

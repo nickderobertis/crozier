@@ -1,0 +1,24 @@
+--- check ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+Found 0 errors and 2 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning::Found 0 errors and 2 warnings in 0.000 seconds. Run fern check --warnings to print out the warnings not shown.
+
+--- generate ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Found 0 errors and 2 warnings in 0.416 seconds. Run fern check --warnings to print out the warnings not shown.
+::warning title=[api]%3A python-sdk::Found 0 errors and 2 warnings in 0.416 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-2559227-GnQQ3b0pa1tP
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <scratch>/481043a3e30df4344d266e5aaba520da1f509e011a1329a415bcb4f9619132ed/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+
