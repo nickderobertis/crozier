@@ -96,6 +96,7 @@ def artifact_kind(path: str) -> tuple[str, str] | None:
     return None
 
 
+# llmlint: ignore-block[contracts_have_one_source_or_a_drift_gate] These patterns read past CI logs, which no longer change, against the wording the checks used then; they are the spike's frozen classification, and the journeys pin each kind's outcome. A later rewording shows as `census-unattributed` rather than a wrong kind.
 SITE_RE = re.compile(
     r"site .* matches \d+ (functions|lines)|anchor it|spans no production counter region|cannot bound|"
     r"golden-reach-sites\.tsv (lists no|does not)|names no registered source|correct its selectors"
@@ -134,6 +135,7 @@ ARTIFACT_PATH = {
 }
 
 
+# llmlint: ignore-end[contracts_have_one_source_or_a_drift_gate]
 def clean_log(raw: bytes) -> str:
     text = raw.decode("utf-8", "replace")
     text = re.sub(r"^\S+Z ", "", text, flags=re.M)
@@ -217,6 +219,7 @@ def git(*args: str, check: bool = True) -> str:
 
 
 # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless; one short-lived results read per run, one after another, gains nothing from an async client.
+# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] This command belongs to the orchestrator, outside this repository, so no gate here can reach it; a changed answer stops the run on the shape check below.
 def onepipeline_results(run: str) -> dict:
     binary = ORCH / "node_modules" / ".bin" / "onepipeline"
     command = (
@@ -272,6 +275,10 @@ def crozier_runs(root: Path) -> list[str]:
 
 def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, node: str | None) -> None:
     match kind:
+        case "gate-run" if not (ts(payload["started_at"]) and ts(payload["ended_at"])):
+            raise ValueError("a publication attempt needs started_at and ended_at")
+        case "sync-conflict" if not isinstance(payload["paths"], list):
+            raise ValueError("a sync conflict needs a list of paths")
         case "change-opened":
             b["pr"] = int(payload["id"])
         case "change-merged":
@@ -298,7 +305,7 @@ def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, n
         case "sync-conflict":
             key = (labels.get("session"), event["ts"])
             b["conflicts"][key] = {"at": ts(event["ts"]), "paths": payload.get("paths", []), "node": node}
-        case "push" if payload.get("accepted") and payload.get("head"):
+        case "push" if payload.get("accepted") is True and payload.get("head"):
             b["pushes"].append((ts(event["ts"]), payload["head"]))
         case "node-settled":
             b["settles"].append(
@@ -347,7 +354,11 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
                     f"{path}: an event is not an object with object labels and payload; repair the journal"
                 )
             when = ts(event.get("ts"))
-            if when is None or when > until:
+            if when is None or when.tzinfo is None:
+                raise SystemExit(
+                    f"{path}: an event has no time with an offset: {event.get('ts')!r}; repair the journal"
+                )
+            if when > until:
                 continue
             labels, payload = event.get("labels", {}), event.get("payload") or {}
             if labels.get("identity") not in (None, IDENTITY):
@@ -382,7 +393,15 @@ def ci_runs(hub: gh.GitHub, branch: str, until: dt.datetime) -> list[dict]:
     runs = hub.paged(
         f"/repos/{gh.OWNER_REPO}/actions/runs?branch={branch}",
         "workflow_runs",
-        fields=("id", "name", "event", "head_sha", "run_started_at", "updated_at", "conclusion"),
+        fields={
+            "id": int,
+            "name": str,
+            "event": str,
+            "head_sha": str,
+            "run_started_at": str,
+            "updated_at": str,
+            "conclusion": (str, type(None)),
+        },
     )
     out = [
         r
@@ -399,7 +418,13 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
     jobs = hub.paged(
         f"/repos/{gh.OWNER_REPO}/actions/runs/{run['id']}/jobs?filter=latest",
         "jobs",
-        fields=("id", "name", "conclusion"),
+        fields={
+            "id": int,
+            "name": str,
+            "conclusion": (str, type(None)),
+            "started_at": (str, type(None)),
+            "completed_at": (str, type(None)),
+        },
     )
     runner = sum(minutes(ts(j.get("started_at")), ts(j.get("completed_at"))) for j in jobs if j.get("completed_at"))
     info = {
@@ -438,6 +463,7 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
     return info
 
 
+# llmlint: ignore[async_typed_clients_at_boundaries] git is this harness's git client and these fetches run one at a time, so an async wrapper would add nothing; AGENTS.md keeps the tooling stdlib-only.
 def fetch_pr(pr: int) -> str | None:
     ref = f"refs/repin-cost/pull/{pr}"
     done = subprocess.run(
@@ -490,8 +516,8 @@ def pinned_changes(a: str | None, b: str) -> dict[str, str]:
 
 
 def worker_pinned(a: str, b: str) -> dict[str, str]:
-    """Pinned files the branch's own commits in a..b rewrote: non-merge commits, plus what each merge
-    from main resolved by hand (files differing from every parent); never what main itself brought in."""
+    """Pinned files a..b rewrote: every non-merge commit in that range, which includes commits a merge
+    from main imported, plus what each merge resolved by hand (files differing from every parent)."""
     names = set(git("log", "--no-merges", "--format=", "--name-only", f"{a}..{b}", check=False).split())
     for merge in git("rev-list", "--merges", f"{a}..{b}", check=False).split():
         names |= set(git("diff-tree", "--cc", "--no-commit-id", "--name-only", merge, check=False).split())
@@ -594,6 +620,7 @@ def main() -> int:
                 branches[name] = data
 
     try:
+        # llmlint: ignore[async_typed_clients_at_boundaries] One synchronous fetch before any reading starts; git is the client, as in fetch_pr.
         git("fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/repin-cost/main")
     except RuntimeError as error:
         raise SystemExit(f"{error}; a base cannot be read without main") from error

@@ -109,23 +109,29 @@ class GitHub:
             )
         return json.loads(body)
 
-    def paged(self, path: str, key: str, *, fields: tuple[str, ...], limit_pages: int = 20) -> list[dict[str, Any]]:
-        """Every item of a paged collection, each holding `fields`; a malformed page stops the run."""
+    def paged(
+        self, path: str, key: str, *, fields: dict[str, type | tuple[type, ...]], limit_pages: int = 20
+    ) -> list[dict[str, Any]]:
+        """Every item of a paged collection, each holding `fields` with those types; a malformed page, or a
+        collection longer than `limit_pages`, stops the run."""
         out: list[dict[str, Any]] = []
         sep = "&" if "?" in path else "?"
         for page in range(1, limit_pages + 1):
             data = self.json(f"{path}{sep}per_page=100&page={page}")
             items = data.get(key) if isinstance(data, dict) else None
             if not isinstance(items, list) or not all(
-                isinstance(item, dict) and all(field in item for field in fields) for item in items
+                isinstance(item, dict) and all(isinstance(item.get(name), kinds) for name, kinds in fields.items())
+                for item in items
             ):
                 raise SystemExit(
                     f"GitHub returned a malformed {key} collection for {path}; restore complete evidence before measuring"
                 )
             out.extend(items)
             if len(items) < 100:
-                break
-        return out
+                return out
+        raise SystemExit(
+            f"GitHub has more than {limit_pages} pages of {key} for {path}; a window that long would undercount"
+        )
 
 
 # llmlint: ignore-end[async_typed_clients_at_boundaries]

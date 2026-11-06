@@ -1,5 +1,7 @@
 """Drive the public CLI through real journals, git and guarded HTTP."""
 
+# llmlint: ignore-file[modern_domain_modeling] These dictionaries are the wire shapes the harness reads, written as a journal line or a GitHub response would be; a typed model of them would hide the JSON the journeys exist to serve.
+# llmlint: ignore-file[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing and runs in under a minute (see `metadata.description` on the target in project.json).
 from __future__ import annotations
 
 import csv
@@ -532,10 +534,91 @@ class HarnessTest(unittest.TestCase):
             },
         )
 
+    def test_ordinary_failure_artifact_kinds_merges_and_temporary_refs(self):
+        branch, head1 = self.change(1, self.main)
+        self.git("checkout", branch)
+        paths = {
+            "docs/openapi-surface/handwritten/orchard/evidence.toml": True,
+            "docs/openapi-surface/handwritten/orchard/spec.yml": False,
+            "shots/baseline/run.png": True,
+            "assets/crozier.schema.json": True,
+            "tests/fixtures/CORPUS.md": True,
+            "docs/fern-refusals/classes.tsv": True,
+            "src/lib.rs": False,
+        }
+        for name in paths:
+            target = self.repo / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_text("v1\n", encoding="utf-8")
+        head2 = self.commit("artifacts")
+        # Main moves the same table and a second one; the worker resolves the first by hand.
+        self.git("checkout", "main")
+        sites = self.repo / "docs/openapi-surface/golden-reach-sites.tsv"
+        sites.parent.mkdir(parents=True, exist_ok=True)
+        sites.write_text("main\n", encoding="utf-8")
+        (self.repo / "docs/openapi-surface/golden-reach.tsv").write_text("main\n", encoding="utf-8")
+        self.commit("main-tables")
+        self.git("checkout", branch)
+        sites.write_text("branch\n", encoding="utf-8")
+        self.commit("branch-table")
+        subprocess.run(["git", "-C", str(self.repo), "merge", "main", "--no-edit"], capture_output=True, check=False)
+        sites.write_text("resolved\n", encoding="utf-8")
+        self.git("add", "--all")
+        self.git("commit", "--no-edit")
+        head3 = self.git("rev-parse", "HEAD").strip()
+        self.git("update-ref", "refs/pull/1/head", head3)
+        self.git("checkout", "main")
+        self.serve_runs(
+            branch,
+            [self.ci_run(1, 1, head1), self.ci_run(2, 2, head2), self.ci_run(3, 3, head3, "success")],
+            {
+                1: b"E AssertionError: formatting differs\nFailed tasks:\n - crozier:test\n",
+                2: b"E AssertionError: unrelated words\nFailed tasks:\n - surface-census:test-census\n",
+            },
+        )
+        out = self.invoke(window="runs:sample")
+        row = self.rows(out, "changes.tsv")[0]
+        self.assertEqual((row["ci_failed"], row["other_failures"], row["census_failures"]), ("2", "1", "1"))
+        events = self.rows(out, "events.tsv")
+        self.assertEqual([e["ci_run"] for e in events], ["2", "2"])
+        # The fix range holds the hand-resolved merge and the commits it imported from main.
+        self.assertEqual(
+            events[0]["fix_files"], "docs/openapi-surface/golden-reach-sites.tsv;docs/openapi-surface/golden-reach.tsv"
+        )
+        self.assertEqual([e["kind"] for e in events], ["measured-count", "site-anchor"])
+        rewrote = set(row["rewrote"].split(";"))
+        self.assertLessEqual(
+            {
+                "docs/openapi-surface/handwritten/orchard/evidence.toml",
+                "shots/baseline/",
+                "assets/crozier.schema.json",
+                "tests/fixtures/CORPUS.md",
+            },
+            rewrote,
+        )
+        self.assertNotIn("docs/openapi-surface/handwritten/orchard/spec.yml", rewrote)
+        self.assertNotIn("src/lib.rs", rewrote)
+        self.assertEqual(self.git("for-each-ref", "refs/repin-cost/"), "")
+
+    def test_a_collection_longer_than_the_page_limit_stops(self):
+        branch, head = self.change(1, self.main)
+        page = [dict(self.ci_run(100, 1, head, "success"), name="other") for _ in range(100)]
+        for number in range(1, 21):
+            self.responses[f"/repos/nickderobertis/crozier/actions/runs?branch={branch}&per_page=100&page={number}"] = (
+                200,
+                {"workflow_runs": page},
+            )
+        done = subprocess.run(self.command(), env=self.env, capture_output=True, text=True, timeout=60)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("more than 20 pages", done.stderr)
+
     def test_malformed_github_collection_stops(self):
         branch, head = self.change(1, self.main)
         path = f"/repos/nickderobertis/crozier/actions/runs?branch={branch}&per_page=100&page=1"
-        for i, payload in enumerate(({}, {"workflow_runs": 3}, {"workflow_runs": [{"id": 1}]})):
+        wrong_id = dict(self.ci_run(1, 1, head), id="one")
+        for i, payload in enumerate(
+            ({}, {"workflow_runs": 3}, {"workflow_runs": [{"id": 1}]}, {"workflow_runs": [wrong_id]})
+        ):
             self.responses[path] = (200, payload)
             env = {**self.env, "CROZIER_GITHUB_CACHE_DIR": str(self.root / f"cache-{i}")}
             done = subprocess.run(self.command(out=f"bad-{i}"), env=env, capture_output=True, text=True, timeout=20)
@@ -589,7 +672,10 @@ class HarnessTest(unittest.TestCase):
         path.write_text(lines + '{"ts": "2026-01-01T0', encoding="utf-8")
         done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
         self.assertEqual(done.returncode, 0, done.stderr)
-        for bad, expected in (("[1]\n", "not an object"),):
+        for bad, expected in (
+            ("[1]\n", "not an object"),
+            ('{"kind": "push", "labels": {}, "payload": {}}\n', "no time with an offset"),
+        ):
             path.write_text(lines + bad, encoding="utf-8")
             done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
             self.assertEqual(done.returncode, 1, done.stderr)
@@ -605,6 +691,11 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stderr)
         self.assertIn("change-opened event", done.stderr)
         self.assertNotIn("Traceback", done.stderr)
+        gate = dict(opened, kind="gate-run", payload={"branch": "x", "started_at": "2026-01-01T02:00:00Z"})
+        path.write_text(lines + json.dumps(gate) + "\n", encoding="utf-8")
+        done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("gate-run event", done.stderr)
         path.write_text(lines, encoding="utf-8")
         for provider, expected in (
             ("import sys\nsys.exit(3)\n", "exited 3"),
@@ -773,11 +864,17 @@ class ComparisonTest(unittest.TestCase):
             data = json.loads(before.read_text())
             data.update(changes=0, changes_with_pr=0, merged=0)
             before.write_text(json.dumps(data))
+            base_rows = (root / "baseline/changes.tsv").read_text()
+            self.assertIn("disagree with totals.json", compare().stderr)
+            (root / "baseline/changes.tsv").write_text(base_rows.splitlines()[0] + "\n")
+            data["census"]["failures"] = 0
+            before.write_text(json.dumps(data))
             path.write_text(json.dumps(good))
             self.assertEqual(compare().returncode, 0)
             text = (root / "after/comparison.md").read_text()
             self.assertIn("| `changes` | 0.00 | n/a | 8.00 | 1.00 | +8.00 | n/a |", text)
             self.assertIn("| pooled baseline | n/a | 0.75 | n/a |", text)
+            self.assertIn("| live run baseline | n/a | 0.75 | n/a |", text)
 
 
 if __name__ == "__main__":

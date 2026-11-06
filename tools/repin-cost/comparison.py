@@ -122,8 +122,18 @@ def reference_rates(baseline: Path, totals: Totals) -> list[tuple[str, float | N
     """Census failures per change the after sample is read against, both from the baseline given."""
     with (baseline / "changes.tsv").open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
-    if any("census_failures" not in row or "runs" not in row for row in rows):
-        raise ValueError(f"{baseline}/changes.tsv: needs census_failures and runs columns")
+    if any(
+        "census_failures" not in row or "runs" not in row or not (row["census_failures"] or "").isdecimal()
+        for row in rows
+    ):
+        raise ValueError(f"{baseline}/changes.tsv: needs a census_failures count and a runs column on every row")
+    prs = [row.get("pr") for row in rows]
+    if (
+        len(rows) != totals["changes"]
+        or len(set(prs)) != len(prs)
+        or sum(int(row["census_failures"]) for row in rows) != totals["census"]["failures"]
+    ):
+        raise ValueError(f"{baseline}/changes.tsv: its rows disagree with totals.json's changes or census failures")
     live = [row for row in rows if LIVE_RUN in row["runs"].split(";")]
     return [
         ("pooled baseline", totals["census"]["failures"] / totals["changes"] if totals["changes"] else None),
