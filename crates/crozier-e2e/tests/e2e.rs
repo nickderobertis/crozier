@@ -3306,20 +3306,20 @@ fn remaining_witnesses_have_output_sensitive_examples_and_enum_alternatives() {
 fn residual_null_example_is_absent_from_matching_request_snippets() {
     let (_, failures) = handwritten_documents(repo_root());
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-    let fixture = repo_root().join("docs/openapi-surface/probe-expected/harbor-signal-null");
-    let spec = repo_root().join("docs/openapi-surface/probes/harbor-signal-null.yml");
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-signal-null");
+    let spec = fixture.join("openapi.yml");
     let failures = filtered_tree_failures(
         "schema-example-null",
-        "docs/openapi-surface/probe-expected/harbor-signal-null",
+        "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected",
         &spec,
-        &fixture,
+        &fixture.join("fern-expected"),
         &[],
     );
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     let temp = tempfile::tempdir().unwrap();
     let output = temp.path().join("sdk");
     probe_command(&spec, &output).assert().success();
-    for tree in [fixture.clone(), output] {
+    for tree in [fixture.join("fern-expected"), output] {
         let text = std::fs::read_to_string(tree.join("src/fern/client.py")).unwrap();
         for (prefix, end) in [
             ("\n        client.submit_signal(", "\n        )"),

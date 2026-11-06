@@ -229,9 +229,8 @@ rows as its own causes: each cause is the issue number in its source URL.
 ## Proof retired by the registrations
 
 The fresh 391-test byte-match and per-test coverage exports supersede the
-following handwritten covers and residual supplement. Each named witness
-passed its corpus gate in both enum modes; its scoped export reaches the named
-arm. The supplement’s witness declares the key and has no corpus residual.
+following handwritten covers. Each named witness passed its corpus gate in both
+enum modes; its scoped export reaches the named arm.
 
 | Retired fixture | Key | Arm or supplement | Registered witness |
 |---|---|---|---|
@@ -244,7 +243,6 @@ arm. The supplement’s witness declares the key and has no corpus residual.
 | `json-request-shapes` | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `meadow-tag-code` | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `shelf-labels-map-variants` | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `registered-literals-apis-guru-openapi-directory-9031af6a` |
-| `harbor-signal-null` | `schema-example-null` | `residual supplement` | `registered-literals-bytedance-sandboxfusion-0b64b21d` |
 
 The nine retired arm covers remove exactly nine rows from
 `handwritten-reach.tsv`; the remaining rows and every configuration-gate row
@@ -255,7 +253,14 @@ rows.
 
 The following fixtures keep their unchanged source bytes and certified trees
 as probes, with manifest digests and their regression test paths updated:
-`byte-text-response`, `byte-text-response-controls`, `harbor-signal-null`, `json-binary-path`, `meadow-tag-code`, `shelf-labels-map-variants`.
+`byte-text-response`, `byte-text-response-controls`, `json-binary-path`, `meadow-tag-code`, `shelf-labels-map-variants`.
+
+The `harbor-signal-null` residual supplement stays. `registered-literals-bytedance-sandboxfusion-0b64b21d` and
+`registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a` declare `schema-example-null` inside
+goldens that byte-match whole, but their
+[paired removals](../../openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json)
+move no generated file in crozier or the certified pair, so neither proves the
+key and its only other witness remains the residual `webflow-v2`.
 
 Three values have no checked-in generator. Under planner ruling 230,
 `apply-retirements.py` in this dispatch’s scratch directory derives them from
@@ -295,9 +300,5 @@ changed repository data. No shared parser, assertion, or enforcement setting cha
 rulings 229 and 248.
 
 The remaining-scenario summary is derived in scratch by
-`derive-remaining-scenarios.py`: 110 features and 87 arms rely on handwritten
-proof. The proof index now names the relocated binary-JSON golden. Residual
-contract tests stage an isolated positive proof from the unchanged probe bytes,
-so their malformed-input and recovery cases remain independent of which
-publisher documents the corpus subsequently registers. All assertions and
-adversarial cases are preserved.
+`derive-remaining-scenarios.py`: 112 features and 86 arms rely on handwritten
+proof. The proof index now names the relocated binary-JSON golden. All assertions and adversarial cases are preserved.

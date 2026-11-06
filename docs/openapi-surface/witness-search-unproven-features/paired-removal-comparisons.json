@@ -21,5 +21,51 @@
     "could_not_check": 0
    }
   }
+ },
+ {
+  "key": "schema-example-null",
+  "fixture": "registered-literals-bytedance-sandboxfusion-0b64b21d",
+  "perturbation": "Remove the null member of the one Schema Object examples array whose first member is null: /components/schemas/TestConfig/properties/dataset_type/examples/0 of the committed source; keep all other document bytes.",
+  "crozier": {
+   "before_files": 77,
+   "after_files": 77,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 77,
+   "after_files": 77,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   }
+  }
+ },
+ {
+  "key": "schema-example-null",
+  "fixture": "registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a",
+  "perturbation": "Remove the null member of each Schema Object examples array whose first member is null: /components/schemas/AttributeDefinition/properties/max/examples/0 and /components/schemas/AttributeDefinition/properties/min/examples/0, lines 2147 and 2151 of the committed source; keep all other document bytes.",
+  "crozier": {
+   "before_files": 154,
+   "after_files": 154,
+   "changed": {}
+  },
+  "certified_pair": {
+   "before_files": 154,
+   "after_files": 154,
+   "changed": {}
+  },
+  "control_comparison": {
+   "exit_code": 0,
+   "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+   }
+  }
  }
 ]

@@ -29,7 +29,7 @@ the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 726
 split five ways:
 
-- **545 carry byte-match evidence against a registered real-world
+- **544 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,7 +38,7 @@ split five ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **111 rest on a hand-written fixture, a weaker proof than a real
+- **112 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows and the residual-only golden
   supplements below. For the `handwritten` rows, no registered real
   specification declares the feature. For supplements, no qualifying real
@@ -115,7 +115,7 @@ split five ways:
   records its own acquired populations and registrations.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  545 and never count as a real-specification match.
+  544 and never count as a real-specification match.
 - **0 are decided output-insensitive.** Deleting the feature leaves both generators'
   complete trees byte-identical, as [the shared
   table](openapi-surface/output-insensitive.tsv) records for the whole key; such a `gap`
@@ -127,7 +127,7 @@ split five ways:
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-545 + 70 + 111 + 0 + 0 = 726.
+544 + 70 + 112 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
 ([the list](openapi-surface/combinations.md)): 28 are `gap`, 71 are `golden` and 8 are `handwritten`.
@@ -234,7 +234,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (111 features, 86
+- **Features and arms resting on hand-written fixtures only (112 features, 86
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
@@ -3640,7 +3640,7 @@ byte-matched file, so
 [`residual-attribution.py`](../tools/surface-census/residual-attribution.py) (`just
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
-splits the files that move by whether the golden test compares them. **1** golden rows rest only on residual golden witnesses. `boolean-schema-true` lands in
+splits the files that move by whether the golden test compares them. **2** golden rows rest only on residual golden witnesses. `boolean-schema-true` lands in
 byte-matched files only, including `src/fern/collections/__init__.py` after the
 package-export repair, so its disposition is `byte-matched`. `format-idn-hostname` and
 `format-iri` rested on `short-io` until it reached full parity, and
@@ -3650,7 +3650,9 @@ in `webflow-v2`, nor in `rs-server` (corpus row 3477), which declares it inside 
 golden that byte-matches whole but whose
 [paired removal](openapi-surface/witness-search-unproven-features/paired-removal-comparisons.json)
 moves no file in either generator, so it is an output-insensitive declarer, not
-a witness. Its renewed bounded search found no real witness whose null
+a witness; so are `registered-literals-bytedance-sandboxfusion-0b64b21d` (corpus row
+5524) and `registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a`
+(corpus row 5550). Its renewed bounded search found no real witness whose null
 example moves a file. The authored `harbor-signal-null` tree instead proves the
 null argument's absence in byte-matched sync and async request snippets. This is
 a weaker hand-written proof: the category remains `golden`, and the headline
