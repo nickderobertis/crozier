@@ -545,6 +545,15 @@ class HarnessTest(unittest.TestCase):
             "tests/fixtures/CORPUS.md": True,
             "docs/fern-refusals/classes.tsv": True,
             "src/lib.rs": False,
+            "docs/openapi-surface/scenario-proof-index.tsv": True,
+            "docs/screenshots/run.png": True,
+            "tests/fixtures/corpus-remote-ref-pins.tsv": True,
+            "llmlint-plugins/lock.json": True,
+            "docs/fern-measurements/cases.tsv": True,
+            "docs/fern-measurements/runs.json": True,
+            "docs/openapi-surface/witness-search-x/census.tsv": True,
+            "docs/openapi-surface/parameters.md": True,
+            "docs/openapi-surface/witness-search-x/README.md": False,
         }
         for name in paths:
             target = self.repo / name
@@ -587,17 +596,10 @@ class HarnessTest(unittest.TestCase):
         )
         self.assertEqual([e["kind"] for e in events], ["measured-count", "site-anchor"])
         rewrote = set(row["rewrote"].split(";"))
-        self.assertLessEqual(
-            {
-                "docs/openapi-surface/handwritten/orchard/evidence.toml",
-                "shots/baseline/",
-                "assets/crozier.schema.json",
-                "tests/fixtures/CORPUS.md",
-            },
-            rewrote,
-        )
-        self.assertNotIn("docs/openapi-surface/handwritten/orchard/spec.yml", rewrote)
-        self.assertNotIn("src/lib.rs", rewrote)
+        for name, pinned in paths.items():
+            shown = "shots/baseline/" if name.startswith("shots/") else name
+            shown = "docs/screenshots/" if name.startswith("docs/screenshots/") else shown
+            self.assertEqual(shown in rewrote, pinned, name)
         self.assertEqual(self.git("for-each-ref", "refs/repin-cost/"), "")
 
     def test_logs_jobs_fallbacks_and_conflict_shares(self):
@@ -693,6 +695,72 @@ class HarnessTest(unittest.TestCase):
         )
         self.assertEqual(shares["tests/fixtures/CORPUS.md"], 3.3)
         self.assertEqual(shares["tests/fixtures/compared-goldens.json"], 3.3)
+
+    def test_journal_identity_ci_filters_and_overlapping_runs(self):
+        branch, head = self.change(1, self.main)
+        session = "session-1"
+        self.journal[0]["labels"]["session"] = session
+        # Carries no branch: the session's earlier event names it.
+        self.journal.append(
+            {
+                "ts": "2026-01-01T02:00:00Z",
+                "kind": "node-dispatched",
+                "labels": {"session": session, "node": "by-session"},
+                "payload": {"attempt": 2},
+            }
+        )
+        # Carries neither: the node's earlier event names it.
+        self.journal.append(
+            {
+                "ts": "2026-01-01T02:10:00Z",
+                "kind": "node-dispatched",
+                "labels": {"node": "node"},
+                "payload": {"attempt": 3},
+            }
+        )
+        # Another repository's event on a branch of the same name is not this change's.
+        self.event("node-dispatched", branch, {"attempt": 9})
+        self.journal[-1]["labels"]["identity"] = "github.com/someone/else"
+        # Past the cutoff.
+        self.event("node-dispatched", branch, {"attempt": 10}, "2026-01-03T00:00:00Z")
+        overlapped = self.ci_run(1, 1, head)
+        overlapped["updated_at"] = "2026-01-01T02:30:00Z"
+        next_run = self.ci_run(2, 2, head, "success")
+        push_event = dict(self.ci_run(3, 3, head), event="push")
+        after_cutoff = dict(self.ci_run(4, 4, head), run_started_at="2026-01-03T00:00:00Z")
+        self.serve_runs(
+            branch,
+            [overlapped, next_run, push_event, after_cutoff],
+            {1: b"E AssertionError: x\nFailed tasks:\n - surface-census:test-census\n"},
+        )
+        out = self.invoke(window="runs:sample")
+        row = self.rows(out, "changes.tsv")[0]
+        self.assertEqual((row["ci_runs"], row["redispatches"]), ("2", "2"))
+        self.assertIn("by-session", row["nodes"])
+        self.assertEqual(
+            (row["census_failures"], row["census_wait_min"], row["census_ci_unresolved"]), ("1", "0.0", "1")
+        )
+        event = self.rows(out, "events.tsv")[0]
+        self.assertEqual((event["ci_next_run"], event["wait_min"]), ("unresolved", ""))
+
+    def test_a_redirect_off_the_api_and_a_wrong_identifier_stop(self):
+        branch, head = self.change(1, self.main)
+        run = self.ci_run(7, 1, head)
+        self.serve_runs(branch, [run], {})
+        log = "/repos/nickderobertis/crozier/actions/jobs/7/logs"
+        self.redirects[log] = "http://elsewhere.invalid/blob"
+        done = subprocess.run(self.command(), env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("refusing to follow", done.stderr)
+        self.assertNotIn("Traceback", done.stderr)
+        self.responses[f"/repos/nickderobertis/crozier/actions/runs?branch={branch}&per_page=100&page=1"] = (
+            200,
+            {"workflow_runs": [dict(run, id=True)]},
+        )
+        env = {**self.env, "CROZIER_GITHUB_CACHE_DIR": str(self.root / "fresh")}
+        done = subprocess.run(self.command(out="flagged"), env=env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("malformed workflow_runs", done.stderr)
 
     def test_a_collection_longer_than_the_page_limit_stops(self):
         branch, head = self.change(1, self.main)
@@ -802,6 +870,19 @@ class HarnessTest(unittest.TestCase):
                 },
             ),
             ("change-opened", {"id": True}),
+            ("change-merged", {"sha": "not-a-sha"}),
+            ("change-merged", {"sha": "a" * 40, "url": "https://github.com/o/r/pull/0"}),
+            ("push", {"accepted": True, "head": "not-a-sha"}),
+            ("sync-conflict", {"paths": [3]}),
+            (
+                "gate-run",
+                {
+                    "started_at": "2026-01-01T02:00:00Z",
+                    "ended_at": "2026-01-01T02:10:00Z",
+                    "verdict": "odd",
+                    "checks": [],
+                },
+            ),
             ("change-opened", {"id": -3}),
             ("node-dispatched", {"attempt": 1.5}),
         ):

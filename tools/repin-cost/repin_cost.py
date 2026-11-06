@@ -55,7 +55,9 @@ IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
 # llmlint: ignore[contracts_have_one_source_or_a_drift_gate] The census tier is the spike method's fixed definition, frozen so a re-take stays comparable with the baseline; following a later target rename here would change what is counted, and `comparison.md` states the one target this leaves out.
 CENSUS_TASKS = ("surface-census:test-census", "surface-census:test-reach", "surface-census:test-reach-portable")
+VERDICTS = ("passed", "failed", "no-verdict", "passed-with-skipped")
 UNAVAILABLE_OUTCOME = "unavailable (node retired; not in current results)"
+COMMIT_RE = re.compile(r"[0-9a-f]{40}")
 KINDS = ("site-anchor", "port-digest", "measured-count", "derived-conflict")
 
 
@@ -218,8 +220,8 @@ def git(*args: str, check: bool = True) -> str:
     return done.stdout
 
 
-# llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless; one short-lived results read per run, one after another, gains nothing from an async client.
-# llmlint: ignore[contracts_have_one_source_or_a_drift_gate] This command belongs to the orchestrator, outside this repository, so no gate here can reach it; a changed answer stops the run on the shape check below.
+# llmlint: ignore-block[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless; one short-lived results read per run, one after another, gains nothing from an async client.
+# llmlint: ignore-block[contracts_have_one_source_or_a_drift_gate] This command belongs to the orchestrator, outside this repository, so no gate here can reach it; a changed answer stops the run on the shape check below.
 def onepipeline_results(run: str) -> dict:
     binary = ORCH / "node_modules" / ".bin" / "onepipeline"
     command = (
@@ -260,6 +262,10 @@ def onepipeline_results(run: str) -> dict:
     return data
 
 
+# llmlint: ignore-end[contracts_have_one_source_or_a_drift_gate]
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
+
+
 def crozier_runs(root: Path) -> list[str]:
     out = []
     for plan in sorted(root.glob("*/plan.json")):
@@ -273,6 +279,14 @@ def crozier_runs(root: Path) -> list[str]:
     return out
 
 
+def aware(value: object) -> dt.datetime:
+    """A required time with an offset; ValueError otherwise, since a blank one would read as zero minutes."""
+    moment = ts(value) if isinstance(value, str) else None
+    if moment is None or moment.tzinfo is None:
+        raise ValueError(f"expected a time with an offset, got {value!r}")
+    return moment
+
+
 def positive_pr(value: object) -> int:
     """A pull request's number as journals write it: a positive integer, or those digits as a string."""
     if (isinstance(value, int) and not isinstance(value, bool) and value > 0) or (
@@ -283,16 +297,16 @@ def positive_pr(value: object) -> int:
 
 
 def valid_publication(payload: dict) -> bool:
-    start, end = ts(payload["started_at"]), ts(payload["ended_at"])
     return bool(
-        start
-        and end
-        and start.tzinfo
-        and end.tzinfo
-        and start <= end
-        and isinstance(payload["verdict"], str)
+        aware(payload["started_at"]) <= aware(payload["ended_at"])
+        and payload["verdict"] in VERDICTS
         and isinstance(payload["checks"], list)
-        and all(isinstance(c, dict) and isinstance(c.get("name"), str) for c in payload["checks"])
+        and all(
+            isinstance(c, dict)
+            and isinstance(c.get("name"), str)
+            and (c.get("conclusion") is None or isinstance(c["conclusion"], str))
+            for c in payload["checks"]
+        )
     )
 
 
@@ -300,15 +314,24 @@ def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, n
     match kind:
         case "gate-run" if not valid_publication(payload):
             raise ValueError("a publication attempt needs aware started_at <= ended_at, a verdict and named checks")
-        case "sync-conflict" if not isinstance(payload["paths"], list):
+        case "sync-conflict" if not (
+            isinstance(payload["paths"], list) and all(isinstance(path, str) for path in payload["paths"])
+        ):
             raise ValueError("a sync conflict needs a list of paths")
+        case "push" if payload.get("accepted") is True and not COMMIT_RE.fullmatch(str(payload.get("head"))):
+            head = payload.get("head")
+            if head is not None:
+                raise ValueError(f"an accepted push's head must be a commit sha, got {head!r}")
         case "change-opened":
             b["pr"] = positive_pr(payload["id"])
         case "change-merged":
-            b["merged"] = payload.get("sha")
+            sha = payload.get("sha")
+            if sha is not None and not COMMIT_RE.fullmatch(str(sha)):
+                raise ValueError(f"a merge's sha must be a commit sha, got {sha!r}")
+            b["merged"] = sha
             m = re.search(r"/pull/(\d+)", payload.get("url", ""))
             if m:
-                b["pr"] = int(m.group(1))
+                b["pr"] = positive_pr(m.group(1))
         case "gate-run":
             key = (labels.get("session"), payload.get("started_at"))
             b["gates"][key] = {
@@ -438,14 +461,9 @@ def ci_runs(hub: gh.GitHub, branch: str, until: dt.datetime) -> list[dict]:
         },
     )
     out = [
-        r
-        for r in runs
-        if r["name"] == "ci"
-        and r["event"] == "pull_request"
-        and (started := ts(r["run_started_at"])) is not None
-        and started <= until
+        r for r in runs if r["name"] == "ci" and r["event"] == "pull_request" and aware(r["run_started_at"]) <= until
     ]
-    return sorted(out, key=lambda r: r["run_started_at"])
+    return sorted(out, key=lambda r: aware(r["run_started_at"]))
 
 
 def analyse_run(hub: gh.GitHub, run: dict) -> dict:
@@ -460,16 +478,17 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
             "completed_at": (str, type(None)),
         },
     )
-    # llmlint: ignore[boundary_inputs_validated] Ordering is not checked: GitHub reports completed_at before started_at on real jobs of the baseline's runs, and the method's runner minutes carry them as they read; only a missing start, which would read as zero minutes, stops the run.
+    # llmlint: ignore[boundary_inputs_validated] Ordering is not checked: GitHub reports completed_at before started_at on real jobs of the baseline's runs, and the method's runner minutes carry them as they read; only a blank or offset-free time, which would read as zero minutes, stops the run.
     for job in jobs:
-        if job["completed_at"] and not job["started_at"]:
-            raise SystemExit(f"GitHub job {job['id']} has completed_at without started_at; re-read the run")
+        if job["completed_at"]:
+            aware(job["completed_at"])
+            aware(job["started_at"])
     runner = sum(minutes(ts(j["started_at"]), ts(j["completed_at"])) for j in jobs if j["completed_at"])
     info = {
         "id": run["id"],
         "head": run["head_sha"],
-        "start": ts(run["run_started_at"]),
-        "end": ts(run["updated_at"]),
+        "start": aware(run["run_started_at"]),
+        "end": aware(run["updated_at"]),
         "conclusion": run["conclusion"],
         "runner_min": round(runner, 1),
         "elapsed_min": minutes(ts(run["run_started_at"]), ts(run["updated_at"])),
@@ -501,7 +520,7 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
     return info
 
 
-# llmlint: ignore[async_typed_clients_at_boundaries] git is this harness's git client and these fetches run one at a time, so an async wrapper would add nothing; AGENTS.md keeps the tooling stdlib-only.
+# llmlint: ignore-block[async_typed_clients_at_boundaries] git is this harness's git client and these fetches run one at a time, so an async wrapper would add nothing; AGENTS.md keeps the tooling stdlib-only.
 def fetch_pr(pr: int) -> str | None:
     ref = f"refs/repin-cost/pull/{pr}"
     done = subprocess.run(
@@ -513,6 +532,9 @@ def fetch_pr(pr: int) -> str | None:
     if done.returncode != 0:
         return None
     return git("rev-parse", ref).strip()
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 def is_ancestor(ancestor: str, descendant: str) -> bool:
@@ -577,16 +599,17 @@ def parse_window(spec: str, root: Path) -> tuple[list[str], list[str]]:
     """The runs a window reads and the commits it requires; ValueError names what is wrong with it."""
     kind, _, value = spec.partition(":")
     items = [v for v in value.split(",") if v]
-    if kind == "runs" and items:
-        bad = [v for v in items if v in (".", "..") or "/" in v or "\\" in v]
-        if bad:
-            raise ValueError(f"--window names run {bad[0]!r}, which is not a directory name under the runs root")
-        return items, []
-    if kind == "base-carries" and items:
-        unknown = [v for v in items if not re.fullmatch(r"[0-9a-f]{40}", v) or not has_commit(v)]
-        if unknown:
-            raise ValueError(f"--window needs full commit shas this checkout holds; {unknown[0]!r} is not one")
-        return crozier_runs(root), items
+    match kind:
+        case "runs" if items:
+            bad = [v for v in items if v in (".", "..") or "/" in v or "\\" in v]
+            if bad:
+                raise ValueError(f"--window names run {bad[0]!r}, which is not a directory name under the runs root")
+            return items, []
+        case "base-carries" if items:
+            unknown = [v for v in items if not COMMIT_RE.fullmatch(v) or not has_commit(v)]
+            if unknown:
+                raise ValueError(f"--window needs full commit shas this checkout holds; {unknown[0]!r} is not one")
+            return crozier_runs(root), items
     raise ValueError(f"--window must be runs:<run>[,...] or base-carries:<sha>[,...], got {spec!r}")
 
 
@@ -657,11 +680,12 @@ def main() -> int:
             else:
                 branches[name] = data
 
+    # llmlint: ignore-block[async_typed_clients_at_boundaries] One synchronous fetch before any reading starts; git is the client, as in fetch_pr.
     try:
-        # llmlint: ignore[async_typed_clients_at_boundaries] One synchronous fetch before any reading starts; git is the client, as in fetch_pr.
         git("fetch", "--quiet", "--no-tags", "origin", "+refs/heads/main:refs/repin-cost/main")
     except RuntimeError as error:
         raise SystemExit(f"{error}; a base cannot be read without main") from error
+    # llmlint: ignore-end[async_typed_clients_at_boundaries]
     changes, events, excluded = [], [], []
     for name, b in sorted(branches.items(), key=lambda kv: (kv[1]["pr"] or 10**9, kv[0])):
         examined = {

@@ -37,6 +37,8 @@ class _NoRedirectAuth(urllib.request.HTTPRedirectHandler):
     """Follow a log download's redirect to blob storage without the credential."""
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not (newurl.startswith("https://") or rlg.is_github_api_url(newurl)):
+            raise ValueError(f"GitHub redirected a read to {newurl!r}; refusing to follow it")
         new = super().redirect_request(req, fp, code, msg, headers, newurl)
         if new is not None:
             new.headers.pop("Authorization", None)
@@ -120,7 +122,11 @@ class GitHub:
             data = self.json(f"{path}{sep}per_page=100&page={page}")
             items = data.get(key) if isinstance(data, dict) else None
             if not isinstance(items, list) or not all(
-                isinstance(item, dict) and all(isinstance(item.get(name), kinds) for name, kinds in fields.items())
+                isinstance(item, dict)
+                and all(
+                    isinstance(item.get(name), kinds) and not isinstance(item.get(name), bool)
+                    for name, kinds in fields.items()
+                )
                 for item in items
             ):
                 raise SystemExit(
