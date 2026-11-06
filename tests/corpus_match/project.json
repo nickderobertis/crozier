@@ -9,6 +9,31 @@
     "lang:rust"
   ],
   "targets": {
+    "cold-registry-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/corpus_match/corpus_offline_test.py --cold-registry-build"
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource",
+        "default"
+      ]
+    },
+    "test-cold-handoff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/corpus_match/cold_handoff_test.py"
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "default",
+        "{workspaceRoot}/src/project.json",
+        "{workspaceRoot}/crates/crozier-e2e/project.json"
+      ]
+    },
     "test-match": {
       "executor": "nx:run-commands",
       "options": {
@@ -26,12 +51,7 @@
         "witnessIndexReads"
       ],
       "dependsOn": [
-        {
-          "projects": [
-            "crozier"
-          ],
-          "target": "build"
-        }
+        "cold-registry-build"
       ]
     },
     "test-strict": {
@@ -51,12 +71,7 @@
         "witnessIndexReads"
       ],
       "dependsOn": [
-        {
-          "projects": [
-            "crozier"
-          ],
-          "target": "build"
-        }
+        "cold-registry-build"
       ]
     },
     "test-offline": {
@@ -90,14 +105,18 @@
         "witnessIndexReads",
         "{workspaceRoot}/tools/witness-search/witness-search-redo.py"
       ],
-      "parallelism": false
+      "parallelism": false,
+      "dependsOn": [
+        "cold-registry-build"
+      ]
     },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
         "test-match",
         "test-strict",
-        "test-offline"
+        "test-offline",
+        "test-cold-handoff"
       ]
     },
     "lint-boundaries": {

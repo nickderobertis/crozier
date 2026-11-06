@@ -1,7 +1,8 @@
 // One compile of crozier per profile within a job, through the commands the gate
 // and the suites really run. The real tree's builds are the job's own, so this adds
-// no compile of crozier; a changed input is proved on a scratch workspace of the
-// same names, which those same commands drive verbatim.
+// no compile of crozier. A scratch workspace of the same names repeats the changed-
+// input checks on every platform; tests/corpus_match/cold_handoff_test.py makes them
+// over crozier's real source.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
