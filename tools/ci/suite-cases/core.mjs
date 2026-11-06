@@ -36,6 +36,27 @@ const COLLECTORS = {
     const output = collectorOutput(root, "uv", ["run", "--locked", "--all-packages", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", ...pytestFiles(command)]);
     return output.split(/\r?\n/).filter((line) => line.includes("::"));
   },
+  /** Every test id a unittest file defines, for a target that runs its files as scripts. */
+  unittest(root, suite) {
+    const files = suite.files ?? commandsOf(root, suite.project, suite.target).flatMap((command) => command.match(/\S+_test\.py/g) ?? []);
+    const script = `
+import importlib.util, sys, unittest
+def walk(suite):
+    for item in suite:
+        if isinstance(item, unittest.TestSuite):
+            yield from walk(item)
+        else:
+            yield item
+for path in sys.argv[1:]:
+    spec = importlib.util.spec_from_file_location("__suite_cases__", path)
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    for case in walk(unittest.defaultTestLoader.loadTestsFromModule(module)):
+        print(path + "::" + case.id().removeprefix("__suite_cases__."))
+`;
+    return collectorOutput(root, "uv", ["run", "--locked", "--all-packages", "python", "-c", script, ...files]).split(/\r?\n/).filter((line) => line.includes("::"));
+  },
   /** `<binary> <test>` for every test `cargo nextest list` selects with the target's own arguments. */
   nextest(root, suite) {
     const output = collectorOutput(root, "cargo", ["nextest", "list", "--message-format", "oneline", "--color", "never", ...suite.arguments]);

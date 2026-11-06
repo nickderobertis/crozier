@@ -1,3 +1,10 @@
 [
-  { "name": "surface-census-test-census", "collector": "pytest", "project": "tools/surface-census", "target": "test-census" }
+  { "name": "surface-census-test-census", "collector": "pytest", "project": "tools/surface-census", "target": "test-census" },
+  { "name": "surface-census-test-reach", "collector": "unittest", "project": "tools/surface-census", "target": "test-reach" },
+  { "name": "surface-census-test-reach-portable", "collector": "unittest", "project": "tools/surface-census", "target": "test-reach-portable" },
+  { "name": "surface-reach-test-fixtures-coverage", "collector": "pytest", "project": "tools/surface-reach", "target": "test-fixtures-coverage" },
+  { "name": "surface-reach-test-handwritten-reach", "collector": "pytest", "project": "tools/surface-reach", "target": "test-handwritten-reach" },
+  { "name": "corpus-match-test-offline", "collector": "unittest", "checkedBy": "corpus-match:test-offline", "files": ["tests/corpus_match/corpus_offline_test.py", "tests/corpus_match/corpus_offline_recovery_test.py", "tests/corpus_match/match_usage_test.py"] },
+  { "name": "crozier-test", "collector": "nextest", "arguments": ["--locked", "-p", "crozier", "--run-ignored", "all"] },
+  { "name": "crozier-e2e-test", "collector": "nextest", "arguments": ["--locked", "-p", "crozier-e2e", "--run-ignored", "all"] }
 ]

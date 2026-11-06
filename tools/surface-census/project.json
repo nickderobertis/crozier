@@ -59,6 +59,23 @@
         "{workspaceRoot}/.coverage-data/surface-census/test-census"
       ]
     },
+    "test-reuse": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-census/tests/reuse_staleness_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-census/test-reuse/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-census/test-reuse"
+      ]
+    },
     "test-reach": {
       "metadata": {
         "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 89 s (measured with `just nx run surface-census:test-reach --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
@@ -159,6 +176,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test-census",
+        "test-reuse",
         "test-fixtures-coverage"
       ]
     },

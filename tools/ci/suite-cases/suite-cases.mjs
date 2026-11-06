@@ -19,7 +19,8 @@ if (!["check", "write"].includes(verb) || unknown.length || (verb === "write" &&
   console.error(`suite-cases: known suites: ${known.map((suite) => suite.name).join(", ")}`);
   process.exit(2);
 }
-const suites = known.filter((suite) => !names.length || names.includes(suite.name));
+// A suite another project's target checks is left to it: this project's inputs may not reach that project.
+const suites = known.filter((suite) => (names.length ? names.includes(suite.name) : !suite.checkedBy));
 if (verb === "write") {
   for (const suite of suites) writePin(root, suite, collect(root, suite));
   console.log(`suite-cases: wrote ${suites.length} pin(s)`);

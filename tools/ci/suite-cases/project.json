@@ -4,20 +4,36 @@
   "projectType": "library",
   "tags": [
     "type:tooling",
+    "measures:crozier-e2e",
+    "measures:nested-discriminator-golden",
     "lang:javascript"
   ],
   "targets": {
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test tools/ci/suite-cases/tests/suite-cases.test.mjs"
+        "command": "node --test tools/ci/suite-cases/tests/suite-cases.test.mjs tools/ci/suite-cases/tests/build-reuse.test.mjs"
       },
       "cache": true,
       "inputs": [
         "default",
         "pythonTooling",
+        "cargo",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        "{workspaceRoot}/src/project.json",
+        "{workspaceRoot}/crates/crozier-e2e/project.json",
+        "{workspaceRoot}/pool-maintenance/**/*",
+        "{workspaceRoot}/tools/ci/**/*",
+        "{workspaceRoot}/tools/ci-journeys/**/*",
+        "{workspaceRoot}/tools/github-action/**/*",
+        "{workspaceRoot}/tests/nested-discriminator/golden/**/*",
+        "{workspaceRoot}/scripts/share-instrumented-build.mjs",
         "{workspaceRoot}/tools/surface-census/project.json",
-        "{workspaceRoot}/tools/surface-census/tests/**/*"
+        "{workspaceRoot}/tools/surface-census/tests/**/*",
+        "{workspaceRoot}/tools/surface-reach/project.json",
+        "{workspaceRoot}/tools/surface-reach/tests/**/*"
       ]
     },
     "lint": {
@@ -27,6 +43,8 @@
           "node --check tools/ci/suite-cases/core.mjs",
           "node --check tools/ci/suite-cases/suite-cases.mjs",
           "node --check tools/ci/suite-cases/tests/suite-cases.test.mjs",
+          "node --check tools/ci/suite-cases/tests/build-reuse.test.mjs",
+          "node --check scripts/share-instrumented-build.mjs",
           "node scripts/check-project-boundaries.mjs suite-cases"
         ],
         "parallel": false
