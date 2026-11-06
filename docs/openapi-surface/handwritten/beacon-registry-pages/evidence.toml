@@ -4,5 +4,5 @@ digest = "db07367fd08a673f3180dd03159c8a6a8b4cb778201028280913fd2344e54bf6"
 
 [[covers]]
 key = "operation-pagination-boolean"
-search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions/README.md#verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/README.md#verdicts"
 verdict = "exhausted"

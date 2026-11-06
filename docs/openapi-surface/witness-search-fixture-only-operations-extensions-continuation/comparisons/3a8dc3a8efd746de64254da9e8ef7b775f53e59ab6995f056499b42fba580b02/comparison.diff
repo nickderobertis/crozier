@@ -1,0 +1,119 @@
+# crozier compare: <scratch>/compare/3a8dc3a8efd746de64254da9e8ef7b775f53e59ab6995f056499b42fba580b02/crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (43 unchanged line(s))
+  
+  client.custom_metrics_api_v1.submits_application_specific_custom_metrics_to_app_autoscaler(
+      app_guid="appGuid",
+-     instance_index=1000000,
++     instance_index=0,
+      metrics=[
+          Metric(
+-             name="name",
+-             value=1.1,
+-         ),
+-         Metric(
+-             name="name",
+-             value=1.1,
++             name="queue_length",
++             value=1337,
+          )
+      ],
+  )
+      ⋮ (18 unchanged line(s))
+  async def main() -> None:
+      await client.custom_metrics_api_v1.submits_application_specific_custom_metrics_to_app_autoscaler(
+          app_guid="appGuid",
+-         instance_index=1000000,
++         instance_index=0,
+          metrics=[
+              Metric(
+-                 name="name",
+-                 value=1.1,
+-             ),
+-             Metric(
+-                 name="name",
+-                 value=1.1,
++                 name="queue_length",
++                 value=1337,
+              )
+          ],
+      )
+      ⋮ (109 unchanged line(s))
+
+Unexplained original crozier line(s): 47, 50, 51, 76, 79, 80
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (39 unchanged line(s))
+  
+  client.custom_metrics_api_v1.submits_application_specific_custom_metrics_to_app_autoscaler(
+      app_guid="appGuid",
+-     instance_index=1000000,
++     instance_index=0,
+      metrics=[
+          Metric(
+-             name="name",
+-             value=1.1,
+-         ),
+-         Metric(
+-             name="name",
+-             value=1.1,
++             name="queue_length",
++             value=1337,
+          )
+      ],
+  )
+      ⋮ (56 unchanged line(s))
+
+Unexplained original crozier line(s): 43, 46, 47
+
+--- reference/src/fern/custom_metrics_api_v1/client.py
++++ crozier/src/fern/custom_metrics_api_v1/client.py
+      ⋮ (71 unchanged line(s))
+          )
+          client.custom_metrics_api_v1.submits_application_specific_custom_metrics_to_app_autoscaler(
+              app_guid="appGuid",
+-             instance_index=1000000,
++             instance_index=0,
+              metrics=[
+                  Metric(
+-                     name="name",
+-                     value=1.1,
+-                 ),
+-                 Metric(
+-                     name="name",
+-                     value=1.1,
+-                 ),
++                     name="queue_length",
++                     value=1337.0,
++                 )
+              ],
+          )
+          """
+      ⋮ (69 unchanged line(s))
+          async def main() -> None:
+              await client.custom_metrics_api_v1.submits_application_specific_custom_metrics_to_app_autoscaler(
+                  app_guid="appGuid",
+-                 instance_index=1000000,
++                 instance_index=0,
+                  metrics=[
+                      Metric(
+-                         name="name",
+-                         value=1.1,
+-                     ),
+-                     Metric(
+-                         name="name",
+-                         value=1.1,
+-                     ),
++                         name="queue_length",
++                         value=1337.0,
++                     )
+                  ],
+              )
+  
+      ⋮ (7 unchanged line(s))
+
+Unexplained original crozier line(s): 75, 78, 79, 80, 156, 159, 160, 161

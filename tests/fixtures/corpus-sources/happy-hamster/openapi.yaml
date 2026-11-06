@@ -1,0 +1,689 @@
+openapi: 3.0.3
+info:
+  title: HappyHamster
+  description: |-
+    The restful API for [HappyHamster](https://happyhamster.org/), please read the Terms of Use before using.
+  version: "2.0"
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - description: HappyHamster Production
+    url: https://api.HappyHamster.org/v2
+  - description: HappyHamster Integration
+    url: https://api.int.HappyHamster.org/v2
+  - description: HappyHamster Development
+    url: https://api.dev.HappyHamster.org/v2
+
+
+
+# ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  #### #
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# ENDPOINTS
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  #### #
+
+paths:
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Locations
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+  '/locations':
+    get:
+      operationId: getLocationsByCoordinates
+      description: |-
+        Searches for locations in the given range.
+      tags:
+        - Locations
+      security:
+        - Keycloak: []
+        - {}
+      parameters:
+        - in: query
+          name: Coordinates
+          description: Latitude and Longitude
+          required: true
+          explode: true
+          schema:
+            $ref: '#/components/schemas/Coordinates'
+        - in: query
+          name: type
+          description: Location Type
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/LocationType'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+                maxItems: 100
+
+  '/locations/{id}':
+    get:
+      operationId: getLocationById
+      description: |-
+        Get details for a specific location.
+      tags:
+        - Locations
+      security:
+        - Keycloak: []
+        - {}
+      parameters:
+        - in: path
+          name: id
+          description: id
+          required: true
+          schema:
+            $ref: '#/components/schemas/LocationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '404':
+          description: Not found
+
+  '/locations/search/{query}':
+    get:
+      operationId: searchLocations
+      description: |-
+        Returns the Coordinate and Locations around the 'Search Query'.
+      tags:
+        - Locations
+      security:
+        - Keycloak: []
+        - {}
+      parameters:
+        - in: query
+          name: Coordinates
+          description: Latitude and Longitude
+          required: false
+          explode: true
+          schema:
+            $ref: '#/components/schemas/Coordinates'
+        - in: path
+          name: query
+          description: Search query
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: type
+          description: Location Type
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: '#/components/schemas/LocationType'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LocationSearchResult'
+        '400':
+          description: Bad Request
+        '404':
+          description: Not found
+
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Location Occupancy
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+  '/locations/{id}/occupancy':
+    post:
+      operationId: addOccupancy
+      description: |-
+        Add or remove current capacity.
+      tags:
+        - Occupancy
+      security:
+        - Keycloak: []
+        - {}
+      parameters:
+        - in: path
+          name: id
+          description: id of the place
+          required: true
+          schema:
+            $ref: '#/components/schemas/LocationId'
+      requestBody:
+        description: The estimated occupancy by the buyer
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OccupancyReport'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: Malformed request
+        '429':
+          description: Too many requests
+
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Location Types
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+  '/locations/types':
+    get:
+      operationId: listLocationTypes
+      description: Location Types
+      tags:
+        - Location Types
+      security: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LocationType'
+
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Location Favorites
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+  '/users/self/favorites':
+    get:
+      operationId: listFavorites
+      description: |-
+        List all favorite locations for the currently logged in user.
+      tags:
+        - "User: Favorites"
+      security:
+        - Keycloak: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Location'
+        '401':
+          description: "Unauthorized: Not logged in"
+
+  '/users/self/favorites/{id}':
+    post:
+      operationId: addFavoriteByLocationId
+      description: |-
+        Add a favorite by location id for the currently logged in user.
+      tags:
+        - "User: Favorites"
+      security:
+        - Keycloak: []
+      parameters:
+        - in: path
+          name: id
+          description: id of the location
+          required: true
+          schema:
+            $ref: '#/components/schemas/LocationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: Malformed request
+        '401':
+          description: "Unauthorized: Not logged in"
+        '404':
+          description: Location not found
+
+    delete:
+      operationId: deleteFavoriteByLocationId
+      description: Remove a favorite by location id for the currently logged in user.
+      tags:
+        - "User: Favorites"
+      security:
+        - Keycloak: []
+      parameters:
+        - in: path
+          name: id
+          description: id of the location
+          required: true
+          schema:
+            $ref: '#/components/schemas/LocationId'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Location'
+        '400':
+          description: Malformed request
+        '401':
+          description: "Unauthorized: Not logged in"
+        '404':
+          description: Location not found
+
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# User Badges
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+  '/users/self/badges':
+    get:
+      operationId: listBadges
+      description: |-
+        provides a list of all badges and the total amount of badges for the currently logged in user.
+      tags:
+        - "User: Badges"
+      security:
+        - Keycloak: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserBadges'
+        '401':
+          description: "Unauthorized: Not logged in"
+
+  '/users/self/badges/newest':
+    get:
+      operationId: listNewestBadge
+      description: |-
+        If the last report generated badges, these will be returned
+      tags:
+        - "User: Badges"
+      security:
+        - Keycloak: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadgeUpdate'
+        '401':
+          description: "Unauthorized: Not logged in"
+
+  '/users/self/level':
+    get:
+      operationId: getLevel
+      description: |-
+        provides the level, stage, total xp, xp needed for the next level and current xp in this level for the logged in user
+      tags:
+        - "User: Level"
+      security:
+        - Keycloak: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Level'
+        '401':
+          description: "Unauthorized: Not logged in"
+
+
+# ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  #### #
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# SCHEMAS
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  #### #
+
+components:
+  schemas:
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Locations
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+    Location:
+      title: Location
+      description: A physical location which represents a supermarket or similar
+      type: object
+      nullable: false
+      required:
+        - id
+        - name
+        - favorite
+        - occupancy
+        - coordinates
+        - address
+      properties:
+        id:
+          $ref: '#/components/schemas/LocationId'
+        name:
+          type: string
+          example: LIDL Mannheim Marktplatz
+        favorite:
+          title: Favorite flag
+          description: |
+            Whether or not this Location is a favorite of the currently logged in user.
+            (Will be null if the user is not logged in.)
+          type: boolean
+          nullable: true
+          example: true
+        details:
+          $ref: '#/components/schemas/LocationDetails'
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        occupancy:
+          $ref: '#/components/schemas/Occupancy'
+        address:
+          $ref: '#/components/schemas/Address'
+    LocationId:
+      title: Location ID
+      description: Location unique identifier
+      type: integer
+      format: int64
+      nullable: false
+      example: 73621836
+    LocationDetails:
+      title: Location details
+      description: Locaiton details
+      type: object
+      nullable: false
+      properties:
+        type:
+          $ref: '#/components/schemas/LocationType'
+        brand:
+          title: Brand
+          description: Brand of the shop
+          type: string
+          nullable: true
+          example: "LIDL"
+        openingHours:
+          title: Opening hours
+          description: Opening hours of the shop
+          type: string
+          nullable: true
+          example: "Mo-Fr 7-22 Uhr, Sa-So 9-12 Uhr"
+    Address:
+      title: Address
+      description: Physical address
+      type: object
+      nullable: false
+      required:
+        - country
+        - city
+        - postcode
+        - street
+        - housenumber
+      properties:
+        country:
+          type: string
+          nullable: true
+          example: "DE"
+        city:
+          type: string
+          nullable: true
+          example: "Mannheim"
+        postcode:
+          type: string
+          nullable: true
+          example: "68161"
+        street:
+          type: string
+          nullable: true
+          example: "Hauptstraße"
+        housenumber:
+          type: string
+          nullable: true
+          example: "1-5"
+    Coordinates:
+      title: Coordinates
+      type: object
+      nullable: false
+      required:
+        - latitude
+        - longitude
+      properties:
+        latitude:
+          title: Latitude
+          type: number
+          example: 49.4953494
+        longitude:
+          title: Longitude
+          type: number
+          example: 8.3563969
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Occupancy
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+    Occupancy:
+      title: Occupancy
+      type: object
+      nullable: false
+      required:
+        - value
+        - count
+        - lastReport
+      properties:
+        value:
+          title: Value
+          description: Occupancy in percent.
+          type: number
+          nullable: true
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.66
+        count:
+          title: Count
+          description: Number of datapoints used for the value calculation.
+          type: integer
+          nullable: false
+          minimum: 0
+          example: 2
+        latestReport:
+          title: Latest Report
+          description: Time of the latest report that was considered to calculate occupancy
+          type: string
+          format: date-time
+          nullable: true
+    OccupancyReport:
+      title: Occupancy Report
+      description: Occupancy report to send
+      type: object
+      nullable: false
+      required:
+        - occupancy
+        - clientType
+      properties:
+        occupancy:
+          title: Occupancy
+          description: Occupancy
+          type: number
+          nullable: false
+          minimum: 0.0
+          maximum: 1.0
+          example: 0.75
+        clientType:
+          title: Client Type
+          description: Type of the client which reported the occupancy
+          type: string
+          nullable: false
+          enum:
+            - IOT
+            - WEB_APP
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Location Types
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+    LocationType:
+      title: Type
+      description: Type of the shop
+      type: string
+      nullable: true
+      enum:
+        - chemist
+        - beverages
+        - kiosk
+        - newsagent
+        - convenience
+
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# Location Search Result
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+
+    LocationSearchResult:
+      title: Location Search Result
+      description: The result for a search request
+      type: object
+      nullable: false
+      properties:
+        coordinates:
+          $ref: '#components/schemas/Coordinates'
+        locations:
+          description: List of Locations around the search query
+          type: array
+          nullable: false
+          maxItems: 100
+          items:
+            $ref: '#/components/schemas/Location'
+    BadgeType:
+      title: Badge Type
+      description: Badges for certain actions
+      type: string
+      nullable: true
+      enum:
+        - next_level
+        - next_level_class
+        - report
+        - new_report
+        - two_shops
+        - shop_first_report
+        - week_1
+        - week_3
+        - week_full
+        - week_special
+        - trusted_shop
+        - trusted_user
+    BadgeUpdate:
+      title: Badge Update
+      description: latest Badges of a specific user
+      type: object
+      nullable: false
+      required:
+        - badges
+        - reason
+      properties:
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
+        reason:
+          type: string
+          enum:
+            - occupancy
+            - no_update
+    UserBadges:
+      title: User Badges
+      description: all Badges of a specific user plus the total ammount of badges
+      type: object
+      nullable: false
+      required:
+        - badges
+        - count
+      properties:
+        badges:
+          type: array
+          items:
+            $ref: '#/components/schemas/Badge'
+        count:
+          type: integer
+          example: 1
+    Badge:
+      title: Badge
+      description: shows how often a user earned the same badge
+      type: object
+      nullable: false
+      required:
+        - type
+        - count
+      properties:
+        type:
+          $ref: '#/components/schemas/BadgeType'        
+        count:
+          type: integer
+          example: 4
+    Level:
+      title: Level
+      description: level and xp of one user
+      type: object
+      nullable: false
+      required:
+        - stage
+        - level
+        - xp
+      properties:
+        stage:
+          $ref: '#/components/schemas/Stage'        
+        level:
+          type: integer
+          minimum: 0
+          example: 2
+        xp:
+          type: object
+          required:
+            - total
+            - needed
+            - current
+          properties:
+            total:
+              type: integer
+              example: 150
+            needed: 
+              type: integer
+              example: 20
+            current:
+              type: integer
+              example: 7
+    Stage:
+      title: Stage
+      description: Stages
+      type: string
+      enum:
+        - novice
+        - explorer
+        - pro
+        - expert
+        - hero
+        
+
+
+
+# ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  #### #
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# SECUTIRY SCHEMAS
+# ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ----  ---- #
+# ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  ####  #### #
+
+  securitySchemes:
+    Keycloak:
+      type: openIdConnect
+      openIdConnectUrl: https://auth.happyhamster.org/auth/realms/happyhamster/.well-known/openid-configuration

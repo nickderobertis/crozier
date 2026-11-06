@@ -1,0 +1,79 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml"
+  ],
+  "exit_code": 3,
+  "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.083951689,
+    "crozier_seconds": 6.815063589,
+    "speedup": 0.012318548154929035,
+    "saved_seconds": -6.7311119
+  },
+  "results": [
+    {
+      "status": "mismatched",
+      "config_file": "<scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml",
+      "generator": "python",
+      "spec": "<scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/openapi.yml",
+      "reference": {
+        "command": "cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT/\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 352,
+        "differing": [
+          "reference.md",
+          "src/fern/opentelemetry/client.py"
+        ],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 39
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 40
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 41
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 42
+          }
+        ],
+        "diff_file": "<repo>/docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/comparisons/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_3319628-17_compare_fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c_crozier.yml-python.diff"
+      },
+      "timing": {
+        "reference_seconds": 0.083951689,
+        "crozier_seconds": 6.815063589,
+        "speedup": 0.012318548154929035,
+        "saved_seconds": -6.7311119
+      },
+      "reason": null,
+      "diff_file": "comparisons/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/comparison.diff"
+    }
+  ]
+}
