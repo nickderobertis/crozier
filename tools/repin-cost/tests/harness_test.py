@@ -600,6 +600,100 @@ class HarnessTest(unittest.TestCase):
         self.assertNotIn("src/lib.rs", rewrote)
         self.assertEqual(self.git("for-each-ref", "refs/repin-cost/"), "")
 
+    def test_logs_jobs_fallbacks_and_conflict_shares(self):
+        branch, head1 = self.change(1, self.main)
+        self.git("checkout", branch)
+        ledger = self.repo / "tests/fixtures/departures-ledger.tsv"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        ledger.write_text("v1\n", encoding="utf-8")
+        head2 = self.commit("ledger")
+        self.git("checkout", "main")
+        run1 = self.ci_run(1, 1, head1)
+        run2 = self.ci_run(2, 2, head1)
+        run3 = self.ci_run(3, 3, head2)
+        run4 = self.ci_run(4, 4, head2, "success")
+        run5 = self.ci_run(5, 5, head2)
+        self.serve_runs(branch, [run1, run2, run3, run4, run5], {})
+
+        def jobs(run, count):
+            return (
+                200,
+                {
+                    "jobs": [
+                        {
+                            "id": run["id"] * 10 + i,
+                            "name": "gate" if count > 1 and i == count else f"check-{i}",
+                            "conclusion": "failure",
+                            "started_at": run["run_started_at"],
+                            "completed_at": run["updated_at"],
+                        }
+                        for i in range(1, count + 1)
+                    ]
+                },
+            )
+
+        for run, count in ((run1, 3), (run2, 1), (run3, 1), (run5, 1)):
+            self.responses[
+                f"/repos/nickderobertis/crozier/actions/runs/{run['id']}/jobs?filter=latest&per_page=100&page=1"
+            ] = jobs(run, count)
+        logs = {
+            # Timestamped, coloured lines across two failed jobs; the gate job's log is never read.
+            11: b"2026-01-01T01:05:00.0000000Z \x1b[31mE AssertionError: site s matches 0 lines; anchor it\x1b[0m\n"
+            b"2026-01-01T01:05:00.0000000Z Failed tasks:\n2026-01-01T01:05:00.0000000Z  - surface-census:test-census\n",
+            12: b"E AssertionError: re-pin the digest\nFailed tasks:\n - surface-census:test-reach\n",
+            # Stale with nothing named: the fix names the artifact.
+            21: b"E AssertionError: the table is stale\nFailed tasks:\n - witness-search:test-index\n",
+            # Stale with nothing named and no fix: the task names it.
+            31: b"E AssertionError: the table is stale\nFailed tasks:\n - corpus:test-sources\n",
+            51: b"E AssertionError: the table is stale\nFailed tasks:\n - corpus:test-sources\n",
+        }
+        for job, body in logs.items():
+            self.responses[f"/repos/nickderobertis/crozier/actions/jobs/{job}/logs"] = (200, body)
+        self.event(
+            "sync-conflict",
+            branch,
+            {
+                "paths": [
+                    "docs/openapi-surface/golden-reach.tsv",
+                    "tests/fixtures/CORPUS.md",
+                    "tests/fixtures/compared-goldens.json",
+                ]
+            },
+            "2026-01-01T01:20:00Z",
+        )
+        self.event(
+            "gate-run",
+            branch,
+            {
+                "started_at": "2026-01-01T01:30:00Z",
+                "ended_at": "2026-01-01T01:40:00Z",
+                "verdict": "passed",
+                "checks": [],
+            },
+            "2026-01-01T01:40:00Z",
+        )
+        out = self.invoke(window="runs:sample")
+        events = self.rows(out, "events.tsv")
+        first = [e for e in events if e["ci_run"] == "1"]
+        self.assertEqual(
+            [(e["kind"], e["runner_min"]) for e in first], [("port-digest", "15.0"), ("site-anchor", "15.0")]
+        )
+        self.assertEqual(first[0]["excerpt"], "E AssertionError: site s matches 0 lines; anchor it")
+        self.assertNotIn("/repos/nickderobertis/crozier/actions/jobs/13/logs", self.requests)
+        self.assertEqual(
+            [e["kind"] for e in events if e["ci_run"] == "2"], ["other-artifact:tests/fixtures/departures-ledger.tsv"]
+        )
+        self.assertEqual([e["kind"] for e in events if e["ci_run"] == "5"], ["other-artifact:task:corpus:test-sources"])
+        totals = json.loads((out / "totals.json").read_text())
+        # A 10-minute conflict wait, two of whose three derived files sit outside the census.
+        shares = {r["artifact"]: r["cycle_min"] for r in totals["artifacts_outside_census"]}
+        conflict = next(e for e in events if e["source"] == "journal")
+        self.assertEqual(
+            (conflict["kind"], conflict["tier"], conflict["wait_min"]), ("derived-conflict", "census", "10.0")
+        )
+        self.assertEqual(shares["tests/fixtures/CORPUS.md"], 3.3)
+        self.assertEqual(shares["tests/fixtures/compared-goldens.json"], 3.3)
+
     def test_a_collection_longer_than_the_page_limit_stops(self):
         branch, head = self.change(1, self.main)
         page = [dict(self.ci_run(100, 1, head, "success"), name="other") for _ in range(100)]
@@ -675,6 +769,11 @@ class HarnessTest(unittest.TestCase):
         for bad, expected in (
             ("[1]\n", "not an object"),
             ('{"kind": "push", "labels": {}, "payload": {}}\n', "no time with an offset"),
+            ('{"ts": "2026-01-01T02:00:00Z", "kind": 3, "labels": {}, "payload": {}}\n', "string kind"),
+            (
+                '{"ts": "2026-01-01T02:00:00Z", "kind": "push", "labels": {"node": 3}, "payload": {}}\n',
+                "string identities",
+            ),
         ):
             path.write_text(lines + bad, encoding="utf-8")
             done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
@@ -691,11 +790,26 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stderr)
         self.assertIn("change-opened event", done.stderr)
         self.assertNotIn("Traceback", done.stderr)
-        gate = dict(opened, kind="gate-run", payload={"branch": "x", "started_at": "2026-01-01T02:00:00Z"})
-        path.write_text(lines + json.dumps(gate) + "\n", encoding="utf-8")
-        done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
-        self.assertEqual(done.returncode, 1, done.stderr)
-        self.assertIn("gate-run event", done.stderr)
+        for kind, payload in (
+            ("gate-run", {"started_at": "2026-01-01T02:00:00Z"}),
+            (
+                "gate-run",
+                {
+                    "started_at": "2026-01-01T03:00:00Z",
+                    "ended_at": "2026-01-01T02:00:00Z",
+                    "verdict": "failed",
+                    "checks": [],
+                },
+            ),
+            ("change-opened", {"id": True}),
+            ("change-opened", {"id": -3}),
+            ("node-dispatched", {"attempt": 1.5}),
+        ):
+            bad = dict(opened, kind=kind, payload={"branch": "x", **payload})
+            path.write_text(lines + json.dumps(bad) + "\n", encoding="utf-8")
+            done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
+            self.assertEqual(done.returncode, 1, done.stderr)
+            self.assertIn(f"{kind} event", done.stderr)
         path.write_text(lines, encoding="utf-8")
         for provider, expected in (
             ("import sys\nsys.exit(3)\n", "exited 3"),
@@ -852,6 +966,8 @@ class ComparisonTest(unittest.TestCase):
             done = compare()
             self.assertEqual(done.returncode, 1)
             self.assertIn("positive PR numbers", done.stderr)
+            tsv.write_text("pr\n1\n1\n2\n3\n4\n5\n6\n7\n")
+            self.assertIn("appears twice", compare().stderr)
             tsv.write_text(rows)
 
             only_after = dict(next(iter(good["by_kind"].values())), events=2)

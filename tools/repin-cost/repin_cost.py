@@ -273,14 +273,37 @@ def crozier_runs(root: Path) -> list[str]:
     return out
 
 
+def positive_pr(value: object) -> int:
+    """A pull request's number as journals write it: a positive integer, or those digits as a string."""
+    if (isinstance(value, int) and not isinstance(value, bool) and value > 0) or (
+        isinstance(value, str) and value.isdecimal() and int(value) > 0
+    ):
+        return int(value)
+    raise ValueError(f"a pull request number must be a positive integer, got {value!r}")
+
+
+def valid_publication(payload: dict) -> bool:
+    start, end = ts(payload["started_at"]), ts(payload["ended_at"])
+    return bool(
+        start
+        and end
+        and start.tzinfo
+        and end.tzinfo
+        and start <= end
+        and isinstance(payload["verdict"], str)
+        and isinstance(payload["checks"], list)
+        and all(isinstance(c, dict) and isinstance(c.get("name"), str) for c in payload["checks"])
+    )
+
+
 def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, node: str | None) -> None:
     match kind:
-        case "gate-run" if not (ts(payload["started_at"]) and ts(payload["ended_at"])):
-            raise ValueError("a publication attempt needs started_at and ended_at")
+        case "gate-run" if not valid_publication(payload):
+            raise ValueError("a publication attempt needs aware started_at <= ended_at, a verdict and named checks")
         case "sync-conflict" if not isinstance(payload["paths"], list):
             raise ValueError("a sync conflict needs a list of paths")
         case "change-opened":
-            b["pr"] = int(payload["id"])
+            b["pr"] = positive_pr(payload["id"])
         case "change-merged":
             b["merged"] = payload.get("sha")
             m = re.search(r"/pull/(\d+)", payload.get("url", ""))
@@ -299,6 +322,8 @@ def record_event(b: dict, kind: str, event: dict, labels: dict, payload: dict, n
             }
         case "node-dispatched":
             attempt = payload.get("attempt", 1)
+            if isinstance(attempt, bool) or not isinstance(attempt, int) or attempt < 1:
+                raise ValueError(f"attempt must be a positive integer, got {attempt!r}")
             retry = bool(re.search(r"-r\d+$", node or ""))
             if attempt > 1 or retry:
                 b["dispatches"].append({"at": ts(event["ts"]), "node": node, "attempt": attempt})
@@ -348,10 +373,19 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
             if (
                 not isinstance(event, dict)
                 or not isinstance(event.get("labels", {}), dict)
-                or not isinstance(event.get("payload") or {}, dict)
+                or not isinstance(event.get("kind"), str)
+                or not (event.get("payload") is None or isinstance(event["payload"], dict))
+                or not all(
+                    value is None or isinstance(value, str)
+                    for value in (
+                        event.get("labels", {}).get("session"),
+                        event.get("labels", {}).get("node"),
+                        (event.get("payload") or {}).get("branch"),
+                    )
+                )
             ):
                 raise SystemExit(
-                    f"{path}: an event is not an object with object labels and payload; repair the journal"
+                    f"{path}: an event is not an object with a string kind, object labels and payload, and string identities; repair the journal"
                 )
             when = ts(event.get("ts"))
             if when is None or when.tzinfo is None:
@@ -426,7 +460,11 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
             "completed_at": (str, type(None)),
         },
     )
-    runner = sum(minutes(ts(j.get("started_at")), ts(j.get("completed_at"))) for j in jobs if j.get("completed_at"))
+    # llmlint: ignore[boundary_inputs_validated] Ordering is not checked: GitHub reports completed_at before started_at on real jobs of the baseline's runs, and the method's runner minutes carry them as they read; only a missing start, which would read as zero minutes, stops the run.
+    for job in jobs:
+        if job["completed_at"] and not job["started_at"]:
+            raise SystemExit(f"GitHub job {job['id']} has completed_at without started_at; re-read the run")
+    runner = sum(minutes(ts(j["started_at"]), ts(j["completed_at"])) for j in jobs if j["completed_at"])
     info = {
         "id": run["id"],
         "head": run["head_sha"],

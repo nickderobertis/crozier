@@ -123,10 +123,15 @@ def reference_rates(baseline: Path, totals: Totals) -> list[tuple[str, float | N
     with (baseline / "changes.tsv").open(encoding="utf-8", newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     if any(
-        "census_failures" not in row or "runs" not in row or not (row["census_failures"] or "").isdecimal()
+        not (row.get("census_failures") or "").isdecimal()
+        or not isinstance(row.get("runs"), str)
+        or not (row.get("pr") or "").isdecimal()
+        or int(row["pr"]) < 1
         for row in rows
     ):
-        raise ValueError(f"{baseline}/changes.tsv: needs a census_failures count and a runs column on every row")
+        raise ValueError(
+            f"{baseline}/changes.tsv: needs a positive pr, a census_failures count and a runs cell on every row"
+        )
     prs = [row.get("pr") for row in rows]
     if (
         len(rows) != totals["changes"]
@@ -149,6 +154,8 @@ def comparison(baseline: Path, after: Path) -> str:
         if not reader.fieldnames or "pr" not in reader.fieldnames:
             raise ValueError(f"{after}/changes.tsv: missing pr column")
         records = list(reader)
+        if len({row["pr"] for row in records}) != len(records):
+            raise ValueError(f"{after}/changes.tsv: a pull request appears twice")
         if len(records) != current["changes"] or any(
             not row["pr"] or not row["pr"].isdigit() or int(row["pr"]) < 1 for row in records
         ):
