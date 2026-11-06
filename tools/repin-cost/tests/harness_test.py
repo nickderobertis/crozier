@@ -1,7 +1,7 @@
 """Drive the public CLI through real journals, git and guarded HTTP."""
 
 # llmlint: ignore-file[modern_domain_modeling] These dictionaries are the wire shapes the harness reads, written as a journal line or a GitHub response would be; a typed model of them would hide the JSON the journeys exist to serve.
-# llmlint: ignore-file[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing and runs in under a minute (see `metadata.description` on the target in project.json).
+# llmlint: ignore-file[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing and runs in one to two minutes (see `metadata.description` on the target in project.json).
 from __future__ import annotations
 
 import csv
@@ -888,6 +888,17 @@ class HarnessTest(unittest.TestCase):
         self.responses[path] = (200, {"workflow_runs": []})
         self.invoke(out="recovered")
 
+    def test_a_failed_run_with_no_jobs_stops(self):
+        branch, head = self.change(1, self.main)
+        self.serve_runs(branch, [self.ci_run(7, 1, head)], {})
+        self.responses["/repos/nickderobertis/crozier/actions/runs/7/jobs?filter=latest&per_page=100&page=1"] = (
+            200,
+            {"jobs": []},
+        )
+        done = subprocess.run(self.command(), env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertIn("no jobs to classify", done.stderr)
+
     def test_an_unknown_conclusion_and_an_unreadable_base_stop(self):
         branch, head = self.change(1, self.main)
         self.serve_runs(branch, [self.ci_run(7, 1, head, "mystery")], {})
@@ -993,7 +1004,7 @@ class HarnessTest(unittest.TestCase):
     def test_journal_and_results_failures_stop_and_a_torn_line_does_not(self):
         self.change(1, self.main)
         path = self.run_dir / "events.jsonl"
-        good = self.command()  # writes the journal
+        good = self.command()
         lines = path.read_text(encoding="utf-8")
         path.write_text(lines + '{"ts": "2026-01-01T0', encoding="utf-8")
         done = subprocess.run(good, env=self.env, capture_output=True, text=True, timeout=20)
@@ -1210,6 +1221,7 @@ class ComparisonTest(unittest.TestCase):
                 "conflicts must hold": lambda d: d["conflicts"].pop("mixed"),
                 "cannot exceed": lambda d: d.update(merged=d["changes"] + 1),
                 "every count": lambda d: d["census"].update(attempts=1.5),
+                "contradict": lambda d: d.update(ci_failed=d["ci_runs"] + 1),
                 "census.extra": lambda d: d["census"].update(extra=-1),
                 "totals.extra": lambda d: d.update(extra=float("inf")),
                 "counts must be integers": lambda d: next(iter(d["by_kind"].values())).update(events=0.5),

@@ -117,6 +117,13 @@ def load_totals(path: Path) -> Totals:
         > data["changes"]
     ):
         raise ValueError(f"{path}: merged, changes_with_pr and changes_hit cannot exceed changes")
+    census = data["census"]
+    if (
+        data["ci_failed"] > data["ci_runs"]
+        or census["failures"] > data["ci_failed"]
+        or census["pub_observed"] + census["pub_unresolved"] != census["publications"]
+    ):
+        raise ValueError(f"{path}: its CI and publication counts contradict each other")
     if not data["changes"] and (data["census"]["failures"] or data["conflicts"]["derived"]):
         raise ValueError(f"{path}: an empty sample cannot have failures or conflicts")
     if not isinstance(data.get("by_kind"), dict):

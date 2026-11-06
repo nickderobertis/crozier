@@ -521,6 +521,8 @@ def analyse_run(hub: gh.GitHub, run: dict) -> dict:
     }
     if run["conclusion"] != "failure":
         return info
+    if not jobs:
+        raise ValueError(f"CI run {run['id']} failed with no jobs to classify it by")
     for job in jobs:
         if job.get("conclusion") != "failure" or job["name"] == "gate":
             continue
