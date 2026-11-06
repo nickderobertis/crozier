@@ -137,12 +137,12 @@ split five ways:
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**19** are byte-matched against a registered real specification at their
+**34** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **3** rest on a hand-written fixture (0 of them witness-blocked, 1 of them co-occurrences proven on the fixture), **73** remain
-open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 19 + 0 + 0 + 3 + 73 + 12 = 107.
+non-generation, **3** rest on a hand-written fixture (0 of them witness-blocked, 1 of them co-occurrences proven on the fixture), **58** remain
+open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 34 + 0 + 0 + 3 + 58 + 12 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -2992,7 +2992,7 @@ unreached by any Fern-accepted document.
 | 10 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **29** | **13** | open — real-specification witness search remains open |
 | 11 | `parameter-in-path` | `parameters` | **2** | **28** | **223** | open — real-specification witness search remains open |
 | 12 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
-| 13 | `media-type-multipart` | `bodies-media` | **2** | **7** | **29** | open — real-specification witness search remains open |
+| 13 | `media-type-multipart` | `bodies-media` | **2** | **8** | **29** | open — real-specification witness search remains open |
 | 14 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
 | 15 | `format-binary` | `schemas` | **2** | **4** | **57** | open — real-specification witness search remains open |
 | 16 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **199** | **17** | open — real-specification witness search remains open |
@@ -3573,13 +3573,13 @@ ledger, so a registration that adds a second witness removes the row here.
 | `anyof-array-variant-inline-const-item` | `schemas` | `canonical-test-observer` |
 | `union-of-two-enum-refs-alias` | `schemas` | `chrome-webstatus-backend` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
-| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
+| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
+| `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
 | `security-scheme-bearer-extension-named` | `security` | `mcp-handle` |
 | `enum-digit-word-member` | `schemas` | `reverb.com` |
 | `cycle-into-cycle` | `schemas` | `ingef-conquery` |
 | `oneof-array-variant-composed-item` | `schemas` | `hse` |
-| `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
 | `component-same-primitive-union` | `schemas` | `openapi-generator-oneof-two-primitives` |
 | `oneof-array-variant-empty-object-item` | `schemas` | `milvus-vector-operations` |
 | `allof-single-ref-empty-properties-alias` | `schemas` | `azure-databox-management` |
