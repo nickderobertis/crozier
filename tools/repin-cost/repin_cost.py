@@ -412,11 +412,10 @@ def read_journal(root: Path, run: str, until: dt.datetime) -> dict:
                 raise SystemExit(
                     f"{path}: an event is not an object with a string kind, object labels and payload, and string identities; repair the journal"
                 )
-            when = ts(event.get("ts"))
-            if when is None or when.tzinfo is None:
-                raise SystemExit(
-                    f"{path}: an event has no time with an offset: {event.get('ts')!r}; repair the journal"
-                )
+            try:
+                when = aware(event.get("ts"))
+            except ValueError as error:
+                raise SystemExit(f"{path}: an event has no usable time: {error}; repair the journal") from error
             if when > until:
                 continue
             labels, payload = event.get("labels", {}), event.get("payload") or {}

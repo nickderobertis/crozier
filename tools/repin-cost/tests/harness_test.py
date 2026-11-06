@@ -824,6 +824,29 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 1, done.stderr)
         self.assertIn("malformed workflow_runs", done.stderr)
 
+    def test_an_even_population_takes_the_mean_of_its_middle_pair(self):
+        branch, head = self.change(1, self.main)
+        log = b"E AssertionError: x\nFailed tasks:\n - surface-census:test-census\n"
+        self.serve_runs(
+            branch,
+            [self.ci_run(1, 1, head), self.ci_run(2, 2, head), self.ci_run(3, 4, head, "success")],
+            {1: log, 2: log},
+        )
+        totals = json.loads((self.invoke(window="runs:sample") / "totals.json").read_text())
+        # Cycles of 60 and 120 minutes: each 10 elapsed plus its wait to the next run.
+        self.assertEqual(totals["census"]["median_cycle_min"], 90)
+
+    def test_an_unwritable_destination_stops_and_recovers(self):
+        self.change(1, self.main)
+        blocked = self.root / "blocked"
+        blocked.write_text("a file where the output directory belongs", encoding="utf-8")
+        done = subprocess.run(self.command(out="blocked"), env=self.env, capture_output=True, text=True, timeout=20)
+        self.assertEqual(done.returncode, 1, done.stderr)
+        self.assertNotIn("Traceback", done.stderr)
+        blocked.unlink()
+        out = self.invoke(out="blocked")
+        self.assertTrue((out / "totals.json").exists())
+
     def test_a_collection_longer_than_the_page_limit_stops(self):
         branch, head = self.change(1, self.main)
         page = [dict(self.ci_run(100, 1, head, "success"), name="other") for _ in range(100)]
@@ -898,7 +921,8 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         for bad, expected in (
             ("[1]\n", "not an object"),
-            ('{"kind": "push", "labels": {}, "payload": {}}\n', "no time with an offset"),
+            ('{"kind": "push", "labels": {}, "payload": {}}\n', "no usable time"),
+            ('{"ts": 3, "kind": "push", "labels": {}, "payload": {}}\n', "no usable time"),
             ('{"ts": "2026-01-01T02:00:00Z", "kind": 3, "labels": {}, "payload": {}}\n', "string kind"),
             (
                 '{"ts": "2026-01-01T02:00:00Z", "kind": "push", "labels": {"node": 3}, "payload": {}}\n',
@@ -1109,6 +1133,15 @@ class ComparisonTest(unittest.TestCase):
             done = compare()
             self.assertEqual(done.returncode, 1)
             self.assertIn("positive PR numbers", done.stderr)
+            target = root / "after/comparison.md"
+            target.unlink(missing_ok=True)
+            target.mkdir()
+            done = compare()
+            self.assertEqual(done.returncode, 1, done.stderr)
+            self.assertIn("provide complete measurement output directories", done.stderr)
+            target.rmdir()
+            self.assertEqual(compare().returncode, 0)
+            self.assertTrue(target.is_file())
             tsv.write_text("pr\n1\n1\n2\n3\n4\n5\n6\n7\n")
             self.assertIn("appears twice", compare().stderr)
             tsv.write_text(rows)
