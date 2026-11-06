@@ -146,12 +146,12 @@ None is among the 724 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 614 `golden` rows declare 1073 handling sites in
+same way. The 616 `golden` rows declare 1075 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **975 are reached by a registered real specification.** Its scoped
+- **977 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **93 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 93 is still one of the 98 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -164,7 +164,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-975 + 93 + 5 + 0 + 0 = 1073. Fourteen sites left the table with the two functions
+977 + 93 + 5 + 0 + 0 = 1075. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2988,44 +2988,42 @@ unreached by any Fern-accepted document.
 | 37 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
 | 38 | `array-item-pointer-walk-allof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
 | 39 | `array-item-pointer-walk-anyof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
-| 40 | `parameter-in-header` | `parameters` | **1** | **9** | **81** | open — real-specification witness search remains open |
-| 41 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **2** | open — real-specification witness search remains open |
-| 42 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
-| 43 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **6** | open — real-specification witness search remains open |
-| 44 | `parameter-in-query` | `parameters` | **1** | **8** | **213** | open — real-specification witness search remains open |
-| 45 | `property-sole-anyof-closed-object-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
-| 46 | `property-sole-anyof-struct-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
-| 47 | `array-item-pointer-walk-properties` | `schemas` | **1** | **6** | **2** | open — real-specification witness search remains open |
-| 48 | `http-dpop` | `security` | **1** | **5** | **3** | open — real-specification witness search remains open |
-| 49 | `http-mutual` | `security` | **1** | **5** | **1** | open — real-specification witness search remains open |
-| 50 | `http-negotiate` | `security` | **1** | **5** | **2** | open — real-specification witness search remains open |
-| 51 | `enum-leading-zero-member` | `schemas` | **1** | **4** | **6** | open — real-specification witness search remains open |
-| 52 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
-| 53 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
-| 54 | `format-int64` | `schemas` | **1** | **3** | **55** | open — real-specification witness search remains open |
-| 55 | `format-uuid` | `schemas` | **1** | **3** | **61** | open — real-specification witness search remains open |
-| 56 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **286** | open — real-specification witness search remains open |
-| 57 | `recursive-graph` | `schemas` | **1** | **2** | **286** | open — real-specification witness search remains open |
-| 58 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
-| 59 | `anyof-array-variant-inline-enum-item` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
-| 60 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 61 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 62 | `format-byte` | `schemas` | **1** | **1** | **16** | open — real-specification witness search remains open |
-| 63 | `format-email` | `schemas` | **1** | **1** | **48** | open — real-specification witness search remains open |
-| 64 | `format-hostname` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 65 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 66 | `format-ipv4` | `schemas` | **1** | **1** | **7** | open — real-specification witness search remains open |
-| 67 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 68 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 69 | `format-password` | `schemas` | **1** | **1** | **10** | open — real-specification witness search remains open |
-| 70 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 71 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 72 | `format-uri` | `schemas` | **1** | **1** | **78** | open — real-specification witness search remains open |
-| 73 | `format-uri-reference` | `schemas` | **1** | **1** | **6** | open — real-specification witness search remains open |
-| 74 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 75 | `property-oneof-residual` | `schemas` | **1** | **1** | **43** | open — real-specification witness search remains open |
-
-
+| 42 | `parameter-in-header` | `parameters` | **1** | **9** | **81** | open — real-specification witness search remains open |
+| 43 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **2** | open — real-specification witness search remains open |
+| 44 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
+| 45 | `inheritance-discriminated-union` | `schemas` | **1** | **8** | **6** | open — real-specification witness search remains open |
+| 46 | `parameter-in-query` | `parameters` | **1** | **8** | **213** | open — real-specification witness search remains open |
+| 47 | `property-sole-anyof-closed-object-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
+| 48 | `property-sole-anyof-struct-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
+| 49 | `array-item-pointer-walk-properties` | `schemas` | **1** | **6** | **2** | open — real-specification witness search remains open |
+| 50 | `http-dpop` | `security` | **1** | **5** | **3** | open — real-specification witness search remains open |
+| 51 | `http-mutual` | `security` | **1** | **5** | **1** | open — real-specification witness search remains open |
+| 52 | `http-negotiate` | `security` | **1** | **5** | **2** | open — real-specification witness search remains open |
+| 53 | `enum-leading-zero-member` | `schemas` | **1** | **4** | **6** | open — real-specification witness search remains open |
+| 54 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
+| 55 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
+| 56 | `format-int64` | `schemas` | **1** | **3** | **55** | open — real-specification witness search remains open |
+| 57 | `format-uuid` | `schemas` | **1** | **3** | **61** | open — real-specification witness search remains open |
+| 58 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **286** | open — real-specification witness search remains open |
+| 59 | `recursive-graph` | `schemas` | **1** | **2** | **286** | open — real-specification witness search remains open |
+| 60 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
+| 61 | `anyof-array-variant-inline-enum-item` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
+| 62 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
+| 63 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 64 | `format-byte` | `schemas` | **1** | **1** | **16** | open — real-specification witness search remains open |
+| 65 | `format-email` | `schemas` | **1** | **1** | **48** | open — real-specification witness search remains open |
+| 66 | `format-hostname` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
+| 67 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 68 | `format-ipv4` | `schemas` | **1** | **1** | **7** | open — real-specification witness search remains open |
+| 69 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 70 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 71 | `format-password` | `schemas` | **1** | **1** | **10** | open — real-specification witness search remains open |
+| 72 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 73 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 74 | `format-uri` | `schemas` | **1** | **1** | **78** | open — real-specification witness search remains open |
+| 75 | `format-uri-reference` | `schemas` | **1** | **1** | **6** | open — real-specification witness search remains open |
+| 76 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
+| 77 | `property-oneof-residual` | `schemas` | **1** | **1** | **43** | open — real-specification witness search remains open |
 #### The rows this measurement's first pass owned
 
 An owned row with a site still unreached carries an **arm search**: the six

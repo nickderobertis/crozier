@@ -5143,7 +5143,7 @@ UNION_PORT_DIGESTS = {
     "untyped_const_tag": "df10174704350956",
     "inferred_union_discriminant_property": "a1a3229b10970d85",
     "same_primitive_union_last": "46bacd9b81edeea4",
-    "base_type_ref": "35f2b9e1cb617ac7",
+    "base_type_ref": "5ac752a3919eaaa2",
     "last_composed_variant": "3ac394950dc70c7f",
     "is_composed_member": "ea34dd7fa128f6b3",
     "is_map": "ce58b2f1f60a3f18",
