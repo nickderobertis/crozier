@@ -229,11 +229,15 @@ def minutes(a: dt.datetime | None, b: dt.datetime | None) -> float:
     return round((b - a).total_seconds() / 60, 1) if a and b else 0.0
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless; these are short local git reads made one at a time, so an async wrapper would add nothing.
 def git(*args: str, check: bool = True) -> str:
     done = subprocess.run(["git", "-C", str(REPO_ROOT), *args], capture_output=True, text=True, check=False)
     if check and done.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)}: {done.stderr.strip()}")
     return done.stdout
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 # llmlint: ignore-block[async_typed_clients_at_boundaries] AGENTS.md keeps this tooling stdlib-only and installless; one short-lived results read per run, one after another, gains nothing from an async client.
@@ -555,9 +559,6 @@ def fetch_pr(pr: int) -> str | None:
     return git("rev-parse", ref).strip()
 
 
-# llmlint: ignore-end[async_typed_clients_at_boundaries]
-
-
 def is_ancestor(ancestor: str, descendant: str) -> bool:
     if not descendant:
         return False
@@ -578,6 +579,9 @@ def has_commit(sha: str) -> bool:
         ).returncode
         == 0
     )
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 # llmlint: ignore-block[boundary_inputs_validated] A failed read here means an intermediate head was force-pushed away, so its fix attribution is empty: the limit the spike's method states and the baseline carries.
