@@ -1,0 +1,19 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Harbor inventory",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/inventory": {
+      "get": {
+        "operationId": "inspectInventory",
+        "responses": {
+          "204": {
+            "description": "Complete."
+          }
+        }
+      }
+    }
+  }
+}

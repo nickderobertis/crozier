@@ -65,7 +65,9 @@
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
         "{workspaceRoot}/justfile",
-        "pythonTooling"
+        "pythonTooling",
+        "{workspaceRoot}/docs/openapi-surface/combination-independence.toml",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-operation-combinations/controls/**/*"
       ],
       "parallelism": false,
       "outputs": [

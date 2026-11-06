@@ -68,6 +68,11 @@ mod examples_docs;
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These certified-tree replays share the compiled-binary golden suite and parity engine (crates/crozier-e2e/AGENTS.md).
+#[path = "e2e/combination_independence.rs"]
+mod combination_independence;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The worked-example value causes the fixture-only witness searches handed
 /// off, measured under `docs/fern-measurements/handed-off/example-values/` and
@@ -14755,9 +14760,11 @@ fn cyclonedx_transparency_exchange_matches_fern_output() {
     assert_committed_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This existing corpus journey proves its interaction witness in both enum modes on the corpus golden edge (crates/crozier-e2e/AGENTS.md).
 #[test]
 fn adyen_capital_matches_fern_output() {
     assert_committed_corpus_matches(&ADYEN_CAPITAL);
+    overlay_goldens::assert_literals_match(&ADYEN_CAPITAL);
 }
 
 #[test]
