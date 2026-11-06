@@ -299,3 +299,42 @@ Template changes select the same generator/SDK/full-census target sets in the re
 4. Preserve uncached external proofs in affected platform PR lanes. Optimize their honest setup and input edges, then remeasure; the observed 2004-second external phase already exceeds a 30-minute job before setup.
 
 The optimization node must refresh the main-tree inventory after the named live runs land. The closing node's same-CLI/window GitHub reconciliation is a later factual comparison, not a claim made by this baseline.
+
+## Repeated work removed from the slowest suites
+
+**Provenance of every figure below.** *Measured here* means on this shared WSL host for this change, under the instrumented-measurement lock, with other work running; such wall times are indicative only. *Historical* means read from CI logs. Nothing here is a comparison between CI runs: the comparative wall-time result belongs to the later re-measure on real pull requests, which also confirms the collected cases on Windows and macOS. No workflow file, job, matrix leg, shard or coverage floor changed.
+
+### What each touched suite no longer repeats
+
+| Suite | Repeated work removed | Evidence on the finished tree (measured here) |
+|---|---|---|
+| `surface-census:test-census` (`FinishedStateGateTests`) | `load_script` executed every tooling script again on each call, which discarded the per-content memo in `golden-reach.py`; `_function_spans` rescanned a whole Rust file for each named site; each case re-parsed the same witness documents. Scripts now run once per content, one scan indexes each file's functions, and a document is parsed once per content. | Over five cases, tooling-script executions fell from 1219 to 26 for about the same number of `load_script` calls. `test_the_committed_ledgers_are_in_their_finished_state` runs 12,571,637 regex matches at base and 265,667 now. |
+| `surface-census:test-census` (`RankedBacklogTests`) | One directory walk and one `records.tsv`, `enumeration.tsv` and pin read per key per source (72 keys × 6 sources), and one whole hand-written gate per row. Each is now read once for the test. Every key's own checks still run. | `test_every_linked_arm_search_names_the_six_sources_and_reconciles` took 334.83 s at base and 47.39 s now; `test_every_non_golden_row_carries_a_proof_or_a_searched_gap` took 86.70 s and 1.15 s. Both indicative; the base run had no `--cov`, so the true reduction is larger. |
+| `surface-census:test-census` (`ScenarioProofIndexTests`) | `read_e2e` re-read the e2e sources on every `check`, scanning forward from each function for its closing brace. It now reads each text once and finds each close by index. | Staleness and body-bound cases in `reuse_staleness_test.py`. |
+| `surface-census:test-reach`, `test-reach-portable` | The same site scan in `golden-reach.py`. Their test code is unchanged. | 125 tests pass on the finished tree in about the base's time here (398 s against 401 s, indicative): their time is elsewhere, so they stay slow. |
+| `surface-reach:test-fixtures-coverage`, `test-handwritten-reach`, `crozier:test` | Separate instrumented compiles of crozier in `target/llvm-cov-gate` and `target/llvm-cov-target`. One compiled tree now backs both, while each directory keeps its own coverage profiles. | Real `cargo llvm-cov`: the reach run after the gate run compiles no `crozier` unit, and the crate report still reads 96.08% lines both before and after the reach run. |
+| `crozier-e2e:test`, `sdk-env`, `runtime`, corpus recipes | `-p crozier` and every suite's build resolved `libc` with different features on Unix, so a job compiled crozier's library and binary twice under the dev profile. `crozier` now declares `libc`. | Cargo's JSON messages: `crozier:build` compiles; the e2e build, `--bin crozier`, `cargo test --no-run` and `--workspace` report crozier `fresh`. `cargo tree` feature sets match on Linux, macOS and Windows targets. |
+| `corpus-match:test-offline` | Its cold-registry proof compiled from another `CARGO_HOME` into the job's target directory, replacing fingerprints, so the next normal build recompiled all 97 units. It now compiles in its own target directory. | That case passes in 89.7 s; the job's target directory is untouched. |
+
+The collected-case lists are `tools/ci/suite-cases/pins/`, taken from base `8cbca1f51`, and `suite-cases:test` (with `corpus-match:test-offline` for its own) compares them with each suite's live collection on Linux: 808 census, 125 reach, 125 portable reach, 26 fixtures-coverage, 10 handwritten-reach, 6 offline, 1254 crate and 1027 e2e cases. The census suite also ran 8273 subtests at base and 8273 on the finished tree (807 passed, 1 skipped; 883.74 s with `--cov`, indicative; the base run took 1997.15 s without `--cov`).
+
+No new cache outlives a process. Cargo's own fingerprints decide build reuse, so the operating system, toolchain, lock, profile, flags and sources are its key. In-process readings are keyed by the bytes they read. `tools/ci/suite-cases/tests/build-reuse.test.mjs` proves a later step uses the first compile and that a changed source or compiler flag rebuilds; removing the `libc` line fails it. `tools/surface-census/tests/reuse_staleness_test.py` warms each reading and then changes the source, script, document or expected table: the moved site resolves anew, a removed one is refused, and a stale `handwritten-reach.tsv` is rejected. A memo made to ignore content fails five of its cases.
+
+### Builds in one job that remain on purpose
+
+- `corpus-match:test-offline`'s cold-registry case still compiles crozier once more under the dev profile, because a compile from an empty `CARGO_HOME` with sockets denied is what it proves.
+- `pool-maintenance` builds the test targets twice because its budget measures that pass. It runs only on the release pull request.
+- `package`'s `cargo publish --dry-run` compiles the packaged tarball, a different source from the checkout; that is what it proves.
+
+### What stays slowest
+
+Historical, from CI run [41822525024](https://github.com/nickderobertis/crozier/actions/runs/41822525024) (change request 762), task seconds at base. These do not reflect this change.
+
+| Leg | Slowest tasks (s) |
+|---|---|
+| Linux check | `surface-census:test-census` 1163, `fern-goldens-weekly:test` 732, `crozier-e2e:test` 714, `witness-search:test-acquisition` 478 |
+| Windows check | `surface-census:test-census` 3237, `crozier-e2e:test` 2266, `witness-search:test-acquisition` 506, `witness-search:test-github` 437 |
+| macOS | `surface-census:test-census` 3145, `crozier-e2e:test` 1770, `fern-goldens-weekly:test` 1207, `witness-search:test-github` 570 |
+| Linux live-e2e | `corpus-match:test-offline` 1774, `test-match` 1396, `test-strict` 1294, `live-e2e:test` 1207 |
+
+Measured here, one `discord_com_matches_fern_output` takes 153.6 s while its `crozier generate` takes 15.2 s in debug and 5.7 s in release: most of a large golden's time is its comparison, compiled at opt-level 0, not repeated work. The corpus-match targets repeat one another's byte comparison by design: the offline proof must really run, since a replay proves nothing about the network.

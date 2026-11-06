@@ -30,6 +30,11 @@
 - Every instrumented build or run holds `instrumented-measurement.lock` under
   the host cache, including one started by hand:
   `flock "${XDG_CACHE_HOME:-$HOME/.cache}/crozier/instrumented-measurement.lock" <command>`.
+  Never hold it around `crozier-e2e:test`: `growing_reports_keep_peak_memory_bounded`
+  takes it itself and would wait forever.
+- Readings kept between cases are keyed by the bytes read, and
+  `reuse_staleness_test.py` holds them to that. A case that rebinds a script's
+  globals takes `fresh_script`, not `load_script`.
 
 - Re-read the named Rust decision against its Python port before
   `just census-repin --confirm-port NAME`, even for a local rename.
