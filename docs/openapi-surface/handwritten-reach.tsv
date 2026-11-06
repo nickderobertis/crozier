@@ -49,7 +49,10 @@ inline-oneof-variants	oneof-closed-empty-object-variant	src/ir.rs::InlineHoister
 inline-property-unions	annotated-ref-target-anyof	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	11	15
 inline-property-unions	property-sole-anyof-closed-object-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
 inline-property-unions	property-sole-anyof-struct-member	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	8	8
+json-request-shapes	format-binary	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	2	2
+json-request-shapes	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	1	1
+json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	20	27
 kiln-array-mode	anyof-array-variant-inline-enum-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(list\) = self\.hoist_array_item_enum\(&variant_name, variant\) \{]	1	1
 kiln-array-mode	oneof-anyof-variant	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	2	2
 kiln-nested-reason	oneof-anyof-variant	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	5	5
