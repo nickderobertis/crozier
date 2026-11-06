@@ -1,0 +1,27 @@
+compare: found config <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml
+compare: <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml python: reference command starting: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+compare: <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml python: reference command finished in 0.08s (exit 0)
+compare: <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml python: crozier generation starting
+compare: <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml python: crozier generation finished in 6.82s
+compare: <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml python: mismatched
+
+crozier compare report
+
+<scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml
+  python: mismatched (layout packaged, 352 file(s) compared)
+    reference command: cp -R ~/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT/"
+    differing (2):
+      reference.md
+      src/fern/opentelemetry/client.py
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:41 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:42 sdk-identity-header-prefix
+    diff: <repo>/docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/comparisons/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_3319628-17_compare_fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c_crozier.yml-python.diff
+    timing: reference 0.08s, crozier 6.82s, speed-up 0.01x, saved -6.73s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.08s, crozier 6.82s, speed-up 0.01x, saved -6.73s
+Result: 1 generator(s) mismatched the reference (exit 3)

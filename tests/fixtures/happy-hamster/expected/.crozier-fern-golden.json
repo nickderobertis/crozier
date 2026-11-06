@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "happy-hamster",
+  "corpus_spec_ref": "1d48c6c5fa2d957f0c56814462b853b1cdc25cfb",
+  "corpus_spec_url": "https://raw.githubusercontent.com/happy-hamster/documentation/1d48c6c5fa2d957f0c56814462b853b1cdc25cfb/api/v2/openapi.yaml"
+}

@@ -1,0 +1,39 @@
+--- check ---
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Discriminated union "ExperimentAnnotationSourcesValue (Experiment > annotationSources > Value)" contains an inline oneOf/anyOf member that is not referenced by the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Extract it into a named schema and add it to the discriminator mapping to include it.
+::warning title=[api]%3A::Discriminated union "ExperimentAnnotationSourcesValue (Experiment > annotationSources > Value)" contains an inline oneOf/anyOf member that is not referenced by the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Extract it into a named schema and add it to the discriminator mapping to include it.
+[sdk] 7 errors
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_delete
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_download_fcs_get
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_download_fcs_post
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_download_tsv_get
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_download_tsv_post
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_read
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+    [error]
+        path: __package__.yml -> service -> endpoints -> fcsfiles_update
+        issue: Path parameter is unreferenced in endpoint: fcsFileId.
+
+Found 7 errors and 10 warnings in 0.003 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 7 errors and 10 warnings in 0.003 seconds. Run fern check --warnings to print out the warnings not shown.
+

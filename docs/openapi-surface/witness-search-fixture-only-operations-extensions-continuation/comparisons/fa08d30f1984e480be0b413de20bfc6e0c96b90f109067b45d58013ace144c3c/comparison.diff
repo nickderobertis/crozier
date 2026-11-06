@@ -1,0 +1,117 @@
+# crozier compare: <scratch>/compare/fa08d30f1984e480be0b413de20bfc6e0c96b90f109067b45d58013ace144c3c/crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (2685 unchanged line(s))
+  client.ingestion.batch(
+      batch=[
+          IngestionEventZero(
++             id="abcdef-1234-5678-90ab",
++             timestamp="2022-01-01T00:00:00.000Z",
+              body=TraceBody(
+                  id="abcdef-1234-5678-90ab",
+                  timestamp=datetime.datetime.fromisoformat("2022-01-01T00:00:00+00:00"),
+      ⋮ (12 unchanged line(s))
+                  environment="production",
+                  public=True,
+              ),
+-             id="abcdef-1234-5678-90ab",
+-             timestamp="2022-01-01T00:00:00.000Z",
+              type=IngestionEventZeroType.TRACE_CREATE,
+          )
+      ],
+      ⋮ (1462 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **environment:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Optional filter for observations where the environment is one of the provided values.
++ **environment:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Optional filter for observations where the environment is one of the provided values.
+      
+  </dd>
+  </dl>
+      ⋮ (331 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **environment:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Optional filter for observations where the environment is one of the provided values.
++ **environment:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Optional filter for observations where the environment is one of the provided values.
+      
+  </dd>
+  </dl>
+      ⋮ (231 unchanged line(s))
+                                      ),
+                                  )
+                              ],
+-                             status={},
+                          )
+                      ],
+                  )
+      ⋮ (2691 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **environment:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Optional filter for scores where the environment is one of the provided values.
++ **environment:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Optional filter for scores where the environment is one of the provided values.
+      
+  </dd>
+  </dl>
+      ⋮ (81 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **trace_tags:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Only scores linked to traces that include all of these tags will be returned.
++ **trace_tags:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Only scores linked to traces that include all of these tags will be returned.
+      
+  </dd>
+  </dl>
+      ⋮ (422 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **environment:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Optional filter for sessions where the environment is one of the provided values.
++ **environment:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Optional filter for sessions where the environment is one of the provided values.
+      
+  </dd>
+  </dl>
+      ⋮ (348 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **tags:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Only traces that include all of these tags will be returned.
++ **tags:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Only traces that include all of these tags will be returned.
+      
+  </dd>
+  </dl>
+      ⋮ (17 unchanged line(s))
+  <dl>
+  <dd>
+  
+- **environment:** `typing.Optional[typing.Union[typing.Optional[str], typing.Sequence[typing.Optional[str]]]]` — Optional filter for traces where the environment is one of the provided values.
++ **environment:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — Optional filter for traces where the environment is one of the provided values.
+      
+  </dd>
+  </dl>
+      ⋮ (213 unchanged line(s))
+
+Unexplained original crozier line(s): 2689, 2690, 4177, 4515, 7450, 7538, 7967, 8322, 8346
+
+--- reference/src/fern/opentelemetry/client.py
++++ crozier/src/fern/opentelemetry/client.py
+      ⋮ (122 unchanged line(s))
+                                              ),
+                                          )
+                                      ],
+-                                     status={},
+                                  )
+                              ],
+                          )
+      ⋮ (122 unchanged line(s))
+                                                  ),
+                                              )
+                                          ],
+-                                         status={},
+                                      )
+                                  ],
+                              )
+      ⋮ (10 unchanged line(s))

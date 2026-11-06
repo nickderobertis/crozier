@@ -1,0 +1,8 @@
+{
+  "sha256": "5ce68565710ca03a17792aaccccb4949d135632e69898d665aa349dbf710385a",
+  "fern_cli": "5.163.1",
+  "generator": "5.41.3",
+  "check_exit": "1",
+  "check_log_sha256": "c9656f30c16d9e5b979495731564d0967eb38860217ae7e7109d5acf4050ce3b",
+  "check_diagnostic": "Found 2 errors and 38 warnings in 0.002 seconds. Run fern check --warnings to print out the warnings not shown. First: Enum name  for value + is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-defi"
+}

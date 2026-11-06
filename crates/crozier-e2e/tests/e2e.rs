@@ -10728,6 +10728,8 @@ const CORPORA: &[&Corpus] = &[
     &MICROSOFT_ADME_CRS_CONVERTER,
     &WIIM_HTTPAPI,
     &LOONFS,
+    &HAPPY_HAMSTER,
+    &SELDON_WRAPPER,
 ];
 
 #[test]
@@ -15423,6 +15425,43 @@ fn loonfs_matches_fern_output() {
     assert_committed_corpus_matches(&LOONFS);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// HappyHamster's publisher API description — corpus row 5370. Required
+/// Coordinates query objects exercise form-query object serialization.
+const HAPPY_HAMSTER: Corpus = Corpus {
+    api: "happy-hamster",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Corpus registration requires this real golden replay in the existing crozier-e2e and corpus-match inventories (tests/fixtures/AGENTS.md); splitting their shared e2eReads family is a separate graph change, outside this witness search.
+#[test]
+fn happy_hamster_matches_fern_output() {
+    assert_committed_corpus_matches(&HAPPY_HAMSTER);
+}
+/// Seldon Core's published wrapper description — corpus row 5371. The
+/// predict query carries a parameter example beside its referenced schema.
+const SELDON_WRAPPER: Corpus = Corpus {
+    api: "seldon-wrapper",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Corpus registration requires this real golden replay in the existing crozier-e2e and corpus-match inventories (tests/fixtures/AGENTS.md); splitting their shared e2eReads family is a separate graph change, outside this witness search.
+#[test]
+fn seldon_wrapper_matches_fern_output() {
+    assert_committed_corpus_matches(&SELDON_WRAPPER);
+}
 
 #[test]
 fn letta_matches_fern_output() {
