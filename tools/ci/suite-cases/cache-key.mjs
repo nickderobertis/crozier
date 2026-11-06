@@ -21,7 +21,23 @@ const PYTHON_IDENTITY = `import platform, sys
 print(sys.implementation.name, sys.version.replace("\\n", " "), sys.implementation.cache_tag, getattr(sys, "abiflags", ""), sys.platform, platform.machine())
 `;
 
+// `uv run --locked --all-packages` reads every workspace member's manifest, and an
+// edit to one can make it reject the lock. These six are type:tier, so nx.json's
+// boundary rule forbids a type:tooling target from declaring them as inputs (the
+// other members' manifests are declared in `project.json`). Hashing them here keeps
+// a cached success from being replayed; it does not make these targets affected by
+// such an edit, which the tier's own `uv run --locked` targets are.
+const TIER_MANIFESTS = [
+  "tests/census_fallback/pyproject.toml",
+  "tests/corpus_match/pyproject.toml",
+  "tests/corpus_match_selection/pyproject.toml",
+  "tests/live_e2e/pyproject.toml",
+  "tests/runtime/pyproject.toml",
+  "tests/nested-discriminator/runtime/pyproject.toml",
+];
+
 const isWindows = process.platform === "win32";
+const digest = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 
 /** What `program args` prints, or "absent" for a tool that is missing or refuses. */
 function ask(program, args, options = {}) {
@@ -60,6 +76,7 @@ const lines = [
   `python: ${pythonIdentity()}`,
   `uv: ${ask("uv", ["--version"])}`,
   ...named(PYTHON_ENV),
+  ...TIER_MANIFESTS.map((path) => `tier manifest ${path}: ${existsSync(path) ? digest(path) : "absent"}`),
 ];
 if (process.argv[2] !== "python") {
   lines.push(
@@ -70,7 +87,7 @@ if (process.argv[2] !== "python") {
     `llvm-cov: ${ask("cargo", ["llvm-cov", "--version"])}`,
     ...named(COMPILER_ENV),
     // By content, so moving a clone does not change the key.
-    ...cargoConfigs(process.cwd()).map((path) => `cargo config: ${createHash("sha256").update(readFileSync(path)).digest("hex")}`),
+    ...cargoConfigs(process.cwd()).map((path) => `cargo config: ${digest(path)}`),
   );
 }
 console.log(lines.join("\n"));

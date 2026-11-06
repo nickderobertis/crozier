@@ -18,4 +18,10 @@
   `surface-census:test-reuse`: Nx does not hash the host, so a tool, variable or
   file that decides what the suites compile, collect or read belongs there.
   `tests/cache-key.test.mjs` proves other hosts, interpreters and flags take no
-  cached result. Files a suite reads go in the target's `inputs`, not there.
+  cached result. Files a suite reads go in the target's `inputs`, not there, with
+  one exception: both targets run `uv run --locked --all-packages`, so every uv
+  member's manifest decides their result. The tooling members' are declared inputs.
+  The tier members' are hashed in `cache-key.mjs`, because the boundary rule forbids
+  a type:tooling target naming them; such an edit misses the cache but does not make
+  these targets affected. A new member belongs in one or the other, and a test fails
+  until it is.

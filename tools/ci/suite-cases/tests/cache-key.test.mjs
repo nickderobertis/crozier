@@ -16,7 +16,7 @@ const NX = join(ROOT, "node_modules/nx/dist/bin/nx.js");
 const KEY = "tools/ci/suite-cases/cache-key.mjs";
 
 /** A workspace holding `project` with the real project's real `test`-like target's inputs, its command only counting. */
-function scratchWorkspace(t, project, targetName) {
+function scratchWorkspace(t, project, targetName, suiteCommand) {
   const root = mkdtempSync(join(tmpdir(), "crozier-cache-key-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const real = JSON.parse(readFileSync(join(ROOT, project, "project.json"), "utf8"));
@@ -24,7 +24,7 @@ function scratchWorkspace(t, project, targetName) {
   mkdirSync(join(root, project), { recursive: true });
   writeFileSync(join(root, project, "project.json"), JSON.stringify({
     name: real.name,
-    targets: { [targetName]: { command: count, cache: true, inputs: real.targets[targetName].inputs } },
+    targets: { [targetName]: { command: suiteCommand ?? count, cache: true, inputs: real.targets[targetName].inputs } },
   }));
   writeFileSync(join(root, "nx.json"), JSON.stringify({ namedInputs: JSON.parse(readFileSync(join(ROOT, "nx.json"), "utf8")).namedInputs }));
   writeFileSync(join(root, ".gitignore"), "/node_modules\n/.nx\n/runs\n/stand-in\n");
@@ -35,18 +35,29 @@ function scratchWorkspace(t, project, targetName) {
   // A junction on Windows needs no privilege; elsewhere it is a symlink.
   symlinkSync(join(ROOT, "node_modules"), join(root, "node_modules"), "junction");
   const task = `${real.name}:${targetName}`;
-  return {
-    root,
-    /** Run the target through Nx under `env`; returns how many times its command has now run. */
-    run(env = {}) {
-      const merged = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true", NX_TUI: "false", NX_ISOLATE_PLUGINS: "false", ...env };
-      // This suite itself runs inside an Nx task, and a sweep turns every replay into a rerun.
-      for (const name of ["NX_SKIP_NX_CACHE", "NX_WORKSPACE_ROOT_PATH", "NX_WORKSPACE_ROOT", "NX_TASK_TARGET_PROJECT", "NX_TASK_TARGET_TARGET", "NX_TASK_HASH"]) delete merged[name];
-      const nx = spawnSync(process.execPath, [NX, "run", task, "--outputStyle=static"], { cwd: root, env: merged, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
-      assert.equal(nx.status, 0, `${nx.stdout}\n${nx.stderr}`);
-      return existsSync(join(root, "runs")) ? readFileSync(join(root, "runs"), "utf8").length : 0;
-    },
+  /** The target through Nx under `env`, whatever it exits. */
+  const nx = (env = {}) => {
+    const merged = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true", NX_TUI: "false", NX_ISOLATE_PLUGINS: "false", ...env };
+    // This suite itself runs inside an Nx task, and a sweep turns every replay into a rerun.
+    for (const name of ["NX_SKIP_NX_CACHE", "NX_WORKSPACE_ROOT_PATH", "NX_WORKSPACE_ROOT", "NX_TASK_TARGET_PROJECT", "NX_TASK_TARGET_TARGET", "NX_TASK_HASH"]) delete merged[name];
+    return spawnSync(process.execPath, [NX, "run", task, "--outputStyle=static"], { cwd: root, env: merged, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
   };
+  /** Run the target through Nx under `env`; returns how many times its command has now run. */
+  const run = (env = {}) => {
+    const result = nx(env);
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    return existsSync(join(root, "runs")) ? readFileSync(join(root, "runs"), "utf8").length : 0;
+  };
+  return { root, nx, run };
+}
+
+/** The workspace's members, split as the boundary rule splits them: declared inputs and tier manifests. */
+function members() {
+  const manifest = readFileSync(join(ROOT, "pyproject.toml"), "utf8");
+  const list = manifest.match(/\[tool\.uv\.workspace\]\s*members = \[([\s\S]*?)\n\]/)[1];
+  const all = [...list.replace(/#.*$/gm, "").matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+  const isTier = (member) => JSON.parse(readFileSync(join(ROOT, member, "project.json"), "utf8")).tags.includes("type:tier");
+  return { tooling: all.filter((member) => !isTier(member)), tier: all.filter(isTier) };
 }
 
 /** PATH with a stand-in `name` first: it answers `output` to the query the key makes and defers everything else to `fallback`. */
@@ -114,8 +125,7 @@ function secondInterpreter(line) {
 const realRustc = (root) => spawnSync("rustc", ["-vV"], { cwd: root, encoding: "utf8", shell: process.platform === "win32" }).stdout.trim();
 
 test("suite-cases:test replays its result only for the same operating system and compiler flags", (t) => {
-  const workspace = scratchWorkspace(t, "tools/ci/suite-cases", "test");
-  const { root, run } = workspace;
+  const { root, run } = scratchWorkspace(t, "tools/ci/suite-cases", "test");
   assert.equal(run(), 1, "the first run executes");
   assert.equal(run(), 1, "the same host and flags replay from cache");
 
@@ -226,6 +236,70 @@ for (const [project, target, read] of [
     assert.equal(run(), 2, `${read} decides the result, so a change to it takes no cached result`);
   });
 }
+
+const TARGETS = [["tools/ci/suite-cases", "test"], ["tools/surface-census", "test-reuse"]];
+const write = (root, path, text) => {
+  mkdirSync(dirname(join(root, path)), { recursive: true });
+  writeFileSync(join(root, path), text);
+};
+
+for (const [project, target] of TARGETS) {
+  test(`${project}:${target} reruns when any member manifest changes, and replays while none has`, (t) => {
+    const { root, run } = scratchWorkspace(t, project, target);
+    const { tooling, tier } = members();
+    assert.equal(tooling.length, 18);
+    assert.equal(tier.length, 6);
+    const manifests = [...tooling, ...tier].map((member) => `${member}/pyproject.toml`);
+    for (const manifest of manifests) write(root, manifest, "[project]\n");
+    let runs = run();
+    assert.equal(runs, 1);
+    assert.equal(run(), 1, "unchanged manifests replay from cache");
+    for (const manifest of manifests) {
+      write(root, manifest, "[project]\n# changed\n");
+      runs += 1;
+      assert.equal(run(), runs, `${manifest} changed, so its cached success must not replay`);
+      assert.equal(run(), runs, `${manifest}'s new content replays its own result`);
+      write(root, manifest, "[project]\n");
+    }
+    assert.equal(run(), 1 + manifests.length, "the original manifests still replay their own result");
+  });
+
+  // The failure the inputs exist for, with a real uv and a real lock.
+  for (const member of ["tools/witness-search", "tests/runtime"]) {
+    test(`${project}:${target} does not replay a success once ${member}'s manifest makes uv reject the lock`, (t) => {
+      const suite = "uv run --locked --all-packages python -c pass";
+      const { root, nx } = scratchWorkspace(t, project, target, suite);
+      const manifest = (dependencies, sources = "") => `[project]\nname = "probe-member"\nversion = "0"\nrequires-python = ">=3.8"\ndependencies = [${dependencies}]\n\n[tool.uv]\npackage = false\n${sources}`;
+      write(root, "pyproject.toml", `[project]\nname = "probe"\nversion = "0"\nrequires-python = ">=3.8"\n\n[tool.uv]\npackage = false\n\n[tool.uv.workspace]\nmembers = ["${member}", "probe-sibling"]\n`);
+      write(root, "probe-sibling/pyproject.toml", '[project]\nname = "probe-sibling"\nversion = "0"\nrequires-python = ">=3.8"\n\n[tool.uv]\npackage = false\n');
+      write(root, `${member}/pyproject.toml`, manifest(""));
+      const lock = spawnSync("uv", ["lock", "--offline"], { cwd: root, encoding: "utf8" });
+      assert.equal(lock.status, 0, lock.stderr);
+      const first = nx({ UV_NO_SYNC: "0" });
+      assert.equal(first.status, 0, `${first.stdout}\n${first.stderr}`);
+      const replay = nx({ UV_NO_SYNC: "0" });
+      assert.equal(replay.status, 0, `${replay.stdout}\n${replay.stderr}`);
+      assert.match(replay.stdout, /existing outputs match the cache|local cache/i, "unchanged inputs hit the cache");
+      write(root, `${member}/pyproject.toml`, manifest('"probe-sibling"', "\n[tool.uv.sources]\nprobe-sibling = { workspace = true }\n"));
+      const stale = nx({ UV_NO_SYNC: "0" });
+      assert.notEqual(stale.status, 0, `the cached success was replayed over a lock uv rejects:\n${stale.stdout}`);
+      assert.match(`${stale.stdout}\n${stale.stderr}`, /lockfile|--locked/i);
+    });
+  }
+}
+
+test("every member's manifest is either declared by both targets or hashed by the key", () => {
+  const { tooling, tier } = members();
+  const lines = keyLines(ROOT);
+  const hashed = lines.filter((line) => line.startsWith("tier manifest ")).map((line) => line.split(" ")[2].replace(/:$/, ""));
+  assert.deepEqual(hashed.sort(), tier.map((member) => `${member}/pyproject.toml`).sort(), "a tier member belongs in the key's TIER_MANIFESTS");
+  assert.deepEqual(keyLines(ROOT, {}, "python").filter((line) => line.startsWith("tier manifest ")), lines.filter((line) => line.startsWith("tier manifest ")));
+  for (const [project, target] of TARGETS) {
+    const inputs = JSON.parse(readFileSync(join(ROOT, project, "project.json"), "utf8")).targets[target].inputs;
+    for (const member of tooling) assert.ok(inputs.includes(`{workspaceRoot}/${member}/pyproject.toml`), `${project}:${target} does not declare ${member}'s manifest`);
+    assert.ok(!inputs.some((input) => tier.some((member) => String(input).includes(`${member}/`))), "a tier manifest as a declared input breaks the boundary rule");
+  }
+});
 
 test("the key names the operating system, the interpreter and the flags, and survives missing tools", () => {
   const key = (env, ...args) => `${keyLines(ROOT, env, ...args).join("\n")}\n`;
