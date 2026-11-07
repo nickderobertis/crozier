@@ -99,6 +99,15 @@ class Document(NamedTuple):
     fixture: str
 
 
+class Region(NamedTuple):
+    """One llvm-cov counter region: where it starts and ends in its source file, 1-based."""
+
+    start_line: int
+    start_column: int
+    end_line: int
+    end_column: int
+
+
 class ArmCount(NamedTuple):
     executed: int
     total: int
@@ -270,6 +279,7 @@ def declared_sites(root: Path, documents: list[Document], selectors: dict[str, s
     return counts
 
 
+# llmlint: ignore[modern_domain_modeling] `CombinationProofClass` lives in golden-reach.py, a hyphenated script loaded by path and so typed `Any` here; the body converts the value to that enum, refusing any other.
 def verdict_of(proof_class: str | None, cooccurrence: bool, declared: int, arm: ArmCount | None) -> Verdict:
     """The verdict its measurements imply; `proof_class` is a `CombinationProofClass` value, or None unaudited."""
     if proof_class is not None:
@@ -291,26 +301,27 @@ def classes(root: Path) -> tuple[dict[str, Any], dict[str, SiteRow]]:
     return audit, REACH.read_sites_table(root / "docs/openapi-surface/golden-reach-sites.tsv")
 
 
-def _view(path: Path) -> dict[str, set[tuple[int, int, int, int]]]:
-    """A measurement view's `file -> regions`, refusing anything but four integers per region."""
+def _view(path: Path) -> dict[str, set[Region]]:
+    """A measurement view's `file -> regions`, refusing anything but ordered four-integer spans."""
     try:
         loaded = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         raise ValueError(f"cannot read {path}: {error}; run `just census-repin`") from error
     if not isinstance(loaded, dict):
         raise ValueError(f"{path} is not a file-to-regions map; run `just census-repin`")
-    regions: dict[str, set[tuple[int, int, int, int]]] = {}
+    regions: dict[str, set[Region]] = {}
     for file, spans in loaded.items():
         if not isinstance(spans, list) or not all(
             isinstance(span, list) and len(span) == 4 and all(type(cell) is int for cell in span) for span in spans
         ):
             raise ValueError(f"{path}: {file}'s regions are not four integers each; run `just census-repin`")
-        for span in spans:
-            if min(span) < 1 or (span[0], span[1]) > (span[2], span[3]):
+        parsed = {Region(*span) for span in spans}
+        for region in parsed:
+            if min(region) < 1 or (region.start_line, region.start_column) > (region.end_line, region.end_column):
                 raise ValueError(
-                    f"{path}: {file}'s region {span} is not an ordered source span; run `just census-repin`"
+                    f"{path}: {file}'s region {list(region)} is not an ordered source span; run `just census-repin`"
                 )
-        regions[file] = {(span[0], span[1], span[2], span[3]) for span in spans}
+        regions[file] = parsed
     return regions
 
 
