@@ -8,6 +8,7 @@ import csv
 import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -1315,6 +1316,37 @@ class HarnessTest(unittest.TestCase):
         self.assertEqual(done.returncode, 0, done.stderr)
         # One census failure over the run's two changes; a run not recognised by its digest reads n/a.
         self.assertIn("| live run baseline | 0.50 |", (after / "comparison.md").read_text())
+
+
+class CommittedMeasurementTest(unittest.TestCase):
+    """The committed measurements hold what a re-run writes, so a hand-pasted name fails here."""
+
+    ID = r"id-[0-9a-f]{12}"
+
+    def assert_nodes(self, cell, where):
+        # An outcome may hold its own semicolon; a node's name is what precedes an equals sign.
+        for name in re.findall(r"(?:^|;)([^;=]+)=", cell):
+            self.assertRegex(name, rf"^{self.ID}$", where)
+
+    def test_committed_identifiers_are_digests(self):
+        for directory in ("after", "selection-journeys/A", "selection-journeys/B"):
+            for name in ("changes.tsv", "events.tsv", "excluded.tsv"):
+                path = SOURCE / directory / name
+                if not path.exists():
+                    continue
+                with path.open(encoding="utf-8", newline="") as handle:
+                    rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+                for row in rows:
+                    self.assertRegex(row["branch"], rf"^{self.ID}$", path)
+                    self.assert_nodes(row.get("nodes", ""), path)
+                    for run in filter(None, row.get("runs", "").split(";")):
+                        self.assertRegex(run, rf"^{self.ID}$", path)
+        totals = json.loads((SOURCE / "after/totals.json").read_text(encoding="utf-8"))
+        for run in totals["window"]["runs"]:
+            self.assertRegex(run, rf"^{self.ID}$")
+        for row in totals["excluded"]:
+            self.assertRegex(row["branch"], rf"^{self.ID}$")
+            self.assert_nodes(row["nodes"], "totals.json")
 
 
 class ComparisonTest(unittest.TestCase):
