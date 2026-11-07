@@ -32201,8 +32201,7 @@ fn registered_literals_apis_guru_openapi_directory_d8d536ea_matches_fern_output(
 
 /// Certified enum-mode witness, corpus row 5601.
 const LITERALS_AZURE_SAMPLES_4F917FB1: Corpus = Corpus {
-    api:
-        "registered-literals-azure-samples-digitization-of-piping-and-instrument-diagrams-4f917fb1",
+    api: "registered-literals-azure-samples-digitization-4f917fb1",
     package_name: "fern",
     project_name: "default_package_name",
     audiences: &[],
@@ -32213,8 +32212,7 @@ const LITERALS_AZURE_SAMPLES_4F917FB1: Corpus = Corpus {
 };
 
 #[test]
-fn registered_literals_azure_samples_digitization_of_piping_and_instrument_diagrams_4f917fb1_matches_fern_output(
-) {
+fn registered_literals_azure_samples_digitization_4f917fb1_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_AZURE_SAMPLES_4F917FB1);
     overlay_goldens::assert_literals_match(&LITERALS_AZURE_SAMPLES_4F917FB1);
 }

@@ -1614,8 +1614,8 @@
         ".crozier-overlay.json"
       ]
     },
-    "tests/fixtures/registered-literals-azure-samples-digitization-of-piping-and-instrument-diagrams-4f917fb1/expected": {},
-    "tests/fixtures/registered-literals-azure-samples-digitization-of-piping-and-instrument-diagrams-4f917fb1/expected-literals": {
+    "tests/fixtures/registered-literals-azure-samples-digitization-4f917fb1/expected": {},
+    "tests/fixtures/registered-literals-azure-samples-digitization-4f917fb1/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]

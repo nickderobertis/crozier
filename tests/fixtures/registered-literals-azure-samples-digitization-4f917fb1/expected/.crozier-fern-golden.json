@@ -1,6 +1,6 @@
 {
   "fern_python_sdk_version": "5.41.3",
-  "corpus_spec_name": "registered-literals-azure-samples-digitization-of-piping-and-instrument-diagrams-4f917fb1",
+  "corpus_spec_name": "registered-literals-azure-samples-digitization-4f917fb1",
   "corpus_spec_ref": "c51302e3ec34147c676ef6eedbdd7551ea908b05",
   "corpus_spec_url": "https://raw.githubusercontent.com/Azure-Samples/digitization-of-piping-and-instrument-diagrams/c51302e3ec34147c676ef6eedbdd7551ea908b05/docs/webapi-swagger.yaml"
 }

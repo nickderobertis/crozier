@@ -104,7 +104,7 @@ const KINDS: &[Kind] = &[
         script_args: "--enum-type literals",
         fixtures: &[
             "registered-literals-apis-guru-openapi-directory-d8d536ea",
-            "registered-literals-azure-samples-digitization-of-piping-and-instrument-diagrams-4f917fb1",
+            "registered-literals-azure-samples-digitization-4f917fb1",
             "registered-literals-cyoda-cyoda-go-5ce9d613",
             "registered-literals-gk0wk-openapi-thrift-cc8bee73",
             "registered-literals-kong-developer-konghq-com-d58ac8e1",
