@@ -158,15 +158,18 @@ for (const [command, platforms] of commands) {
 }
 
 // Whether a push to main starts a workflow: true, false, or undefined for a form this check
-// does not read, which fails rather than being guessed at. Its forms are the repository's own:
-// a whole-line `on:` block, whose `push` has no filter, `branches: [main]` or tags alone.
+// does not read, which fails rather than being guessed at. Its forms are `on: <event>`,
+// `on: [<event>, ...]`, and a block of `<event>:` keys, whose `push` has no filter,
+// `branches: [main]` or tags alone.
 function mainPushVerdict(text) {
   const on = /^on:([^\n]*)\n((?:[ #][^\n]*\n|\n)*)/m.exec(text);
   if (!on) return undefined;
-  if (on[1].trim() !== "") return /\bpush\b/.test(on[1]);
-  if (/^ {2}["'](?:push|pull_request)/m.test(on[2])) return undefined;
+  const inline = on[1].trim();
+  if (inline !== "") return /^(?:\w+|\[\s*\w+(?:\s*,\s*\w+)*\s*\])$/.test(inline) ? /\bpush\b/.test(inline) : undefined;
+  const events = on[2].split("\n").filter((line) => /^ {1,2}\S/.test(line) && !/^ *#/.test(line));
+  if (events.length === 0 || !events.every((line) => /^ {2}\w+:[ \t]*$/.test(line))) return undefined;
   const push = /^ {2}push:[ \t]*\n((?: {4,}[^\n]*\n)*)/m.exec(on[2]);
-  if (!push) return /^ {2}push\b/m.test(on[2]) ? undefined : false;
+  if (!push) return false;
   const filters = push[1].trimEnd();
   if (filters === "" || filters === "    branches: [main]") return true;
   return /^ {4}tags:/.test(filters) && !/^ {4}(?!tags:)\S/m.test(filters) ? false : undefined;
@@ -182,7 +185,7 @@ for (const path of listedNonCheck.keys()) {
 for (const name of readdirSync(join(ROOT, ".github/workflows"))) {
   const path = `.github/workflows/${name}`;
   const verdict = mainPushVerdict(read(path));
-  if (verdict === undefined) problems.push(`${path}: cannot tell whether a push to main starts it; write its trigger as a whole-line \`on:\` block whose \`push\` has no filter, \`branches: [main]\` or tags alone`);
+  if (verdict === undefined) problems.push(`${path}: cannot tell whether a push to main starts it; write it as \`on: <event>\`, a list of events, or a block of \`<event>:\` keys whose \`push\` has no filter, \`branches: [main]\` or tags alone`);
   else if (verdict && !listedNonCheck.has(path)) problems.push(`${path}: runs on push to main and is not in nonCheckWorkflows; CI's proof belongs in a pull request lane`);
 }
 

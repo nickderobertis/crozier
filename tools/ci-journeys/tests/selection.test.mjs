@@ -291,14 +291,17 @@ test("a workflow on push to main must be declared as gating nothing, and stay th
   const onMain = "on:\n  push:\n    branches: [main]\njobs: {}\n";
   const cases = [
     ["an undeclared workflow on main", (root) => write(root, { ".github/workflows/extra.yml": onMain }), /extra\.yml: runs on push to main and is not in nonCheckWorkflows/],
-    ["an undeclared one by the list form", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    branches:\n      - main\njobs: {}\n" }), /extra\.yml: runs on push to main/],
+    ["an undeclared one in an inline list", (root) => write(root, { ".github/workflows/extra.yml": "on: [push, pull_request]\njobs: {}\n" }), /extra\.yml: runs on push to main/],
+    ["a branch list on its own lines, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    branches:\n      - main\njobs: {}\n" }), /extra\.yml: cannot tell/],
+    ["an event list on its own line, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  [push, pull_request]\njobs: {}\n" }), /extra\.yml: cannot tell/],
+    ["an inline mapping, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "on: { workflow_dispatch: { inputs: { push: {} } } }\njobs: {}\n" }), /extra\.yml: cannot tell/],
     ["an undeclared one with no filter", (root) => write(root, { ".github/workflows/extra.yml": "on: push\njobs: {}\n" }), /extra\.yml: runs on push to main/],
     ["a wildcard filter, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    branches: ['**']\njobs: {}\n" }), /extra\.yml: cannot tell whether a push to main starts it/],
     ["an ignore filter, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    branches-ignore: [main]\njobs: {}\n" }), /extra\.yml: cannot tell/],
     ["a quoted on key, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "\"on\":\n  push:\njobs: {}\n" }), /extra\.yml: cannot tell/],
     ["a path filter beside main, which it does not read", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    branches: [main]\n    paths: [src/**]\njobs: {}\n" }), /extra\.yml: cannot tell/],
     ["a declared one a pull request starts", rewrite(WRITER, (text) => text.replace("on:\n  push:", "on:\n  pull_request:\n  push:")), /ci-caches\.yml: listed as a non-check workflow, but a pull request starts it/],
-    ["a declared one main no longer starts", rewrite(WRITER, (text) => text.replace("branches: [main]", "branches: [other]")), /ci-caches\.yml: listed as a non-check workflow, but no push to main starts it/],
+    ["a declared one main no longer starts", rewrite(WRITER, (text) => text.replace("branches: [main]", "tags: [v1]")), /ci-caches\.yml: listed as a non-check workflow, but no push to main starts it/],
     ["a declared one that is gone", (root) => rmSync(join(root, WRITER)), /cannot read \.github\/workflows\/ci-caches\.yml/],
   ];
   for (const [what, edit, message] of cases) {

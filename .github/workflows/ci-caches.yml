@@ -85,9 +85,11 @@ jobs:
         run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       # A red target must not cost the results the others proved: actions/cache saves only
       # from a job that succeeded, and nothing gates on this run.
+      # llmlint: ignore-block[no_second_broader_sweep_over_an_already_gated_commit] Writing main-scoped caches is this node's stated criterion, and a pull request's own results cannot reach that scope, so main must produce them. It verifies nothing and gates nothing: only inputs no earlier push proved execute.
       - name: Prove the lint targets into the cache
         continue-on-error: true
         run: just ci-caches-lint
+      # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]
 
   # Limits are the lanes' measured transitional ones (ci.yml), which this offline subset fits.
   test-linux:
@@ -138,9 +140,11 @@ jobs:
           restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
       # A red target must not cost the results the others proved: actions/cache saves only
       # from a job that succeeded, and nothing gates on this run.
+      # llmlint: ignore-block[no_second_broader_sweep_over_an_already_gated_commit] Writing main-scoped caches is this node's stated criterion, and a pull request's own results cannot reach that scope, so main must produce them. It verifies nothing and gates nothing: only inputs no earlier push proved execute.
       - name: Prove the test targets into the cache
         continue-on-error: true
         run: just ci-caches-test
+      # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]
 
   test-windows:
     name: main caches (test-windows)
@@ -193,6 +197,8 @@ jobs:
           restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
       # A red target must not cost the results the others proved: actions/cache saves only
       # from a job that succeeded, and nothing gates on this run.
+      # llmlint: ignore-block[no_second_broader_sweep_over_an_already_gated_commit] Writing main-scoped caches is this node's stated criterion, and a pull request's own results cannot reach that scope, so main must produce them. It verifies nothing and gates nothing: only inputs no earlier push proved execute.
       - name: Prove the test targets into the cache
         continue-on-error: true
         run: just ci-caches-test
+      # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]
