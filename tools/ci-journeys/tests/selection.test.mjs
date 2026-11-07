@@ -264,6 +264,7 @@ test("a change to a tier manifest alone selects the inventory check, which fails
     ["a target removed", editManifest("tests/runtime/project.json", (p) => { delete p.targets.test; }), /runtime:test: the target is gone/],
     ["a platform dropped", editManifest(SDK, (p) => { p.tags.push("platform:linux"); }), /sdk-env:test: no longer runs on macos/],
     ["a lane removed", editManifest("tests/live_e2e/project.json", (p) => { p.tags = p.tags.filter((tag) => !tag.startsWith("lane:")); }), /live-e2e: tier:promoted with no lane: tag/],
+    ["a lane only Linux has", editManifest(SDK, (p) => { p.tags = p.tags.map((tag) => (tag === "lane:sdk-env" ? "lane:packaging" : tag)); }), /sdk-env:test: test-windows has no step `--projects=tag:lane:packaging`/],
     ["a target no lane reaches any more", editManifest("tests/corpus_match/project.json", (p) => { p.targets.test.dependsOn = p.targets.test.dependsOn.filter((name) => name !== "test-strict"); }), /corpus-match:test-strict: no lane reaches it/],
     ["a tier deleted outright", (root) => rmSync(join(root, "tests/live_e2e/project.json")), /live-e2e:test: project live-e2e is gone/],
   ];
@@ -294,6 +295,15 @@ test("a manifest or inventory of the wrong shape is refused, not read past", (t)
     ["commands that are a list", (root) => {
       const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
       write(root, { "tools/ci/lanes.json": JSON.stringify({ ...inventory, commands: [] }) });
+    }],
+    ["a row whose new name is not a string", (root) => {
+      const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
+      inventory.entrypoints["runtime:test"].now = ["runtime:test"];
+      write(root, { "tools/ci/lanes.json": JSON.stringify(inventory) });
+    }],
+    ["an added entry that is not a string", (root) => {
+      const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
+      write(root, { "tools/ci/lanes.json": JSON.stringify({ ...inventory, added: [["runtime:test"]] }) });
     }],
     ["an inventory with no rows", (root) => write(root, { "tools/ci/lanes.json": JSON.stringify({ added: [] }) })],
     ["a row with an unknown platform", (root) => {

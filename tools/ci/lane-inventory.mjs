@@ -65,9 +65,10 @@ try {
 }
 const rows = isMapping(inventory?.entrypoints) ? Object.entries(inventory.entrypoints) : undefined;
 const commands = isMapping(inventory?.commands) ? Object.entries(inventory.commands) : undefined;
+const isEntrypoint = (value) => typeof value === "string" && /^[^:]+:[^:]+$/.test(value);
 const isPlatformList = (list) => Array.isArray(list) && list.every((platform) => ["linux", "macos", "windows"].includes(platform));
-if (!rows || !commands || !Array.isArray(inventory.added) || !inventory.added.every((entry) => /^[^:]+:[^:]+$/.test(entry))
-  || !rows.every(([entry, row]) => /^[^:]+:[^:]+$/.test(row?.now ?? entry) && isPlatformList(row?.platforms)) || !commands.every(([, list]) => isPlatformList(list))) {
+if (!rows || !commands || !Array.isArray(inventory.added) || !inventory.added.every(isEntrypoint)
+  || !rows.every(([entry, row]) => isEntrypoint(row?.now ?? entry) && isPlatformList(row?.platforms)) || !commands.every(([, list]) => isPlatformList(list))) {
   refuse("tools/ci/lanes.json needs entrypoints and commands naming project:target and linux, macos or windows, and an added list");
 }
 const ci = read(".github/workflows/ci.yml");
@@ -118,8 +119,12 @@ for (const [entry, row] of rows) {
   }
   if (!reached.has(now)) problems.push(`${now}: no lane reaches it: no recipe starts it and no target it serves depends on it`);
   const owners = (project.tags ?? []).filter((tag) => tag.startsWith("platform:")).map((tag) => tag.slice("platform:".length));
+  // The step that runs this project in each lane its row owes: its lane's, or the offline one.
+  const lane = (project.tags ?? []).find((tag) => tag.startsWith("lane:"));
+  const step = (project.tags ?? []).includes("tier:promoted") ? `--projects=tag:${lane}` : "--exclude=tag:tier:promoted";
   for (const platform of row.platforms) {
     if (owners.length > 0 && !owners.includes(platform)) problems.push(`${now}: no longer runs on ${platform}, which its row owes`);
+    else if (target !== "budgets-host" && !lanes[platform].includes(step)) problems.push(`${now}: test-${platform} has no step \`${step}\`, which its row owes`);
   }
 }
 for (const added of inventory.added) {
