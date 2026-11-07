@@ -118,8 +118,7 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just check` — the gate (`--sweep` for the broader tier). Must pass before any
   commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
-- `just ci-lint` / `just ci-test` / `just ci-budgets-host` — what CI's lanes run, from a derived
-  merge base. See [`docs/ci-lanes.md`](docs/ci-lanes.md).
+- [`docs/ci-lanes.md`](docs/ci-lanes.md) — which lane owns what, and what selects a suite.
 - A target's `inputs` are both its cache key and its affected trigger: code that
   starts reading a new path adds it there, or a change to that path never reruns
   it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
@@ -182,22 +181,16 @@ Use the `just` recipes; do not hand-roll equivalents.
   protected: merge/rebase disabled, so one PR is one squash commit whose subject
   is the PR title. Queue with `gh pr merge --auto --squash`; merged branches
   auto-delete. Admins may break-glass.
-- **All gating checks required:** today `gate` (aggregates the `lint`, `test-linux`,
-  `test-windows` and `test-macos` lanes), `commitlint` (PR-title Conventional Commits) and
-  `llmlint`, plus linear history, conversation resolution, no force-push/branch-deletion.
-  `.github/governance.json` declares the four-lane set protection moves to; see
-  [`docs/ci-lanes.md`](docs/ci-lanes.md). **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`
+- **All gating checks required** ([`docs/ci-lanes.md`](docs/ci-lanes.md)), plus linear history,
+  conversation resolution, no force-push/branch-deletion. **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`
   (llmlint's Claude Code harness) and `RELEASE_PLZ_TOKEN` (a PAT for releases)
   must be set in repo settings, or those checks fail fast by design. Sync them
   (with the crates.io/PyPI publishing tokens) from Bitwarden via
   `gh-secrets sync` — the manifest is `gh-secrets.json`.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
-- **Where each tier runs.** Pull requests run the affected tier against their merge base, in
-  the lanes [`docs/ci-lanes.md`](docs/ci-lanes.md) describes. CI does not run on push to main.
-  A release pull request runs `lint` alone: `scripts/release-branch-guard.mjs` holds its tree
-  to a tested main plus version and changelog edits, and only that guard's pass excuses its
-  skipped test lanes. The broader tier (`--sweep`) runs by hand and on a manual dispatch.
+- **Where each tier runs.** Pull requests run the affected tier; the broader tier (`--sweep`)
+  runs by hand and on a manual dispatch.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
   merging it bumps the version, writes `CHANGELOG.md`, pushes the `vX.Y.Z` tag,
   and cuts the GitHub Release (under `RELEASE_PLZ_TOKEN`, a PAT — a tag from the

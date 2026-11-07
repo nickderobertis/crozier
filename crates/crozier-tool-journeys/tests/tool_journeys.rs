@@ -1,7 +1,7 @@
 //! Journeys of the repository's tooling surfaces. Each drives the real script over real
 //! files, with the `crozier` that `crozier:build` leaves in this profile's target directory
-//! where it needs one; none reads a golden, so a change to one of these surfaces never pays
-//! for the golden suite in crozier-e2e.
+//! where it needs one. A change to one of these surfaces never pays for the golden suite in
+//! crozier-e2e; the migration journey reads the one golden its guide walks through.
 
 #[path = "../../../src/yaml.rs"]
 mod yaml;
@@ -34,6 +34,7 @@ fn repo_root() -> &'static Path {
 /// The binary `crozier:build` leaves beside this suite's `deps/`. Cargo sets
 /// `CARGO_BIN_EXE_crozier` only for the package that owns it, so a value there is a
 /// caller's override, held to the same check: it must name a file.
+// Every caller is a `cfg(unix)` journey, so Windows compiles this with none.
 #[cfg_attr(not(unix), allow(dead_code))]
 fn crozier_bin() -> PathBuf {
     if let Some(explicit) = std::env::var_os("CARGO_BIN_EXE_crozier") {

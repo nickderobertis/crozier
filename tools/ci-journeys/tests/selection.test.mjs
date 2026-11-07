@@ -11,6 +11,8 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, 
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
+import { connect } from "node:net";
+import { serveResults } from "../../ci/result-cache.mjs";
 import { REPO, write } from "./support.mjs";
 
 /** This environment without what an enclosing Nx task or sweep set, which would change a journey's answers. */
@@ -72,8 +74,12 @@ function lane(graph, edit, recipe, args = [], env = {}) {
     env: clean({ NX_BASE: base, RAN_LOG: log, ...env }),
   });
   const ran = existsSync(log) ? readFileSync(log, "utf8").trim().split("\n") : [];
+  // Nx may lose a fast task's output under load, while its status always holds.
+  const inventory = spawnSync(process.execPath, ["tools/ci/lane-inventory.mjs"], { cwd: root, encoding: "utf8" });
+  gitIn(root, "add", "-A");
+  gitIn(root, "reset", "--quiet", "--hard", "HEAD");
   gitIn(root, "checkout", "--quiet", "--detach", base);
-  return { status: run.status, output: `${run.stdout}${run.stderr}`, ran: new Set(ran), projects: /gate: projects: (.*)/.exec(run.stdout)?.[1].split(", ") ?? [] };
+  return { inventory, status: run.status, output: `${run.stdout}${run.stderr}`, ran: new Set(ran), projects: /gate: projects: (.*)/.exec(run.stdout)?.[1].split(", ") ?? [] };
 }
 const offline = ["lane-test", ["--platform=windows", "--exclude=tag:tier:promoted"]];
 const every = (ran, names) => names.filter((name) => !ran.has(name));
@@ -258,20 +264,45 @@ test("a change to a tier manifest alone selects the inventory check, which fails
     ["a target removed", editManifest("tests/runtime/project.json", (p) => { delete p.targets.test; }), /runtime:test: the target is gone/],
     ["a platform dropped", editManifest(SDK, (p) => { p.tags.push("platform:linux"); }), /sdk-env:test: no longer runs on macos/],
     ["a lane removed", editManifest("tests/live_e2e/project.json", (p) => { p.tags = p.tags.filter((tag) => !tag.startsWith("lane:")); }), /live-e2e: tier:promoted with no lane: tag/],
+    ["a target no lane reaches any more", editManifest("tests/corpus_match/project.json", (p) => { p.targets.test.dependsOn = p.targets.test.dependsOn.filter((name) => name !== "test-strict"); }), /corpus-match:test-strict: no lane reaches it/],
     ["a tier deleted outright", (root) => rmSync(join(root, "tests/live_e2e/project.json")), /live-e2e:test: project live-e2e is gone/],
   ];
   for (const [what, edit, message] of cases) {
-    const { status, ran, output, projects } = lane(graph, edit, "lane-lint");
-    assert.ok(ran.has("lane-inventory:lint") || projects.includes("lane-inventory"), `${what} did not select the check:\n${output}`);
+    const { status, output, projects, inventory } = lane(graph, edit, "lane-lint");
+    assert.ok(projects.includes("lane-inventory"), `${what} did not select the check:\n${output}`);
     assert.notEqual(status, 0, `${what} passed the lint lane:\n${output}`);
-    assert.ok(message.test(output), `${what}: expected ${message}, the lane ended:\n${output.slice(-2500)}`);
+    assert.match(output, /gate: task lane-inventory:lint: [\d.]+s \(failure\)/, what);
     assert.match(output, /gate: a target failed/, what);
+    assert.match(inventory.stderr, message, what);
   }
   const kept = lane(graph, editManifest(SDK, (p) => { p.metadata = { note: "no proof changed" }; }), "lane-lint");
   assert.equal(kept.status, 0, `a manifest edit that keeps every row passes:\n${kept.output}`);
   assert.ok(kept.projects.includes("lane-inventory"), kept.output);
   const unrelated = lane(graph, ["docs/float-literal-parity.md"], "lane-lint");
   assert.ok(!unrelated.projects.includes("lane-inventory"), "an unrelated edit does not pay for it");
+});
+
+test("a manifest or inventory of the wrong shape is refused, not read past", (t) => {
+  const graph = realGraph(t);
+  for (const [what, edit] of [
+    ["a manifest that is not JSON", (root) => write(root, { "tests/runtime/project.json": "{broken" })],
+    ["a target that is not a mapping", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [], targets: { test: null } }) })],
+    ["a tag that is not a string", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [null], targets: {} }) })],
+    ["a malformed dependency", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [], targets: { test: { dependsOn: [7] } } }) })],
+    ["an inventory with no rows", (root) => write(root, { "tools/ci/lanes.json": JSON.stringify({ added: [] }) })],
+    ["a row with an unknown platform", (root) => {
+      const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
+      inventory.entrypoints["runtime:test"].platforms = ["solaris"];
+      write(root, { "tools/ci/lanes.json": JSON.stringify(inventory) });
+    }],
+  ]) {
+    gitIn(graph.root, "checkout", "--quiet", "--detach", graph.base);
+    edit(graph.root);
+    const run = spawnSync(process.execPath, ["tools/ci/lane-inventory.mjs"], { cwd: graph.root, encoding: "utf8" });
+    assert.equal(run.status, 2, what);
+    assert.match(run.stderr, /lane-inventory: .*\n.*restore the file/, what);
+    gitIn(graph.root, "checkout", "--quiet", "--", ".");
+  }
 });
 
 test("a retired row in the same change passes: only an unrecorded loss fails", (t) => {
@@ -293,6 +324,33 @@ test("the prune stays alone and in the pull request flow, with no scheduled repl
   assert.ok(!/schedule|ci-broader/.test(ci.slice(0, ci.indexOf("jobs:"))));
 });
 
+test("the result cache refuses what it is not, and a failed upload leaves nothing to replay", async (t) => {
+  const directory = mkdtempSync(join(tmpdir(), "crozier-results-"));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const { env, stop } = await serveResults(directory);
+  t.after(stop);
+  const url = (path) => `${env.NX_SELF_HOSTED_REMOTE_CACHE_SERVER}${path}`;
+  const headers = { Authorization: `Bearer ${env.NX_SELF_HOSTED_REMOTE_CACHE_ACCESS_TOKEN}` };
+  assert.equal((await fetch(url("/v1/cache/abc"))).status, 401, "no token");
+  assert.equal((await fetch(url("/v1/cache/abc"), { headers: { Authorization: "Bearer wrong" } })).status, 401);
+  for (const route of ["/v1/cache/../secret", "/v1/cache/a.b", "/v1/other/abc"]) assert.equal((await fetch(url(route), { headers })).status, 404, route);
+  assert.equal((await fetch(url("/v1/cache/abc"), { headers })).status, 404, "nothing stored yet");
+  assert.equal((await fetch(url("/v1/cache/abc"), { method: "DELETE", headers })).status, 405);
+  assert.equal((await fetch(url("/v1/cache/abc"), { method: "PUT", headers, body: "tar" })).status, 200);
+  assert.equal((await fetch(url("/v1/cache/abc"), { method: "PUT", headers, body: "other" })).status, 409, "a stored result is never overwritten");
+  assert.equal(await (await fetch(url("/v1/cache/abc"), { headers })).text(), "tar");
+  const { port } = new URL(url("/"));
+  await new Promise((resolve) => {
+    const cut = connect(Number(port), "127.0.0.1", () => {
+      cut.write(`PUT /v1/cache/interrupted HTTP/1.1\r\nHost: x\r\nAuthorization: ${headers.Authorization}\r\nContent-Length: 100\r\n\r\npartial`, () => cut.destroy());
+    });
+    cut.on("close", resolve);
+  });
+  await new Promise((resolve) => setTimeout(resolve, 200));
+  assert.equal((await fetch(url("/v1/cache/interrupted"), { headers })).status, 404, "an interrupted upload is a miss");
+  assert.deepEqual(readdirSync(directory), ["abc.tar"], "and leaves no partial file");
+});
+
 test("no e2e case was lost when the tooling journeys moved out", () => {
   const { e2eCases } = JSON.parse(readFileSync(join(REPO, "tools/ci/lanes.json"), "utf8"));
   const pin = (name) => readFileSync(join(REPO, `tools/ci/suite-cases/pins/${name}.txt`), "utf8").trim().split("\n");
@@ -305,8 +363,6 @@ test("no e2e case was lost when the tooling journeys moved out", () => {
   const digest = createHash("sha256").update(`${[...unique].map((line) => Buffer.from(line)).sort(Buffer.compare).map(String).join("\n")}\n`).digest("hex");
   assert.equal(digest, e2eCases.sha256);
 });
-
-// ---- A tiny real generator and SDK journey ------------------------------------------------
 
 function tinyRepo(t) {
   const root = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(), "crozier-tiny-"));
@@ -399,20 +455,20 @@ test("results restored onto a runner with no Nx state replay by input hash, outp
   const { root, run } = tinyRepo(t);
   const results = join(root, ".results");
   write(root, { "generator/template.txt": "v3\n", "cli/expected.txt": "v3:pets\n", "sdk/expected.txt": "v3:pets\n" });
-  const lane = { CROZIER_RESULT_CACHE: ".results" };
-  const first = run(lane);
+  const carried = { CROZIER_RESULT_CACHE: ".results" };
+  const first = run(carried);
   assert.deepEqual(first.ran, ["cli:test", "sdk:test"], first.output);
   assert.equal(readdirSync(results).filter((name) => name.endsWith(".tar")).length, 2, "each result is stored by its hash");
 
   // A new runner: the Nx database and local cache are gone; only the carried results remain.
   rmSync(join(root, ".nx"), { recursive: true, force: true });
-  const replayed = run(lane);
+  const replayed = run(carried);
   assert.equal(replayed.status, 0, replayed.output);
   assert.deepEqual(replayed.ran, [], `the carried results must replay:\n${replayed.output}`);
 
   rmSync(join(root, ".nx"), { recursive: true, force: true });
   write(root, { "spec/api.txt": "owners\n" });
-  const changed = run(lane);
+  const changed = run(carried);
   assert.notEqual(changed.status, 0, "a stale table is never replayed past");
   assert.match(changed.output, /stale table: got v3:owners want v3:pets/);
   assert.deepEqual(changed.ran, ["cli:test", "sdk:test"]);
@@ -420,7 +476,7 @@ test("results restored onto a runner with no Nx state replay by input hash, outp
 
   rmSync(join(root, ".nx"), { recursive: true, force: true });
   rmSync(results, { recursive: true, force: true });
-  assert.deepEqual(run(lane).ran, ["cli:test", "sdk:test"], "nothing carried, nothing replayed");
+  assert.deepEqual(run(carried).ran, ["cli:test", "sdk:test"], "nothing carried, nothing replayed");
 });
 
 test("a target's declared outputs come back with its carried result", (t) => {

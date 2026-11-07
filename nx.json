@@ -134,7 +134,13 @@
       "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
       "{workspaceRoot}/tools/surface-census/golden-reach.py",
       "{workspaceRoot}/assets/scaffolding/metadata.json",
-      "{workspaceRoot}/pyproject.toml"
+      "{workspaceRoot}/pyproject.toml",
+      "{workspaceRoot}/README.md",
+      "{workspaceRoot}/.ruff-version",
+      "{workspaceRoot}/tests/fixtures/corpus-sources/swagger-petstore/**/*",
+      "{workspaceRoot}/tests/fixtures/swagger-petstore-distribution/**/*",
+      "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
+      "{workspaceRoot}/tests/fixtures/client-class-name/**/*"
     ],
     "censusScripts": [
       "{workspaceRoot}/tools/surface-census/census-repin.py",

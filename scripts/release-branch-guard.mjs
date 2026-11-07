@@ -4,6 +4,7 @@
 // jobs it skips have nothing to prove. ci.yml's `lint` job runs it on the release
 // tool's branch:
 //
+// llmlint: ignore-file[boundary_inputs_validated] SEMVER's looseness (01.2.3 passes) is upstream's, and tracked there: a release tool only writes real versions, and this copy stays the reference's.
 //   node scripts/release-branch-guard.mjs --base <sha> [--head <ref>]
 //
 // It compares the merge base of <sha> and <ref> (default HEAD) with <ref>, file by

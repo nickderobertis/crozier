@@ -12,4 +12,4 @@
   script, so every project's `lint` can run it without depending on this project.
 - `lanes.json` is the frozen pre-refactor inventory plus what was added since; a row may
   move (`now`), never vanish silently. `lane-inventory.mjs` reconciles it, as
-  `lane-inventory:lint`, which a tier manifest edit selects. See `docs/ci-lanes.md`.
+  `lane-inventory:lint`, which a tier manifest edit selects.

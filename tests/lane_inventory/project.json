@@ -22,6 +22,7 @@
         "default",
         "boundaries",
         "{workspaceRoot}/tools/ci/lanes.json",
+        "{workspaceRoot}/justfile",
         "{workspaceRoot}/tools/ci/lane-inventory.mjs",
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/tests/**/project.json",

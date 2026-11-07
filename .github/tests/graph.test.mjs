@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parse, stringify } from 'yaml';
-import { execFileSync, spawnSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { mkdirSync, writeFileSync, mkdtempSync, rmSync, readFileSync, cpSync, symlinkSync } from 'node:fs';
@@ -289,8 +289,8 @@ test('visual docs are lint steps over the same x86_64 baseline, and only its upk
   const graph = workflows(), lint = graph.find(w => w.path.endsWith('/ci.yml')).value.jobs.lint;
   const visual = lint.steps.find(s => s.uses?.startsWith('nickderobertis/screencomp/visual-docs@'));
   assert.equal(visual.with.arch, 'x86_64'); assert.equal(visual.with['fail-on-drift'], true); assert.equal(visual.with['verify-second'], 'shots/verify');
-  assert.ok(lint.steps.some(s => s.run === './scripts/capture-visual-docs.sh'));
-  assert.deepEqual(JSON.parse(execFileSync('python3', ['-c', 'import tomllib,json; print(json.dumps(tomllib.load(open("screencomp.toml","rb"))["capture"]["arches"]))'], { cwd: root, encoding: 'utf8' })), ['x86_64']);
+  assert.ok(lint.steps.some(s => s.run === './screenshots/capture-visual-docs.sh'));
+  assert.match(readFileSync(resolve(root, 'screencomp.toml'), 'utf8'), /^arches = \["x86_64"\]$/m);
   const upkeep = graph.find(w => w.path.endsWith('/visual-docs.yml'));
   assert.deepEqual(Object.keys(upkeep.value.on).sort(), ['pull_request', 'schedule']);
   assert.deepEqual(upkeep.value.on.pull_request.types, ['closed']);

@@ -79,10 +79,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
-      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
-      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
-      # the compiler flags every recipe builds with locally.
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache-key: ${{ github.job }}
@@ -93,20 +90,14 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
-      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
-      # lock; every environment is still really built and every suite really run.
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
       - uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The results of earlier runs, each replayed only for an unchanged input hash (the
-      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
-      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
-      # and generator pins, plus this workflow, which pins the rest. Any of them changing
-      # starts cold. External-contact targets are uncached: they always really run.
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
       - name: Key the results on this host
         id: host
         shell: bash
@@ -133,7 +124,7 @@ jobs:
         with:
           version: 0.4.2
       - name: Capture the visual docs
-        run: ./scripts/capture-visual-docs.sh
+        run: ./screenshots/capture-visual-docs.sh
       - uses: nickderobertis/screencomp/visual-docs@v0.4.2
         with:
           arch: x86_64
@@ -167,10 +158,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
-      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
-      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
-      # the compiler flags every recipe builds with locally.
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache-key: ${{ github.job }}
@@ -181,20 +169,14 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
-      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
-      # lock; every environment is still really built and every suite really run.
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
       - uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The results of earlier runs, each replayed only for an unchanged input hash (the
-      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
-      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
-      # and generator pins, plus this workflow, which pins the rest. Any of them changing
-      # starts cold. External-contact targets are uncached: they always really run.
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
       - name: Key the results on this host
         id: host
         shell: bash
@@ -273,10 +255,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
-      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
-      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
-      # the compiler flags every recipe builds with locally.
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache-key: ${{ github.job }}
@@ -287,20 +266,14 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
-      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
-      # lock; every environment is still really built and every suite really run.
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
       - uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The results of earlier runs, each replayed only for an unchanged input hash (the
-      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
-      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
-      # and generator pins, plus this workflow, which pins the rest. Any of them changing
-      # starts cold. External-contact targets are uncached: they always really run.
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
       - name: Key the results on this host
         id: host
         shell: bash
@@ -347,10 +320,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
-      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
-      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
-      # the compiler flags every recipe builds with locally.
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
       - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           cache-key: ${{ github.job }}
@@ -361,20 +331,14 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
-      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
-      # lock; every environment is still really built and every suite really run.
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
       - uses: astral-sh/setup-uv@v8.3.2
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The results of earlier runs, each replayed only for an unchanged input hash (the
-      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
-      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
-      # and generator pins, plus this workflow, which pins the rest. Any of them changing
-      # starts cold. External-contact targets are uncached: they always really run.
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
       - name: Key the results on this host
         id: host
         shell: bash

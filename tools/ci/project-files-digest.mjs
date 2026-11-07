@@ -8,9 +8,11 @@ import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
-const listing = spawnSync("git", ["ls-files", "-co", "--exclude-standard", "-z", "--", "*project.json"], { encoding: "utf8" }).stdout ?? "";
+const listing = spawnSync("git", ["ls-files", "-co", "--exclude-standard", "-z", "--", "*project.json"], { encoding: "utf8" });
 const hash = createHash("sha256");
-for (const path of listing.split("\0").filter(Boolean).sort()) {
+// A failed listing must not read as an empty, cacheable one: this hash then matches nothing.
+if (listing.status !== 0) hash.update(`listing failed ${listing.status} ${process.pid} ${Date.now()} ${listing.stderr}`);
+for (const path of (listing.stdout ?? "").split("\0").filter(Boolean).sort()) {
   hash.update(path).update("\0");
   try {
     hash.update(readFileSync(path));

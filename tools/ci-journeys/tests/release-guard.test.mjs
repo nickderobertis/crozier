@@ -91,6 +91,76 @@ test("a dependency, build setting or script edited inside an allowed file fails 
   }
 });
 
+test("a workspace crate's inline version may move; a look-alike or anything beside it may not", (t) => {
+  const h = history(t);
+  const manifest = (dependency) => `[package]\nname = "crozier"\nversion = "0.0.1"\n\n[dependencies]\n${dependency}\n`;
+  const inline = (version, extra = "") => `helper = { path = "crates/helper", version = "${version}"${extra} }`;
+  const base = h.change({ "Cargo.toml": manifest(inline("0.0.1")) });
+  const compare = (text) => {
+    h.git("checkout", "--quiet", "--detach", base);
+    write(h.dir, { "Cargo.toml": text });
+    h.git("add", "-A");
+    h.git("commit", "--quiet", "-m", "release");
+    const head = h.git("rev-parse", "HEAD");
+    return spawnSync(process.execPath, [GUARD, "--base", base, "--head", head], { cwd: h.dir, encoding: "utf8" });
+  };
+  assert.equal(compare(manifest(inline("0.0.2"))).status, 0, "a workspace crate's own version");
+  assert.equal(compare(manifest(inline("0.0.2", ', features = ["x"]'))).status, 1, "a feature beside it");
+  // The `path` here is text inside a comment, so this is a registry dependency.
+  const registry = h.change({ "Cargo.toml": manifest('serde = { version = "1.0.0" } # path = "not/a/field"') });
+  h.git("checkout", "--quiet", "--detach", registry);
+  write(h.dir, { "Cargo.toml": manifest('serde = { version = "2.0.0" } # path = "not/a/field"') });
+  h.git("add", "-A");
+  h.git("commit", "--quiet", "-m", "release");
+  const bumped = spawnSync(process.execPath, [GUARD, "--base", registry, "--head", h.git("rev-parse", "HEAD")], { cwd: h.dir, encoding: "utf8" });
+  assert.equal(bumped.status, 1, "a path named only in a comment makes nothing a workspace crate");
+});
+
+test("a manifest holding a multi-line string may not change at all", (t) => {
+  const h = history(t);
+  const text = 'description = """\nversion = "0.0.1"\n"""\n[package]\nversion = "0.0.1"\n';
+  const base = h.change({ "Cargo.toml": text });
+  h.git("checkout", "--quiet", "--detach", base);
+  write(h.dir, { "Cargo.toml": text.replace('[package]\nversion = "0.0.1"', '[package]\nversion = "0.0.2"') });
+  h.git("add", "-A");
+  h.git("commit", "--quiet", "-m", "release");
+  const run = spawnSync(process.execPath, [GUARD, "--base", base, "--head", h.git("rev-parse", "HEAD")], { cwd: h.dir, encoding: "utf8" });
+  assert.equal(run.status, 1);
+  assert.match(run.stderr, /Cargo\.toml: it changes more than the package version/);
+});
+
+test("a dependency list naming a workspace member follows its version; a registry package's does not", (t) => {
+  const h = history(t);
+  const lock = (member, external) => `version = 4\n\n[[package]]\nname = "crozier"\nversion = "${member}"\ndependencies = [\n "helper ${member}",\n "serde ${external}",\n]\n\n[[package]]\nname = "helper"\nversion = "${member}"\n\n[[package]]\nname = "serde"\nversion = "${external}"\nsource = "registry+test"\n`;
+  const base = h.change({ "Cargo.lock": lock("0.0.1", "1.0.0") });
+  const compare = (text) => {
+    h.git("checkout", "--quiet", "--detach", base);
+    write(h.dir, { "Cargo.lock": text });
+    h.git("add", "-A");
+    h.git("commit", "--quiet", "-m", "release");
+    return spawnSync(process.execPath, [GUARD, "--base", base, "--head", h.git("rev-parse", "HEAD")], { cwd: h.dir, encoding: "utf8" });
+  };
+  assert.equal(compare(lock("0.0.2", "1.0.0")).status, 0, "members and references to them");
+  const moved = compare(lock("0.0.2", "9.9.9"));
+  assert.equal(moved.status, 1, "a registry package moved beside them");
+  assert.match(moved.stderr, /Cargo\.lock: it changes more than workspace members' versions/);
+});
+
+test("a release-please manifest may change only its versions", (t) => {
+  const h = history(t);
+  const base = h.change({ ".release-please-manifest.json": JSON.stringify({ ".": "0.0.1" }) });
+  const compare = (value) => {
+    h.git("checkout", "--quiet", "--detach", base);
+    write(h.dir, { ".release-please-manifest.json": JSON.stringify(value) });
+    h.git("add", "-A");
+    h.git("commit", "--quiet", "-m", "release");
+    return spawnSync(process.execPath, [GUARD, "--base", base, "--head", h.git("rev-parse", "HEAD")], { cwd: h.dir, encoding: "utf8" });
+  };
+  assert.equal(compare({ ".": "0.0.2" }).status, 0);
+  assert.match(compare({ ".": "0.0.2", extra: "0.0.1" }).stderr, /it adds or removes a package/);
+  assert.match(compare({ ".": "latest" }).stderr, /\. is not given a semantic version/);
+});
+
 test("a same-named registry package's version is not a workspace member's", (t) => {
   const h = history(t);
   const registry = '\n[[package]]\nname = "crozier"\nversion = "1.0.0"\nsource = "registry+test"\nchecksum = "abc"\n';
@@ -166,7 +236,7 @@ test("the copied reference scripts match the adopted reference's checksums, with
   const sha = (text) => createHash("sha256").update(text).digest("hex");
   for (const [path, entry] of Object.entries(provenance.files)) {
     const lines = readFileSync(join(REPO, path), "utf8").split("\n");
-    if (entry.removedLine) lines.splice(entry.removedLine.index, 0, Buffer.from(entry.removedLine.base64, "base64").toString("utf8"));
+    if (entry.replacedLine) lines[entry.replacedLine.index] = Buffer.from(entry.replacedLine.base64, "base64").toString("utf8");
     assert.equal(sha(lines.join("\n")), entry.sha256, `${path} differs from the adopted reference`);
   }
   const figures = readFileSync(join(REPO, "scripts/actions-budget-figures.sh"));
