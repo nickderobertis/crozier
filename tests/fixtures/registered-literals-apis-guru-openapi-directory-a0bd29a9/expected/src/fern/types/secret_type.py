@@ -1,0 +1,3 @@
+
+
+SecretType = int

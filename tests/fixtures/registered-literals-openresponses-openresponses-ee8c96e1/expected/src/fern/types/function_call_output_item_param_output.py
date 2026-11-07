@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .function_call_output_item_param_output_one_item import FunctionCallOutputItemParamOutputOneItem
+
+FunctionCallOutputItemParamOutput = typing.Union[str, typing.List[FunctionCallOutputItemParamOutputOneItem]]

@@ -1,0 +1,3 @@
+
+
+DownloadRequestEvent = str

@@ -1,0 +1,41 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .artifact_type import ArtifactType
+
+
+class Artifact(UniversalBaseModel):
+    created_at: str = pydantic.Field()
+    """
+    The creation datetime of the task.
+    """
+
+    modified_at: str = pydantic.Field()
+    """
+    The modification datetime of the task.
+    """
+
+    artifact_id: str
+    artifact_type: ArtifactType
+    uri: str
+    task_id: typing.Optional[str] = None
+    step_id: typing.Optional[str] = None
+    workflow_run_id: typing.Optional[str] = None
+    workflow_run_block_id: typing.Optional[str] = None
+    observer_cruise_id: typing.Optional[str] = None
+    observer_thought_id: typing.Optional[str] = None
+    ai_suggestion_id: typing.Optional[str] = None
+    signed_url: typing.Optional[str] = None
+    organization_id: typing.Optional[str] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

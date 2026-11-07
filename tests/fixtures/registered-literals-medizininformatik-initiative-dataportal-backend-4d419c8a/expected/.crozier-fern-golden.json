@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a",
+  "corpus_spec_ref": "cafb8aa33d47717c311c1ff438df73a2acf17e94",
+  "corpus_spec_url": "https://raw.githubusercontent.com/medizininformatik-initiative/dataportal-backend/cafb8aa33d47717c311c1ff438df73a2acf17e94/docs/public/openapi.yaml"
+}

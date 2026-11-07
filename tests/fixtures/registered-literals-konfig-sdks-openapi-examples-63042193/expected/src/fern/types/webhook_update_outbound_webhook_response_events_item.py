@@ -1,0 +1,20 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class WebhookUpdateOutboundWebhookResponseEventsItem(enum.StrEnum):
+    WORKFLOW_COMPLETED = "workflow-completed"
+    JOB_COMPLETED = "job-completed"
+
+    def visit(
+        self, workflow_completed: typing.Callable[[], T_Result], job_completed: typing.Callable[[], T_Result]
+    ) -> T_Result:
+        if self is WebhookUpdateOutboundWebhookResponseEventsItem.WORKFLOW_COMPLETED:
+            return workflow_completed()
+        if self is WebhookUpdateOutboundWebhookResponseEventsItem.JOB_COMPLETED:
+            return job_completed()

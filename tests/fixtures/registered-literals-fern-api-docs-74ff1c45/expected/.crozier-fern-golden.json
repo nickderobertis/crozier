@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-fern-api-docs-74ff1c45",
+  "corpus_spec_ref": "e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2",
+  "corpus_spec_url": "https://raw.githubusercontent.com/fern-api/docs/e82e7289d69f082c6ee1d950bb7cb8d2c2d4b4a2/fern/apis/fai/openapi.json"
+}

@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .sqlite_batch_request_statements_item_args import SqliteBatchRequestStatementsItemArgs
+
+SqliteBatchRequestStatementsItem = typing.Union[str, SqliteBatchRequestStatementsItemArgs]

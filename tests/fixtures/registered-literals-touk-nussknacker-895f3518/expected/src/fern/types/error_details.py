@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .coordinates_based_text_range import CoordinatesBasedTextRange
+from .incompatible_parameter_definition_error_details import IncompatibleParameterDefinitionErrorDetails
+from .tabular_data_definition_parser_error_details import TabularDataDefinitionParserErrorDetails
+
+ErrorDetails = typing.Union[
+    CoordinatesBasedTextRange, IncompatibleParameterDefinitionErrorDetails, TabularDataDefinitionParserErrorDetails
+]

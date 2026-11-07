@@ -1,0 +1,3008 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Stripe Sync Engine",
+    "version": "1.0.0",
+    "description": "Stripe Sync Engine — stateless, one-shot source/destination sync over HTTP.\nAll sync endpoints accept configuration via a JSON request body.\n\n## Endpoints\n\n| Method | Path | Summary |\n|--------|------|---------|\n| GET | /health | Health check |\n| POST | /pipeline_check | Check connector connection |\n| POST | /pipeline_setup | Set up destination schema |\n| POST | /pipeline_teardown | Tear down destination schema |\n| POST | /source_discover | Discover available streams |\n| POST | /pipeline_read | Read records from source |\n| POST | /pipeline_write | Write records to destination |\n| POST | /pipeline_sync | Run sync pipeline (read → write) |\n| POST | /pipeline_sync_batch | Run sync pipeline (batch, returns JSON) |\n| GET | /meta/sources | List available source connectors |\n| GET | /meta/sources/{type} | Get source connector spec |\n| GET | /meta/destinations | List available destination connectors |\n| GET | /meta/destinations/{type} | Get destination connector spec |\n| POST | /internal/query | Run a SQL query against a Postgres connection |"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "tags": [
+          "Status"
+        ],
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "hostname": {
+                      "type": "string"
+                    },
+                    "commit": {
+                      "type": "string"
+                    },
+                    "commit_url": {
+                      "type": "string"
+                    },
+                    "build_date": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "hostname"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_check": {
+      "post": {
+        "operationId": "pipeline_check",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Check connector connection",
+        "description": "Validates the source/destination config and tests connectivity. Streams NDJSON messages (connection_status, log, trace) tagged with _emitted_by. Pass only=source or only=destination to check a single side.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "only": {
+                    "description": "Run only the source or destination side. Useful for optimistic destination setup or isolating a connector when debugging.",
+                    "type": "string",
+                    "enum": [
+                      "source",
+                      "destination"
+                    ]
+                  }
+                },
+                "required": [
+                  "pipeline"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of check messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/CheckOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_setup": {
+      "post": {
+        "operationId": "pipeline_setup",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Set up destination schema",
+        "description": "Creates destination tables and applies migrations. Streams NDJSON messages (control, log, trace) tagged with _emitted_by. Pass only=destination to run destination setup alone (e.g. optimistic table creation) or only=source to isolate the source.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "only": {
+                    "description": "Run only the source or destination side. Useful for optimistic destination setup or isolating a connector when debugging.",
+                    "type": "string",
+                    "enum": [
+                      "source",
+                      "destination"
+                    ]
+                  }
+                },
+                "required": [
+                  "pipeline"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of setup messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_teardown": {
+      "post": {
+        "operationId": "pipeline_teardown",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Tear down destination schema",
+        "description": "Drops destination tables. Streams NDJSON messages (log, trace) tagged with _emitted_by. Pass only=destination or only=source to run a single side.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "only": {
+                    "description": "Run only the source or destination side. Useful for optimistic destination setup or isolating a connector when debugging.",
+                    "type": "string",
+                    "enum": [
+                      "source",
+                      "destination"
+                    ]
+                  }
+                },
+                "required": [
+                  "pipeline"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of teardown messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeardownOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/source_discover": {
+      "post": {
+        "operationId": "source_discover",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Discover available streams",
+        "description": "Streams NDJSON messages (catalog, logs, traces) for the configured source.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "source": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "type"
+                    ],
+                    "additionalProperties": {},
+                    "description": "Source config ({ type, ...config })"
+                  }
+                },
+                "required": [
+                  "source"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of discover messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_read": {
+      "post": {
+        "operationId": "pipeline_read",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Read records from source",
+        "description": "Streams NDJSON messages (records, state, catalog).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "time_limit": {
+                    "description": "Stop streaming after N seconds.",
+                    "example": 300,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "soft_time_limit": {
+                    "description": "Soft wall-clock deadline in seconds. Stops reading from the source between messages; the destination continues to drain and flush until time_limit fires.",
+                    "example": 150,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "run_id": {
+                    "description": "Optional sync run identifier used to track bounded sync progress.",
+                    "example": "run_demo",
+                    "type": "string"
+                  },
+                  "stdin": {
+                    "description": "Optional array of input messages (push mode). Without stdin, reads from the source connector (backfill mode).",
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "state": {
+                    "description": "SyncState ({ source, destination, sync_run }). Falls back to empty state if invalid.",
+                    "$ref": "#/components/schemas/SyncState"
+                  }
+                },
+                "required": [
+                  "pipeline"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of sync messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_write": {
+      "post": {
+        "operationId": "pipeline_write",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Write records to destination",
+        "description": "Writes messages to the destination. Pass an array of messages in the request body.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "stdin": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "description": "Array of messages to write to the destination."
+                  }
+                },
+                "required": [
+                  "pipeline",
+                  "stdin"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of write result messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/DestinationOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_sync": {
+      "post": {
+        "operationId": "pipeline_sync",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Run sync pipeline (read → write)",
+        "description": "Reads from the source connector and writes to the destination (backfill mode).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "time_limit": {
+                    "description": "Stop streaming after N seconds.",
+                    "example": 300,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "soft_time_limit": {
+                    "description": "Soft wall-clock deadline in seconds. Stops reading from the source between messages; the destination continues to drain and flush until time_limit fires.",
+                    "example": 150,
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                  },
+                  "run_id": {
+                    "description": "Optional sync run identifier used to track bounded sync progress.",
+                    "example": "run_demo",
+                    "type": "string"
+                  },
+                  "stdin": {
+                    "description": "Optional array of input messages (push mode). Without stdin, reads from the source connector (backfill mode).",
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  },
+                  "state": {
+                    "description": "SyncState ({ source, destination, sync_run }). Falls back to empty state if invalid.",
+                    "$ref": "#/components/schemas/SyncState"
+                  }
+                },
+                "required": [
+                  "pipeline"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "NDJSON stream of sync messages",
+            "content": {
+              "application/x-ndjson": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncOutput"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pipeline_sync_batch": {
+      "post": {
+        "operationId": "pipeline_sync_batch",
+        "tags": [
+          "Stateless Sync API"
+        ],
+        "summary": "Run sync pipeline (batch, returns JSON)",
+        "description": "Runs the full read → write pipeline and returns the final EofPayload as a single JSON response.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pipeline": {
+                    "$ref": "#/components/schemas/PipelineConfig"
+                  },
+                  "run_id": {
+                    "description": "Optional sync run identifier used to track bounded sync progress.",
+                    "example": "run_demo",
+                    "type": "string"
+                  },
+                  "state_limit": {
+                    "description": "Stop after yielding N source_state messages, inclusive.",
+                    "example": 100,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "state": {
+                    "description": "SyncState ({ source, destination, sync_run }). Falls back to empty state if invalid.",
+                    "$ref": "#/components/schemas/SyncState"
+                  }
+                },
+                "required": [
+                  "pipeline"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Sync result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EofPayload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta/sources": {
+      "get": {
+        "operationId": "meta_sources_list",
+        "tags": [
+          "Meta"
+        ],
+        "summary": "List available source connectors",
+        "responses": {
+          "200": {
+            "description": "Available source connectors with their JSON Schema configs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "config_schema": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          },
+                          "type": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "config_schema",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta/sources/{type}": {
+      "get": {
+        "operationId": "meta_sources_get",
+        "tags": [
+          "Meta"
+        ],
+        "summary": "Get source connector spec",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Source connector spec",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "config_schema": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "config_schema"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Source connector not found"
+          }
+        }
+      }
+    },
+    "/meta/destinations": {
+      "get": {
+        "operationId": "meta_destinations_list",
+        "tags": [
+          "Meta"
+        ],
+        "summary": "List available destination connectors",
+        "responses": {
+          "200": {
+            "description": "Available destination connectors with their JSON Schema configs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "config_schema": {
+                            "type": "object",
+                            "propertyNames": {
+                              "type": "string"
+                            },
+                            "additionalProperties": {}
+                          },
+                          "type": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "config_schema",
+                          "type"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/meta/destinations/{type}": {
+      "get": {
+        "operationId": "meta_destinations_get",
+        "tags": [
+          "Meta"
+        ],
+        "summary": "Get destination connector spec",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Destination connector spec",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "config_schema": {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    }
+                  },
+                  "required": [
+                    "config_schema"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Destination connector not found"
+          }
+        }
+      }
+    },
+    "/internal/query": {
+      "post": {
+        "operationId": "internalQuery",
+        "tags": [
+          "Internal"
+        ],
+        "summary": "Run a SQL query against a Postgres connection",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "connection_string": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "sql": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "sql"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Query results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "propertyNames": {
+                          "type": "string"
+                        },
+                        "additionalProperties": {}
+                      }
+                    },
+                    "rowCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "rows",
+                    "rowCount"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid params",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {}
+                  },
+                  "required": [
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PipelineConfig": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/SourceConfig"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/DestinationConfig"
+          },
+          "streams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Stream (table) name to sync."
+                },
+                "sync_mode": {
+                  "description": "How the source reads this stream. Defaults to full_refresh.",
+                  "type": "string",
+                  "enum": [
+                    "incremental",
+                    "full_refresh"
+                  ]
+                },
+                "fields": {
+                  "description": "If set, only these fields are synced.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "backfill_limit": {
+                  "description": "Cap backfill to this many records, then mark the stream complete.",
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          }
+        },
+        "required": [
+          "source",
+          "destination"
+        ]
+      },
+      "SourceConfig": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "stripe"
+              },
+              "stripe": {
+                "$ref": "#/components/schemas/SourceStripeConfig"
+              }
+            },
+            "required": [
+              "type",
+              "stripe"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "postgres"
+              },
+              "postgres": {
+                "$ref": "#/components/schemas/SourcePostgresConfig"
+              }
+            },
+            "required": [
+              "type",
+              "postgres"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "metronome"
+              },
+              "metronome": {
+                "$ref": "#/components/schemas/SourceMetronomeConfig"
+              }
+            },
+            "required": [
+              "type",
+              "metronome"
+            ]
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "SourceStripeConfig": {
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "description": "Stripe API key (sk_test_... or sk_live_...)"
+          },
+          "account_id": {
+            "type": "string",
+            "description": "Stripe account ID (resolved from API if omitted)"
+          },
+          "account_created": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Stripe account creation timestamp in unix seconds (resolved from API if omitted)"
+          },
+          "livemode": {
+            "type": "boolean",
+            "description": "Whether this is a live mode sync"
+          },
+          "api_version": {
+            "type": "string",
+            "enum": [
+              "2026-03-25.dahlia",
+              "2026-02-25.clover",
+              "2026-01-28.clover",
+              "2025-12-15.clover",
+              "2025-11-17.clover",
+              "2025-10-29.clover",
+              "2025-09-30.clover",
+              "2025-08-27.basil",
+              "2025-07-30.basil",
+              "2025-06-30.basil",
+              "2025-05-28.basil",
+              "2025-04-30.basil",
+              "2025-03-31.basil",
+              "2025-02-24.acacia",
+              "2025-01-27.acacia",
+              "2024-12-18.acacia",
+              "2024-11-20.acacia",
+              "2024-10-28.acacia",
+              "2024-09-30.acacia",
+              "2024-06-20",
+              "2024-04-10",
+              "2024-04-03",
+              "2023-10-16",
+              "2023-08-16",
+              "2022-11-15",
+              "2022-08-01",
+              "2020-08-27",
+              "2020-03-02",
+              "2019-12-03",
+              "2019-11-05",
+              "2019-10-17",
+              "2019-10-08",
+              "2019-09-09",
+              "2019-08-14",
+              "2019-05-16",
+              "2019-03-14",
+              "2019-02-19",
+              "2019-02-11",
+              "2018-11-08",
+              "2018-10-31",
+              "2018-09-24",
+              "2018-09-06",
+              "2018-08-23",
+              "2018-07-27",
+              "2018-05-21",
+              "2018-02-28",
+              "2018-02-06",
+              "2018-02-05",
+              "2018-01-23",
+              "2017-12-14",
+              "2017-08-15"
+            ]
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Override the Stripe API base URL (e.g. http://localhost:12111 for stripe-mock)"
+          },
+          "webhook_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL for managed webhook endpoint registration"
+          },
+          "webhook_secret": {
+            "type": "string",
+            "description": "Webhook signing secret (whsec_...) for signature verification"
+          },
+          "websocket": {
+            "type": "boolean",
+            "description": "Enable WebSocket streaming for live events"
+          },
+          "poll_events": {
+            "type": "boolean",
+            "description": "Enable events API polling for incremental sync after backfill"
+          },
+          "webhook_port": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Port for built-in webhook HTTP listener (e.g. 4242)"
+          },
+          "revalidate_objects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Object types to re-fetch from Stripe API on webhook (e.g. [\"subscription\"])"
+          },
+          "backfill_limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Max objects to backfill per stream (useful for testing)"
+          },
+          "rate_limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Override max requests per second (default: auto-derived from API key mode — 20 live, 10 test)."
+          }
+        },
+        "required": [
+          "api_key"
+        ],
+        "additionalProperties": false
+      },
+      "SourcePostgresConfig": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": {}
+          },
+          {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "schema": {
+                    "default": "public",
+                    "type": "string",
+                    "description": "Schema containing the source table"
+                  },
+                  "primary_key": {
+                    "default": [
+                      "id"
+                    ],
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Columns that uniquely identify a row in this stream"
+                  },
+                  "cursor_field": {
+                    "type": "string",
+                    "description": "Monotonic column used for incremental reads"
+                  },
+                  "page_size": {
+                    "default": 100,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Rows to read per page"
+                  },
+                  "ssl_ca_pem": {
+                    "type": "string",
+                    "description": "PEM-encoded CA certificate for SSL verification (required for verify-ca / verify-full with a private CA)"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Postgres connection string"
+                  },
+                  "connection_string": {
+                    "type": "string",
+                    "description": "Deprecated alias for url; prefer url"
+                  },
+                  "table": {
+                    "type": "string",
+                    "description": "Table to read from"
+                  },
+                  "query": {
+                    "not": {}
+                  },
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream name emitted in the catalog and records. Defaults to table name."
+                  }
+                },
+                "required": [
+                  "cursor_field",
+                  "url",
+                  "table"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "schema": {
+                    "default": "public",
+                    "type": "string",
+                    "description": "Schema containing the source table"
+                  },
+                  "primary_key": {
+                    "default": [
+                      "id"
+                    ],
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Columns that uniquely identify a row in this stream"
+                  },
+                  "cursor_field": {
+                    "type": "string",
+                    "description": "Monotonic column used for incremental reads"
+                  },
+                  "page_size": {
+                    "default": 100,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Rows to read per page"
+                  },
+                  "ssl_ca_pem": {
+                    "type": "string",
+                    "description": "PEM-encoded CA certificate for SSL verification (required for verify-ca / verify-full with a private CA)"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Postgres connection string"
+                  },
+                  "connection_string": {
+                    "type": "string",
+                    "description": "Deprecated alias for url; prefer url"
+                  },
+                  "table": {
+                    "type": "string",
+                    "description": "Table to read from"
+                  },
+                  "query": {
+                    "not": {}
+                  },
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream name emitted in the catalog and records. Defaults to table name."
+                  }
+                },
+                "required": [
+                  "cursor_field",
+                  "connection_string",
+                  "table"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "schema": {
+                    "default": "public",
+                    "type": "string",
+                    "description": "Schema containing the source table"
+                  },
+                  "primary_key": {
+                    "default": [
+                      "id"
+                    ],
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Columns that uniquely identify a row in this stream"
+                  },
+                  "cursor_field": {
+                    "type": "string",
+                    "description": "Monotonic column used for incremental reads"
+                  },
+                  "page_size": {
+                    "default": 100,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Rows to read per page"
+                  },
+                  "ssl_ca_pem": {
+                    "type": "string",
+                    "description": "PEM-encoded CA certificate for SSL verification (required for verify-ca / verify-full with a private CA)"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Postgres connection string"
+                  },
+                  "connection_string": {
+                    "type": "string",
+                    "description": "Deprecated alias for url; prefer url"
+                  },
+                  "table": {
+                    "not": {}
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "SQL query to read from. Must expose the primary_key and cursor_field columns."
+                  },
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream name emitted in the catalog and records."
+                  }
+                },
+                "required": [
+                  "cursor_field",
+                  "url",
+                  "query",
+                  "stream"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "schema": {
+                    "default": "public",
+                    "type": "string",
+                    "description": "Schema containing the source table"
+                  },
+                  "primary_key": {
+                    "default": [
+                      "id"
+                    ],
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Columns that uniquely identify a row in this stream"
+                  },
+                  "cursor_field": {
+                    "type": "string",
+                    "description": "Monotonic column used for incremental reads"
+                  },
+                  "page_size": {
+                    "default": 100,
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Rows to read per page"
+                  },
+                  "ssl_ca_pem": {
+                    "type": "string",
+                    "description": "PEM-encoded CA certificate for SSL verification (required for verify-ca / verify-full with a private CA)"
+                  },
+                  "url": {
+                    "type": "string",
+                    "description": "Postgres connection string"
+                  },
+                  "connection_string": {
+                    "type": "string",
+                    "description": "Deprecated alias for url; prefer url"
+                  },
+                  "table": {
+                    "not": {}
+                  },
+                  "query": {
+                    "type": "string",
+                    "description": "SQL query to read from. Must expose the primary_key and cursor_field columns."
+                  },
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream name emitted in the catalog and records."
+                  }
+                },
+                "required": [
+                  "cursor_field",
+                  "connection_string",
+                  "query",
+                  "stream"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      },
+      "SourceMetronomeConfig": {
+        "type": "object",
+        "properties": {
+          "api_key": {
+            "type": "string",
+            "description": "Metronome API bearer token"
+          },
+          "base_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Override the Metronome API base URL (default: https://api.metronome.com)"
+          },
+          "rate_limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Max requests per second (default: no limit)"
+          },
+          "backfill_limit": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
+            "description": "Max records to fetch per stream (useful for testing)"
+          },
+          "webhook_secret": {
+            "type": "string",
+            "description": "Webhook signing secret for HMAC-SHA256 signature verification"
+          },
+          "webhook_port": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Port for built-in webhook HTTP listener (e.g. 4243)"
+          }
+        },
+        "required": [
+          "api_key"
+        ],
+        "additionalProperties": false
+      },
+      "DestinationConfig": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "postgres"
+              },
+              "postgres": {
+                "$ref": "#/components/schemas/DestinationPostgresConfig"
+              }
+            },
+            "required": [
+              "type",
+              "postgres"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "google_sheets"
+              },
+              "google_sheets": {
+                "$ref": "#/components/schemas/DestinationGoogleSheetsConfig"
+              }
+            },
+            "required": [
+              "type",
+              "google_sheets"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "stripe"
+              },
+              "stripe": {
+                "$ref": "#/components/schemas/DestinationStripeConfig"
+              }
+            },
+            "required": [
+              "type",
+              "stripe"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "redis"
+              },
+              "redis": {
+                "$ref": "#/components/schemas/DestinationRedisConfig"
+              }
+            },
+            "required": [
+              "type",
+              "redis"
+            ]
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type"
+        }
+      },
+      "DestinationPostgresConfig": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Postgres connection string"
+          },
+          "connection_string": {
+            "type": "string",
+            "description": "Deprecated alias for url; prefer url"
+          },
+          "schema": {
+            "default": "public",
+            "type": "string",
+            "description": "Target schema name (e.g. \"stripe\")"
+          },
+          "batch_size": {
+            "default": 100,
+            "type": "number",
+            "description": "Records to buffer before flushing"
+          },
+          "aws": {
+            "type": "object",
+            "properties": {
+              "host": {
+                "type": "string",
+                "description": "Postgres host for RDS IAM auth"
+              },
+              "port": {
+                "default": 5432,
+                "type": "number",
+                "description": "Postgres port for RDS IAM auth"
+              },
+              "database": {
+                "type": "string",
+                "description": "Database name for RDS IAM auth"
+              },
+              "user": {
+                "type": "string",
+                "description": "Database user for RDS IAM auth"
+              },
+              "region": {
+                "type": "string",
+                "description": "AWS region for RDS instance"
+              },
+              "role_arn": {
+                "type": "string",
+                "description": "IAM role ARN to assume (cross-account)"
+              },
+              "external_id": {
+                "type": "string",
+                "description": "External ID for STS AssumeRole"
+              }
+            },
+            "required": [
+              "host",
+              "database",
+              "user",
+              "region"
+            ],
+            "additionalProperties": false,
+            "description": "AWS RDS IAM authentication config"
+          },
+          "ssl_ca_pem": {
+            "type": "string",
+            "description": "PEM-encoded CA certificate for SSL verification (required for verify-ca / verify-full with a private CA)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "DestinationGoogleSheetsConfig": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "description": "Google OAuth2 client ID (env: GOOGLE_CLIENT_ID)"
+          },
+          "client_secret": {
+            "type": "string",
+            "description": "Google OAuth2 client secret (env: GOOGLE_CLIENT_SECRET)"
+          },
+          "access_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "OAuth2 refresh token"
+          },
+          "spreadsheet_id": {
+            "type": "string",
+            "description": "Target spreadsheet ID (created if omitted)"
+          },
+          "spreadsheet_title": {
+            "default": "Stripe Sync",
+            "type": "string",
+            "description": "Title when creating a new spreadsheet"
+          },
+          "batch_size": {
+            "default": 50,
+            "type": "number",
+            "description": "Rows per Sheets API append call"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ],
+        "additionalProperties": false
+      },
+      "DestinationStripeConfig": {
+        "allOf": [
+          {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": {}
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "api_key": {
+                    "type": "string",
+                    "description": "Stripe API key (sk_test_... or sk_live_...)"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Override the Stripe API base URL (e.g. http://localhost:12111 for tests)"
+                  },
+                  "max_retries": {
+                    "default": 3,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Retries for 429/5xx/network errors"
+                  },
+                  "api_version": {
+                    "type": "string",
+                    "const": "unsafe-development"
+                  },
+                  "object": {
+                    "type": "string",
+                    "const": "custom_object"
+                  },
+                  "write_mode": {
+                    "type": "string",
+                    "const": "create"
+                  },
+                  "streams": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "plural_name": {
+                          "type": "string",
+                          "description": "Stripe Custom Object api_name_plural"
+                        },
+                        "field_mapping": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "description": "Mapping from Custom Object field names to source record fields."
+                        }
+                      },
+                      "required": [
+                        "plural_name",
+                        "field_mapping"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "Per-source-stream Custom Object write configuration."
+                  }
+                },
+                "required": [
+                  "api_key",
+                  "api_version",
+                  "object",
+                  "write_mode",
+                  "streams"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "api_key": {
+                    "type": "string",
+                    "description": "Stripe API key (sk_test_... or sk_live_...)"
+                  },
+                  "base_url": {
+                    "type": "string",
+                    "format": "uri",
+                    "description": "Override the Stripe API base URL (e.g. http://localhost:12111 for tests)"
+                  },
+                  "max_retries": {
+                    "default": 3,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "Retries for 429/5xx/network errors"
+                  },
+                  "api_version": {
+                    "type": "string",
+                    "enum": [
+                      "2026-03-25.dahlia",
+                      "2026-02-25.clover",
+                      "2026-01-28.clover",
+                      "2025-12-15.clover",
+                      "2025-11-17.clover",
+                      "2025-10-29.clover",
+                      "2025-09-30.clover",
+                      "2025-08-27.basil",
+                      "2025-07-30.basil",
+                      "2025-06-30.basil",
+                      "2025-05-28.basil",
+                      "2025-04-30.basil",
+                      "2025-03-31.basil",
+                      "2025-02-24.acacia",
+                      "2025-01-27.acacia",
+                      "2024-12-18.acacia",
+                      "2024-11-20.acacia",
+                      "2024-10-28.acacia",
+                      "2024-09-30.acacia",
+                      "2024-06-20",
+                      "2024-04-10",
+                      "2024-04-03",
+                      "2023-10-16",
+                      "2023-08-16",
+                      "2022-11-15",
+                      "2022-08-01",
+                      "2020-08-27",
+                      "2020-03-02",
+                      "2019-12-03",
+                      "2019-11-05",
+                      "2019-10-17",
+                      "2019-10-08",
+                      "2019-09-09",
+                      "2019-08-14",
+                      "2019-05-16",
+                      "2019-03-14",
+                      "2019-02-19",
+                      "2019-02-11",
+                      "2018-11-08",
+                      "2018-10-31",
+                      "2018-09-24",
+                      "2018-09-06",
+                      "2018-08-23",
+                      "2018-07-27",
+                      "2018-05-21",
+                      "2018-02-28",
+                      "2018-02-06",
+                      "2018-02-05",
+                      "2018-01-23",
+                      "2017-12-14",
+                      "2017-08-15"
+                    ]
+                  },
+                  "object": {
+                    "type": "string",
+                    "const": "standard_object"
+                  },
+                  "write_mode": {
+                    "type": "string",
+                    "const": "create"
+                  },
+                  "streams": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "field_mapping": {
+                          "type": "object",
+                          "propertyNames": {
+                            "type": "string"
+                          },
+                          "additionalProperties": {
+                            "type": "string"
+                          },
+                          "description": "Mapping from Stripe create parameter names to source record fields."
+                        }
+                      },
+                      "required": [
+                        "field_mapping"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "description": "Per-source-stream standard Stripe object create configuration."
+                  }
+                },
+                "required": [
+                  "api_key",
+                  "api_version",
+                  "object",
+                  "write_mode",
+                  "streams"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      },
+      "DestinationRedisConfig": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Redis connection URL (redis://host:port)"
+          },
+          "host": {
+            "type": "string",
+            "description": "Redis host (default: localhost)"
+          },
+          "port": {
+            "type": "number",
+            "description": "Redis port (default: 6379)"
+          },
+          "password": {
+            "type": "string",
+            "description": "Redis password"
+          },
+          "db": {
+            "type": "number",
+            "description": "Redis database number (default: 0)"
+          },
+          "tls": {
+            "type": "boolean",
+            "description": "Enable TLS"
+          },
+          "key_prefix": {
+            "type": "string",
+            "description": "Prefix for all Redis keys (default: empty)"
+          },
+          "batch_size": {
+            "default": 100,
+            "type": "number",
+            "description": "Records to buffer before flushing via pipeline"
+          }
+        },
+        "additionalProperties": false
+      },
+      "RecordMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "record"
+          },
+          "record": {
+            "type": "object",
+            "properties": {
+              "stream": {
+                "type": "string",
+                "description": "Stream (table) name this record belongs to."
+              },
+              "data": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "description": "The record payload as a key-value map."
+              },
+              "recordDeleted": {
+                "type": "boolean"
+              },
+              "emitted_at": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+                "description": "ISO 8601 timestamp when the record was emitted by the source."
+              }
+            },
+            "required": [
+              "stream",
+              "data",
+              "emitted_at"
+            ],
+            "description": "One record for one stream."
+          }
+        },
+        "required": [
+          "type",
+          "record"
+        ]
+      },
+      "SourceStateMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "source_state"
+          },
+          "source_state": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "state_type": {
+                    "default": "stream",
+                    "type": "string",
+                    "const": "stream"
+                  },
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream being checkpointed."
+                  },
+                  "data": {
+                    "description": "Opaque checkpoint data — only the source understands its contents. The orchestrator persists it keyed by stream and passes it back on resume."
+                  }
+                },
+                "required": [
+                  "stream",
+                  "data"
+                ],
+                "description": "Per-stream checkpoint for resumable syncs."
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "state_type": {
+                    "type": "string",
+                    "const": "global"
+                  },
+                  "data": {
+                    "description": "Sync-wide state shared across all streams (e.g. a global events cursor)."
+                  }
+                },
+                "required": [
+                  "state_type",
+                  "data"
+                ],
+                "description": "Sync-wide checkpoint shared across all streams."
+              }
+            ]
+          }
+        },
+        "required": [
+          "type",
+          "source_state"
+        ]
+      },
+      "CatalogMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "catalog"
+          },
+          "catalog": {
+            "type": "object",
+            "properties": {
+              "streams": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string",
+                      "description": "Collection name (e.g. \"customers\", \"invoices\", \"pg_public.users\")."
+                    },
+                    "primary_key": {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "description": "Paths to fields that uniquely identify a record within this stream. Supports composite keys and nested paths. e.g. [[\"id\"]] or [[\"account_id\"], [\"created\"]]"
+                    },
+                    "json_schema": {
+                      "description": "JSON Schema describing the record shape. Discovered at runtime or provided by config.",
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    },
+                    "metadata": {
+                      "description": "Source-specific metadata that applies to every record in this stream. The destination can use these for schema naming, partitioning, etc. Examples: Stripe: { api_version, account_id, live_mode }.",
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {}
+                    },
+                    "newer_than_field": {
+                      "type": "string",
+                      "description": "Field whose value increases monotonically. Destination uses it to skip stale writes (e.g. \"updated\")."
+                    },
+                    "soft_delete_field": {
+                      "description": "Field in record data that signals a soft delete (e.g. \"deleted\"). Destination uses this to classify upserts as deletes when the field is truthy.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "primary_key",
+                    "newer_than_field"
+                  ],
+                  "description": "A named collection of records — analogous to a table or API resource."
+                },
+                "description": "All streams available from this source."
+              }
+            },
+            "required": [
+              "streams"
+            ],
+            "description": "Catalog of available streams."
+          }
+        },
+        "required": [
+          "type",
+          "catalog"
+        ]
+      },
+      "LogMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "log"
+          },
+          "log": {
+            "type": "object",
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": [
+                  "debug",
+                  "info",
+                  "warn",
+                  "error"
+                ],
+                "description": "Log severity level."
+              },
+              "message": {
+                "type": "string",
+                "description": "Human-readable log message."
+              },
+              "data": {
+                "description": "Structured log fields emitted alongside the message.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "required": [
+              "level",
+              "message"
+            ],
+            "description": "Structured log output from a connector."
+          }
+        },
+        "required": [
+          "type",
+          "log"
+        ]
+      },
+      "SpecMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "spec"
+          },
+          "spec": {
+            "type": "object",
+            "properties": {
+              "config": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {},
+                "description": "JSON Schema for the connector's configuration object."
+              },
+              "source_state_stream": {
+                "description": "JSON Schema for per-stream state (cursor/checkpoint shape). See also SourceState.global for sync-wide cursors.",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              "source_input": {
+                "description": "JSON Schema for the read() input parameter (e.g. a webhook event).",
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              },
+              "soft_limit_fraction": {
+                "description": "Fraction of `time_limit` to use as default `soft_time_limit` (e.g. 0.5).",
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
+              }
+            },
+            "required": [
+              "config"
+            ],
+            "description": "JSON Schema describing the configuration a connector requires."
+          }
+        },
+        "required": [
+          "type",
+          "spec"
+        ]
+      },
+      "ConnectionStatusMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "connection_status"
+          },
+          "connection_status": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "succeeded",
+                  "failed"
+                ],
+                "description": "Whether the connection check passed."
+              },
+              "message": {
+                "description": "Human-readable explanation of the check result.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "status"
+            ],
+            "description": "Result of a connection check."
+          }
+        },
+        "required": [
+          "type",
+          "connection_status"
+        ]
+      },
+      "StreamStatusMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "stream_status"
+          },
+          "stream_status": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream being reported on."
+                  },
+                  "status": {
+                    "type": "string",
+                    "const": "start"
+                  },
+                  "time_range": {
+                    "description": "Full backfill time span for this stream.",
+                    "type": "object",
+                    "properties": {
+                      "gte": {
+                        "description": "Inclusive lower bound (ISO 8601).",
+                        "type": "string"
+                      },
+                      "lt": {
+                        "description": "Exclusive upper bound (ISO 8601).",
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "stream",
+                  "status"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream being reported on."
+                  },
+                  "status": {
+                    "type": "string",
+                    "const": "range_complete"
+                  },
+                  "range_complete": {
+                    "type": "object",
+                    "properties": {
+                      "gte": {
+                        "type": "string",
+                        "description": "Inclusive lower bound (ISO 8601)."
+                      },
+                      "lt": {
+                        "type": "string",
+                        "description": "Exclusive upper bound (ISO 8601)."
+                      }
+                    },
+                    "required": [
+                      "gte",
+                      "lt"
+                    ],
+                    "description": "The sub-range that finished."
+                  }
+                },
+                "required": [
+                  "stream",
+                  "status",
+                  "range_complete"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream being reported on."
+                  },
+                  "status": {
+                    "type": "string",
+                    "const": "complete"
+                  }
+                },
+                "required": [
+                  "stream",
+                  "status"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream being reported on."
+                  },
+                  "status": {
+                    "type": "string",
+                    "const": "error"
+                  },
+                  "error": {
+                    "type": "string",
+                    "description": "Human-readable error description."
+                  }
+                },
+                "required": [
+                  "stream",
+                  "status",
+                  "error"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "stream": {
+                    "type": "string",
+                    "description": "Stream being reported on."
+                  },
+                  "status": {
+                    "type": "string",
+                    "const": "skip"
+                  },
+                  "reason": {
+                    "type": "string",
+                    "description": "Why the stream was skipped."
+                  }
+                },
+                "required": [
+                  "stream",
+                  "status",
+                  "reason"
+                ]
+              }
+            ],
+            "description": "Stream lifecycle event. Sources emit these; the engine tracks stream progress from them.",
+            "type": "object",
+            "discriminator": {
+              "propertyName": "status"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "stream_status"
+        ]
+      },
+      "ControlMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "control"
+          },
+          "control": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "control_type": {
+                    "type": "string",
+                    "const": "source_config"
+                  },
+                  "source_config": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/SourceStripeConfig"
+                      },
+                      {
+                        "$ref": "#/components/schemas/SourcePostgresConfig"
+                      },
+                      {
+                        "$ref": "#/components/schemas/SourceMetronomeConfig"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "control_type",
+                  "source_config"
+                ]
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "control_type": {
+                    "type": "string",
+                    "const": "destination_config"
+                  },
+                  "destination_config": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/DestinationPostgresConfig"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DestinationGoogleSheetsConfig"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DestinationStripeConfig"
+                      },
+                      {
+                        "$ref": "#/components/schemas/DestinationRedisConfig"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "control_type",
+                  "destination_config"
+                ]
+              }
+            ],
+            "description": "Control signal from a connector to the orchestrator.",
+            "type": "object",
+            "discriminator": {
+              "propertyName": "control_type"
+            }
+          }
+        },
+        "required": [
+          "type",
+          "control"
+        ]
+      },
+      "ProgressMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "progress"
+          },
+          "progress": {
+            "$ref": "#/components/schemas/ProgressPayload"
+          }
+        },
+        "required": [
+          "type",
+          "progress"
+        ]
+      },
+      "ProgressPayload": {
+        "type": "object",
+        "properties": {
+          "started_at": {
+            "type": "string",
+            "description": "When this sync started (ISO 8601); generally equals time_ceiling."
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Wall-clock milliseconds since the sync run started."
+          },
+          "global_state_count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Total source_state messages observed so far."
+          },
+          "connection_status": {
+            "description": "Set when source or destination emits connection_status: failed.",
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "succeeded",
+                  "failed"
+                ],
+                "description": "Whether the connection check passed."
+              },
+              "message": {
+                "description": "Human-readable explanation of the check result.",
+                "type": "string"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "derived": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "$ref": "#/components/schemas/RunStatus"
+              },
+              "records_per_second": {
+                "type": "number",
+                "description": "Overall throughput for the entire run."
+              },
+              "states_per_second": {
+                "type": "number",
+                "description": "State checkpoints per second."
+              },
+              "total_record_count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "Total records across all streams."
+              },
+              "total_state_count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "description": "Total source_state messages across all streams."
+              }
+            },
+            "required": [
+              "status",
+              "records_per_second",
+              "states_per_second",
+              "total_record_count",
+              "total_state_count"
+            ],
+            "description": "Computed aggregates."
+          },
+          "streams": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {
+              "$ref": "#/components/schemas/StreamProgress"
+            },
+            "description": "Per-stream progress, keyed by stream name."
+          }
+        },
+        "required": [
+          "started_at",
+          "elapsed_ms",
+          "global_state_count",
+          "derived",
+          "streams"
+        ],
+        "description": "Periodic sync progress emitted by the engine as a top-level message. Each emission is a full replacement."
+      },
+      "RunStatus": {
+        "type": "string",
+        "enum": [
+          "started",
+          "succeeded",
+          "failed"
+        ],
+        "description": "succeeded = all streams completed/skipped; failed = connection_status failed OR any stream errored."
+      },
+      "StreamProgress": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "not_started",
+              "started",
+              "completed",
+              "skipped",
+              "errored"
+            ],
+            "description": "Current state, derived from stream_status events."
+          },
+          "state_count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Number of state checkpoints for this stream."
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Records synced for this stream in this run."
+          },
+          "message": {
+            "description": "Human-readable status message (error reason, skip reason, etc).",
+            "type": "string"
+          },
+          "total_range": {
+            "description": "Full backfill time span for this stream.",
+            "type": "object",
+            "properties": {
+              "gte": {
+                "type": "string",
+                "description": "Inclusive lower bound (ISO 8601)."
+              },
+              "lt": {
+                "type": "string",
+                "description": "Exclusive upper bound (ISO 8601)."
+              }
+            },
+            "required": [
+              "gte",
+              "lt"
+            ]
+          },
+          "completed_ranges": {
+            "description": "Completed time sub-ranges within the total_range.",
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "gte": {
+                  "type": "string",
+                  "description": "Inclusive lower bound (ISO 8601)."
+                },
+                "lt": {
+                  "type": "string",
+                  "description": "Exclusive upper bound (ISO 8601)."
+                }
+              },
+              "required": [
+                "gte",
+                "lt"
+              ]
+            }
+          }
+        },
+        "required": [
+          "status",
+          "state_count",
+          "record_count"
+        ],
+        "description": "Per-stream progress snapshot."
+      },
+      "EofMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "eof"
+          },
+          "eof": {
+            "$ref": "#/components/schemas/EofPayload"
+          }
+        },
+        "required": [
+          "type",
+          "eof"
+        ]
+      },
+      "EofPayload": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "description": "Terminal run status derived from stream outcomes.",
+            "$ref": "#/components/schemas/RunStatus"
+          },
+          "has_more": {
+            "type": "boolean",
+            "description": "Whether the client should continue with another request. true when cut off by limits; false when the source iterator exhausted naturally."
+          },
+          "ending_state": {
+            "description": "Full sync state at the end of this request. Round-trip this as starting_state on the next request.",
+            "$ref": "#/components/schemas/SyncState"
+          },
+          "run_progress": {
+            "description": "Accumulated progress across all requests in this sync run.",
+            "$ref": "#/components/schemas/ProgressPayload"
+          },
+          "request_progress": {
+            "description": "Progress for this specific request only.",
+            "$ref": "#/components/schemas/ProgressPayload"
+          }
+        },
+        "required": [
+          "status",
+          "has_more",
+          "run_progress",
+          "request_progress"
+        ],
+        "description": "Deprecated terminal message signaling end of this request. Prefer explicit request/response results via pipeline_sync_batch."
+      },
+      "SyncState": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "$ref": "#/components/schemas/SourceState"
+          },
+          "destination": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "description": "Destination connector state."
+          },
+          "sync_run": {
+            "type": "object",
+            "properties": {
+              "run_id": {
+                "description": "Identifies a finite backfill run. Omit for continuous sync.",
+                "type": "string"
+              },
+              "time_ceiling": {
+                "description": "Frozen upper bound (ISO 8601). Set on first invocation when run_id is present; reused on continuation.",
+                "type": "string"
+              },
+              "progress": {
+                "description": "Accumulated progress from prior requests in this run.",
+                "$ref": "#/components/schemas/ProgressPayload"
+              }
+            },
+            "required": [
+              "progress"
+            ],
+            "description": "Engine-managed run state — run_id, time_ceiling, accumulated progress."
+          }
+        },
+        "required": [
+          "source",
+          "destination",
+          "sync_run"
+        ],
+        "description": "Full sync checkpoint with separate sections for source, destination, and sync run. Connectors only see their own section; the engine manages routing."
+      },
+      "SourceState": {
+        "type": "object",
+        "properties": {
+          "streams": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "description": "Per-stream checkpoint data, keyed by stream name."
+          },
+          "global": {
+            "type": "object",
+            "propertyNames": {
+              "type": "string"
+            },
+            "additionalProperties": {},
+            "description": "Source-wide state shared across all streams."
+          }
+        },
+        "required": [
+          "streams",
+          "global"
+        ],
+        "description": "Source connector state — cursors, backfill progress, events cursors."
+      },
+      "SourceInputMessage": {
+        "type": "object",
+        "properties": {
+          "_emitted_by": {
+            "description": "Who emitted this message: \"source/{type}\", \"destination/{type}\", or \"engine\". Set by the engine.",
+            "type": "string"
+          },
+          "_ts": {
+            "description": "ISO 8601 timestamp when the engine observed this message.",
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "type": {
+            "type": "string",
+            "const": "source_input"
+          },
+          "source_input": {}
+        },
+        "required": [
+          "type",
+          "source_input"
+        ]
+      },
+      "Message": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RecordMessage"
+          },
+          {
+            "$ref": "#/components/schemas/SourceStateMessage"
+          },
+          {
+            "$ref": "#/components/schemas/CatalogMessage"
+          },
+          {
+            "$ref": "#/components/schemas/LogMessage"
+          },
+          {
+            "$ref": "#/components/schemas/SpecMessage"
+          },
+          {
+            "$ref": "#/components/schemas/ConnectionStatusMessage"
+          },
+          {
+            "$ref": "#/components/schemas/StreamStatusMessage"
+          },
+          {
+            "$ref": "#/components/schemas/ControlMessage"
+          },
+          {
+            "$ref": "#/components/schemas/ProgressMessage"
+          },
+          {
+            "$ref": "#/components/schemas/EofMessage"
+          },
+          {
+            "$ref": "#/components/schemas/SourceInputMessage"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "record": "#/components/schemas/RecordMessage",
+            "source_state": "#/components/schemas/SourceStateMessage",
+            "catalog": "#/components/schemas/CatalogMessage",
+            "log": "#/components/schemas/LogMessage",
+            "spec": "#/components/schemas/SpecMessage",
+            "connection_status": "#/components/schemas/ConnectionStatusMessage",
+            "stream_status": "#/components/schemas/StreamStatusMessage",
+            "control": "#/components/schemas/ControlMessage",
+            "progress": "#/components/schemas/ProgressMessage",
+            "eof": "#/components/schemas/EofMessage",
+            "source_input": "#/components/schemas/SourceInputMessage"
+          }
+        }
+      },
+      "DiscoverOutput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/CatalogMessage"
+          },
+          {
+            "$ref": "#/components/schemas/LogMessage"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "catalog": "#/components/schemas/CatalogMessage",
+            "log": "#/components/schemas/LogMessage"
+          }
+        }
+      },
+      "DestinationOutput": {
+        "$ref": "#/components/schemas/Message"
+      },
+      "SyncOutput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/SourceStateMessage"
+          },
+          {
+            "$ref": "#/components/schemas/StreamStatusMessage"
+          },
+          {
+            "$ref": "#/components/schemas/ProgressMessage"
+          },
+          {
+            "$ref": "#/components/schemas/ConnectionStatusMessage"
+          },
+          {
+            "$ref": "#/components/schemas/LogMessage"
+          },
+          {
+            "$ref": "#/components/schemas/EofMessage"
+          },
+          {
+            "$ref": "#/components/schemas/ControlMessage"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "source_state": "#/components/schemas/SourceStateMessage",
+            "stream_status": "#/components/schemas/StreamStatusMessage",
+            "progress": "#/components/schemas/ProgressMessage",
+            "connection_status": "#/components/schemas/ConnectionStatusMessage",
+            "log": "#/components/schemas/LogMessage",
+            "eof": "#/components/schemas/EofMessage",
+            "control": "#/components/schemas/ControlMessage"
+          }
+        }
+      },
+      "CheckOutput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ConnectionStatusMessage"
+          },
+          {
+            "$ref": "#/components/schemas/LogMessage"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "connection_status": "#/components/schemas/ConnectionStatusMessage",
+            "log": "#/components/schemas/LogMessage"
+          }
+        }
+      },
+      "SetupOutput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/ControlMessage"
+          },
+          {
+            "$ref": "#/components/schemas/LogMessage"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "control": "#/components/schemas/ControlMessage",
+            "log": "#/components/schemas/LogMessage"
+          }
+        }
+      },
+      "TeardownOutput": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/LogMessage"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "type",
+          "mapping": {
+            "log": "#/components/schemas/LogMessage"
+          }
+        }
+      }
+    }
+  }
+}

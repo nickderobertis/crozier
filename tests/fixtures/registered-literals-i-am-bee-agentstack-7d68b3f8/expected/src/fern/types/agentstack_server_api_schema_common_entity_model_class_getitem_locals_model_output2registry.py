@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .file_system_registry_location import FileSystemRegistryLocation
+from .github_registry_location import GithubRegistryLocation
+from .network_registry_location import NetworkRegistryLocation
+
+AgentstackServerApiSchemaCommonEntityModelClassGetitemLocalsModelOutput2Registry = typing.Union[
+    GithubRegistryLocation, NetworkRegistryLocation, FileSystemRegistryLocation
+]
