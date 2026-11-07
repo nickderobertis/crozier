@@ -245,6 +245,7 @@ def test_the_no_token_guard_sees_gh_ask_for_a_bus_once_the_variable_is_removed(t
     subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, timeout=30)
     if not (tmp_path / "bus-guard/dbus-launch.called").exists():
         pytest.skip("this gh asks for no session bus even without the variable, so none can leak")
+# llmlint: ignore-end[shell_test_tiers_stay_split]
 
 
 def cached(cache: Path, commit: str) -> Path:
