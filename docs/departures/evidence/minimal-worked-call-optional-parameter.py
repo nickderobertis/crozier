@@ -7,12 +7,26 @@ import re
 import subprocess
 import sys
 import tempfile
+import typing
 
 root = pathlib.Path(__file__).resolve().parents[3]
 fixtures = root / "tests/fixtures"
 sources = fixtures / "corpus-sources"
+
+
+class Case(typing.NamedTuple):
+    """One document's omitted optional argument: where to read it and what was declared."""
+
+    fixture: str
+    group: str
+    method: str
+    keyword: str
+    line: str
+    declared: str
+
+
 CASES = (
-    (
+    Case(
         "registered-literals-kong-developer-konghq-com-d58ac8e1",
         "dashboards",
         "list",
@@ -20,7 +34,7 @@ CASES = (
         'sort="created_at desc",',
         "example: created_at desc",
     ),
-    (
+    Case(
         "registered-literals-crate-works-ro-crate-api-f2457da3",
         "entities",
         "list_entities",
@@ -45,7 +59,15 @@ def parameter_default(client: str, method: str, name: str) -> ast.expr:
     return default
 
 
-for fixture, group, method, keyword, line, declared in CASES:
+for case in CASES:
+    fixture, group, method, keyword, line, declared = (
+        case.fixture,
+        case.group,
+        case.method,
+        case.keyword,
+        case.line,
+        case.declared,
+    )
     document = next((sources / fixture).glob("openapi.*")).read_text(encoding="utf-8")
     assert declared in document, f"{fixture}: the document does not declare {declared}"
     certified = (fixtures / fixture / f"expected/src/fern/{group}/client.py").read_text(encoding="utf-8")

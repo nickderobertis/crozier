@@ -715,6 +715,15 @@ fn wrapped_single_item_region(id: Mechanism, pair: &Pair<'_>) -> Option<Region> 
                 && fern.get(line + 1) == crozier.get(at + 3)
                 && fern[line] != unwrapped
                 && indexed(id, pair, fern[line], &unwrapped)
+                // What `holds` asks of a one-line repair: no value the document
+                // declares, and an example line on both sides, never runtime code.
+                && !super::declared_values::declared_example_over_placeholder(
+                    pair,
+                    fern[line],
+                    &unwrapped,
+                )
+                && documented_example_line(pair.rel, pair.fern, fern[line])
+                && documented_example_line(pair.rel, pair.crozier, open)
         })?;
         Some(Region {
             fern: line..line + 1,

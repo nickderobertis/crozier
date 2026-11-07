@@ -8307,6 +8307,48 @@ mod tests {
     }
 
     #[test]
+    fn a_wrapped_one_item_repair_holds_only_in_an_example_and_only_for_the_repair() {
+        let schema = serde_json::json!({"type": "array",
+            "items": {"type": "string", "pattern": "^[a-f]{64}$"}});
+        let repaired = "a".repeat(64);
+        let docstring = |argument: &str| {
+            format!("        \"\"\"\n        Examples\n        --------\n        client.post_check(\n{argument}        )\n        \"\"\"\n")
+        };
+        let runtime = |argument: &str| format!("        client.post_check(\n{argument}        )\n");
+        let fern_arg = "            addresses=[\"addresses\"],\n";
+        let wrapped =
+            format!("            addresses=[\n                \"{repaired}\"\n            ],\n");
+        let compare = |source: serde_json::Value, crozier: String, fern: String| {
+            let context = Context::default()
+                .with_source_document(serde_json::from_value(source).expect("a document"));
+            crate::parity::compare_file(&context, "src/fern/batch/client.py", &crozier, &fern)
+                .unwrap()
+        };
+        let source_again = || rejected_example_source("addresses", schema.clone());
+        let source = source_again();
+        let held = compare(source.clone(), docstring(&wrapped), docstring(fern_arg));
+        assert!(held.residual.is_none(), "{held:?}");
+        assert!(held
+            .departures
+            .iter()
+            .any(|found| found.id == "schema-rejected-name-example"));
+        // The same lines as runtime code are no example.
+        assert!(compare(source, runtime(&wrapped), runtime(fern_arg))
+            .residual
+            .is_some());
+        // A wrapped value the schema's repair does not choose is no repair.
+        let other = format!(
+            "            addresses=[\n                \"{}\"\n            ],\n",
+            "b".repeat(64)
+        );
+        assert!(
+            compare(source_again(), docstring(&other), docstring(fern_arg))
+                .residual
+                .is_some()
+        );
+    }
+
+    #[test]
     fn each_rejected_example_rule_accounts_for_its_repair_and_nothing_else() {
         let cases = [
             (
