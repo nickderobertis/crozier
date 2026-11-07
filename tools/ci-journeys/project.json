@@ -46,7 +46,7 @@
       "options": {
         "commands": [
           "cargo nextest run --locked -p crozier-ci-journeys",
-          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs"
+          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs tools/ci-journeys/tests/release-guard.test.mjs"
         ],
         "parallel": false
       },
@@ -65,10 +65,32 @@
         "{workspaceRoot}/scripts/check-project-boundaries.mjs",
         "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*",
         "{workspaceRoot}/src/yaml.rs",
-        "{workspaceRoot}/.github/macos-policy.mjs",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/scripts/release-branch-guard.mjs",
+        "{workspaceRoot}/scripts/actions-budget-figures.sh",
+        "{workspaceRoot}/scripts/reference-copies.json",
+        "{workspaceRoot}/Cargo.toml",
+        "{workspaceRoot}/Cargo.lock",
+        "{workspaceRoot}/pyproject.toml",
         "{workspaceRoot}/.github/require-ci-results.mjs",
         "^production"
       ]
+    },
+    "lint-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-ci-journeys --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "{workspaceRoot}/tools/ci/tests/support/release.rs",
+        "{workspaceRoot}/src/yaml.rs"
+      ],
+      "metadata": {
+        "description": "This crate's cfg(unix)/cfg(windows) gates compile different code on Windows, so clippy there reads code `lint` on Linux never sees (tools/ci/lanes.json)."
+      }
     }
   },
   "implicitDependencies": [

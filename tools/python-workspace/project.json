@@ -4,7 +4,9 @@
   "projectType": "library",
   "tags": [
     "type:tooling",
-    "lang:python"
+    "lang:python",
+    "platform:linux",
+    "platform:macos"
   ],
   "implicitDependencies": [
     "screenshots",

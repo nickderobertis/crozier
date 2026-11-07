@@ -1,19 +1,23 @@
-# Prove the artifact from a clean checkout: bootstrap, then the gate, on the real
-# Linux/Windows matrix plus one sequential Mac PR lane. Every gate job runs `just ci-check`, which picks the tier the
-# event owes (tools/ci/ci-tier.mjs): the broader tier (`check --sweep`) on the
-# release-plz release pull request, the affected tier against an explicitly
-# derived base on every other pull request and on a push to main. Each job scopes
-# it to the projects its runner holds the toolchain for. See AGENTS.md.
+# Prove each pull request from a clean checkout. Four lanes do the work, none needing
+# another so all start at once: `lint` once on Linux for everything platform-independent,
+# and one test lane per platform, each running the suites the change can reach (Nx
+# affected, from an explicit merge base) through the same gate the recipes run locally.
+# CI does not run on push to main: the squash commit's tree is what its pull request's
+# lanes proved. See docs/ci-lanes.md for which lane owns what, and tools/ci/lanes.json for
+# the executable inventory.
+#
+# TRANSITIONAL: `gate`, `commitlint` and `llmlint` stay under the contexts main requires
+# today, so seven jobs run per pull request until protection moves to the four lanes in
+# .github/governance.json. Then cleanup folds the title and judged checks into `lint` and
+# removes these three jobs.
 
 name: ci
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       macos-diagnostic:
-        description: Run the single Mac diagnostic lane
+        description: Run the Mac test lane too
         type: boolean
         default: false
   pull_request:
@@ -30,425 +34,390 @@ permissions:
   contents: read
 
 jobs:
-  macos-policy:
+  # Everything platform-independent, once. On a release pull request it is the one lane
+  # that runs, and it holds that branch to the release tool's own edits.
+  lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write  # visual docs: push the pull request's gallery preview to gh-pages
+      pull-requests: write  # the suppressions and visual docs comments
     outputs:
-      macosRequired: ${{ steps.policy.outputs.macosRequired }}
+      releaseGuard: ${{ steps.release-guard.outputs.releaseGuard }}
     steps:
+      # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - id: policy
+          persist-credentials: false
+      # The test lanes skip the release branch, which is sound only while its tree is a
+      # tested main plus release-plz's version and changelog edits. The guard reads each
+      # change by content, and `gate` accepts a skipped test lane only on this step's output.
+      - name: Hold the release branch to the release tool's edits
+        id: release-guard
+        if: github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')
+        shell: bash
         env:
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
-        run: |
-          node .github/macos-policy.mjs classify --event "$GITHUB_EVENT_PATH" --base "$PR_BASE" --head "$PR_HEAD"
-
-  macos:
-    name: macOS check, SDK environment and install
-    needs: macos-policy
-    if: needs.macos-policy.outputs.macosRequired == 'true' || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
-    runs-on: macos-latest
-    steps:
-      # Full history: the affected tier's base is a merge base or the commit a
-      # push replaced, and either must be in the checkout.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Install just
-        uses: extractions/setup-just@v2
-
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: node scripts/release-branch-guard.mjs --base "$BASE_SHA" --head HEAD && echo "releaseGuard=passed" >> "$GITHUB_OUTPUT"
+      # A fork's pull request is granted a read-only token, so the comment upsert would fail
+      # on something the contributor has no way to fix. A review artifact, not a gate.
+      # `@v0` floats over 0.x releases and moves only once a release has published.
+      - name: Comment the suppressions this change adds
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        uses: nickderobertis/notignored@v0
+      - uses: extractions/setup-just@v2
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
+      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
+      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
+      # the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
+      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
+      # lock; every environment is still really built and every suite really run.
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Bootstrap
+        run: just bootstrap
+      # The Nx results of earlier runs, each replayed only for an unchanged input hash
+      # (the project's `inputs`). The key holds what Nx does not hash: this host and
+      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
+      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      # github-workflows:lint runs the workflow syntax checker.
       - uses: actions/setup-go@v5
         with:
           go-version: "1.26"
           cache: false
       - name: Install workflow syntax checker
         run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      - name: Format, lint, type-check and audit the affected projects
+        run: just ci-lint
+      # The visual docs as steps of this lane, not screencomp's reusable workflow, whose
+      # jobs would each hold a slot: capture in the pinned container, compare against the
+      # committed x86_64 baseline, publish the gallery preview and comment the before/after.
+      # A drift in the CLI's rendered output fails here; `just screenshots-bless` moves it.
+      - uses: nickderobertis/screencomp@v0.4.2
+        with:
+          version: 0.4.2
+      - name: Capture the visual docs
+        run: ./scripts/capture-visual-docs.sh
+      - uses: nickderobertis/screencomp/visual-docs@v0.4.2
+        with:
+          arch: x86_64
+          current: shots/current
+          verify-second: shots/verify
+          gallery-title: Visual docs
+          fail-on-drift: true
+          publish: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          github-token: ${{ github.token }}
+
+  # The Linux test lane: the only platform for the Prism, corpus and packaging proof, which
+  # exercise no platform-specific code path of crozier's.
+  # Measured limit: run 42345332459 spent 7371 s on this work across its jobs (Check 3053,
+  # SDK 160, live/corpus/fallback 3814, packaging 168, install 176). 150 is the transitional
+  # ceiling until the re-measure tightens it to the 30-minute line.
+  test-linux:
+    if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      # Full history: the affected tier's base is a merge base, which must be in the checkout.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: extractions/setup-just@v2
+      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
+      # installs it with bun, on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-
-      # rustup honors rust-toolchain.toml (channel + components) on first cargo
-      # use, so the pinned toolchain is the single source of truth. Pre-install
-      # the dev cargo subcommands as fast prebuilt binaries so `just bootstrap`
-      # finds them and skips building from source.
+      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
+      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
+      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
+      # the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-
-      # uv provisions the Python tooling workspace (the root pyproject.toml's
-      # members, locked in uv.lock, Pillow and the ruff/ty/pytest/coverage
-      # toolchain included) that bootstrap syncs and every Python target runs
-      # under; uv is not preinstalled on GitHub runners.
+      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
+      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
+      # lock; every environment is still really built and every suite really run.
       - uses: astral-sh/setup-uv@v8.3.2
-
-      # Bootstrap installs the pinned `ruff` too (a generation-time dependency —
-      # crozier defers Python wrapping to `ruff format`); see
-      # scripts/install-ruff.sh and the `.ruff-version` source of truth.
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-
-      # Mac covers the same offline projects and Python coverage floor as Linux.
-      - name: Check
+      # The Nx results of earlier runs, each replayed only for an unchanged input hash
+      # (the project's `inputs`). The key holds what Nx does not hash: this host and
+      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
+      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      - name: Install maturin and Prism
+        run: |
+          uv tool install maturin==1.14.1
+          # conftest prefers a Prism on PATH over an `npx` fetch; the version is single-sourced
+          # from the suite, so the pin can never drift between the workflow and it.
+          npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
+      # Prove the PUBLISHED crate builds, before anything can dirty the tree: `cargo publish
+      # --dry-run` packages the crate (honoring Cargo.toml's `include`) and compiles from
+      # that tarball, the only check that catches an include-list gap.
+      - name: Verify the published crate tarball builds
+        run: cargo publish --dry-run --locked
+      # The path the README tells users to run: separate from the dev bootstrap.
+      - name: Install crozier (recommended end-user method)
+        run: cargo install --path . --locked
+      - name: Smoke-test the installed binary
+        run: crozier --version
+      - name: Prove the staged native archive and wheel
+        run: just ci-test --projects=tag:lane:packaging
+      # The offline projects this change reaches. No project runs twice on one platform:
+      # each later step below names only the projects it owns.
+      - name: Test the affected projects
+        run: just ci-test --exclude=tag:tier:promoted
+      # The SDK environments: real PyPI installs and suites, no credential. Distinct from
+      # the offline projects for what they contact, not for when they run.
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
+      - name: Test the affected SDK environments
+        run: just ci-test --projects=tag:lane:sdk-env
+      # Host-measured: one pool-maintenance pass builds twice and prunes, so Nx runs it alone,
+      # and only when the change reaches that project.
+      - name: Install cargo-prune-superseded
+        run: just install-pruner
+      - name: Measure the affected host budgets
+        run: just ci-budgets-host
+      # Last in the lane: an empty registry at one path for the whole step, so its first dev
+      # build comes from it with sockets denied (`corpus-match:cold-registry-build`), and
+      # cargo reuses that build only under this same CARGO_HOME. Live Prism, the corpus
+      # byte-match (proved offline too, which no replay can), and the parser fallback.
+      # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] External contact in the PR lanes is the user's explicit departure from the reference (docs/ci-lanes.md). The census-fallback tier needs uv to install the pinned ruamel.yaml; it reads only committed specifications and loopback servers.
+      - name: Live e2e, corpus byte-match and census fallback
         env:
-          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --exclude=tag:tier:promoted
+          CARGO_HOME: ${{ runner.temp }}/cold-cargo-home
+          CROZIER_COLD_REGISTRY_HANDOFF: "1"
+        run: just ci-test --projects=tag:lane:live
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
-      - name: SDK Python-environment tier
-        # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] Mac runs one job, so its required PyPI-backed SDK tiers share this lane; they fetch only public packages and need no credential.
-        run: just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime
+  # The Windows test lane. Measured limit: run 42345332459 spent 4307 s on this work
+  # (Check 3557, SDK 363, install 387). 90 is transitional, as for test-linux.
+  test-windows:
+    if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
+      # Full history: the affected tier's base is a merge base, which must be in the checkout.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: extractions/setup-just@v2
+      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
+      # installs it with bun, on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
+      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
+      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
+      # the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
+      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
+      # lock; every environment is still really built and every suite really run.
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Bootstrap
+        run: just bootstrap
+      # The Nx results of earlier runs, each replayed only for an unchanged input hash
+      # (the project's `inputs`). The key holds what Nx does not hash: this host and
+      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
+      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      # The offline projects this change reaches. No project runs twice on one platform:
+      # each later step below names only the projects it owns.
+      - name: Test the affected projects
+        run: just ci-test --exclude=tag:tier:promoted
+      # The SDK environments: real PyPI installs and suites, no credential. Distinct from
+      # the offline projects for what they contact, not for when they run.
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
+      - name: Test the affected SDK environments
+        run: just ci-test --projects=tag:lane:sdk-env
+      # The path the README tells users to run: separate from the dev bootstrap.
       - name: Install crozier (recommended end-user method)
         run: cargo install --path . --locked
       - name: Smoke-test the installed binary
         run: crozier --version
 
-  check:
-    name: check (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+  # The Mac test lane, one job per run. Measured limit: run 42345332459 spent 3767 s on this
+  # work (Check 2451, SDK 1153, install 163). 90 is transitional, as for test-linux.
+  test-macos:
+    if: >-
+      (github.event_name == 'pull_request' && !(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')))
+      || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
+    runs-on: macos-latest
+    timeout-minutes: 90
     steps:
-      - name: Enable Git long paths
-        if: runner.os == 'Windows'
-        run: git config --global core.longpaths true
-
-      # Full history: the affected tier's base is a merge base or the commit a
-      # push replaced, and either must be in the checkout.
+      # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Install just
-        uses: extractions/setup-just@v2
-
+      - uses: extractions/setup-just@v2
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - uses: actions/setup-go@v5
-        with:
-          go-version: "1.26"
-          cache: false
-      - name: Install workflow syntax checker
-        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
-
-      # rustup honors rust-toolchain.toml (channel + components) on first cargo
-      # use, so the pinned toolchain is the single source of truth. Pre-install
-      # the dev cargo subcommands as fast prebuilt binaries so `just bootstrap`
-      # finds them and skips building from source.
+      # Installs from rust-toolchain.toml. Its cache keys `target` and the cargo registry
+      # on Cargo.lock, the toolchain, the OS and this key; a hit serves artifacts cargo
+      # still fingerprints, so it can never replay a stale build. `rustflags: ""` keeps
+      # the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
           tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-
-      # uv provisions the Python tooling workspace (the root pyproject.toml's
-      # members, locked in uv.lock, Pillow and the ruff/ty/pytest/coverage
-      # toolchain included) that bootstrap syncs and every Python target runs
-      # under; uv is not preinstalled on GitHub runners.
+      # uv provisions the Python tooling workspace (locked in uv.lock) every Python target
+      # runs under, and the SDK venvs. The cache holds downloaded wheels, keyed on the
+      # lock; every environment is still really built and every suite really run.
       - uses: astral-sh/setup-uv@v8.3.2
-
-      # Bootstrap installs the pinned `ruff` too (a generation-time dependency —
-      # crozier defers Python wrapping to `ruff format`); see
-      # scripts/install-ruff.sh and the `.ruff-version` source of truth.
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
+      # The Nx results of earlier runs, each replayed only for an unchanged input hash
+      # (the project's `inputs`). The key holds what Nx does not hash: this host and
+      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
+      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .nx/cache
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      # The offline projects this change reaches. No project runs twice on one platform:
+      # each later step below names only the projects it owns.
+      - name: Test the affected projects
+        run: just ci-test --exclude=tag:tier:promoted
+      # The SDK environments: real PyPI installs and suites, no credential. Distinct from
+      # the offline projects for what they contact, not for when they run.
+      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
+      - name: Test the affected SDK environments
+        run: just ci-test --projects=tag:lane:sdk-env
+      # The path the README tells users to run: separate from the dev bootstrap.
+      - name: Install crozier (recommended end-user method)
+        run: cargo install --path . --locked
+      - name: Smoke-test the installed binary
+        run: crozier --version
 
-      # Every project but the promoted tiers, which run in the jobs below. On
-      # Windows also without `python-workspace`, the combined Python coverage
-      # floor: the suites skip their POSIX-only cases there, so the floor
-      # (AGENTS.md) holds on the Linux and macOS legs, and every tooling
-      # project's own tests still run here.
-      - name: Check
-        env:
-          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --exclude=tag:tier:promoted${{ runner.os == 'Windows' && ',python-workspace' || '' }}
-
-  # The SDK Python-environment tier, SEPARATE from the offline `just check`: the
-  # e2e journeys that build a generated SDK's virtualenv from PyPI and run mypy or
-  # pytest in it (the runtime wire suite, the own-pin type-check, the shared env's
-  # concurrent build, and the fern-refusals gate's `wire_test.py` condition). Same
-  # Linux/Windows matrix as `check`; Mac runs this tier in its combined lane.
-  # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
-  sdk-env:
-    name: sdk-env (${{ matrix.os }})
-    needs: check
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    steps:
-      - name: Enable Git long paths
-        if: runner.os == 'Windows'
-        run: git config --global core.longpaths true
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Install just
-        uses: extractions/setup-just@v2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
-      # uv builds the SDK venvs in seconds; without it the journeys fall back to
-      # venv + pip.
-      - uses: astral-sh/setup-uv@v8.3.2
-      - name: Bootstrap
-        run: just bootstrap
-      # The `sdk-env` and `runtime` projects, when the change reaches them (every
-      # time, on the release pull request).
-      - name: SDK Python-environment tier
-        env:
-          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        # llmlint: ignore[live_tier_compiles_and_requires_credential] These SDK tiers fetch only public PyPI packages and need no credential.
-        run: just ci-check --projects=sdk-env,runtime,nested-discriminator-runtime
-  # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
-
-  # The golden-reach base for this push to main: `just census-repin` steps from
-  # the nearest first-parent ancestor that has one, re-measuring only what a
-  # change touched. The job measures HEAD from the nearest earlier published base
-  # (fully past 7 days or 20 steps) and uploads `golden-reach-base-<sha>`. A newer
-  # push cancels a run in progress, so a burst of pushes yields a base for its
-  # newest commit only. Not a gate: nothing on a pull request waits for it.
-  # `actions: read` lets it list and download the earlier base; the upload uses
-  # the runner's own artifact token.
-  golden-reach-base:
-    name: golden-reach-base
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    concurrency:
-      group: golden-reach-base
-      cancel-in-progress: true
-    permissions:
-      contents: read
-      actions: read
-    steps:
-      # Full history: the base is the nearest first-parent ancestor with one, and
-      # the step diffs against its commit.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: extractions/setup-just@v2
-      - uses: astral-sh/setup-uv@v8.3.2
-      # The golden tests generate through crozier, which shells out to `ruff format`.
-      - name: Install ruff
-        run: ./scripts/install-ruff.sh
-      - name: Install the pinned Rust toolchain
-        run: just install-toolchain
-      - name: Install cargo tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest,cargo-llvm-cov
-      - name: Measure the golden-reach base
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: just golden-reach-base "$RUNNER_TEMP/golden-reach-base"
-      - uses: actions/upload-artifact@v4
-        with:
-          name: golden-reach-base-${{ github.sha }}
-          path: ${{ runner.temp }}/golden-reach-base/base.json.gz
-          retention-days: 90
-          if-no-files-found: error
-
-  # Single stable required-status context aggregating the matrix, so branch
-  # protection lists one `gate` name instead of every per-OS leg. Fails unless
-  # every Linux/Windows leg succeeded and Mac succeeded (on a Mac, or by naming
-  # the earlier run that passed it on this head) or its omission was explicitly
-  # authorized by the semantic classifier.
+  # TRANSITIONAL, until protection moves to the four lanes: the `gate` context main requires
+  # today. It runs no work of its own. Fails unless every lane and transitional check really
+  # succeeded; a skipped test lane counts only when the release guard really passed.
   gate:
     name: gate
-    # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
-    needs: [check, sdk-env, install, package, live-e2e, macos-policy, macos]
-    if: always()
+    needs: [lint, test-linux, test-windows, test-macos, commitlint, llmlint]
+    if: always() && github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Require all gate jobs to have succeeded
+      - name: Require every lane to have succeeded
         env:
           CI_NEEDS: ${{ toJSON(needs) }}
         run: node .github/require-ci-results.mjs
 
-  # The pool-maintenance budget (`crozier-pool-maintenance-seconds`,
-  # pool-maintenance/budgets.yaml): how long one declared pool maintenance pass
-  # takes. Its measurement builds the test targets twice, so no per-change path
-  # runs it: only the release pull request, once the gate has passed.
-  pool-maintenance:
-    name: pool-maintenance
-    needs: gate
-    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release-plz-')
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: extractions/setup-just@v2
-      # The budget check runs through Nx and the onebudgetspec CLI, both pinned
-      # in bun.lock.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - name: Install Nx and onebudgetspec (bun.lock)
-        run: just install-nx
-      - name: Install the pinned Rust toolchain
-        run: just install-toolchain
-      - name: Install cargo-prune-superseded
-        run: just install-pruner
-      - name: Pool maintenance budget
-        run: just budgets-pool-maintenance
-
-  # Live runtime e2e, SEPARATE from `just check` so the core gate stays Node-free:
-  # boot a Prism OpenAPI mock server from each fixture's spec and drive the generated
-  # SDK through every documented endpoint, asserting a value of the method's declared
-  # return type comes back over real HTTP. Complements the byte-diff e2e (source) and
-  # the wire tests (request/response shaping vs Fern). Linux-only, like supply-chain.
-  live-e2e:
-    name: live-e2e
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: extractions/setup-just@v2
-      # Prism (the mock server) is a Node CLI; install the pinned version globally so
-      # `prism` is on PATH (conftest prefers it over an `npx` fetch). The version is
-      # single-sourced from tests/live_e2e/conftest.py:PRISM_PKG — read it out here so
-      # the pin can never drift between the workflow and the suite.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - name: Install Nx (bun.lock)
-        run: just install-nx
-      - run: npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
-      # uv backs the test venv (httpx/pydantic/pytest/pyyaml) and the ruff install.
-      - uses: astral-sh/setup-uv@v8.3.2
-      # ruff is crozier's generation-time dependency (it shells out to `ruff format`);
-      # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
-      - name: Install ruff
-        run: ./scripts/install-ruff.sh
-      # Install the rust-toolchain.toml toolchain once, before the gate: left to
-      # first use, the gate's parallel cargo tasks each start the same rustup
-      # install and race on its download directory.
-      - name: Install the pinned Rust toolchain
-        run: just install-toolchain
-      # The corpus-match recipes run their golden inventory under nextest.
-      - name: Install cargo-nextest
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-nextest
-      # The `live-e2e` project builds the release binary its suite drives;
-      # `corpus-match` byte-compares against Fern from committed sources (and proves it with sockets
-      # denied and no cache); `corpus-match-selection` proves that byte-match's nextest
-      # selection is its inventory; `census-fallback` holds the parser fallback to the
-      # pinned ruamel.yaml. Each runs when the change reaches it, and on the release
-      # pull request always.
-      # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
-      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
-      - name: Live e2e, corpus byte-match and census fallback
-        env:
-          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-          # An empty registry at one path for the whole step: the job's first dev
-          # build comes from it with sockets denied (`corpus-match:cold-registry-build`),
-          # and cargo reuses that build only under this same CARGO_HOME.
-          CARGO_HOME: ${{ runner.temp }}/cold-cargo-home
-          CROZIER_COLD_REGISTRY_HANDOFF: "1"
-        run: just ci-check --projects=live-e2e,corpus-match,corpus-match-selection,census-fallback
-      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
-
-  # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
-  # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the
-  # only check that catches an include-list gap — e.g. an `include_str!` asset dir
-  # left unshipped — which otherwise stays green everywhere (source builds see the
-  # full tree) and only breaks the real publish-crate job at release time.
-  package:
-    name: package
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: extractions/setup-just@v2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - uses: astral-sh/setup-uv@v8.3.2
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install maturin==1.14.1
-      - run: just install-nx
-      - run: ./scripts/install-ruff.sh
-      - name: Prove the staged native archive and wheel
-        env:
-          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --projects=release-packaging
-      # cargo is preinstalled and honors rust-toolchain.toml on first use (as the
-      # install job and the release crate jobs do); no explicit toolchain step.
-      - name: Verify the published crate tarball builds
-        run: cargo publish --dry-run --locked
-
-  # Prove the end-user install path (cargo install) and smoke-test the installed
-  # binary — separate from the dev bootstrap. This is the path the README tells
-  # users to run.
-  install:
-    name: install (${{ matrix.os }})
-    needs: check
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-    steps:
-      - name: Enable Git long paths
-        if: runner.os == 'Windows'
-        run: git config --global core.longpaths true
-
-      - uses: actions/checkout@v4
-      - name: Install crozier (recommended end-user method)
-        run: cargo install --path . --locked
-      - name: Smoke-test the installed binary
-        run: crozier --version
-
-  # PR-title lint: under squash-merge the PR title becomes the release-driving
-  # commit, so it must be a valid Conventional Commit. Required check.
+  # TRANSITIONAL, then a step of `lint`. PR-title lint: under squash-merge the PR title
+  # becomes the release-driving commit, so it must be a valid Conventional Commit.
   commitlint:
     name: commitlint
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       pull-requests: read
     steps:
@@ -456,7 +425,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # LLM-judge tier (llmlint) — a blocking PR check, SEPARATE from `just check`.
+  # TRANSITIONAL, then steps of `lint`. LLM-judge tier (llmlint) — a blocking PR check, SEPARATE from `just check`.
   # Non-deterministic and harness-backed, so it never runs inside the gate. Scoped
   # to the merge-base diff. It REQUIRES its credential and fails fast without it;
   # fork PRs are gated by the repo's require-approval-for-fork-workflows setting.
@@ -466,6 +435,7 @@ jobs:
     name: llmlint
     if: github.event_name == 'pull_request' && github.event.action != 'edited'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:

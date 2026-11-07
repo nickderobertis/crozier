@@ -1,57 +1,55 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { parse, stringify } from 'yaml';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { mkdirSync, writeFileSync, mkdtempSync, rmSync, readFileSync, cpSync, symlinkSync } from 'node:fs';
 import { resolve, join, basename } from 'node:path';
 import { root, workflows, triggered, resolveRun, matrixRows, digest } from '../workflow-graph.mjs';
-import { history, event } from './support.mjs';
+import { event } from './support.mjs';
 
 import { classes, recordingDigest, validateTelemetry, lifecycleScenarios } from '../scenarios.mjs';
 let recorded;
 
 // llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
 test('actual workflow/call graph resolves event fan-out and records authoritative workload telemetry', async t => {
-  const h = history(t), graph = workflows(), scenarios = [];
+  const graph = workflows(), scenarios = [];
   for (const [id,eventName,action] of classes) for (const diff of ['source','version','dependency']) for (const fork of [false,true]) for (const crates of ['false','true']) for (const pypi of ['false','true']) {
     const pr = event(id === 'release-merge' ? 'release-plz-test' : 'feature/change', fork);
     pr.action = action; pr.release = { prerelease: false }; pr.head_commit = { message: id === 'release-merge' ? 'chore: release' : 'feat: change' };
     const s = { id: `${id}/${diff}/${fork ? 'fork' : 'same'}/crates=${crates}/pypi=${pypi}`, class: id, diff, fork, eventName, event: pr, branch: id === 'tag-push' ? 'v0.0.2' : 'main', tag: id === 'release-published' || id === 'tag-push' ? 'v0.0.2' : undefined, inputs: { 'macos-diagnostic': id === 'manual-opt-in' }, publish: { crates,pypi } };
-    const decision = h.classify(pr, h.heads[diff], eventName);
-    const runs = graph.filter(w => triggered(w.value,s)).map(w => ({ workflow: w.path, rows: resolveRun(w,s,decision) }));
+    const runs = graph.filter(w => triggered(w.value,s)).map(w => ({ workflow: w.path, rows: resolveRun(w,s) }));
     for (const run of runs) {
       const mac = run.rows.filter(r => r.macos);
-      const expected = wMac(run.workflow, s, decision);
+      const expected = wMac(run.workflow, s);
       assert.deepEqual(mac.map(r => r.job), expected, s.id + ' ' + run.workflow);
       if (run.workflow.endsWith('/ci.yml') && eventName === 'pull_request') {
-        for (const name of ['commitlint','gate','llmlint']) assert.equal(run.rows.find(r => r.job === name)?.result, 'success', name);
-        for (const id of ['check','sdk-env','install']) assert.deepEqual(run.rows.filter(r => r.job === id).map(r => r.runner), ['ubuntu-latest','windows-latest']);
+        for (const name of ['lint','commitlint','gate','llmlint']) assert.equal(run.rows.find(r => r.job === name)?.result, 'success', name);
+        assert.deepEqual(run.rows.filter(r => r.job.startsWith('test-')).map(r => [r.job, r.runner]), [['test-linux','ubuntu-latest'],['test-windows','windows-latest'],['test-macos','macos-latest']]);
       }
     }
-    scenarios.push({ ...s, decision, runs });
+    scenarios.push({ ...s, runs });
   }
-  // The automatic release PR is a separate version-only route, under the same
-  // PAT identity as people. Unknown input must still demand the Mac proof.
+  // The automatic release PR skips its test lanes by the job's own condition on ownership
+  // and branch; lint's guard step then holds the content (journeys in ci-journeys).
   const release = event('release-plz-2026-10-12');
   for (const pr of [release,event('release-plz-forged',true),{action:'synchronize'},event('release-plz-mixed')]) {
-    const head = pr.pull_request?.head.ref === 'release-plz-mixed' ? h.heads.source : h.heads.version;
-    const decision = h.classify(pr,head);
     const s = { id: `classification/${pr.pull_request?.head.ref ?? 'unknown'}`, eventName:'pull_request',event:pr,branch:'main',inputs:{} };
-    const runs = graph.filter(w => triggered(w.value,s)).map(w => ({workflow:w.path, rows:resolveRun(w,s,decision)}));
+    const runs = graph.filter(w => triggered(w.value,s)).map(w => ({workflow:w.path, rows:resolveRun(w,s)}));
     for (const run of runs.filter(r=>r.workflow.endsWith('/ci.yml'))) {
-      assert.deepEqual(run.rows.filter(r=>r.macos).map(r=>r.job), decision.macosRequired ? ['macos'] : []);
-      for (const name of ['commitlint','gate','llmlint']) assert.equal(run.rows.find(r=>r.job===name)?.result,'success');
+      const sameRepositoryRelease = pr === release || pr.pull_request?.head.ref === 'release-plz-mixed';
+      assert.deepEqual(run.rows.filter(r=>r.macos).map(r=>r.job), sameRepositoryRelease ? [] : ['test-macos'], s.id);
+      for (const name of ['lint','commitlint','gate','llmlint']) assert.equal(run.rows.find(r=>r.job===name)?.result,'success');
     }
-    scenarios.push({...s,decision,runs});
+    scenarios.push({...s,runs});
   }
   const lifecycles = [];
   for (const fork of [false,true]) for (const diff of ['source','version','dependency']) for (const crates of ['false','true']) for (const pypi of ['false','true']) {
     const runs = lifecycleScenarios(scenarios,{fork,diff,crates,pypi}).flatMap(s => s.runs.filter(r => r.rows.some(row=>row.macos)).map(r => ({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
     lifecycles.push({fork,diff,crates,pypi,runs});
   }
-  const telemetry = {schemaVersion:7,sourceDigest:digest(),scenarios,lifecycles};
+  const telemetry = {schemaVersion:8,sourceDigest:digest(),scenarios,lifecycles};
   telemetry.recordingDigest=recordingDigest(telemetry);
   recorded=telemetry;
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
@@ -60,18 +58,16 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
 // llmlint: ignore-end[shell_test_tiers_stay_split]
 // llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
 test('marking a draft ready starts no run; the head\'s opened or synchronize run already reports every required context, Mac included', t => {
-  const h = history(t), graph = workflows(), ci = graph.find(w => w.path.endsWith('/ci.yml'));
+  const graph = workflows(), ci = graph.find(w => w.path.endsWith('/ci.yml'));
   for (const action of ['opened', 'synchronize', 'reopened']) {
-    const pr = event(); pr.action = action; pr.pull_request.head.sha = h.heads.source;
+    const pr = event(); pr.action = action;
     const scenario = { id: `pr-${action}`, eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
     assert.equal(triggered(ci.value, scenario), true, action);
-    const decision = h.classify(pr, h.heads.source);
-    assert.equal(decision.macosRequired, true, action);
-    const rows = resolveRun(ci, scenario, decision);
-    for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', `${action} ${name}`);
-    assert.deepEqual(rows.filter(row => row.macos).map(row => [row.job, row.runner]), [['macos', 'macos-latest']], action);
+    const rows = resolveRun(ci, scenario);
+    for (const name of ['lint', 'commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', `${action} ${name}`);
+    assert.deepEqual(rows.filter(row => row.macos).map(row => [row.job, row.runner]), [['test-macos', 'macos-latest']], action);
   }
-  const lift = event(); lift.action = 'ready_for_review'; lift.pull_request.head.sha = h.heads.source;
+  const lift = event(); lift.action = 'ready_for_review';
   const scenario = { id: 'pr-ready-for-review', eventName: 'pull_request', event: lift, branch: 'main', inputs: {} };
   assert.equal(triggered(ci.value, scenario), false, 'ci.yml must not run when a draft is marked ready');
   assert.deepEqual(graph.filter(w => triggered(w.value, scenario)).map(w => w.path), []);
@@ -79,8 +75,8 @@ test('marking a draft ready starts no run; the head\'s opened or synchronize run
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
 
-function wMac(path,s,decision) {
-  if (path.endsWith('/ci.yml')) return decision.macosRequired || s.class === 'manual-opt-in' ? ['macos'] : [];
+function wMac(path,s) {
+  if (path.endsWith('/ci.yml')) return s.eventName === 'pull_request' || s.class === 'manual-opt-in' ? ['test-macos'] : [];
   if (path.endsWith('/release.yml')) return ['darwin'];
   return [];
 }
@@ -94,7 +90,7 @@ test('unknown runners, calls, matrices and cycles fail loudly; real matrix inclu
   }
   const scenario={id:'bad',eventName:'push',event:{},branch:'main'};
   for (const jobs of [ {bad:{'runs-on':[]}}, {bad:{'runs-on':'${{ needs.unknown.outputs.runner }}'}}, {bad:{uses:'org/repo/.github/workflows/no.yml@v1'}}, {bad:{'runs-on':'ubuntu-latest',strategy:{matrix:{os:'${{ fromJSON(needs.no.outputs.matrix) }}'}}}}, {bad:{needs:'bad','runs-on':'ubuntu-latest'}} ]) {
-    assert.throws(()=>resolveRun({path:'bad.yml',value:{jobs}},scenario,{macosRequired:false}), /unresolved|context|Unexpected|JSON|Cannot|cyclic/i);
+    assert.throws(()=>resolveRun({path:'bad.yml',value:{jobs}},scenario), /unresolved|context|Unexpected|JSON|Cannot|cyclic/i);
   }
 });
 
@@ -155,62 +151,29 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
 });
 
 
-// llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
-test('actual local reusable workflows resolve Mac jobs and missing calls/capture configurations fail', async t=>{
-  const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'macos-capture-'));
+// llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
+test('a local reusable workflow resolves its jobs; a remote one, or a missing one, fails rather than hiding its slots', t=>{
+  const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'workflow-calls-'));
   t.after(()=>rmSync(dir,{recursive:true,force:true}));
   cpSync(resolve(root,'.github'),join(dir,'.github'),{recursive:true,filter:path=>!['node_modules','.telemetry'].includes(basename(path))});
+  writeFileSync(join(dir,'.github/workflows/callee.yml'),stringify({on:{workflow_call:{inputs:{runner:{type:'string',required:true}}}},jobs:{inner:{'runs-on':'${{ inputs.runner }}',steps:[{run:'true'}]}}}));
   symlinkSync(resolve(root,'.github/node_modules'),join(dir,'.github/node_modules'),'junction');
-  writeFileSync(join(dir,'screencomp.toml'),'[capture]\narches = ["unsupported"]\n');
-  const graph=await import(pathToFileURL(join(dir,'.github/workflow-graph.mjs')).href);
-  const visual=graph.workflows().find(w=>w.path.endsWith('/visual-docs.yml'));
-  assert.throws(()=>graph.resolveRun(visual,{id:'unsupported-capture',eventName:'pull_request',event:event(),branch:'main'},{macosRequired:true}),/unresolved capture architectures/);
-  writeFileSync(join(dir,'.github/workflows/local-proof.yml'), 'on:\n  workflow_call:\n    inputs:\n      runner:\n        type: string\n        required: true\n      enabled:\n        type: boolean\n        default: true\n      attempts:\n        type: number\n        default: 1\njobs:\n  native:\n    if: inputs.enabled\n    runs-on: ${{ inputs.runner }}\n    steps:\n      - run: echo proof\n');
-  writeFileSync(join(dir,'.github/workflows/local-caller.yml'), 'on: workflow_dispatch\njobs:\n  proof:\n    uses: ./.github/workflows/local-proof.yml\n    with:\n      runner: macos-latest\n');
-  const caller = graph.workflows().find(w=>w.path.endsWith('/local-caller.yml'));
-  const scenario = { id:'local-call',eventName:'workflow_dispatch',event:{},branch:'main',inputs:{} };
-  assert.equal(graph.triggered(caller.value,scenario),true);
-  const rows = graph.resolveRun(caller,scenario,{macosRequired:false});
-  assert.equal(rows.length,1);
-  assert.equal(rows[0].workflow,'.github/workflows/local-proof.yml');
-  assert.equal(rows[0].runner,'macos-latest');
-  assert.equal(rows[0].macos,true);
-  for (const inputs of [{runner:'macos-latest',enabled:'false'}, {}, {runner:'macos-latest',extra:true}, {runner:'macos-latest',attempts:'1'}, {runner:null}]) {
-    caller.value.jobs.proof.with=inputs;
-    assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),/unresolved reusable input/);
-  }
-  caller.value.jobs.proof.with={runner:'macos-latest',enabled:false,attempts:2};
-  const disabled=graph.resolveRun(caller,scenario,{macosRequired:false});
-  assert.equal(disabled[0].result,'skipped');
-  assert.equal(disabled[0].macos,false);
-  caller.value.jobs.proof.with={runner:'macos-latest',enabled:true,attempts:2};
-  assert.equal(graph.resolveRun(caller,scenario,{macosRequired:false})[0].macos,true);
-  const childPath=join(dir,'.github/workflows/local-proof.yml'), child=readFileSync(childPath,'utf8');
-  for (const key of ['__proto__','constructor']) {
-    writeFileSync(childPath,child.replace('    inputs:\n',`    inputs:\n      ${key}:\n        type: boolean\n        default: true\n`));
-    assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),new RegExp(`unresolved reusable input: unsupported evaluator key ${key}`));
-  }
-  writeFileSync(childPath,child);
-  caller.value.jobs.proof.uses='./.github/workflows/missing.yml';
-  assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),/ENOENT/);
-
+  return import(pathToFileURL(join(dir,'.github/workflow-graph.mjs')).href).then(graph=>{
+    const scenario={id:'calls',eventName:'pull_request',event:event(),branch:'main'};
+    const call=(uses,withs)=>({path:'caller.yml',value:{jobs:{outer:{uses,with:withs}}}});
+    assert.deepEqual(graph.resolveRun(call('./.github/workflows/callee.yml',{runner:'macos-latest'}),scenario).filter(r=>r.macos).map(r=>r.job),['inner']);
+    assert.throws(()=>graph.resolveRun(call('nickderobertis/screencomp/.github/workflows/visual-docs-reusable.yml@v0.4.2',{}),scenario),/unresolved reusable workflow/);
+    assert.throws(()=>graph.resolveRun(call('./.github/workflows/absent.yml',{}),scenario),/ENOENT/);
+    assert.throws(()=>graph.resolveRun(call('./.github/workflows/callee.yml',{}),scenario),/missing required runner/);
+    assert.throws(()=>graph.resolveRun(call('./.github/workflows/callee.yml',{runner:'macos-latest',extra:'x'}),scenario),/unknown extra/);
+  });
 });
-// llmlint: ignore-end[shell_test_tiers_stay_split]
-
-
-// llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
 test('producer wiring changes refuse measurement instead of silently using assumed outputs', ()=>{
-  const graph=workflows(), ci=graph.find(w=>w.path.endsWith('/ci.yml')), release=graph.find(w=>w.path.endsWith('/release.yml'));
-  const scenario={id:'producer-drift',eventName:'pull_request',event:event(),branch:'main',publish:{crates:'true',pypi:'false'}};
-  for(const change of [w=>delete w.value.jobs['macos-policy'].outputs.macosRequired,w=>w.value.jobs['macos-policy'].steps.find(s=>s.id==='policy').env.PR_HEAD='HEAD']) {
-    const changed=structuredClone(ci); change(changed); assert.throws(()=>resolveRun(changed,scenario,{macosRequired:true}),/producer wiring/);
-  }
+  const release=workflows().find(w=>w.path.endsWith('/release.yml'));
+  const scenario={id:'producer-drift',eventName:'release',event:event(),branch:'main',publish:{crates:'true',pypi:'false'}};
   for(const change of [w=>delete w.value.jobs.guard.outputs.crates,w=>w.value.jobs.guard.steps.find(s=>s.id==='check').run='echo crates=false >> "$GITHUB_OUTPUT"; echo pypi=false >> "$GITHUB_OUTPUT"']) {
-    const changed=structuredClone(release); change(changed); assert.throws(()=>resolveRun(changed,{...scenario,eventName:'release'},{macosRequired:false}),/producer wiring|token routing/);
+    const changed=structuredClone(release); change(changed); assert.throws(()=>resolveRun(changed,scenario),/producer wiring|token routing/);
   }
-  const visual=structuredClone(graph.find(w=>w.path.endsWith('/visual-docs.yml'))); visual.value.jobs['visual-docs'].with.arches='["arm64"]';
-  const rows=resolveRun(visual,scenario,{macosRequired:true}); assert.ok(rows.some(r=>r.job==='capture' && r.runner==='ubuntu-24.04-arm'));
-  visual.value.jobs['visual-docs'].with.arches='["unsupported"]'; assert.throws(()=>resolveRun(visual,scenario,{macosRequired:true}),/unresolved capture architectures/);
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
 
@@ -255,4 +218,90 @@ test('the budget wrapper accepts actual telemetry and rejects each exceeded limi
     assert.ok(rejected.stdout.includes(`${budget.id}: over`), rejected.stdout);
     assert.equal(rejected.stderr, '');
   }
+});
+
+const pushed = () => { const pr = event(); pr.action = 'synchronize'; return { id: 'push', eventName: 'pull_request', event: pr, branch: 'main', inputs: {} }; };
+const prRows = (scenario, graph = workflows()) => graph.filter(w => triggered(w.value, scenario)).flatMap(w => resolveRun(w, scenario).map(row => ({ ...row, workflow: w.path })));
+
+test('an ordinary pull request push runs exactly seven jobs: four independent lanes and three transitional ones', () => {
+  const rows = prRows(pushed());
+  assert.deepEqual(rows.map(r => r.job).sort(), ['commitlint', 'gate', 'lint', 'llmlint', 'test-linux', 'test-macos', 'test-windows']);
+  assert.ok(rows.every(r => r.workflow === '.github/workflows/ci.yml' && r.result === 'success'));
+  const by = Object.fromEntries(rows.map(r => [r.job, r]));
+  assert.deepEqual(rows.filter(r => r.needs.length).map(r => r.job), ['gate'], 'only the transitional gate has a needs edge');
+  assert.deepEqual([...by.gate.needs].sort(), ['commitlint', 'lint', 'llmlint', 'test-linux', 'test-macos', 'test-windows']);
+  for (const id of ['lint', 'commitlint', 'llmlint', 'gate']) assert.equal(by[id].timeout, 30, id);
+  // Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed: measured transitional ceilings until the re-measure.
+  assert.equal(by['test-linux'].timeout, 150); assert.equal(by['test-windows'].timeout, 90); assert.equal(by['test-macos'].timeout, 90);
+  const ci = workflows().find(w => w.path.endsWith('/ci.yml')).value;
+  for (const id of ['test-linux', 'test-windows', 'test-macos']) assert.equal(ci.jobs[id].strategy, undefined, `${id} is one job, no matrix or shards`);
+});
+
+test('no run on push to main comes from CI: only delivery and the base measurement', () => {
+  const graph = workflows();
+  const scenario = { id: 'main', eventName: 'push', event: {}, branch: 'main', inputs: {} };
+  assert.deepEqual(graph.filter(w => triggered(w.value, scenario)).map(w => w.path).sort(), ['.github/workflows/golden-reach-base.yml', '.github/workflows/release-plz.yml']);
+  const base = graph.find(w => w.path.endsWith('/golden-reach-base.yml')).value;
+  assert.deepEqual(Object.keys(base.jobs), ['golden-reach-base']);
+  assert.equal(Object.keys(base.on).join(), 'push', 'a pull request push never starts the measurement');
+});
+
+test('a release branch runs lint, its guard and the transitional checks; a fork or other branch of that name owes every lane', () => {
+  const ci = workflows().find(w => w.path.endsWith('/ci.yml'));
+  const release = event('release-plz-2026-10-12'); release.action = 'synchronize';
+  const rows = resolveRun(ci, { id: 'release', eventName: 'pull_request', event: release, branch: 'main', inputs: {} });
+  assert.deepEqual(rows.filter(r => r.result === 'success').map(r => r.job).sort(), ['commitlint', 'gate', 'lint', 'llmlint']);
+  assert.deepEqual(rows.filter(r => r.result === 'skipped').map(r => r.job).sort(), ['test-linux', 'test-macos', 'test-windows']);
+  const fork = event('release-plz-2026-10-12', true); fork.action = 'synchronize';
+  const forked = resolveRun(ci, { id: 'fork', eventName: 'pull_request', event: fork, branch: 'main', inputs: {} });
+  assert.deepEqual(forked.filter(r => r.job.startsWith('test-')).map(r => r.result), ['success', 'success', 'success']);
+  const guard = ci.value.jobs.lint.steps.find(s => s.id === 'release-guard');
+  assert.equal(guard.if, "github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')");
+  assert.equal(ci.value.jobs.lint.outputs.releaseGuard, '${{ steps.release-guard.outputs.releaseGuard }}');
+});
+
+test('the final governance declaration names the four lanes, non-strict, and every one is a real job', () => {
+  const governance = JSON.parse(readFileSync(resolve(root, '.github/governance.json'), 'utf8'));
+  assert.deepEqual(governance, { required_checks: ['lint', 'test-linux', 'test-windows', 'test-macos'], strict: false });
+  const jobs = workflows().find(w => w.path.endsWith('/ci.yml')).value.jobs;
+  for (const id of governance.required_checks) assert.ok(jobs[id] && !jobs[id].needs && jobs[id].name === undefined, id);
+});
+
+test('every former platform proof is a step of the lane that owes it, each project in one step per lane', () => {
+  const jobs = workflows().find(w => w.path.endsWith('/ci.yml')).value.jobs;
+  const runs = id => jobs[id].steps.filter(s => s.run).map(s => s.run.trim());
+  const shared = ['just bootstrap', 'just ci-test --exclude=tag:tier:promoted', 'just ci-test --projects=tag:lane:sdk-env', 'cargo install --path . --locked', 'crozier --version'];
+  for (const id of ['test-linux', 'test-windows', 'test-macos']) for (const command of shared) assert.ok(runs(id).includes(command), `${id}: ${command}`);
+  for (const command of ['just ci-test --projects=tag:lane:live', 'just ci-test --projects=tag:lane:packaging', 'cargo publish --dry-run --locked', 'just ci-budgets-host']) {
+    assert.ok(runs('test-linux').includes(command), command);
+    for (const id of ['test-windows', 'test-macos', 'lint']) assert.ok(!runs(id).includes(command), `${id} must not repeat ${command}`);
+  }
+  const live = jobs['test-linux'].steps.find(s => s.run === 'just ci-test --projects=tag:lane:live');
+  assert.equal(live.env.CROZIER_COLD_REGISTRY_HANDOFF, '1'); assert.equal(live.env.CARGO_HOME, '${{ runner.temp }}/cold-cargo-home');
+  assert.ok(runs('lint').includes('just ci-lint'));
+  for (const id of ['test-linux', 'test-windows', 'test-macos']) assert.ok(!runs(id).includes('just ci-lint'));
+  for (const [id, job] of Object.entries(jobs)) for (const step of job.steps) {
+    assert.ok(!/\bnx (run|affected)\b|just check\b/.test(step.run ?? ''), `${id}: CI goes through the lane recipes, never a second gate`);
+  }
+});
+
+test('visual docs are lint steps over the same x86_64 baseline, and only its upkeep has its own events', () => {
+  const graph = workflows(), lint = graph.find(w => w.path.endsWith('/ci.yml')).value.jobs.lint;
+  const visual = lint.steps.find(s => s.uses?.startsWith('nickderobertis/screencomp/visual-docs@'));
+  assert.equal(visual.with.arch, 'x86_64'); assert.equal(visual.with['fail-on-drift'], true); assert.equal(visual.with['verify-second'], 'shots/verify');
+  assert.ok(lint.steps.some(s => s.run === './scripts/capture-visual-docs.sh'));
+  assert.deepEqual(JSON.parse(execFileSync('python3', ['-c', 'import tomllib,json; print(json.dumps(tomllib.load(open("screencomp.toml","rb"))["capture"]["arches"]))'], { cwd: root, encoding: 'utf8' })), ['x86_64']);
+  const upkeep = graph.find(w => w.path.endsWith('/visual-docs.yml'));
+  assert.deepEqual(Object.keys(upkeep.value.on).sort(), ['pull_request', 'schedule']);
+  assert.deepEqual(upkeep.value.on.pull_request.types, ['closed']);
+  const closed = event(); closed.action = 'closed'; closed.pull_request.number = 7;
+  assert.deepEqual(resolveRun(upkeep, { id: 'closed', eventName: 'pull_request', event: closed, branch: 'main' }).filter(r => r.result === 'success').map(r => r.job), ['cleanup-preview']);
+  assert.deepEqual(resolveRun(upkeep, { id: 'monthly', eventName: 'schedule', event: {}, branch: 'main' }).filter(r => r.result === 'success').map(r => r.job), ['prune-history']);
+});
+
+test('release.yml keeps its build, install and publish proof with no test sweep', () => {
+  const jobs = workflows().find(w => w.path.endsWith('/release.yml')).value.jobs;
+  assert.equal(jobs.test, undefined);
+  for (const job of Object.values(jobs)) for (const step of job.steps ?? []) assert.ok(!/just (check|ci-)/.test(step.run ?? ''), step.run);
+  for (const id of ['darwin', 'upload', 'publish-crate', 'verify-crate', 'build-wheels', 'build-sdist', 'publish-pypi', 'verify-pypi', 'verify-install-script', 'verify-attestation', 'major-tag']) assert.ok(jobs[id], id);
 });

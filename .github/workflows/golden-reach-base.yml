@@ -1,0 +1,58 @@
+# The golden-reach base for each push to main: a measurement artifact, not a check.
+# `just census-repin` steps from the nearest first-parent ancestor that has one,
+# re-measuring only what a change touched. Nothing on a pull request waits for it, and
+# no pull request push starts it.
+name: golden-reach-base
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  # The golden-reach base for this push to main: `just census-repin` steps from
+  # the nearest first-parent ancestor that has one, re-measuring only what a
+  # change touched. The job measures HEAD from the nearest earlier published base
+  # (fully past 7 days or 20 steps) and uploads `golden-reach-base-<sha>`. A newer
+  # push cancels a run in progress, so a burst of pushes yields a base for its
+  # newest commit only. Not a gate: nothing on a pull request waits for it.
+  # `actions: read` lets it list and download the earlier base; the upload uses
+  # the runner's own artifact token.
+  golden-reach-base:
+    name: golden-reach-base
+    runs-on: ubuntu-latest
+    concurrency:
+      group: golden-reach-base
+      cancel-in-progress: true
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      # Full history: the base is the nearest first-parent ancestor with one, and
+      # the step diffs against its commit.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: extractions/setup-just@v2
+      - uses: astral-sh/setup-uv@v8.3.2
+      # The golden tests generate through crozier, which shells out to `ruff format`.
+      - name: Install ruff
+        run: ./scripts/install-ruff.sh
+      - name: Install the pinned Rust toolchain
+        run: just install-toolchain
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov
+      - name: Measure the golden-reach base
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: just golden-reach-base "$RUNNER_TEMP/golden-reach-base"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: golden-reach-base-${{ github.sha }}
+          path: ${{ runner.temp }}/golden-reach-base/base.json.gz
+          retention-days: 90
+          if-no-files-found: error

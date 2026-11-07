@@ -1,0 +1,16 @@
+{
+  "source": "github.com/nickderobertis/dero-skills",
+  "commit": "a73a309",
+  "files": {
+    "scripts/release-branch-guard.mjs": {
+      "from": "skills/bootstrap/create-repo/assets/release-branch-guard.mjs",
+      "sha256": "d47c310ad82282cd6187924545e277d6578719c9669c5e0b84ec7a1a12e2d987"
+    },
+    "scripts/actions-budget-figures.sh": {
+      "from": "skills/bootstrap/create-repo/assets/budgets/actions-budget-figures.sh",
+      "sha256": "20f01083698bc1de298af37f78f8da8ce14bc07e2b4dd841920fdcbdaf285969",
+      "version": 10,
+      "bodySha256": "13ac7d79aaa3902dc7cfe87449283a05ba397fbc0612701e9b788ed59daf438d"
+    }
+  }
+}

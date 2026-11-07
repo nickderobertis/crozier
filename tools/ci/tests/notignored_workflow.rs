@@ -1,145 +1,122 @@
-//! `notignored.yml` posts the suppressions review comment on a pull request.
-//! Its effect is a comment on GitHub, which no local run can produce, so these
-//! tests hold the properties that make it safe: it runs on pull requests with a
-//! read-only tree and comment-only write grant, skips forks (whose token cannot
-//! comment), sees the base branch it diffs against, and never becomes part of a
-//! required check — a required context that skips on forks would block them.
-//! Every context `ci.yml` reports is a candidate for branch protection, so the
-//! job must share a name with none of them and none may depend on it.
+//! The lint lane's notignored step posts the suppressions review comment on a pull
+//! request. Its effect is a comment on GitHub, which no local run can produce, so these
+//! tests hold the properties that make it safe: it runs on pull requests with a read-only
+//! tree and a comment grant, skips forks (whose token cannot comment), sees the base
+//! branch it diffs against, and stays a review artifact: a failed comment never fails
+//! the required lane it sits in, and no second workflow or job runs it.
 
 #[path = "../../../src/yaml.rs"]
 mod yaml;
 
 use serde_json::Value;
-type Mapping = serde_json::Map<String, Value>;
 
-const NOTIGNORED_WORKFLOW: &str = include_str!("../../../.github/workflows/notignored.yml");
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
-const FORK_GUARD: &str = "github.event.pull_request.head.repo.full_name == github.repository";
+const FORK_GUARD: &str = "github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository";
 
-fn parse(source: &str) -> Value {
-    crate::yaml::from_str(source).expect("workflow is valid YAML")
-}
-
-fn jobs(workflow: &Value) -> &Mapping {
+fn lint() -> Value {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     workflow
         .get("jobs")
-        .and_then(Value::as_object)
-        .expect("workflow has jobs")
+        .and_then(|jobs| jobs.get("lint"))
+        .cloned()
+        .expect("ci.yml has a lint lane")
 }
 
-fn only_job(workflow: &Value) -> (&str, &Mapping) {
-    let jobs = jobs(workflow);
-    assert_eq!(jobs.len(), 1, "notignored.yml defines exactly one job");
-    let (id, job) = jobs.iter().next().expect("one job");
-    (id.as_str(), job.as_object().expect("the job is a mapping"))
+fn steps(job: &Value) -> Vec<Value> {
+    job.get("steps")
+        .and_then(Value::as_array)
+        .expect("the job has steps")
+        .clone()
 }
 
-/// The context a job reports: its `name`, else its id.
-fn context<'a>(id: &'a str, job: &'a Mapping) -> &'a str {
-    job.get("name").and_then(Value::as_str).unwrap_or(id)
+fn is_notignored(step: &Value) -> bool {
+    step.get("uses")
+        .and_then(Value::as_str)
+        .is_some_and(|uses| uses.starts_with("nickderobertis/notignored@"))
 }
 
-fn needs(job: &Mapping) -> Vec<String> {
-    match job.get("needs") {
-        None => Vec::new(),
-        Some(Value::String(one)) => vec![one.clone()],
-        Some(Value::Array(many)) => many
-            .iter()
-            .map(|need| need.as_str().expect("needs are job ids").to_owned())
-            .collect(),
-        Some(other) => panic!("unexpected needs: {other:?}"),
+#[test]
+fn runs_as_one_step_of_the_lint_lane_alone() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let mut found = Vec::new();
+    for (id, job) in workflow.get("jobs").and_then(Value::as_object).unwrap() {
+        let Some(job_steps) = job.get("steps").and_then(Value::as_array) else {
+            continue;
+        };
+        found.extend(
+            job_steps
+                .iter()
+                .filter(|step| is_notignored(step))
+                .map(|_| id.clone()),
+        );
     }
+    assert_eq!(found, ["lint"]);
 }
 
 #[test]
-fn runs_on_pull_requests_only() {
-    let workflow = parse(NOTIGNORED_WORKFLOW);
-    let on = workflow
-        .get("on")
-        .expect("notignored.yml declares its trigger");
-    let triggers: Vec<&str> = on
-        .as_object()
-        .expect("`on` is a mapping")
-        .keys()
-        .map(|key| key.as_str())
-        .collect();
-    assert_eq!(triggers, ["pull_request"]);
-}
-
-#[test]
-fn grants_only_a_read_tree_and_a_pull_request_comment() {
-    let workflow = parse(NOTIGNORED_WORKFLOW);
-    let permissions = workflow
+fn grants_only_what_the_comment_and_gallery_need() {
+    let job = lint();
+    let permissions = job
         .get("permissions")
         .and_then(Value::as_object)
-        .expect("notignored.yml sets workflow permissions");
-    let granted: Vec<(&str, &str)> = permissions
-        .iter()
-        .map(|(scope, level)| (scope.as_str(), level.as_str().expect("levels are strings")))
-        .collect();
-    assert_eq!(granted, [("contents", "read"), ("pull-requests", "write")]);
-    let (_, job) = only_job(&workflow);
-    assert!(
-        job.get("permissions").is_none(),
-        "the job must not widen the workflow's grant"
+        .expect("the lane sets its permissions");
+    assert_eq!(
+        permissions.get("pull-requests").and_then(Value::as_str),
+        Some("write"),
+        "the comment"
+    );
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    assert_eq!(
+        workflow
+            .get("permissions")
+            .and_then(|permissions| permissions.get("contents"))
+            .and_then(Value::as_str),
+        Some("read"),
+        "every other job stays read-only"
     );
 }
 
 #[test]
 fn skips_forks_and_checks_out_full_history_before_the_action() {
-    let workflow = parse(NOTIGNORED_WORKFLOW);
-    let (_, job) = only_job(&workflow);
-    assert_eq!(job.get("if").and_then(Value::as_str), Some(FORK_GUARD));
-    let steps = job
-        .get("steps")
-        .and_then(Value::as_array)
-        .expect("the job has steps");
-    let uses: Vec<&str> = steps
+    let job = lint();
+    let steps = steps(&job);
+    let at = steps
         .iter()
-        .filter_map(|step| step.get("uses").and_then(Value::as_str))
-        .collect();
+        .position(is_notignored)
+        .expect("the lane runs notignored");
     assert_eq!(
-        uses,
-        ["actions/checkout@v4", "nickderobertis/notignored@v0"]
+        steps[at].get("if").and_then(Value::as_str),
+        Some(FORK_GUARD)
     );
-    let depth = steps[0]
-        .get("with")
-        .and_then(|with| with.get("fetch-depth"))
-        .and_then(Value::as_u64);
+    let checkout = steps[..at]
+        .iter()
+        .find(|step| {
+            step.get("uses")
+                .and_then(Value::as_str)
+                .is_some_and(|uses| uses.starts_with("actions/checkout@"))
+        })
+        .expect("the lane checks out before it");
     assert_eq!(
-        depth,
+        checkout
+            .get("with")
+            .and_then(|with| with.get("fetch-depth"))
+            .and_then(Value::as_u64),
         Some(0),
         "the scan diffs against the base branch, which a shallow checkout omits"
     );
 }
 
 #[test]
-fn shares_no_context_with_ci_and_nothing_in_ci_needs_it() {
-    let notignored = parse(NOTIGNORED_WORKFLOW);
-    let (id, job) = only_job(&notignored);
-    let own = context(id, job);
-
-    let ci = parse(CI_WORKFLOW);
-    let ci_jobs = jobs(&ci);
-    for (ci_id, ci_job) in ci_jobs {
-        let ci_id = ci_id.as_str();
-        let ci_job = ci_job.as_object().expect("each job is a mapping");
-        let name = context(ci_id, ci_job);
-        assert_ne!(name, own, "notignored reports ci.yml's {name} context");
-        let mut pending = needs(ci_job);
-        let mut seen = Vec::new();
-        while let Some(need) = pending.pop() {
-            assert_ne!(need, id, "ci.yml's {name} needs notignored's job");
-            if seen.contains(&need) {
-                continue;
-            }
-            let upstream = ci_jobs
-                .get(need.as_str())
-                .and_then(Value::as_object)
-                .unwrap_or_else(|| panic!("{name} needs unknown job {need}"));
-            pending.extend(needs(upstream));
-            seen.push(need);
-        }
-    }
+fn a_failed_comment_does_not_fail_the_required_lane() {
+    let job = lint();
+    let steps = steps(&job);
+    let step = steps
+        .iter()
+        .find(|step| is_notignored(step))
+        .expect("the lane runs notignored");
+    assert_eq!(
+        step.get("continue-on-error").and_then(Value::as_bool),
+        Some(true),
+        "a review artifact, not a gate"
+    );
 }

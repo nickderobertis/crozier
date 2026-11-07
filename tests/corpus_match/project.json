@@ -6,7 +6,9 @@
     "type:tier",
     "cost:expensive",
     "tier:promoted",
-    "lang:rust"
+    "lang:rust",
+    "lane:live",
+    "platform:linux"
   ],
   "targets": {
     "cold-registry-build": {

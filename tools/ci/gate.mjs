@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // The gate: one recipe (`just check`), two tiers, chosen by a flag.
 //
-//   node tools/ci/gate.mjs [--sweep] [--projects=p,q] [--exclude=p,q] -- nx run-many --targets=a,b
+//   node tools/ci/gate.mjs [--sweep] [--include-promoted] [--platform=host|linux|macos|windows]
+//     [--projects=p,q] [--exclude=p,q] -- nx run-many --targets=a,b
 //
 // The recipe names the Nx command it runs (`just check`, `just test` and `just
 // lint` differ only in their target list); this driver validates the base,
@@ -16,7 +17,13 @@
 // The selection compares that base with the working tree, so uncommitted work
 // is included. Projects tagged `tier:promoted` (the suites that leave the
 // affected tier because of what they touch) run only when `--projects` names
-// them, which is how CI runs each one on the runner holding its toolchain.
+// them, which is how CI's test lanes run each one under its own toolchain and
+// credential policy, or when `--include-promoted` asks for all of them, which is how
+// the lint lane reads every affected project once.
+//
+// `--platform` holds the selection to what a platform owes: a project carrying
+// `platform:<name>` tags runs only on those platforms, so which platform proves what
+// is the project's own declaration, never a list here or in a workflow.
 //
 // The broader tier (`--sweep`) runs the same targets over every project,
 // promoted ones included, with the cache skipped: it exists to catch what
@@ -56,6 +63,9 @@ const USAGE = `usage: just check|test|lint [--sweep] [--projects=p,q] [--exclude
                of HEAD with ${DEFAULT_BASE_REF}
   --sweep      broader tier: every project, promoted tiers included, uncached
   --plan       print the selection and the Nx command, and run nothing
+  --include-promoted  promoted tiers too, when the change reaches them
+  --platform   only what this platform owes (host, linux, macos or windows),
+               by each project's platform:<name> tags
   --projects   only these projects (promoted ones run only when named)
   --exclude    never these projects
   Each list takes project names and tag:<tag> patterns.`;
@@ -70,9 +80,11 @@ const PROJECT_NAME = new RegExp(`^${PROJECT}$`);
 
 // The one command a recipe may hand over: `nx run-many --targets=<names>`.
 const COMMAND = /^--targets=(.+)$/;
+const PLATFORMS = new Map([["linux", "linux"], ["darwin", "macos"], ["win32", "windows"]]);
+const PLATFORM_TAG = "platform:";
 
 function parseArgs(argv) {
-  const options = { sweep: false, plan: false, targets: undefined, projects: undefined, exclude: [] };
+  const options = { sweep: false, plan: false, includePromoted: false, platform: undefined, targets: undefined, projects: undefined, exclude: [] };
   const split = argv.indexOf("--");
   const command = split < 0 ? [] : argv.slice(split + 1);
   const targets = command.length === 3 && command[0] === "nx" && command[1] === "run-many" && COMMAND.exec(command[2]);
@@ -91,7 +103,7 @@ function parseArgs(argv) {
       }
       return v.split(",");
     };
-    if ((flag === "--sweep" || flag === "--plan") && inline !== undefined) {
+    if ((flag === "--sweep" || flag === "--plan" || flag === "--include-promoted") && inline !== undefined) {
       die(`${flag} takes no value, not '${inline}'`, USAGE, 2);
     }
     switch (flag) {
@@ -101,6 +113,18 @@ function parseArgs(argv) {
       case "--plan":
         options.plan = true;
         break;
+      case "--include-promoted":
+        options.includePromoted = true;
+        break;
+      case "--platform": {
+        const named = inline ?? argv[++i];
+        const platform = named === "host" ? PLATFORMS.get(process.platform) : named;
+        if (![...PLATFORMS.values()].includes(platform)) {
+          die(`--platform takes host, linux, macos or windows, not '${named ?? ""}'`, USAGE, 2);
+        }
+        options.platform = platform;
+        break;
+      }
       case "--projects":
         options.projects = value();
         break;
@@ -290,15 +314,21 @@ function main() {
     tierLine = `affected tier against ${base.sha.slice(0, 12)} (${base.how})`;
   }
   const named = options.projects ? new Set(options.projects) : undefined;
+  const everyPromoted = options.sweep || options.includePromoted;
+  const owedHere = (name) => {
+    const owners = tags[name].filter((tag) => tag.startsWith(PLATFORM_TAG));
+    return !options.platform || owners.length === 0 || owners.includes(`${PLATFORM_TAG}${options.platform}`);
+  };
   const selected = candidates
-    .filter((name) => (named ? named.has(name) : options.sweep || !tags[name].includes(PROMOTED_TAG)))
+    .filter((name) => (named ? named.has(name) : everyPromoted || !tags[name].includes(PROMOTED_TAG)))
     .filter((name) => !options.exclude.includes(name))
+    .filter(owedHere)
     .sort();
-  const skippedPromoted = named || options.sweep ? [] : candidates.filter((name) => tags[name].includes(PROMOTED_TAG)).sort();
+  const skippedPromoted = named || everyPromoted ? [] : candidates.filter((name) => tags[name].includes(PROMOTED_TAG)).sort();
   console.log(`${TOOL}: ${tierLine}`);
   console.log(`${TOOL}: projects: ${selected.join(", ") || "(none)"}`);
   if (skippedPromoted.length > 0) {
-    console.log(`${TOOL}: promoted, run by their own CI legs: ${skippedPromoted.join(", ")}`);
+    console.log(`${TOOL}: promoted, run by their own lane steps: ${skippedPromoted.join(", ")}`);
   }
   if (selected.length === 0) {
     console.log(`${TOOL}: ok (nothing to run)`);

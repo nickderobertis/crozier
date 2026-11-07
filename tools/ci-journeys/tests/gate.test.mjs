@@ -147,7 +147,7 @@ test("a promoted project leaves the affected tier unless --projects names it", (
 
   const skipped = just(root, ["check"]);
   assert.equal(skipped.status, 0, skipped.output);
-  assert.match(skipped.stdout, /promoted, run by their own CI legs: b/);
+  assert.match(skipped.stdout, /promoted, run by their own lane steps: b/);
   assert.ok(!ran(root, "b"));
 
   const named = just(root, ["check", "--projects=b"]);
@@ -187,6 +187,25 @@ test("an unknown argument or project is refused before anything runs", (t) => {
   assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
 
+test("--platform holds the selection to what a project's own tags owe that platform", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { "a/project.json": project("a", { tags: ["type:tooling", "platform:linux"] }), "b/project.json": project("b", { tags: ["type:tooling", "platform:linux", "platform:macos"] }) });
+  commitChange(root, "a/src.txt", "a changed\n");
+  commitChange(root, "b/src.txt", "b changed\n");
+  const base = git(root, "rev-parse", "origin/main");
+  const selected = (platform) => /gate: projects: (.*)\n/.exec(just(root, ["check", "--plan", `--platform=${platform}`], { NX_BASE: base }).stdout)[1];
+  assert.equal(selected("linux"), "a, b");
+  assert.equal(selected("macos"), "b");
+  assert.equal(selected("windows"), "(none)");
+  const host = { linux: "a, b", darwin: "b", win32: "(none)" }[process.platform];
+  assert.equal(selected("host"), host);
+  const untagged = just(root, ["check", "--plan", "--sweep", "--projects=a", "--platform=windows"]);
+  assert.match(untagged.stdout, /gate: projects: \(none\)/);
+  const refused = just(root, ["check", "--plan", "--platform=solaris"], { NX_BASE: base });
+  assert.equal(refused.status, 2, refused.output);
+  assert.match(refused.stderr, /--platform takes host, linux, macos or windows, not 'solaris'/);
+});
+
 test("--plan prints the selection and the command, and runs nothing", (t) => {
   const root = scratchWorkspace(t);
   commitChange(root, "a/src.txt", "a changed\n");
@@ -195,7 +214,7 @@ test("--plan prints the selection and the command, and runs nothing", (t) => {
 
   assert.equal(run.status, 0, run.output);
   assert.match(run.stdout, /gate: projects: a\n/);
-  assert.match(run.stdout, /gate: would run: nx run-many --targets=format,lint,typecheck,test,build,coverage,supply-chain,doc --projects=a /);
+  assert.match(run.stdout, /gate: would run: nx run-many --targets=format,lint,typecheck,test,build,coverage,budgets,supply-chain,doc --projects=a /);
   assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
 
