@@ -71,15 +71,23 @@ control test and registered certified comparison.
 
 ## Former hand-written combinations
 
-All seven newly admitted documents are also exactly the registered rows in
-docs/fern-measurements/handed-off/documents.tsv. Each has a negative declaration
-verdict for each of combo-param-example-beside-ref-schema,
-combo-annotated-ref-property-example, combo-anyof-beside-properties and
-combo-oneof-beside-properties. The candidate ledger names each document, digest
-and per-combination verdict. The earlier retry tables in the
+The documents `## Newly admitted documents` in
+docs/fern-measurements/handed-off/README.md lists are exactly the 78 registered
+rows of docs/fern-measurements/handed-off/documents.tsv; the first seven of them
+were screened here before the other 71 registered.
+[handed-off-registered-verdicts.tsv](handed-off-registered-verdicts.tsv) gives each
+document, digest, corpus row and verdict for each of
+combo-param-example-beside-ref-schema, combo-annotated-ref-property-example,
+combo-anyof-beside-properties and combo-oneof-beside-properties, read from the
+census over the committed sources and the per-test regions of the full reach
+measurement at merge commit 38cd6d6da. None executes an interaction arm: the two
+union combinations' `Builder::discriminated_union` arm is 0/10 for all 78, and the
+other two have no region of their own to execute. So no document registers as a
+witness, and all four rows stay `open`. The candidate ledger holds the search's own
+candidates. The earlier retry tables in the
 [schemas search](../witness-search-fixture-only-schemas/README.md#handed-off-document-retry-2026-11-04)
 and [operations/extensions search](../witness-search-fixture-only-operations-extensions/README.md#handed-off-document-retry-2026-11-04)
-record the same checks. No document can witness a combination it does not declare.
+record the same checks for the first seven. No document can witness a combination it does not declare.
 
 Corpus row 5371, `seldon-wrapper`, registered on main after these screens, also
 declares combo-param-example-beside-ref-schema, at
