@@ -2131,7 +2131,9 @@ INTERACTION_ARMS: dict[str, InteractionArm] = {
     # body; the writable body is the entailed feature alone, and the referenced body shows a
     # `readOnly` the inline arm never reads.
     "combo-inline-body-read-only-property": InteractionArm(
-        operation_document(form_body("application/json", KIOSK_BODY.format(flag="                  readOnly: true\n")), ""),
+        operation_document(
+            form_body("application/json", KIOSK_BODY.format(flag="                  readOnly: true\n")), ""
+        ),
         {
             "inline body alone": operation_document(form_body("application/json", KIOSK_BODY.format(flag="")), ""),
             "referenced body with a readOnly property": operation_document(
@@ -2529,7 +2531,7 @@ class IndependentCombinationTest(unittest.TestCase):
                             mode.replace("_", "-"),
                         )
                         hits[label] = {
-                            (site.file, *region)
+                            ReachedRegion(site.file, *region)
                             for site in sites
                             for region in hit.get(site.file, [])
                             if site.holds(tuple(region))

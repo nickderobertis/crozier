@@ -10160,6 +10160,13 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
         self.assertTrue(any("unknown candidate state" in f for f in self.tool.failures(self.root, self.counts)))
 
+    def test_a_census_row_naming_a_verdict_cell_twice_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        repeated = next(line for line in lines if "osf.io" in line)
+        census.write_bytes(gzip.compress("".join([*lines, repeated]).encode("utf-8"), mtime=0))
+        self.assertTrue(any("names it twice" in f for f in self.tool.failures(self.root, self.counts)))
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],
@@ -10208,12 +10215,13 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         universe = views / "universe.json"
         good = universe.read_text(encoding="utf-8")
         before = target.read_bytes()
-        universe.write_text('{"src/ir.rs": [[1, 2]]}', encoding="utf-8")
-        refused = self.run_tool("write", "--repo-root", str(self.root))
-        self.assertEqual(1, refused.returncode)
-        self.assertIn("just census-repin", refused.stderr)
-        self.assertNotIn("Traceback", refused.stderr)
-        self.assertEqual(before, target.read_bytes())
+        for malformed in ('{"src/ir.rs": [[1, 2]]}', '{"src/ir.rs": [[9, 1, 2, 1]]}'):
+            universe.write_text(malformed, encoding="utf-8")
+            refused = self.run_tool("write", "--repo-root", str(self.root))
+            self.assertEqual(1, refused.returncode)
+            self.assertIn("just census-repin", refused.stderr)
+            self.assertNotIn("Traceback", refused.stderr)
+            self.assertEqual(before, target.read_bytes())
         universe.write_text(good, encoding="utf-8")
         self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
         # The record's README is read before anything is written, so losing it changes nothing.

@@ -302,6 +302,11 @@ def _view(path: Path) -> dict[str, set[tuple[int, int, int, int]]]:
             isinstance(span, list) and len(span) == 4 and all(type(cell) is int for cell in span) for span in spans
         ):
             raise ValueError(f"{path}: {file}'s regions are not four integers each; run `just census-repin`")
+        for span in spans:
+            if min(span) < 1 or (span[0], span[1]) > (span[2], span[3]):
+                raise ValueError(
+                    f"{path}: {file}'s region {span} is not an ordered source span; run `just census-repin`"
+                )
         regions[file] = {(span[0], span[1], span[2], span[3]) for span in spans}
     return regions
 
@@ -607,7 +612,12 @@ def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> li
             found.append(
                 f"{key}: its audit names {witness} as its witness, but no verdict says that run executes the arm"
             )
-    named = {(row.document, row.key): row for row in census}
+    named: dict[tuple[str, str], CensusRow] = {}
+    for row in census:
+        identity = (row.document, row.key)
+        if identity in cells and identity in named:
+            found.append(f"{row.key} on {row.document}: census.tsv.gz names it twice")
+        named[identity] = row
     for cell, row in sorted(cells.items()):
         stated = named.get(cell)
         if stated is None:
