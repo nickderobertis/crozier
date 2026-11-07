@@ -223,8 +223,12 @@ def population(root: Path) -> list[Document]:
     _before, heading, admitted = readme.partition("## Newly admitted documents")
     if not heading:
         raise ValueError("the handed-off README has no `## Newly admitted documents` section")
-    listed = re.findall(r"^- `([^`]+)` \| `([0-9a-f]{64})`", admitted.split("\n## ", 1)[0], re.M)
-    for document, sha256 in listed:
+    entries = [line for line in admitted.split("\n## ", 1)[0].splitlines() if line.startswith("- ")]
+    for entry in entries:
+        listed = re.match(r"- `([^`]+)` \| `([0-9a-f]{64})`", entry)
+        if not listed:
+            raise ValueError(f"the handed-off README's newly admitted entry is malformed: {entry[:120]!r}")
+        document, sha256 = listed.groups()
         if document not in found or found[document].sha256 != sha256:
             raise ValueError(f"{document}: newly admitted, but not the same `registered` row of documents.tsv")
     return sorted(found.values())
@@ -355,51 +359,73 @@ def read_rows(root: Path) -> list[VerdictRow]:
     return rows
 
 
-def read_census(root: Path) -> tuple[list[str], list[dict[str, str]]]:
+@dataclass
+class CensusRow:
+    """One candidate of `census.tsv.gz`; columns this tool does not read travel in `other`."""
+
+    key: str
+    document: str
+    sha256: str
+    sites: str
+    outcome: str
+    other: dict[str, str]
+
+    @classmethod
+    def parse(cls, cells: dict[str, str]) -> CensusRow:
+        known = {name: cells[name] for name in ("key", "document", "sha256", "sites", "outcome")}
+        return cls(**known, other={name: value for name, value in cells.items() if name not in known})
+
+    def cell(self, column: str) -> str:
+        return self.other[column] if column in self.other else getattr(self, column)
+
+
+def read_census(root: Path) -> tuple[list[str], list[CensusRow]]:
     text = gzip.decompress((root / RECORD / "census.tsv.gz").read_bytes()).decode("utf-8")
     reader = csv.DictReader(io.StringIO(text, newline=""), delimiter="\t")
     columns = list(reader.fieldnames or ())
     if not set(columns) >= CENSUS_COLUMNS:
         raise ValueError(f"census.tsv.gz lacks {sorted(CENSUS_COLUMNS - set(columns))}")
-    rows = list(reader)
-    for number, row in enumerate(rows, start=2):
+    rows = []
+    for number, row in enumerate(reader, start=2):
         if None in row or None in row.values():
             raise ValueError(f"census.tsv.gz line {number}: extra or missing cells")
+        rows.append(CensusRow.parse(row))
     return columns, rows
 
 
-def rendered_census(columns: list[str], rows: list[dict[str, str]]) -> str:
+def rendered_census(columns: list[str], rows: list[CensusRow]) -> str:
     """The one canonical serialization `canonical_census_failures` holds: sorted over every column."""
     written = io.StringIO(newline="")
     writer = csv.writer(written, delimiter="\t", lineterminator="\n")
     writer.writerow(columns)
-    writer.writerows(sorted([row[column] for column in columns] for row in rows))
+    writer.writerows(sorted([row.cell(column) for column in columns] for row in rows))
     return written.getvalue()
 
 
-def restated_census(root: Path, verdicts: list[VerdictRow]) -> tuple[list[str], list[dict[str, str]]]:
+def restated_census(root: Path, verdicts: list[VerdictRow]) -> tuple[list[str], list[CensusRow]]:
     columns, rows = read_census(root)
     by_cell = {(row.key, row.document): row for row in verdicts}
     seen = set()
     for row in rows:
-        verdict_row = by_cell.get((row["key"], row["document"]))
+        verdict_row = by_cell.get((row.key, row.document))
         if verdict_row is not None:
-            seen.add((row["key"], row["document"]))
-            row["sites"] = str(verdict_row.declared_sites)
-            row["outcome"] = verdict_row.outcome()
+            seen.add((row.key, row.document))
+            row.sites = str(verdict_row.declared_sites)
+            row.outcome = verdict_row.outcome()
     for cell, verdict_row in sorted(by_cell.items()):
         if cell not in seen:
-            added = dict.fromkeys(columns, "-")
-            added.update(
-                key=cell[0],
-                document=cell[1],
-                sha256=verdict_row.sha256,
-                kind="combination",
-                sites=str(verdict_row.declared_sites),
-                licence="not-reassessed",
-                outcome=verdict_row.outcome(),
+            other = dict.fromkeys(set(columns) - {"key", "document", "sha256", "sites", "outcome"}, "-")
+            other.update(kind="combination", licence="not-reassessed")
+            rows.append(
+                CensusRow(
+                    cell[0],
+                    cell[1],
+                    verdict_row.sha256,
+                    str(verdict_row.declared_sites),
+                    verdict_row.outcome(),
+                    other,
+                )
             )
-            rows.append(added)
     return columns, rows
 
 
@@ -408,34 +434,41 @@ def proven_keys(root: Path) -> set[str]:
     return {key for key, row in audit.items() if row.proof_class == REACH.CombinationProofClass.INTERACTION}
 
 
-def restated_index(root: Path, rows: list[dict[str, str]]) -> str:
+class Outstanding(NamedTuple):
+    """One document's open combinations, and each distinct reason they stay open."""
+
+    keys: list[str]
+    reasons: list[str]
+
+
+def restated_index(root: Path, rows: list[CensusRow]) -> str:
     """`outstanding-candidates.tsv`: each open key's outstanding candidates, with the reasons."""
     proven = proven_keys(root)
-    open_rows: dict[tuple[str, str], tuple[list[str], list[str]]] = {}
+    open_rows: dict[tuple[str, str], Outstanding] = {}
     for row in rows:
-        state, _, reason = row["outcome"].partition(":")
-        if state != "outstanding" or row["key"] in proven:
+        state, _, reason = row.outcome.partition(":")
+        if state != "outstanding" or row.key in proven:
             continue
-        keys, reasons = open_rows.setdefault((row["document"], row["sha256"]), ([], []))
-        keys.append(row["key"])
-        if reason.strip() not in reasons:
-            reasons.append(reason.strip())
+        entry = open_rows.setdefault((row.document, row.sha256), Outstanding([], []))
+        entry.keys.append(row.key)
+        if reason.strip() not in entry.reasons:
+            entry.reasons.append(reason.strip())
     written = io.StringIO(newline="")
     writer = csv.writer(written, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE)
     writer.writerow(("document", "sha256", "combinations", "why_not_screened"))
-    for (document, sha256), (keys, reasons) in sorted(open_rows.items()):
-        writer.writerow((document, sha256, ",".join(sorted(keys)), "; ".join(sorted(reasons))))
+    for (document, sha256), entry in sorted(open_rows.items()):
+        writer.writerow((document, sha256, ",".join(sorted(entry.keys)), "; ".join(sorted(entry.reasons))))
     return written.getvalue()
 
 
-def restated_readme(root: Path, rows: list[dict[str, str]]) -> str:
+def restated_readme(root: Path, rows: list[CensusRow]) -> str:
     text = (root / RECORD / "README.md").read_text(encoding="utf-8")
     proven = proven_keys(root)
     candidates: dict[str, int] = {}
     outstanding: dict[str, int] = {}
     for row in rows:
-        candidates[row["key"]] = candidates.get(row["key"], 0) + 1
-        outstanding[row["key"]] = outstanding.get(row["key"], 0) + row["outcome"].startswith("outstanding:")
+        candidates[row.key] = candidates.get(row.key, 0) + 1
+        outstanding[row.key] = outstanding.get(row.key, 0) + row.outcome.startswith("outstanding:")
 
     def restate(match: re.Match[str]) -> str:
         key = match.group(1)
@@ -452,20 +485,20 @@ def restated_readme(root: Path, rows: list[dict[str, str]]) -> str:
 
 
 def write(root: Path) -> None:
+    """Render all four artifacts from validated inputs, then write them: nothing changes on a refusal."""
     rows = measure(root)
     columns, census = restated_census(root, rows)
     written = io.StringIO(newline="")
     writer = csv.writer(written, delimiter="\t", lineterminator="\n", quoting=csv.QUOTE_NONE)
     writer.writerow(COLUMNS)
     writer.writerows(row.cells() for row in rows)
+    compressed = gzip.compress(rendered_census(columns, census).encode("utf-8"), compresslevel=9, mtime=0)
+    index = restated_index(root, census)
+    readme = restated_readme(root, census)
     (root / RECORD / "handed-off-verdicts.tsv").write_text(written.getvalue(), encoding="utf-8", newline="\n")
-    (root / RECORD / "census.tsv.gz").write_bytes(
-        gzip.compress(rendered_census(columns, census).encode("utf-8"), compresslevel=9, mtime=0)
-    )
-    (root / RECORD / "outstanding-candidates.tsv").write_text(
-        restated_index(root, census), encoding="utf-8", newline="\n"
-    )
-    (root / RECORD / "README.md").write_text(restated_readme(root, census), encoding="utf-8", newline="\n")
+    (root / RECORD / "census.tsv.gz").write_bytes(compressed)
+    (root / RECORD / "outstanding-candidates.tsv").write_text(index, encoding="utf-8", newline="\n")
+    (root / RECORD / "README.md").write_text(readme, encoding="utf-8", newline="\n")
 
 
 def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> list[str]:
@@ -533,16 +566,16 @@ def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> li
             found.append(
                 f"{key}: its audit names {witness} as its witness, but no verdict says that run executes the arm"
             )
-    named = {(row["document"], row["key"]): row for row in census}
+    named = {(row.document, row.key): row for row in census}
     for cell, row in sorted(cells.items()):
         stated = named.get(cell)
         if stated is None:
             found.append(f"{cell[1]} on {cell[0]}: census.tsv.gz does not name it")
-        elif stated["outcome"] != row.outcome():
+        elif stated.outcome != row.outcome():
             found.append(f"{cell[1]} on {cell[0]}: census.tsv.gz does not state its verdict `{row.verdict}`")
-        elif stated["sites"] != str(row.declared_sites):
+        elif stated.sites != str(row.declared_sites):
             found.append(
-                f"{cell[1]} on {cell[0]}: census.tsv.gz counts {stated['sites']} declarations, not {row.declared_sites}"
+                f"{cell[1]} on {cell[0]}: census.tsv.gz counts {stated.sites} declarations, not {row.declared_sites}"
             )
     index = (root / RECORD / "outstanding-candidates.tsv").read_text(encoding="utf-8")
     if index != restated_index(root, census):

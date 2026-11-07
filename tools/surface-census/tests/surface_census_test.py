@@ -10138,6 +10138,15 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         self.rewrite_cell(key, fixture, "verdict", "probably")
         self.assertTrue(any("unknown verdict" in f for f in self.tool.failures(self.root, self.counts)))
 
+    def test_a_malformed_admitted_entry_is_refused(self) -> None:
+        readme = self.root / self.tool.HANDED_OFF / "README.md"
+        text = readme.read_text(encoding="utf-8")
+        readme.write_text(
+            text.replace("## Newly admitted documents\n", "## Newly admitted documents\n\n- `x` | `short`\n", 1),
+            encoding="utf-8",
+        )
+        self.assertTrue(any("malformed" in f for f in self.tool.failures(self.root, self.counts)))
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],
@@ -10193,6 +10202,16 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         self.assertNotIn("Traceback", refused.stderr)
         self.assertEqual(before, target.read_bytes())
         universe.write_text(good, encoding="utf-8")
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        # The record's README is read before anything is written, so losing it changes nothing.
+        readme = self.root / self.tool.RECORD / "README.md"
+        text = readme.read_text(encoding="utf-8")
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        before = target.read_bytes(), census.read_bytes()
+        readme.unlink()
+        self.assertEqual(1, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        self.assertEqual(before, (target.read_bytes(), census.read_bytes()))
+        readme.write_text(text, encoding="utf-8")
         self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
 
     def test_source_bytes_other_than_the_pinned_ones_are_refused(self) -> None:
