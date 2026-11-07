@@ -247,7 +247,7 @@ for (const [project, target] of TARGETS) {
   test(`${project}:${target} reruns when any member manifest changes, and replays while none has`, (t) => {
     const { root, run } = scratchWorkspace(t, project, target);
     const { tooling, tier } = members();
-    assert.equal(tooling.length, 18);
+    assert.equal(tooling.length, 19);
     assert.equal(tier.length, 6);
     const manifests = [...tooling, ...tier].map((member) => `${member}/pyproject.toml`);
     for (const manifest of manifests) write(root, manifest, "[project]\n");

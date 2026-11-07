@@ -31,6 +31,7 @@
         "{workspaceRoot}/tools/llmlint/pyproject.toml",
         "{workspaceRoot}/tools/llmlint-resolution/pyproject.toml",
         "{workspaceRoot}/tools/python-workspace/pyproject.toml",
+        "{workspaceRoot}/tools/repin-cost/pyproject.toml",
         "{workspaceRoot}/tools/surface-census/pyproject.toml",
         "{workspaceRoot}/tools/surface-reach/pyproject.toml",
         "{workspaceRoot}/tools/surface-repin/pyproject.toml",
