@@ -430,6 +430,8 @@ def read_census(root: Path) -> tuple[list[str], list[CensusRow]]:
     text = gzip.decompress((root / RECORD / "census.tsv.gz").read_bytes()).decode("utf-8")
     reader = csv.DictReader(io.StringIO(text, newline=""), delimiter="\t")
     columns = list(reader.fieldnames or ())
+    if len(columns) != len(set(columns)):
+        raise ValueError("census.tsv.gz repeats a column name")
     if not set(columns) >= CENSUS_COLUMNS:
         raise ValueError(f"census.tsv.gz lacks {sorted(CENSUS_COLUMNS - set(columns))}")
     rows = []

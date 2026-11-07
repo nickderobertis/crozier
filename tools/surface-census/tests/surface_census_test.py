@@ -10167,6 +10167,12 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         census.write_bytes(gzip.compress("".join([*lines, repeated]).encode("utf-8"), mtime=0))
         self.assertTrue(any("names it twice" in f for f in self.tool.failures(self.root, self.counts)))
 
+    def test_a_census_header_repeating_a_column_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        header, separator, rest = gzip.decompress(census.read_bytes()).decode("utf-8").partition("\n")
+        census.write_bytes(gzip.compress(f"{header}\tkey{separator}{rest}".encode(), mtime=0))
+        self.assertTrue(any("repeats a column" in f for f in self.tool.failures(self.root, self.counts)))
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],
