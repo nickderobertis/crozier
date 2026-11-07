@@ -13431,10 +13431,6 @@ mod tests {
         assert!(file(&required, "reference.md").contains(tag));
     }
 
-    /// Worked examples walk query and header parameters each in declaration
-    /// order, an optional one shown before a required one declared after it
-    /// (the `query-declaration-order` measurement, Fern CLI 5.163.1). The
-    /// docstring takes headers first, and the Markdown takes queries first.
     /// The raw client and docstring client of one tagged operation over `document`.
     fn sources_of(document: serde_json::Value, tag: &str) -> (String, String) {
         let files = files_for(document);
@@ -13926,6 +13922,10 @@ mod tests {
         assert!(!raw.contains("raise ApiError("), "{raw}");
     }
 
+    /// Worked examples walk query and header parameters each in declaration
+    /// order, an optional one shown before a required one declared after it
+    /// (the `query-declaration-order` measurement, Fern CLI 5.163.1). The
+    /// docstring takes headers first, and the Markdown takes queries first.
     #[test]
     fn worked_examples_keep_each_parameter_kind_in_declaration_order() {
         let header = |name: &str, required: bool, example: &str| {
