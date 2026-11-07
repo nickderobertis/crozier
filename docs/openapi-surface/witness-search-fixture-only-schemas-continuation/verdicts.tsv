@@ -7,7 +7,7 @@ allof-base-in-cycle-imported-after-class	feature	-	circuit-readings	search-incom
 allof-child-of-cyclic-base-imports-base-deferred	feature	-	garden-crown	search-incomplete	search-incomplete	4	target-6-allof-child-of-cyclic-base-imports-base-deferred
 allof-enum-ref-narrowed-by-scalar-member	feature	-	measurement-phase	search-incomplete	exhausted	0	target-7-allof-enum-ref-narrowed-by-scalar-member
 allof-extends-oneof-object-refused	feature	-	union-sample	search-incomplete	search-incomplete	2	target-8-allof-extends-oneof-object-refused
-allof-overlapping-ref-parents-flattened	feature	-	artefact-catalogue	search-incomplete	search-incomplete	38	target-9-allof-overlapping-ref-parents-flattened
+allof-overlapping-ref-parents-flattened	feature	-	artefact-catalogue	search-incomplete	registered:5504	0	target-9-allof-overlapping-ref-parents-flattened
 allof-union-branch-not-schema-overrides-property	feature	-	sampling-branches	search-incomplete	search-incomplete	1	target-10-allof-union-branch-not-schema-overrides-property
 annotated-ref-shape	arm	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]	inline-oneof-variants	exhausted	exhausted	0	target-11-annotated-ref-shape
 annotated-ref-target-anyof	arm	src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]	inline-property-unions	exhausted	exhausted	0	target-12-annotated-ref-target-anyof
@@ -33,18 +33,12 @@ array-item-pointer-walk-anyof	arm	"src/ir.rs::resolve_schema_pointer[^\s*""anyOf
 array-item-pointer-walk-items	arm	"src/ir.rs::resolve_schema_pointer[^\s*""items"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-32-array-item-pointer-walk-items
 array-item-pointer-walk-oneof	feature	-	array-item-pointer-walk-oneof	search-incomplete	exhausted	0	target-33-array-item-pointer-walk-oneof
 array-item-pointer-walk-properties	arm	"src/ir.rs::resolve_schema_pointer[^\s*""properties"" => \{]"	ref-pointer-walk	exhausted	exhausted	0	target-34-array-item-pointer-walk-properties
-combo-annotated-ref-property-example	feature	-	harbor-parcel-requests	search-incomplete	exhausted	0	target-35-combo-annotated-ref-property-example
-combo-anyof-beside-properties	feature	-	orchard-dispatch-schemas	search-incomplete	search-incomplete	3	target-36-combo-anyof-beside-properties
-combo-oneof-beside-properties	feature	-	orchard-dispatch-schemas	search-incomplete	search-incomplete	4	target-37-combo-oneof-beside-properties
 discriminated-variant-date-value-snippet	feature	-	discriminated-variant-date-value-snippet	search-incomplete	exhausted	0	target-38-discriminated-variant-date-value-snippet
 discriminator-mapping	arm	src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]	tidepool-survey-log	exhausted	exhausted	0	target-39-discriminator-mapping
 discriminator-mapping	arm	src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]	kitchen-nested-mapping-target	search-incomplete	search-incomplete	179	target-40-discriminator-mapping
 discriminator-mapping	arm	src/ir.rs::Builder::discriminated_union[if union_target \{]	tidepool-survey-log	exhausted	exhausted	0	target-41-discriminator-mapping
 enum	arm	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	harbour-window, measurement-phase	search-incomplete	search-incomplete	1848	target-42-enum
 enum-value-description-extension-dropped	feature	-	compass-member-notes	search-incomplete	search-incomplete	2	target-43-enum-value-description-extension-dropped
-format-binary	arm	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	json-binary-path, json-request-shapes	search-incomplete	search-incomplete	440	target-44-format-binary
-format-binary	arm	"src/ir.rs::scalar_body[=Some\(""binary""\)]"	json-binary-path, json-request-shapes	search-incomplete	search-incomplete	442	target-45-format-binary
-format-byte	arm	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	byte-text-response, byte-text-response-controls	search-incomplete	search-incomplete	228	target-46-format-byte
 format-email	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-47-format-email
 format-hostname	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-48-format-hostname
 format-idn-hostname	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-49-format-idn-hostname
@@ -58,7 +52,6 @@ format-time	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str
 format-uri	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted	exhausted	0	target-57-format-uri
 format-uri-reference	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-58-format-uri-reference
 format-uri-template	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted	exhausted	0	target-59-format-uri-template
-format-uuid	arm	"src/ir.rs::scalar_body[=Some\(""uuid"" \x7c ""byte""\)]"	meadow-tag-code	search-incomplete	search-incomplete	473	target-60-format-uuid
 forward-refs-omit-hoisted-variant-models	feature	-	woven-thread	search-incomplete	exhausted	0	target-61-forward-refs-omit-hoisted-variant-models
 inheritance-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	exhausted	exhausted	0	target-62-inheritance-discriminated-union
 integer-example-beyond-double-precision	feature	-	odometer-reading	search-incomplete	search-incomplete	23	target-63-integer-example-beyond-double-precision
@@ -66,8 +59,8 @@ literal-enum-value-quote-escaping	feature	-	literal-enum-value-quote-escaping	se
 literal-example-dollar-escaped-in-docstring	feature	-	prompt-variable	search-incomplete	exhausted	0	target-65-literal-example-dollar-escaped-in-docstring
 literal-type-extension-ignored	feature	-	verified-seal	exhausted	exhausted	0	target-66-literal-type-extension-ignored
 model-property-construct	feature	-	376-354-model-property-construct	search-incomplete	exhausted	0	target-67-model-property-construct
-nullable-anyof-member-description-dropped	feature	-	nullable-observer-notes	search-incomplete	search-incomplete	9	target-68-nullable-anyof-member-description-dropped
-number-format-uint64-typed-int	feature	-	material-register	search-incomplete	search-incomplete	1	target-69-number-format-uint64-typed-int
+nullable-anyof-member-description-dropped	feature	-	nullable-observer-notes	search-incomplete	registered:5539+5547	0	target-68-nullable-anyof-member-description-dropped
+number-format-uint64-typed-int	feature	-	material-register	search-incomplete	registered:5522+5536	0	target-69-number-format-uint64-typed-int
 oneof	arm	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	quiz-nullable-response-union	search-incomplete	search-incomplete	803	target-70-oneof
 oneof	arm	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	error-body-shapes	search-incomplete	search-incomplete	803	target-71-oneof
 oneof-anyof-variant	arm	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	kiln-array-mode	search-incomplete	search-incomplete	18	target-72-oneof-anyof-variant
@@ -86,10 +79,9 @@ oneof-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{
 oneof-map-variant-anyof-value	feature	-	survey-map-value-union	search-incomplete	exhausted	0	target-85-oneof-map-variant-anyof-value
 oneof-map-variant-oneof-value	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	survey-map-value-union	search-incomplete	search-incomplete	1	target-86-oneof-map-variant-oneof-value
 property-anyof-sole-string-enum-member	feature	-	dormant-sensor-unions	search-incomplete	exhausted	0	target-87-property-anyof-sole-string-enum-member
-property-map-value-oneof	arm	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	shelf-labels-map-variants	search-incomplete	search-incomplete	29	target-88-property-map-value-oneof
 property-oneof-residual	arm	src/ir.rs::untagged_inline_discriminator[if untagged \{]	atlas-untagged-inline-discriminator	search-incomplete	search-incomplete	358	target-89-property-oneof-residual
 property-oneof-sole-string-enum-member	feature	-	dormant-sensor-unions	search-incomplete	search-incomplete	2	target-90-property-oneof-sole-string-enum-member
-property-ref-to-nullable-component-annotation	feature	-	reservoir-ledger	search-incomplete	search-incomplete	11	target-91-property-ref-to-nullable-component-annotation
+property-ref-to-nullable-component-annotation	feature	-	reservoir-ledger	search-incomplete	registered:5554	0	target-91-property-ref-to-nullable-component-annotation
 property-sole-anyof-closed-object-member	arm	src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]	inline-property-unions	exhausted	exhausted	0	target-92-property-sole-anyof-closed-object-member
 property-sole-anyof-composed-member	feature	-	property-sole-anyof-composed-member	search-incomplete	exhausted	0	target-93-property-sole-anyof-composed-member
 property-sole-anyof-empty-object-member	feature	-	property-sole-anyof-empty-object-member	search-incomplete	exhausted	0	target-94-property-sole-anyof-empty-object-member
@@ -121,5 +113,5 @@ schema-type-name-component	feature	-	376-350-declared-type-name, 376-350-declare
 schema-type-name-inline-property	feature	-	film-shot-planner	exhausted	exhausted	0	target-120-schema-type-name-inline-property
 string-json-format-typed-any	feature	-	material-register	search-incomplete	exhausted	0	target-121-string-json-format-typed-any
 type-single	arm	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	verified-seal	search-incomplete	search-incomplete	2095	target-122-type-single
-undiscriminated-ref-oneof-sibling-properties-dropped	feature	-	undiscriminated-ref-oneof-sibling-properties-dropped	search-incomplete	search-incomplete	56	target-123-undiscriminated-ref-oneof-sibling-properties-dropped
+undiscriminated-ref-oneof-sibling-properties-dropped	feature	-	undiscriminated-ref-oneof-sibling-properties-dropped	search-incomplete	registered:5515	0	target-123-undiscriminated-ref-oneof-sibling-properties-dropped
 union-of-enum-ref-const-and-string-members	feature	-	union-of-enum-ref-const-and-string-members	search-incomplete	exhausted	0	target-124-union-of-enum-ref-const-and-string-members

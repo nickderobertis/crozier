@@ -33,18 +33,12 @@ array-item-pointer-walk-anyof	arm	"src/ir.rs::resolve_schema_pointer[^\s*""anyOf
 array-item-pointer-walk-items	arm	"src/ir.rs::resolve_schema_pointer[^\s*""items"" => \{]"	ref-pointer-walk	exhausted
 array-item-pointer-walk-oneof	feature	-	array-item-pointer-walk-oneof	search-incomplete
 array-item-pointer-walk-properties	arm	"src/ir.rs::resolve_schema_pointer[^\s*""properties"" => \{]"	ref-pointer-walk	exhausted
-combo-annotated-ref-property-example	feature	-	harbor-parcel-requests	search-incomplete
-combo-anyof-beside-properties	feature	-	orchard-dispatch-schemas	search-incomplete
-combo-oneof-beside-properties	feature	-	orchard-dispatch-schemas	search-incomplete
 discriminated-variant-date-value-snippet	feature	-	discriminated-variant-date-value-snippet	search-incomplete
 discriminator-mapping	arm	src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]	tidepool-survey-log	exhausted
 discriminator-mapping	arm	src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]	kitchen-nested-mapping-target	search-incomplete
 discriminator-mapping	arm	src/ir.rs::Builder::discriminated_union[if union_target \{]	tidepool-survey-log	exhausted
 enum	arm	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	harbour-window, measurement-phase	search-incomplete
 enum-value-description-extension-dropped	feature	-	compass-member-notes	search-incomplete
-format-binary	arm	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	json-binary-path, json-request-shapes	search-incomplete
-format-binary	arm	"src/ir.rs::scalar_body[=Some\(""binary""\)]"	json-binary-path, json-request-shapes	search-incomplete
-format-byte	arm	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	byte-text-response, byte-text-response-controls	search-incomplete
 format-email	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted
 format-hostname	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted
 format-idn-hostname	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted
@@ -58,7 +52,6 @@ format-time	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str
 format-uri	arm	"src/ir.rs::scalar_body[Some\(""email"" \x7c ""hostname"" \x7c ""ipv4""]"	format-scalar-bodies	exhausted
 format-uri-reference	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted
 format-uri-template	arm	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	format-scalar-bodies	exhausted
-format-uuid	arm	"src/ir.rs::scalar_body[=Some\(""uuid"" \x7c ""byte""\)]"	meadow-tag-code	search-incomplete
 forward-refs-omit-hoisted-variant-models	feature	-	woven-thread	search-incomplete
 inheritance-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	nested-array-discriminated-unions	exhausted
 integer-example-beyond-double-precision	feature	-	odometer-reading	search-incomplete
@@ -86,7 +79,6 @@ oneof-discriminated-union	arm	src/ir.rs::Builder::nested_array_element[^\s*\) \{
 oneof-map-variant-anyof-value	feature	-	survey-map-value-union	search-incomplete
 oneof-map-variant-oneof-value	arm	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	survey-map-value-union	search-incomplete
 property-anyof-sole-string-enum-member	feature	-	dormant-sensor-unions	search-incomplete
-property-map-value-oneof	arm	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	shelf-labels-map-variants	search-incomplete
 property-oneof-residual	arm	src/ir.rs::untagged_inline_discriminator[if untagged \{]	atlas-untagged-inline-discriminator	search-incomplete
 property-oneof-sole-string-enum-member	feature	-	dormant-sensor-unions	search-incomplete
 property-ref-to-nullable-component-annotation	feature	-	reservoir-ledger	search-incomplete
