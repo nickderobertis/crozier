@@ -2188,7 +2188,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | streaming | Event-stream and JSON-lines framing, stream-condition halves and event dispatch; stream headings corrected | Fern behaviour + Fern defect | `fix-streaming` | tests/fixtures/zylon-private-gpt/expected; docs/openapi-surface/handwritten/streaming-extension-terminator/fern-expected | `zylon_private_gpt_matches_fern_output; handwritten_fixtures_match_fern_goldens` | `stream-reference-return-type` |
 | client-header-date-format-typed-str | Promoted date header typed `dt.date` on the client; invalid constructor example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-date/fern-expected | `handwritten_fixtures_match_fern_goldens` | `date-header-constructor-example` |
 | sdk-variables-extension-ignored | SDK-variable path parameters lifted to the client; constructor and method documentation corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-variable/fern-expected | `handwritten_fixtures_match_fern_goldens` | `sdk-variable-docs-examples` |
-| nested-oneof-mapping-target-wrapped-as-value | Discriminator mapping target that is itself a union, held whole as the wrapper's `value` | Fern behaviour | `fix-unions` | docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected | `handwritten_fixtures_match_fern_goldens` | — |
+| nested-oneof-mapping-target-wrapped-as-value | Discriminator mapping target that is itself a union, held whole as the wrapper's `value` | Fern behaviour | `fix-unions` | docs/openapi-surface/probe-expected/kitchen-nested-mapping-target | `handwritten_fixtures_match_fern_goldens` | — |
 
 | allof-enum-ref-narrowed-by-scalar-member | Enum and scalar allOf alias rendering; pattern-invalid generated example corrected | Fern behaviour + Fern defect | `models-refs` | docs/openapi-surface/handwritten/measurement-phase/fern-expected; docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected | `handwritten_fixtures_match_fern_goldens; remaining_model_shapes_match_the_certified_fern_trees` | `pattern-narrowed-enum-example` |
 | integer-example-beyond-double-precision | Integer examples beyond 2^53 written as their nearest double; an int64 example rounded past the format's range corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/odometer-reading/fern-expected; docs/fern-measurements/literals-mode/odometer-reading/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::int64_example_correction_explains_only_the_out_of_range_rounding` | `int64-example-rounded-out-of-range` |
@@ -3170,8 +3170,9 @@ generation. `discriminator-mapping` reads `config-gated` only on its
 `collect_schema_refs` arm, the one `handwritten-config-gates.tsv` measures
 behind `audiences`. The two union arms its record's **Successor arms** section
 names read `search-incomplete`, the verdict their covers cite:
-`handwritten-reach.tsv` measures the setting-free `kitchen-nested-mapping-target`
-fixture executing both, so no setting gates them. Of the arms no arm-search record names,
+the setting-free `kitchen-nested-mapping-target` probe, retired from the
+hand-written tier once a registered specification reached one of them, executes
+both, so no setting gates them. Of the arms no arm-search record names,
 the four streaming arms rest on the covers of their hand-written fixtures
 (`event-stream-event-dispatch`, `streaming-extension-terminator` and
 `stream-condition-union-body`); of the three example arms once listed here,
