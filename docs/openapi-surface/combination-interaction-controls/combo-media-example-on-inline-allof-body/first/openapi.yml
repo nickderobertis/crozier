@@ -1,0 +1,55 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "sample",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/tallies": {
+      "post": {
+        "operationId": "postTally",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "required": [
+                  "size"
+                ],
+                "properties": {
+                  "note": {
+                    "type": "string"
+                  },
+                  "size": {
+                    "type": "integer"
+                  }
+                }
+              },
+              "example": {
+                "name": "Rex",
+                "note": "tidy",
+                "size": 3
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "done"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Kennel": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

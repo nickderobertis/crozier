@@ -4,7 +4,7 @@ This bounded search covers the four `prove-schema-combinations` keys named as
 unproven at base `bc66bfb087fbd34abfe89f1075912b103e848896`: one in `examples`
 and three in `models-unions-refs`. The certified pair is Fern CLI 5.163.1 with
 `fernapi/fern-python-sdk` 5.41.3. All four now have a from-scratch
-[`orchard-dispatch-schemas`](../handwritten/orchard-dispatch-schemas/) proof.
+[`orchard-dispatch-schemas`](../../fern-measurements/combination-diagnostics/orchard-dispatch-schemas/) proof.
 
 ## Populations read
 

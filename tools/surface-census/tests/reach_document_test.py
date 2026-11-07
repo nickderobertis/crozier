@@ -82,6 +82,12 @@ def test_a_missing_summary_anchor_is_refused(anchor: str) -> None:
         reach_document.summary("missing anchor", rf"\*\*\d+\*\* {anchor}", "replacement", anchor)
 
 
+def test_a_final_table_row_with_no_newline_is_replaced_and_the_document_is_kept() -> None:
+    text = "intro\n#### Ranked\n\n| key |\n|---|\n| stale |"
+    updated = reach_document.table(text, "#### Ranked", ["| fresh |\n"])
+    assert updated == "intro\n#### Ranked\n\n| key |\n|---|\n| fresh |\n"
+
+
 def test_a_missing_ownership_source_is_refused_without_inventing_boundaries(tmp_path: Path) -> None:
     text = (
         (REPO / reach_document.INDEX)

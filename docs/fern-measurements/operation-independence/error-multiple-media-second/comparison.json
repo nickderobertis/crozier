@@ -1,0 +1,75 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.158",
+  "searched_paths": [
+    "<scratch>/error-media-compare/second/crozier.yml"
+  ],
+  "exit_code": 0,
+  "counts": {
+    "matched": 1,
+    "mismatched": 0,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.242984092,
+    "crozier_seconds": 0.236609102,
+    "speedup": 1.0269431308690737,
+    "saved_seconds": 0.006374990000000025
+  },
+  "results": [
+    {
+      "status": "matched",
+      "config_file": "<scratch>/error-media-compare/second/crozier.yml",
+      "generator": "python",
+      "spec": "<repo>/docs/fern-measurements/operation-independence/error-multiple-media-second/openapi.yml",
+      "reference": {
+        "command": "/home/whoop/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/bin/python3.14 <scratch>/error-media-compare/second/reference.py",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 36,
+        "differing": [],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 34
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 35
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.242984092,
+        "crozier_seconds": 0.236609102,
+        "speedup": 1.0269431308690737,
+        "saved_seconds": 0.006374990000000025
+      },
+      "reason": null
+    }
+  ]
+}

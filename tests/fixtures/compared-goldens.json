@@ -50,6 +50,8 @@
     "docs/fern-measurements/clients-extensions/twin-key-relay-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
+    "docs/fern-measurements/combination-diagnostics/harbor-parcel-requests/fern-expected": {},
+    "docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas/fern-expected": {},
     "docs/fern-measurements/emission-parity/allof-only-base-literals/fern-expected": {},
     "docs/fern-measurements/emission-parity/allof-only-base/fern-expected": {},
     "docs/fern-measurements/emission-parity/array-with-properties-literals/fern-expected": {},
@@ -766,7 +768,6 @@
     "docs/openapi-surface/handwritten/greenhouse-vents/fern-expected": {},
     "docs/openapi-surface/handwritten/grid-valve-console/fern-expected": {},
     "docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected": {},
-    "docs/openapi-surface/handwritten/harbor-parcel-requests/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-relay-registration/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected": {},
@@ -813,7 +814,6 @@
     "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},
     "docs/openapi-surface/handwritten/odometer-reading/fern-expected": {},
     "docs/openapi-surface/handwritten/orbit-ground-stations/fern-expected": {},
-    "docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-courier-desk/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-response/fern-expected": {},
     "docs/openapi-surface/handwritten/passport-scan/fern-expected": {},
@@ -1020,6 +1020,11 @@
     "tests/fixtures/ably-sdk-test-proxy/expected": {},
     "tests/fixtures/adyen-acs-notification/expected": {},
     "tests/fixtures/adyen-capital/expected": {},
+    "tests/fixtures/adyen-capital/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/adyen-managed-risk-notification/expected": {},
     "tests/fixtures/adyen-report-notification/expected": {},
     "tests/fixtures/agco-ats/expected": {},
@@ -1103,6 +1108,11 @@
     },
     "tests/fixtures/bracketed-property-names/expected": {},
     "tests/fixtures/braintrust-dev/expected": {},
+    "tests/fixtures/braintrust-dev/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/breizhsport-catalogue/expected": {},
     "tests/fixtures/buildrelay/expected": {},
     "tests/fixtures/bungie.net/expected": {},
@@ -1269,6 +1279,11 @@
       ]
     },
     "tests/fixtures/hasura-metadata/expected": {},
+    "tests/fixtures/hasura-metadata/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/helios-verifiable-api/expected": {},
     "tests/fixtures/helixdb-http-api/expected": {},
     "tests/fixtures/hse/expected": {},
