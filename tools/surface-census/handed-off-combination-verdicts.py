@@ -308,13 +308,16 @@ def write(root: Path) -> None:
     (root / RECORD / "README.md").write_text(restated_readme(root, census), encoding="utf-8", newline="\n")
 
 
-def failures(root: Path) -> list[str]:
-    """Every way the committed verdicts differ from the committed bytes, audit and record."""
+def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> list[str]:
+    """Every way the committed verdicts differ from the committed bytes, audit and record.
+
+    `counts` is `declared_sites`' answer, for a caller that already censused these bytes.
+    """
     try:
         rows = read_rows(root)
         documents = population(root)
         selectors = contract(root)
-        counts = declared_sites(root, documents, selectors)
+        counts = declared_sites(root, documents, selectors) if counts is None else counts
         proof, table = classes(root)
         registrations = CENSUS.golden_registrations(root / "crates/crozier-e2e/tests/e2e.rs")
     except (OSError, ValueError, KeyError) as error:
@@ -345,6 +348,13 @@ def failures(root: Path) -> list[str]:
             found.append(f"{where}: verdict `{row['verdict']}` does not follow from its measurements")
         if row["verdict"] == "witness" and row["unmatched_files"] != "0":
             found.append(f"{where}: a witness must byte-match whole; it leaves {row['unmatched_files']} files unmatched")
+    audit, _problems = REACH.read_cooccurrence(root / "docs/openapi-surface/combination-cooccurrence.tsv")
+    for key in FORMER_HANDWRITTEN:
+        witness = audit[key].witness if proof.get(key) == "interaction" else None
+        if witness in {document.fixture for document in documents} and not any(
+            row["key"] == key and row["fixture"] == witness and row["verdict"] == "witness" for row in rows
+        ):
+            found.append(f"{key}: its audit names {witness} as its witness, but no verdict says that run executes the arm")
     _columns, census = read_census(root)
     named = {(row["document"], row["key"]): row for row in census}
     for cell, row in sorted(cells.items()):

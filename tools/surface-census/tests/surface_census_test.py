@@ -10049,6 +10049,89 @@ class EscalationRestatementTests(unittest.TestCase):
                 self.assertEqual(expected[name], self.number(found[1]))
 
 
+class HandedOffCombinationVerdictsTests(unittest.TestCase):
+    """The operation search's per-combination verdicts, against the committed bytes and audit."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.tool = load_script("tools/surface-census/handed-off-combination-verdicts.py")
+        cls.counts = cls.tool.declared_sites(REPO, cls.tool.population(REPO), cls.tool.contract(REPO))
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        for relative in (self.tool.RECORD, self.tool.HANDED_OFF / "documents.tsv", self.tool.HANDED_OFF / "README.md"):
+            target = self.root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            (shutil.copytree if (REPO / relative).is_dir() else shutil.copy)(REPO / relative, target)
+        for relative in ("tests", "crates"):
+            (self.root / relative).symlink_to(REPO / relative, target_is_directory=True)
+        for name in ("combination-cooccurrence.tsv", "golden-reach-sites.tsv"):
+            shutil.copy(REPO / "docs/openapi-surface" / name, self.root / "docs/openapi-surface" / name)
+        self.record = self.root / self.tool.RECORD / "handed-off-verdicts.tsv"
+
+    def rewrite_cell(self, key: str, fixture: str, column: str, value: str) -> None:
+        columns = self.tool.COLUMNS
+        lines = self.record.read_text(encoding="utf-8").split("\n")
+        for index, line in enumerate(lines):
+            cells = line.split("\t")
+            if cells[0] == key and len(cells) == len(columns) and cells[columns.index("fixture")] == fixture:
+                cells[columns.index(column)] = value
+                lines[index] = "\t".join(cells)
+                self.record.write_text("\n".join(lines), encoding="utf-8")
+                return
+        self.fail(f"{key} has no verdict on {fixture}")
+
+    def test_the_committed_verdicts_hold(self) -> None:
+        self.assertEqual([], self.tool.failures(REPO, self.counts))
+
+    def test_every_former_handwritten_combination_has_a_verdict_on_every_document(self) -> None:
+        rows = self.tool.read_rows(REPO)
+        documents = {document.document for document in self.tool.population(REPO)}
+        self.assertEqual(78, len(documents))
+        for key in self.tool.FORMER_HANDWRITTEN:
+            self.assertEqual(documents, {row["document"] for row in rows if row["key"] == key}, key)
+
+    def test_the_inline_read_only_arm_rests_on_the_measured_witness(self) -> None:
+        witnesses = {
+            row["fixture"]
+            for row in self.tool.read_rows(REPO)
+            if row["key"] == "combo-inline-body-read-only-property" and row["verdict"] == "witness"
+        }
+        self.assertIn("registered-literals-apis-guru-openapi-directory-cdcf7865", witnesses)
+
+    def test_a_verdict_its_measurements_do_not_support_is_refused(self) -> None:
+        key, fixture = "combo-inline-body-read-only-property", "registered-literals-apis-guru-openapi-directory-cdcf7865"
+        self.rewrite_cell(key, fixture, "arm_regions_executed", "0")
+        self.assertTrue(any("does not follow from its measurements" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_declaration_count_the_bytes_do_not_hold_is_refused(self) -> None:
+        self.rewrite_cell(
+            "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239", "declared_sites", "15"
+        )
+        self.assertTrue(any("the bytes declare 14" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_document_with_no_verdict_is_refused(self) -> None:
+        lines = self.record.read_text(encoding="utf-8").splitlines(keepends=True)
+        self.record.write_text("".join(line for line in lines if "osf.io" not in line), encoding="utf-8")
+        self.assertTrue(any("no verdict on" in f and "osf.io" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_census_cell_disagreeing_with_its_verdict_is_refused(self) -> None:
+        self.rewrite_cell(
+            "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239", "verdict", "not-declared"
+        )
+        self.assertTrue(any("census.tsv.gz does not state" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_source_bytes_other_than_the_pinned_ones_are_refused(self) -> None:
+        documents = self.root / self.tool.HANDED_OFF / "documents.tsv"
+        pinned = self.tool.population(REPO)[0].sha256
+        documents.write_text(documents.read_text(encoding="utf-8").replace(pinned, "0" * 64), encoding="utf-8")
+        readme = documents.with_name("README.md")
+        readme.write_text(readme.read_text(encoding="utf-8").replace(pinned, "0" * 64), encoding="utf-8")
+        self.assertTrue(any("not the handed-off" in f for f in self.tool.failures(self.root)))
+
+
 class RankedBacklogTests(unittest.TestCase):
     """The index's synthesis restates the six region files; recompute it from them.
 
