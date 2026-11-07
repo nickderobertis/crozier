@@ -154,7 +154,7 @@ same way. The 616 `golden` rows declare 1090 handling sites in
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **993 are reached by a registered real specification.** Its scoped
+- **1001 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **86 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 86 is still one of the 89 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -167,7 +167,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-993 + 92 + 5 + 0 + 0 = 1090. Fourteen sites left the table with the two functions
+1001 + 86 + 3 + 0 + 0 = 1090. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
