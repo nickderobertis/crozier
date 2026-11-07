@@ -59,6 +59,59 @@
         "{workspaceRoot}/.coverage-data/surface-census/test-census"
       ]
     },
+    "test-reuse": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-census/tests/reuse_staleness_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-census/test-reuse/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling",
+        "{workspaceRoot}/screenshots/pyproject.toml",
+        "{workspaceRoot}/tools/corpus/pyproject.toml",
+        "{workspaceRoot}/tools/corpus-fetch/pyproject.toml",
+        "{workspaceRoot}/tools/corpus-licensing/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens-git/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens-weekly/pyproject.toml",
+        "{workspaceRoot}/tools/fern-references-check/pyproject.toml",
+        "{workspaceRoot}/tools/fern-refusals/pyproject.toml",
+        "{workspaceRoot}/tools/fern-refusals-strict/pyproject.toml",
+        "{workspaceRoot}/tools/llmlint/pyproject.toml",
+        "{workspaceRoot}/tools/llmlint-resolution/pyproject.toml",
+        "{workspaceRoot}/tools/python-workspace/pyproject.toml",
+        "{workspaceRoot}/tools/repin-cost/pyproject.toml",
+        "{workspaceRoot}/tools/surface-census/pyproject.toml",
+        "{workspaceRoot}/tools/surface-reach/pyproject.toml",
+        "{workspaceRoot}/tools/surface-repin/pyproject.toml",
+        "{workspaceRoot}/tools/witness-search/pyproject.toml",
+        "{workspaceRoot}/tools/witness-search-git/pyproject.toml",
+        {
+          "runtime": "node tools/ci/suite-cases/cache-key.mjs python"
+        },
+        "crateSource",
+        "witnessIndexReads",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
+        "{workspaceRoot}/tools/fern-refusals/sdk_evaluation.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/justfile"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-census/test-reuse"
+      ]
+    },
     "test-reach": {
       "metadata": {
         "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 89 s (measured with `just nx run surface-census:test-reach --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
@@ -159,6 +212,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test-census",
+        "test-reuse",
         "test-fixtures-coverage"
       ]
     },
