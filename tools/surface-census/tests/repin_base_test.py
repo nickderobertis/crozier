@@ -237,6 +237,7 @@ def lookup(
     return run
 
 
+# llmlint: ignore-block[shell_test_tiers_stay_split] The no-token lookups in this same file already reach whatever `gh` the host has, through `reach_base._token`; this control is what proves their guard can fire, so it belongs beside them. It installs nothing, opens no socket, costs one 100 ms `gh auth token`, and skips where `gh` is absent, and a split project would add the tier this guard was asked not to add.
 @pytest.mark.skipif(not sys.platform.startswith("linux") or shutil.which("gh") is None, reason="no bus can start here")
 def test_the_no_token_guard_sees_gh_ask_for_a_bus_once_the_variable_is_removed(tmp_path: Path) -> None:
     env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")} | no_login_env(tmp_path)
