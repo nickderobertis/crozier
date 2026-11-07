@@ -1,6 +1,7 @@
 schema_version: 1
 budgets:
-  # llmlint: ignore[budgets_track_product_owner_outcomes] Preserve the existing crozier-macos-jobs-per-run one-slot contract beside the required new all-platform crozier-ci-job-count budget; this deliberate component overlap avoids silently relaxing existing Mac scheduling constraints.
+  # Preserves the existing one-slot Mac contract beside the all-platform crozier-ci-job-count
+  # budget cleanup registers; this deliberate overlap avoids silently relaxing Mac scheduling.
   - id: crozier-macos-jobs-per-run
     description: >-
       Maximum resolved Mac runner instances per workflow run over 12 event

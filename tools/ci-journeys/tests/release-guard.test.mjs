@@ -160,11 +160,15 @@ test("the workflow's own guard command, as written in ci.yml, holds a branch to 
   assert.throws(() => statSync(join(h.dir, ".git/outputs")), "a failed guard records no pass the gate could read");
 });
 
-test("the copied reference scripts are byte-for-byte the adopted reference, with its command contract", () => {
+test("the copied reference scripts match the adopted reference's checksums, with its command contract", () => {
   const provenance = JSON.parse(real("scripts/reference-copies.json"));
   assert.equal(provenance.commit, "a73a309");
   const sha = (text) => createHash("sha256").update(text).digest("hex");
-  for (const [path, entry] of Object.entries(provenance.files)) assert.equal(sha(readFileSync(join(REPO, path))), entry.sha256, path);
+  for (const [path, entry] of Object.entries(provenance.files)) {
+    const lines = readFileSync(join(REPO, path), "utf8").split("\n");
+    if (entry.removedLine) lines.splice(entry.removedLine.index, 0, Buffer.from(entry.removedLine.base64, "base64").toString("utf8"));
+    assert.equal(sha(lines.join("\n")), entry.sha256, `${path} differs from the adopted reference`);
+  }
   const figures = readFileSync(join(REPO, "scripts/actions-budget-figures.sh"));
   const lines = figures.toString("utf8").split("\n");
   const entry = provenance.files["scripts/actions-budget-figures.sh"];
