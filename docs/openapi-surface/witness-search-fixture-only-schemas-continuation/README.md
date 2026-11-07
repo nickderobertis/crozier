@@ -1036,16 +1036,10 @@ Files: `src/fern/measurement/raw_client.py`. [Comparison](screens/1e6f231fdcbbcd
 
 ## Reach carry audit
 
-[`carry-audit.json`](carry-audit.json) records the store join manager ruling 294
-approved, superseding this record's earlier audit of the `5d88a471` store. The
-store saved at `5b6a3d9575c841d97ddc2f69fbde3fb9e876f174` (321 tests, 53
-fixtures) was measured over the production tree this branch now has: every
-production path has an empty diff. Its entries keep their original commits.
-The only addition is a fresh scoped Eqivo run at the measured commit the audit
-names. Between the two commits the e2e suite gains only Eqivo's constant, test,
-`CORPORA` member and overlay entry; carried sources and golden trees are
-byte-identical; fixture documents are unchanged and their evidence differs only
-in search bookkeeping that no measurement reads.
+[`carry-audit.json`](carry-audit.json) is the earlier session's store join, kept as
+history. It is superseded: after the merge of this base, `census-repin` measured the
+whole tree fully (Cargo.lock had moved), so no carried entry stands behind the reach
+cells now committed. The five promoted rows each reach every handling site they declare.
 
 ## Verification
 
