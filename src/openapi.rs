@@ -6730,6 +6730,22 @@ components:
     }
 
     #[test]
+    fn an_optional_datetime_type_override_is_a_datetime_override() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": ["string", "null"],
+            "x-fern-type": "optional<datetime>"
+        }))
+        .unwrap();
+        assert!(schema.has_datetime_type_override());
+        let other: Schema = serde_json::from_value(serde_json::json!({
+            "type": ["string", "null"],
+            "x-fern-type": "optional<date>"
+        }))
+        .unwrap();
+        assert!(!other.has_datetime_type_override());
+    }
+
+    #[test]
     fn crozier_ignore_false_overrides_fern_ignore_true() {
         // The Overlay pattern: `x-fern-ignore: true` marks the op ignored, but an
         // explicit `x-crozier-ignore: false` on the same node keeps it.

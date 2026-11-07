@@ -3272,6 +3272,19 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             continue;
         };
         let class = ref_to_class(&format!("#/components/schemas/{name}"));
+        // A sole inline `allOf` member replaces its schema in Fern's merge, and the
+        // outer group goes with it: AssemblyAI's `LemurTaskParams` declares
+        // `x-fern-sdk-group-name: lemur` beside `allOf: [{inline}]`, and the
+        // certified pair writes `types/lemur_task_params.py`, where its `$ref`-based
+        // siblings stay in `lemur/types/`.
+        if schema.sdk_group_name().is_some()
+            && schema
+                .all_of
+                .as_deref()
+                .is_some_and(|members| matches!(members, [member] if member.reference.is_none()))
+        {
+            continue;
+        }
         // Hoisted children inherit their declaring component's package. A
         // reference to another named component keeps that component's own
         // placement; only synthetic descendants follow this root.

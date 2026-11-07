@@ -13804,6 +13804,56 @@ mod tests {
     }
 
     #[test]
+    fn a_group_beside_a_sole_inline_all_of_member_is_lost_in_the_merge() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/things": {"get": {
+                "operationId": "getThing",
+                "tags": ["things"],
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "components": {"schemas": {
+                "Base": {"type": "object", "properties": {"z": {"type": "string"}}},
+                "Merged": {"x-fern-sdk-group-name": "things", "type": "object", "allOf": [
+                    {"type": "object", "properties": {"a": {"type": "string"}}}
+                ]},
+                "Extended": {"x-fern-sdk-group-name": "things", "type": "object", "allOf": [
+                    {"$ref": "#/components/schemas/Base"},
+                    {"type": "object", "properties": {"b": {"type": "string"}}}
+                ]}
+            }}
+        }));
+        let at = |suffix: &str| files.iter().any(|(path, _)| path.ends_with(suffix));
+        assert!(at("things/types/extended.py"));
+        assert!(!at("things/types/merged.py"));
+        assert!(at("types/merged.py"));
+    }
+
+    #[test]
+    fn a_single_use_documented_body_with_a_schema_example_keeps_its_content_type() {
+        let (raw, _) = sources_of(
+            one_post(
+                serde_json::json!({"application/json": {"schema": {
+                    "$ref": "#/components/schemas/Addition"
+                }}}),
+                serde_json::json!({"Addition": {
+                    "type": "object",
+                    "description": "An addition.",
+                    "example": {"name": "n"},
+                    "required": ["name"],
+                    "properties": {"name": {"type": "string"}, "note": {"type": "string"}}
+                }}),
+            ),
+            "things",
+        );
+        assert!(
+            raw.contains("\"content-type\": \"application/json\""),
+            "{raw}"
+        );
+    }
+
+    #[test]
     fn the_retry_with_status_has_its_named_error() {
         assert_eq!(crate::ir::error_class_name(449), Some("RetryWithError"));
     }
