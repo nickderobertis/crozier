@@ -10224,6 +10224,13 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
         self.assertTrue(any("census.tsv.gz pins" in f for f in self.tool.failures(self.root, self.counts)))
 
+    def test_an_unknown_proof_class_never_reads_as_a_witness(self) -> None:
+        arm = self.tool.ArmCount(1, 1)
+        self.assertIs(self.tool.Verdict.WITNESS, self.tool.verdict_of("interaction", False, 1, arm))
+        self.assertIs(self.tool.Verdict.POOLED_ARM_EXECUTED, self.tool.verdict_of("open", False, 1, arm))
+        with self.assertRaises(ValueError):
+            self.tool.verdict_of("proven", False, 1, arm)
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],

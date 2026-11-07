@@ -270,7 +270,10 @@ def declared_sites(root: Path, documents: list[Document], selectors: dict[str, s
     return counts
 
 
-def verdict_of(proof_class: object, cooccurrence: bool, declared: int, arm: ArmCount | None) -> Verdict:
+def verdict_of(proof_class: str | None, cooccurrence: bool, declared: int, arm: ArmCount | None) -> Verdict:
+    """The verdict its measurements imply; `proof_class` is a `CombinationProofClass` value, or None unaudited."""
+    if proof_class is not None:
+        REACH.CombinationProofClass(proof_class)  # An unknown class raises ValueError, never reads as a witness.
     if declared == 0:
         return Verdict.NOT_DECLARED
     if cooccurrence or arm is None:
