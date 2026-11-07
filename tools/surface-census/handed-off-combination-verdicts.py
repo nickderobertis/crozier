@@ -382,9 +382,13 @@ def main() -> int:
     for problem in problems:
         print(problem, file=sys.stderr)
     if problems:
-        print("run `just census-repin`, then this script's `write`", file=sys.stderr)
+        print("the verdicts are stale \u2014 run `just census-repin`, then this script's `write`", file=sys.stderr)
     return int(bool(problems))
 
 
 if __name__ == "__main__":
+    # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     raise SystemExit(main())

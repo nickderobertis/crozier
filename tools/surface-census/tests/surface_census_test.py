@@ -19595,6 +19595,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "apis-guru-gap-screen.py": ("\u2014",),
         "combination-independence.py": ("--json", "\u2014"),
         "fixtures-coverage-report.py": ("--repo-root", ".", "--tier", ".", "--golden-tier", ".", "\u2014"),
+        "handed-off-combination-verdicts.py": ("check", "--repo-root", "missing-root"),
         "golden-reach-search.py": ("\u2014",),
         "golden-reach.py": ("\u2014",),
         "handwritten-fixtures.py": ("\u2014",),
