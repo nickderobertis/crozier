@@ -1354,9 +1354,21 @@ def open_handwritten_presentation_failures(root: Path, key: str, record: str | N
             f"an open row's evidence reads `{SEARCH_INCOMPLETE}` and cites `{record}`"
         )
     for evidence in sorted((surface / "handwritten").glob("*/evidence.toml")):
-        with evidence.open("rb") as handle:
-            covers = tomllib.load(handle).get("covers", [])
+        try:
+            with evidence.open("rb") as handle:
+                covers = tomllib.load(handle).get("covers", [])
+        except (OSError, tomllib.TOMLDecodeError) as error:
+            failures.append(f"{key}: cannot read `{evidence.parent.name}`'s evidence.toml: {error}")
+            continue
+        if not isinstance(covers, list):
+            failures.append(f"{key}: `{evidence.parent.name}`'s `covers` is not a list of tables")
+            continue
         for cover in covers:
+            if not isinstance(cover, dict) or not all(
+                isinstance(cover.get(field), str) for field in ("key", "search", "verdict")
+            ):
+                failures.append(f"{key}: `{evidence.parent.name}` has a cover without string key, search and verdict")
+                continue
             if cover["key"] != key or "arm" in cover:
                 continue
             if cover["verdict"] != SEARCH_INCOMPLETE or cover["search"].partition("#")[0] != record:
@@ -10203,6 +10215,15 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         census.write_bytes(gzip.compress(f"{header}\tkey{separator}{rest}".encode(), mtime=0))
         self.assertTrue(any("repeats a column" in f for f in self.tool.failures(self.root, self.counts)))
 
+    def test_a_census_digest_other_than_the_verdicts_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        row = next(line for line in self.tool.read_rows(REPO) if line.declared_sites)
+        index = next(i for i, line in enumerate(lines) if f"\t{row.document}\t" in line and line.startswith(row.key))
+        lines[index] = lines[index].replace(row.sha256, "0" * 64)
+        census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
+        self.assertTrue(any("census.tsv.gz pins" in f for f in self.tool.failures(self.root, self.counts)))
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],
@@ -14357,6 +14378,18 @@ class FinishedStateGateTests(unittest.TestCase):
             f'key = "{key}"\nsearch = "docs/openapi-surface/{historical}#verdicts"\nverdict = "exhausted"',
         )
         self.assertTrue(presented(finished_state_failures(self.root)))
+
+    def test_a_malformed_cover_is_reported_by_the_open_row_check(self) -> None:
+        root = self.root / "docs/openapi-surface/handwritten/beacon-signal-results"
+        record = "docs/openapi-surface/witness-search-operation-combinations/README.md"
+        key = "combo-body-property-named-as-path-param"
+        row = combination_rows(self.root)[key]
+        (root / "evidence.toml").write_text('covers = "none"\n', encoding="utf-8")
+        failures = open_handwritten_presentation_failures(self.root, key, record, row)
+        self.assertIn("is not a list of tables", "\n".join(failures))
+        (root / "evidence.toml").write_text('[[covers]]\nkey = "combo-sample"\n', encoding="utf-8")
+        failures = open_handwritten_presentation_failures(self.root, key, record, row)
+        self.assertIn("without string key, search and verdict", "\n".join(failures))
 
     def test_a_witness_blocked_cover_on_a_feature_key_is_refused(self) -> None:
         fixture = self.add_cover("request-body-content", f"{self.BLOCKED_RECORD}#blocked-witnesses")

@@ -459,6 +459,11 @@ def restated_census(root: Path, verdicts: list[VerdictRow]) -> tuple[list[str], 
         verdict_row = by_cell.get((row.key, row.document))
         if verdict_row is not None:
             seen.add((row.key, row.document))
+            if row.sha256 not in {NOT_MEASURED, verdict_row.sha256}:
+                raise ValueError(
+                    f"{row.key} on {row.document}: census.tsv.gz pins {row.sha256}, not {verdict_row.sha256}"
+                )
+            row.sha256 = verdict_row.sha256
             row.sites = verdict_row.declared_sites
             row.outcome = verdict_row.outcome()
     for cell, verdict_row in sorted(by_cell.items()):
@@ -624,6 +629,8 @@ def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> li
         stated = named.get(cell)
         if stated is None:
             found.append(f"{cell[1]} on {cell[0]}: census.tsv.gz does not name it")
+        elif stated.sha256 != row.sha256:
+            found.append(f"{cell[1]} on {cell[0]}: census.tsv.gz pins {stated.sha256}, not {row.sha256}")
         elif stated.outcome != row.outcome():
             found.append(f"{cell[1]} on {cell[0]}: census.tsv.gz does not state its verdict `{row.verdict}`")
         elif stated.sites != row.declared_sites:
