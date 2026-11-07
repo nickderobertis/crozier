@@ -88,8 +88,27 @@ witness: removing both declarations changes none of its 231 crozier files.
 [`rsserver-removal.json`](rsserver-removal.json) records the two paths and the
 empty whole-tree diff, under the same sensitivity rule as Isaacus.
 
-Eqivo matches the certified trees in both enum modes. Corpus row 5300 is now
-registered; its promotion in the target ledger awaits scoped arm measurement.
+## Outcome: no fixture-only promotion
+
+**This node promotes no fixture-only target and retires no hand-written cover.**
+
+Eqivo matches the certified trees in both enum modes and is registered as corpus
+row 5300, `eqivo-apostrophe-enums`. It stands as a witness of
+`enum-apostrophe-member` only: three response enums carry an apostrophe, and that
+row's `enum_words` arm handles it. It does not prove
+`literal-enum-value-quote-escaping` (manager ruling 294). An apostrophe needs no
+escape inside a double-quoted Python string, so no escape in `escape_py_str` or
+`literal_enum_value` changes Eqivo's output. A witness counts only where the arm
+runs and changes output.
+
+That row therefore stays `handwritten`, verdict `search-incomplete`, with the
+`literal-enum-value-quote-escaping` fixture retained. Its search completes only
+with a registered real specification declaring an enum value with a double
+quote, a backslash or a non-ASCII character, proven under both enum modes. A scan
+of the registered goldens found no double-quote or backslash enum value in either
+mode. Two `python_enums` goldens hold non-ASCII members, `med-anvisa-price` and
+`peopledatalabs`, but neither has a literals overlay, and no literals overlay holds
+one of the three.
 
 ## GitHub requests
 
@@ -109,8 +128,8 @@ SwaggerHub route was used. Certified-tree reuse is not a response-cache hit.
 
 ## Verdicts
 
-Current totals: 75 `exhausted`, 49
-`search-incomplete`; no target is promoted in this provisional ledger yet. Exhaustion is restricted to
+Final totals: 75 `exhausted`, 49
+`search-incomplete`, none promoted to a registered corpus row. Exhaustion is restricted to
 these two assigned populations; it makes no claim about previously truncated
 search pages. [`census.tsv`](census.tsv) names every outstanding candidate for
 each key and arm and gives its current reason beside its prior reading.
@@ -500,6 +519,10 @@ separate from candidates awaiting their first certified screen.
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
 | `literal-enum-value-quote-escaping` | feature | `-` | `search-incomplete` | `none-registrable` | 48 |
+
+Corpus row 5300, `eqivo-apostrophe-enums`, byte-matches but is apostrophe-only, so it
+is no witness here. Still required: a registered real specification with a double-quote,
+backslash or non-ASCII enum value; the 48 entries in [`census.tsv`](census.tsv) are outstanding.
 
 ### Target 65: literal-example-dollar-escaped-in-docstring
 
@@ -979,25 +1002,16 @@ Files: `src/fern/measurement/raw_client.py`. [Comparison](screens/1e6f231fdcbbcd
 
 ## Reach carry audit
 
-[`carry-audit.json`](carry-audit.json) compares the saved 319-test, 54-fixture
-store at `5d88a471fe004818ed8d541d8afc646214d62339` with the registered tree.
-Production sources, templates, assets, crate sources/manifests, toolchain,
-configuration and corpus reader code have an empty diff. The root Cargo files
-differ only in crozier's own version, under `reach_store.release_only`.
-Every carried golden source/tree is unchanged. The only reachable Rust changes
-are the Eqivo `CORPORA` member, its new constant and the overlay `KINDS` entry.
-The unrelated in-process journey's earlier path relocation is outside these runs.
-
-All 54 fixture documents are byte-identical. Parsed evidence has identical
-digests, certified versions, audiences, cover keys and arms; only search,
-verdict and renewal bookkeeping differs. `read_evidence` parses and validates
-that bookkeeping, but `fixture_plan` selects only keys/arms and
-`measured_fixtures` supplies audiences; `measure_fixture` passes only the spec,
-package, project and audiences to crozier. No changed proof field enters the
-Rust profile. Manager rulings 289, 290 and 292 approve carrying those existing
-exports, preserving each original commit, with Eqivo's fresh scoped export.
-The ordinary carry planner asks for a full pass because the registry constant
-changed; no enforcement rule is changed to avoid it.
+[`carry-audit.json`](carry-audit.json) records the store join manager ruling 294
+approved, superseding this record's earlier audit of the `5d88a471` store. The
+store saved at `5b6a3d9575c841d97ddc2f69fbde3fb9e876f174` (321 tests, 53
+fixtures) was measured over the production tree this branch now has: every
+production path has an empty diff. Its entries keep their original commits.
+The only addition is a fresh scoped Eqivo run at the measured commit the audit
+names. Between the two commits the e2e suite gains only Eqivo's constant, test,
+`CORPORA` member and overlay entry; carried sources and golden trees are
+byte-identical; fixture documents are unchanged and their evidence differs only
+in search bookkeeping that no measurement reads.
 
 ## Verification
 
