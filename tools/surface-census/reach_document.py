@@ -61,7 +61,7 @@ def table(text: str, heading: str, rows: list[str]) -> str:
     end = len(text) if end < 0 else end
     section = text[start:end]
     updated, count = re.subn(
-        r"(\|[^\n]+\|\n\|[-| ]+\|\n)(?:\|[^\n]*\|\n)*", lambda match: match[1] + "".join(rows), section, count=1
+        r"(\|[^\n]+\|\n\|[-| ]+\|\n)(?:\|[^\n]*\|(?:\n|$))*", lambda match: match[1] + "".join(rows), section, count=1
     )
     if count != 1:
         raise ValueError(f"{heading}: restore the table header, then run `just census-repin`")

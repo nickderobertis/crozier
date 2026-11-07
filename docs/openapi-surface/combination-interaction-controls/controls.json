@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "combinations": [
+    {
+      "key": "combo-map-beside-anyof",
+      "region": "src/ir.rs::prefer_map_to_union[if schema\\.any_of\\.is_some\\(\\)]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-anyof/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-anyof/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-map-beside-anyof/both/openapi.yml"
+      }
+    },
+    {
+      "key": "combo-properties-beside-additional-properties",
+      "region": "src/ir.rs::Builder::field_type_ref[let inline_value = if !prop_schema\\.properties\\.is_empty\\(\\)]",
+      "documents": {
+        "first": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/first/openapi.yml",
+        "second": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/second/openapi.yml",
+        "both": "docs/openapi-surface/combination-interaction-controls/combo-properties-beside-additional-properties/both/openapi.yml"
+      }
+    }
+  ]
+}

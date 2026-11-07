@@ -144,6 +144,7 @@
     ],
     "censusScripts": [
       "{workspaceRoot}/tools/surface-census/census-repin.py",
+      "{workspaceRoot}/tools/surface-census/combination-independence.py",
       "{workspaceRoot}/tools/surface-census/fixtures-coverage-report.py",
       "{workspaceRoot}/tools/surface-census/golden-reach-search.py",
       "{workspaceRoot}/tools/surface-census/golden-reach.py",

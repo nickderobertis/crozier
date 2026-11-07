@@ -30,6 +30,13 @@ def load(name: str, file: str) -> Any:
     return module
 
 
+def test_a_table_directly_above_the_next_heading_keeps_no_stale_last_row() -> None:
+    document = "#### Ranked\n\n| rank |\n|---|\n| 1 |\n| 2 |\n#### Next\n"
+    assert reach_document.table(document, "#### Ranked", ["| 7 |\n"]) == (
+        "#### Ranked\n\n| rank |\n|---|\n| 7 |\n\n#### Next\n"
+    )
+
+
 def test_recipe_restores_every_ledger_derived_section_before_measurement(tmp_path: Path) -> None:
     # Copy only what the offline readers consume, including the real attribution
     # inputs. No binary, interpreter selector or instrumented toolchain is staged.

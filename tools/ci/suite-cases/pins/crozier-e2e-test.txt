@@ -159,6 +159,8 @@ crozier-e2e::e2e clients_extensions_measurements_match_fern
 crozier-e2e::e2e closed_empty_inline_objects_hoist_through_the_cli
 crozier-e2e::e2e colliding_query_and_body_fields_serialize_from_body_argument
 crozier-e2e::e2e color_pizza_matches_fern_output
+crozier-e2e::e2e combination_independence::a_populated_independence_manifest_crosses_the_python_rust_boundary
+crozier-e2e::e2e combination_independence::independent_combination_documents_match_certified_trees
 crozier-e2e::e2e compare::compare_applies_the_packaging_and_metadata_departures_exactly
 crozier-e2e::e2e compare::compare_checks_every_generator_and_reports_each_status
 crozier-e2e::e2e compare::compare_colours_statuses_only_when_the_rule_says_so
@@ -990,6 +992,7 @@ crozier-e2e::e2e union_modelling::object_member_items_are_a_named_union_of_model
 crozier-e2e::e2e union_modelling::union_modelling_document_sub_rules_match_the_certified_pair
 crozier-e2e::e2e union_modelling::union_modelling_sub_rules_match_the_certified_pair
 crozier-e2e::e2e unions::discriminator_property_names_are_trimmed_and_blanks_declare_nothing
+crozier-e2e::e2e unions::retired_parameter_reference_matches_complete_golden
 crozier-e2e::e2e unions::union_extension_aliases_match_and_win
 crozier-e2e::e2e unions::union_extensions_are_documented_under_both_spellings
 crozier-e2e::e2e unions::union_literals_overlays_are_exactly_the_fixtures
