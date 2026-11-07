@@ -436,6 +436,26 @@
     `reference.md` documents an argument the method does not have.
   evidence: docs/departures/evidence/lifted-base-path-docs-examples.md
 
+- id: minimal-worked-call-optional-parameter
+  kind: usefulness
+  trigger: >-
+    A worked example (README.md, reference.md, each client.py docstring) of an
+    operation with an optional query parameter that either annotates a $ref
+    through allOf whose target declares an example, or is an array over $ref
+    items with a parameter-level array example.
+  fern: >-
+    Passes the optional argument with that declared value (sort="created_at
+    desc", entity_type=["http://pcdm.org/models#Collection"]).
+  crozier: >-
+    Leaves the optional argument out of the call, so the worked call is minimal.
+  reason: >-
+    The user's design-review ruling 4, minimal-worked-call: a worked call is a
+    minimal call carrying the required parameters only, so crozier leaves every
+    optional parameter out of it, even one with a declared example. The certified
+    output passes these arguments; the ruling is followed and that evidence is
+    recorded in the note.
+  evidence: docs/departures/evidence/minimal-worked-call-optional-parameter.md
+
 - id: multipart-object-required-file-example
   kind: fern-defect
   trigger: >-

@@ -1823,7 +1823,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 43] = [
+pub const RULE_IDS: [&str; 44] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1845,6 +1845,7 @@ pub const RULE_IDS: [&str; 43] = [
     "init-type-checking-import-order",
     "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
+    "minimal-worked-call-optional-parameter",
     "multipart-object-required-file-example",
     "nested-discriminator-flat-wire",
     "non-string-client-header-example",
@@ -1987,6 +1988,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "request-alias-reference-parameters" => Rule {
             region: Some(alias_reference_parameters),
+            ..none
+        },
+        "minimal-worked-call-optional-parameter" => Rule {
+            region: Some(declared_values::minimal_call_optional_parameter),
             ..none
         },
         "multipart-object-required-file-example" => Rule {
@@ -2825,7 +2830,7 @@ fn closed_empty_object_example_line(_: &Pair<'_>, fern: &str, crozier: &str) -> 
 /// runtime line must conservatively prevent normalization too. The public-API
 /// integration control is `tests/generation.rs::narrowed_enum_departure_requires_source_validity_and_rejects_other_changes`;
 /// it checks missing source, non-Python fences and duplicated runtime lines.
-fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
+pub(super) fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
     let mut in_doc = false;
     let mut example = false;
     let mut found = false;

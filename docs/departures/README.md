@@ -202,7 +202,7 @@ when the two differ.
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
 | `richer-documentation` | 4 | Both outputs are valid; crozier's documents more of what the specification declares. |
-| `usefulness` | 5 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
+| `usefulness` | 6 | Both outputs are valid; crozier's behaves more usefully for the specification as written. |
 
 ### `anyof-path-param-schema-example`
 
@@ -392,6 +392,15 @@ when the two differ.
 - **crozier writes:** Method snippets and parameter lists without it, and every snippet's constructor passing it first, by keyword: its default (`edition="v2"`), or the `YOUR_EDITION` placeholder Fern's own docstrings use when it has none.
 - **Why:** The examples contradict the generated code: each method call raises `TypeError` for an unexpected keyword argument, a required lifted argument left out of the constructor raises `TypeError` for the missing one, and `reference.md` documents an argument the method does not have.
 - **Evidence:** [`docs/departures/evidence/lifted-base-path-docs-examples.md`](../../docs/departures/evidence/lifted-base-path-docs-examples.md)
+
+### `minimal-worked-call-optional-parameter`
+
+- **Kind:** `usefulness`
+- **Trigger:** A worked example (README.md, reference.md, each client.py docstring) of an operation with an optional query parameter that either annotates a $ref through allOf whose target declares an example, or is an array over $ref items with a parameter-level array example.
+- **Fern writes:** Passes the optional argument with that declared value (sort="created_at desc", entity_type=["http://pcdm.org/models#Collection"]).
+- **crozier writes:** Leaves the optional argument out of the call, so the worked call is minimal.
+- **Why:** The user's design-review ruling 4, minimal-worked-call: a worked call is a minimal call carrying the required parameters only, so crozier leaves every optional parameter out of it, even one with a declared example. The certified output passes these arguments; the ruling is followed and that evidence is recorded in the note.
+- **Evidence:** [`docs/departures/evidence/minimal-worked-call-optional-parameter.md`](../../docs/departures/evidence/minimal-worked-call-optional-parameter.md)
 
 ### `multipart-object-required-file-example`
 

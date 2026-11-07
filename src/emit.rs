@@ -13613,58 +13613,51 @@ mod tests {
         assert!(!raw.contains("content-type"), "{raw}");
     }
 
+    /// Ruling 4 (`minimal-worked-call`): an optional parameter stays out of the
+    /// call even with a declared example. The certified pair passes these two
+    /// shapes; the `minimal-worked-call-optional-parameter` departure records it.
     #[test]
-    fn an_annotating_all_of_parameter_is_worked_from_its_targets_example() {
-        let files = files_for(serde_json::json!({
-            "openapi": "3.0.3",
-            "info": {"title": "Api", "version": "1"},
-            "paths": {"/things": {"get": {
-                "operationId": "listThings",
-                "tags": ["things"],
-                "parameters": [{"name": "sort", "in": "query", "schema": {"allOf": [
-                    {"$ref": "#/components/schemas/Sort"},
-                    {"description": "How."}
-                ]}}],
-                "responses": {"204": {"description": "ok"}}
-            }}},
-            "components": {"schemas": {"Sort": {"type": "string", "example": "name desc"}}}
-        }));
-        let client = files
-            .iter()
-            .find(|(path, _)| path.ends_with("things/client.py"))
-            .map(|(_, text)| text)
-            .expect("client");
-        assert!(client.contains("sort=\"name desc\""), "{client}");
-    }
-
-    #[test]
-    fn an_array_parameter_over_referenced_items_passes_its_declared_example() {
-        let document = |items: serde_json::Value| {
+    fn a_minimal_call_leaves_out_annotated_ref_and_ref_item_array_parameters() {
+        let document = |required: bool| {
             serde_json::json!({
                 "openapi": "3.0.3",
                 "info": {"title": "Api", "version": "1"},
                 "paths": {"/things": {"get": {
                     "operationId": "listThings",
                     "tags": ["things"],
-                    "parameters": [{"name": "kinds", "in": "query", "example": ["alpha"],
-                        "schema": {"type": "array", "items": items}}],
+                    "parameters": [
+                        {"name": "sort", "in": "query", "schema": {"allOf": [
+                            {"$ref": "#/components/schemas/Sort"},
+                            {"description": "How."}
+                        ]}},
+                        {"name": "kinds", "in": "query", "required": required,
+                         "example": ["alpha"],
+                         "schema": {"type": "array",
+                                    "items": {"$ref": "#/components/schemas/Kind"}}}
+                    ],
                     "responses": {"204": {"description": "ok"}}
                 }}},
-                "components": {"schemas": {"Kind": {"type": "string"}}}
+                "components": {"schemas": {
+                    "Sort": {"type": "string", "example": "name desc"},
+                    "Kind": {"type": "string"}
+                }}
             })
         };
-        let passes = |document| {
-            let files = files_for(document);
-            files
-                .iter()
+        let client = |required| {
+            files_for(document(required))
+                .into_iter()
                 .find(|(path, _)| path.ends_with("things/client.py"))
-                .is_some_and(|(_, text)| text.contains("kinds=[\"alpha\"]"))
+                .map(|(_, text)| text)
+                .expect("client")
         };
-        assert!(passes(document(
-            serde_json::json!({"$ref": "#/components/schemas/Kind"})
-        )));
-        // Inline items stay out of the minimal call (ruling 4's measured case).
-        assert!(!passes(document(serde_json::json!({"type": "string"}))));
+        let optional = client(false);
+        assert!(
+            optional.contains("client.things.list_things()"),
+            "{optional}"
+        );
+        // A required array is a required argument of the call all the same.
+        let required = client(true);
+        assert!(required.contains("kinds=[\"alpha\"]"), "{required}");
     }
 
     #[test]

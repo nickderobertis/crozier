@@ -4273,16 +4273,9 @@ fn build_endpoint(
                     .and_then(|reference| resolve_ref(doc, reference))
                     .unwrap_or(schema);
                 let scalar = |schema: &Schema| {
-                    // An annotating `allOf` around a `$ref` is that `$ref`: Kong's
-                    // `sort` is `allOf: [$ref SortQuery, {description}]`.
-                    let reference = schema.reference.as_deref().or_else(|| {
-                        schema
-                            .all_of
-                            .iter()
-                            .flatten()
-                            .find_map(|member| member.reference.as_deref())
-                    });
-                    let schema = reference
+                    let schema = schema
+                        .reference
+                        .as_deref()
                         .and_then(|reference| resolve_ref(doc, reference))
                         .unwrap_or(schema);
                     matches!(
@@ -5537,22 +5530,6 @@ fn parameter_example_value<'a>(
                 .and_then(typed_schema_example)
         })
         .or_else(|| {
-            // A `$ref` a schema annotates through `allOf` is worked from the
-            // target's example: Kong's `sort` is `allOf: [$ref SortQuery,
-            // {description}]`, and its call passes `SortQuery`'s example.
-            resolve_ref(
-                doc,
-                parameter
-                    .schema
-                    .as_ref()?
-                    .all_of
-                    .as_deref()?
-                    .iter()
-                    .find_map(|member| member.reference.as_deref())?,
-            )
-            .and_then(typed_schema_example)
-        })
-        .or_else(|| {
             // A `oneOf` of a referenced schema and a string `const` is worked from
             // the referenced member's example, wherever the `const` sits: mautrix's
             // `loginID` (`oneOf: [$ref UserLoginID, {const: all}]`) passes the
@@ -5606,17 +5583,10 @@ fn optional_array_declares_example(doc: &OpenApi, parameter: &crate::openapi::Pa
         .unwrap_or(schema);
     resolved.ty.as_ref().and_then(TypeField::primary) == Some("array")
         && (schema_example(resolved).is_some_and(serde_json::Value::is_array)
-            // …unless its items are a `$ref`, whose call the certified pair does
-            // pass the parameter's example: ro-crate-api's `entityType` passes
-            // `entity_type=["http://pcdm.org/models#Collection"]`.
             || parameter
                 .example
                 .as_ref()
                 .is_some_and(serde_json::Value::is_array)
-                && resolved
-                    .items
-                    .as_deref()
-                    .is_none_or(|items| items.reference.is_none())
             // dnd5eapi's `challenge_rating`, `level` and `school` filters carry
             // an `examples` map of arrays, and their calls pass none of them.
             || parameter
