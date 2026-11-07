@@ -7998,14 +7998,18 @@ fn resolve_request_body(
             // also declares keeps its slot, below.
             let (kept, dropped): (Vec<BodyField>, Vec<BodyField>) =
                 fields.into_iter().partition(|field| {
-                    schema
+                    let declared_read_only = schema
                         .properties
                         .get(&field.wire_name)
-                        .is_none_or(|property| property.read_only != Some(true))
-                        || parents
+                        .is_some_and(|property| property.read_only == Some(true));
+                    if declared_read_only {
+                        parents
                             .iter()
                             .flatten()
                             .any(|inherited| inherited.wire_name == field.wire_name)
+                    } else {
+                        true
+                    }
                 });
             fields = kept;
             // …and so does every type hoisted only for a property it drops: the

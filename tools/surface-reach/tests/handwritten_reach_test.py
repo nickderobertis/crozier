@@ -2108,6 +2108,16 @@ def reference(target: str) -> str:
     return f'            $ref: "#/components/schemas/{target}"\n'
 
 
+KIOSK_BODY = (
+    "              type: object\n              properties:\n                label:\n                  type: string\n"
+    "                serial:\n                  type: string\n{flag}"
+)
+KIOSK_SCHEMAS = (
+    "  schemas:\n    Kiosk:\n      type: object\n      properties:\n        label:\n          type: string\n"
+    "        serial:\n          type: string\n          readOnly: true\n"
+)
+
+
 class InteractionArm(NamedTuple):
     both: str
     controls: dict[str, str]
@@ -2117,6 +2127,18 @@ class InteractionArm(NamedTuple):
 # may each hold at most one of them. Where one feature entails the other, no valid
 # document has the entailing feature alone, so the controls hold the entailed one.
 INTERACTION_ARMS: dict[str, InteractionArm] = {
+    # The selector reads `readOnly` on the inline body's own property, so it entails an inline
+    # body; the writable body is the entailed feature alone, and the referenced body shows a
+    # `readOnly` the inline arm never reads.
+    "combo-inline-body-read-only-property": InteractionArm(
+        operation_document(form_body("application/json", KIOSK_BODY.format(flag="                  readOnly: true\n")), ""),
+        {
+            "inline body alone": operation_document(form_body("application/json", KIOSK_BODY.format(flag="")), ""),
+            "referenced body with a readOnly property": operation_document(
+                form_body("application/json", '              $ref: "#/components/schemas/Kiosk"\n'), KIOSK_SCHEMAS
+            ),
+        },
+    ),
     "combo-header-param-ref-string-enum": InteractionArm(
         operation_document(craft_header("Rig"), CRAFT_SCHEMAS),
         {
