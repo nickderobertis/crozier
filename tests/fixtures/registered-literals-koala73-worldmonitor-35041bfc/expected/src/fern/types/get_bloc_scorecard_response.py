@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .get_bloc_scorecard_response_one import GetBlocScorecardResponseOne
+from .get_bloc_scorecard_response_zero import GetBlocScorecardResponseZero
+
+GetBlocScorecardResponse = typing.Union[GetBlocScorecardResponseZero, GetBlocScorecardResponseOne]

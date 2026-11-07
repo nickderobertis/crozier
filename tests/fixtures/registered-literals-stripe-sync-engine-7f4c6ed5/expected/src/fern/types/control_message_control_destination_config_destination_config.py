@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .destination_google_sheets_config import DestinationGoogleSheetsConfig
+from .destination_postgres_config import DestinationPostgresConfig
+from .destination_redis_config import DestinationRedisConfig
+from .destination_stripe_config import DestinationStripeConfig
+
+ControlMessageControlDestinationConfigDestinationConfig = typing.Union[
+    DestinationPostgresConfig, DestinationGoogleSheetsConfig, DestinationStripeConfig, DestinationRedisConfig
+]

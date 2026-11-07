@@ -1,0 +1,9 @@
+
+
+import typing
+
+from .act_update_request_attachments import ActUpdateRequestAttachments
+from .act_update_request_completion import ActUpdateRequestCompletion
+from .act_update_request_reason_code import ActUpdateRequestReasonCode
+
+ActUpdateRequest = typing.Union[ActUpdateRequestAttachments, ActUpdateRequestCompletion, ActUpdateRequestReasonCode]

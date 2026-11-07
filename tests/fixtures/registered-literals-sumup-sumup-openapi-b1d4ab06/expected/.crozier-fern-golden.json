@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-sumup-sumup-openapi-b1d4ab06",
+  "corpus_spec_ref": "c359e2f1291fa81bb533298c5958ab95f0ba11c4",
+  "corpus_spec_url": "https://raw.githubusercontent.com/sumup/sumup-openapi/c359e2f1291fa81bb533298c5958ab95f0ba11c4/openapi.yaml"
+}

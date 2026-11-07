@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .get_five_factor_scorecard_response_one import GetFiveFactorScorecardResponseOne
+from .get_five_factor_scorecard_response_zero import GetFiveFactorScorecardResponseZero
+
+GetFiveFactorScorecardResponse = typing.Union[GetFiveFactorScorecardResponseZero, GetFiveFactorScorecardResponseOne]

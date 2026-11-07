@@ -1,0 +1,83 @@
+{
+  "name": "repin-cost",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "metadata": {
+        "description": "llmlint: ignore-file[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing and runs in one to two minutes (measured with `just nx run repin-cost:test --skipNxCache`). A case that adds an install or a real network reach belongs in a split project."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 -m unittest discover -s tools/repin-cost/tests -p \"*_test.py\""
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "pythonTooling"
+      ],
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/repin-cost"
+        }
+      }
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "pythonTooling"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tools/repin-cost/**",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs repin-cost"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    }
+  }
+}

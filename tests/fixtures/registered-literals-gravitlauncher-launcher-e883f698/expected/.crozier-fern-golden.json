@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-gravitlauncher-launcher-e883f698",
+  "corpus_spec_ref": "fef9bae63da1afc0518d32e3333db20f409ab196",
+  "corpus_spec_url": "https://raw.githubusercontent.com/GravitLauncher/Launcher/fef9bae63da1afc0518d32e3333db20f409ab196/openapi.yaml"
+}

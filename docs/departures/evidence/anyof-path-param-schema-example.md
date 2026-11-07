@@ -63,7 +63,7 @@ is recorded from `src/parity.rs`, never hand-edited.
 
 ## Required reference examples and named oneOf examples
 
-The from-scratch [Harbor parcel document](../../openapi-surface/handwritten/harbor-parcel-requests/openapi.yml)
+The from-scratch [Harbor parcel document](../../fern-measurements/combination-diagnostics/harbor-parcel-requests/openapi.yml)
 adds two measured reference shapes. `tracking` is a required string query
 parameter with a local schema reference and its own example. `category` is a
 required body property whose `allOf` has one local string reference and a

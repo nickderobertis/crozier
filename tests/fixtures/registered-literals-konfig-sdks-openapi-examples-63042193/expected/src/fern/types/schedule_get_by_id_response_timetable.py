@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .schedule_get_by_id_response_timetable_one import ScheduleGetByIdResponseTimetableOne
+from .schedule_get_by_id_response_timetable_zero import ScheduleGetByIdResponseTimetableZero
+
+ScheduleGetByIdResponseTimetable = typing.Union[
+    ScheduleGetByIdResponseTimetableZero, ScheduleGetByIdResponseTimetableOne
+]

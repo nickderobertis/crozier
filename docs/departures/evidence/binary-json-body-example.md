@@ -2,10 +2,12 @@
 
 The independently authored [request shapes](../../openapi-surface/handwritten/json-request-shapes/openapi.yml)
 include tagged `PUT /vault`, without parameters. The independent
-[path-parameter source](../../openapi-surface/handwritten/json-binary-path/openapi.yml)
+[path-parameter source](../../openapi-surface/probes/json-binary-path.yml)
 uses tagged `POST /depository/{locker}` beside a required string path parameter.
 Both certified pairs declare `request: bytes` and send `json=request` with the
-JSON content-type header. Their unedited complete output sits beside each source.
+JSON content-type header. Their unedited complete output is committed in the
+fixture directory for the request shapes and under `probe-expected/` for the path
+source.
 The literals counterparts live under `docs/fern-measurements/bodies-responses/`.
 
 Both use Fern CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3, packaged
@@ -17,7 +19,7 @@ bytes for both trigger variants; no string-annotated method is claimed.
 The sync and async client docstrings and `reference.md`, plus the path variant's
 README, pass `request="string"`: `json-request-shapes/fern-expected` at
 `src/fern/vault/client.py` lines 73 and 153 and `reference.md` line 490;
-`json-binary-path/fern-expected` at `src/fern/depository/client.py` lines 54 and
+`probe-expected/json-binary-path` at `src/fern/depository/client.py` lines 54 and
 131, `README.md` lines 45 and 66 and `reference.md` line 24. The actual generated
 annotation is bytes. Crozier passes `request=b"string"` on those lines.
 
@@ -45,7 +47,7 @@ python docs/departures/evidence/binary-json-body-example.py \
   docs/openapi-surface/handwritten/json-request-shapes/fern-expected/src \
   vault deposit_bundle --examples invalid
 python docs/departures/evidence/binary-json-body-example.py \
-  docs/openapi-surface/handwritten/json-binary-path/fern-expected/src \
+  docs/openapi-surface/probe-expected/json-binary-path/src \
   depository deposit_parcel --examples invalid
 ```
 

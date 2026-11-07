@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .context_update_environment_variable_response_context_id import ContextUpdateEnvironmentVariableResponseContextId
+from .context_update_environment_variable_response_message import ContextUpdateEnvironmentVariableResponseMessage
+
+ContextUpdateEnvironmentVariableResponse = typing.Union[
+    ContextUpdateEnvironmentVariableResponseContextId, ContextUpdateEnvironmentVariableResponseMessage
+]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85",
+  "corpus_spec_ref": "079f9e1f9cf203c439b5ed206ef26d381cf0ba5a",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Observation-Management-Service/ewms-workflow-management-service/079f9e1f9cf203c439b5ed206ef26d381cf0ba5a/wms/schema/openapi.json"
+}

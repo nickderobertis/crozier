@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-codosseum-org-backend-9fa232be",
+  "corpus_spec_ref": "a92699b50e5b57aefb8922525a27ed8bb8d7885f",
+  "corpus_spec_url": "https://raw.githubusercontent.com/codosseum-org/backend/a92699b50e5b57aefb8922525a27ed8bb8d7885f/openapi.yaml"
+}

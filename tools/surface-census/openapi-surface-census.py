@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 290 of the 321 registered sources live in `corpus-sources/` (a split
+  and 361 of the 392 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -2922,7 +2922,7 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/ir.rs::base_type_ref",
         "that scalar union members still convert to the same primitive kinds",
-        "2ed5d7c0ead13fa7",
+        "bc4f2c4324cbd25b",
     ),
     PortPin(
         "last_composed_variant",

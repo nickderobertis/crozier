@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .list_five_factor_scorecards_response_computed_at import ListFiveFactorScorecardsResponseComputedAt
+from .list_five_factor_scorecards_response_zero import ListFiveFactorScorecardsResponseZero
+
+ListFiveFactorScorecardsResponse = typing.Union[
+    ListFiveFactorScorecardsResponseZero, ListFiveFactorScorecardsResponseComputedAt
+]

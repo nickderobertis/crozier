@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-cryptotyson-n8n-skyvern-117c4acb",
+  "corpus_spec_ref": "6fcaa74efb6160921f1c1ef9c8f39f47e242ea07",
+  "corpus_spec_url": "https://raw.githubusercontent.com/CryptoTyson/n8n-skyvern/6fcaa74efb6160921f1c1ef9c8f39f47e242ea07/fern/openapi/skyvern_openapi.json"
+}

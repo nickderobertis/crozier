@@ -1,0 +1,34 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class WorkflowSchedule(UniversalBaseModel):
+    workflow_schedule_id: str
+    organization_id: str
+    workflow_permanent_id: str
+    cron_expression: typing.Optional[str] = None
+    interval_seconds: typing.Optional[int] = None
+    first_fire_at: typing.Optional[dt.datetime] = None
+    timezone: str
+    enabled: bool
+    parameters: typing.Optional[typing.Dict[str, typing.Any]] = None
+    temporal_schedule_id: typing.Optional[str] = None
+    name: typing.Optional[str] = None
+    description: typing.Optional[str] = None
+    created_at: dt.datetime
+    modified_at: dt.datetime
+    deleted_at: typing.Optional[dt.datetime] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .context_create_new_context_request_owner_id import ContextCreateNewContextRequestOwnerId
+from .context_create_new_context_request_owner_slug import ContextCreateNewContextRequestOwnerSlug
+
+ContextCreateNewContextRequestOwner = typing.Union[
+    ContextCreateNewContextRequestOwnerId, ContextCreateNewContextRequestOwnerSlug
+]

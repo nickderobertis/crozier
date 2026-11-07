@@ -1,0 +1,31 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class NsiUeDlThroughput(UniversalBaseModel):
+    """
+    This attribute describes the guaranteed data rate supported by the network slice per UE in downlink
+    """
+
+    guaranteed: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    kbps
+    """
+
+    maximum: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    kbps
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

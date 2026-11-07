@@ -26,9 +26,9 @@
       "dependsOn": [
         {
           "projects": [
-            "crozier"
+            "corpus-match"
           ],
-          "target": "build"
+          "target": "cold-registry-build"
         }
       ]
     },
