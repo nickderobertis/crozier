@@ -17,6 +17,7 @@ members = [
     "crozier-fern-references-check",
     "crozier-fern-refusals",
     "crozier-fern-refusals-strict",
+    "crozier-golden-reach",
     "crozier-live-e2e",
     "crozier-llmlint-resolution",
     "crozier-llmlint-tooling",
@@ -381,6 +382,17 @@ requires-dist = [
     { name = "crozier-surface-census", virtual = "tools/surface-census" },
     { name = "crozier-witness-search", virtual = "tools/witness-search" },
 ]
+
+[[package]]
+name = "crozier-golden-reach"
+version = "0.0.0"
+source = { virtual = "tools/golden-reach" }
+dependencies = [
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-surface-census", virtual = "tools/surface-census" }]
 
 [[package]]
 name = "crozier-live-e2e"

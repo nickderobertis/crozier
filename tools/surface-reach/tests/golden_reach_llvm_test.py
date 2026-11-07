@@ -8,7 +8,7 @@ the real tool from the active Rust toolchain over a file that is not a profile.
 It also runs each golden test from the directory cargo does, which the pinned
 `ruff` (the one crozier formats with) shows matters under the tooling's own
 `[tool.ruff]`. The rest of golden-reach's boundary cases need no host tool and
-are `tools/surface-census/tests/golden_reach_test.py`.
+are `tools/golden-reach/tests/golden_reach_test.py`.
 """
 
 from __future__ import annotations

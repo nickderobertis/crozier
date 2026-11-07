@@ -276,7 +276,7 @@ test-fern-probe-refusal:
 # golden-reach suite runs twice: the second time without `fcntl` and the other
 # POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
-    @just nx run-many --targets=test-fixtures-coverage --projects=surface-census,surface-reach
+    @just nx run-many --targets=test-fixtures-coverage --projects=golden-reach,surface-reach
 
 # The arm search's YAML fallback against the census's stdlib loader: identical
 # counts on every registered YAML source, and each refused form's committed sample

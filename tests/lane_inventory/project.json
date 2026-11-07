@@ -1,0 +1,39 @@
+{
+  "name": "lane-inventory",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "lang:javascript"
+  ],
+  "targets": {
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node tools/ci/lane-inventory.mjs",
+          "node scripts/check-project-boundaries.mjs lane-inventory"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries",
+        "{workspaceRoot}/tools/ci/lanes.json",
+        "{workspaceRoot}/tools/ci/lane-inventory.mjs",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/tests/**/project.json",
+        "{workspaceRoot}/tools/release-packaging/project.json",
+        "{workspaceRoot}/crates/crozier-e2e/project.json",
+        {
+          "runtime": "node tools/ci/project-files-digest.mjs"
+        }
+      ],
+      "metadata": {
+        "description": "Selected by any edit to, or deletion of, a tier's manifest: tagged type:tier and cost:expensive because the boundary rule lets only such a project name those files. It costs under a second, and nothing depends on it, so the tags draw no edge an unrelated change could reach."
+      }
+    }
+  }
+}

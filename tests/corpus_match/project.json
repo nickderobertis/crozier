@@ -49,7 +49,7 @@
         "generator",
         "default",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/tools/surface-census/*.py",
+        "censusScripts",
         "witnessIndexReads"
       ],
       "dependsOn": [
@@ -69,7 +69,7 @@
         "generator",
         "default",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/tools/surface-census/*.py",
+        "censusScripts",
         "witnessIndexReads"
       ],
       "dependsOn": [

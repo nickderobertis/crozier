@@ -12,7 +12,6 @@
     "screenshots",
     "corpus",
     "corpus-fetch",
-    "corpus-licensing",
     "fern-goldens",
     "fern-goldens-git",
     "fern-goldens-weekly",
@@ -25,7 +24,8 @@
     "surface-reach",
     "witness-search",
     "witness-search-git",
-    "surface-repin"
+    "surface-repin",
+    "golden-reach"
   ],
   "targets": {
     "coverage": {
@@ -40,8 +40,17 @@
       ],
       "dependsOn": [
         "^test",
-        "test"
-      ]
+        "test",
+        {
+          "projects": [
+            "corpus-licensing"
+          ],
+          "target": "test"
+        }
+      ],
+      "metadata": {
+        "description": "corpus-licensing is a task dependency, not a project edge: its suite reads every tracked Markdown file, and a project edge would make any documentation edit rerun every tooling suite through this floor. Its data is still always here when the floor runs."
+      }
     },
     "test": {
       "executor": "nx:run-commands",
@@ -87,6 +96,7 @@
         "{workspaceRoot}/tools/fern-references-check/pyproject.toml",
         "{workspaceRoot}/tools/fern-refusals/pyproject.toml",
         "{workspaceRoot}/tools/fern-refusals-strict/pyproject.toml",
+        "{workspaceRoot}/tools/golden-reach/pyproject.toml",
         "{workspaceRoot}/tools/llmlint/pyproject.toml",
         "{workspaceRoot}/tools/llmlint-resolution/pyproject.toml",
         "{workspaceRoot}/tools/surface-census/pyproject.toml",
@@ -94,7 +104,8 @@
         "{workspaceRoot}/tools/witness-search/pyproject.toml",
         "{workspaceRoot}/tools/witness-search-git/pyproject.toml",
         "{workspaceRoot}/tools/surface-repin/project.json",
-        "{workspaceRoot}/tools/surface-repin/pyproject.toml"
+        "{workspaceRoot}/tools/surface-repin/pyproject.toml",
+        "{workspaceRoot}/tools/golden-reach/project.json"
       ]
     },
     "format": {

@@ -46,7 +46,7 @@
       "options": {
         "commands": [
           "cargo nextest run --locked -p crozier-ci-journeys",
-          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs tools/ci-journeys/tests/release-guard.test.mjs"
+          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs tools/ci-journeys/tests/release-guard.test.mjs tools/ci-journeys/tests/selection.test.mjs"
         ],
         "parallel": false
       },
@@ -57,6 +57,10 @@
         "{workspaceRoot}/.github/workflows/release.yml",
         "{workspaceRoot}/tools/ci/tests/support/release.rs",
         "{workspaceRoot}/tools/ci/gate.mjs",
+        "{workspaceRoot}/tools/ci/result-cache.mjs",
+        "{workspaceRoot}/tools/ci/lanes.json",
+        "{workspaceRoot}/tools/ci/lane-inventory.mjs",
+        "{workspaceRoot}/tools/ci/suite-cases/pins/*",
         "{workspaceRoot}/tools/ci/ci-tier.mjs",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/nx.json",
@@ -73,7 +77,11 @@
         "{workspaceRoot}/Cargo.lock",
         "{workspaceRoot}/pyproject.toml",
         "{workspaceRoot}/.github/require-ci-results.mjs",
-        "^production"
+        "^production",
+        {
+          "runtime": "node tools/ci/project-files-digest.mjs"
+        },
+        "{workspaceRoot}/tools/ci/project-files-digest.mjs"
       ]
     },
     "lint-windows": {

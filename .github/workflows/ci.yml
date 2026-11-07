@@ -33,6 +33,9 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  CROZIER_RESULT_CACHE: .ci-results
+
 jobs:
   # Everything platform-independent, once. On a release pull request it is the one lane
   # that runs, and it holds that branch to the release tool's own edits.
@@ -99,17 +102,18 @@ jobs:
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The Nx results of earlier runs, each replayed only for an unchanged input hash
-      # (the project's `inputs`). The key holds what Nx does not hash: this host and
-      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
-      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      # The results of earlier runs, each replayed only for an unchanged input hash (the
+      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
+      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
+      # and generator pins, plus this workflow, which pins the rest. Any of them changing
+      # starts cold. External-contact targets are uncached: they always really run.
       - name: Key the results on this host
         id: host
         shell: bash
         run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         with:
-          path: .nx/cache
+          path: .ci-results
           key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
           restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
       # github-workflows:lint runs the workflow syntax checker.
@@ -186,17 +190,18 @@ jobs:
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The Nx results of earlier runs, each replayed only for an unchanged input hash
-      # (the project's `inputs`). The key holds what Nx does not hash: this host and
-      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
-      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      # The results of earlier runs, each replayed only for an unchanged input hash (the
+      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
+      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
+      # and generator pins, plus this workflow, which pins the rest. Any of them changing
+      # starts cold. External-contact targets are uncached: they always really run.
       - name: Key the results on this host
         id: host
         shell: bash
         run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         with:
-          path: .nx/cache
+          path: .ci-results
           key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
           restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
       - name: Install maturin and Prism
@@ -291,17 +296,18 @@ jobs:
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The Nx results of earlier runs, each replayed only for an unchanged input hash
-      # (the project's `inputs`). The key holds what Nx does not hash: this host and
-      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
-      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      # The results of earlier runs, each replayed only for an unchanged input hash (the
+      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
+      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
+      # and generator pins, plus this workflow, which pins the rest. Any of them changing
+      # starts cold. External-contact targets are uncached: they always really run.
       - name: Key the results on this host
         id: host
         shell: bash
         run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         with:
-          path: .nx/cache
+          path: .ci-results
           key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
           restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
       # The offline projects this change reaches. No project runs twice on one platform:
@@ -364,17 +370,18 @@ jobs:
           cache-dependency-glob: uv.lock
       - name: Bootstrap
         run: just bootstrap
-      # The Nx results of earlier runs, each replayed only for an unchanged input hash
-      # (the project's `inputs`). The key holds what Nx does not hash: this host and
-      # every tool version (cache-key.mjs), and the locks, toolchain and generator pins,
-      # plus this workflow, which pins the rest. Any of them changing starts cold.
+      # The results of earlier runs, each replayed only for an unchanged input hash (the
+      # project's `inputs`), through tools/ci/result-cache.mjs. The key holds what Nx does
+      # not hash: this host and every tool version (cache-key.mjs), and the locks, toolchain
+      # and generator pins, plus this workflow, which pins the rest. Any of them changing
+      # starts cold. External-contact targets are uncached: they always really run.
       - name: Key the results on this host
         id: host
         shell: bash
         run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
         with:
-          path: .nx/cache
+          path: .ci-results
           key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
           restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
       # The offline projects this change reaches. No project runs twice on one platform:

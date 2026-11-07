@@ -48,3 +48,4 @@ __pycache__/
 /.venv
 /.coverage-data
 /.ruff_cache
+/.ci-results

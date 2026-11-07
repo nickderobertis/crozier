@@ -259,7 +259,14 @@ fn every_lane_keys_its_results_on_the_host_and_its_pins() {
             .find(|step| text(step, "uses").is_some_and(|uses| uses.starts_with("actions/cache@")))
             .unwrap_or_else(|| panic!("{name} restores no results"));
         let with = cache.get("with").expect("the cache step has inputs");
-        assert_eq!(text(with, "path"), Some(".nx/cache"));
+        assert_eq!(text(with, "path"), Some(".ci-results"));
+        assert_eq!(
+            workflow
+                .get("env")
+                .and_then(|env| text(env, "CROZIER_RESULT_CACHE")),
+            Some(".ci-results"),
+            "the gate serves what the cache step restores"
+        );
         let key = text(with, "key").expect("the cache step has a key");
         for part in [
             "github.job",

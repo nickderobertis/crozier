@@ -40,7 +40,8 @@
 // completion line. Nx's own output goes to a
 // log that is printed in full when a target fails.
 import { taskTimings } from "./gate-timing.mjs";
-import { execFileSync, spawnSync } from "node:child_process";
+import { serveResults } from "./result-cache.mjs";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -277,7 +278,20 @@ function ensureRustToolchain() {
   return output;
 }
 
-function main() {
+/** What a child printed and how it ended, with this process's event loop still running. */
+function runCaptured(command, args, options) {
+  return new Promise((done) => {
+    const child = spawn(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
+    const out = [];
+    const err = [];
+    child.stdout.on("data", (chunk) => out.push(chunk));
+    child.stderr.on("data", (chunk) => err.push(chunk));
+    child.on("error", (error) => done({ status: 1, stdout: "", stderr: `${error.message}\n` }));
+    child.on("close", (status) => done({ status, stdout: Buffer.concat(out).toString("utf8"), stderr: Buffer.concat(err).toString("utf8") }));
+  });
+}
+
+async function main() {
   const options = parseArgs(process.argv.slice(2));
   const base = options.sweep ? undefined : resolveBase();
   const tags = projectTags();
@@ -350,8 +364,12 @@ function main() {
   mkdirSync(logDir, { recursive: true });
   const log = join(logDir, `gate-${process.pid}.log`);
   const profile = `.nx/logs/gate-${process.pid}.profile.json`;
-  const run = spawnSync(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, NX_PROFILE: profile }, encoding: "utf8", maxBuffer: 1024 * 1024 * 1024, shell: process.platform === "win32" });
-  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
+  // Set by CI's lanes: results earlier runners left, which this run may replay and add to.
+  const results = process.env.CROZIER_RESULT_CACHE && !options.sweep ? await serveResults(resolve(ROOT, process.env.CROZIER_RESULT_CACHE)) : undefined;
+  // Asynchronous, unlike every other child here: this process serves the cache Nx calls.
+  const run = await runCaptured(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, ...results?.env, NX_PROFILE: profile }, shell: process.platform === "win32" });
+  await results?.stop();
+  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${run.stdout}${run.stderr}`);
   let timing;
   let timingError = false;
   try {
@@ -380,4 +398,4 @@ function main() {
 
 // Node names its main module by its real path, so the path it was started by is
 // resolved the same way: through macOS's /var -> /private/var, say.
-if (process.argv[1] && existsSync(process.argv[1]) && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (process.argv[1] && existsSync(process.argv[1]) && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) await main();
