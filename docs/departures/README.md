@@ -279,9 +279,9 @@ when the two differ.
 ### `date-header-constructor-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A promoted optional date header in a client constructor's Python examples.
-- **Fern writes:** The constructor receives a YOUR placeholder string despite its dt.date annotation.
-- **crozier writes:** The constructor receives datetime.date.fromisoformat("2023-01-15") and the example imports datetime.
+- **Trigger:** A promoted optional date or date-time header in a client constructor's Python examples.
+- **Fern writes:** The constructor receives a YOUR placeholder string despite its dt.date or dt.datetime annotation.
+- **crozier writes:** The constructor receives datetime.date.fromisoformat("2023-01-15") or datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00") and the example imports datetime.
 - **Why:** The placeholder is invalid for the declared date schema. The correction uses the certified generator's own date-example form and leaves string placeholders intact.
 - **Evidence:** [`docs/departures/evidence/date-header-constructor-example.md`](../../docs/departures/evidence/date-header-constructor-example.md)
 

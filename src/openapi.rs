@@ -5769,7 +5769,7 @@ mod tests {
     /// them, case aside, and the only names left over are the five the importer
     /// gives statuses crozier's table leaves unnamed (419, 420, 444, 449, 450).
     #[test]
-    fn fern_error_names_are_the_error_classes_crozier_names_and_five_more() {
+    fn fern_error_names_are_the_error_classes_crozier_names_and_four_more() {
         use std::collections::BTreeSet;
         let fern: BTreeSet<String> = FERN_ERROR_NAMES
             .iter()
@@ -5800,7 +5800,6 @@ mod tests {
             "AuthenticationTimeoutError",
             "MethodFailureError",
             "NoResponseError",
-            "RetryWithError",
             "BlockedByWindowsParentalControlsError",
         ]
         .iter()

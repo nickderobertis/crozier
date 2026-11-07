@@ -103,6 +103,7 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
             "registered-literals-apis-guru-openapi-directory-d8d536ea",
             "registered-literals-azure-samples-digitization-4f917fb1",
             "registered-literals-cyoda-cyoda-go-5ce9d613",
@@ -121,6 +122,7 @@ const KINDS: &[Kind] = &[
             "registered-literals-jentic-jentic-public-apis-2011299d",
             "registered-literals-konfig-dev-konfig-75888823",
             "registered-literals-revertinc-revert-698ea54a",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literals proofs extend the existing corpus overlay inventory and subprocess gate; this task cannot split the shared e2eReads family into another project.
             "happy-hamster",
             "seldon-wrapper",

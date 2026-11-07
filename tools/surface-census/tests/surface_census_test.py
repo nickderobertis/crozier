@@ -17396,11 +17396,17 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             }
 
         self.assertEqual(
-            {(selector, "legacy"): 1, (selector, "canonical"): 1, (selector, "null-canonical"): 1},
+            {
+                (selector, "legacy"): 1,
+                (selector, "optional-legacy"): 1,
+                (selector, "canonical"): 1,
+                (selector, "null-canonical"): 1,
+            },
             self.census_one(
                 selector,
                 {
                     "legacy": document({"x-fern-type": "datetime"}),
+                    "optional-legacy": document({"x-fern-type": "optional<datetime>"}),
                     "canonical": document({"x-crozier-type": "datetime", "x-fern-type": "literal<true>"}),
                     "null-canonical": document({"x-crozier-type": None, "x-fern-type": "datetime"}),
                     "near-canonical": document({"x-crozier-type": "literal<true>", "x-fern-type": "datetime"}),

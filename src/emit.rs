@@ -13859,6 +13859,37 @@ mod tests {
     }
 
     #[test]
+    fn a_server_sent_stream_raises_the_aliased_core_api_error() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/logs": {"get": {
+                "operationId": "streamLogs",
+                "tags": ["logs"],
+                "responses": {
+                    "200": {"description": "ok", "content": {"text/event-stream": {
+                        "schema": {"$ref": "#/components/schemas/Line"}
+                    }}},
+                    "404": {"description": "no", "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/ApiError"}
+                    }}}
+                }
+            }}},
+            "components": {"schemas": {
+                "Line": {"type": "object", "properties": {"text": {"type": "string"}}},
+                "ApiError": {"type": "object", "properties": {"message": {"type": "string"}}}
+            }}
+        }));
+        let raw = files
+            .iter()
+            .find(|(path, _)| path.ends_with("logs/raw_client.py"))
+            .map(|(_, text)| text)
+            .expect("raw client");
+        assert!(raw.contains("raise core_api_error_ApiError("), "{raw}");
+        assert!(!raw.contains("raise ApiError("), "{raw}");
+    }
+
+    #[test]
     fn a_streamed_download_raises_the_aliased_core_api_error() {
         // A component schema called `ApiError` aliases both imports; the stream's
         // own `raise` lines have to use the alias or the module raises a NameError.

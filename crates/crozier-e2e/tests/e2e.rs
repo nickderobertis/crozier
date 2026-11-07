@@ -32181,6 +32181,7 @@ fn registered_literals_zalando_incubator_agentic_identity_broker_c7fb9242_matche
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
 /// Certified enum-mode witness, corpus row 5600.
 const LITERALS_APIS_GURU_D8D536EA: Corpus = Corpus {
     api: "registered-literals-apis-guru-openapi-directory-d8d536ea",
@@ -32506,3 +32507,4 @@ fn registered_literals_revertinc_revert_698ea54a_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_REVERTINC_698EA54A);
     overlay_goldens::assert_literals_match(&LITERALS_REVERTINC_698EA54A);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
