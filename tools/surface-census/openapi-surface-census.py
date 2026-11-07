@@ -2985,7 +2985,7 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/openapi.rs::<LiteralTypeOverride as From>::from",
         "that the same literal and datetime override spellings still select primitive kinds",
-        "d560f3ebb3112f41",
+        "1f3cfbacddab1a91",
     ),
     PortPin(
         "is_closed_empty_object",
@@ -8421,7 +8421,7 @@ class Census:
                 case "float":
                     return "float"
                 case "string":
-                    if override == "datetime":
+                    if override in ("datetime", "optional<datetime>"):
                         return "datetime"
                     return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
                 case "integer":
