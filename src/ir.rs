@@ -6311,6 +6311,25 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
     }) {
         return BodyComposition::AllOf;
     }
+    // An inline JSON `allOf` requiring a parent's property works its docstring call
+    // from the parent's order, where the Markdown writers take the promoted field
+    // first: FOSSology's `createUser` passes `id=1, name="name"` and documents
+    // `name` first.
+    if op
+        .request_body
+        .as_ref()
+        .and_then(|body| body.content.get("application/json"))
+        .and_then(|media| media.schema.as_ref())
+        .and_then(parents_with_inline_members)
+        .is_some_and(|merged| {
+            merged
+                .required
+                .iter()
+                .any(|name| !merged.properties.contains_key(name))
+        })
+    {
+        return BodyComposition::AllOf;
+    }
     if !request_body_has_all_of(doc, op) {
         return BodyComposition::Plain;
     }
@@ -8782,6 +8801,16 @@ impl InlineHoister<'_> {
         // is (see [`flatten_nested_all_of`]): Short.io's `POST /links` answers
         // `allOf: [{allOf: [{originalURL, …}, {idString, …}]}, {success,
         // duplicate}]`, and Fern's `PostLinksResponse` carries every property.
+        // `allOf: [$ref Parent, {required: [...]}]` tightening the parent is the
+        // parent's own object with those names required, documented as the parent
+        // is: mautrix's `create_dm` answers `ResolvedIdentifier` requiring `mxid`.
+        let tightened = self
+            .schemas
+            .and_then(|schemas| tightened_parent(schemas, schema));
+        let (schema, docstring) = match &tightened {
+            Some(parent) => (parent, clean_doc(parent.description.as_deref())),
+            None => (schema, docstring),
+        };
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
         let redeclared = last_redeclared_member_properties(schema);
@@ -11112,11 +11141,13 @@ fn append_parent_body_fields(schema: &Schema, types: &[TypeDecl], fields: &mut V
     let promoted_count = promoted.len();
     for field in fields.iter_mut() {
         field.reference_order += promoted_count;
+        field.markdown_order += promoted_count;
     }
     for (index, mut field) in promoted.into_iter().enumerate() {
         field.optional = false;
         field.spec_required = true;
         field.reference_order = index;
+        field.markdown_order = index;
         fields.insert(index, field);
     }
     // A promotion flattens the parent, so the reference documentation follows the
@@ -11133,6 +11164,46 @@ fn append_parent_body_fields(schema: &Schema, types: &[TypeDecl], fields: &mut V
             fields[index].reference_order = rank;
         }
     }
+}
+
+/// The parent an inline `allOf: [$ref Parent, {required: [...]}]` tightens, with
+/// those names required, when one of them is a property the parent leaves optional.
+fn tightened_parent(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Option<Schema> {
+    if !schema.properties.is_empty() {
+        return None;
+    }
+    let [first, second] = schema.all_of.as_deref()? else {
+        return None;
+    };
+    let (reference, bare) = match (first.reference.as_deref(), second.reference.as_deref()) {
+        (Some(reference), None) => (reference, second),
+        (None, Some(reference)) => (reference, first),
+        _ => return None,
+    };
+    // A member declaring `type: object` is an object of its own, and takes the
+    // promotion path instead: KOMPAZ's `AuthMeResponse` lists the fields it requires
+    // first, where mautrix's typeless member keeps `ResolvedIdentifier`'s order.
+    if !bare.properties.is_empty() || bare.required.is_empty() || bare.ty.is_some() {
+        return None;
+    }
+    let parent = resolve_ref_from_schemas(schemas, reference)?;
+    if parent.all_of.is_some() || parent.one_of.is_some() || parent.any_of.is_some() {
+        return None;
+    }
+    let tightens = bare
+        .required
+        .iter()
+        .any(|name| parent.properties.contains_key(name) && !parent.required.contains(name));
+    if !tightens {
+        return None;
+    }
+    let mut merged = parent.clone();
+    for name in bare.required.iter() {
+        if !merged.required.contains(name) {
+            merged.required.push(name.clone());
+        }
+    }
+    Some(merged)
 }
 
 /// The names a component body requires through a bare `{required: [...]}` member

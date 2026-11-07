@@ -9377,10 +9377,14 @@ impl<'a> ExampleCtx<'a> {
             }
             TypeDecl::Enum(enum_type) => {
                 let value = example.strip_prefix('"')?.strip_suffix('"')?;
+                // A value the enum does not declare is worked as its first member:
+                // AppVeyor's role example names `DeleteProjectBuilds`, which
+                // `PermissionName` leaves out.
                 let member = enum_type
                     .members
                     .iter()
-                    .find(|member| member.value == value)?;
+                    .find(|member| member.value == value)
+                    .or_else(|| enum_type.members.first())?;
                 if self.enum_type == EnumType::Literals {
                     return Some(Example::Atom(literal_enum_value(&member.value)));
                 }
@@ -13740,6 +13744,61 @@ mod tests {
     }
 
     #[test]
+    fn a_required_only_member_tightening_an_inline_response_keeps_the_parents_order() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/things": {"get": {
+                "operationId": "getThing",
+                "tags": ["things"],
+                "responses": {"200": {"description": "ok", "content": {"application/json": {
+                    "schema": {"allOf": [
+                        {"$ref": "#/components/schemas/Thing"},
+                        {"required": ["later"]}
+                    ]}
+                }}}}
+            }}},
+            "components": {"schemas": {"Thing": {
+                "type": "object",
+                "description": "One thing.",
+                "properties": {"first": {"type": "string"}, "later": {"type": "string"}}
+            }}}
+        }));
+        let model = files
+            .iter()
+            .find(|(path, _)| path.ends_with("get_thing_response.py"))
+            .map(|(_, text)| text)
+            .expect("the response model");
+        assert!(model.contains("One thing."), "{model}");
+        assert!(model.contains("later: str"), "{model}");
+        assert!(
+            model.find("first: typing.Optional[str]").expect(model)
+                < model.find("later: str").expect(model),
+            "{model}"
+        );
+    }
+
+    #[test]
+    fn an_example_value_the_enum_does_not_declare_is_worked_as_its_first_member() {
+        let (_, client) = sources_of(
+            one_post(
+                serde_json::json!({"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Grant"},
+                    "example": {"name": "Unlisted"}
+                }}),
+                serde_json::json!({
+                    "Permission": {"type": "string", "enum": ["Read", "Write"]},
+                    "Grant": {"type": "object", "required": ["name"],
+                              "properties": {"name": {"$ref": "#/components/schemas/Permission"}}}
+                }),
+            ),
+            "things",
+        );
+        assert!(client.contains("name=Permission.READ"), "{client}");
+        assert!(!client.contains("Unlisted"), "{client}");
+    }
+
+    #[test]
     fn the_retry_with_status_has_its_named_error() {
         assert_eq!(crate::ir::error_class_name(449), Some("RetryWithError"));
     }
@@ -16896,9 +16955,14 @@ mod tests {
                 .flat(),
             "Color.RED"
         );
-        assert!(ctx
-            .value_from_example(&TypeRef::Named("Color".to_string()), "\"blue\"")
-            .is_none());
+        // A value the enum does not declare is worked as its first member, as the
+        // certified pair works AppVeyor's `DeleteProjectBuilds`.
+        assert_eq!(
+            ctx.value_from_example(&TypeRef::Named("Color".to_string()), "\"blue\"")
+                .unwrap()
+                .flat(),
+            "Color.RED"
+        );
         assert!(ctx
             .value_from_example(&TypeRef::Primitive(Prim::Bool), "not-json")
             .is_some());
