@@ -69,7 +69,6 @@
         "{workspaceRoot}/src/**/*",
         "{workspaceRoot}/crates/**/*",
         "{workspaceRoot}/tests/*",
-        "{workspaceRoot}/tests/lane_inventory/**/*",
         "{workspaceRoot}/tests/support/**/*",
         "{workspaceRoot}/tools/ci/**/*",
         "{workspaceRoot}/tools/ci-journeys/**/*",
