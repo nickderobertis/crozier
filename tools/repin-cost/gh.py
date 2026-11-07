@@ -18,6 +18,8 @@ import urllib.request
 from pathlib import Path
 from typing import Any
 
+from public_id import public_url
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT / "tools" / "witness-search"))
 
@@ -106,7 +108,7 @@ class GitHub:
 
     def _log(self, url: str, status: int, hit: bool) -> None:
         with self.ledger.open("a", encoding="utf-8") as handle:
-            handle.write(json.dumps({"url": url, "status": status, "cache_hit": hit}) + "\n")
+            handle.write(json.dumps({"url": public_url(url), "status": status, "cache_hit": hit}) + "\n")
 
     def json(self, path: str):
         status, body = self.get(path, json_body=True)
