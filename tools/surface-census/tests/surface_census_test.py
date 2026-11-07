@@ -1624,7 +1624,13 @@ def combination_search_failures(
             if not heading:
                 raise ValueError("handed-off README omits Newly admitted documents")
             admitted = admitted.split("\n## ", 1)[0]
-            required |= set(re.findall(r"^- `([^`]+)` \| `[0-9a-f]{64}`", admitted, re.M))
+            for entry in admitted.splitlines():
+                if not entry.startswith("- "):
+                    continue
+                listed = re.match(r"- `([^`]+)` \| `[0-9a-f]{64}`", entry)
+                if not listed:
+                    raise ValueError(f"handed-off README has a malformed newly admitted entry: {entry[:120]!r}")
+                required.add(listed.group(1))
         except (OSError, UnicodeError, csv.Error, ValueError, AssertionError) as error:
             return [*failures, f"{key}: cannot read the required handed-off population: {error}"]
         missing = required - set(names)
@@ -10146,6 +10152,13 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.assertTrue(any("malformed" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_malformed_census_cell_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        lines[1] = lines[1].replace("\tdecided:", "\tperhaps:").replace("\toutstanding:", "\tperhaps:")
+        census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
+        self.assertTrue(any("unknown candidate state" in f for f in self.tool.failures(self.root, self.counts)))
 
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
