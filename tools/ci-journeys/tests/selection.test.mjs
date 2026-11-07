@@ -301,9 +301,9 @@ test("a manifest or inventory of the wrong shape is refused, not read past", (t)
       inventory.entrypoints["runtime:test"].now = ["runtime:test"];
       write(root, { "tools/ci/lanes.json": JSON.stringify(inventory) });
     }],
-    ["an added entry that is not a string", (root) => {
+    ["an added entry with no platform list", (root) => {
       const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
-      write(root, { "tools/ci/lanes.json": JSON.stringify({ ...inventory, added: [["runtime:test"]] }) });
+      write(root, { "tools/ci/lanes.json": JSON.stringify({ ...inventory, added: { "runtime:test": "linux" } }) });
     }],
     ["an inventory with no rows", (root) => write(root, { "tools/ci/lanes.json": JSON.stringify({ added: [] }) })],
     ["a row with an unknown platform", (root) => {
@@ -351,6 +351,21 @@ test("the manifest digest moves with every manifest, and a failed listing never 
   const failed = digest(elsewhere);
   assert.equal(failed.status, 0, "a runtime input must never fail");
   assert.notEqual(failed.stdout, digest(elsewhere).stdout, "a failed listing is never reused");
+});
+
+test("the inventory reads each platform's lane targets: a loss on one is a loss", (t) => {
+  const graph = realGraph(t);
+  gitIn(graph.root, "checkout", "--quiet", "--detach", graph.base);
+  const justfile = readFileSync(join(graph.root, "justfile"), "utf8");
+  const dropped = justfile.replace('"test,build,coverage,budgets,lint-windows,typecheck"', '"build,coverage,budgets,lint-windows,typecheck"');
+  assert.notEqual(dropped, justfile);
+  write(graph.root, { justfile: dropped });
+  const run = spawnSync(process.execPath, ["tools/ci/lane-inventory.mjs"], { cwd: graph.root, encoding: "utf8" });
+  assert.equal(run.status, 1, run.stderr);
+  assert.match(run.stderr, /crozier-tool-journeys:test: no lane reaches it on windows/, "added entries are held too");
+  assert.match(run.stderr, /crozier-e2e:test: no lane reaches it on windows/);
+  assert.doesNotMatch(run.stderr, /on (linux|macos):/);
+  gitIn(graph.root, "checkout", "--quiet", "--", ".");
 });
 
 test("a retired row in the same change passes: only an unrecorded loss fails", (t) => {

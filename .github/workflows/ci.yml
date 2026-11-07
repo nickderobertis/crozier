@@ -135,6 +135,7 @@ jobs:
           publish: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
           github-token: ${{ github.token }}
 
+  # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
   # The Linux test lane: the only platform for the Prism, corpus and packaging proof, which
   # exercise no platform-specific code path of crozier's.
   # Measured limit: run 42345332459 spent 7371 s on this work across its jobs (Check 3053,
@@ -233,6 +234,7 @@ jobs:
         run: just ci-test --projects=tag:lane:live
       # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
 
+  # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
   # The Windows test lane. Measured limit: run 42345332459 spent 4307 s on this work
   # (Check 3557, SDK 363, install 387). 90 is transitional, as for test-linux.
   test-windows:
@@ -300,6 +302,7 @@ jobs:
       - name: Smoke-test the installed binary
         run: crozier --version
 
+  # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
   # The Mac test lane, one job per run. Measured limit: run 42345332459 spent 3767 s on this
   # work (Check 2451, SDK 1153, install 163). 90 is transitional, as for test-linux.
   test-macos:

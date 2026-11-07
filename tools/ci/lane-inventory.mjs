@@ -65,46 +65,52 @@ try {
 }
 const rows = isMapping(inventory?.entrypoints) ? Object.entries(inventory.entrypoints) : undefined;
 const commands = isMapping(inventory?.commands) ? Object.entries(inventory.commands) : undefined;
+const added = isMapping(inventory?.added) ? Object.entries(inventory.added) : undefined;
 const isEntrypoint = (value) => typeof value === "string" && /^[^:]+:[^:]+$/.test(value);
 const isPlatformList = (list) => Array.isArray(list) && list.every((platform) => ["linux", "macos", "windows"].includes(platform));
-if (!rows || !commands || !Array.isArray(inventory.added) || !inventory.added.every(isEntrypoint)
+if (!rows || !commands || !added || !added.every(([name, list]) => isEntrypoint(name) && isPlatformList(list))
   || !rows.every(([entry, row]) => isEntrypoint(row?.now ?? entry) && isPlatformList(row?.platforms)) || !commands.every(([, list]) => isPlatformList(list))) {
-  refuse("tools/ci/lanes.json needs entrypoints and commands naming project:target and linux, macos or windows, and an added list");
+  refuse("tools/ci/lanes.json needs entrypoints and commands naming project:target and linux, macos or windows, and an added mapping of the same");
 }
 const ci = read(".github/workflows/ci.yml");
 const problems = [];
 const at = (from, to) => ci.slice(ci.indexOf(`  ${from}:\n`), to ? ci.indexOf(`  ${to}:\n`) : undefined);
 const lanes = { linux: at("test-linux", "test-windows"), windows: at("test-windows", "test-macos"), macos: at("test-macos", "gate") };
 
-// What the lanes' recipes start, through every `dependsOn`: a row whose target nothing starts
-// runs nowhere, however present it is.
+// What each platform's recipes start, through every `dependsOn`: a row whose target nothing
+// starts on a platform it owes runs nowhere there, however present it is.
 const justfile = read("justfile");
-const LANE_TARGETS = [...justfile.matchAll(/^lane-(?:test|budgets-host) \*args:\n.*--targets=(.+)$/gm), ...justfile.matchAll(/^lane_test_targets := (.+)$/gm)]
-  .flatMap((match) => match[1].match(/[a-z][a-z,-]*[a-z]/g) ?? [])
-  .flatMap((list) => list.split(","))
-  .filter((target) => ENTRYPOINT.test(target));
-if (!LANE_TARGETS.includes("test") || !LANE_TARGETS.includes("budgets-host")) {
-  console.error("lane-inventory: cannot read the lane recipes' target lists from the justfile");
-  console.error("lane-inventory: keep `lane_test_targets` and the `lane-*` recipes' --targets= lists readable");
-  process.exit(2);
+const listed = /^lane_test_targets := if os\(\) == "windows" \{ "([^"]+)" \} else if os\(\) == "macos" \{ "([^"]+)" \} else \{ "([^"]+)" \}$/m.exec(justfile);
+const hostBudgets = /^lane-budgets-host \*args:\n.*--targets=(\S+)$/m.exec(justfile);
+if (!listed || !hostBudgets) refuse("the justfile's lane_test_targets and lane-budgets-host recipes are not in the form this check reads");
+const started = {
+  windows: listed[1].split(","),
+  macos: listed[2].split(","),
+  // Only test-linux runs the host budget step (asserted against ci.yml below).
+  linux: [...listed[3].split(","), ...hostBudgets[1].split(",")],
+};
+if (!lanes.linux.includes("just ci-budgets-host")) problems.push("test-linux no longer runs `just ci-budgets-host`");
+const reachedOn = {};
+for (const [platform, targets] of Object.entries(started)) {
+  const reached = new Set();
+  const reach = (name, target) => {
+    const id = `${name}:${target}`;
+    const spec = graph.get(name)?.targets?.[target];
+    if (!spec || reached.has(id)) return;
+    reached.add(id);
+    for (const dependency of spec.dependsOn ?? []) {
+      if (typeof dependency === "object") for (const other of dependency.projects ?? [name]) reach(other, dependency.target);
+      else if (dependency.startsWith("^")) continue;
+      else if (dependency.includes(":")) reach(...dependency.split(":"));
+      else reach(name, dependency);
+    }
+  };
+  for (const name of graph.keys()) for (const target of targets) reach(name, target);
+  reachedOn[platform] = reached;
 }
-const reached = new Set();
-function reach(name, target) {
-  const id = `${name}:${target}`;
-  const spec = graph.get(name)?.targets?.[target];
-  if (!spec || reached.has(id)) return;
-  reached.add(id);
-  for (const dependency of spec.dependsOn ?? []) {
-    if (typeof dependency === "object") for (const other of dependency.projects ?? [name]) reach(other, dependency.target);
-    else if (dependency.startsWith("^")) continue;
-    else if (dependency.includes(":")) reach(...dependency.split(":"));
-    else reach(name, dependency);
-  }
-}
-for (const name of graph.keys()) for (const target of LANE_TARGETS) reach(name, target);
 
-const accounted = new Set(inventory.added);
-for (const [entry, row] of rows) {
+const accounted = new Set();
+for (const [entry, row] of [...rows, ...added.map(([name, platforms]) => [name, { platforms }])]) {
   const now = row.now ?? entry;
   accounted.add(now);
   const [name, target] = now.split(":");
@@ -117,25 +123,21 @@ for (const [entry, row] of rows) {
     problems.push(`${now}: the target is gone, and its row says it runs on ${row.platforms.join(", ")}`);
     continue;
   }
-  if (!reached.has(now)) problems.push(`${now}: no lane reaches it: no recipe starts it and no target it serves depends on it`);
   const owners = (project.tags ?? []).filter((tag) => tag.startsWith("platform:")).map((tag) => tag.slice("platform:".length));
   // The step that runs this project in each lane its row owes: its lane's, or the offline one.
   const lane = (project.tags ?? []).find((tag) => tag.startsWith("lane:"));
   const step = (project.tags ?? []).includes("tier:promoted") ? `--projects=tag:${lane}` : "--exclude=tag:tier:promoted";
   for (const platform of row.platforms) {
     if (owners.length > 0 && !owners.includes(platform)) problems.push(`${now}: no longer runs on ${platform}, which its row owes`);
+    else if (!reachedOn[platform].has(now)) problems.push(`${now}: no lane reaches it on ${platform}: no recipe starts it and no target it serves depends on it`);
     else if (target !== "budgets-host" && !lanes[platform].includes(step)) problems.push(`${now}: test-${platform} has no step \`${step}\`, which its row owes`);
   }
-}
-for (const added of inventory.added) {
-  const [name, target] = added.split(":");
-  if (!graph.get(name)?.targets?.[target]) problems.push(`${added}: listed under "added", and the target is gone`);
 }
 for (const [name, project] of graph) {
   const tags = project.tags ?? [];
   for (const [target, spec] of Object.entries(project.targets ?? {})) {
     if (ENTRYPOINT.test(target) && spec.executor !== "nx:noop" && !accounted.has(`${name}:${target}`)) {
-      problems.push(`${name}:${target}: not in tools/ci/lanes.json; add it under "added"`);
+      problems.push(`${name}:${target}: not in tools/ci/lanes.json; add it under "added" with the platforms that owe it`);
     }
   }
   if (tags.includes("tier:promoted")) {

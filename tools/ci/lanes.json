@@ -476,7 +476,11 @@
       "lint-macos": "clippy over crozier-e2e, whose cfg(target_os = \"linux\") case compiles out on macOS; every other cfg in the tree is cfg(unix), the same code Linux reads"
     }
   },
-  "added": [
-    "crozier-tool-journeys:test"
-  ]
+  "added": {
+    "crozier-tool-journeys:test": [
+      "linux",
+      "macos",
+      "windows"
+    ]
+  }
 }
