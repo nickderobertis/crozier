@@ -142,8 +142,9 @@ from committed bytes; those are measured, and record the reach store's commit `2
 
 `census.tsv.gz` retains the fixture-only search census columns, sorted by all
 column values, with UTF-8 and LF records. It uses gzip level 9, timestamp 0,
-and an empty original filename. The census suite decodes, sorts, serializes
-and recompresses this committed file and requires identical bytes. The plain
+and an empty original filename. The census suite requires that header and that its
+decompressed content is sorted and serialized canonically; the compressed bytes
+themselves are the compressor's, so they are not compared. The plain
 [outstanding index](outstanding-candidates.tsv) lists every affected combination
 for each candidate and the reason its screening is unfinished.
 

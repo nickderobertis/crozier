@@ -10091,20 +10091,25 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         documents = {document.document for document in self.tool.population(REPO)}
         self.assertEqual(78, len(documents))
         for key in self.tool.FORMER_HANDWRITTEN:
-            self.assertEqual(documents, {row["document"] for row in rows if row["key"] == key}, key)
+            self.assertEqual(documents, {row.document for row in rows if row.key == key}, key)
 
     def test_the_inline_read_only_arm_rests_on_the_measured_witness(self) -> None:
         witnesses = {
-            row["fixture"]
+            row.fixture
             for row in self.tool.read_rows(REPO)
-            if row["key"] == "combo-inline-body-read-only-property" and row["verdict"] == "witness"
+            if row.key == "combo-inline-body-read-only-property" and row.verdict is self.tool.Verdict.WITNESS
         }
         self.assertIn("registered-literals-apis-guru-openapi-directory-cdcf7865", witnesses)
 
     def test_a_verdict_its_measurements_do_not_support_is_refused(self) -> None:
-        key, fixture = "combo-inline-body-read-only-property", "registered-literals-apis-guru-openapi-directory-cdcf7865"
+        key, fixture = (
+            "combo-inline-body-read-only-property",
+            "registered-literals-apis-guru-openapi-directory-cdcf7865",
+        )
         self.rewrite_cell(key, fixture, "arm_regions_executed", "0")
-        self.assertTrue(any("does not follow from its measurements" in f for f in self.tool.failures(self.root, self.counts)))
+        self.assertTrue(
+            any("does not follow from its measurements" in f for f in self.tool.failures(self.root, self.counts))
+        )
 
     def test_a_declaration_count_the_bytes_do_not_hold_is_refused(self) -> None:
         self.rewrite_cell(
@@ -10122,6 +10127,73 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
             "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239", "verdict", "not-declared"
         )
         self.assertTrue(any("census.tsv.gz does not state" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_fixture_or_digest_other_than_the_populations_is_refused(self) -> None:
+        key, fixture = "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239"
+        self.rewrite_cell(key, fixture, "sha256", "0" * 64)
+        self.assertTrue(any("not the handed-off" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_malformed_verdict_row_is_refused(self) -> None:
+        key, fixture = "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239"
+        self.rewrite_cell(key, fixture, "verdict", "probably")
+        self.assertTrue(any("unknown verdict" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+            cwd=REPO,
+        )
+
+    def test_write_measures_the_views_and_then_check_passes(self) -> None:
+        """The whole journey over the CLI: views to verdicts, a refused view, then recovery."""
+        reach = load_script("tools/surface-census/golden-reach.py")
+        (self.root / "src").symlink_to(REPO / "src", target_is_directory=True)
+        rows = self.tool.read_rows(REPO)
+        table = reach.read_sites_table(REPO / "docs/openapi-surface/golden-reach-sites.tsv")
+        site = reach.resolve_site(table["combo-inline-body-read-only-property"].sites[0], REPO)
+        region = [site.start, site.start_col, site.start, site.start_col + 1]
+        views = self.root / self.tool.VIEWS
+        (views / "tests").mkdir(parents=True)
+        files = {
+            reach.resolve_site(table[key].sites[0], REPO).file
+            for key in self.tool.contract(REPO)
+            if key in table and not table[key].cooccurrence
+        }
+        (views / "universe.json").write_text(json.dumps({file: [region] for file in files}), encoding="utf-8")
+        witness = "registered-literals-apis-guru-openapi-directory-cdcf7865"
+        for fixture, test in {(row.fixture, row.golden_test) for row in rows}:
+            hit = [region] if fixture == witness else []
+            (views / "tests" / f"{test}.json").write_text(json.dumps(dict.fromkeys(files, hit)), encoding="utf-8")
+        target = self.root / self.tool.RECORD / "handed-off-verdicts.tsv"
+        target.unlink()
+        written = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(0, written.returncode, written.stderr)
+        verdicts = {(row.key, row.fixture): row for row in self.tool.read_rows(self.root)}
+        proved = verdicts["combo-inline-body-read-only-property", witness]
+        self.assertIs(self.tool.Verdict.WITNESS, proved.verdict)
+        self.assertEqual((1, 1), proved.arm)
+        other = "registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265"
+        self.assertIs(
+            self.tool.Verdict.ARM_NOT_EXECUTED, verdicts["combo-inline-body-read-only-property", other].verdict
+        )
+        checked = self.run_tool("check", "--repo-root", str(self.root))
+        self.assertEqual(0, checked.returncode, checked.stderr)
+        # A view that cannot be read writes nothing and says what to run; restoring it recovers.
+        universe = views / "universe.json"
+        good = universe.read_text(encoding="utf-8")
+        before = target.read_bytes()
+        universe.write_text('{"src/ir.rs": [[1, 2]]}', encoding="utf-8")
+        refused = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("just census-repin", refused.stderr)
+        self.assertNotIn("Traceback", refused.stderr)
+        self.assertEqual(before, target.read_bytes())
+        universe.write_text(good, encoding="utf-8")
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
 
     def test_source_bytes_other_than_the_pinned_ones_are_refused(self) -> None:
         documents = self.root / self.tool.HANDED_OFF / "documents.tsv"
