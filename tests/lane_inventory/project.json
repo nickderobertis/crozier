@@ -24,7 +24,7 @@
         "{workspaceRoot}/tools/ci/lanes.json",
         "{workspaceRoot}/justfile",
         "{workspaceRoot}/tools/ci/lane-inventory.mjs",
-        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/.github/workflows/*.yml",
         "{workspaceRoot}/tests/**/project.json",
         "{workspaceRoot}/tools/release-packaging/project.json",
         "{workspaceRoot}/crates/crozier-e2e/project.json",

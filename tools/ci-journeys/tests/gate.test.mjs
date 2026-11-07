@@ -155,6 +155,19 @@ test("a promoted project leaves the affected tier unless --projects names it", (
   assert.ok(ran(root, "b"), named.output);
 });
 
+test("--every-project takes both projects with no base to resolve, keeps the cache, and refuses --sweep", (t) => {
+  const root = scratchWorkspace(t);
+  git(root, "remote", "remove", "origin");
+  const run = just(root, ["check", "--every-project"]);
+  assert.equal(run.status, 0, run.output);
+  assert.match(run.stdout, /every project \(--every-project\), through the cache/);
+  assert.match(run.stdout, /gate: projects: a, b/);
+  assert.ok(ran(root, "a") && ran(root, "b"));
+  const both = just(root, ["check", "--every-project", "--sweep"]);
+  assert.equal(both.status, 2, both.output);
+  assert.match(both.stderr, /--sweep skips the cache and --every-project keeps it/);
+});
+
 test("--sweep runs a promoted project without --projects naming it", (t) => {
   const root = scratchWorkspace(t);
   commitChange(root, "b/project.json", JSON.stringify({
@@ -179,7 +192,7 @@ test("an unknown argument or project is refused before anything runs", (t) => {
   assert.ok(!ran(root, "a") && !ran(root, "b"));
   // A switch given a value is refused, not read as set: `--plan=false` would
   // otherwise run nothing, and `--sweep=false` would sweep.
-  for (const flag of ["--plan", "--sweep"]) {
+  for (const flag of ["--plan", "--sweep", "--every-project"]) {
     const run = just(root, ["check", `${flag}=false`]);
     assert.equal(run.status, 2, run.output);
     assert.match(run.output, new RegExp(`${flag} takes no value, not 'false'`));

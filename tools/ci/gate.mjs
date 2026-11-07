@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // The gate: one recipe (`just check`), two tiers, chosen by a flag.
 //
-//   node tools/ci/gate.mjs [--sweep] [--include-promoted] [--platform=host|linux|macos|windows]
+//   node tools/ci/gate.mjs [--sweep] [--every-project] [--include-promoted] [--platform=host|linux|macos|windows]
 //     [--projects=p,q] [--exclude=p,q] -- nx run-many --targets=a,b
 //
 // The recipe names the Nx command it runs (`just check`, `just test` and `just
@@ -28,6 +28,10 @@
 // The broader tier (`--sweep`) runs the same targets over every project,
 // promoted ones included, with the cache skipped: it exists to catch what
 // affected detection or a stale cache could miss.
+//
+// `--every-project` selects like the broader tier but keeps the cache, promoted
+// projects still needing `--projects` or `--include-promoted`: main's cache writer
+// (ci-caches.yml) replays what an earlier push proved and adds what this one changed.
 //
 // Exit status: 0 when every selected target passed (or none was selected); 2
 // for an invocation it does not take — an unknown flag, a list that is not
@@ -63,6 +67,7 @@ const USAGE = `usage: just check|test|lint [--sweep] [--projects=p,q] [--exclude
                the base is NX_BASE (a ref name or commit SHA) or the merge base
                of HEAD with ${DEFAULT_BASE_REF}
   --sweep      broader tier: every project, promoted tiers included, uncached
+  --every-project  every project, through the cache; no base is compared against
   --plan       print the selection and the Nx command, and run nothing
   --include-promoted  promoted tiers too, when the change reaches them
   --platform   only what this platform owes (host, linux, macos or windows),
@@ -85,7 +90,7 @@ const PLATFORMS = new Map([["linux", "linux"], ["darwin", "macos"], ["win32", "w
 const PLATFORM_TAG = "platform:";
 
 function parseArgs(argv) {
-  const options = { sweep: false, plan: false, includePromoted: false, platform: undefined, targets: undefined, projects: undefined, exclude: [] };
+  const options = { sweep: false, everyProject: false, plan: false, includePromoted: false, platform: undefined, targets: undefined, projects: undefined, exclude: [] };
   const split = argv.indexOf("--");
   const command = split < 0 ? [] : argv.slice(split + 1);
   const targets = command.length === 3 && command[0] === "nx" && command[1] === "run-many" && COMMAND.exec(command[2]);
@@ -104,12 +109,15 @@ function parseArgs(argv) {
       }
       return v.split(",");
     };
-    if ((flag === "--sweep" || flag === "--plan" || flag === "--include-promoted") && inline !== undefined) {
+    if ((flag === "--sweep" || flag === "--every-project" || flag === "--plan" || flag === "--include-promoted") && inline !== undefined) {
       die(`${flag} takes no value, not '${inline}'`, USAGE, 2);
     }
     switch (flag) {
       case "--sweep":
         options.sweep = true;
+        break;
+      case "--every-project":
+        options.everyProject = true;
         break;
       case "--plan":
         options.plan = true;
@@ -141,6 +149,7 @@ function parseArgs(argv) {
         die(`unknown argument '${arg}'`, USAGE, 2);
     }
   }
+  if (options.sweep && options.everyProject) die("--sweep skips the cache and --every-project keeps it; pass one", USAGE, 2);
   return options;
 }
 
@@ -293,7 +302,7 @@ function runCaptured(command, args, options) {
 
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const base = options.sweep ? undefined : resolveBase();
+  const base = options.sweep || options.everyProject ? undefined : resolveBase();
   const tags = projectTags();
   const expand = (list) =>
     list.flatMap((entry) => {
@@ -316,6 +325,9 @@ async function main() {
   if (options.sweep) {
     candidates = Object.keys(tags);
     tierLine = "broader tier (--sweep): every project, cache skipped";
+  } else if (options.everyProject) {
+    candidates = Object.keys(tags);
+    tierLine = "every project (--every-project), through the cache";
   } else {
     candidates = nxJson(["show", "projects", "--affected", `--base=${base.sha}`, "--json"]);
     const unknown = Array.isArray(candidates) ? candidates.filter((name) => typeof name !== "string" || !Object.hasOwn(tags, name)) : [];

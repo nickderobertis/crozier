@@ -2,11 +2,12 @@
 // Every test, build, coverage and budget entrypoint against tools/ci/lanes.json and ci.yml,
 // so none can leave the pull request flow unnoticed: a row whose target or project is gone,
 // or whose platform was dropped, a new target with no row, a promoted project with no lane,
-// a lane no step runs, or a lost platform command.
+// a lane no step runs, a lost platform command, or a workflow on push to main that is not
+// declared as gating nothing.
 //
 // Exit 0 when they reconcile; 1 naming each difference; 2 when a file cannot be read or has the wrong shape.
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -67,7 +68,11 @@ const rows = isMapping(inventory?.entrypoints) ? Object.entries(inventory.entryp
 const commands = isMapping(inventory?.commands) ? Object.entries(inventory.commands) : undefined;
 const added = isMapping(inventory?.added) ? Object.entries(inventory.added) : undefined;
 const isEntrypoint = (value) => typeof value === "string" && /^[^:]+:[^:]+$/.test(value);
+const nonCheck = isMapping(inventory?.nonCheckWorkflows) ? Object.entries(inventory.nonCheckWorkflows) : undefined;
 const isPlatformList = (list) => Array.isArray(list) && list.every((platform) => ["linux", "macos", "windows"].includes(platform));
+if (!nonCheck || !nonCheck.every(([path, why]) => /^\.github\/workflows\/[^/]+\.yml$/.test(path) && typeof why === "string" && why !== "")) {
+  refuse("tools/ci/lanes.json needs a nonCheckWorkflows mapping of .github/workflows/<name>.yml to why it gates nothing");
+}
 if (!rows || !commands || !added || !added.every(([name, list]) => isEntrypoint(name) && isPlatformList(list))
   || !rows.every(([entry, row]) => isEntrypoint(row?.now ?? entry) && isPlatformList(row?.platforms)) || !commands.every(([, list]) => isPlatformList(list))) {
   refuse("tools/ci/lanes.json needs entrypoints and commands naming project:target and linux, macos or windows, and an added mapping of the same");
@@ -150,6 +155,27 @@ for (const [command, platforms] of commands) {
   for (const platform of platforms) {
     if (!lanes[platform].includes(`run: ${command}`)) problems.push(`test-${platform} no longer runs \`${command}\``);
   }
+}
+
+// A workflow's top-level `on:` value, through the lines up to the next top-level key.
+const triggers = (text) => /^on:[^\n]*\n(?:[ #][^\n]*\n|\n)*/m.exec(text)?.[0] ?? "";
+// Whether a push to main starts it: a `push` with no filter does, as does one whose branches name main.
+function runsOnMainPush(block) {
+  if (/^on:.*\bpush\b/.test(block)) return true;
+  const push = /^ {2}push:[^\n]*\n((?: {4,}[^\n]*\n)*)/m.exec(block);
+  if (!push) return false;
+  if (/^ {4}branches:/m.test(push[1])) return /\bmain\b/.test(push[1]);
+  return !/^ {4}tags:/m.test(push[1]);
+}
+const listedNonCheck = new Map(nonCheck);
+for (const path of listedNonCheck.keys()) {
+  const block = triggers(read(path));
+  if (!runsOnMainPush(block)) problems.push(`${path}: listed as a non-check workflow, but no push to main starts it`);
+  if (/\bpull_request/.test(block)) problems.push(`${path}: listed as a non-check workflow, but a pull request starts it`);
+}
+for (const name of readdirSync(join(ROOT, ".github/workflows"))) {
+  const path = `.github/workflows/${name}`;
+  if (runsOnMainPush(triggers(read(path))) && !listedNonCheck.has(path)) problems.push(`${path}: runs on push to main and is not in nonCheckWorkflows; CI's proof belongs in a pull request lane`);
 }
 
 if (problems.length > 0) {

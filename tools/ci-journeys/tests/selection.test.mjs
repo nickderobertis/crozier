@@ -31,10 +31,11 @@ const RECORD = `node -e "const f=require('fs');f.appendFileSync(process.env.RAN_
 function realGraph(t) {
   const root = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(), "crozier-graph-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  for (const path of ["justfile", "nx.json", "package.json", "tools/ci/lane-inventory.mjs", "tools/ci/lanes.json", "tools/ci/project-files-digest.mjs", ".github/workflows/ci.yml", "tools/ci/gate.mjs", "tools/ci/result-cache.mjs", "tools/ci/gate-timing.mjs", "tools/ci/gate-timing/core.mjs", "tools/ci/ci-tier.mjs"]) {
+  for (const path of ["justfile", "nx.json", "package.json", "tools/ci/lane-inventory.mjs", "tools/ci/lanes.json", "tools/ci/project-files-digest.mjs", "tools/ci/gate.mjs", "tools/ci/result-cache.mjs", "tools/ci/gate-timing.mjs", "tools/ci/gate-timing/core.mjs", "tools/ci/ci-tier.mjs"]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     cpSync(join(REPO, path), join(root, path));
   }
+  cpSync(join(REPO, ".github/workflows"), join(root, ".github/workflows"), { recursive: true });
   symlinkSync(join(REPO, "node_modules"), join(root, "node_modules"), "junction");
   for (const path of tracked()) {
     const project = readProject(path);
@@ -281,6 +282,28 @@ test("a change to a tier manifest alone selects the inventory check, which fails
   assert.ok(kept.projects.includes("lane-inventory"), kept.output);
   const unrelated = lane(graph, ["docs/float-literal-parity.md"], "lane-lint");
   assert.ok(!unrelated.projects.includes("lane-inventory"), "an unrelated edit does not pay for it");
+});
+
+test("a workflow on push to main must be declared as gating nothing, and stay that", (t) => {
+  const graph = realGraph(t);
+  const rewrite = (path, change) => (root) => write(root, { [path]: change(readFileSync(join(root, path), "utf8")) });
+  const WRITER = ".github/workflows/ci-caches.yml";
+  const onMain = "on:\n  push:\n    branches: [main]\njobs: {}\n";
+  const cases = [
+    ["an undeclared workflow on main", (root) => write(root, { ".github/workflows/extra.yml": onMain }), /extra\.yml: runs on push to main and is not in nonCheckWorkflows/],
+    ["an undeclared one by the list form", (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    branches:\n      - main\njobs: {}\n" }), /extra\.yml: runs on push to main/],
+    ["an undeclared one with no filter", (root) => write(root, { ".github/workflows/extra.yml": "on: push\njobs: {}\n" }), /extra\.yml: runs on push to main/],
+    ["a declared one a pull request starts", rewrite(WRITER, (text) => text.replace("on:\n  push:", "on:\n  pull_request:\n  push:")), /ci-caches\.yml: listed as a non-check workflow, but a pull request starts it/],
+    ["a declared one main no longer starts", rewrite(WRITER, (text) => text.replace("branches: [main]", "branches: [other]")), /ci-caches\.yml: listed as a non-check workflow, but no push to main starts it/],
+    ["a declared one that is gone", (root) => rmSync(join(root, WRITER)), /cannot read \.github\/workflows\/ci-caches\.yml/],
+  ];
+  for (const [what, edit, message] of cases) {
+    const { inventory } = lane(graph, edit, "lane-lint");
+    assert.notEqual(inventory.status, 0, what);
+    assert.match(inventory.stderr, message, what);
+  }
+  const tagged = lane(graph, (root) => write(root, { ".github/workflows/extra.yml": "on:\n  push:\n    tags: ['v*']\njobs: {}\n" }), "lane-lint");
+  assert.equal(tagged.inventory.status, 0, `a tag push is not a push to main:\n${tagged.inventory.stderr}`);
 });
 
 test("a manifest or inventory of the wrong shape is refused, not read past", (t) => {
@@ -540,6 +563,56 @@ test("results restored onto a runner with no Nx state replay by input hash, outp
   rmSync(join(root, ".nx"), { recursive: true, force: true });
   rmSync(results, { recursive: true, force: true });
   assert.deepEqual(run(carried).ran, ["cli:test", "sdk:test"], "nothing carried, nothing replayed");
+});
+
+test("main's cache writer proves every project into the store, and a pull request's first push replays from it", (t) => {
+  const { root } = tinyRepo(t);
+  const results = join(root, ".results");
+  const log = join(root, "ran.log");
+  // A suite reading less than its project, so a pull request can reach the project and not the suite's inputs.
+  write(root, {
+    "narrow/project.json": JSON.stringify({ name: "narrow", tags: ["type:tooling"], targets: { test: { command: `node -e "require('fs').appendFileSync(process.env.RAN_LOG,'narrow:test\\n')"`, cache: true, inputs: ["{projectRoot}/src/**/*"] } } }),
+    "narrow/src/a.txt": "a\n",
+    "narrow/readme.txt": "x\n",
+    "tier/project.json": JSON.stringify({ name: "tier", tags: ["type:tier", "tier:promoted"], targets: { test: { command: `node -e "require('fs').appendFileSync(process.env.RAN_LOG,'tier:test\\n')"`, cache: false } } }),
+  });
+  gitIn(root, "add", "-A");
+  gitIn(root, "commit", "--quiet", "-m", "two more projects");
+  const main = gitIn(root, "rev-parse", "HEAD");
+  const invoke = (args, env = {}) => {
+    rmSync(log, { force: true });
+    const result = spawnSync("just", args, { cwd: root, encoding: "utf8", shell: process.platform === "win32", env: clean({ RAN_LOG: log, CROZIER_RESULT_CACHE: ".results", ...env }) });
+    return { status: result.status, output: `${result.stdout}${result.stderr}`, ran: existsSync(log) ? readFileSync(log, "utf8").trim().split("\n").sort() : [] };
+  };
+  const stored = () => readdirSync(results).filter((name) => name.endsWith(".tar")).length;
+
+  // A red suite on main: what the writer's continue-on-error is for. The rest are still stored.
+  write(root, { "sdk/expected.txt": "stale\n" });
+  const red = invoke(["ci-caches-test"]);
+  assert.notEqual(red.status, 0, "the failure is reported");
+  assert.match(red.output, /stale table/);
+  assert.deepEqual(red.ran, ["cli:test", "narrow:test", "other:test", "sdk:test"], "every project, no base compared against, and the promoted tier left to its own step");
+  assert.equal(stored(), 3, "the three that passed are stored and the failure is not");
+  write(root, { "sdk/expected.txt": "v1:pets\n" });
+
+  // The next push to main, on a new runner: only what is missing executes.
+  rmSync(join(root, ".nx"), { recursive: true, force: true });
+  const next = invoke(["ci-caches-test"]);
+  assert.equal(next.status, 0, next.output);
+  assert.deepEqual(next.ran, ["sdk:test"], next.output);
+  assert.equal(stored(), 4);
+
+  // A pull request's first push, on a new runner, restoring main's store: it reaches the
+  // project and replays the suite whose inputs it left alone; an edit to an input reruns it.
+  rmSync(join(root, ".nx"), { recursive: true, force: true });
+  write(root, { "narrow/readme.txt": "edited\n" });
+  const affected = ["lane-test", "--projects=narrow"];
+  const replayed = invoke(affected, { NX_BASE: main });
+  assert.equal(replayed.status, 0, replayed.output);
+  assert.match(replayed.output, /gate: projects: narrow/, "the change reaches the project");
+  assert.deepEqual(replayed.ran, [], `main's result must replay:\n${replayed.output}`);
+  write(root, { "narrow/src/a.txt": "b\n" });
+  assert.deepEqual(invoke(affected, { NX_BASE: main }).ran, ["narrow:test"], "a changed input never replays main's result");
 });
 
 test("a target's declared outputs come back with its carried result", (t) => {

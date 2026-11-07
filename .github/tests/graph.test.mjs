@@ -237,10 +237,10 @@ test('an ordinary pull request push runs exactly seven jobs: four independent la
   for (const id of ['test-linux', 'test-windows', 'test-macos']) assert.equal(ci.jobs[id].strategy, undefined, `${id} is one job, no matrix or shards`);
 });
 
-test('no run on push to main comes from CI: only delivery and the base measurement', () => {
+test('no run on push to main comes from CI: only delivery and the workflows that gate nothing', () => {
   const graph = workflows();
   const scenario = { id: 'main', eventName: 'push', event: {}, branch: 'main', inputs: {} };
-  assert.deepEqual(graph.filter(w => triggered(w.value, scenario)).map(w => w.path).sort(), ['.github/workflows/golden-reach-base.yml', '.github/workflows/release-plz.yml']);
+  assert.deepEqual(graph.filter(w => triggered(w.value, scenario)).map(w => w.path).sort(), ['.github/workflows/ci-caches.yml', '.github/workflows/golden-reach-base.yml', '.github/workflows/release-plz.yml', '.github/workflows/visual-docs-gallery.yml']);
   const base = graph.find(w => w.path.endsWith('/golden-reach-base.yml')).value;
   assert.deepEqual(Object.keys(base.jobs), ['golden-reach-base']);
   assert.equal(Object.keys(base.on).join(), 'push', 'a pull request push never starts the measurement');

@@ -56,9 +56,15 @@ over the real graph, observing what executes.
 - **Never.** Targets whose external state is the proof (`cache: false`): SDK environments, live
   Prism, the offline corpus proof, the host budget.
 
-**These caches help a pull request's later pushes, not its first.** GitHub lets a pull request
-read caches from its own ref and its base branch, and CI does not run on main, so nothing
-populates main's.
+**Main seeds them.** GitHub lets a pull request read caches from its own ref and its base
+branch, so `ci-caches.yml` runs on each push to main and saves under the keys the lanes restore:
+its job ids are the lanes', because the keys carry `github.job`, and `ci_workflow.rs` holds the
+keys equal. Each job runs every offline project through the result cache, so a push pays for what
+it changed. A red target there fails nothing: the step continues so the job's cache saves still
+run, and only passing results are stored. It has no Mac job, because
+`crozier-macos-runs-per-change` holds a change to two Mac-spending runs and a pull request and a
+release build use both. So `test-macos` starts cold on a pull request's first push (up to the
+measured 3767 s) and reuses results on its later ones.
 
 ## Platform-specific lint
 
@@ -69,8 +75,10 @@ suite's `cfg(target_os = "linux")` case on macOS.
 
 ## Not on pull request pushes
 
-`golden-reach-base.yml` publishes the measurement `just census-repin` steps from, on each push
-to main; nothing gates on it. `visual-docs.yml` deletes a closed pull request's preview and
-prunes gh-pages monthly. `release-plz.yml` and `release.yml` are CD. The gh-pages root gallery
-no longer redeploys on push to main; pull request previews still publish. The broader tier
+`tools/ci/lanes.json` (`nonCheckWorkflows`) lists each workflow a push to main starts, and
+`lane-inventory:lint` fails one that is unlisted or that a pull request also starts. None gates
+anything: `ci-caches.yml` writes the caches above, `visual-docs-gallery.yml` publishes the gh-pages
+root gallery, `golden-reach-base.yml` publishes the measurement `just census-repin` steps from, and
+`release-plz.yml` is CD. `release.yml` is CD too. `visual-docs.yml` deletes a closed pull request's
+preview and prunes gh-pages monthly. The broader tier
 (`--sweep`) runs by hand and on a manual `ci` dispatch.

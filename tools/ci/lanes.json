@@ -482,5 +482,11 @@
       "macos",
       "windows"
     ]
+  },
+  "nonCheckWorkflows": {
+    ".github/workflows/ci-caches.yml": "Writes the main-scoped caches the lint, test-linux and test-windows lanes restore. Runs no proof a pull request relies on, and gates nothing.",
+    ".github/workflows/visual-docs-gallery.yml": "Publishes the gh-pages root gallery. The pull request's visual docs proof is a step of the lint lane.",
+    ".github/workflows/golden-reach-base.yml": "Publishes the measurement `just census-repin` steps from.",
+    ".github/workflows/release-plz.yml": "CD: opens the release pull request and cuts the release."
   }
 }

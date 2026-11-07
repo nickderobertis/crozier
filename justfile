@@ -103,6 +103,14 @@ lane-test *args:
 lane-budgets-host *args:
     @node tools/ci/gate.mjs --platform=host "$@" -- nx run-many --targets=budgets-host
 
+# What main's cache writer (ci-caches.yml) runs: the same lane targets over every project
+# through the result cache, so a pull request's lanes restore what main has proved.
+ci-caches-lint:
+    @just lane-lint --every-project
+
+ci-caches-test:
+    @just lane-test --every-project --exclude=tag:tier:promoted
+
 # The commit `budgets` measures the affected projects against.
 base := env("NX_BASE", "origin/main")
 
@@ -352,7 +360,7 @@ golden-reach:
 census-repin *args:
     python3 tools/surface-census/census-repin.py "$@"
 
-# CI's base-publishing job (ci.yml `golden-reach-base`): measure HEAD from the
+# CI's base-publishing job (golden-reach-base.yml): measure HEAD from the
 # nearest earlier published base and package DIR/base.json.gz, which the job
 # uploads as the artifact golden-reach-base-<sha>.
 golden-reach-base dir:
