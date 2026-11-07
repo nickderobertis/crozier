@@ -6783,7 +6783,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_plain("contextlib");
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_core("api_error", "ApiError");
+    let api_error = imports.add_core_local("api_error", "ApiError");
     imports.add_core("parse_error", "ParsingError");
     let validation_error = imports.add_from_local("pydantic", "ValidationError");
     if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
@@ -6973,14 +6973,14 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                     {read}{error_branches}
                     _response_json = _response.json()
                 except JSONDecodeError:
-                    raise ApiError(
+                    raise {api_error}(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     )
                 except {validation_error} as e:
                     raise ParsingError(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
                     )
-                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+                raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield {yield_expr}",
         call = call.join("\n"),
@@ -7039,7 +7039,7 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     imports.add_plain("contextlib");
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_core("api_error", "ApiError");
+    let api_error = imports.add_core_local("api_error", "ApiError");
     if !ep.errors.is_empty() {
         imports.add_core("pydantic_utilities", "parse_obj_as");
     }
@@ -7122,10 +7122,10 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
                     {read}{error_branches}
                     _response_json = _response.json()
                 except JSONDecodeError:
-                    raise ApiError(
+                    raise {api_error}(
                         status_code=_response.status_code, headers=dict(_response.headers), body=_response.text
                     ){validation_error}
-                raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+                raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
             yield {yield_expr}",
         call = call.join("\n"),
@@ -13401,6 +13401,43 @@ mod tests {
     /// order, an optional one shown before a required one declared after it
     /// (the `query-declaration-order` measurement, Fern CLI 5.163.1). The
     /// docstring takes headers first, and the Markdown takes queries first.
+    #[test]
+    fn a_streamed_download_raises_the_aliased_core_api_error() {
+        // A component schema called `ApiError` aliases both imports; the stream's
+        // own `raise` lines have to use the alias or the module raises a NameError.
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/logs": {"get": {
+                "operationId": "getLogs",
+                "tags": ["logs"],
+                "responses": {
+                    "200": {"description": "ok", "content": {"application/octet-stream": {
+                        "schema": {"type": "string", "format": "binary"}
+                    }}},
+                    "404": {"description": "no", "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/ApiError"}
+                    }}}
+                }
+            }}},
+            "components": {"schemas": {"ApiError": {
+                "type": "object",
+                "properties": {"message": {"type": "string"}}
+            }}}
+        }));
+        let raw = files
+            .iter()
+            .find(|(path, _)| path.ends_with("logs/raw_client.py"))
+            .map(|(_, text)| text)
+            .expect("raw client");
+        assert!(
+            raw.contains("from ..core.api_error import ApiError as core_api_error_ApiError"),
+            "{raw}"
+        );
+        assert!(raw.contains("raise core_api_error_ApiError("), "{raw}");
+        assert!(!raw.contains("raise ApiError("), "{raw}");
+    }
+
     #[test]
     fn worked_examples_keep_each_parameter_kind_in_declaration_order() {
         let header = |name: &str, required: bool, example: &str| {
