@@ -1643,7 +1643,9 @@ impl From<String> for LiteralTypeOverride {
         match value.as_str() {
             "literal<true>" => Self::True,
             "literal<false>" => Self::False,
-            "datetime" => Self::Datetime,
+            // The schema's own `type: [string, "null"]` carries the optionality:
+            // AssemblyAI's `TranscriptListItem.completed`.
+            "datetime" | "optional<datetime>" => Self::Datetime,
             _ => Self::Unsupported,
         }
     }

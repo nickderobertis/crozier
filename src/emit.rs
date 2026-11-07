@@ -6663,8 +6663,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                                 && ep.body_schema_metadata_missing
                                 && ep.body_schema_is_open
                                 && !ep.body_schema_is_success_response))
+                        // A documented schema example drops the header only while the
+                        // schema survives: one flattened away keeps it, as AppVeyor's
+                        // single-use `ProjectAddition` and AssemblyAI's
+                        // `TranscriptParams` do.
                         && (!(ep.body_schema_has_example
                                 && ep.body_schema_documented
+                                && !ep.body_schema_dropped
                                 && !ep.body_schema_example_wrapped
                             || ep.body_schema_example_wrapped
                                 && matches!(body, RequestBody::Inline(fields)
