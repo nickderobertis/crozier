@@ -1,0 +1,3 @@
+
+
+VmDiskType = int

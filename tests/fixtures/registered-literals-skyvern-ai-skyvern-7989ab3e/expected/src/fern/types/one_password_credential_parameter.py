@@ -1,0 +1,30 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class OnePasswordCredentialParameter(UniversalBaseModel):
+    key: str
+    description: typing.Optional[str] = None
+    onepassword_credential_parameter_id: str
+    workflow_id: str
+    vault_id: str
+    item_id: str
+    totp_field_name: typing.Optional[str] = None
+    totp_identifier: typing.Optional[str] = None
+    created_at: dt.datetime
+    modified_at: dt.datetime
+    deleted_at: typing.Optional[dt.datetime] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

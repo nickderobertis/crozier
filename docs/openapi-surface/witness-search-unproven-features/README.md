@@ -139,7 +139,10 @@ only if no real witness can be registered. Corpus row 3477, `rs-server`, later
 declared two null first `examples` members inside a golden that byte-matches
 whole; its [paired removal](paired-removal-comparisons.json) moves no generated
 file in crozier or the certified pair, so it is an output-insensitive declarer,
-not a witness, and the `harbor-signal-null` supplement still stands.
+not a witness, and the `harbor-signal-null` supplement still stands. Corpus rows
+5524, `registered-literals-bytedance-sandboxfusion-0b64b21d`, and 5550,
+`registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a`, declare the
+same null first member and their paired removals measure the same.
 
 ## Renewed search
 

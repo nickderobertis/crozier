@@ -1,0 +1,1647 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "EWMS Workflow Management Service",
+        "version": "1"
+    },
+    "components": {
+        "parameters": {
+            "TaskforceUUIDParam": {
+                "name": "taskforce_uuid",
+                "in": "path",
+                "required": true,
+                "description": "UUID of the taskforce.",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "CondorCollector": {
+                "name": "collector",
+                "in": "query",
+                "required": false,
+                "deprecated": true,
+                "description": "Deprecated. Name of the HTCondor collector; no longer used.",
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "CondorSchedd": {
+                "name": "schedd",
+                "in": "query",
+                "required": true,
+                "description": "Name of the HTCondor schedd.",
+                "schema": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas": {
+            "WorkflowObject": {
+                "type": "object",
+                "description": "Workflow object. See https://observation-management-service.github.io/ewms-docs/services/wms.html#workflow.",
+                "properties": {
+                    "workflow_id": {
+                        "type": "string",
+                        "description": "A unique identifier automatically generated for this workflow."
+                    },
+                    "timestamp": {
+                        "type": "number",
+                        "description": "The epoch time when this workflow was created."
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "description": "The workflow's priority level relative to other workflows."
+                    },
+                    "deactivated": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "description": "Indicates why the workflow was deactivated.",
+                                "enum": [
+                                    "ABORTED",
+                                    "FINISHED"
+                                ]
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "deactivated_ts": {
+                        "anyOf": [
+                            {
+                                "type": "number",
+                                "description": "The epoch time when this workflow was deactivated."
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    }
+                },
+                "required": [],
+                "additionalProperties": false
+            },
+            "TaskDirectiveObject": {
+                "type": "object",
+                "description": "Task directive object. See https://observation-management-service.github.io/ewms-docs/services/wms.html#task-directive.",
+                "properties": {
+                    "task_id": {
+                        "type": "string",
+                        "description": "A unique identifier automatically generated for this task."
+                    },
+                    "workflow_id": {
+                        "type": "string",
+                        "description": "The identifier of the overarching workflow object (M task directives : 1 workflow)."
+                    },
+                    "cluster_locations": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "description": "The HTCondor pool(s) where the taskforce(s) will run.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1
+                    },
+                    "task_image": {
+                        "type": "string",
+                        "description": "The Docker/Singularity/Apptainer image to run for each event. Apptainer images in directory (sandbox) format will start fastest; other formats will first be converted to this format on each worker CPU."
+                    },
+                    "task_args": {
+                        "type": "string",
+                        "description": "The argument string to pass to the task image."
+                    },
+                    "task_env": {
+                        "type": "object",
+                        "description": "Environment variables (and values) to set in the task instance.",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "minProperties": 0
+                    },
+                    "init_image": {
+                        "type": "string",
+                        "description": "The Docker/Singularity/Apptainer image for the init container. See 'task_image' for caveats/optimizations regarding the image format."
+                    },
+                    "init_args": {
+                        "type": "string",
+                        "description": "The argument string to pass to the init container."
+                    },
+                    "init_env": {
+                        "type": "object",
+                        "description": "Environment variables (and values) to set in the init container.",
+                        "additionalProperties": {
+                            "type": "string"
+                        },
+                        "minProperties": 0
+                    },
+                    "timestamp": {
+                        "type": "number",
+                        "description": "The epoch time when this task was created."
+                    },
+                    "input_queues": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "description": "The message queue(s) that this task will use for event input.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 0
+                    },
+                    "output_queues": {
+                        "type": "array",
+                        "uniqueItems": true,
+                        "description": "The message queue(s) that this task will use for event output.",
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 0
+                    }
+                },
+                "required": [],
+                "additionalProperties": false
+            },
+            "TaskforceObject": {
+                "type": "object",
+                "description": "Taskforce object. See https://observation-management-service.github.io/ewms-docs/services/wms.html#taskforce.",
+                "properties": {
+                    "taskforce_uuid": {
+                        "type": "string",
+                        "description": "A unique identifier automatically generated for this taskforce."
+                    },
+                    "task_id": {
+                        "type": "string",
+                        "description": "The identifier of the associated task directive object (N taskforces : 1 task directive)."
+                    },
+                    "workflow_id": {
+                        "type": "string",
+                        "description": "The identifier of the overarching workflow object (N*M taskforces : M task directives : 1 workflow)."
+                    },
+                    "timestamp": {
+                        "type": "number",
+                        "description": "The epoch time when this taskforce was created."
+                    },
+                    "priority": {
+                        "type": "integer",
+                        "description": "The priority level relative to other taskforces (usually, this value is inherited from the parent workflow object)."
+                    },
+                    "collector": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "description": "Deprecated. Address of the HTCondor collector; no longer used.",
+                                "deprecated": true
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "schedd": {
+                        "type": "string",
+                        "description": "The address of the HTCondor schedd."
+                    },
+                    "n_workers": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "description": "The number of workers in this taskforce's HTCondor cluster (immutable)."
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "pilot_config": {
+                        "type": "object",
+                        "description": "Configuration settings for the EWMS pilot.",
+                        "properties": {
+                            "tag": {
+                                "type": "string",
+                                "description": "The image tag to use (e.g., '#.#.#', 'latest', or a feature branch tag). Note: tags like # or #.# are disallowed since these are mutable. This field is useful for repeatability.",
+                                "pattern": "^([0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3})|(latest)|([a-z0-9._-]+-[a-z0-9]{1,128})$"
+                            },
+                            "image_source": {
+                                "type": "string",
+                                "description": "The canonical source name for the image.",
+                                "enum": [
+                                    "cvmfs",
+                                    "auto"
+                                ]
+                            },
+                            "environment": {
+                                "type": "object",
+                                "description": "Environment variables and their corresponding values.",
+                                "additionalProperties": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "integer"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            },
+                                            "minItems": 1
+                                        }
+                                    ]
+                                },
+                                "minProperties": 0
+                            },
+                            "input_files": {
+                                "type": "array",
+                                "uniqueItems": true,
+                                "description": "Paths to files to make available to the task container. These files must already be accessible on the AP.",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "minItems": 0
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "tag",
+                            "image_source",
+                            "environment",
+                            "input_files"
+                        ]
+                    },
+                    "worker_config": {
+                        "type": "object",
+                        "description": "Configuration settings for the HTCondor cluster submission.",
+                        "properties": {
+                            "do_transfer_worker_stdouterr": {
+                                "type": "boolean",
+                                "description": "Indicates whether to transfer back the workers' stdout and stderr (accessible on the AP)."
+                            },
+                            "max_worker_runtime": {
+                                "type": "integer",
+                                "description": "The maximum runtime for a worker. Adjust this to optimize performance (e.g., to terminate slow CPUs)."
+                            },
+                            "n_cores": {
+                                "type": "integer",
+                                "description": "The number of cores to request per HTCondor worker."
+                            },
+                            "priority": {
+                                "type": "integer",
+                                "description": "The priority level for the HTCondor submission."
+                            },
+                            "worker_disk": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "The amount of disk space to request per HTCondor worker."
+                                    },
+                                    {
+                                        "type": "integer"
+                                    }
+                                ]
+                            },
+                            "worker_memory": {
+                                "anyOf": [
+                                    {
+                                        "type": "string",
+                                        "description": "The amount of memory to request per HTCondor worker."
+                                    },
+                                    {
+                                        "type": "integer"
+                                    }
+                                ]
+                            },
+                            "condor_requirements": {
+                                "type": "string",
+                                "description": "The 'requirements' string given to the HTCondor submission."
+                            }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                            "do_transfer_worker_stdouterr",
+                            "max_worker_runtime",
+                            "n_cores",
+                            "priority",
+                            "worker_disk",
+                            "worker_memory",
+                            "condor_requirements"
+                        ]
+                    },
+                    "cluster_id": {
+                        "anyOf": [
+                            {
+                                "type": "integer",
+                                "description": "The identifier for the associated HTCondor cluster."
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "submit_dict": {
+                        "type": "object",
+                        "description": "The actual HTCondor submit class ad.",
+                        "additionalProperties": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "minProperties": 0
+                    },
+                    "job_event_log_fpath": {
+                        "type": "string",
+                        "description": "The file path on the HTCondor AP containing job event logs."
+                    },
+                    "phase": {
+                        "type": "string",
+                        "description": "The current phase of the taskforce within the workflow's lifetime. Not all taskforces will enter every phase.",
+                        "enum": [
+                            "pre-mq-activation",
+                            "pre-launch",
+                            "pending-starter",
+                            "condor-submit",
+                            "pending-stopper",
+                            "condor-rm",
+                            "condor-complete"
+                        ]
+                    },
+                    "phase_change_log": {
+                        "type": "array",
+                        "description": "A record of all attempted phase changes, including both successful and unsuccessful ones.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "target_phase": {
+                                    "type": "string",
+                                    "description": "The phase that the system was attempting to transition to."
+                                },
+                                "timestamp": {
+                                    "type": "number",
+                                    "description": "The epoch timestamp when this phase change attempt was recorded in the system."
+                                },
+                                "was_successful": {
+                                    "type": "boolean",
+                                    "description": "Indicates whether the phase change was completed successfully, i.e. did it actually change?"
+                                },
+                                "source_event_time": {
+                                    "anyOf": [
+                                        {
+                                            "type": "number",
+                                            "description": "The epoch timestamp of the external event that led to this phase change attempt."
+                                        },
+                                        {
+                                            "type": "null",
+                                            "description": "Indicates no specific external event was tied to this phase change."
+                                        }
+                                    ]
+                                },
+                                "source_entity": {
+                                    "type": "string",
+                                    "description": "The entity (person, system, or process) responsible for the external event that triggered this phase change attempt."
+                                },
+                                "context": {
+                                    "type": "string",
+                                    "description": "The circumstances or background information about the phase change attempt."
+                                }
+                            },
+                            "required": [
+                                "target_phase",
+                                "timestamp",
+                                "was_successful",
+                                "source_event_time",
+                                "source_entity",
+                                "context"
+                            ],
+                            "additionalProperties": false
+                        },
+                        "minItems": 0
+                    },
+                    "compound_statuses": {
+                        "type": "object",
+                        "description": "Aggregated status of the workers, represented as a nested dictionary mapping HTCondor states to EWMS pilot states and their counts.",
+                        "additionalProperties": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "integer"
+                            },
+                            "minProperties": 0
+                        },
+                        "minProperties": 0
+                    },
+                    "top_task_errors": {
+                        "type": "object",
+                        "description": "The most common errors encountered by workers, paired with their occurrence counts.",
+                        "additionalProperties": {
+                            "type": "integer"
+                        },
+                        "minProperties": 0
+                    }
+                },
+                "required": [],
+                "additionalProperties": false
+            },
+            "FindObject": {
+                "type": "object",
+                "description": "The fields and values used to search.",
+                "properties": {
+                    "query": {
+                        "description": "The search criteria (MongoDB-filter syntax)",
+                        "type": "object"
+                    },
+                    "projection": {
+                        "description": "The fields to include in the response",
+                        "type": "array",
+                        "uniqueItems": true,
+                        "items": {
+                            "type": "string"
+                        },
+                        "minItems": 1
+                    },
+                    "after": {
+                        "description": "The database '_id' to resume pagination from, taken from a previous response's 'next_after' field.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "query"
+                ],
+                "additionalProperties": false
+            },
+            "QueryNextAfter": {
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "description": "The value to supply as 'after' in the next request for pagination. If null, there are no more results."
+                    },
+                    {
+                        "type": "null"
+                    }
+                ]
+            },
+            "DeactivatedWorkflowResponseObject": {
+                "type": "object",
+                "properties": {
+                    "workflow_id": {
+                        "description": "The workflow ID.",
+                        "type": "string"
+                    },
+                    "n_taskforces": {
+                        "description": "Number of taskforces to be stopped.",
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "workflow_id",
+                    "n_taskforces"
+                ],
+                "additionalProperties": false
+            },
+            "ErrorResponse": {
+                "type": "object",
+                "properties": {
+                    "code": {
+                        "description": "HTTP error code.",
+                        "type": "integer"
+                    },
+                    "error": {
+                        "description": "HTTP error reason.",
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "code",
+                    "error"
+                ],
+                "additionalProperties": false
+            }
+        },
+        "responses": {
+            "BadRequest": {
+                "description": "Invalid request arguments",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "NotFound": {
+                "description": "Not found",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "UnprocessableEntity": {
+                "description": "Unprocessable Entity",
+                "content": {
+                    "application/json": {
+                        "schema": {
+                            "$ref": "#/components/schemas/ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "paths": {
+        "/v1/": {
+            "parameters": [],
+            "get": {
+                "description": "Returns an empty response.",
+                "responses": {
+                    "200": {
+                        "description": "Empty response object.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                }
+            }
+        },
+        "/v1/query/task-directives": {
+            "parameters": [],
+            "post": {
+                "description": "Queries and returns a list of task directive objects based on the provided criteria. See `FindObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#findobject>`_, `TaskDirectiveObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskdirectiveobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FindObject"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Matching task directives and pagination metadata.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "task_directives": {
+                                            "description": "A list of task directive objects. Entries may not be unique if query included a 'projection'.",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TaskDirectiveObject"
+                                            },
+                                            "minItems": 0
+                                        },
+                                        "next_after": {
+                                            "$ref": "#/components/schemas/QueryNextAfter"
+                                        }
+                                    },
+                                    "required": [
+                                        "task_directives",
+                                        "next_after"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "task-directives"
+                ]
+            }
+        },
+        "/v1/query/taskforces": {
+            "parameters": [],
+            "post": {
+                "description": "Queries and returns a list of taskforce objects based on the provided criteria. See `FindObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#findobject>`_, `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FindObject"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Matching taskforces and pagination metadata.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taskforces": {
+                                            "description": "A list of taskforce objects. Entries may not be unique if query included a 'projection'.",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/TaskforceObject"
+                                            },
+                                            "minItems": 0
+                                        },
+                                        "next_after": {
+                                            "$ref": "#/components/schemas/QueryNextAfter"
+                                        }
+                                    },
+                                    "required": [
+                                        "taskforces",
+                                        "next_after"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "taskforces"
+                ]
+            }
+        },
+        "/v1/query/workflows": {
+            "parameters": [],
+            "post": {
+                "description": "Queries and returns a list of workflow objects based on the provided criteria. See `FindObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#findobject>`_, `WorkflowObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#workflowobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FindObject"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Matching workflows and pagination metadata.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "workflows": {
+                                            "description": "A list of workflow objects. Entries may not be unique if query included a 'projection'.",
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/WorkflowObject"
+                                            },
+                                            "minItems": 0
+                                        },
+                                        "next_after": {
+                                            "$ref": "#/components/schemas/QueryNextAfter"
+                                        }
+                                    },
+                                    "required": [
+                                        "workflows",
+                                        "next_after"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "workflows"
+                ]
+            }
+        },
+        "/v1/schema/openapi": {
+            "parameters": [],
+            "get": {
+                "description": "Returns the OpenAPI schema.",
+                "responses": {
+                    "200": {
+                        "description": "The OpenAPI schema.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {},
+                                    "additionalProperties": true
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "openapi"
+                ]
+            }
+        },
+        "/v1/task-directives/{task_id}": {
+            "parameters": [
+                {
+                    "name": "task_id",
+                    "in": "path",
+                    "required": true,
+                    "description": "The ID of the task directive",
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "description": "Retrieves the task directive that matches the specified task ID. See `TaskDirectiveObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskdirectiveobject>`_.",
+                "responses": {
+                    "200": {
+                        "description": "The matching task directive",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaskDirectiveObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "task-directives"
+                ]
+            }
+        },
+        "/v1/task-directives/{task_id}/actions/add-workers": {
+            "parameters": [
+                {
+                    "name": "task_id",
+                    "in": "path",
+                    "required": true,
+                    "description": "The ID of the task directive to which the taskforce (and workers) will be added.",
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "post": {
+                "description": "Creates a new taskforce (and associated workers) for an existing task directive. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "cluster_location": {
+                                        "$ref": "#/components/schemas/TaskDirectiveObject/properties/cluster_locations/items"
+                                    },
+                                    "n_workers": {
+                                        "$ref": "#/components/schemas/TaskforceObject/properties/n_workers"
+                                    }
+                                },
+                                "required": [
+                                    "cluster_location",
+                                    "n_workers"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The created taskforce object with its details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaskforceObject"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/UnprocessableEntity"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "task-directives"
+                ]
+            }
+        },
+        "/v1/taskforces/{taskforce_uuid}": {
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/TaskforceUUIDParam"
+                }
+            ],
+            "get": {
+                "description": "Retrieves the taskforce object that matches the specified taskforce UUID. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "responses": {
+                    "200": {
+                        "description": "The matching taskforce object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaskforceObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "taskforces"
+                ]
+            }
+        },
+        "/v1/tms/condor-complete/taskforces/{taskforce_uuid}": {
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/TaskforceUUIDParam"
+                }
+            ],
+            "post": {
+                "description": "For internal use only (TMS): Updates the specified taskforce with the completion timestamp of the HTCondor cluster. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "condor_complete_ts": {
+                                        "description": "The time when the taskforce's HTCondor cluster ended.",
+                                        "type": "integer"
+                                    }
+                                },
+                                "required": [
+                                    "condor_complete_ts"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The UUID of the updated taskforce object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taskforce_uuid": {
+                                            "$ref": "#/components/schemas/TaskforceObject/properties/taskforce_uuid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "taskforce_uuid"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/condor-rm/taskforces/{taskforce_uuid}": {
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/TaskforceUUIDParam"
+                }
+            ],
+            "post": {
+                "description": "For internal use only (TMS): Confirms that a taskforce has been removed on HTCondor. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "responses": {
+                    "200": {
+                        "description": "The UUID of the updated taskforce object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taskforce_uuid": {
+                                            "$ref": "#/components/schemas/TaskforceObject/properties/taskforce_uuid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "taskforce_uuid"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/condor-rm/taskforces/{taskforce_uuid}/failed": {
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/TaskforceUUIDParam"
+                }
+            ],
+            "post": {
+                "description": "For internal use only (TMS): Communicates that a taskforce failed to be removed on HTCondor. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "description": "A description of why the taskforce could not be removed from HTCondor.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The UUID of the updated taskforce object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taskforce_uuid": {
+                                            "$ref": "#/components/schemas/TaskforceObject/properties/taskforce_uuid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "taskforce_uuid"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/condor-submit/taskforces/{taskforce_uuid}": {
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/TaskforceUUIDParam"
+                }
+            ],
+            "post": {
+                "description": "For internal use only (TMS): Confirms that a taskforce has been submitted to HTCondor for execution. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/TaskforceObject"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The UUID of the updated taskforce object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taskforce_uuid": {
+                                            "$ref": "#/components/schemas/TaskforceObject/properties/taskforce_uuid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "taskforce_uuid"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/condor-submit/taskforces/{taskforce_uuid}/failed": {
+            "parameters": [
+                {
+                    "$ref": "#/components/parameters/TaskforceUUIDParam"
+                }
+            ],
+            "post": {
+                "description": "For internal use only (TMS): Communicates that a taskforce failed to be submitted to HTCondor for execution. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "error": {
+                                        "description": "A description of why the taskforce could not be submitted to HTCondor.",
+                                        "type": "string"
+                                    }
+                                },
+                                "required": [],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The UUID of the updated taskforce object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "taskforce_uuid": {
+                                            "$ref": "#/components/schemas/TaskforceObject/properties/taskforce_uuid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "taskforce_uuid"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/pending-starter/taskforces": {
+            "parameters": [],
+            "get": {
+                "description": "For internal use only (TMS): Retrieves the next taskforce ready to start at the specified HTCondor location. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_, `TaskDirectiveObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskdirectiveobject>`_, `MQProfileObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/mqs-objects.html#mqprofileobject>`_.",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/CondorCollector"
+                    },
+                    {
+                        "$ref": "#/components/parameters/CondorSchedd"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The next taskforce to start at the HTCondor location.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "taskforce": {
+                                                    "$ref": "#/components/schemas/TaskforceObject"
+                                                },
+                                                "task_directive": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject"
+                                                },
+                                                "mqprofiles": {
+                                                    "type": "array",
+                                                    "description": "MQ profiles relevant to this taskforce. See https://observation-management-service.github.io/ewms-docs/apis/_generated/mqs-objects.html#mqprofileobject.",
+                                                    "items": {
+                                                        "type": "object"
+                                                    },
+                                                    "minItems": 1
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/pending-stopper/taskforces": {
+            "parameters": [],
+            "get": {
+                "description": "For internal use only (TMS): Retrieves the next taskforce ready to stop at the specified HTCondor location. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "parameters": [
+                    {
+                        "$ref": "#/components/parameters/CondorCollector"
+                    },
+                    {
+                        "$ref": "#/components/parameters/CondorSchedd"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The next taskforce to stop at the HTCondor location.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "anyOf": [
+                                        {
+                                            "$ref": "#/components/schemas/TaskforceObject"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "additionalProperties": false
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/tms/statuses/taskforces": {
+            "parameters": [],
+            "post": {
+                "description": "For internal use only (TMS): Updates and returns the statuses and errors for the specified taskforces. See `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "top_task_errors_by_taskforce": {
+                                        "description": "The top errors (paired with a count) for each indicated taskforce",
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "integer"
+                                            },
+                                            "minProperties": 0
+                                        },
+                                        "minProperties": 1
+                                    },
+                                    "compound_statuses_by_taskforce": {
+                                        "description": "The compound statuses (status -> state -> count) for the indicated taskforces",
+                                        "type": "object",
+                                        "additionalProperties": {
+                                            "type": "object",
+                                            "additionalProperties": {
+                                                "type": "object",
+                                                "additionalProperties": {
+                                                    "type": "integer"
+                                                },
+                                                "minProperties": 0
+                                            },
+                                            "minProperties": 0
+                                        },
+                                        "minProperties": 1
+                                    }
+                                },
+                                "required": [],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Individual update results for each UUID.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "results": {
+                                            "type": "array",
+                                            "uniqueItems": true,
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "uuid",
+                                                    "status"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "minItems": 1
+                                        }
+                                    },
+                                    "required": [
+                                        "results"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "207": {
+                        "description": "Individual update results for each UUID, including errors.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "results": {
+                                            "type": "array",
+                                            "uniqueItems": true,
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "uuid": {
+                                                        "type": "string"
+                                                    },
+                                                    "status": {
+                                                        "type": "string"
+                                                    },
+                                                    "error": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "uuid",
+                                                    "status"
+                                                ],
+                                                "additionalProperties": false
+                                            },
+                                            "minItems": 1
+                                        }
+                                    },
+                                    "required": [
+                                        "results"
+                                    ],
+                                    "additionalProperties": false
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "tms - internal"
+                ]
+            }
+        },
+        "/v1/workflows": {
+            "parameters": [],
+            "post": {
+                "description": "Creates a new workflow along with its associated task directives and taskforces. See `WorkflowObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#workflowobject>`_, `TaskDirectiveObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskdirectiveobject>`_, `TaskforceObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#taskforceobject>`_.",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "tasks": {
+                                        "type": "array",
+                                        "uniqueItems": true,
+                                        "items": {
+                                            "type": "object",
+                                            "properties": {
+                                                "cluster_locations": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/cluster_locations"
+                                                },
+                                                "task_image": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/task_image"
+                                                },
+                                                "task_args": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/task_args"
+                                                },
+                                                "task_env": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/task_env"
+                                                },
+                                                "init_image": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/init_image"
+                                                },
+                                                "init_args": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/init_args"
+                                                },
+                                                "init_env": {
+                                                    "$ref": "#/components/schemas/TaskDirectiveObject/properties/init_env"
+                                                },
+                                                "input_queue_aliases": {
+                                                    "description": "User-defined aliases for input event queues. Globally-unique IDs for the queues will be generated after submission.",
+                                                    "type": "array",
+                                                    "uniqueItems": true,
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "minItems": 0
+                                                },
+                                                "output_queue_aliases": {
+                                                    "description": "User-defined aliases for output event queues. Globally-unique IDs for the queues will be generated after submission.",
+                                                    "type": "array",
+                                                    "uniqueItems": true,
+                                                    "items": {
+                                                        "type": "string"
+                                                    },
+                                                    "minItems": 0
+                                                },
+                                                "pilot_config": {
+                                                    "$ref": "#/components/schemas/TaskforceObject/properties/pilot_config"
+                                                },
+                                                "worker_config": {
+                                                    "$ref": "#/components/schemas/TaskforceObject/properties/worker_config"
+                                                },
+                                                "n_workers": {
+                                                    "$ref": "#/components/schemas/TaskforceObject/properties/n_workers"
+                                                }
+                                            },
+                                            "required": [
+                                                "cluster_locations",
+                                                "task_image",
+                                                "task_args",
+                                                "input_queue_aliases",
+                                                "output_queue_aliases",
+                                                "worker_config"
+                                            ],
+                                            "additionalProperties": false
+                                        },
+                                        "minItems": 1
+                                    },
+                                    "public_queue_aliases": {
+                                        "description": "User-defined aliases for queues listed in 'input_queue_aliases' and 'output_queue_aliases' that will be used externally. The actual IDs will be generated after submission.",
+                                        "type": "array",
+                                        "uniqueItems": true,
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "minItems": 0
+                                    },
+                                    "priority": {
+                                        "type": "integer",
+                                        "description": "The workflow's priority level relative to other workflows."
+                                    }
+                                },
+                                "required": [
+                                    "tasks",
+                                    "public_queue_aliases"
+                                ],
+                                "additionalProperties": false
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "The created workflow, task directives, and taskforces.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "workflow": {
+                                            "$ref": "#/components/schemas/WorkflowObject"
+                                        },
+                                        "task_directives": {
+                                            "type": "array",
+                                            "uniqueItems": true,
+                                            "items": {
+                                                "$ref": "#/components/schemas/TaskDirectiveObject"
+                                            },
+                                            "minItems": 0
+                                        },
+                                        "taskforces": {
+                                            "type": "array",
+                                            "uniqueItems": true,
+                                            "items": {
+                                                "$ref": "#/components/schemas/TaskforceObject"
+                                            },
+                                            "minItems": 0
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "workflow",
+                                        "task_directives",
+                                        "taskforces"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "workflows"
+                ]
+            }
+        },
+        "/v1/workflows/{workflow_id}": {
+            "parameters": [
+                {
+                    "name": "workflow_id",
+                    "in": "path",
+                    "required": true,
+                    "description": "The ID of the workflow object",
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "get": {
+                "description": "Retrieves the workflow object that matches the specified workflow ID. See `WorkflowObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#workflowobject>`_.",
+                "responses": {
+                    "200": {
+                        "description": "The matching workflow object",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkflowObject"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    }
+                },
+                "tags": [
+                    "workflows"
+                ]
+            }
+        },
+        "/v1/workflows/{workflow_id}/actions/abort": {
+            "parameters": [
+                {
+                    "name": "workflow_id",
+                    "in": "path",
+                    "required": true,
+                    "description": "The ID of the workflow object",
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "post": {
+                "description": "Aborts the specified workflow, marks it as deactivated, and sends stop commands to the associated taskforces. See `DeactivatedWorkflowResponseObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#deactivatedworkflowresponseobject>`_.",
+                "responses": {
+                    "200": {
+                        "description": "Summary of the deactivated workflow.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeactivatedWorkflowResponseObject"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "workflows"
+                ]
+            }
+        },
+        "/v1/workflows/{workflow_id}/actions/finished": {
+            "parameters": [
+                {
+                    "name": "workflow_id",
+                    "in": "path",
+                    "required": true,
+                    "description": "The ID of the workflow object",
+                    "schema": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "post": {
+                "description": "Marks the specified workflow as finished, marks it as deactivated, and sends stop commands to the associated taskforces. See `DeactivatedWorkflowResponseObject <https://observation-management-service.github.io/ewms-docs/apis/_generated/wms-objects.html#deactivatedworkflowresponseobject>`_.",
+                "responses": {
+                    "200": {
+                        "description": "Summary of the deactivated workflow.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DeactivatedWorkflowResponseObject"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/NotFound"
+                    },
+                    "400": {
+                        "$ref": "#/components/responses/BadRequest"
+                    }
+                },
+                "tags": [
+                    "workflows"
+                ]
+            }
+        }
+    }
+}

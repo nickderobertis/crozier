@@ -1,0 +1,289 @@
+"""Render two committed measurements without reading journals, git or GitHub."""
+
+# llmlint: ignore-file[modern_domain_modeling] The totals are a persisted JSON record whose fields `load_totals` checks one by one and whose figures render by key path; a second typed copy of that record could only drift from the producer the journeys feed it from.
+from __future__ import annotations
+
+import csv
+import datetime as dt
+import json
+import math
+import re
+from pathlib import Path
+from typing import Any
+
+from public_id import opaque
+
+# Any: parsed JSON, whose shape `load_totals` checks field by field.
+Totals = dict[str, Any]
+LIVE_RUN = "Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations"
+TOP_FIELDS = {
+    "changes",
+    "changes_with_pr",
+    "merged",
+    "ci_runs",
+    "ci_failed",
+    "other_failures",
+    "attempts",
+    "redispatches",
+}
+CENSUS_FIELDS = {
+    "failures",
+    "changes_hit",
+    "runner_min",
+    "elapsed_min",
+    "wait_min",
+    "attempts",
+    "redispatches",
+    "median_cycle_min",
+    "ci_retry_unresolved",
+    "publications",
+    "pub_wait_min",
+    "pub_unresolved",
+    "pub_observed",
+    "median_pub_wait_min",
+}
+CENSUS_COUNTS = CENSUS_FIELDS - {
+    "runner_min",
+    "elapsed_min",
+    "wait_min",
+    "median_cycle_min",
+    "pub_wait_min",
+    "median_pub_wait_min",
+}
+CONFLICT_FIELDS = {"derived", "changes_hit", "wait_min", "median_wait_min", "redispatches", "mixed", "code"}
+CONFLICT_COUNTS = CONFLICT_FIELDS - {"wait_min", "median_wait_min"}
+GITHUB_FIELDS = {"uncached_calls", "cache_hits"}
+KIND_FIELDS = {
+    "events",
+    "changes",
+    "runner_min",
+    "elapsed_min",
+    "wait_min",
+    "cycle_min",
+    "attempts",
+    "redispatches",
+    "pub_observed",
+    "pub_unresolved",
+    "pub_wait_min",
+}
+KIND_COUNTS = KIND_FIELDS - {"runner_min", "elapsed_min", "wait_min", "cycle_min", "pub_wait_min"}
+ARTIFACT_FIELDS = {"ci_failures", "conflicts", "changes", "cycle_min", "runner_min"}
+ARTIFACT_COUNTS = {"ci_failures", "conflicts", "changes"}
+STRUCTURAL_FIELDS = {
+    "census",
+    "conflicts",
+    "github",
+    "by_kind",
+    "artifacts_outside_census",
+    "window",
+    "rewrote",
+    "excluded",
+}
+
+
+def numeric_rows(data: Totals, prefix: str = "") -> dict[str, float]:
+    rows: dict[str, float] = {}
+    for key, value in data.items():
+        label = f"{prefix}.{key}" if prefix else key
+        match value:
+            case bool():
+                continue
+            case int() | float():
+                rows[label] = value
+            case dict():
+                rows.update(numeric_rows(value, label))
+    return rows
+
+
+def load_totals(path: Path) -> Totals:
+    """Reject incomplete or nonnumeric evidence instead of reporting missing cost as zero."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ValueError(f"{path}: totals must be an object")
+    for group, fields in (("census", CENSUS_FIELDS), ("conflicts", CONFLICT_FIELDS), ("github", GITHUB_FIELDS)):
+        if not isinstance(data.get(group), dict) or not fields <= data[group].keys():
+            raise ValueError(f"{path}: {group} must hold {sorted(fields)}")
+        numbers(path, data[group], group)
+    if not data.keys() >= TOP_FIELDS:
+        raise ValueError(f"{path}: totals must hold {sorted(TOP_FIELDS)}")
+    numbers(path, {key: value for key, value in data.items() if key not in STRUCTURAL_FIELDS}, "totals")
+    counts = [
+        *(data[field] for field in TOP_FIELDS),
+        *(data["census"][field] for field in CENSUS_COUNTS),
+        *(data["conflicts"][field] for field in CONFLICT_COUNTS),
+    ]
+    if not all(isinstance(value, int) for value in counts):
+        raise ValueError(f"{path}: every count must be an integer")
+    if (
+        max(data["merged"], data["changes_with_pr"], data["census"]["changes_hit"], data["conflicts"]["changes_hit"])
+        > data["changes"]
+    ):
+        raise ValueError(f"{path}: merged, changes_with_pr and changes_hit cannot exceed changes")
+    census = data["census"]
+    if (
+        data["ci_failed"] > data["ci_runs"]
+        or census["failures"] > data["ci_failed"]
+        or census["pub_observed"] + census["pub_unresolved"] != census["publications"]
+    ):
+        raise ValueError(f"{path}: its CI and publication counts contradict each other")
+    if not data["changes"] and (data["census"]["failures"] or data["conflicts"]["derived"]):
+        raise ValueError(f"{path}: an empty sample cannot have failures or conflicts")
+    if not isinstance(data.get("by_kind"), dict):
+        raise ValueError(f"{path}: by_kind must be an object")
+    for kind, values in data["by_kind"].items():
+        if not isinstance(values, dict) or not values.keys() >= KIND_FIELDS:
+            raise ValueError(f"{path}: kind {kind!r} must hold {sorted(KIND_FIELDS)}")
+        numbers(path, values, kind)
+        require_counts(path, values, KIND_COUNTS, kind)
+    artifacts = data.get("artifacts_outside_census")
+    if not isinstance(artifacts, list):
+        raise ValueError(f"{path}: artifacts_outside_census must be a list")
+    if not all(isinstance(artifact, dict) and isinstance(artifact.get("artifact"), str) for artifact in artifacts):
+        raise ValueError(f"{path}: malformed artifact record")
+    names = [artifact["artifact"] for artifact in artifacts]
+    if len(names) != len(set(names)):
+        raise ValueError(f"{path}: an artifact is listed twice")
+    for artifact in artifacts:
+        if not artifact.keys() >= ARTIFACT_FIELDS:
+            raise ValueError(f"{path}: artifact {artifact['artifact']!r} must hold {sorted(ARTIFACT_FIELDS)}")
+        numbers(path, {k: v for k, v in artifact.items() if k != "artifact"}, artifact["artifact"])
+        require_counts(path, artifact, ARTIFACT_COUNTS, artifact["artifact"])
+    if not valid_window(data.get("window")):
+        raise ValueError(f"{path}: malformed window metadata")
+    return data
+
+
+def valid_window(window: object) -> bool:
+    if not isinstance(window, dict):
+        return False
+    spec, until, carries = window.get("spec"), window.get("until"), window.get("base_carries")
+    if not isinstance(spec, str) or not spec.startswith(("runs:", "base-carries:")) or not isinstance(until, str):
+        return False
+    try:
+        cutoff = dt.datetime.fromisoformat(until.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    kind, _, value = spec.partition(":")
+    named = value.split(",")
+    return (
+        cutoff.tzinfo is not None
+        and isinstance(carries, list)
+        and all(isinstance(sha, str) and re.fullmatch(r"[0-9a-f]{40}", sha) for sha in carries)
+        and all(named)
+        and carries == (named if kind == "base-carries" else [])
+    )
+
+
+def numbers(path: Path, values: dict[str, object], label: str) -> None:
+    for key, value in values.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+            raise ValueError(f"{path}: {label}.{key} must be a finite nonnegative number")
+
+
+def require_counts(path: Path, values: Totals, fields: set[str], label: str) -> None:
+    if not all(isinstance(values[field], int) for field in fields):
+        raise ValueError(f"{path}: {label}'s counts must be integers")
+
+
+def change_rows(directory: Path, totals: Totals) -> list[dict[str, str]]:
+    """The directory's changes.tsv, held to the totals.json it came with."""
+    path = directory / "changes.tsv"
+    with path.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    for row in rows:
+        if (
+            not (row.get("pr") or "").isdecimal()
+            or int(row["pr"]) < 1
+            or not (row.get("census_failures") or "").isdecimal()
+            or not isinstance(row.get("runs"), str)
+        ):
+            raise ValueError(f"{path}: needs a positive pr, a census_failures count and a runs cell on every row")
+    if len({row["pr"] for row in rows}) != len(rows):
+        raise ValueError(f"{path}: a pull request appears twice")
+    if (
+        len(rows) != totals["changes"]
+        or sum(int(row["census_failures"]) for row in rows) != totals["census"]["failures"]
+    ):
+        raise ValueError(f"{path}: its rows disagree with totals.json's changes or census failures")
+    return rows
+
+
+def reference_rates(rows: list[dict[str, str]], totals: Totals) -> list[tuple[str, float | None]]:
+    """Census failures per change the after sample is read against, both from the baseline given."""
+    # The committed baseline predates digested identifiers; a measurement taken since names the run by digest.
+    live = [row for row in rows if {LIVE_RUN, opaque(LIVE_RUN)} & set(row["runs"].split(";"))]
+    return [
+        ("pooled baseline", totals["census"]["failures"] / totals["changes"] if totals["changes"] else None),
+        ("live run baseline", sum(int(row["census_failures"]) for row in live) / len(live) if live else None),
+    ]
+
+
+def comparison(baseline: Path, after: Path) -> str:
+    before = load_totals(baseline / "totals.json")
+    current = load_totals(after / "totals.json")
+    prs = [f"#{row['pr']}" for row in change_rows(after, current)]
+    n, m = before["changes"], current["changes"]
+    window = current["window"]
+    lines = [
+        "# Repin cost after the incremental census tooling",
+        "",
+        f"{'Provisional' if m < 5 else 'Measured'} comparison: {m} after-sample changes; {n} baseline changes.",
+        "No reduction can be inferred from an empty sample."
+        if not m
+        else "Cycle intervals include other work and queueing; they do not establish causation.",
+        "",
+        f"After-sample PRs: {', '.join(prs) or 'none'}.",
+        f"Landing commits: {', '.join(window['base_carries']) or 'not a base-carries window'}.",
+        f"Cutoff: {window['until']}.",
+        "",
+        "```sh",
+        f'python3 tools/repin-cost/repin_cost.py --window {window["spec"]} --runs-root "$ONEPIPELINE_RUNS_DIR" --until {window["until"]} --out tools/repin-cost/after',
+        "python3 tools/repin-cost/repin_cost.py compare tools/repin-cost/baseline tools/repin-cost/after",
+        "```",
+        "",
+        "Differences are after minus baseline. Per-change denominators are all eligible changes, including those with no repin.",
+        "An empty sample has undefined per-change rates (n/a). Unresolved intervals remain excluded from minute sums and medians.",
+        "Kind counts overlap when a failure names several kinds; its minutes are split evenly, as in the baseline.",
+        "Medians and changes-hit counts are also shown per eligible change for completeness; median totals retain their original meaning.",
+        "",
+        "| figure | baseline total | baseline / change | after total | after / change | difference total | difference / change |",
+        "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+    ]
+    excluded = {"window", "github", "excluded", "by_kind", "rewrote", "artifacts_outside_census"}
+
+    def figures(data: Totals) -> dict[str, float]:
+        rows = numeric_rows({k: v for k, v in data.items() if k not in excluded})
+        rows["census.cycle_min"] = data["census"]["elapsed_min"] + data["census"]["wait_min"]
+        rows["census_and_conflict_redispatches"] = data["census"]["redispatches"] + data["conflicts"]["redispatches"]
+        rows.update(numeric_rows(data["by_kind"], "kind"))
+        for artifact in data["artifacts_outside_census"]:
+            rows.update(
+                numeric_rows({k: v for k, v in artifact.items() if k != "artifact"}, "artifact." + artifact["artifact"])
+            )
+        return rows
+
+    left, right = figures(before), figures(current)
+    for label in sorted(left.keys() | right.keys()):
+        a, b = left.get(label, 0), right.get(label, 0)
+        ar, br = f"{a / n:.2f}" if n else "n/a", f"{b / m:.2f}" if m else "n/a"
+        delta = f"{b / m - a / n:+.2f}" if n and m else "n/a"
+        lines.append(f"| `{label}` | {a:.2f} | {ar} | {b:.2f} | {br} | {b - a:+.2f} | {delta} |")
+    rate = current["census"]["failures"] / m if m else None
+    references = reference_rates(change_rows(baseline, before), before)
+    lines += [
+        "",
+        "| census failures / change reference | reference | after | difference |",
+        "| --- | ---: | ---: | ---: |",
+    ]
+    for label, reference in references:
+        shown = f"{rate:.2f}" if rate is not None else "n/a"
+        known = f"{reference:.2f}" if reference is not None else "n/a"
+        delta = f"{rate - reference:+.2f}" if rate is not None and reference is not None else "n/a"
+        lines.append(f"| {label} | {known} | {shown} | {delta} |")
+    lines += [
+        "",
+        f"After measurement GitHub quota: {current['github']['uncached_calls']} uncached core REST calls; {current['github']['cache_hits']} cache hits.",
+        "The dispatch-wide quota and baseline-cache verification are recorded in the hand-counted evidence below.",
+        "",
+    ]
+    return "\n".join(lines) + "\n"

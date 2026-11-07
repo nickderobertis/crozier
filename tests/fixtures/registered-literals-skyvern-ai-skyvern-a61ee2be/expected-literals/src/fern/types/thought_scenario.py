@@ -1,0 +1,18 @@
+
+
+import typing
+
+ThoughtScenario = typing.Union[
+    typing.Literal[
+        "generate_plan",
+        "user_goal_check",
+        "failure_describe",
+        "summarization",
+        "generate_metadata",
+        "extract_loop_values",
+        "generate_task_in_loop",
+        "generate_general_task",
+        "termination",
+    ],
+    typing.Any,
+]

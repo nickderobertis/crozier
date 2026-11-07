@@ -1,0 +1,62 @@
+
+
+
+
+import typing
+from importlib import import_module
+
+if typing.TYPE_CHECKING:
+    from .bad_request_error_body import BadRequestErrorBody
+    from .conflict_error_body import ConflictErrorBody
+    from .content_too_large_error_body import ContentTooLargeErrorBody
+    from .internal_server_error_body import InternalServerErrorBody
+    from .not_found_error_body import NotFoundErrorBody
+    from .service_unavailable_error_body import ServiceUnavailableErrorBody
+    from .too_many_requests_error_body import TooManyRequestsErrorBody
+    from .unauthorized_error_body import UnauthorizedErrorBody
+    from .unsupported_media_type_error_body import UnsupportedMediaTypeErrorBody
+_dynamic_imports: typing.Dict[str, str] = {
+    "BadRequestErrorBody": ".bad_request_error_body",
+    "ConflictErrorBody": ".conflict_error_body",
+    "ContentTooLargeErrorBody": ".content_too_large_error_body",
+    "InternalServerErrorBody": ".internal_server_error_body",
+    "NotFoundErrorBody": ".not_found_error_body",
+    "ServiceUnavailableErrorBody": ".service_unavailable_error_body",
+    "TooManyRequestsErrorBody": ".too_many_requests_error_body",
+    "UnauthorizedErrorBody": ".unauthorized_error_body",
+    "UnsupportedMediaTypeErrorBody": ".unsupported_media_type_error_body",
+}
+
+
+def __getattr__(attr_name: str) -> typing.Any:
+    module_name = _dynamic_imports.get(attr_name)
+    if module_name is None:
+        raise AttributeError(f"No {attr_name} found in _dynamic_imports for module name -> {__name__}")
+    try:
+        module = import_module(module_name, __package__)
+        if module_name == f".{attr_name}":
+            return module
+        else:
+            return getattr(module, attr_name)
+    except ImportError as e:
+        raise ImportError(f"Failed to import {attr_name} from {module_name}: {e}") from e
+    except AttributeError as e:
+        raise AttributeError(f"Failed to get {attr_name} from {module_name}: {e}") from e
+
+
+def __dir__():
+    lazy_attrs = list(_dynamic_imports.keys())
+    return sorted(lazy_attrs)
+
+
+__all__ = [
+    "BadRequestErrorBody",
+    "ConflictErrorBody",
+    "ContentTooLargeErrorBody",
+    "InternalServerErrorBody",
+    "NotFoundErrorBody",
+    "ServiceUnavailableErrorBody",
+    "TooManyRequestsErrorBody",
+    "UnauthorizedErrorBody",
+    "UnsupportedMediaTypeErrorBody",
+]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-rd-alliance-metadata-catalog-v2-c5da87bb",
+  "corpus_spec_ref": "833c55f1ad8b6a19b77e8fc4f1d16133b8e5d624",
+  "corpus_spec_url": "https://raw.githubusercontent.com/rd-alliance/metadata-catalog-v2/833c55f1ad8b6a19b77e8fc4f1d16133b8e5d624/openapi.yaml"
+}

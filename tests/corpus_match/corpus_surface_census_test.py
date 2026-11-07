@@ -27,7 +27,15 @@ _INDEX_SPEC = importlib.util.spec_from_file_location(
 assert _INDEX_SPEC and _INDEX_SPEC.loader
 INDEX = importlib.util.module_from_spec(_INDEX_SPEC)
 _INDEX_SPEC.loader.exec_module(INDEX)
+_HANDWRITTEN_SPEC = importlib.util.spec_from_file_location(
+    "handwritten_fixtures_corpus", REPO / "tools" / "surface-census" / "handwritten-fixtures.py"
+)
+assert _HANDWRITTEN_SPEC and _HANDWRITTEN_SPEC.loader
+HANDWRITTEN = importlib.util.module_from_spec(_HANDWRITTEN_SPEC)
+sys.modules[_HANDWRITTEN_SPEC.name] = HANDWRITTEN
+_HANDWRITTEN_SPEC.loader.exec_module(HANDWRITTEN)
 CENSUS_TIMEOUT = 60
+CASE_11_KEY = "oneof-bare-object-example-variant"
 
 
 def load_census():
@@ -44,18 +52,30 @@ census = load_census()
 
 
 class RegisteredCorpusCensusTests(unittest.TestCase):
-    def test_case_11_is_absent_from_the_registered_corpus(self) -> None:
-        """The recorded gap is measured over every registered source, end to end."""
+    def test_case_11_declarers_are_whole_byte_matches_their_removal_leaves_unmoved(self) -> None:
+        """Every registered declarer of the shape is measured, end to end, and none proves the row.
+
+        Two Ironclad documents declare it. `oneof-bare-object-example-variant` stays
+        `handwritten` only while each declarer's committed paired removal moves no file in
+        either generator; a declarer without that record may be a real witness, so it fails here.
+        """
         selector = (
             "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&"
             "!schema.example:schema-shaped&!schema.properties:non-empty&"
             "schema.example=object&schema.type:primary=object"
         )
-        sources = census.registered_sources(
-            REPO / "tests" / "fixtures", REPO / "tests" / "fixtures" / "corpus-sources", False
+        fixtures = REPO / "tests" / "fixtures"
+        sources = census.registered_sources(fixtures, fixtures / "corpus-sources", False)
+        # "Every registered source" is every committed golden tree, whatever the
+        # corpus has grown to: a tree the census drops would pass the search below
+        # unmeasured, so this names the fixture rather than pinning a count.
+        aliases = census.corpus_aliases(fixtures)
+        self.assertEqual(
+            sorted(path.parent.name for path in fixtures.glob("*/expected") if path.is_dir()),
+            sorted(aliases.get(source.fixture, source.fixture) for source in sources),
         )
-        self.assertEqual(319, len(sources))
-        declared: list[str] = []
+        self.assertTrue(sources)
+        declared: set[str] = set()
         for offset in range(0, len(sources), 30):
             fixture_args = list(
                 itertools.chain.from_iterable(("--fixture", source.fixture) for source in sources[offset : offset + 30])
@@ -72,8 +92,16 @@ class RegisteredCorpusCensusTests(unittest.TestCase):
             for line in completed.stdout.splitlines():
                 _reported_selector, separator, remainder = line.partition("  ")
                 if separator and not remainder.strip().startswith("("):
-                    declared.append(line)
-        self.assertEqual([], declared)
+                    declared.add(remainder.split()[0])
+        measured, failures = HANDWRITTEN.output_insensitive_declarers(REPO)
+        self.assertEqual([], failures)
+        self.assertEqual(sorted(measured.get(CASE_11_KEY, ())), sorted(declared))
+        registrations = census.golden_registrations(REPO / census.GOLDEN_REGISTRY)
+        for fixture in declared:
+            with self.subTest(fixture=fixture):
+                self.assertEqual([], list(registrations[fixture].unmatched))
+                self.assertTrue((fixtures / fixture / "expected").is_dir())
+                self.assertTrue((fixtures / fixture / "expected-literals").is_dir())
 
     def test_byte_identical_dispositions_are_the_registered_source_bytes(self) -> None:
         """A candidate settled as a copy of a corpus row carries that row's bytes.

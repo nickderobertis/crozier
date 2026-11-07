@@ -18784,7 +18784,7 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
         self.assertEqual([], self.check())
 
     def test_an_output_insensitive_golden_declarer_leaves_the_supplement_and_its_cover_admissible(self) -> None:
-        """`rs-server` byte-matches and declares the key, but its paired removal moves no file."""
+        """Each declarer byte-matches whole, but its paired removal moves no file in either generator."""
         ledger = {row.key: row for _rank, row in load_script("tools/surface-census/golden-reach.py").read_ledger()}
         self.assertIn("rs-server", ledger["schema-example-null"].witnesses)
         self.assertNotIn(
@@ -18795,7 +18795,16 @@ class ResidualHandwrittenProofTests(unittest.TestCase):
             REPO
         )
         self.assertEqual([], errors)
-        self.assertEqual(frozenset({"rs-server"}), insensitive["schema-example-null"])
+        self.assertEqual(
+            frozenset(
+                {
+                    "registered-literals-bytedance-sandboxfusion-0b64b21d",
+                    "registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a",
+                    "rs-server",
+                }
+            ),
+            insensitive["schema-example-null"],
+        )
         self.assertEqual([], self.check())
 
     def test_a_malformed_paired_removal_is_refused_and_admits_nothing(self) -> None:

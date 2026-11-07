@@ -1,0 +1,98 @@
+# crozier compare: <scratch>/compare/d3aacb203499646e297b5bfe04d62342d76435ef086fd51d435c9a77fa08c91c/crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (41 unchanged line(s))
+  client.get(
+      device="ttyAMA0",
+      baudrate=2400,
+-     address="48",
++     address="x",
+  )
+  ```
+  
+      ⋮ (26 unchanged line(s))
+      await client.get(
+          device="ttyAMA0",
+          baudrate=2400,
+-         address="48",
++         address="x",
+      )
+  
+  
+      ⋮ (107 unchanged line(s))
+
+Unexplained original crozier line(s): 45, 78
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (97 unchanged line(s))
+  client.get(
+      device="ttyAMA0",
+      baudrate=2400,
+-     address="48",
++     address="x",
+  )
+  
+  ```
+      ⋮ (83 unchanged line(s))
+  client.get_multi(
+      device="ttyAMA0",
+      baudrate=2400,
+-     address="48",
+-     maxframes=16,
++     address="x",
++     maxframes=1,
+  )
+  
+  ```
+      ⋮ (324 unchanged line(s))
+
+Unexplained original crozier line(s): 101, 191, 192
+
+--- reference/src/fern/client.py
++++ crozier/src/fern/client.py
+      ⋮ (167 unchanged line(s))
+          client.get(
+              device="ttyAMA0",
+              baudrate=2400,
+-             address="48",
++             address="x",
+          )
+          """
+          _response = self._raw_client.get(device, baudrate, address, request_options=request_options)
+      ⋮ (40 unchanged line(s))
+          client.get_multi(
+              device="ttyAMA0",
+              baudrate=2400,
+-             address="48",
+-             maxframes=16,
++             address="x",
++             maxframes=1,
+          )
+          """
+          _response = self._raw_client.get_multi(device, baudrate, address, maxframes, request_options=request_options)
+      ⋮ (287 unchanged line(s))
+              await client.get(
+                  device="ttyAMA0",
+                  baudrate=2400,
+-                 address="48",
++                 address="x",
+              )
+  
+  
+      ⋮ (48 unchanged line(s))
+              await client.get_multi(
+                  device="ttyAMA0",
+                  baudrate=2400,
+-                 address="48",
+-                 maxframes=16,
++                 address="x",
++                 maxframes=1,
+              )
+  
+  
+      ⋮ (152 unchanged line(s))
+
+Unexplained original crozier line(s): 171, 218, 219, 513, 568, 569

@@ -1,0 +1,30 @@
+
+
+import typing
+
+from ...core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class GetActionsResponseActionsItemRequestsItemHttpMethod(enum.StrEnum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+
+    def visit(
+        self,
+        get: typing.Callable[[], T_Result],
+        post: typing.Callable[[], T_Result],
+        put: typing.Callable[[], T_Result],
+        delete: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is GetActionsResponseActionsItemRequestsItemHttpMethod.GET:
+            return get()
+        if self is GetActionsResponseActionsItemRequestsItemHttpMethod.POST:
+            return post()
+        if self is GetActionsResponseActionsItemRequestsItemHttpMethod.PUT:
+            return put()
+        if self is GetActionsResponseActionsItemRequestsItemHttpMethod.DELETE:
+            return delete()

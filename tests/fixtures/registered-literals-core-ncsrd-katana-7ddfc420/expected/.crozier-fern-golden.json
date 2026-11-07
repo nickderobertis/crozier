@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-core-ncsrd-katana-7ddfc420",
+  "corpus_spec_ref": "2c55159fabe40a5b5428b213dba3b0fa791db846",
+  "corpus_spec_url": "https://raw.githubusercontent.com/core-ncsrd/katana/2c55159fabe40a5b5428b213dba3b0fa791db846/katana-swagger/swagger.json"
+}

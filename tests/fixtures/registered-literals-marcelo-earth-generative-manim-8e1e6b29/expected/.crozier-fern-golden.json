@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-marcelo-earth-generative-manim-8e1e6b29",
+  "corpus_spec_ref": "f681cc78a6b1cad8443b6af4b3a1adbfed9d3e0e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/marcelo-earth/generative-manim/f681cc78a6b1cad8443b6af4b3a1adbfed9d3e0e/api/public/openapi.yaml"
+}

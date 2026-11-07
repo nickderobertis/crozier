@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-darwin-studios-darwin-cli-ee5e2a21",
+  "corpus_spec_ref": "0ae98a805869b7acabd737365c193b0afcbd0d7e",
+  "corpus_spec_url": "https://raw.githubusercontent.com/darwin-studios/darwin-cli/0ae98a805869b7acabd737365c193b0afcbd0d7e/openapi.json"
+}
