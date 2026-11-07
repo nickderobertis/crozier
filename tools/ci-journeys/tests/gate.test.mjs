@@ -5,7 +5,7 @@
 // which projects the tier selected and ran.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { taskTimings } from "../../ci/gate-timing.mjs";
@@ -522,4 +522,67 @@ test('gate emits exact profile conversion and cache-replay status without execut
   assert.equal(second.status,0,second.output);
   assert.match(second.stdout,/gate: task a:test: [0-9.]+s \((local-cache|local-cache-kept-existing|remote-cache)\)/);
   assert.equal(readFileSync(join(root,'ran-a'),'utf8'),'once');
+});
+
+test("an Nx panic reruns the targets once, and only that run's status decides", (t) => {
+  const root = scratchWorkspace(t);
+  // Nx itself is the one thing doubled, and only its first `run-many` calls, because no input
+  // provokes the panic: everything else, the rerun included, is the real Nx.
+  rmSync(join(root, "node_modules"), { recursive: true, force: true });
+  mkdirSync(join(root, "node_modules/.bin"), { recursive: true });
+  for (const entry of readdirSync(join(REPO, "node_modules"))) {
+    if (entry !== ".bin") symlinkSync(join(REPO, "node_modules", entry), join(root, "node_modules", entry), "junction");
+  }
+  const stub = join(root, "node_modules/.bin/nx-stub.cjs");
+  writeFileSync(stub, `const fs = require("fs");
+const { spawnSync } = require("child_process");
+const args = process.argv.slice(2);
+if (args[0] === "run-many") {
+  const calls = fs.existsSync("nx-calls") ? fs.readFileSync("nx-calls", "utf8").length : 0;
+  fs.appendFileSync("nx-calls", "x");
+  if (calls < Number(process.env.STUB_PANICS)) {
+    console.log(" NX   Successfully ran targets test");
+    console.error(" NX   Panic in async function");
+    process.exit(1);
+  }
+}
+const real = spawnSync(process.execPath, [${JSON.stringify(join(REPO, "node_modules/nx/dist/bin/nx.js"))}, ...args], { stdio: "inherit" });
+process.exit(real.status ?? 1);
+`);
+  if (process.platform === "win32") {
+    writeFileSync(join(root, "node_modules/.bin/nx.cmd"), `@"${process.execPath}" "${stub}" %*\r\n`);
+  } else {
+    writeFileSync(join(root, "node_modules/.bin/nx"), `#!/bin/sh\nexec "${process.execPath}" "${stub}" "$@"\n`);
+    chmodSync(join(root, "node_modules/.bin/nx"), 0o755);
+  }
+  write(root, { ".gitignore": "/node_modules\n/.nx\nran-*\nnx-calls\n" });
+  const failing = project("a", { targets: { test: { command: `node -e "console.error('the real failure'); process.exit(3)"` } } });
+  const scenario = (panics, projectJson) => {
+    rmSync(join(root, "nx-calls"), { force: true });
+    rmSync(join(root, "ran-a"), { force: true });
+    write(root, { "a/project.json": projectJson });
+    const run = just(root, ["check", "--every-project", "--projects=a"], { STUB_PANICS: String(panics) });
+    return { ...run, calls: readFileSync(join(root, "nx-calls"), "utf8").length };
+  };
+
+  const recovered = scenario(1, project("a"));
+  assert.equal(recovered.status, 0, recovered.output);
+  assert.equal(recovered.calls, 2, recovered.output);
+  assert.match(recovered.stderr, /gate: Nx itself panicked/);
+  assert.ok(ran(root, "a"), "the rerun ran the target for real");
+
+  const twice = scenario(2, project("a"));
+  assert.equal(twice.status, 1, "a second panic is a failure, not a further rerun");
+  assert.equal(twice.calls, 2, twice.output);
+  assert.match(twice.output, /Panic in async function/);
+  assert.match(twice.output, /gate: a target failed/);
+
+  const realFailure = scenario(1, failing);
+  assert.equal(realFailure.status, 1, "the rerun's real failure stands");
+  assert.equal(realFailure.calls, 2, realFailure.output);
+  assert.match(realFailure.output, /the real failure/);
+
+  const noPanic = scenario(0, failing);
+  assert.equal(noPanic.status, 1, noPanic.output);
+  assert.equal(noPanic.calls, 1, "an ordinary failure is not rerun");
 });

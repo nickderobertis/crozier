@@ -89,7 +89,7 @@ test("an event with no derivable base runs the broader tier rather than a scoped
 // the gate's status as its own.
 function ciLane(root, recipe, args, env) {
   const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-    !key.startsWith("GITHUB_") && key !== "NX_BASE"));
+    !key.startsWith("GITHUB_") && !key.startsWith("NX_SELF_HOSTED_") && !["NX_BASE", "CROZIER_RESULT_CACHE"].includes(key)));
   const run = spawnSync("just", [recipe, ...args], {
     cwd: root, env: { ...clean, NX_DAEMON: "false", NX_NO_CLOUD: "true", ...env }, encoding: "utf8",
     shell: process.platform === "win32",

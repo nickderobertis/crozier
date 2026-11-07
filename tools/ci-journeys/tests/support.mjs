@@ -80,6 +80,8 @@ export function just(root, args, env = {}) {
   // journeys exports NX_SKIP_NX_CACHE, which would turn every replay a journey
   // asserts into a rerun. A journey that wants it passes it in `env`.
   if (!("NX_SKIP_NX_CACHE" in env)) delete merged.NX_SKIP_NX_CACHE;
+  // A lane's own result store answers for this repository, never a scratch one.
+  for (const name of ["NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "NX_SELF_HOSTED_REMOTE_CACHE_ACCESS_TOKEN", "CROZIER_RESULT_CACHE"]) if (!(name in env)) delete merged[name];
   for (const [key, value] of Object.entries(env)) if (value === undefined) delete merged[key];
   const run = spawnSync("just", args, { cwd: root, env: merged, encoding: "utf8", shell: process.platform === "win32" });
   return { status: run.status, stdout: run.stdout ?? "", stderr: run.stderr ?? "", output: `${run.stdout}${run.stderr}` };

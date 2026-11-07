@@ -5,7 +5,7 @@
 // other host.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { delimiter, dirname, join, resolve } from "node:path";
 import { test } from "node:test";
@@ -39,7 +39,13 @@ function scratchWorkspace(t, project, targetName, suiteCommand) {
   const nx = (env = {}) => {
     const merged = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true", NX_TUI: "false", NX_ISOLATE_PLUGINS: "false", ...env };
     // This suite itself runs inside an Nx task, and a sweep turns every replay into a rerun.
-    for (const name of ["NX_SKIP_NX_CACHE", "NX_WORKSPACE_ROOT_PATH", "NX_WORKSPACE_ROOT", "NX_TASK_TARGET_PROJECT", "NX_TASK_TARGET_TARGET", "NX_TASK_HASH"]) delete merged[name];
+    // A lane's gate also hands its tasks a result store, which would answer a scratch run's
+    // first execution with an earlier case's result and keep what this one stores.
+    for (const name of ["NX_SKIP_NX_CACHE", "NX_WORKSPACE_ROOT_PATH", "NX_WORKSPACE_ROOT", "NX_TASK_TARGET_PROJECT", "NX_TASK_TARGET_TARGET", "NX_TASK_HASH", "NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "NX_SELF_HOSTED_REMOTE_CACHE_ACCESS_TOKEN"]) delete merged[name];
+    // Nx reuses an archived file hash whenever the file's mtime matches, and that mtime is in
+    // whole seconds off Windows, so an edit in the second of the last run would keep the old
+    // hash. A commit never lands that fast; these cases do. Each run hashes the bytes it sees.
+    rmSync(join(root, ".nx/workspace-data/nx_files.nxt"), { force: true });
     return spawnSync(process.execPath, [NX, "run", task, "--outputStyle=static"], { cwd: root, env: merged, encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
   };
   /** Run the target through Nx under `env`; returns how many times its command has now run. */
@@ -236,6 +242,24 @@ for (const [project, target, read] of [
     assert.equal(run(), 2, `${read} decides the result, so a change to it takes no cached result`);
   });
 }
+
+test("an edit that keeps the file's mtime still reruns, and restoring its bytes still replays", (t) => {
+  const { root, run } = scratchWorkspace(t, "tools/ci/suite-cases", "test");
+  const read = join(root, "docs/fern-limitations.md");
+  mkdirSync(dirname(read), { recursive: true });
+  const stamp = new Date("2026-01-02T03:04:05Z");
+  const edit = (text) => {
+    writeFileSync(read, text);
+    utimesSync(read, stamp, stamp);
+  };
+  edit("one\n");
+  assert.equal(run(), 1);
+  assert.equal(run(), 1, "unchanged bytes replay");
+  edit("two\n");
+  assert.equal(run(), 2, "changed bytes rerun, though Nx's archive holds this mtime");
+  edit("one\n");
+  assert.equal(run(), 2, "the original bytes replay their own result");
+});
 
 const TARGETS = [["tools/ci/suite-cases", "test"], ["tools/surface-census", "test-reuse"]];
 const write = (root, path, text) => {

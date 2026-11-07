@@ -18,9 +18,12 @@ import { REPO, write } from "./support.mjs";
 /** This environment without what an enclosing Nx task or sweep set, which would change a journey's answers. */
 function clean(env) {
   const merged = { ...process.env, NX_DAEMON: "false", NX_NO_CLOUD: "true", ...env };
-  for (const name of Object.keys(merged)) if (/^NX_(SKIP_NX_CACHE|WORKSPACE_ROOT|TASK_|PROFILE|CLI_SET|LOAD_DOT)/.test(name) && !(name in env)) delete merged[name];
+  for (const name of Object.keys(merged)) if (/^(NX_(SKIP_NX_CACHE|WORKSPACE_ROOT|TASK_|PROFILE|CLI_SET|LOAD_DOT|SELF_HOSTED_)|CROZIER_RESULT_CACHE$)/.test(name) && !(name in env)) delete merged[name];
   return merged;
 }
+// Nx reuses an archived file hash whenever a file's mtime matches, and that mtime is in whole
+// seconds off Windows: an edit in the second of the last run would keep the old hash.
+const forgetFileHashes = (root) => rmSync(join(root, ".nx/workspace-data/nx_files.nxt"), { force: true });
 const gitIn = (cwd, ...args) => execFileSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", ...args], { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
 const tracked = () => execFileSync("git", ["ls-files", "--", "*project.json"], { cwd: REPO, encoding: "utf8" }).trim().split("\n");
 const readProject = (path) => JSON.parse(readFileSync(join(REPO, path), "utf8").replace(/^\s*\/\/.*$/gm, ""));
@@ -36,6 +39,8 @@ function realGraph(t) {
     cpSync(join(REPO, path), join(root, path));
   }
   cpSync(join(REPO, ".github/workflows"), join(root, ".github/workflows"), { recursive: true });
+  // Its line endings, or a checkout here turns the workflows CRLF on a Windows runner's core.autocrlf.
+  cpSync(join(REPO, ".gitattributes"), join(root, ".gitattributes"));
   symlinkSync(join(REPO, "node_modules"), join(root, "node_modules"), "junction");
   for (const path of tracked()) {
     const project = readProject(path);
@@ -70,7 +75,7 @@ function lane(graph, edit, recipe, args = [], env = {}) {
   gitIn(root, "commit", "--quiet", "--allow-empty", "-m", "edit");
   const log = join(root, "ran.log");
   rmSync(log, { force: true });
-  const run = spawnSync("just", [recipe, ...args], {
+  const run = spawnSync("just", [...[recipe].flat(), ...args], {
     cwd: root, encoding: "utf8", shell: process.platform === "win32",
     env: clean({ NX_BASE: base, RAN_LOG: log, ...env }),
   });
@@ -201,11 +206,14 @@ test("the lint and test lanes are disjoint in what they execute, and no target r
   const lint = lane(graph, edit, "lane-lint");
   assert.equal(lint.status, 0, lint.output);
   for (const name of lint.ran) assert.ok(!/:(test|test-.*|budgets.*|coverage|build|cold-registry-build)$/.test(name), `lint ran ${name}`);
+  // The recipe's target list keys on the host's OS, and this asks what Linux's lane owes, whichever
+  // host runs the question: Windows' list adds typecheck, which lint runs on another platform.
+  const linuxTargets = /else \{ "([^"]+)" \}/.exec(/^lane_test_targets := .*$/m.exec(readFileSync(join(REPO, "justfile"), "utf8"))[0])[1];
   for (const [platform, owed] of [["linux", ["--platform=linux"]]]) {
     const lanes = [["--exclude=tag:tier:promoted"], ["--projects=tag:lane:sdk-env"], ["--projects=tag:lane:packaging"], ["--projects=tag:lane:live"]];
     const seen = new Map();
     for (const scope of lanes) {
-      const { ran, output, status } = lane(graph, edit, "lane-test", [...owed, ...scope]);
+      const { ran, output, status } = lane(graph, edit, [`lane_test_targets=${linuxTargets}`, "lane-test"], [...owed, ...scope]);
       assert.equal(status, 0, output);
       for (const name of ran) {
         assert.ok(!lint.ran.has(name), `${name} runs in both lint and the ${platform} lane`);
@@ -495,6 +503,7 @@ function tinyRepo(t) {
   const run = (env = {}) => {
     const log = join(root, "ran.log");
     rmSync(log, { force: true });
+    forgetFileHashes(root);
     const result = spawnSync("just", ["check", "--projects=cli,sdk,other"], {
       cwd: root, encoding: "utf8", shell: process.platform === "win32",
       env: clean({ NX_BASE: base, RAN_LOG: log, ...env }),
@@ -588,6 +597,7 @@ test("main's cache writer proves every project into the store, and a pull reques
   const main = gitIn(root, "rev-parse", "HEAD");
   const invoke = (args, env = {}) => {
     rmSync(log, { force: true });
+    forgetFileHashes(root);
     const result = spawnSync("just", args, { cwd: root, encoding: "utf8", shell: process.platform === "win32", env: clean({ RAN_LOG: log, CROZIER_RESULT_CACHE: ".results", ...env }) });
     return { status: result.status, output: `${result.stdout}${result.stderr}`, ran: existsSync(log) ? readFileSync(log, "utf8").trim().split("\n").sort() : [] };
   };
@@ -629,7 +639,7 @@ test("a target's declared outputs come back with its carried result", (t) => {
     cache: true, inputs: ["{projectRoot}/**/*"], outputs: ["{workspaceRoot}/.coverage-data/cov"],
   } } }), ".gitignore": "/node_modules\n/.nx\n/ran.log\n/.coverage-data\n/.results\n" });
   const log = join(root, "ran.log");
-  const invoke = () => spawnSync("just", ["check", "--projects=cov"], { cwd: root, encoding: "utf8", shell: process.platform === "win32",
+  const invoke = () => forgetFileHashes(root) ?? spawnSync("just", ["check", "--projects=cov"], { cwd: root, encoding: "utf8", shell: process.platform === "win32",
     env: clean({ NX_BASE: base, RAN_LOG: log, CROZIER_RESULT_CACHE: ".results" }) });
   assert.equal(invoke().status, 0);
   assert.equal(readFileSync(log, "utf8"), "cov:test\n");

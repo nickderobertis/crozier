@@ -27,7 +27,7 @@ function cargoArgs(command, ...extra) {
 
 function cargo(cwd, args, env = {}) {
   const { CARGO_TARGET_DIR: _outerTarget, ...inherited } = process.env;
-  const run = spawnSync("cargo", args, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, env: { ...inherited, ...env } });
+  const run = spawnSync("cargo", args, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, env: { ...inherited, CARGO_TERM_COLOR: "never", ...env } });
   assert.equal(run.status, 0, `cargo ${args.join(" ")}\n${run.stdout?.slice(-2000)}\n${run.stderr?.slice(-4000)}`);
   return run;
 }

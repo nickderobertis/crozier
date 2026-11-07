@@ -55,6 +55,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TOOL = "gate";
 const PROMOTED_TAG = "tier:promoted";
 const DEFAULT_BASE_REF = "origin/main";
+const NX_PANIC = "Panic in async function";
 
 function die(message, action, code = 1) {
   console.error(`${TOOL}: ${message}`);
@@ -379,9 +380,19 @@ async function main() {
   // Set by CI's lanes: results earlier runners left, which this run may replay and add to.
   const results = process.env.CROZIER_RESULT_CACHE && !options.sweep ? await serveResults(resolve(ROOT, process.env.CROZIER_RESULT_CACHE)) : undefined;
   // Asynchronous, unlike every other child here: this process serves the cache Nx calls.
-  const run = await runCaptured(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, ...results?.env, NX_PROFILE: profile }, shell: process.platform === "win32" });
+  const nxRun = () => runCaptured(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, ...results?.env, NX_PROFILE: profile }, shell: process.platform === "win32" });
+  let run = await nxRun();
+  // Nx 23's tracing layer can panic inside a native async call, cache calls included, and then
+  // Nx exits 1 whatever its targets did: lint saw it print success first. It says nothing about
+  // the targets, so one rerun answers for them: what passed replays and what failed fails again.
+  let panicked = "";
+  if (run.status !== 0 && `${run.stdout}${run.stderr}`.includes(NX_PANIC)) {
+    console.error(`${TOOL}: Nx itself panicked (${NX_PANIC}); rerunning once, and that run's status decides`);
+    panicked = `${run.stdout}${run.stderr}\n${TOOL}: Nx itself panicked; the rerun follows\n`;
+    run = await nxRun();
+  }
   await results?.stop();
-  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${run.stdout}${run.stderr}`);
+  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${panicked}${run.stdout}${run.stderr}`);
   let timing;
   let timingError = false;
   try {
