@@ -16121,7 +16121,7 @@ impl Builder<'_> {
             // union leaves the alias, exactly as it does at a property, and makes
             // the map's value type `Optional`.
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
-                // Properties suppress value hoisting independently of a value's reference.
+                // The certified pair hoists no value type for a map that declares `properties`.
                 let inline_value = if !prop_schema.properties.is_empty() {
                     None
                 } else {
