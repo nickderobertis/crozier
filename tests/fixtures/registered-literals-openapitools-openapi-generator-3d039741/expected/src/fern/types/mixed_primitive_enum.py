@@ -1,0 +1,3 @@
+
+
+MixedPrimitiveEnum = str

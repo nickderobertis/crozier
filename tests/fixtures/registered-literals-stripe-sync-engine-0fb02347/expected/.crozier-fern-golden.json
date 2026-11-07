@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-stripe-sync-engine-0fb02347",
+  "corpus_spec_ref": "0cb8ca453d7ad266de714f83838f4e38565e8a57",
+  "corpus_spec_url": "https://raw.githubusercontent.com/stripe/sync-engine/0cb8ca453d7ad266de714f83838f4e38565e8a57/apps/service/src/__generated__/openapi.json"
+}

@@ -1,0 +1,1634 @@
+openapi: 3.1.0
+info:
+  title: Inferna Next
+  version: 0.2.0
+paths:
+  /api/v1/auth/login:
+    post:
+      tags:
+      - auth
+      summary: Login
+      operationId: login_api_v1_auth_login_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/auth/me:
+    get:
+      tags:
+      - auth
+      summary: Me
+      operationId: me_api_v1_auth_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users:
+    get:
+      tags:
+      - users
+      summary: List Users
+      operationId: list_users_api_v1_users_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/UserOut'
+                type: array
+                title: Response List Users Api V1 Users Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - users
+      summary: Create User
+      operationId: create_user_api_v1_users_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/users/{user_id}:
+    delete:
+      tags:
+      - users
+      summary: Delete User
+      operationId: delete_user_api_v1_users__user_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: User Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/users/{user_id}/password:
+    put:
+      tags:
+      - users
+      summary: Change Password
+      operationId: change_password_api_v1_users__user_id__password_put
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: User Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/keys:
+    get:
+      tags:
+      - keys
+      summary: List Keys
+      operationId: list_keys_api_v1_keys_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ApiKeyOut'
+                type: array
+                title: Response List Keys Api V1 Keys Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - keys
+      summary: Create Key
+      operationId: create_key_api_v1_keys_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeySecretOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/keys/{key_id}/revoke:
+    post:
+      tags:
+      - keys
+      summary: Revoke Key
+      description: 'Revoke an API key (idempotent).
+
+
+        POST-with-explicit-verb (not DELETE) is deliberate: revoke is a state
+
+        transition on a still-existing resource, not deletion; repeat calls are
+
+        no-ops.'
+      operationId: revoke_key_api_v1_keys__key_id__revoke_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: key_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Key Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyOut'
+        '404':
+          description: Key not found
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/clusters:
+    get:
+      tags:
+      - clusters
+      summary: List Clusters
+      operationId: list_clusters_api_v1_clusters_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ClusterOut'
+                type: array
+                title: Response List Clusters Api V1 Clusters Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - clusters
+      summary: Create Cluster
+      operationId: create_cluster_api_v1_clusters_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClusterCreate'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClusterOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/clusters/{cluster_id}:
+    delete:
+      tags:
+      - clusters
+      summary: Delete Cluster
+      operationId: delete_cluster_api_v1_clusters__cluster_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: cluster_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Cluster Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workers:
+    get:
+      tags:
+      - workers
+      summary: List Workers
+      operationId: list_workers_api_v1_workers_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: cluster_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Cluster Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WorkerOut'
+                title: Response List Workers Api V1 Workers Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/workers/{worker_id}:
+    delete:
+      tags:
+      - workers
+      summary: Delete Worker
+      operationId: delete_worker_api_v1_workers__worker_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: worker_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Worker Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/models:
+    get:
+      tags:
+      - models
+      summary: List Models
+      operationId: list_models_api_v1_models_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ModelOut'
+                type: array
+                title: Response List Models Api V1 Models Get
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/models/{model_id}:
+    get:
+      tags:
+      - models
+      summary: Get Model
+      operationId: get_model_api_v1_models__model_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: model_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Model Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/model-instances:
+    get:
+      tags:
+      - instances
+      summary: List Instances
+      operationId: list_instances_api_v1_model_instances_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/InstanceOut'
+                type: array
+                title: Response List Instances Api V1 Model Instances Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - instances
+      summary: Deploy
+      operationId: deploy_api_v1_model_instances_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeployRequest'
+        required: true
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/InstanceOut'
+                type: array
+                title: Response Deploy Api V1 Model Instances Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/model-instances/{instance_id}/stop:
+    post:
+      tags:
+      - instances
+      summary: Stop Instance
+      operationId: stop_instance_api_v1_model_instances__instance_id__stop_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: instance_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Instance Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/model-instances/{instance_id}/restart:
+    post:
+      tags:
+      - instances
+      summary: Restart Instance
+      operationId: restart_instance_api_v1_model_instances__instance_id__restart_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: instance_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Instance Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/model-instances/{instance_id}:
+    delete:
+      tags:
+      - instances
+      summary: Delete Instance
+      operationId: delete_instance_api_v1_model_instances__instance_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: instance_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Instance Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/deployments:
+    get:
+      tags:
+      - deployments
+      summary: List Deployments
+      operationId: list_deployments_api_v1_deployments_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/DeploymentOut'
+                type: array
+                title: Response List Deployments Api V1 Deployments Get
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/deployments/{deployment_id}/scale:
+    post:
+      tags:
+      - deployments
+      summary: Scale Deployment
+      operationId: scale_deployment_api_v1_deployments__deployment_id__scale_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScaleRequest'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeploymentOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/deployments/{deployment_id}:
+    delete:
+      tags:
+      - deployments
+      summary: Delete Deployment
+      operationId: delete_deployment_api_v1_deployments__deployment_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: deployment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+          title: Deployment Id
+      responses:
+        '204':
+          description: Successful Response
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/dashboard:
+    get:
+      tags:
+      - dashboard
+      summary: Dashboard
+      operationId: dashboard_api_v1_dashboard_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardOut'
+      security:
+      - OAuth2PasswordBearer: []
+  /api/v1/compatibility:
+    get:
+      tags:
+      - compatibility
+      summary: Compatibility
+      operationId: compatibility_api_v1_compatibility_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Compatibility Api V1 Compatibility Get
+      security:
+      - OAuth2PasswordBearer: []
+  /v1/chat/completions:
+    post:
+      tags:
+      - gateway
+      summary: Chat Completions
+      operationId: chat_completions_v1_chat_completions_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                model:
+                  type: string
+                messages:
+                  items: {}
+                  type: array
+                stream:
+                  type: boolean
+              type: object
+              required:
+              - model
+              - messages
+        required: true
+      responses:
+        '200':
+          description: Success (SSE stream when stream=true)
+          content:
+            application/json:
+              schema: {}
+            text/event-stream:
+              schema:
+                type: string
+                description: SSE stream of JSON chunks
+        '400':
+          description: "Bad request \u2014 missing or invalid model"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '401':
+          description: Missing/invalid/revoked/inactive API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '403':
+          description: API key lacks inference scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '404':
+          description: Model unknown or no running instance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '413':
+          description: Request body exceeds size limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '502':
+          description: Upstream unreachable or target not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+      security:
+      - HTTPBearer: []
+  /v1/embeddings:
+    post:
+      tags:
+      - gateway
+      summary: Embeddings
+      operationId: embeddings_v1_embeddings_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                model:
+                  type: string
+                input:
+                  type: string
+                encoding_format:
+                  type: string
+              type: object
+              required:
+              - model
+              - input
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: "Bad request \u2014 missing or invalid model"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '401':
+          description: Missing/invalid/revoked/inactive API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '403':
+          description: API key lacks inference scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '404':
+          description: Model unknown or no running instance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '413':
+          description: Request body exceeds size limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '502':
+          description: Upstream unreachable or target not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+      security:
+      - HTTPBearer: []
+  /v1/audio/transcriptions:
+    post:
+      tags:
+      - gateway
+      summary: Audio Transcriptions
+      operationId: audio_transcriptions_v1_audio_transcriptions_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                model:
+                  type: string
+                file:
+                  type: string
+                  format: binary
+              type: object
+              required:
+              - model
+              - file
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+        required: true
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: {}
+        '400':
+          description: "Bad request \u2014 missing or invalid model"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '401':
+          description: Missing/invalid/revoked/inactive API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '403':
+          description: API key lacks inference scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '404':
+          description: Model unknown or no running instance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '413':
+          description: Request body exceeds size limit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '502':
+          description: Upstream unreachable or target not allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+      security:
+      - HTTPBearer: []
+      parameters:
+      - name: model
+        in: query
+        required: false
+        schema:
+          type: string
+        description: Required for application/octet-stream bodies
+  /v1/models:
+    get:
+      tags:
+      - gateway
+      summary: List Models
+      operationId: list_models_v1_models_get
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: {}
+        '401':
+          description: Missing/invalid/revoked/inactive API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+        '403':
+          description: API key lacks inference scope
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GatewayError'
+      security:
+      - HTTPBearer: []
+  /healthz:
+    get:
+      summary: Healthz
+      operationId: healthz_healthz_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties:
+                  type: string
+                type: object
+                title: Response Healthz Healthz Get
+  /readyz:
+    get:
+      summary: Readyz
+      operationId: readyz_readyz_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    ApiKeyCreate:
+      properties:
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Name
+      type: object
+      required:
+      - name
+      title: ApiKeyCreate
+    ApiKeyOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        user_id:
+          type: string
+          format: uuid
+          title: User Id
+        name:
+          type: string
+          title: Name
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+          default: []
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        last_used_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Used At
+        revoked_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Revoked At
+      type: object
+      required:
+      - id
+      - user_id
+      - name
+      - created_at
+      - updated_at
+      title: ApiKeyOut
+    ApiKeySecretOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        user_id:
+          type: string
+          format: uuid
+          title: User Id
+        name:
+          type: string
+          title: Name
+        scopes:
+          items:
+            type: string
+          type: array
+          title: Scopes
+          default: []
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        last_used_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Used At
+        revoked_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Revoked At
+        key:
+          type: string
+          title: Key
+      type: object
+      required:
+      - id
+      - user_id
+      - name
+      - created_at
+      - updated_at
+      - key
+      title: ApiKeySecretOut
+    ClusterCreate:
+      properties:
+        name:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+      type: object
+      required:
+      - name
+      title: ClusterCreate
+    ClusterOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        name:
+          type: string
+          title: Name
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+      type: object
+      required:
+      - id
+      - name
+      - description
+      - created_at
+      title: ClusterOut
+    DashboardOut:
+      properties:
+        clusters:
+          type: integer
+          title: Clusters
+        workers_online:
+          type: integer
+          title: Workers Online
+        gpus_total:
+          type: integer
+          title: Gpus Total
+        vram_used_mb:
+          type: integer
+          title: Vram Used Mb
+        vram_total_mb:
+          type: integer
+          title: Vram Total Mb
+        instances_running:
+          type: integer
+          title: Instances Running
+        instances:
+          items:
+            $ref: '#/components/schemas/InstanceOut'
+          type: array
+          title: Instances
+      type: object
+      required:
+      - clusters
+      - workers_online
+      - gpus_total
+      - vram_used_mb
+      - vram_total_mb
+      - instances_running
+      - instances
+      title: DashboardOut
+    DeployRequest:
+      properties:
+        model_id:
+          type: string
+          format: uuid
+          title: Model Id
+        cluster_id:
+          type: string
+          format: uuid
+          title: Cluster Id
+        engine:
+          type: string
+          enum:
+          - vllm
+          - sglang
+          title: Engine
+        profile:
+          type: string
+          enum:
+          - latency
+          - throughput
+          title: Profile
+        replicas:
+          type: integer
+          maximum: 8.0
+          minimum: 1.0
+          title: Replicas
+          default: 1
+        gpu_selection:
+          anyOf:
+          - $ref: '#/components/schemas/ManualGpuSelection'
+          - type: string
+            const: auto
+          title: Gpu Selection
+          default: auto
+      type: object
+      required:
+      - model_id
+      - cluster_id
+      - engine
+      - profile
+      title: DeployRequest
+    DeploymentOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        model_id:
+          type: string
+          format: uuid
+          title: Model Id
+        cluster_id:
+          type: string
+          format: uuid
+          title: Cluster Id
+        engine:
+          type: string
+          title: Engine
+        profile:
+          type: string
+          title: Profile
+        min_replicas:
+          type: integer
+          title: Min Replicas
+        max_replicas:
+          type: integer
+          title: Max Replicas
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        model:
+          anyOf:
+          - $ref: '#/components/schemas/ModelOut'
+          - type: 'null'
+        instances:
+          items:
+            $ref: '#/components/schemas/InstanceOut'
+          type: array
+          title: Instances
+          default: []
+      type: object
+      required:
+      - id
+      - model_id
+      - cluster_id
+      - engine
+      - profile
+      - min_replicas
+      - max_replicas
+      - created_at
+      title: DeploymentOut
+    GPUOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        index:
+          type: integer
+          title: Index
+        vendor:
+          type: string
+          title: Vendor
+        name:
+          type: string
+          title: Name
+        vram_mb:
+          type: integer
+          title: Vram Mb
+        used_vram_mb:
+          type: integer
+          title: Used Vram Mb
+        utilization_pct:
+          type: integer
+          title: Utilization Pct
+        uuid:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uuid
+        driver_version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Driver Version
+      type: object
+      required:
+      - id
+      - index
+      - vendor
+      - name
+      - vram_mb
+      - used_vram_mb
+      - utilization_pct
+      - uuid
+      - driver_version
+      title: GPUOut
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    InstanceOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        deployment_id:
+          type: string
+          format: uuid
+          title: Deployment Id
+        model_id:
+          type: string
+          format: uuid
+          title: Model Id
+        cluster_id:
+          type: string
+          format: uuid
+          title: Cluster Id
+        worker_id:
+          anyOf:
+          - type: string
+            format: uuid
+          - type: 'null'
+          title: Worker Id
+        engine:
+          type: string
+          title: Engine
+        profile:
+          type: string
+          title: Profile
+        gpu_indexes:
+          items:
+            type: integer
+          type: array
+          title: Gpu Indexes
+        state:
+          type: string
+          title: State
+        desired_state:
+          type: string
+          title: Desired State
+        generation:
+          type: integer
+          title: Generation
+        port:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Port
+        error_detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error Detail
+        created_at:
+          type: string
+          format: date-time
+          title: Created At
+        updated_at:
+          type: string
+          format: date-time
+          title: Updated At
+        model:
+          anyOf:
+          - $ref: '#/components/schemas/ModelOut'
+          - type: 'null'
+        worker_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Worker Name
+      type: object
+      required:
+      - id
+      - deployment_id
+      - model_id
+      - cluster_id
+      - worker_id
+      - engine
+      - profile
+      - gpu_indexes
+      - state
+      - desired_state
+      - generation
+      - port
+      - error_detail
+      - created_at
+      - updated_at
+      title: InstanceOut
+    LoginRequest:
+      properties:
+        username:
+          type: string
+          title: Username
+        password:
+          type: string
+          title: Password
+      type: object
+      required:
+      - username
+      - password
+      title: LoginRequest
+    ManualGpuSelection:
+      properties:
+        worker_id:
+          type: string
+          format: uuid
+          title: Worker Id
+        gpu_indexes:
+          items:
+            type: integer
+          type: array
+          minItems: 1
+          title: Gpu Indexes
+      type: object
+      required:
+      - worker_id
+      - gpu_indexes
+      title: ManualGpuSelection
+    ModelOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        name:
+          type: string
+          title: Name
+        display_name:
+          type: string
+          title: Display Name
+        category:
+          type: string
+          title: Category
+        description:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Description
+        params_b:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Params B
+        vram_required_mb:
+          type: integer
+          title: Vram Required Mb
+        requires_hf_token:
+          type: boolean
+          title: Requires Hf Token
+        license:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: License
+        is_builtin:
+          type: boolean
+          title: Is Builtin
+        supported_engines:
+          items:
+            type: string
+          type: array
+          title: Supported Engines
+          default: []
+      type: object
+      required:
+      - id
+      - name
+      - display_name
+      - category
+      - description
+      - params_b
+      - vram_required_mb
+      - requires_hf_token
+      - license
+      - is_builtin
+      title: ModelOut
+    PasswordChange:
+      properties:
+        password:
+          type: string
+          maxLength: 128
+          minLength: 6
+          title: Password
+      type: object
+      required:
+      - password
+      title: PasswordChange
+    ScaleRequest:
+      properties:
+        replicas:
+          type: integer
+          maximum: 8.0
+          minimum: 1.0
+          title: Replicas
+      type: object
+      required:
+      - replicas
+      title: ScaleRequest
+    TokenResponse:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        token_type:
+          type: string
+          title: Token Type
+          default: bearer
+      type: object
+      required:
+      - access_token
+      title: TokenResponse
+    UserCreate:
+      properties:
+        username:
+          type: string
+          maxLength: 64
+          minLength: 1
+          title: Username
+        password:
+          type: string
+          maxLength: 128
+          minLength: 6
+          title: Password
+        role:
+          type: string
+          title: Role
+          default: user
+      type: object
+      required:
+      - username
+      - password
+      title: UserCreate
+    UserOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        username:
+          type: string
+          title: Username
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        role:
+          type: string
+          title: Role
+        is_active:
+          type: boolean
+          title: Is Active
+      type: object
+      required:
+      - id
+      - username
+      - email
+      - role
+      - is_active
+      title: UserOut
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    WorkerOut:
+      properties:
+        id:
+          type: string
+          format: uuid
+          title: Id
+        cluster_id:
+          type: string
+          format: uuid
+          title: Cluster Id
+        name:
+          type: string
+          title: Name
+        hostname:
+          type: string
+          title: Hostname
+        state:
+          type: string
+          title: State
+        version:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Version
+        os:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Os
+        cpu_cores:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Cpu Cores
+        memory_mb:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Memory Mb
+        last_seen_at:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Last Seen At
+        gpus:
+          items:
+            $ref: '#/components/schemas/GPUOut'
+          type: array
+          title: Gpus
+          default: []
+        instances:
+          items:
+            $ref: '#/components/schemas/InstanceOut'
+          type: array
+          title: Instances
+          default: []
+      type: object
+      required:
+      - id
+      - cluster_id
+      - name
+      - hostname
+      - state
+      - version
+      - os
+      - cpu_cores
+      - memory_mb
+      - last_seen_at
+      title: WorkerOut
+    GatewayError:
+      title: GatewayError
+      type: object
+      description: OpenAI-style error envelope returned by /v1/* gateway routes.
+      required:
+      - error
+      properties:
+        error:
+          type: object
+          required:
+          - message
+          - type
+          - code
+          properties:
+            message:
+              type: string
+            type:
+              type: string
+            code:
+              type: string
+  securitySchemes:
+    OAuth2PasswordBearer:
+      type: oauth2
+      flows:
+        password:
+          scopes: {}
+          tokenUrl: /api/v1/auth/login
+    HTTPBearer:
+      type: http
+      description: "Inferna API key \u2014 'inf-' followed by 32 hex characters, created\
+        \ in the web UI."
+      scheme: bearer
+      bearerFormat: inf-<32 hex>

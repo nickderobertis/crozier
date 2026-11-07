@@ -1,0 +1,31 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class CreditCardCredentialResponse(UniversalBaseModel):
+    """
+    Response model for credit card credentials, containing only the last four digits and brand.
+    """
+
+    last_four: str = pydantic.Field()
+    """
+    Last four digits of the credit card number
+    """
+
+    brand: str = pydantic.Field()
+    """
+    Brand of the credit card
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

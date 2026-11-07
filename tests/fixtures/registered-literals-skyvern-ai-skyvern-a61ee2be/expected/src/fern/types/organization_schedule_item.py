@@ -1,0 +1,43 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+
+
+class OrganizationScheduleItem(UniversalBaseModel):
+    """
+    Compact schedule projection for the org-wide list endpoint.
+
+    Intentionally omits `backend_schedule_id` — the list view is for browsing
+    schedules in the dashboard, not for managing the underlying execution-backend
+    binding. Callers that need the backend id should fetch the individual
+    schedule via the per-workflow get endpoint.
+    """
+
+    workflow_schedule_id: str
+    organization_id: str
+    workflow_permanent_id: str
+    workflow_title: str
+    cron_expression: typing.Optional[str] = None
+    interval_seconds: typing.Optional[int] = None
+    first_fire_at: typing.Optional[dt.datetime] = None
+    timezone: str
+    enabled: bool
+    parameters: typing.Optional[typing.Dict[str, typing.Any]] = None
+    name: typing.Optional[str] = None
+    description: typing.Optional[str] = None
+    next_run: typing.Optional[dt.datetime] = None
+    created_at: dt.datetime
+    modified_at: dt.datetime
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-i-am-bee-agentstack-7d68b3f8",
+  "corpus_spec_ref": "79c786049d39684841d77fef9abfd8457a58b0bf",
+  "corpus_spec_url": "https://raw.githubusercontent.com/i-am-bee/agentstack/79c786049d39684841d77fef9abfd8457a58b0bf/docs/development/api-reference/openapi.json"
+}

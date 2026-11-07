@@ -15,6 +15,13 @@ files preserve the spike's classification and interval rules. `compare` writes
 `<after>/comparison.md`; append transcript-reviewed recipe-versus-hand counts
 after running it. Re-running `compare` replaces that file.
 
+Every run, branch and node name appears in the outputs as a digest (`id-` and twelve hex
+digits of its SHA-256; see [`public_id.py`](public_id.py)), and a `runs:` window's `spec` names
+its runs the same way, because such a name can hold a private repository's and these
+directories are committed to a public repository. The `pr` column says which change a row is;
+to find a digest's run, hash the names under the runs root. `baseline/` predates this and
+keeps its names.
+
 Exit codes: 0 when the outputs were written; 1 when the measurement stopped on evidence it
 could not read or trust; 2 for a wrong command line. `base-carries:` takes full commit shas
 this checkout holds, and `--until` needs a UTC offset or `Z`. `compare` derives both reference

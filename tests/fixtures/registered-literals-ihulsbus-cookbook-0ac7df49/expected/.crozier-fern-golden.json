@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-ihulsbus-cookbook-0ac7df49",
+  "corpus_spec_ref": "9be5a607c9d09820928575972b1ab83aa90e14af",
+  "corpus_spec_url": "https://raw.githubusercontent.com/ihulsbus/cookbook/9be5a607c9d09820928575972b1ab83aa90e14af/docs/k8s/files/openapi.yaml"
+}

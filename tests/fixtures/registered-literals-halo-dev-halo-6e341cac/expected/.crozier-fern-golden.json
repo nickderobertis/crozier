@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-halo-dev-halo-6e341cac",
+  "corpus_spec_ref": "ead7adfb0ca1da810a6a080cf8aeed476668db64",
+  "corpus_spec_url": "https://raw.githubusercontent.com/halo-dev/halo/ead7adfb0ca1da810a6a080cf8aeed476668db64/api-docs/openapi/v3_0/apis_uc.api_v1alpha1.json"
+}

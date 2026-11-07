@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-gbyo-tilecast-832b9080",
+  "corpus_spec_ref": "9b731f41de1c1387ebd7a7f74c3c783510aa67a0",
+  "corpus_spec_url": "https://raw.githubusercontent.com/gbyo/tilecast/9b731f41de1c1387ebd7a7f74c3c783510aa67a0/docs/openapi.yaml"
+}

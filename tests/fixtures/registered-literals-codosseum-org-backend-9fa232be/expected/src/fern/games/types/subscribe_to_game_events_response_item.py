@@ -1,0 +1,31 @@
+
+
+import typing
+
+from .subscribe_to_game_events_response_item_data import SubscribeToGameEventsResponseItemData
+from .subscribe_to_game_events_response_item_eight import SubscribeToGameEventsResponseItemEight
+from .subscribe_to_game_events_response_item_five import SubscribeToGameEventsResponseItemFive
+from .subscribe_to_game_events_response_item_four import SubscribeToGameEventsResponseItemFour
+from .subscribe_to_game_events_response_item_nine import SubscribeToGameEventsResponseItemNine
+from .subscribe_to_game_events_response_item_one import SubscribeToGameEventsResponseItemOne
+from .subscribe_to_game_events_response_item_seven import SubscribeToGameEventsResponseItemSeven
+from .subscribe_to_game_events_response_item_six import SubscribeToGameEventsResponseItemSix
+from .subscribe_to_game_events_response_item_ten import SubscribeToGameEventsResponseItemTen
+from .subscribe_to_game_events_response_item_three import SubscribeToGameEventsResponseItemThree
+from .subscribe_to_game_events_response_item_two import SubscribeToGameEventsResponseItemTwo
+from .subscribe_to_game_events_response_item_zero import SubscribeToGameEventsResponseItemZero
+
+SubscribeToGameEventsResponseItem = typing.Union[
+    SubscribeToGameEventsResponseItemZero,
+    SubscribeToGameEventsResponseItemOne,
+    SubscribeToGameEventsResponseItemTwo,
+    SubscribeToGameEventsResponseItemThree,
+    SubscribeToGameEventsResponseItemFour,
+    SubscribeToGameEventsResponseItemFive,
+    SubscribeToGameEventsResponseItemSix,
+    SubscribeToGameEventsResponseItemSeven,
+    SubscribeToGameEventsResponseItemEight,
+    SubscribeToGameEventsResponseItemNine,
+    SubscribeToGameEventsResponseItemTen,
+    SubscribeToGameEventsResponseItemData,
+]

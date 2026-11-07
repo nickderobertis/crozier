@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-hardonian-reach-f36ad5db",
+  "corpus_spec_ref": "beb7f7f9d28d4b123af2b2d52790225e796f0879",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Hardonian/Reach/beb7f7f9d28d4b123af2b2d52790225e796f0879/openapi/reach.openapi.yaml"
+}

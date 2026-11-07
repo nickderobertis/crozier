@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .presentation_reference_layout_id import PresentationReferenceLayoutId
+from .presentation_reference_playlist_id import PresentationReferencePlaylistId
+
+PresentationReference = typing.Union[PresentationReferencePlaylistId, PresentationReferenceLayoutId]

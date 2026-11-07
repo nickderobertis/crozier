@@ -11,6 +11,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from public_id import opaque
+
 # Any: parsed JSON, whose shape `load_totals` checks field by field.
 Totals = dict[str, Any]
 LIVE_RUN = "Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations"
@@ -208,7 +210,8 @@ def change_rows(directory: Path, totals: Totals) -> list[dict[str, str]]:
 
 def reference_rates(rows: list[dict[str, str]], totals: Totals) -> list[tuple[str, float | None]]:
     """Census failures per change the after sample is read against, both from the baseline given."""
-    live = [row for row in rows if LIVE_RUN in row["runs"].split(";")]
+    # The committed baseline predates digested identifiers; a measurement taken since names the run by digest.
+    live = [row for row in rows if {LIVE_RUN, opaque(LIVE_RUN)} & set(row["runs"].split(";"))]
     return [
         ("pooled baseline", totals["census"]["failures"] / totals["changes"] if totals["changes"] else None),
         ("live run baseline", sum(int(row["census_failures"]) for row in live) / len(live) if live else None),

@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .webhook_invalid_event_type_bad_request_response import WebhookInvalidEventTypeBadRequestResponse
+from .webhook_target_url_exists_bad_request_response import WebhookTargetUrlExistsBadRequestResponse
+
+WebhooksCreateNew400Response = typing.Union[
+    WebhookInvalidEventTypeBadRequestResponse, WebhookTargetUrlExistsBadRequestResponse
+]

@@ -1,8 +1,8 @@
 case	document	enum_type	layout	overlay
-bodies-responses/byte-text-response-literals	docs/openapi-surface/handwritten/byte-text-response/openapi.yml	literals	packaged	-
+bodies-responses/byte-text-response-literals	docs/openapi-surface/probes/byte-text-response.yml	literals	packaged	-
 bodies-responses/error-body-shapes-literals	docs/openapi-surface/handwritten/error-body-shapes/openapi.yml	literals	packaged	-
 bodies-responses/inline-body-readonly-own-overlap-literals	docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/openapi.yml	literals	packaged	-
-bodies-responses/json-binary-path-literals	docs/openapi-surface/handwritten/json-binary-path/openapi.yml	literals	packaged	-
+bodies-responses/json-binary-path-literals	docs/openapi-surface/probes/json-binary-path.yml	literals	packaged	-
 bodies-responses/json-request-shapes-literals	docs/openapi-surface/handwritten/json-request-shapes/openapi.yml	literals	packaged	-
 bodies-responses/multipart-alias-object-literals	docs/openapi-surface/handwritten/multipart-alias-object/openapi.yml	literals	packaged	-
 bodies-responses/multipart-json-module-literals	docs/openapi-surface/handwritten/multipart-json-module/openapi.yml	literals	packaged	-

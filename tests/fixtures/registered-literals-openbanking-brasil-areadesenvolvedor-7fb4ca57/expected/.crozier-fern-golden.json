@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-openbanking-brasil-areadesenvolvedor-7fb4ca57",
+  "corpus_spec_ref": "d6770dfcb778e2e938c43455740b3f806a1efea8",
+  "corpus_spec_url": "https://raw.githubusercontent.com/OpenBanking-Brasil/areadesenvolvedor/d6770dfcb778e2e938c43455740b3f806a1efea8/documentation/source/swagger/swagger_pension_apis.yaml"
+}
