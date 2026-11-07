@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-resemble-ai-resemble-mcp-48c5814b",
+  "corpus_spec_ref": "6404fd41b18fbf3509e0028c1f5e15c11822f3e0",
+  "corpus_spec_url": "https://raw.githubusercontent.com/resemble-ai/resemble-mcp/6404fd41b18fbf3509e0028c1f5e15c11822f3e0/openapi/openapi.yml"
+}

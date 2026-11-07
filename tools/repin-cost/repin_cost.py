@@ -22,7 +22,8 @@ branch, run nodes):
    commits, for which pinned or derived files each change and each fix rewrote.
 
 Writes <out>/changes.tsv, <out>/events.tsv, <out>/totals.json and <out>/summary.md;
-prints one line. Runs no measurement, no golden test, no generation; never writes to
+prints one line. Run, branch and node names reach those files only as digests (see
+public_id.py), so a private name in one cannot be published. Runs no measurement, no golden test, no generation; never writes to
 GitHub.
 
 Exit codes: 0 when the outputs were written; 1 when the measurement stopped on evidence it
@@ -51,6 +52,7 @@ REPO_ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE))
 
 import gh  # noqa: E402 -- sibling adapter must follow the runtime script-directory path setup.
+from public_id import opaque, public_window, redactor  # noqa: E402 -- as above.
 
 IDENTITY = "github.com/nickderobertis/crozier"
 ORCH = Path(os.environ.get("ONEPIPELINE_ORCHESTRATOR_ROOT", "/home/whoop/ai-orchestrator"))
@@ -215,7 +217,8 @@ def classify_failure(log: str) -> dict:
         "stale": stale,
         "kinds": kinds,
         "artifacts": sorted(artifacts),
-        "excerpt": first[:200],
+        # Whole here: it is cut to length once redacted, or the cut could leave part of an identifier behind.
+        "excerpt": first,
     }
 
 
@@ -721,13 +724,14 @@ def main() -> int:
         raise SystemExit(f"{error}; a base cannot be read without main") from error
     # llmlint: ignore-end[async_typed_clients_at_boundaries]
     changes, events, excluded = [], [], []
+    redact = redactor([*branches, *runs, *(node for b in branches.values() for node in b["nodes"])])
     for name, b in sorted(branches.items(), key=lambda kv: (kv[1]["pr"] or 10**9, kv[0])):
         examined = {
             "pr": b["pr"] or "",
-            "branch": name,
+            "branch": opaque(name),
             "base": "",
             "head": "",
-            "nodes": ";".join(f"{n}={outcomes.get(n, UNAVAILABLE_OUTCOME)}" for n in sorted(b["nodes"])),
+            "nodes": ";".join(f"{opaque(n)}={outcomes.get(n, UNAVAILABLE_OUTCOME)}" for n in sorted(b["nodes"])),
             "attempts": len(b["gates"]),
             "redispatches": len(b["dispatches"]),
             "conflicts": len(b["conflicts"]),
@@ -760,9 +764,9 @@ def main() -> int:
         # Any: one TSV row's mixed columns, serialised by name in write_outputs.
         row: dict[str, Any] = {
             "pr": b["pr"],
-            "branch": name,
-            "runs": sorted(b["runs"]),
-            "nodes": [f"{n}={outcomes.get(n, UNAVAILABLE_OUTCOME)}" for n in sorted(b["nodes"])],
+            "branch": opaque(name),
+            "runs": [opaque(r) for r in sorted(b["runs"])],
+            "nodes": [f"{opaque(n)}={outcomes.get(n, UNAVAILABLE_OUTCOME)}" for n in sorted(b["nodes"])],
             "merged": bool(b["merged"]),
             "ci_runs": len(runs_ci),
             "ci_failed": 0,
@@ -881,7 +885,7 @@ def main() -> int:
                             **pub_fields,
                             "ci_next_run": "observed" if ci_resolved else "unresolved",
                             "pr": b["pr"],
-                            "branch": name,
+                            "branch": opaque(name),
                             "source": "ci",
                             "at": run["end"].isoformat(),
                             "kind": k,
@@ -892,7 +896,7 @@ def main() -> int:
                             "wait_min": round(wait / len(kinds), 1),
                             "fix_files": ";".join(sorted(fix)),
                             "tasks": ";".join(run["tasks"]),
-                            "excerpt": run["excerpt"],
+                            "excerpt": redact(run["excerpt"])[:200],
                         }
                     )
         for _g, decided in gate_match:
@@ -915,7 +919,7 @@ def main() -> int:
                 events.append(
                     {
                         "pr": b["pr"],
-                        "branch": name,
+                        "branch": opaque(name),
                         "source": "journal",
                         "at": c["at"].isoformat(),
                         "kind": "derived-conflict",
@@ -966,7 +970,12 @@ def main() -> int:
     for ref in git("for-each-ref", "--format=%(refname)", "refs/repin-cost/", check=False).split():
         git("update-ref", "-d", ref, check=False)
     totals = summarise(changes, events)
-    totals["window"] = {"spec": args.window, "until": until.isoformat(), "runs": runs, "base_carries": carries}
+    totals["window"] = {
+        "spec": public_window(args.window),
+        "until": until.isoformat(),
+        "runs": [opaque(r) for r in runs],
+        "base_carries": carries,
+    }
     totals["github"] = {"uncached_calls": hub.calls, "cache_hits": hub.hits}
     totals["excluded"] = excluded
     write_outputs(out, changes, events, totals)

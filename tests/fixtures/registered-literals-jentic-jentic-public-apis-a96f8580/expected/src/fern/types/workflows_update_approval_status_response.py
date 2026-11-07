@@ -1,0 +1,3 @@
+
+
+WorkflowsUpdateApprovalStatusResponse = bool

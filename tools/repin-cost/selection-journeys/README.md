@@ -15,4 +15,6 @@ cut off at the baseline's `--until`. Each directory holds that run's `changes.ts
   commits carry 4c2f0920ae8b)`. No change is included.
 
 Both runs made 0 uncached GitHub calls. To re-run, use the command shown; outputs other than
-these three files go to `github-evidence/`, which is not committed.
+these three files go to `github-evidence/`, which is not committed. Branch and node names in
+these files were later replaced by the digests a re-run now writes (see `../README.md`); no
+other cell changed.

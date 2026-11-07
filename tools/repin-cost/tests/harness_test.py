@@ -5,8 +5,10 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -22,6 +24,14 @@ SOURCE = Path(__file__).resolve().parents[1]
 GUARD = SOURCE.parent / "witness-search/rate_limit_guard.py"
 UNTIL = "2026-01-02T00:00:00Z"
 OUTSTANDING = "docs/openapi-surface/witness-search-registries/outstanding.tsv"
+# An invented stand-in for a private repository's name; no real one belongs in this suite.
+STAND_IN = "Zephyrquill"
+LIVE_RUN = "Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations"
+
+
+def digest(identifier):
+    """The published form of a host identifier, spelled out here so a change to it fails."""
+    return "id-" + hashlib.sha256(identifier.encode()).hexdigest()[:12]
 
 
 class HarnessTest(unittest.TestCase):
@@ -33,7 +43,7 @@ class HarnessTest(unittest.TestCase):
         self.repo.mkdir()
         tool = self.repo / "tools/repin-cost"
         tool.mkdir(parents=True)
-        for name in ("repin_cost.py", "gh.py", "comparison.py"):
+        for name in ("repin_cost.py", "gh.py", "comparison.py", "public_id.py"):
             shutil.copyfile(SOURCE / name, tool / name)
         guard = self.repo / "tools/witness-search/rate_limit_guard.py"
         guard.parent.mkdir()
@@ -201,7 +211,7 @@ class HarnessTest(unittest.TestCase):
         self.event("push", branch, {"accepted": True, "head": self.main}, "2026-01-03T00:00:00Z")
         out = self.invoke()
         self.assertEqual([r["pr"] for r in self.rows(out, "changes.tsv")], ["1"])
-        self.assertEqual(self.rows(out, "changes.tsv")[0]["nodes"], "node=merged")
+        self.assertEqual(self.rows(out, "changes.tsv")[0]["nodes"], f"{digest('node')}=merged")
         excluded = {r["pr"]: r["reason"] for r in self.rows(out, "excluded.tsv")}
         self.assertEqual(set(excluded), {"2", "3", "4", "5", "6"})
         self.assertIn(self.second[:12], excluded["2"])
@@ -209,7 +219,7 @@ class HarnessTest(unittest.TestCase):
         self.assertIn("own commits carry", excluded["5"])
         self.assertIn("base", excluded["6"])
         retired = next(r for r in self.rows(out, "excluded.tsv") if r["pr"] == "4")
-        self.assertIn("retired=unavailable (node retired; not in current results)", retired["nodes"])
+        self.assertIn(f"{digest('retired')}=unavailable (node retired; not in current results)", retired["nodes"])
         before = list(self.requests)
         self.invoke(out="repeat")
         self.assertEqual(self.requests, before)
@@ -448,7 +458,7 @@ class HarnessTest(unittest.TestCase):
 
         rows = self.rows(out, "changes.tsv")
         self.assertEqual([r["pr"] for r in rows], ["1"])
-        self.assertEqual(rows[0]["runs"], "other-run;sample")
+        self.assertEqual(rows[0]["runs"], f"{digest('other-run')};{digest('sample')}")
         self.assertEqual(
             rows[0]["rewrote"],
             ";".join(
@@ -739,7 +749,7 @@ class HarnessTest(unittest.TestCase):
         out = self.invoke(window="runs:sample")
         row = self.rows(out, "changes.tsv")[0]
         self.assertEqual((row["ci_runs"], row["redispatches"]), ("2", "2"))
-        self.assertIn("by-session", row["nodes"])
+        self.assertIn(digest("by-session"), row["nodes"])
         self.assertEqual(
             (row["census_failures"], row["census_wait_min"], row["census_ci_unresolved"]), ("1", "0.0", "1")
         )
@@ -1187,6 +1197,157 @@ class HarnessTest(unittest.TestCase):
             process.terminate()
             process.communicate(timeout=10)
 
+    # Every file a measurement writes may be committed, so a host's names must not reach one.
+    BRANCH = f"nick/Generate-{STAND_IN}-s-Python-SDKs"
+    NODE = f"{STAND_IN.lower()}-parity-gaps"
+    RUN = f"Generate-{STAND_IN}-s-Python-SDKs"
+
+    def run_records(self, run=RUN):
+        """A run, as a host records it, whose run, branch and node names all hold the stand-in."""
+        shutil.rmtree(self.run_dir)
+        self.run_dir = self.runs / run
+        self.run_dir.mkdir()
+        (self.run_dir / "plan.json").write_text('"nickderobertis/crozier"', encoding="utf-8")
+        self.results.write_text(
+            "import json\nprint(json.dumps("
+            + repr({"nodes": [{"id": self.NODE, "status": "done", "outcome": "merged"}]})
+            + "))\n",
+            encoding="utf-8",
+        )
+        _, kept = self.change(1, self.main)
+        self.change(2, self.initial)
+        for event in self.journal:
+            pr = "1" if event["payload"]["branch"] == "change-1" else "2"
+            event["labels"].update(node=f"{self.NODE}-{pr}", session=f"{self.BRANCH}-{pr}")
+            event["payload"]["branch"] = f"{self.BRANCH}-{pr}"
+        self.journal.append(
+            {
+                "ts": "2026-01-01T01:00:00Z",
+                "kind": "node-dispatched",
+                "labels": {"node": self.NODE, "session": self.BRANCH, "identity": "github.com/nickderobertis/crozier"},
+                "payload": {"branch": self.BRANCH, "attempt": 1},
+            }
+        )
+        return kept
+
+    def assert_stand_in_absent(self, *roots):
+        written = [path for root in roots for path in sorted(root.rglob("*")) if path.is_file()]
+        self.assertTrue(written, "nothing was written, so nothing was checked")
+        for path in written:
+            self.assertNotIn(STAND_IN.lower(), path.relative_to(self.root).as_posix().lower())
+            self.assertNotIn(STAND_IN.lower().encode(), path.read_bytes().lower(), f"{path} carries the stand-in")
+
+    def test_no_file_written_carries_a_host_identifier(self):
+        kept = self.run_records()
+        log = b"E AssertionError: golden-reach.tsv is stale\nFailed tasks:\n - surface-census:test-census\n"
+        self.serve_runs(f"{self.BRANCH}-1", [self.ci_run(1, 2, kept)], {1: log})
+        carries = f"base-carries:{self.first},{self.second}"
+        for window, out in ((carries, "carries"), (f"runs:{self.RUN}", "named")):
+            done = subprocess.run(
+                self.command(window=window, out=out), env=self.env, capture_output=True, text=True, timeout=20
+            )
+            self.assertEqual(done.returncode, 0, done.stderr)
+            self.assertNotIn(STAND_IN.lower(), done.stdout.lower())
+        carried, named = self.root / "carries", self.root / "named"
+        # `compare` writes into the measurement it reads, so it is scanned with the rest.
+        baseline = self.root / "fixture-baseline"
+        shutil.copytree(SOURCE / "tests/fixtures/baseline", baseline)
+        done = subprocess.run(
+            [PYTHON, str(self.cli), "compare", str(baseline), str(named)], capture_output=True, text=True, timeout=20
+        )
+        self.assertEqual(done.returncode, 0, done.stderr)
+        self.assert_stand_in_absent(carried, named, self.root / "cache")
+
+        # Absence alone would pass on empty files: the figures and the rows they belong to are still there.
+        change = self.rows(carried, "changes.tsv")[0]
+        self.assertEqual(
+            (change["pr"], change["branch"], change["census_failures"], change["ci_runs"]),
+            ("1", digest(f"{self.BRANCH}-1"), "1", "1"),
+        )
+        self.assertEqual(
+            change["nodes"], f"{digest(self.NODE + '-1')}=unavailable (node retired; not in current results)"
+        )
+        self.assertEqual(change["runs"], digest(self.RUN))
+        self.assertEqual(self.rows(carried, "events.tsv")[0]["branch"], digest(f"{self.BRANCH}-1"))
+        excluded = {row["pr"]: row for row in self.rows(carried, "excluded.tsv")}
+        self.assertEqual(set(excluded), {"", "2"})
+        self.assertEqual(excluded[""]["branch"], digest(self.BRANCH))
+        self.assertEqual(excluded[""]["nodes"], f"{digest(self.NODE)}=merged")
+        totals = json.loads((named / "totals.json").read_text())
+        self.assertEqual(totals["window"]["spec"], f"runs:{digest(self.RUN)}")
+        self.assertEqual(totals["window"]["runs"], [digest(self.RUN)])
+        self.assertEqual(totals["census"]["failures"], 1)
+        self.assertIn(f"`runs:{digest(self.RUN)}`", (named / "summary.md").read_text())
+        ledger = (carried / "github-evidence/repin-cost-requests.jsonl").read_text()
+        self.assertIn(f"branch={digest(self.BRANCH + '-1')}", ledger)
+
+    def test_a_ci_log_line_naming_a_host_identifier_is_published_redacted(self):
+        kept = self.run_records()
+        # Long enough that the 200-character cut falls inside the name, keeping only its first half if cut first.
+        prefix = "E AssertionError: golden-reach.tsv is stale at " + "x" * 135 + " "
+        name = f"{self.BRANCH}-1"
+        self.assertLess(len(prefix) + name.index(STAND_IN), 200)
+        self.assertGreater(len(prefix) + len(name), 200)
+        for line, out in (
+            (f"{prefix}{name}", "whole-branch"),
+            (f"E AssertionError: golden-reach.tsv is stale under /runs/{self.RUN}/{self.NODE}-1/x", "run-and-node"),
+        ):
+            log = f"{line}\nFailed tasks:\n - surface-census:test-census\n".encode()
+            self.env["CROZIER_GITHUB_CACHE_DIR"] = str(self.root / f"cache-{out}")
+            self.serve_runs(name, [self.ci_run(1, 2, kept)], {1: log})
+            result = self.invoke(window=f"runs:{self.RUN}", out=out)
+            # Only the measurement's own directory: the host's response cache keeps GitHub's answer as it came.
+            self.assert_stand_in_absent(result)
+            excerpt = self.rows(result, "events.tsv")[0]["excerpt"]
+            self.assertTrue(excerpt.startswith("E AssertionError: golden-reach.tsv is stale"), excerpt)
+            self.assertLessEqual(len(excerpt), 200)
+            self.assertIn(digest(name)[:6] if out == "whole-branch" else digest(self.RUN), excerpt)
+
+    def test_a_run_named_by_digest_is_still_the_live_run_baseline(self):
+        kept = self.run_records(run=LIVE_RUN)
+        log = b"E AssertionError: golden-reach.tsv is stale\nFailed tasks:\n - surface-census:test-census\n"
+        self.serve_runs(f"{self.BRANCH}-1", [self.ci_run(1, 2, kept)], {1: log})
+        measured = self.invoke(window=f"runs:{LIVE_RUN}")
+        after = self.root / "fixture-after"
+        shutil.copytree(SOURCE / "tests/fixtures/after", after)
+        done = subprocess.run(
+            [PYTHON, str(self.cli), "compare", str(measured), str(after)], capture_output=True, text=True, timeout=20
+        )
+        self.assertEqual(done.returncode, 0, done.stderr)
+        # One census failure over the run's two changes; a run not recognised by its digest reads n/a.
+        self.assertIn("| live run baseline | 0.50 |", (after / "comparison.md").read_text())
+
+
+class CommittedMeasurementTest(unittest.TestCase):
+    """The committed measurements hold what a re-run writes, so a hand-pasted name fails here."""
+
+    ID = r"id-[0-9a-f]{12}"
+
+    def assert_nodes(self, cell, where):
+        # An outcome may hold its own semicolon; a node's name is what precedes an equals sign.
+        for name in re.findall(r"(?:^|;)([^;=]+)=", cell):
+            self.assertRegex(name, rf"^{self.ID}$", where)
+
+    def test_committed_identifiers_are_digests(self):
+        for directory in ("after", "selection-journeys/A", "selection-journeys/B"):
+            for name in ("changes.tsv", "events.tsv", "excluded.tsv"):
+                path = SOURCE / directory / name
+                if not path.exists():
+                    continue
+                with path.open(encoding="utf-8", newline="") as handle:
+                    rows = list(csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE))
+                for row in rows:
+                    self.assertRegex(row["branch"], rf"^{self.ID}$", path)
+                    self.assert_nodes(row.get("nodes", ""), path)
+                    for run in filter(None, row.get("runs", "").split(";")):
+                        self.assertRegex(run, rf"^{self.ID}$", path)
+        totals = json.loads((SOURCE / "after/totals.json").read_text(encoding="utf-8"))
+        for run in totals["window"]["runs"]:
+            self.assertRegex(run, rf"^{self.ID}$")
+        for row in totals["excluded"]:
+            self.assertRegex(row["branch"], rf"^{self.ID}$")
+            self.assert_nodes(row["nodes"], "totals.json")
+
 
 class ComparisonTest(unittest.TestCase):
     def test_compare_every_figure(self):
@@ -1296,9 +1457,11 @@ class ComparisonTest(unittest.TestCase):
                 "listed twice": lambda d: d["artifacts_outside_census"].extend(
                     [d["artifacts_outside_census"][0], d["artifacts_outside_census"][0]]
                 ),
-                "empty sample": lambda d: d.update(changes=0, changes_with_pr=0, merged=0)
-                or d["census"].update(changes_hit=0)
-                or d["conflicts"].update(changes_hit=0),
+                "empty sample": lambda d: (
+                    d.update(changes=0, changes_with_pr=0, merged=0)
+                    or d["census"].update(changes_hit=0)
+                    or d["conflicts"].update(changes_hit=0)
+                ),
                 "kind 'x' must hold": lambda d: d["by_kind"].update(x={"events": 1}),
                 "malformed artifact": lambda d: d["artifacts_outside_census"].append({}),
                 "malformed artifact record": lambda d: d["artifacts_outside_census"].append({"artifact": ["a"]}),

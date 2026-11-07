@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .user_list_collaborations_response_item import UserListCollaborationsResponseItem
+
+UserListCollaborationsResponse = typing.List[UserListCollaborationsResponseItem]

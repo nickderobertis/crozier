@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-malach-it-boruta-server-26683af5",
+  "corpus_spec_ref": "9a32a89c224367a97e8f5af69031bcd8b867ddad",
+  "corpus_spec_url": "https://raw.githubusercontent.com/malach-it/boruta-server/9a32a89c224367a97e8f5af69031bcd8b867ddad/boruta-web.openapi.json"
+}

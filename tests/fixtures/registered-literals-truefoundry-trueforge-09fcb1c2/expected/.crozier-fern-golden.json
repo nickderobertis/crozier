@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-truefoundry-trueforge-09fcb1c2",
+  "corpus_spec_ref": "47fd7e81f39e66289d9c62ba80c4e7f7b0370d64",
+  "corpus_spec_url": "https://raw.githubusercontent.com/truefoundry/trueforge/47fd7e81f39e66289d9c62ba80c4e7f7b0370d64/docs/openapi.json"
+}

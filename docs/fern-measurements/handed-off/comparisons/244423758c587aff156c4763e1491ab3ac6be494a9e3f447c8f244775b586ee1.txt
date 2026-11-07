@@ -1,41 +1,42 @@
 sha256: 244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1
 result: byte-matches
-command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/diffs
-crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
+command: /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/runs/s-abffdbdc71d4/worktree/target/release/crozier compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/diffs
+crozier binary sha256: cf94cc7be3eff0d48a5915d2ffab59850c93d18f21fe4dcfeb482587c9d9728f
 compare exit: 0
 certified pair: CLI 5.163.1 / Python SDK 5.41.3
 certified cache document sha256: 244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1
+enum mode: literals (python_enums byte-match retained from the preceding measurement)
 
 differing files:
 
-
 compare log:
-compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: reference command finished in 0.07s (exit 0)
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: crozier generation starting
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: crozier generation finished in 1.41s
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: matched
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: reference command finished in 0.04s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: crozier generation finished in 0.78s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml python: matched
 
 crozier compare report
 
-/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml
-  python: matched (layout packaged, 100 file(s) compared)
-    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
-    intended departures applied (44):
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3319628-5/comparisons-literals/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/crozier.yml
+  python: matched (layout packaged, 99 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (45):
+      .fern/metadata.json:5 fern-metadata-generator-config
       reference.md:359 schema-rejected-name-example
       reference.md:417 schema-rejected-name-example
       reference.md:609 schema-rejected-name-example
       reference.md:782 schema-rejected-name-example
       reference.md:897 schema-rejected-name-example
       reference.md:1004 schema-rejected-name-example
+      reference.md:1111 schema-rejected-name-example
       reference.md:1112 schema-rejected-name-example
-      reference.md:1113 schema-rejected-name-example
-      reference.md:1213 schema-rejected-name-example
-      reference.md:1271 schema-rejected-name-example
-      reference.md:1329 schema-rejected-name-example
-      reference.md:1436 schema-rejected-name-example
-      reference.md:1503 schema-rejected-name-example
+      reference.md:1212 schema-rejected-name-example
+      reference.md:1270 schema-rejected-name-example
+      reference.md:1328 schema-rejected-name-example
+      reference.md:1435 schema-rejected-name-example
+      reference.md:1502 schema-rejected-name-example
       src/fern/clusters/client.py:113 schema-rejected-name-example
       src/fern/clusters/client.py:244 schema-rejected-name-example
       src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
@@ -47,16 +48,16 @@ crozier compare report
       src/fern/deployments/client.py:112 schema-rejected-name-example
       src/fern/deployments/client.py:201 schema-rejected-name-example
       src/fern/deployments/client.py:242 schema-rejected-name-example
-      src/fern/instances/client.py:102 schema-rejected-name-example
-      src/fern/instances/client.py:103 schema-rejected-name-example
-      src/fern/instances/client.py:144 schema-rejected-name-example
-      src/fern/instances/client.py:175 schema-rejected-name-example
-      src/fern/instances/client.py:203 schema-rejected-name-example
-      src/fern/instances/client.py:310 schema-rejected-name-example
-      src/fern/instances/client.py:311 schema-rejected-name-example
-      src/fern/instances/client.py:360 schema-rejected-name-example
-      src/fern/instances/client.py:399 schema-rejected-name-example
-      src/fern/instances/client.py:437 schema-rejected-name-example
+      src/fern/instances/client.py:100 schema-rejected-name-example
+      src/fern/instances/client.py:101 schema-rejected-name-example
+      src/fern/instances/client.py:142 schema-rejected-name-example
+      src/fern/instances/client.py:173 schema-rejected-name-example
+      src/fern/instances/client.py:201 schema-rejected-name-example
+      src/fern/instances/client.py:306 schema-rejected-name-example
+      src/fern/instances/client.py:307 schema-rejected-name-example
+      src/fern/instances/client.py:356 schema-rejected-name-example
+      src/fern/instances/client.py:395 schema-rejected-name-example
+      src/fern/instances/client.py:433 schema-rejected-name-example
       src/fern/keys/client.py:113 schema-rejected-name-example
       src/fern/keys/client.py:241 schema-rejected-name-example
       src/fern/models/client.py:74 schema-rejected-name-example
@@ -67,10 +68,10 @@ crozier compare report
       src/fern/users/client.py:327 schema-rejected-name-example
       src/fern/workers/client.py:77 schema-rejected-name-example
       src/fern/workers/client.py:163 schema-rejected-name-example
-    timing: reference 0.07s, crozier 1.41s, speed-up 0.05x, saved -1.34s
+    timing: reference 0.04s, crozier 0.78s, speed-up 0.05x, saved -0.74s
 
 Totals: 1 matched, 0 mismatched, 0 could not check
-Timing totals (1 generator(s) where both sides ran): reference 0.07s, crozier 1.41s, speed-up 0.05x, saved -1.34s
+Timing totals (1 generator(s) where both sides ran): reference 0.04s, crozier 0.78s, speed-up 0.05x, saved -0.74s
 Result: every checked generator matched the reference (1 of 1, exit 0)
 
 Licence/provenance evidence (rule: docs/corpus-licensing.md):

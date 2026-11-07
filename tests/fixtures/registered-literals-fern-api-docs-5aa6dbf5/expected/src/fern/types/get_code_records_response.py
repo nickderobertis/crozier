@@ -1,0 +1,29 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .code import Code
+from .pagination_response import PaginationResponse
+
+
+class GetCodeRecordsResponse(UniversalBaseModel):
+    documents: typing.List[Code] = pydantic.Field()
+    """
+    List of code entries for the domain
+    """
+
+    pagination: PaginationResponse = pydantic.Field()
+    """
+    Pagination information for the code list
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
