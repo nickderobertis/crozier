@@ -1635,6 +1635,27 @@ def combination_search_failures(
     return failures
 
 
+def canonical_census_failures(payload: bytes) -> list[str]:
+    """What keeps a compressed search census from its one canonical content and gzip header."""
+    failures = []
+    flags, mtime = payload[3], int.from_bytes(payload[4:8], "little")
+    if flags:
+        failures.append(f'its gzip header sets flags {flags:#x}, such as a file name; write it with `filename=""`')
+    if mtime:
+        failures.append(f"its gzip header records mtime {mtime}; write it with `mtime=0`")
+    written = gzip.decompress(payload).decode("utf-8")
+    header, *rows = csv.reader(io.StringIO(written), delimiter="\t")
+    canonical = io.StringIO(newline="")
+    writer = csv.writer(canonical, delimiter="\t", lineterminator="\n")
+    writer.writerow(header)
+    writer.writerows(sorted(rows))
+    if header != ["key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome"]:
+        failures.append(f"its header reads {header}")
+    if written != canonical.getvalue():
+        failures.append("its rows or quoting differ from the sorted tab-separated form")
+    return failures
+
+
 class HandwrittenReachRow(NamedTuple):
     """One `handwritten-reach.tsv` row, as `handwritten-fixtures.py`'s `ReachRow` reads it."""
 
@@ -13001,20 +13022,23 @@ class CombinationSearchRecordTests(unittest.TestCase):
             census.write_text(valid)
             self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.OPEN))
 
-    def test_committed_operation_search_has_reproducible_compressed_bytes(self) -> None:
-        path = REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz"
-        committed = path.read_bytes()
-        reader = csv.reader(io.StringIO(gzip.decompress(committed).decode("utf-8")), delimiter="\t")
-        header, *rows = reader
-        self.assertEqual(["key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome"], header)
-        text = io.StringIO(newline="")
-        writer = csv.writer(text, delimiter="\t", lineterminator="\n")
-        writer.writerow(header)
-        writer.writerows(sorted(rows))
-        encoded = io.BytesIO()
-        with gzip.GzipFile(filename="", mode="wb", fileobj=encoded, mtime=0) as stream:
-            stream.write(text.getvalue().encode("utf-8"))
-        self.assertEqual(committed, encoded.getvalue(), "the search census must be reproducible on every host")
+    def test_committed_operation_search_is_canonical_whichever_deflate_wrote_it(self) -> None:
+        committed = (REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz").read_bytes()
+        self.assertEqual([], canonical_census_failures(committed))
+        # Deflate output is the compressor's own: CPython links zlib on some hosts and
+        # zlib-ng on others, so only the content and the gzip header are the record's.
+        text = gzip.decompress(committed)
+        self.assertEqual([], canonical_census_failures(gzip.compress(text, compresslevel=1, mtime=0)))
+        self.assertNotEqual(committed, gzip.compress(text, compresslevel=1, mtime=0))
+        header, first, second, *rest = text.decode("utf-8").splitlines(keepends=True)
+        swapped = "".join((header, second, first, *rest)).encode("utf-8")
+        self.assertIn("rows or quoting", canonical_census_failures(gzip.compress(swapped, mtime=0))[0])
+        stamped = gzip.compress(text, mtime=1)
+        self.assertIn("mtime", canonical_census_failures(stamped)[0])
+        named = io.BytesIO()
+        with gzip.GzipFile(filename="census.tsv", mode="wb", fileobj=named, mtime=0) as stream:
+            stream.write(text)
+        self.assertIn("file name", canonical_census_failures(named.getvalue())[0])
 
     def test_compressed_searches_preserve_open_and_exhausted_obligations(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -23250,7 +23274,6 @@ class HandedOffRepositoryRecordTests(unittest.TestCase):
             path.write_text("".join(lines), encoding="utf-8")
             with self.assertRaisesRegex(AssertionError, "missing causes:.*" + re.escape(removed)):
                 reconcile_handed_off(root)
-
 
 
 class WithdrawnWitnessSelectorTests(unittest.TestCase):
