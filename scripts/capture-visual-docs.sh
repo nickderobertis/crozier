@@ -10,13 +10,16 @@ image="rust:$(sed -n 's/^channel = "\(.*\)"$/\1/p' rust-toolchain.toml)-bookworm
 toolchain="${image#rust:}"
 toolchain="${toolchain%-bookworm}"
 
-docker run --rm -v "$PWD":/work -v crozier-visual-docs-target:/work/target -w /work \
+# A linked worktree's .git file names a directory outside it, which the capture's git reads.
+git_common="$(git rev-parse --path-format=absolute --git-common-dir)"
+
+docker run --rm -v "$PWD":/work -v "$git_common":"$git_common":ro -v crozier-visual-docs-target:/work/target -w /work \
   -e RUSTUP_TOOLCHAIN="$toolchain" \
   -e HOST_OWNER="$(id -u):$(id -g)" \
   "$image" bash -euc '
     # Whatever the capture leaves is the caller'\''s, including after a failed capture.
-    trap '\''chown -R "$HOST_OWNER" shots'\'' EXIT
-    git config --global --add safe.directory /work
+    trap '\''chown -R "$HOST_OWNER" shots docs/screenshots'\'' EXIT
+    git config --global --add safe.directory "*"
     # freeze renders the deterministic SVGs; ruff is what crozier defers Python
     # wrapping to. Both prebuilt, pinned to the files the local recipes read, so the
     # local and CI renderers cannot silently diverge.
