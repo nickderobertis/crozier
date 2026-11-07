@@ -779,10 +779,25 @@ fn request_example_context<'a>(
     let mut out = RequestExampleContext::default();
     let mut model_fields: std::collections::BTreeMap<String, BTreeSet<String>> =
         std::collections::BTreeMap::new();
+    let mut model_bases: std::collections::BTreeMap<String, Vec<String>> =
+        std::collections::BTreeMap::new();
     for (_, text) in &sources {
         let mut model = None;
         for line in text.lines() {
-            if let Some(name) = line
+            if let Some((name, bases)) = line
+                .strip_prefix("class ")
+                .and_then(|line| line.strip_suffix("):"))
+                .and_then(|line| line.split_once('('))
+            {
+                model = Some(name.to_string());
+                model_bases.insert(
+                    name.to_string(),
+                    bases
+                        .split(',')
+                        .map(|base| base.trim().to_string())
+                        .collect::<Vec<_>>(),
+                );
+            } else if let Some(name) = line
                 .strip_prefix("class ")
                 .and_then(|line| line.split_once('(').map(|(name, _)| name))
             {
@@ -799,6 +814,22 @@ fn request_example_context<'a>(
                         .or_default()
                         .insert(name.to_string());
                 }
+            }
+        }
+    }
+    // A model's fields include what it inherits: Revert's
+    // `CrmSetObjectPropertiesRequest` aliases a model adding `additional` to a
+    // base holding `name`, `type` and `description`, and the method spreads all
+    // four.
+    let declared_fields = model_fields.clone();
+    for (model, fields) in &mut model_fields {
+        let mut pending: Vec<&String> = model_bases.get(model).into_iter().flatten().collect();
+        let mut visited = BTreeSet::new();
+        while let Some(base) = pending.pop() {
+            // The runtime's own base classes hold no request field.
+            if !base.starts_with("Universal") && visited.insert(base) {
+                fields.extend(declared_fields.get(base).into_iter().flatten().cloned());
+                pending.extend(model_bases.get(base).into_iter().flatten());
             }
         }
     }
@@ -1390,7 +1421,12 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
                     (!description.is_empty()).then_some(description),
                 );
                 let expected = format!("**{name}:** `{annotation}`{suffix}\n    ");
-                if annotation != crate::emit::reference_param_annotation(&parameter.annotation)
+                // The reference documents a signature's `typing.Sequence` as
+                // `typing.List`.
+                let documented = parameter
+                    .annotation
+                    .replace("typing.Sequence[", "typing.List[");
+                if annotation != crate::emit::reference_param_annotation(&documented)
                     || pair.crozier[first + 3..close].join("\n") != expected
                     || !seen.insert(name.to_string())
                     || range.as_ref().is_some_and(|previous| {
@@ -3940,24 +3976,48 @@ fn lifted_base_path_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, Str
     Ok(differing_window(pair.fern, pair.crozier))
 }
 
-/// Constructor examples must supply a date, rather than a placeholder string.
-/// Only constructor parameters typed as optional dates qualify. After replacing
+/// Constructor examples must supply a date or date-time, rather than a placeholder
+/// string. Only constructor parameters typed as optional dates or date-times qualify. After replacing
 /// those exact placeholders and accounting for the example import, every line
 /// must match; string-header placeholders remain untouched.
 fn date_header_constructor_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if !pair.rel.ends_with("client.py") || pair.rel.ends_with("raw_client.py") {
         return Ok(None);
     }
-    let names: BTreeSet<&str> = pair
-        .fern
+    // Each annotation's parameters, with the value crozier's example passes.
+    // A sub-client's docstring constructs the root client, whose wrapper is
+    // where a parameter's annotation stands.
+    let wrappers: Vec<String> = pair
+        .context
+        .roots
         .iter()
-        .filter_map(|line| {
-            line.trim()
-                .split_once(": typing.Optional[dt.date] = None")
-                .map(|(name, _)| name)
-        })
+        .flat_map(|(_, root)| python_sources(root))
+        .filter(|(rel, _)| is_client_wrapper(rel))
+        .map(|(_, text)| text)
         .collect();
-    if names.is_empty() {
+    let names_typed = |annotation: &str| -> BTreeSet<String> {
+        pair.fern
+            .iter()
+            .copied()
+            .chain(wrappers.iter().flat_map(|text| text.lines()))
+            .filter_map(|line| {
+                line.trim()
+                    .split_once(&format!(": typing.Optional[{annotation}] = None"))
+                    .map(|(name, _)| name.to_string())
+            })
+            .collect()
+    };
+    let corrections: Vec<(String, &str)> = names_typed("dt.date")
+        .into_iter()
+        .map(|name| (name, "datetime.date.fromisoformat(\"2023-01-15\")"))
+        .chain(names_typed("dt.datetime").into_iter().map(|name| {
+            (
+                name,
+                "datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\")",
+            )
+        }))
+        .collect();
+    if corrections.is_empty() {
         return Ok(None);
     }
     let mut changed = false;
@@ -3966,14 +4026,11 @@ fn date_header_constructor_example(pair: &Pair<'_>) -> Result<Option<Region>, St
         .iter()
         .map(|line| {
             let mut line = (*line).to_string();
-            for name in &names {
+            for (name, value) in &corrections {
                 let placeholder = format!("{name}=\"YOUR_{}\"", name.to_uppercase());
                 if line.contains(&placeholder) {
                     changed = true;
-                    line = line.replace(
-                        &placeholder,
-                        &format!("{name}=datetime.date.fromisoformat(\"2023-01-15\")"),
-                    );
+                    line = line.replace(&placeholder, &format!("{name}={value}"));
                 }
             }
             line

@@ -171,11 +171,12 @@
 - id: date-header-constructor-example
   kind: fern-defect
   trigger: >-
-    A promoted optional date header in a client constructor's Python examples.
+    A promoted optional date or date-time header in a client constructor's Python examples.
   fern: >-
-    The constructor receives a YOUR placeholder string despite its dt.date annotation.
+    The constructor receives a YOUR placeholder string despite its dt.date or dt.datetime annotation.
   crozier: >-
-    The constructor receives datetime.date.fromisoformat("2023-01-15") and the example imports datetime.
+    The constructor receives datetime.date.fromisoformat("2023-01-15") or
+    datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00") and the example imports datetime.
   reason: >-
     The placeholder is invalid for the declared date schema. The correction uses the
     certified generator's own date-example form and leaves string placeholders intact.

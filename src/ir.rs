@@ -732,6 +732,9 @@ pub enum HeaderType {
     Str,
     /// A date-valued header, serialized with `str`.
     Date,
+    /// A `format: date-time` header, serialized with `str`: the Agentic Commerce
+    /// Protocol's `Timestamp`.
+    DateTime,
     /// `int`, from `type: integer`.
     Int,
     /// `float`, from `type: number`.
@@ -762,6 +765,7 @@ impl HeaderType {
         match self {
             Self::Str => "str",
             Self::Date => "dt.date",
+            Self::DateTime => "dt.datetime",
             Self::Int => "int",
             Self::Float => "float",
             Self::Bool => "bool",
@@ -941,6 +945,11 @@ fn header_py_type(schema: Option<&Schema>) -> HeaderType {
     match schema.and_then(|schema| schema.ty.as_ref()?.primary()) {
         Some("string") if schema.and_then(|schema| schema.format.as_deref()) == Some("date") => {
             HeaderType::Date
+        }
+        Some("string")
+            if schema.and_then(|schema| schema.format.as_deref()) == Some("date-time") =>
+        {
+            HeaderType::DateTime
         }
         Some("integer") => HeaderType::Int,
         Some("number") => HeaderType::Float,
@@ -1543,7 +1552,7 @@ fn inline_body_source_names(
             // Fern keeps beside the inlined method: Zoonk's `LessonVisibilityUpdate`
             // is `allOf: [$ref LessonVisibility]`, and `lesson_visibility_update.py`
             // declares `LessonVisibilityUpdate = LessonVisibility`.
-            let is_alias = !target.properties.declared() && sole_all_of_ref(target).is_some();
+            let is_alias = target.properties.is_empty() && sole_all_of_ref(target).is_some();
             // A multipart body's form is inlined whatever properties it declares,
             // none included: the property-less `AdvanceForm` of
             // `docs/fern-measurements/handed-off/bodies-media/multipart-empty-body/`
@@ -4251,9 +4260,16 @@ fn build_endpoint(
                     .and_then(|reference| resolve_ref(doc, reference))
                     .unwrap_or(schema);
                 let scalar = |schema: &Schema| {
-                    let schema = schema
-                        .reference
-                        .as_deref()
+                    // An annotating `allOf` around a `$ref` is that `$ref`: Kong's
+                    // `sort` is `allOf: [$ref SortQuery, {description}]`.
+                    let reference = schema.reference.as_deref().or_else(|| {
+                        schema
+                            .all_of
+                            .iter()
+                            .flatten()
+                            .find_map(|member| member.reference.as_deref())
+                    });
+                    let schema = reference
                         .and_then(|reference| resolve_ref(doc, reference))
                         .unwrap_or(schema);
                     matches!(
@@ -4956,6 +4972,18 @@ fn build_endpoint(
                                     .is_some_and(|target| {
                                         target.title.is_none() || bare_name_mapped_union(target)
                                     })
+                            // A component that is only `allOf` one `$ref` is an
+                            // alias, a bare type name whatever its `title`:
+                            // Revert's `chatCreateorUpdateMessageRequest` sends
+                            // no `content-type`.
+                            || schema
+                                .reference
+                                .as_deref()
+                                .and_then(|reference| resolve_ref(doc, reference))
+                                .is_some_and(|target| {
+                                    target.properties.is_empty()
+                                        && sole_all_of_ref(target).is_some()
+                                })
                     })
             });
 
@@ -5496,6 +5524,22 @@ fn parameter_example_value<'a>(
                 .and_then(typed_schema_example)
         })
         .or_else(|| {
+            // A `$ref` a schema annotates through `allOf` is worked from the
+            // target's example: Kong's `sort` is `allOf: [$ref SortQuery,
+            // {description}]`, and its call passes `SortQuery`'s example.
+            resolve_ref(
+                doc,
+                parameter
+                    .schema
+                    .as_ref()?
+                    .all_of
+                    .as_deref()?
+                    .iter()
+                    .find_map(|member| member.reference.as_deref())?,
+            )
+            .and_then(typed_schema_example)
+        })
+        .or_else(|| {
             // A `oneOf` of a referenced schema and a string `const` is worked from
             // the referenced member's example, wherever the `const` sits: mautrix's
             // `loginID` (`oneOf: [$ref UserLoginID, {const: all}]`) passes the
@@ -5549,10 +5593,17 @@ fn optional_array_declares_example(doc: &OpenApi, parameter: &crate::openapi::Pa
         .unwrap_or(schema);
     resolved.ty.as_ref().and_then(TypeField::primary) == Some("array")
         && (schema_example(resolved).is_some_and(serde_json::Value::is_array)
+            // …unless its items are a `$ref`, whose call the certified pair does
+            // pass the parameter's example: ro-crate-api's `entityType` passes
+            // `entity_type=["http://pcdm.org/models#Collection"]`.
             || parameter
                 .example
                 .as_ref()
                 .is_some_and(serde_json::Value::is_array)
+                && resolved
+                    .items
+                    .as_deref()
+                    .is_none_or(|items| items.reference.is_none())
             // dnd5eapi's `challenge_rating`, `level` and `school` filters carry
             // an `examples` map of arrays, and their calls pass none of them.
             || parameter
@@ -6218,8 +6269,18 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
 
 /// How the operation's JSON request schema is composed: see [`BodyComposition`].
 fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
-    if !request_body_has_all_of(doc, op) {
-        return BodyComposition::Plain;
+    // An inline urlencoded `allOf` of parents and plain objects writes its worked
+    // call with the parents' fields first, as a composed JSON body does.
+    if op.request_body.as_ref().is_some_and(|body| {
+        selected_json_request_media(body).is_none()
+            && body
+                .content
+                .get("application/x-www-form-urlencoded")
+                .and_then(|media| media.schema.as_ref())
+                .and_then(parents_with_inline_members)
+                .is_some()
+    }) {
+        return BodyComposition::AllOf;
     }
     let reference = op
         .request_body
@@ -6227,6 +6288,32 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
         .and_then(|body| body.content.get("application/json"))
         .and_then(|media| media.schema.as_ref())
         .and_then(|schema| schema.reference.as_deref());
+    // A titled component declaring `properties` beside its `allOf` over a `$ref` lists
+    // each base's fields ahead of its own in the Markdown writers even where it
+    // is a parent or is reached through an alias: Revert's `commonCompany` and
+    // `crmSetObjectPropertiesRequest` both do.
+    let declared = reference.and_then(|reference| resolve_ref(doc, reference));
+    let target = declared.map(|declared| {
+        declared
+            .reference
+            .as_deref()
+            .and_then(|inner| resolve_ref(doc, inner))
+            .unwrap_or(declared)
+    });
+    if target.is_some_and(|target| {
+        target.title.is_some()
+            && !target.properties.is_empty()
+            && target
+                .all_of
+                .iter()
+                .flatten()
+                .any(|member| member.reference.is_some())
+    }) {
+        return BodyComposition::AllOf;
+    }
+    if !request_body_has_all_of(doc, op) {
+        return BodyComposition::Plain;
+    }
     let parent =
         doc.components.schemas.values().any(|schema| {
             schema.all_of.iter().flatten().any(|member| {
@@ -6744,6 +6831,7 @@ pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
         426 => "UpgradeRequiredError",
         428 => "PreconditionError",
         429 => "TooManyRequestsError",
+        449 => "RetryWithError",
         431 => "RequestHeaderFieldsTooLargeError",
         451 => "UnavailableForLegalReasonsError",
         // Fern also names three widely deployed non-IANA statuses: Esri's 498,
@@ -7432,6 +7520,16 @@ fn resolve_request_body(
                     ));
                 }
             }
+            // A multipart object whose `oneOf` sits beside its properties loses
+            // them: FOSSology's `report/import` declares a required file `report`
+            // beside `oneOf: [$ref DecisionImporter, $ref SpdxRdfImport]`, and the
+            // certified pair's method takes no part and sends `data={}, files={}`.
+            if multipart && obj.one_of.is_some() {
+                return Some(RequestBody::Form(FormBody {
+                    fields: Vec::new(),
+                    multipart,
+                }));
+            }
             // A form body reads the media type's own `example`/`examples` exactly
             // like a JSON one: the values name the fields the rendered example
             // carries, optional ones included
@@ -7442,14 +7540,23 @@ fn resolve_request_body(
                 .as_deref()
                 .filter(|_| !multipart)
                 .map(ref_to_class);
+            // An inline urlencoded body that is an `allOf` of `$ref` parents and
+            // plain inline objects is laid out as a JSON one is: the inline
+            // members' fields, then the parents'. FOSSology's `POST /tokens`.
+            let parents_and_inline = (!multipart && component.is_none())
+                .then(|| parents_with_inline_members(obj))
+                .flatten();
             let mut fields = hoist_form_object(
-                obj,
+                parents_and_inline.as_ref().unwrap_or(obj),
                 &media.encoding,
                 hoister,
                 request_ctx,
                 multipart,
                 component.as_deref(),
             );
+            if let Some(merged) = &parents_and_inline {
+                append_parent_body_fields(merged, types, &mut fields);
+            }
             // So does a urlencoded component's own example, beneath the media
             // type's: Supabase's `OAuthTokenBody` declares one, and Fern's
             // snippet passes its seven values.
@@ -7677,6 +7784,17 @@ fn resolve_request_body(
                         target,
                         &mut fields,
                     );
+                    if target.title.is_some()
+                        && !target.properties.is_empty()
+                        && target
+                            .all_of
+                            .iter()
+                            .flatten()
+                            .any(|member| member.reference.is_some())
+                    {
+                        apply_sibling_properties_example_order(&class, types, &mut fields);
+                    }
+                    promote_bare_required_members(target, &mut fields);
                     for field in &mut fields {
                         if field.example.is_none()
                             && target.is_beta == Some(true)
@@ -7946,44 +8064,7 @@ fn resolve_request_body(
             // `status` writes none).
             prune_dropped_hoisted(&mut hoister.out, hoisted_before, &dropped, &fields);
             // Own fields precede inherited fields; reuse the parent's resolved types.
-            let own_count = fields.len();
-            for reference in schema
-                .all_of
-                .iter()
-                .flatten()
-                .filter_map(|member| member.reference.as_deref())
-            {
-                if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
-                    for mut field in parent {
-                        // A parent field an own field redeclares is never a second
-                        // argument. `name_refusals` refuses a writable own field; a
-                        // readOnly own field keeps its slot and, as pinned Fern does,
-                        // the parent's description (handwritten
-                        // inline-body-readonly-own-overlap).
-                        if let Some(own) = fields
-                            .iter_mut()
-                            .take(own_count)
-                            .find(|own| own.wire_name == field.wire_name)
-                        {
-                            if field.docstring.is_some() {
-                                own.docstring = field.docstring;
-                            }
-                            continue;
-                        }
-                        let inherited_order = fields.len() - own_count;
-                        field.reference_order = inherited_order;
-                        field.declaration_order = inherited_order;
-                        field.markdown_order = inherited_order;
-                        fields.push(field);
-                    }
-                }
-            }
-            let inherited_count = fields.len() - own_count;
-            for field in fields.iter_mut().take(own_count) {
-                field.reference_order += inherited_count;
-                field.declaration_order += inherited_count;
-                field.markdown_order += inherited_count;
-            }
+            append_parent_body_fields(schema, types, &mut fields);
             // An inline body carries its example on the schema as readily as a
             // `$ref` body does — VTEX puts the whole `rules` array on the request
             // schema — so both are applied here in the same order the `$ref` path
@@ -10755,7 +10836,11 @@ fn hoist_form_object(
                     // `docs/fern-measurements/handed-off/bodies-media/multipart-scalar-union-part-encoding/`.
                     || (resolved.one_of.is_some() || resolved.any_of.is_some())
                         && !is_multipart_primitive(resolved, hoister.schemas, 0)
-                    || resolved.all_of.is_some());
+                    || resolved.all_of.is_some()
+                    // `format: json-string` types the part `typing.Any`, and an
+                    // unknown part is JSON-encoded: Azure's PID digitization
+                    // `bounding_box_inclusive_str`.
+                    || resolved.format.as_deref() == Some("json-string"));
             let type_ref = if is_unknown(prop_schema) && !prop_schema.malformed {
                 TypeRef::Primitive(Prim::Any)
             } else if is_file && octet_stream(prop_schema) {
@@ -10963,6 +11048,169 @@ fn hoist_fields_with_component_examples(
             .unwrap_or(usize::MAX);
     }
     Some(fields)
+}
+
+/// The fields an inline `allOf` body inherits, appended after its own, with the
+/// parents' resolved types: the two write their fields in that order, and the
+/// reference documentation lists the inherited ones first. A name the body's own
+/// `required` lists, or a member's, is required however the parent declares it, and
+/// a field it makes required moves ahead of the rest: FOSSology's `createUser`
+/// requires `name`, which its `$ref` parent leaves optional, and the certified
+/// pair's method takes `name` first.
+fn append_parent_body_fields(schema: &Schema, types: &[TypeDecl], fields: &mut Vec<BodyField>) {
+    let own_count = fields.len();
+    for reference in schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter_map(|member| member.reference.as_deref())
+    {
+        if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
+            for mut field in parent {
+                // A parent field an own field redeclares is never a second
+                // argument. `name_refusals` refuses a writable own field; a
+                // readOnly own field keeps its slot and, as pinned Fern does,
+                // the parent's description (handwritten
+                // inline-body-readonly-own-overlap).
+                if let Some(own) = fields
+                    .iter_mut()
+                    .take(own_count)
+                    .find(|own| own.wire_name == field.wire_name)
+                {
+                    if field.docstring.is_some() {
+                        own.docstring = field.docstring;
+                    }
+                    continue;
+                }
+                let inherited_order = fields.len() - own_count;
+                field.reference_order = inherited_order;
+                field.declaration_order = inherited_order;
+                field.markdown_order = inherited_order;
+                fields.push(field);
+            }
+        }
+    }
+    let inherited_count = fields.len() - own_count;
+    for field in fields.iter_mut().take(own_count) {
+        field.reference_order += inherited_count;
+        field.declaration_order += inherited_count;
+        field.markdown_order += inherited_count;
+    }
+    let promoted: Vec<BodyField> = {
+        let mut kept = Vec::with_capacity(fields.len());
+        let mut promoted = Vec::new();
+        for (index, field) in std::mem::take(fields).into_iter().enumerate() {
+            if index >= own_count && field.optional && schema.required.contains(&field.wire_name) {
+                promoted.push(field);
+            } else {
+                kept.push(field);
+            }
+        }
+        *fields = kept;
+        promoted
+    };
+    let promoted_count = promoted.len();
+    for field in fields.iter_mut() {
+        field.reference_order += promoted_count;
+    }
+    for (index, mut field) in promoted.into_iter().enumerate() {
+        field.optional = false;
+        field.spec_required = true;
+        field.reference_order = index;
+        fields.insert(index, field);
+    }
+    // A promotion flattens the parent, so the reference documentation follows the
+    // signature, required arguments first: FOSSology's `createUser` lists its own
+    // optional `user_pass` ahead of the inherited optional fields.
+    if promoted_count > 0 {
+        let mut ranked: Vec<(bool, usize)> = fields
+            .iter()
+            .enumerate()
+            .map(|(index, field)| (field.optional, index))
+            .collect();
+        ranked.sort_unstable();
+        for (rank, (_, index)) in ranked.into_iter().enumerate() {
+            fields[index].reference_order = rank;
+        }
+    }
+}
+
+/// The names a component body requires through a bare `{required: [...]}` member
+/// of its `allOf`, or through `required` beside it. In the type layer such a member
+/// is skipped (see [`is_object_all_of_member`]), but a flattened body honours it:
+/// Notehub's `CreateMonitor` is `allOf: [$ref Monitor, {required: [name, …]}]`, and
+/// the certified pair's method requires those arguments, listed first.
+fn promote_bare_required_members(target: &Schema, fields: &mut [BodyField]) {
+    let names: Vec<&String> = target
+        .all_of
+        .iter()
+        .flatten()
+        .filter(|member| member.reference.is_none() && member.properties.is_empty())
+        .flat_map(|member| member.required.iter())
+        .collect();
+    if names.is_empty() {
+        return;
+    }
+    for field in fields.iter_mut() {
+        if field.optional && !field.nullable && names.contains(&&field.wire_name) {
+            field.optional = false;
+            field.spec_required = true;
+        }
+    }
+    let mut ranked: Vec<(bool, usize, String)> = fields
+        .iter()
+        .map(|field| {
+            (
+                field.optional,
+                field.reference_order,
+                field.wire_name.clone(),
+            )
+        })
+        .collect();
+    ranked.sort();
+    for field in fields.iter_mut() {
+        field.reference_order = ranked
+            .iter()
+            .position(|(_, _, wire)| *wire == field.wire_name)
+            .unwrap_or(usize::MAX);
+    }
+}
+
+/// The docstring's worked-example order of a component body declaring
+/// a `title` and `properties` beside an `allOf` over a `$ref` (no inline member):
+/// each object's own fields ahead of its bases'. Measured on Revert's titled
+/// `crmCreateOrUpdateCompanyRequest`, whose docstring lists `commonCompany`'s
+/// `name` ahead of its base's `id`; Azure Data Box's untitled `JobResource`
+/// keeps its base's fields first.
+fn apply_sibling_properties_example_order(
+    class: &str,
+    types: &[TypeDecl],
+    fields: &mut [BodyField],
+) {
+    let class = types
+        .iter()
+        .find_map(|decl| match decl {
+            TypeDecl::Alias(alias) if alias.name == class => match &alias.target {
+                TypeRef::Named(target) => Some(target.as_str()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .unwrap_or(class);
+    let Some(obj) = types.iter().find_map(|decl| match decl {
+        TypeDecl::Object(object) if object.name == class => Some(object),
+        _ => None,
+    }) else {
+        return;
+    };
+    let mut own_first = Vec::new();
+    append_own_first_field_names(obj, types, &mut Default::default(), &mut own_first);
+    for field in fields {
+        field.declaration_order = own_first
+            .iter()
+            .position(|name| *name == field.wire_name)
+            .unwrap_or(usize::MAX);
+    }
 }
 
 /// The order reference documentation lists a request body's fields in: the ones
@@ -14070,6 +14318,16 @@ impl Builder<'_> {
                         return;
                     }
                 }
+                // A string enum written beside the alternatives is no part of the
+                // alias, but Fern still declares its type: the Agentic Commerce
+                // Protocol's `SelectedFulfillmentOption.type` is an unused
+                // `SelectedFulfillmentOptionType`.
+                for (prop, prop_schema) in &schema.properties {
+                    if prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some()
+                    {
+                        self.field_type_ref(name, prop, prop_schema);
+                    }
+                }
                 let members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
@@ -15496,12 +15754,20 @@ impl Builder<'_> {
             // wrapper extends: the hand-written `library-union-shared-fields`
             // fixture's `Loan` declares `patron_id` and `due` next to two tagged
             // objects, and Fern's `Loan_Book(Base)` inherits them.
+            // The discriminant itself is no shared field, and its declared type
+            // is never written: mautrix's `LoginStep` declares `type` beside its
+            // members, and Vercel's `CreateRecordRequestBody` declares nothing
+            // else, so it gets no `Base` at all.
             let mut base_fields = Vec::new();
             if !schema.properties.is_empty()
                 && variants.iter().all(|variant| variant.reference.is_none())
             {
-                let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
-                self.collect_fields(name, schema, &required, &mut base_fields);
+                let mut shared = schema.clone();
+                shared.properties.shift_remove(&property_name);
+                if !shared.properties.is_empty() {
+                    let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
+                    self.collect_fields(name, &shared, &required, &mut base_fields);
+                }
             }
             return Some(DiscriminatedUnion {
                 name: name.to_string(),

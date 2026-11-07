@@ -211,6 +211,19 @@ pub fn observed_rows(
         let crozier_lines: Vec<&str> = generated.split('\n').collect();
         for value in values {
             let line = value.line.get();
+            // A declared value crozier keeps where Fern writes its placeholder
+            // (ruling 2) is no value of Fern's to inventory: the departure on its
+            // line already accounts for it. The apifox lab's empty `bucket` beside
+            // Fern's `bucket="bucket"`.
+            if value.finding.disposition == Disposition::DeclaredInSpec
+                && departures.iter().any(|(file, departure_line, id)| {
+                    file == rel
+                        && *departure_line == line
+                        && id == "declared-example-over-placeholder"
+                })
+            {
+                continue;
+            }
             let Some(fern_line) = mapped.get(line - 1).copied().flatten() else {
                 failures.push(format!(
                     "{rel}:{}: the comparison pairs crozier's line holding {} with no Fern line",

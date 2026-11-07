@@ -2664,6 +2664,10 @@ fn global_header_example(header: &GlobalHeader) -> String {
             "{}=datetime.date.fromisoformat(\"2023-01-15\")",
             header.py_name
         ),
+        HeaderType::DateTime => format!(
+            "{}=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\")",
+            header.py_name
+        ),
         HeaderType::Bool => format!("{}=True", header.py_name),
         HeaderType::Int => format!("{}=1", header.py_name),
         HeaderType::Float => format!("{}=1.1", header.py_name),
@@ -3375,6 +3379,18 @@ fn reference_entry(
                 .any(|header| header.py_name == param.name)
         })
         .collect();
+    // A composed urlencoded form lists its parents' fields first, as a composed
+    // JSON body does: FOSSology's `POST /tokens`.
+    if let Some(RequestBody::Form(form)) = &ep.request_body {
+        if !form.multipart && ep.body_composition.is_all_of() {
+            reference_body.sort_by_key(|param| {
+                form.fields
+                    .iter()
+                    .find(|field| field.py_name == param.name)
+                    .map_or(usize::MAX, |field| field.reference_order)
+            });
+        }
+    }
     if let Some(RequestBody::Inline(fields)) = &ep.request_body {
         // The field a stream condition fixes is not a method argument, but the
         // reference documents it — as a bare `typing.Literal`, in its declared
@@ -4418,7 +4434,7 @@ fn client_wrapper_file(
     c.push_str(HEADER);
     if global_headers
         .iter()
-        .any(|header| matches!(header.py_type(), HeaderType::Date))
+        .any(|header| matches!(header.py_type(), HeaderType::Date | HeaderType::DateTime))
     {
         c.push_str("\n\nimport datetime as dt");
     } else {
@@ -6485,6 +6501,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Inline(_))
             if ep.body_schema_shape == BodySchemaShape::Ref
                 && ep.body_schema_titled
+                && !ep.body_collapses_to_type_reference
                 && !ep.body_codegen_named =>
         {
             Some("application/json".to_string())
@@ -7259,7 +7276,7 @@ fn root_client_file(
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
     if global_headers
         .iter()
-        .any(|header| matches!(header.py_type(), HeaderType::Date))
+        .any(|header| matches!(header.py_type(), HeaderType::Date | HeaderType::DateTime))
     {
         imports.add_plain_as("datetime", "dt");
     }
@@ -7706,7 +7723,7 @@ fn root_client_class(
         client_param_doc,
         client_param_ctor,
         client_param_example,
-        client_example_imports: if global_headers.iter().any(|header| header.py_type() == HeaderType::Date) { "    import datetime\n\n" } else { "" }.to_string(),
+        client_example_imports: if global_headers.iter().any(|header| matches!(header.py_type(), HeaderType::Date | HeaderType::DateTime)) { "    import datetime\n\n" } else { "" }.to_string(),
         client_param_wrapper,
         tr_doc,
         tr_ctor,
@@ -11391,7 +11408,7 @@ fn build_example_inner(
         && ctx
             .global_headers
             .iter()
-            .any(|header| header.py_type() == HeaderType::Date)
+            .any(|header| matches!(header.py_type(), HeaderType::Date | HeaderType::DateTime))
     {
         ctx.uses_datetime = true;
     }
@@ -12150,6 +12167,11 @@ fn build_example_inner(
             if form.multipart && documentation {
                 example_fields.sort_by_key(|field| !field.is_file);
             }
+            // A composed urlencoded form's example passes its parents' fields
+            // first, as a composed JSON body's does.
+            if !form.multipart && ep.body_composition.is_all_of() {
+                example_fields.sort_by_key(|field| field.declaration_order);
+            }
             for f in example_fields {
                 let v = if f.is_file && (documentation || form.multipart) {
                     if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
@@ -12533,7 +12555,10 @@ fn documentation_client_example_args(
                 // docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
                 .filter(|header| {
                     header.required()
-                        && matches!(header.py_type(), HeaderType::Str | HeaderType::Date)
+                        && matches!(
+                            header.py_type(),
+                            HeaderType::Str | HeaderType::Date | HeaderType::DateTime
+                        )
                 })
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
@@ -13401,6 +13426,324 @@ mod tests {
     /// order, an optional one shown before a required one declared after it
     /// (the `query-declaration-order` measurement, Fern CLI 5.163.1). The
     /// docstring takes headers first, and the Markdown takes queries first.
+    /// The raw client and docstring client of one tagged operation over `document`.
+    fn sources_of(document: serde_json::Value, tag: &str) -> (String, String) {
+        let files = files_for(document);
+        let find = |suffix: String| {
+            files
+                .iter()
+                .find(|(path, _)| path.ends_with(&suffix))
+                .map(|(_, text)| text.clone())
+                .unwrap_or_else(|| panic!("no {suffix}"))
+        };
+        (
+            find(format!("{tag}/raw_client.py")),
+            find(format!("{tag}/client.py")),
+        )
+    }
+
+    fn one_post(body: serde_json::Value, schemas: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/things": {"post": {
+                "operationId": "postThing",
+                "tags": ["things"],
+                "requestBody": {"required": true, "content": body},
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "components": {"schemas": schemas}
+        })
+    }
+
+    #[test]
+    fn a_json_string_multipart_part_is_json_encoded() {
+        let (raw, _) = sources_of(
+            one_post(
+                serde_json::json!({"multipart/form-data": {"schema": {
+                    "type": "object",
+                    "properties": {
+                        "box": {"type": "string", "format": "json-string"},
+                        "file": {"type": "string", "format": "binary"}
+                    }
+                }}}),
+                serde_json::json!({}),
+            ),
+            "things",
+        );
+        assert!(raw.contains("json.dumps(jsonable_encoder(box))"), "{raw}");
+    }
+
+    #[test]
+    fn a_multipart_object_with_a_sibling_one_of_takes_no_parts() {
+        let (raw, _) = sources_of(
+            one_post(
+                serde_json::json!({"multipart/form-data": {"schema": {
+                    "type": "object",
+                    "required": ["report"],
+                    "properties": {"report": {"type": "string", "format": "binary"}},
+                    "oneOf": [
+                        {"$ref": "#/components/schemas/First"},
+                        {"$ref": "#/components/schemas/Second"}
+                    ]
+                }}}),
+                serde_json::json!({
+                    "First": {"type": "object", "properties": {"a": {"type": "string"}}},
+                    "Second": {"type": "object", "properties": {"b": {"type": "string"}}}
+                }),
+            ),
+            "things",
+        );
+        assert!(!raw.contains("report"), "{raw}");
+        assert!(raw.contains("data={}"), "{raw}");
+        assert!(raw.contains("files={}"), "{raw}");
+    }
+
+    #[test]
+    fn a_required_only_all_of_member_requires_the_parents_field_in_a_flattened_body() {
+        let (raw, _) = sources_of(
+            one_post(
+                serde_json::json!({"application/json": {"schema": {
+                    "$ref": "#/components/schemas/CreateThing"
+                }}}),
+                serde_json::json!({
+                    "Thing": {"type": "object", "properties": {
+                        "note": {"type": "string"},
+                        "name": {"type": "string"}
+                    }},
+                    "CreateThing": {"allOf": [
+                        {"$ref": "#/components/schemas/Thing"},
+                        {"required": ["name"]}
+                    ]}
+                }),
+            ),
+            "things",
+        );
+        assert!(raw.contains("name: str,"), "{raw}");
+        assert!(raw.contains("note: typing.Optional[str] = OMIT"), "{raw}");
+    }
+
+    #[test]
+    fn an_inline_urlencoded_all_of_flattens_parents_and_inline_members() {
+        let (raw, client) = sources_of(
+            one_post(
+                serde_json::json!({"application/x-www-form-urlencoded": {"schema": {"allOf": [
+                    {"$ref": "#/components/schemas/Token"},
+                    {"type": "object", "required": ["username"],
+                     "properties": {"username": {"type": "string"}}}
+                ]}}}),
+                serde_json::json!({"Token": {
+                    "type": "object",
+                    "required": ["token_name"],
+                    "properties": {"token_name": {"type": "string"}}
+                }}),
+            ),
+            "things",
+        );
+        // The method and its form take the inline member's first, and the worked
+        // call passes the parent's first.
+        let signature = raw.find("username: str").expect(&raw);
+        assert!(
+            signature < raw.find("token_name: str").expect(&raw),
+            "{raw}"
+        );
+        let call = client.find("token_name=\"token_name\"").expect(&client);
+        assert!(
+            call < client.find("username=\"username\"").expect(&client),
+            "{client}"
+        );
+    }
+
+    #[test]
+    fn a_titled_body_beside_an_all_of_writes_its_own_fields_first_in_the_docstring() {
+        let document = |title: Option<&str>| {
+            let mut body = serde_json::json!({
+                "type": "object",
+                "required": ["own"],
+                "properties": {"own": {"type": "string"}},
+                "allOf": [{"$ref": "#/components/schemas/Base"}]
+            });
+            if let Some(title) = title {
+                body["title"] = title.into();
+            }
+            one_post(
+                serde_json::json!({"application/json": {"schema": {
+                    "$ref": "#/components/schemas/Body"
+                }}}),
+                serde_json::json!({
+                    "Base": {"type": "object", "required": ["base"],
+                             "properties": {"base": {"type": "string"}}},
+                    "Body": body
+                }),
+            )
+        };
+        let order = |document| {
+            let (_, client) = sources_of(document, "things");
+            client.find("own=\"own\"").expect(&client)
+                < client.find("base=\"base\"").expect(&client)
+        };
+        assert!(order(document(Some("Body"))));
+        // An untitled one keeps its base's first (Azure Data Box's `JobResource`).
+        assert!(!order(document(None)));
+    }
+
+    #[test]
+    fn a_titled_alias_body_with_no_parameters_collapses_and_sends_no_content_type() {
+        let (raw, _) = sources_of(
+            one_post(
+                serde_json::json!({"application/json": {"schema": {
+                    "$ref": "#/components/schemas/ThingRequest"
+                }}}),
+                serde_json::json!({
+                    "Thing": {"type": "object", "required": ["name"],
+                              "properties": {"name": {"type": "string"}}},
+                    "ThingRequest": {
+                        "title": "ThingRequest", "type": "object", "properties": {},
+                        "allOf": [{"$ref": "#/components/schemas/Thing"}]
+                    }
+                }),
+            ),
+            "things",
+        );
+        assert!(!raw.contains("content-type"), "{raw}");
+    }
+
+    #[test]
+    fn an_annotating_all_of_parameter_is_worked_from_its_targets_example() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/things": {"get": {
+                "operationId": "listThings",
+                "tags": ["things"],
+                "parameters": [{"name": "sort", "in": "query", "schema": {"allOf": [
+                    {"$ref": "#/components/schemas/Sort"},
+                    {"description": "How."}
+                ]}}],
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "components": {"schemas": {"Sort": {"type": "string", "example": "name desc"}}}
+        }));
+        let client = files
+            .iter()
+            .find(|(path, _)| path.ends_with("things/client.py"))
+            .map(|(_, text)| text)
+            .expect("client");
+        assert!(client.contains("sort=\"name desc\""), "{client}");
+    }
+
+    #[test]
+    fn an_array_parameter_over_referenced_items_passes_its_declared_example() {
+        let document = |items: serde_json::Value| {
+            serde_json::json!({
+                "openapi": "3.0.3",
+                "info": {"title": "Api", "version": "1"},
+                "paths": {"/things": {"get": {
+                    "operationId": "listThings",
+                    "tags": ["things"],
+                    "parameters": [{"name": "kinds", "in": "query", "example": ["alpha"],
+                        "schema": {"type": "array", "items": items}}],
+                    "responses": {"204": {"description": "ok"}}
+                }}},
+                "components": {"schemas": {"Kind": {"type": "string"}}}
+            })
+        };
+        let passes = |document| {
+            let files = files_for(document);
+            files
+                .iter()
+                .find(|(path, _)| path.ends_with("things/client.py"))
+                .is_some_and(|(_, text)| text.contains("kinds=[\"alpha\"]"))
+        };
+        assert!(passes(document(
+            serde_json::json!({"$ref": "#/components/schemas/Kind"})
+        )));
+        // Inline items stay out of the minimal call (ruling 4's measured case).
+        assert!(!passes(document(serde_json::json!({"type": "string"}))));
+    }
+
+    #[test]
+    fn a_date_time_client_header_is_typed_and_worked_as_a_datetime() {
+        let header = serde_json::json!({"name": "Timestamp", "in": "header",
+            "schema": {"type": "string", "format": "date-time"}});
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/things": {"get": {
+                "operationId": "listThings",
+                "tags": ["things"],
+                "parameters": [header],
+                "responses": {"204": {"description": "ok"}}
+            }}}
+        }));
+        let wrapper = files
+            .iter()
+            .find(|(path, _)| path.ends_with("core/client_wrapper.py"))
+            .map(|(_, text)| text)
+            .expect("wrapper");
+        assert!(
+            wrapper.contains("timestamp: typing.Optional[dt.datetime] = None"),
+            "{wrapper}"
+        );
+        assert!(wrapper.contains("str(self._timestamp)"), "{wrapper}");
+    }
+
+    #[test]
+    fn a_shared_field_beside_a_discriminated_union_excludes_the_discriminant() {
+        let variant = |tag: &str| {
+            serde_json::json!({"required": ["kind"], "properties": {
+                "kind": {"type": "string", "const": tag},
+                tag: {"type": "string"}
+            }})
+        };
+        let document = |shared: bool| {
+            let mut properties = serde_json::json!({
+                "kind": {"type": "string", "enum": ["one", "two"]}
+            });
+            if shared {
+                properties["note"] = serde_json::json!({"type": "string"});
+            }
+            one_post(
+                serde_json::json!({"application/json": {"schema": {
+                    "$ref": "#/components/schemas/Step"
+                }}}),
+                serde_json::json!({"Step": {
+                    "type": "object",
+                    "properties": properties,
+                    "discriminator": {"propertyName": "kind"},
+                    "oneOf": [variant("one"), variant("two")]
+                }}),
+            )
+        };
+        let step = |shared| {
+            let files = files_for(document(shared));
+            assert!(
+                !files.iter().any(|(path, _)| path.ends_with("step_kind.py")),
+                "the discriminant's declared type is never written"
+            );
+            files
+                .iter()
+                .find(|(path, _)| path.ends_with("types/step.py"))
+                .map(|(_, text)| text.clone())
+                .expect("step")
+        };
+        let with_shared = step(true);
+        assert!(
+            with_shared.contains("class Base(UniversalBaseModel):"),
+            "{with_shared}"
+        );
+        assert!(
+            with_shared.contains("note: typing.Optional[str]"),
+            "{with_shared}"
+        );
+        assert!(!step(false).contains("class Base("));
+    }
+
+    #[test]
+    fn the_retry_with_status_has_its_named_error() {
+        assert_eq!(crate::ir::error_class_name(449), Some("RetryWithError"));
+    }
+
     #[test]
     fn a_streamed_download_raises_the_aliased_core_api_error() {
         // A component schema called `ApiError` aliases both imports; the stream's
