@@ -129,9 +129,24 @@ node's base:
 `combo-inline-body-read-only-property` is proven by this screen: the split read-only
 arm runs on `registered-literals-apis-guru-openapi-directory-cdcf7865` (osf.io), whose
 `POST /preprints/` inline body declares read-only `id` and `links`, and its hand-written
-cover is retired. The other four stay open. Their declarers here are decided negatively,
-and their outstanding candidates are the documents below whose bytes or arm comparison
-this bound did not reach.
+cover is retired. The other four stay open, with their hand-written fixtures still
+byte-matched but not counted as proof. Their declarers here are decided negatively, and
+their outstanding candidates are the documents whose bytes or arm comparison this bound
+did not reach. The `exhausted` verdict the
+[earlier continuation record](../witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts)
+gives them is historical: it read only that record's two narrower populations.
+
+## Renewed screen outcomes
+
+Each of the four fixtures' covers cites this table: this search found no registrable
+real witness among the populations it finished, and its outstanding candidates remain.
+
+| Combination | Outcome | Note |
+|---|---|---|
+| `combo-body-property-named-as-header-param` | `none-registrable` | No handed-off document declares it, and no registered region implies a header collision. |
+| `combo-body-property-named-as-path-param` | `none-registrable` | Its handed-off and registered declarers never execute the arm. |
+| `combo-success-anyof-nullable` | `none-registrable` | Its handed-off and registered declarers never execute the dropped-null region. |
+| `combo-success-oneof-nullable` | `none-registrable` | Its handed-off and registered declarers never execute the dropped-null region. |
 
 `tools/surface-census/handed-off-combination-verdicts.py write` restates the table, the
 census cells, the outstanding index and the verdict table above from `just census-repin`'s

@@ -1339,6 +1339,34 @@ class MeasuredReach(Protocol):
     def unreached_sites(self) -> int: ...
 
 
+def open_handwritten_presentation_failures(root: Path, key: str, record: str | None, row: CombinationRow) -> list[str]:
+    """An `open` row with a surviving fixture must not read as a current `exhausted` hand-written proof.
+
+    Its evidence cell and every feature-level cover state `search-incomplete` and cite the
+    bounded search its audit row cites; an older verdict stays in its own record as history.
+    """
+    surface = root / "docs" / "openapi-surface"
+    failures = []
+    cell = re.fullmatch(r"handwritten: [^;]+; search: ([a-z-]+) \(\[record\]\(([^)#]+)#[^)]*\)\)", row.cells[4])
+    if cell is None or cell.group(1) != SEARCH_INCOMPLETE or f"docs/openapi-surface/{cell.group(2)}" != record:
+        failures.append(
+            f"{key}: its audit class is open, but its region row presents `{row.cells[4][:100]}`; "
+            f"an open row's evidence reads `{SEARCH_INCOMPLETE}` and cites `{record}`"
+        )
+    for evidence in sorted((surface / "handwritten").glob("*/evidence.toml")):
+        with evidence.open("rb") as handle:
+            covers = tomllib.load(handle).get("covers", [])
+        for cover in covers:
+            if cover["key"] != key or "arm" in cover:
+                continue
+            if cover["verdict"] != SEARCH_INCOMPLETE or cover["search"].partition("#")[0] != record:
+                failures.append(
+                    f"{key}: its audit class is open, but `{evidence.parent.name}`'s cover reads "
+                    f"`{cover['verdict']}` from `{cover['search']}`; it must read `{SEARCH_INCOMPLETE}` from `{record}`"
+                )
+    return failures
+
+
 def combination_proof_failures(
     root: Path, ledger: dict[str, MeasuredReach], covers: list[tuple[str, str, str | None]]
 ) -> list[str]:
@@ -1368,6 +1396,8 @@ def combination_proof_failures(
             failures.append(f"{key}: its audit must declare class:interaction, independent, handwritten or open")
         if row.proof_class in {"interaction", "handwritten"} and key in table and table[key].cooccurrence:
             failures.append(f"{key}: {row.proof_class} proof needs an exclusive interaction site, not co-occurrence")
+        if row.proof_class == "open" and key in rows and rows[key].cells[3].strip("`") == "handwritten":
+            failures += open_handwritten_presentation_failures(root, key, row.search_record, rows[key])
         if row.proof_class in {"open", "handwritten"}:
             state = CombinationSearchState.OPEN if row.proof_class == "open" else CombinationSearchState.EXHAUSTED
             failures += combination_search_failures(
@@ -14295,6 +14325,38 @@ class FinishedStateGateTests(unittest.TestCase):
         # The positive cover must declare and reach the combination it claims.
         fixture = "harbor-relay-registration"
         self.assertEqual([], [f for f in finished_state_failures(self.root) if "witness-blocked" in f or fixture in f])
+
+    def test_an_open_row_presented_as_a_current_exhausted_handwritten_proof_is_refused(self) -> None:
+        key = "combo-body-property-named-as-path-param"
+        current = "docs/openapi-surface/witness-search-operation-combinations/README.md"
+        historical = "witness-search-fixture-only-bodies-paths-continuation/README.md"
+
+        def presented(failures: list[str]) -> list[str]:
+            return [failure for failure in failures if failure.startswith(f"{key}: its audit class is open")]
+
+        self.assertEqual([], presented(finished_state_failures(self.root)))
+        cell = "search: search-incomplete ([record](witness-search-operation-combinations/README.md#verdicts))"
+        region = "docs/openapi-surface/document-paths.md"
+        line = next(
+            line
+            for line in (self.root / region).read_text(encoding="utf-8").splitlines()
+            if line.startswith(f"| {key} |")
+        )
+        stale = line.replace(cell, f"search: exhausted ([record]({historical}#verdicts))")
+        self.assertNotEqual(line, stale)
+        self.edit(region, line, stale)
+        self.assertTrue(presented(finished_state_failures(self.root)))
+        self.edit(region, stale, line)
+        evidence = "docs/openapi-surface/handwritten/beacon-signal-results/evidence.toml"
+        text = (self.root / evidence).read_text(encoding="utf-8")
+        cover = f'key = "{key}"\nsearch = "{current}#verdicts"\nverdict = "search-incomplete"\nrenewed = "{current}"'
+        self.assertIn(cover, text)
+        self.edit(
+            evidence,
+            cover,
+            f'key = "{key}"\nsearch = "docs/openapi-surface/{historical}#verdicts"\nverdict = "exhausted"',
+        )
+        self.assertTrue(presented(finished_state_failures(self.root)))
 
     def test_a_witness_blocked_cover_on_a_feature_key_is_refused(self) -> None:
         fixture = self.add_cover("request-body-content", f"{self.BLOCKED_RECORD}#blocked-witnesses")
