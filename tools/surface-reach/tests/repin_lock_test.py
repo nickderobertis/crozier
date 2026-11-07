@@ -136,6 +136,28 @@ def _stand_in_cargo(shims: Path, marker: Path) -> None:
     cargo.chmod(0o755)
 
 
+def _base_env() -> dict[str, str]:
+    """No token, and no session bus: an ambient `GITHUB_REPOSITORY`, as in CI, takes `reach_base` to `gh auth token`."""
+    stripped = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "CI", "VIRTUAL_ENV")}
+    return stripped | {"DBUS_SESSION_BUS_ADDRESS": "disabled:"}
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux") or shutil.which("gh") is None, reason="no bus can start here")
+def test_the_entry_points_environment_keeps_gh_from_starting_a_session_bus(tmp_path: Path) -> None:
+    called = tmp_path / "dbus-launch.called"
+    (tmp_path / "dbus-launch").write_text('#!/bin/sh\necho "$@" >> "$0.called"\nexit 1\n', encoding="utf-8")
+    (tmp_path / "dbus-launch").chmod(0o755)
+    env = _base_env()
+    env |= {"GH_CONFIG_DIR": str(tmp_path / "empty-gh-config"), "PATH": f"{tmp_path}{os.pathsep}{env['PATH']}"}
+    control = {key: value for key, value in env.items() if key != "DBUS_SESSION_BUS_ADDRESS"}
+    subprocess.run(["gh", "auth", "token"], env=control, capture_output=True, timeout=30)
+    if not called.exists():
+        pytest.skip("this gh asks for no session bus even without the variable, so none can leak")
+    called.unlink()
+    subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, timeout=30)
+    assert not called.exists(), "with the entry points' environment, gh autolaunched a session bus"
+
+
 def _wait_line(process: subprocess.Popen[str], deadline: float) -> list[str]:
     """Stderr up to the line saying the process waits for the lock (or to its exit)."""
     assert process.stderr is not None
@@ -160,7 +182,7 @@ def test_every_entry_point_waits_for_the_lock_and_builds_only_once_it_is_release
     xdg = tmp_path / "xdg"
     lock = xdg / "crozier" / "instrumented-measurement.lock"
     lock.parent.mkdir(parents=True)
-    base_env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "CI", "VIRTUAL_ENV")}
+    base_env = _base_env()
     processes: dict[str, tuple[subprocess.Popen[str], Path]] = {}
     with lock.open("a+") as held:
         fcntl.flock(held.fileno(), fcntl.LOCK_EX)

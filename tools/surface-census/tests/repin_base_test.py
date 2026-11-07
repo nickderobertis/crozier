@@ -185,6 +185,19 @@ def history(tmp_path: Path) -> tuple[Path, list[str]]:
     return root, commits
 
 
+def no_login_env(scratch: Path) -> dict[str, str]:
+    """What a no-token lookup adds: no gh login, no session bus, and a `dbus-launch` that records a call and starts nothing."""
+    guard = scratch / "bus-guard"
+    guard.mkdir(exist_ok=True)
+    (guard / "dbus-launch").write_text('#!/bin/sh\necho "$@" >> "$0.called"\nexit 1\n', encoding="utf-8")
+    (guard / "dbus-launch").chmod(0o755)
+    return {
+        "GH_CONFIG_DIR": str(scratch / "empty-gh-config"),
+        "DBUS_SESSION_BUS_ADDRESS": "disabled:",
+        "PATH": f"{guard}{os.pathsep}{os.environ['PATH']}",
+    }
+
+
 def lookup(
     root: Path,
     cache: Path,
@@ -211,7 +224,7 @@ def lookup(
         (tools / "gh").chmod(0o755)
         env["PATH"] = str(tools)
     else:
-        env["GH_CONFIG_DIR"] = str(cache.parent / "empty-gh-config")
+        env |= no_login_env(cache.parent)
     run = subprocess.run(
         [sys.executable, str(VERB), "--repo-root", str(root), "--base-only"],
         capture_output=True,
@@ -220,7 +233,17 @@ def lookup(
         timeout=120,
     )
     assert run.returncode == 0, run.stderr
+    assert not (cache.parent / "bus-guard/dbus-launch.called").exists(), "gh autolaunched a session bus: " + run.stdout
     return run
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux") or shutil.which("gh") is None, reason="no bus can start here")
+def test_the_no_token_guard_sees_gh_ask_for_a_bus_once_the_variable_is_removed(tmp_path: Path) -> None:
+    env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")} | no_login_env(tmp_path)
+    del env["DBUS_SESSION_BUS_ADDRESS"]
+    subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, timeout=30)
+    if not (tmp_path / "bus-guard/dbus-launch.called").exists():
+        pytest.skip("this gh asks for no session bus even without the variable, so none can leak")
 
 
 def cached(cache: Path, commit: str) -> Path:
@@ -232,7 +255,7 @@ def cached(cache: Path, commit: str) -> Path:
 def test_the_nearest_first_parent_ancestor_with_an_artifact_is_chosen_and_cached(
     history: tuple[Path, list[str]], github: str, tmp_path: Path
 ) -> None:
-    root, (c1, _c2, c3, c4) = history
+    root, (c1, _c2, c3, _c4) = history
     cache = tmp_path / "cache"
     side = git(root, "rev-parse", "side")
     # c4 has no artifact of its own; its parent c3 has; c1 is farther; the merged

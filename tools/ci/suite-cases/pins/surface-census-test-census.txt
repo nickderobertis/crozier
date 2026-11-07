@@ -130,6 +130,7 @@ tools/surface-census/tests/repin_base_test.py::test_the_lookup_authenticates_wit
 tools/surface-census/tests/repin_base_test.py::test_the_lookup_authenticates_with_each_credential_in_order[GITHUB_TOKEN wins]
 tools/surface-census/tests/repin_base_test.py::test_the_lookup_authenticates_with_each_credential_in_order[gh auth token]
 tools/surface-census/tests/repin_base_test.py::test_the_nearest_first_parent_ancestor_with_an_artifact_is_chosen_and_cached
+tools/surface-census/tests/repin_base_test.py::test_the_no_token_guard_sees_gh_ask_for_a_bus_once_the_variable_is_removed
 tools/surface-census/tests/repin_merge_test.py::test_a_conflict_in_a_hand_written_line_is_refused_by_name_and_the_merge_left_open
 tools/surface-census/tests/repin_merge_test.py::test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections[across its end marker into authored prose-| 1 | `a` |\n<!-- END GENERATED ARM TABLE -->\n\nAuthored prose after.-False]
 tools/surface-census/tests/repin_merge_test.py::test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections[inside a generated section-| 1 | `a` |-True]
