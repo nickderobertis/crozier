@@ -1,0 +1,91 @@
+{
+  "name": "suite-cases",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "measures:crozier-e2e",
+    "measures:nested-discriminator-golden",
+    "lang:javascript"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/ci/suite-cases/tests/suite-cases.test.mjs tools/ci/suite-cases/tests/build-reuse.test.mjs tools/ci/suite-cases/tests/cache-key.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling",
+        "{workspaceRoot}/screenshots/pyproject.toml",
+        "{workspaceRoot}/tools/corpus/pyproject.toml",
+        "{workspaceRoot}/tools/corpus-fetch/pyproject.toml",
+        "{workspaceRoot}/tools/corpus-licensing/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens-git/pyproject.toml",
+        "{workspaceRoot}/tools/fern-goldens-weekly/pyproject.toml",
+        "{workspaceRoot}/tools/fern-references-check/pyproject.toml",
+        "{workspaceRoot}/tools/fern-refusals/pyproject.toml",
+        "{workspaceRoot}/tools/fern-refusals-strict/pyproject.toml",
+        "{workspaceRoot}/tools/llmlint/pyproject.toml",
+        "{workspaceRoot}/tools/llmlint-resolution/pyproject.toml",
+        "{workspaceRoot}/tools/python-workspace/pyproject.toml",
+        "{workspaceRoot}/tools/repin-cost/pyproject.toml",
+        "{workspaceRoot}/tools/surface-census/pyproject.toml",
+        "{workspaceRoot}/tools/surface-reach/pyproject.toml",
+        "{workspaceRoot}/tools/surface-repin/pyproject.toml",
+        "{workspaceRoot}/tools/witness-search/pyproject.toml",
+        "{workspaceRoot}/tools/witness-search-git/pyproject.toml",
+        "cargo",
+        "crateTests",
+        "e2eSource",
+        "generator",
+        {
+          "runtime": "node tools/ci/suite-cases/cache-key.mjs"
+        },
+        "{workspaceRoot}/src/project.json",
+        "{workspaceRoot}/crates/crozier-e2e/project.json",
+        "{workspaceRoot}/pool-maintenance/**/*",
+        "{workspaceRoot}/tools/ci/**/*",
+        "{workspaceRoot}/tools/ci-journeys/**/*",
+        "{workspaceRoot}/tools/github-action/**/*",
+        "{workspaceRoot}/tests/nested-discriminator/golden/**/*",
+        "{workspaceRoot}/scripts/share-instrumented-build.mjs",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/surface-reach/**/*",
+        "{workspaceRoot}/tools/witness-search/witness_screen.py",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/openapi-surface/golden-reach-sites.tsv",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/bun.lock"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node --check tools/ci/suite-cases/core.mjs",
+          "node --check tools/ci/suite-cases/cache-key.mjs",
+          "node --check tools/ci/suite-cases/suite-cases.mjs",
+          "node --check tools/ci/suite-cases/tests/suite-cases.test.mjs",
+          "node --check tools/ci/suite-cases/tests/build-reuse.test.mjs",
+          "node --check tools/ci/suite-cases/tests/cache-key.test.mjs",
+          "node --check scripts/share-instrumented-build.mjs",
+          "node scripts/check-project-boundaries.mjs suite-cases"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries",
+        "{workspaceRoot}/scripts/share-instrumented-build.mjs",
+        {
+          "runtime": "node --version"
+        }
+      ]
+    }
+  }
+}

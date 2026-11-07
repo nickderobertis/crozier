@@ -1,0 +1,808 @@
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_a_handwritten_row_stays_a_screening_target
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_a_provenance_row_of_the_wrong_width_refuses_to_publish
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_a_snapshot_stamp_that_is_no_utc_instant_is_rejected
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_fetch_failure_refuses_to_publish_after_bounded_retries
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_malformed_document_refuses_to_publish
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_nonpositive_numeric_arguments_are_rejected
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_real_command_writes_complete_deterministic_snapshot
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_reconciliation_rejects_duplicate_order_and_wrong_identity
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_redo_classifies_non_openapi_and_unparseable_responses
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_redo_refuses_historical_manifest_changed_from_served_index
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_redo_refuses_incomplete_and_different_historical_entries
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_redo_reuses_tree_read_versions_without_refetching_them
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_the_licence_screen_reads_the_corpus_rule
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_the_tracked_snapshot_s_licence_screens_are_the_corpus_rule_s
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_tracked_snapshot_is_reconciled_with_finished_evidence
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_tracked_snapshot_obeys_the_consumer_contract
+tools/surface-census/tests/apis_guru_gap_screen_test.py::GapScreenTest::test_unread_versions_record_http_refusal_and_real_selector_result
+tools/surface-census/tests/reach_document_test.py::test_a_missing_ownership_source_is_refused_without_inventing_boundaries
+tools/surface-census/tests/reach_document_test.py::test_a_missing_summary_anchor_is_refused[golden rows reach every handling site]
+tools/surface-census/tests/reach_document_test.py::test_a_missing_summary_anchor_is_refused[golden rows rest on one document]
+tools/surface-census/tests/reach_document_test.py::test_attribution_config_inputs_match_rust_discovery_names
+tools/surface-census/tests/reach_document_test.py::test_attribution_files_refuse_duplicate_or_contradictory_classifications[duplicate-matched]
+tools/surface-census/tests/reach_document_test.py::test_attribution_files_refuse_duplicate_or_contradictory_classifications[duplicate-unmatched]
+tools/surface-census/tests/reach_document_test.py::test_attribution_files_refuse_duplicate_or_contradictory_classifications[overlap]
+tools/surface-census/tests/reach_document_test.py::test_attribution_round_trips_and_refuses_missing_or_changed_inputs
+tools/surface-census/tests/reach_document_test.py::test_content_digest_uses_canonical_relative_path_order
+tools/surface-census/tests/reach_document_test.py::test_record_versions_and_root_fields_are_validated[boolean-version]
+tools/surface-census/tests/reach_document_test.py::test_record_versions_and_root_fields_are_validated[future-version]
+tools/surface-census/tests/reach_document_test.py::test_record_versions_and_root_fields_are_validated[string-version]
+tools/surface-census/tests/reach_document_test.py::test_record_versions_and_root_fields_are_validated[unknown-root-field]
+tools/surface-census/tests/reach_store_test.py::test_a_base_with_physically_reversed_regions_measures_fully
+tools/surface-census/tests/reach_store_test.py::test_a_base_with_regions_escaping_their_function_measures_fully
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a const fn made ordinary]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a const fn]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a const outside any function]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a dependency in Cargo.lock]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a helper the golden tests reach]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a removed const fn]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a removed trait default]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a row-keyed table new since the base]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a suite data file a reachable helper names]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[a template the crate embeds]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[an override added to a trait impl]
+tools/surface-census/tests/reach_store_test.py::test_a_change_no_function_can_own_re_runs_every_test[the toolchain file]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[CHANGELOG.md alone]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a body edit a fixture executed re-runs the fixture]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a body edit re-runs the tests that executed it]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a comment and a reflow re-run nothing]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a corpus list no golden test reaches]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a golden test's Corpus literal]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a golden test's own function]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a hand-written fixture's Fern tree is no input of its run]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a hand-written fixture's document]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a substantive Corpus literal change]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[a suite data file nothing reachable names]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[an unrelated test]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[its corpus-sources.tsv row]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[its golden's fixture tree]
+tools/surface-census/tests/reach_store_test.py::test_a_change_re_runs_exactly_the_tests_and_fixtures_it_reaches[its source document]
+tools/surface-census/tests/reach_store_test.py::test_a_file_only_a_cfg_test_module_declares_is_not_measured
+tools/surface-census/tests/reach_store_test.py::test_a_function_only_a_fixtures_control_run_executed_re_runs_that_fixture
+tools/surface-census/tests/reach_store_test.py::test_a_region_ending_at_a_token_boundary_encodes_the_same_whatever_follows_it
+tools/surface-census/tests/reach_store_test.py::test_a_region_maps_exactly_onto_its_code_through_comments_whitespace_and_reflow
+tools/surface-census/tests/reach_store_test.py::test_a_release_commit_bumping_only_crozier_s_version_re_runs_nothing
+tools/surface-census/tests/reach_store_test.py::test_a_token_change_changes_the_digest_and_a_comment_does_not
+tools/surface-census/tests/reach_store_test.py::test_decoding_refuses_offsets_that_reverse_a_region_in_the_real_source
+tools/surface-census/tests/reach_store_test.py::test_function_keys_name_methods_trait_impls_nested_fns_and_twins_and_drop_test_code
+tools/surface-census/tests/reach_store_test.py::test_measured_at_parses_the_stamp_the_store_writes
+tools/surface-census/tests/reach_store_test.py::test_ordinary_list_commas_stay_stable_through_reflow[pub fn a() { consume(1); }-pub fn a() { consume(\n1,\n); }]
+tools/surface-census/tests/reach_store_test.py::test_ordinary_list_commas_stay_stable_through_reflow[pub fn a() { let _ = !(consume(1)); }-pub fn a() { let _ = !(consume(\n1,\n)); }]
+tools/surface-census/tests/reach_store_test.py::test_ordinary_list_commas_stay_stable_through_reflow[pub fn a() { let _ = (1 < 2, 3); }-pub fn a() { let _ = (1 < 2, 3,); }]
+tools/surface-census/tests/reach_store_test.py::test_ordinary_list_commas_stay_stable_through_reflow[pub fn a() { let _ = (1, 2); }-pub fn a() { let _ = (\n1, 2,\n); }]
+tools/surface-census/tests/reach_store_test.py::test_ordinary_list_commas_stay_stable_through_reflow[pub fn a(x: u8) {}-pub fn a(\nx: u8,\n) {}]
+tools/surface-census/tests/reach_store_test.py::test_ordinary_list_commas_stay_stable_through_reflow[pub fn a<T>() { consume::<T>(); }-pub fn a<T,>() { consume::<T,>(); }]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[#![custom(a,)] pub fn a() {}-#![custom(a)] pub fn a() {}-{items}]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[#[custom(a,)] pub fn a() {}-#[custom(a)] pub fn a() {}-{items}]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[macro_rules! pick { (a,) => { 1 }; }-macro_rules! pick { (a) => { 1 }; }-{items}]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() -> (u8,) { todo!() }-pub fn a() -> (u8) { todo!() }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() -> impl std::fmt::Debug { (1,) }-pub fn a() -> impl std::fmt::Debug { (1) }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() { (factory::<A, B>(),); }-pub fn a() { (factory::<A, B>()); }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() { (factory::<fn() -> Result<A, B>, C>(),); }-pub fn a() { (factory::<fn() -> Result<A, B>, C>()); }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() { (|x, y| x + y,); }-pub fn a() { (|x, y| x + y); }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() { pick!(1,); }-pub fn a() { pick!(1); }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() { pick![1,]; }-pub fn a() { pick![1]; }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a() { pick!{1,}; }-pub fn a() { pick!{1}; }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a(x: (u8,)) { let (y,) = x; }-pub fn a(x: (u8,)) { let (y) = x; }-a]
+tools/surface-census/tests/reach_store_test.py::test_semantic_commas_change_the_real_parsers_digest[pub fn a(x: (u8,)) {}-pub fn a(x: (u8)) {}-a]
+tools/surface-census/tests/reach_store_test.py::test_the_coverage_index_states_the_contract_this_reader_enforces
+tools/surface-census/tests/reach_store_test.py::test_the_drift_bound_measures_fully_and_says_why[another compiler]
+tools/surface-census/tests/reach_store_test.py::test_the_drift_bound_measures_fully_and_says_why[another host]
+tools/surface-census/tests/reach_store_test.py::test_the_drift_bound_measures_fully_and_says_why[legacy host missing]
+tools/surface-census/tests/reach_store_test.py::test_the_drift_bound_measures_fully_and_says_why[older than seven days]
+tools/surface-census/tests/reach_store_test.py::test_the_drift_bound_measures_fully_and_says_why[past twenty steps]
+tools/surface-census/tests/reach_store_test.py::test_the_instrumented_lock_says_it_waits_and_enters_only_once_released
+tools/surface-census/tests/reach_store_test.py::test_the_store_round_trips_byte_stably_and_refuses_any_other_schema
+tools/surface-census/tests/reach_store_test.py::test_tokens_keep_strings_chars_and_lifetimes_whole_and_drop_comments
+tools/surface-census/tests/reach_store_test.py::test_twenty_steps_is_still_inside_the_bound
+tools/surface-census/tests/repin_anchor_test.py::test_a_duplicate_line_is_re_anchored_and_the_new_spec_rewritten_everywhere_it_is_quoted
+tools/surface-census/tests/repin_anchor_test.py::test_a_line_rustfmt_split_is_followed_into_head
+tools/surface-census/tests/repin_anchor_test.py::test_a_missing_anchored_source_is_refused_without_rewriting_quotes[deleted]
+tools/surface-census/tests/repin_anchor_test.py::test_a_missing_anchored_source_is_refused_without_rewriting_quotes[renamed]
+tools/surface-census/tests/repin_anchor_test.py::test_a_site_the_verb_cannot_follow_is_refused_by_name_and_nothing_is_rewritten[a function removed at HEAD]
+tools/surface-census/tests/repin_anchor_test.py::test_a_site_the_verb_cannot_follow_is_refused_by_name_and_nothing_is_rewritten[a site that did not resolve at the base either]
+tools/surface-census/tests/repin_anchor_test.py::test_a_site_the_verb_cannot_follow_is_refused_by_name_and_nothing_is_rewritten[an anchored arm whose code changed]
+tools/surface-census/tests/repin_anchor_test.py::test_a_site_the_verb_cannot_follow_is_refused_by_name_and_nothing_is_rewritten[anchored code duplicated at HEAD]
+tools/surface-census/tests/repin_anchor_test.py::test_a_site_the_verb_cannot_follow_is_refused_by_name_and_nothing_is_rewritten[unchanged tokens no single line anchors uniquely]
+tools/surface-census/tests/repin_anchor_test.py::test_an_unchanged_anchor_with_wider_token_spacing_is_followed
+tools/surface-census/tests/repin_anchor_test.py::test_reanchoring_adds_escapes_to_basic_toml_strings_without_changing_literal_strings
+tools/surface-census/tests/repin_base_test.py::test_a_cached_base_is_used_without_a_request_when_no_nearer_ancestor_was_published
+tools/surface-census/tests/repin_base_test.py::test_a_downloaded_base_of_another_schema_is_refused
+tools/surface-census/tests/repin_base_test.py::test_a_downloaded_base_recording_another_commit_is_refused
+tools/surface-census/tests/repin_base_test.py::test_a_failed_download_falls_back_to_the_nearest_cached_base[download answers 500]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_download_falls_back_to_the_nearest_cached_base[zip without base.json.gz]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[cached fallback-artifact list 404]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[cached fallback-guard would wait]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[cached fallback-no token]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[cached fallback-refused token]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[full fallback-artifact list 404]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[full fallback-guard would wait]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[full fallback-no token]
+tools/surface-census/tests/repin_base_test.py::test_a_failed_lookup_falls_back_to_the_nearest_cached_base_or_to_a_full_measurement[full fallback-refused token]
+tools/surface-census/tests/repin_base_test.py::test_a_refused_cached_base_is_skipped_for_the_next_one_down[a cached base recording another commit]
+tools/surface-census/tests/repin_base_test.py::test_a_refused_cached_base_is_skipped_for_the_next_one_down[a corrupt cached base]
+tools/surface-census/tests/repin_base_test.py::test_an_artifact_download_follows_only_the_redirects_it_allows[a redirect to a host the lookup refuses]
+tools/surface-census/tests/repin_base_test.py::test_an_artifact_download_follows_only_the_redirects_it_allows[a redirect to artifact storage]
+tools/surface-census/tests/repin_base_test.py::test_an_artifact_list_that_is_not_an_array_falls_back_with_its_reason
+tools/surface-census/tests/repin_base_test.py::test_an_expired_or_malformed_artifact_record_is_passed_over_for_the_next_ancestor
+tools/surface-census/tests/repin_base_test.py::test_the_ci_jobs_packaged_base_is_found_by_the_verb_on_a_later_commit
+tools/surface-census/tests/repin_base_test.py::test_the_lookup_authenticates_with_each_credential_in_order[GH_TOKEN]
+tools/surface-census/tests/repin_base_test.py::test_the_lookup_authenticates_with_each_credential_in_order[GITHUB_TOKEN wins]
+tools/surface-census/tests/repin_base_test.py::test_the_lookup_authenticates_with_each_credential_in_order[gh auth token]
+tools/surface-census/tests/repin_base_test.py::test_the_nearest_first_parent_ancestor_with_an_artifact_is_chosen_and_cached
+tools/surface-census/tests/repin_merge_test.py::test_a_conflict_in_a_hand_written_line_is_refused_by_name_and_the_merge_left_open
+tools/surface-census/tests/repin_merge_test.py::test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections[across its end marker into authored prose-| 1 | `a` |\n<!-- END GENERATED ARM TABLE -->\n\nAuthored prose after.-False]
+tools/surface-census/tests/repin_merge_test.py::test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections[inside a generated section-| 1 | `a` |-True]
+tools/surface-census/tests/repin_merge_test.py::test_a_coverage_index_conflict_resolves_only_inside_its_generated_sections[on the authored line after it-Authored prose after.-False]
+tools/surface-census/tests/repin_merge_test.py::test_a_merge_whose_conflicts_are_all_ledger_rows_and_reach_cells_is_completed
+tools/surface-census/tests/repin_merge_test.py::test_a_scenario_index_conflict_resolves_only_in_the_cells_its_writer_restates[derived settings cell]
+tools/surface-census/tests/repin_merge_test.py::test_a_scenario_index_conflict_resolves_only_in_the_cells_its_writer_restates[hand-decided closer cell]
+tools/surface-census/tests/repin_merge_test.py::test_a_scenario_row_the_writer_skips_keeps_its_conflict[cells0]
+tools/surface-census/tests/repin_merge_test.py::test_a_scenario_row_the_writer_skips_keeps_its_conflict[cells1]
+tools/surface-census/tests/repin_merge_test.py::test_an_incomplete_conflict_is_refused_before_any_rewrite[missing closer]
+tools/surface-census/tests/repin_merge_test.py::test_an_incomplete_conflict_is_refused_before_any_rewrite[missing separator]
+tools/surface-census/tests/repin_merge_test.py::test_an_incomplete_conflict_is_refused_before_any_rewrite[nested opener]
+tools/surface-census/tests/repin_merge_test.py::test_non_text_and_deleted_conflicts_are_refused_and_can_be_resolved_by_hand[modify-delete]
+tools/surface-census/tests/repin_merge_test.py::test_non_text_and_deleted_conflicts_are_refused_and_can_be_resolved_by_hand[non-utf8]
+tools/surface-census/tests/repin_merge_test.py::test_non_text_and_deleted_conflicts_are_refused_and_can_be_resolved_by_hand[nul]
+tools/surface-census/tests/repin_messages_test.py::test_a_corrupt_checkout_store_is_reported_and_ignored_rather_than_stepped_from
+tools/surface-census/tests/repin_messages_test.py::test_a_layout_only_change_reports_regions_translated_from_the_store
+tools/surface-census/tests/repin_messages_test.py::test_a_ledger_row_its_reach_cell_no_longer_renders_names_the_verb
+tools/surface-census/tests/repin_messages_test.py::test_a_report_over_a_tree_its_measurement_predates_names_the_verb_and_succeeds_once_repinned
+tools/surface-census/tests/repin_messages_test.py::test_a_site_whose_anchor_no_longer_resolves_names_the_verb
+tools/surface-census/tests/repin_messages_test.py::test_a_stale_outstanding_row_names_the_verb
+tools/surface-census/tests/repin_messages_test.py::test_the_scenario_index_writer_refuses_a_broken_catalog_and_writes_once_it_is_repaired
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_blocker_too_vague_to_act_on_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_none_found_row_every_source_answered_is_accepted
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_none_found_row_whose_search_a_source_did_not_answer_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_none_found_row_with_a_rate_limited_source_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_naming_every_source_but_querying_one_of_them_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_naming_no_blocker_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_recording_a_query_and_not_what_it_returned_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_that_meets_the_rule_is_accepted
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_whose_search_did_not_finish_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_whose_search_found_a_usable_witness_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_whose_search_found_nothing_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_whose_search_omits_a_declared_source_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_with_no_probe_recorded_in_the_ledger_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_a_row_with_no_recorded_search_is_refused
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_each_of_the_three_blocker_forms_is_accepted
+tools/surface-census/tests/surface_census_test.py::AmendedSettlementRuleTests::test_search_incomplete_is_the_spelling_an_unanswered_source_takes
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_a_misspelling_of_an_annotated_ref_selector_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_a_reference_that_resolves_and_one_that_does_not_are_told_apart
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_an_annotated_ref_selector_no_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_each_permitted_overlap_is_counted_by_both_cases
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_each_selector_counts_every_form_of_its_own_branch
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_each_selector_counts_no_document_missing_one_part_of_its_condition
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_each_selector_has_exactly_one_name
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_each_selector_reports_one_row_per_document_declaring_it
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_every_document_the_table_names_was_censused
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_the_table_covers_every_selector_this_pass_declared
+tools/surface-census/tests/surface_census_test.py::AnnotatedRefSelectorDiscriminationTests::test_the_two_annotated_all_of_shapes_are_told_apart
+tools/surface-census/tests/surface_census_test.py::AuthoredEvidenceTierTests::test_every_authored_case_has_a_decided_counted_tier
+tools/surface-census/tests/surface_census_test.py::AuthoredEvidenceTierTests::test_tier_inventory_rejects_source_drift_and_recovers
+tools/surface-census/tests/surface_census_test.py::AuthoredPointerAndTagSelectorTests::test_defs_pointer_and_tag_only_operation
+tools/surface-census/tests/surface_census_test.py::AuthoredPointerAndTagSelectorTests::test_missing_pointer_and_resolved_neighbor
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_blank_description_counts_only_over_a_partly_optional_parameterless_body
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_body_prefixed_body_counts_only_posted_once
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_described_inline_scalar_counts_only_without_an_enum_or_a_parameter
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_schemaless_download_counts_audio_video_and_pdf_only
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_schemaless_json_request_body_counts_only_when_no_media_declares_a_schema
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_schemaless_text_success_counts_without_json_beside_it
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_schemaless_wav_success_counts_audio_wav_alone
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_space_suffixed_status_key_counts_only_a_status_a_space_and_text
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_suffixed_status_key_counts_every_spelling_but_a_status_or_a_range
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_a_titled_inline_container_counts_only_in_a_parameterless_3_0_operation
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_an_empty_schema_success_counts_only_inline_in_3_0
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_contentless_200_with_201_counts_inline_and_referenced_responses
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_event_stream_predicates_count_their_shape_and_not_its_near_misses
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_get_union_member_counts_get_bodies_naming_tagged_union_members
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_plain_string_map_requests_count_through_refs_once_and_reject_near_misses
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_success_selection_dispatches_a_slashless_json_media_key
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_success_selection_prefers_200_and_skips_unusable_media
+tools/surface-census/tests/surface_census_test.py::BodyAndResponseSelectorControls::test_success_selection_reads_only_fern_statuses_in_order
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_a_foreign_virtualenv_is_refused_by_name_rather_than_used
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_a_repo_local_venv_is_preferred_over_anything_on_path
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_an_interpreter_that_cannot_start_names_itself_and_the_fix
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_both_census_recipes_run_under_this_repositorys_interpreter
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_no_python3_at_all_is_a_named_failure_rather_than_a_fall_through
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_started_as_sh_it_runs_its_arguments_under_the_interpreter_and_keeps_their_status
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_started_as_sh_without_bash_on_path_it_names_bash_and_the_fix
+tools/surface-census/tests/surface_census_test.py::CensusInterpreterTests::test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_a_declared_feature_names_its_sources_and_its_declaration_count
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_a_feature_no_registered_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_a_valued_selector_reports_one_member_of_a_closed_set
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_a_vendor_extension_is_reported_under_the_object_that_carries_it
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_every_declaration_site_counts_including_a_reused_yaml_anchor
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_non_ascii_info_title_distinguishes_the_probe_from_its_control
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_the_document_version_is_censused_as_its_major_minor
+tools/surface-census/tests/surface_census_test.py::CensusReportTests::test_the_json_report_carries_the_sources_it_read
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_census_combination_the_list_omits_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_key_set_row_differing_from_the_list_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_key_the_census_does_not_declare_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_list_without_its_rejected_section_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_missing_region_row_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_region_differing_from_the_census_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_region_row_citing_another_selector_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_rejected_candidate_without_a_reason_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_seam_outside_its_vocabulary_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_a_selector_differing_from_the_census_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_an_owner_outside_its_vocabulary_or_not_following_its_seam_is_named
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_every_census_combination_is_a_declared_conjunction_with_its_own_sentence
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_no_golden_row_waits_outside_the_ledger_whatever_its_cell_says
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_the_committed_list_agrees_with_the_census_the_region_rows_and_the_key_set
+tools/surface-census/tests/surface_census_test.py::CombinationListTests::test_the_coverage_headline_counts_the_combinations_apart
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_compact_record_reconciles
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_count_drift_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_cross_source_record_link_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_extra_source_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_indexed_candidate_field_drift_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_malformed_segment_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_missing_indexed_candidate_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_missing_source_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_same_candidate_at_two_revisions_is_retained
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_unscreened_witness_is_refused
+tools/surface-census/tests/surface_census_test.py::CompactWitnessRecordTests::test_witness_segment_names_its_candidate_and_revision
+tools/surface-census/tests/surface_census_test.py::CompletePointerTraversalTests::test_pointer_segments_and_invalid_neighbors_through_census
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_a_cited_proof_settles_a_limitations_row
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_a_gap_row_with_its_compact_search_record_passes
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_a_gap_row_with_neither_half_is_refused_naming_both
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_a_limitations_row_with_no_proof_is_refused_naming_the_missing_half
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_a_measured_byte_comparison_is_not_a_proof_of_non_generation
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_a_proof_its_row_does_not_cite_is_refused
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_an_excluded_or_undeclared_source_is_refused
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_an_exhausted_record_still_owing_candidates_is_refused
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_an_incomplete_record_must_name_every_owing_source
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_an_outcome_outside_the_vocabulary_is_refused
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_an_unsearched_gap_row_passes_only_when_named_not_searched
+tools/surface-census/tests/surface_census_test.py::CompletenessTierTests::test_modern_handwritten_proof_requires_evidence_search_and_matching_cover
+tools/surface-census/tests/surface_census_test.py::ComponentTypeNameSelectorTests::test_component_override_and_property_control
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_a_cover_whose_audiences_are_not_names_is_refused
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_a_cover_with_an_empty_key_or_arm_is_refused
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_a_later_arm_no_setting_free_run_executes_states_no_verdict
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_a_measurement_count_int_cannot_read_is_refused_with_its_fix
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_a_measurement_with_other_columns_is_refused_with_its_fix
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_an_arm_marker_without_its_line_break_is_refused_with_its_fix
+tools/surface-census/tests/surface_census_test.py::ConfigGatedArmVerdictTests::test_only_the_measured_gate_reads_config_gated
+tools/surface-census/tests/surface_census_test.py::ConfigGatedRecordTests::test_a_record_without_each_sources_statement_is_refused
+tools/surface-census/tests/surface_census_test.py::ConfigGatedRecordTests::test_a_record_without_its_measured_gate_is_refused
+tools/surface-census/tests/surface_census_test.py::ConfigGatedRecordTests::test_a_record_without_its_setting_or_code_path_is_refused
+tools/surface-census/tests/surface_census_test.py::ConfigGatedRecordTests::test_a_well_formed_record_is_accepted
+tools/surface-census/tests/surface_census_test.py::ConfigGatedRecordTests::test_each_config_flag_is_the_one_crozier_declares_for_its_field
+tools/surface-census/tests/surface_census_test.py::ConfigGatedRecordTests::test_the_heading_is_the_arm_search_scripts_own
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_a_conjunction_no_selected_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_a_conjunction_reports_one_row_per_source_declaring_it
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_a_misspelling_of_a_conjunction_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_an_any_of_only_document_is_counted_by_its_own_spelling
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_every_conjunction_counts_what_its_own_composition_implies
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_example_value_selectors_and_case_11_distinguish_the_real_readings
+tools/surface-census/tests/surface_census_test.py::ConjunctionCensusTests::test_the_closed_list_is_the_one_this_case_answers_for
+tools/surface-census/tests/surface_census_test.py::CorpusManifestAgreementTests::test_authored_aliases_agree_with_the_real_fetcher
+tools/surface-census/tests/surface_census_test.py::CorpusManifestAgreementTests::test_the_census_registers_exactly_the_rows_the_fetcher_fetches
+tools/surface-census/tests/surface_census_test.py::CorpusManifestAgreementTests::test_the_census_resolves_an_alias_the_way_the_fetcher_does
+tools/surface-census/tests/surface_census_test.py::CountedOpenCombinationTests::test_zero_requires_the_census_and_named_missing_population
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_a_missing_thin_witness_section_refuses_without_writing
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_a_new_single_witness_golden_updates_the_thin_witness_list
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_a_reclassification_requires_restatement_and_then_checks_cleanly
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_an_empty_fixture_backlog_has_no_stale_ranks_and_is_idempotent
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_authored_inventory_rendering_refuses_truncation_and_recovers
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_authored_snapshot_gap_counts_preserve_cells_and_recover
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_byte_matched_residual_attribution_is_accepted
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_changed_narrative_inputs_refuse_without_writing
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_changed_residual_and_witness_populations_reconcile
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_combination_only_restating_rejects_category_drift_and_recovers
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_combination_proof_split_follows_the_reach_ledger_and_the_rows
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_combination_proof_split_moves_each_row_to_the_bucket_its_evidence_names
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_combination_proof_subtotals_follow_their_evidence
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_combination_restating_refuses_a_row_the_region_parser_would_drop
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_feature_and_combination_ledger_populations_are_checked_in_full
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_ledger_population_must_equal_golden_categories
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_malformed_inputs_refuse_without_writing_and_recover
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_missing_measurement_refuses_without_writing
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_native_snapshot_json_restates_the_operation_id_predicate_rows
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_native_snapshot_json_writes_refuses_bad_input_and_recovers
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_output_write_failure_reports_and_recovers
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_residual_keys_must_be_unique_golden_and_have_witnesses
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_shared_location_count_is_derived_and_missing_statement_recovers
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_snapshot_input_and_template_failures_preserve_files_and_recover
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_snapshot_orders_multiple_absent_and_webhook_witnesses_alphabetically
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_snapshot_populates_empty_witness_placeholders_on_a_later_walk
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_snapshot_ranks_truncates_and_counts_paths_absent
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_snapshot_write_denial_is_actionable_and_recovers
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_source_population_changes_are_restated_and_missing_inputs_refuse
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_the_committed_index_is_the_restater_output
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_unrelated_source_measurement_tables_are_preserved
+tools/surface-census/tests/surface_census_test.py::CoverageRestatementTests::test_zero_site_count_still_names_a_source_file
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_a_discriminated_union_selector_no_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_a_misspelling_of_a_discriminated_union_selector_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_each_permitted_overlap_is_counted_by_both_cases
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_each_selector_counts_every_form_of_its_own_branch
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_each_selector_counts_no_document_missing_one_part_of_its_condition
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_each_selector_has_exactly_one_name
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_each_selector_reports_one_row_per_document_declaring_it
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_every_document_the_table_names_was_censused
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_the_condition_is_read_rather_than_the_shape_that_resembles_it
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_the_preserved_const_discriminants_are_the_ones_the_generator_preserves
+tools/surface-census/tests/surface_census_test.py::DiscriminatedUnionSelectorDiscriminationTests::test_the_table_covers_every_selector_this_pass_declared
+tools/surface-census/tests/surface_census_test.py::DocumentContextTests::test_a_document_declaring_no_component_schemas_carries_an_empty_context
+tools/surface-census/tests/surface_census_test.py::DocumentContextTests::test_the_census_reads_no_document_but_the_one_it_is_censusing
+tools/surface-census/tests/surface_census_test.py::DocumentContextTests::test_the_context_is_reachable_from_a_node_outside_components
+tools/surface-census/tests/surface_census_test.py::DocumentContextTests::test_the_context_is_the_documents_own_map_and_its_string_keys
+tools/surface-census/tests/surface_census_test.py::DocumentPathsSnapshotTests::test_every_census_cell_is_the_walks_own_and_the_counts_are_stated
+tools/surface-census/tests/surface_census_test.py::DocumentPathsSnapshotTests::test_every_cited_ledger_key_carries_the_ledgers_verdict
+tools/surface-census/tests/surface_census_test.py::DocumentPathsSnapshotTests::test_extension_tail_joins_and_counts_match_the_registered_source_walk
+tools/surface-census/tests/surface_census_test.py::DocumentPathsSnapshotTests::test_golden_rows_publish_reach_and_gap_rows_publish_sites
+tools/surface-census/tests/surface_census_test.py::DocumentPathsSnapshotTests::test_one_spec_location_is_classified_in_one_region_file
+tools/surface-census/tests/surface_census_test.py::DocumentPathsSnapshotTests::test_the_snapshot_is_the_registry_walk_as_it_stands
+tools/surface-census/tests/surface_census_test.py::EscalationRestatementTests::test_each_note_names_every_candidate_a_namesake_served
+tools/surface-census/tests/surface_census_test.py::EscalationRestatementTests::test_each_note_names_every_candidate_its_key_still_owes
+tools/surface-census/tests/surface_census_test.py::EscalationRestatementTests::test_the_escalation_table_counts_what_each_key_owes
+tools/surface-census/tests/surface_census_test.py::EscalationRestatementTests::test_the_sentences_summing_the_outcomes_add_up
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_each_enum_member_branch_has_a_positive_and_decoy
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_each_example_kind_has_a_positive_and_decoy
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_explicit_null_falls_through_to_first_examples_member
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_named_example_object_map_selects_its_first_value
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_new_value_rows_cite_the_offline_census_own_counts
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_scalar_examples_is_one_member_list
+tools/surface-census/tests/surface_census_test.py::ExampleEnumAndSchemaNameSelectorControls::test_schema_name_sanitization_has_a_positive_and_decoy
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_candidate_marked_unreaching_counts_only_with_the_stamped_probe_it_cites
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_candidate_or_screen_outcome_its_evidence_does_not_carry_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_candidate_passing_every_screen_is_a_witness_unless_declined_as_a_test_fixture
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_candidate_with_no_census_confirmation_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_census_digest_disagreeing_with_acquisition_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_declaring_candidate_screened_on_fewer_than_three_screens_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_duplicate_compact_census_document_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_fabricated_path_swapped_for_a_real_one_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_matched_census_row_without_its_positive_record_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_named_ledgers_shards_are_accounted_for_and_a_strays_are_not
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_positive_record_without_its_census_match_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_rate_limit_cap_recorded_unanswered_is_refused_at_any_outcome
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_record_claiming_a_source_offers_less_than_the_table_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_record_dropping_a_declared_source_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_record_meeting_all_five_conditions_is_accepted
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_record_reading_a_declared_source_unanswered_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_table_cell_its_evidence_does_not_carry_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_walk_at_a_mutable_ref_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_walked_document_absent_from_compact_census_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_a_walked_document_with_no_census_output_or_reason_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_an_undeclared_source_counted_as_answered_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_an_undeclared_source_owes_nothing_outside_an_exhausted_record
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_candidate_failures_remain_outstanding_without_becoming_absence
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_each_evidence_file_is_read_and_scanned_a_bounded_number_of_times_however_many_candidates
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_evidence_the_table_does_not_account_for_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_one_query_phrasing_for_a_text_query_source_is_refused
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_queries_never_stand_in_for_an_unwalked_tree
+tools/surface-census/tests/surface_census_test.py::ExhaustiveSearchRecordTests::test_two_phrasings_that_are_the_same_string_are_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_bounded_arm_search_refuses_absent_records_and_unnamed_candidates
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_bounded_feature_search_names_its_candidates
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_combination_cover_with_nothing_to_measure_at_is_refused_not_skipped
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_combination_naming_a_whole_function_or_none_is_refused_by_key
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_cooccurrence_row_and_its_audit_row_are_held_both_ways
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_fixture_gap_named_with_its_search_state_passes_and_unlisted_ones_fail
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_fixture_gap_named_without_the_not_searched_reason_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_fixture_gap_row_with_no_witness_or_cover_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_gap_combination_row_missing_from_its_named_table_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_golden_combination_whose_witnesses_miss_its_interaction_branch_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_handwritten_audit_row_is_refused_when_the_certified_pins_are_unreadable
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_handwritten_audit_row_whose_document_no_longer_byte_matches_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_handwritten_audit_row_whose_fixture_does_not_byte_match_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_handwritten_audit_row_whose_fixture_misses_a_named_handler_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_handwritten_combination_whose_fixture_misses_its_interaction_site_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_handwritten_cooccurrence_audit_row_on_its_byte_matched_fixture_passes
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_named_combination_that_is_not_a_gap_row_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_named_combination_with_neither_admitted_reason_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_named_gap_is_an_uncovered_arm_with_an_incomplete_screen
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_named_gap_over_a_search_reading_exhausted_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_named_gap_with_no_search_must_say_it_was_not_searched
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_refused_document_record_without_its_committed_probe_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_user_ruling_is_admitted_in_every_named_table_only_when_well_formed
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_witness_blocked_cover_citing_a_record_that_does_not_name_its_key_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_witness_blocked_cover_is_admitted_only_on_a_combination_citing_its_blocked_declarers
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_witness_blocked_cover_on_a_feature_key_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_witness_blocked_reason_without_its_record_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_a_witness_blocked_record_naming_a_non_declarer_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_audit_row_whose_handlers_cell_breaks_its_grammar_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_audit_row_whose_witness_is_no_golden_only_declarer_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_interaction_branch_unreached_reason_is_admitted_only_as_measured
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_unevaluated_class_with_evaluated_documents_is_decided
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_unevaluated_refusal_class_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_unreached_arm_losing_its_hand_written_cover_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_an_unreached_arm_losing_its_refused_document_record_is_refused
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_bounded_search_accepts_windows_paths_and_crlf_records
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_missing_sdk_evidence_keeps_the_unevaluated_class_open
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_one_undecided_document_keeps_the_unevaluated_class_open
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_output_insensitive_feature_is_decided_but_changed_comparison_is_rejected
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_restating_the_combinations_refuses_evidence_that_breaks_its_contract
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_the_committed_arms_are_covered_and_no_longer_named
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_the_committed_ledgers_are_in_their_finished_state
+tools/surface-census/tests/surface_census_test.py::FinishedStateGateTests::test_whole_key_decisions_reach_the_gate_and_the_restated_headline
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_colon_inside_a_flow_sequence_scalar_is_kept_and_a_pair_is_built
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_flow_collection_across_lines_reads_its_quoted_scalars_and_brackets
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_flow_collection_that_cannot_advance_is_a_parse_error_not_a_hang
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_flow_collection_used_as_a_key_is_a_parse_error_not_a_crash
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_flow_mapping_parses_to_its_entries_not_a_list_of_its_keys
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_json_document_in_a_yaml_file_loads_in_linear_time
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_a_quote_inside_a_flow_plain_scalar_and_a_bare_flow_key_read_as_yaml_does
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_the_openbanking_client_assertion_enum_reads_as_its_one_urn
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_the_recursive_callback_construct_terminates_with_its_count
+tools/surface-census/tests/surface_census_test.py::FlowCollectionRegressionTests::test_the_whole_vendored_corpus_censuses_within_the_timeout
+tools/surface-census/tests/surface_census_test.py::FreeMapKeyWalkTests::test_an_unquoted_status_code_declares_what_the_quoted_spelling_declares
+tools/surface-census/tests/surface_census_test.py::FreeMapKeyWalkTests::test_the_key_itself_is_still_a_name_in_either_spelling
+tools/surface-census/tests/surface_census_test.py::FreeMapKeyWalkTests::test_the_publisher_source_that_writes_unquoted_status_codes_is_read
+tools/surface-census/tests/surface_census_test.py::GoldenSourcePopulationTests::test_a_corpus_row_is_a_source_only_when_a_golden_test_compares_its_golden
+tools/surface-census/tests/surface_census_test.py::GoldenSourcePopulationTests::test_the_reach_join_reads_the_census_registrations
+tools/surface-census/tests/surface_census_test.py::GoldenSourcePopulationTests::test_the_real_population_is_exactly_the_compared_goldens
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_bodies_media_ledger_citations_match_the_keyed_verdicts
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_each_region_file_repeats_the_index_s_boundary_verbatim
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_every_case_carries_one_declared_selector_or_one_declared_hole
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_every_case_of_the_table_is_well_formed
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_every_conjunction_is_spelled_in_its_one_canonical_order
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_function_body_ignores_literal_and_comment_braces
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_no_member_only_reading_is_also_a_declared_selector
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_finds_committed_document_current
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_rejects_malformed_documents_without_writing
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_renders_small_teen_and_exact_ten_counts
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_repairs_counts_and_context_list
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_repairs_only_grammar_and_is_idempotent
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_reports_invalid_census_configuration
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_reports_missing_and_non_utf8_inputs
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_predicate_grammar_regenerator_reports_write_failure
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_case_analysis_covers_the_six_blind_functions_of_the_rule
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_case_analysis_states_the_totals_its_own_rows_add_up_to
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_case_table_and_the_case_analysis_carry_the_same_cases
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_case_table_is_a_reading_of_the_functions_it_names
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_anchor_kinds_are_the_ones_that_head_a_selector
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_conjunction_selectors_are_the_ones_the_script_declares
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_enumeration_headers_are_the_gated_ones
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_example_kinds_are_the_closed_valued_family
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_extending_kinds_are_the_ones_that_extend_a_selector
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_join_command_still_finds_the_limitations_keys
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_member_only_readings_are_the_ones_the_script_declares
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_node_local_split_partitions_the_predicate_list
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_predicate_selectors_are_the_ones_the_script_declares
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_documented_valued_fields_are_the_ones_that_emit_a_value
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_join_command_is_skipped_not_failed_where_grep_lacks_pcre
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_region_files_carry_the_agreed_table_header
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_schema_shaped_reading_keeps_the_removed_helpers_truth_table
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_stated_corpus_sizes_are_the_measured_ones
+tools/surface-census/tests/surface_census_test.py::GrammarContractTests::test_the_verdict_vocabulary_is_the_one_fern_limitations_defines
+tools/surface-census/tests/surface_census_test.py::HandedOffReconciliationTests::test_document_evidence_and_admitted_index_agree
+tools/surface-census/tests/surface_census_test.py::HandedOffReconciliationTests::test_follow_up_ticket_area_validates_sources_and_rejects_drift
+tools/surface-census/tests/surface_census_test.py::HandedOffReconciliationTests::test_reconciles_files_and_rejects_each_triage_drift
+tools/surface-census/tests/surface_census_test.py::HandedOffReconciliationTests::test_refusals_require_matching_nonzero_modes_and_a_decided_class
+tools/surface-census/tests/surface_census_test.py::HandedOffRepositoryRecordTests::test_committed_handed_off_records_reconcile
+tools/surface-census/tests/surface_census_test.py::HandedOffRepositoryRecordTests::test_readme_outcome_counts_are_the_document_measurement
+tools/surface-census/tests/surface_census_test.py::HandedOffRepositoryRecordTests::test_removing_a_committed_cause_is_rejected
+tools/surface-census/tests/surface_census_test.py::HandwrittenE2eCoversTests::test_committed_multi_file_covers_are_accepted
+tools/surface-census/tests/surface_census_test.py::HandwrittenE2eCoversTests::test_completeness_reads_the_committed_multi_file_covers
+tools/surface-census/tests/surface_census_test.py::HandwrittenE2eCoversTests::test_every_missing_piece_is_refused
+tools/surface-census/tests/surface_census_test.py::HandwrittenReachReaderContractTests::test_the_typed_adapter_tracks_the_authoritative_readers_fields
+tools/surface-census/tests/surface_census_test.py::LegacyLocaleEncodingTests::test_every_entry_point_writes_its_diagnostics_as_utf8
+tools/surface-census/tests/surface_census_test.py::LegacyLocaleEncodingTests::test_the_proof_index_summary_writes_utf8
+tools/surface-census/tests/surface_census_test.py::MalformedRequiredMemberTests::test_mapping_members_are_skipped_and_required_names_are_preserved
+tools/surface-census/tests/surface_census_test.py::ModelApiPropertySelectorTests::test_construct_property_and_adjacent_name
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_a_hyphenated_id_strips_its_tag_only_when_its_words_are_the_tags
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_an_extension_named_method_is_not_an_operation_id_method
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_an_untyped_const_tag_leaves_an_inline_union_undiscriminated
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_an_untyped_enum_tag_leaves_a_one_of_undiscriminated
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_each_branch_counts_its_document_and_not_its_near_miss
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_tag_location_decides_a_groupless_ids_digit_leading_method
+tools/surface-census/tests/surface_census_test.py::NamingAndExampleBranchDiscriminationTests::test_the_cases_are_exactly_the_family
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_a_path_template_normalizes_only_its_expressions
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_an_inferred_tag_is_read_off_a_composed_members_last_alternative
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_deburr_exceptions_match_the_rust_table
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_enum_port_reproduces_croziers_own_member_expectations
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_the_method_name_port_reproduces_croziers_own_expectations
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_the_port_reproduces_croziers_own_class_name_expectations
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_the_port_reproduces_croziers_own_field_name_expectations
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_the_port_spells_a_whole_leading_number_as_crozier_does
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_the_reserved_set_is_croziers_own
+tools/surface-census/tests/surface_census_test.py::NamingMirrorTests::test_the_success_status_port_matches_the_rust_constant
+tools/surface-census/tests/surface_census_test.py::NamingWireCensusTests::test_a_measured_probe_tree_and_its_literals_overlay_name_the_probe_document
+tools/surface-census/tests/surface_census_test.py::NamingWireCensusTests::test_camel_tag_shape_excludes_upper_prefix_and_lower_tag
+tools/surface-census/tests/surface_census_test.py::NamingWireCensusTests::test_measurement_name_ending_in_literals_keeps_its_exact_source
+tools/surface-census/tests/surface_census_test.py::NamingWireCensusTests::test_multipart_required_and_malformed_required_lists_are_not_optional
+tools/surface-census/tests/surface_census_test.py::NamingWireCensusTests::test_owned_shapes_and_adjacent_controls
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_a_case_added_to_the_table_moves_the_residual_it_is_in
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_a_misspelling_of_a_negation_selector_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_a_negation_selector_no_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_a_residual_inside_a_gate_counts_no_node_the_gate_excludes
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_a_selector_of_negated_members_alone_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_annotated_ref_residual_leaves_inheritance_union_targets_to_case_3c
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_each_permitted_overlap_is_counted_by_both_cases
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_each_selector_counts_its_own_node_and_not_its_near_miss
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_property_residual_counts_closed_objects_without_properties
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_the_entries_carrying_no_overlap_are_the_three_predicates
+tools/surface-census/tests/surface_census_test.py::NegationSelectorDiscriminationTests::test_the_table_covers_every_selector_this_pass_declared
+tools/surface-census/tests/surface_census_test.py::NestedCompositionSelectorDiscriminationTests::test_a_member_declaring_all_of_beside_the_composition_is_counted_by_case_9_too
+tools/surface-census/tests/surface_census_test.py::NestedCompositionSelectorDiscriminationTests::test_each_selector_counts_its_own_spelling_and_not_the_other
+tools/surface-census/tests/surface_census_test.py::NestedCompositionSelectorDiscriminationTests::test_the_residual_no_longer_counts_a_member_this_arm_claims
+tools/surface-census/tests/surface_census_test.py::NestedCompositionSelectorDiscriminationTests::test_the_table_covers_every_selector_this_arm_declared
+tools/surface-census/tests/surface_census_test.py::NodeLocalSelectorDiscriminationTests::test_a_misspelling_of_a_node_local_selector_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::NodeLocalSelectorDiscriminationTests::test_a_node_local_selector_no_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::NodeLocalSelectorDiscriminationTests::test_each_permitted_overlap_is_counted_by_both_cases
+tools/surface-census/tests/surface_census_test.py::NodeLocalSelectorDiscriminationTests::test_each_selector_counts_its_own_node_and_not_its_near_miss
+tools/surface-census/tests/surface_census_test.py::NodeLocalSelectorDiscriminationTests::test_the_entries_carrying_no_overlap_are_the_ones_no_case_can_claim
+tools/surface-census/tests/surface_census_test.py::NodeLocalSelectorDiscriminationTests::test_the_table_covers_every_selector_this_node_declared
+tools/surface-census/tests/surface_census_test.py::ObjectModelWalkTests::test_a_reference_is_counted_once_and_not_followed
+tools/surface-census/tests/surface_census_test.py::ObjectModelWalkTests::test_the_walk_disagrees_with_a_naive_text_match_on_a_property_name
+tools/surface-census/tests/surface_census_test.py::ObjectModelWalkTests::test_the_walk_separates_three_different_meanings_of_one_key
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_capped_source_spelled_as_an_outstanding_acquisition_still_licenses_nothing
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_rate_limit_cap_recorded_as_unanswered_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_promised_convertible_with_no_destination_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_that_does_not_say_it_stays_convertible_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_that_meets_the_route_is_accepted
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_whose_evidence_names_no_outstanding_source_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_whose_search_found_a_usable_witness_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_whose_search_marks_no_source_unanswered_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_with_no_probe_recorded_in_the_ledger_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_a_row_with_no_recorded_search_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_an_outstanding_source_too_vague_to_act_on_is_refused
+tools/surface-census/tests/surface_census_test.py::OpenSearchProbeRuleTests::test_each_way_of_naming_what_the_source_did_instead_is_accepted
+tools/surface-census/tests/surface_census_test.py::OperationContextCompositionTests::test_anchor_index_preserves_nested_fields_and_negative_only_groups
+tools/surface-census/tests/surface_census_test.py::OperationContextCompositionTests::test_anonymous_security_alternative_counts_and_required_control_does_not
+tools/surface-census/tests/surface_census_test.py::OperationContextCompositionTests::test_authored_documents_count_only_the_operations_the_composition_names
+tools/surface-census/tests/surface_census_test.py::OperationContextCompositionTests::test_every_context_reading_is_a_member_and_a_misspelling_is_named
+tools/surface-census/tests/surface_census_test.py::OperationContextCompositionTests::test_nullable_flag_and_null_type_array_count_and_nonnullable_controls_do_not
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_arm_context_is_rejected_only_when_that_arm_is_proven
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_each_refusal_reaches_the_cli
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_generated_file_motion_is_rejected
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_key_claimed_proven_is_rejected
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_malformed_covers_are_reported_not_raised
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_missing_comparison_is_rejected
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_narrow_context_of_a_proven_key_is_rejected
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_reach_ledger_without_sites_uses_the_canonical_sentinel
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_the_documented_contract_is_the_readers
+tools/surface-census/tests/surface_census_test.py::OutputInsensitiveTests::test_unchanged_complete_comparisons_are_decided
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_blank_description_counts_only_over_a_partly_optional_parameterless_body
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_body_prefixed_body_counts_only_posted_once
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_described_inline_scalar_counts_only_without_an_enum_or_a_parameter
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_schemaless_download_counts_audio_video_and_pdf_only
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_schemaless_json_request_body_counts_only_when_no_media_declares_a_schema
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_schemaless_text_success_counts_without_json_beside_it
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_schemaless_wav_success_counts_audio_wav_alone
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_space_suffixed_status_key_counts_only_a_status_a_space_and_text
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_suffixed_status_key_counts_every_spelling_but_a_status_or_a_range
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_a_titled_inline_container_counts_only_in_a_parameterless_3_0_operation
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_an_empty_schema_success_counts_only_inline_in_3_0
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_contentless_200_with_201_counts_inline_and_referenced_responses
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_date_header_promotion_requires_frequency_and_unowned_header
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_event_stream_predicates_count_their_shape_and_not_its_near_misses
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_get_union_member_counts_get_bodies_naming_tagged_union_members
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_parameter_shape_predicates_select_only_the_complete_trigger
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_path_order_predicate_requires_31_and_operation_only_untitled_parameters
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_plain_string_map_requests_count_through_refs_once_and_reject_near_misses
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_success_selection_dispatches_a_slashless_json_media_key
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_success_selection_prefers_200_and_skips_unusable_media
+tools/surface-census/tests/surface_census_test.py::ParameterExtensionShapeSelectors::test_success_selection_reads_only_fern_statuses_in_order
+tools/surface-census/tests/surface_census_test.py::ParityProofIndexTests::test_missing_departure_and_unrecorded_shape_are_rejected
+tools/surface-census/tests/surface_census_test.py::ParityProofIndexTests::test_the_proof_index_matches_the_departure_catalog_and_real_gate_tests
+tools/surface-census/tests/surface_census_test.py::PinnedTreeWalkTests::test_a_declaration_reachable_only_across_a_document_boundary_is_counted
+tools/surface-census/tests/surface_census_test.py::PinnedTreeWalkTests::test_a_reference_cannot_pull_in_an_unregistered_sibling
+tools/surface-census/tests/surface_census_test.py::PinnedTreeWalkTests::test_a_sibling_reference_back_into_the_root_does_not_recount_it
+tools/surface-census/tests/surface_census_test.py::PinnedTreeWalkTests::test_relative_path_item_reference_counts_at_its_writing_site
+tools/surface-census/tests/surface_census_test.py::PinnedTreeWalkTests::test_two_references_to_one_declaration_count_it_once
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_a_misspelling_of_a_pointer_form_selector_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_a_pointer_form_selector_no_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_a_pointer_repeating_a_segment_kind_counts_once_for_that_node
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_each_permitted_overlap_is_counted_by_both_cases
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_each_selector_counts_its_own_node_and_not_its_near_miss
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_no_vendored_source_declares_a_pointer_form_selector
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_one_source_writing_a_foreign_pointer_and_an_undeclared_head
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_the_table_covers_every_pointer_form_selector
+tools/surface-census/tests/surface_census_test.py::PointerFormSelectorDiscriminationTests::test_the_two_entries_carrying_no_overlap_are_the_two_halves_of_one_arm
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_a_misspelling_of_a_pointer_walk_selector_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_a_pointer_the_generator_never_walks_is_counted_by_nothing
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_a_pointer_walk_selector_no_source_declares_is_reported_as_absent
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_each_permitted_overlap_is_counted_by_both_cases
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_each_selector_counts_every_form_of_its_own_branch
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_each_selector_counts_no_document_missing_one_part_of_its_condition
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_each_selector_has_exactly_one_name
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_each_selector_reports_one_row_per_document_declaring_it
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_every_document_the_table_names_was_censused
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_no_member_only_reading_is_ever_recorded_as_a_selector
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_the_table_covers_every_selector_this_pass_declared
+tools/surface-census/tests/surface_census_test.py::PointerWalkSelectorDiscriminationTests::test_the_walk_reads_the_pointer_against_the_document_and_not_its_text
+tools/surface-census/tests/surface_census_test.py::PortableCensusInterpreterTests::test_a_system_python_without_the_python3_spelling_is_usable
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_callback_expression_is_not_a_templated_path_key
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_component_name_collision_counts_every_colliding_key
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_document_declaring_none_of_them_reports_each_as_absent
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_duplicated_operation_id_counts_every_operation_that_writes_it
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_link_objects_operation_id_is_not_an_operations
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_multi_tag_operation_is_counted_once_per_operation
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_normalized_path_collision_counts_every_colliding_key
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_a_templated_path_key_is_read_apart_from_a_multiply_templated_one
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_each_predicate_selector_is_accepted_by_name
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_the_class_name_normalization_is_croziers_own
+tools/surface-census/tests/surface_census_test.py::PredicateSelectorTests::test_the_path_normalization_is_croziers_own
+tools/surface-census/tests/surface_census_test.py::PyYamlOracleTests::test_explicit_keys_match_pyyaml_wherever_pyyaml_reads_them
+tools/surface-census/tests/surface_census_test.py::PyYamlOracleTests::test_the_census_matches_pyyaml_on_every_vendored_document
+tools/surface-census/tests/surface_census_test.py::PyYamlOracleTests::test_the_pinned_stripe_description_counts_as_pyyaml_counts_it
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_a_gap_row_the_frozen_contract_does_not_own_records_its_search_compactly
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_an_entry_search_is_refused_for_a_missing_source_or_an_exhausted_reading
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_census_refused_documents_are_counted_by_name_apart_from_outstanding_items
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_committed_schema_proofs_are_cited_by_the_fern_ledger
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_committed_security_media_and_extension_citations_track_manifest
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_contract_a_restatements_agree_with_the_gate
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_contract_b_restatements_agree_with_the_index
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_criterion_one_is_the_region_rows_own_crozier_sites_count
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_criterion_three_counts_the_artifact_kinds_its_own_cell_lists
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_dynamic_schema_probe_names_share_the_measured_document
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_each_ranked_row_reads_its_blind_spot_count_off_the_join_table
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_blocked_witness_probe_row_meets_the_amended_settlement_rule
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_branch_predicate_carries_one_row_in_the_region_that_owns_it
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_branch_predicate_rows_evidence_is_the_census_own_output
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_conjunction_row_names_the_branch_it_is_about
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_conjunction_row_rests_on_a_source_carrying_a_golden
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_conjunction_rows_evidence_is_the_census_own_output
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_declared_conjunction_carries_exactly_one_classified_row
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_demoted_row_is_a_gap_naming_its_verdict_and_its_need
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_enumerated_feature_is_classified_exactly_once
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_exhaustive_search_record_in_the_tree_meets_contract_b
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_golden_branch_predicate_row_says_it_is_not_golden_exhausted
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_golden_conjunction_row_says_it_is_not_golden_exhausted
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_golden_row_carries_the_reach_cell_its_ledger_row_renders
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_golden_row_resting_on_one_document_is_reported
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_golden_row_resting_only_on_residual_goldens_is_attributed
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_limitations_row_records_the_one_proof_it_owes
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_linked_arm_search_names_the_six_sources_and_reconciles
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_non_golden_row_carries_a_proof_or_a_searched_gap
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_open_search_probe_row_meets_the_amended_settlement_rule
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_probe_row_is_one_of_two_kinds_and_cites_no_census_selector
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_region_row_parser_reads_the_documented_categories
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_unreached_arm_is_named_with_its_search_verdict
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_every_witness_supply_probe_names_its_sources_and_their_queries
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_fern_ledger_golden_annotations_track_their_region_rows
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_no_recorded_search_calls_an_unanswered_source_evidence_of_absence
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_no_recorded_search_reads_a_rate_limit_cap_as_unanswered
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_reach_reader_rejects_missing_and_extra_features_and_combinations
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_blind_spot_reader_includes_nested_module_paths
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_blind_spot_rows_count_the_unreached_arms_in_their_file
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_classification_table_is_the_region_cells_own
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_documented_witness_supply_derivation_is_the_region_files_own
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_evidence_kinds_are_the_indexs_own
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_gap_count_paragraph_recomputes_its_own_numbers
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_handwritten_gate_reads_the_gated_verdict_vocabularies
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_headline_totals_are_the_region_files_own
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_index_states_one_settlement_rule_and_names_what_it_amended
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_join_table_is_the_coverage_reports_own_blind_spot_block
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_join_table_names_the_ranked_gaps_that_point_at_each_file
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_ledger_join_counts_the_keys_it_reports
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_ledger_measures_exactly_the_declared_sites_and_every_site_resolves
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_new_outcome_is_defined_once_and_only_deferred_to
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_outstanding_list_itemises_every_arm_searchs_outstanding_count
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_owned_table_states_each_arm_searchs_outstanding_items_as_its_record_does
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_probe_backlog_is_every_probe_gap_and_nothing_else
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_probe_backlog_splits_by_the_kind_each_region_row_declares
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_prose_counts_are_the_ledgers_counts
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_prose_totals_are_the_summary_tables_own_column_sums
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_ranked_backlog_counts_its_own_populations
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_ranked_backlog_is_every_fixture_gap_in_rubric_order
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_ranked_backlog_publishes_its_own_median_blind_spot_count
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_ranked_table_names_each_keys_owning_region
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_reach_ledger_is_every_golden_row_in_ranking_order
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_reach_ranking_is_every_row_with_an_unreached_site_and_its_boundary
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_reconciliation_counts_the_rows_it_narrates
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_report_is_in_its_finished_state
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_rule_records_why_the_largest_unread_source_is_unread
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_rule_states_route_three_and_what_separates_it_from_the_others
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_rule_states_the_second_amendment
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_source_capability_table_is_complete_and_cited
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_stated_registered_and_golden_source_counts_are_measured
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_summary_table_is_the_six_region_files_own_row_counts
+tools/surface-census/tests/surface_census_test.py::RankedBacklogTests::test_the_two_largest_unranked_files_sum_as_the_join_narrates
+tools/surface-census/tests/surface_census_test.py::RecipeWiringTests::test_the_gate_runs_this_file_offline
+tools/surface-census/tests/surface_census_test.py::RecipeWiringTests::test_the_unscoped_recipe_censuses_committed_sources
+tools/surface-census/tests/surface_census_test.py::RequestBodyReadingTests::test_a_misspelled_combination_is_refused_by_name
+tools/surface-census/tests/surface_census_test.py::RequestBodyReadingTests::test_a_reading_alone_is_refused_as_a_selector_by_name
+tools/surface-census/tests/surface_census_test.py::RequestBodyReadingTests::test_each_combination_counts_the_operations_its_composition_names
+tools/surface-census/tests/surface_census_test.py::RequestBodyReadingTests::test_no_reading_is_ever_recorded_on_its_own
+tools/surface-census/tests/surface_census_test.py::RequestBodyReadingTests::test_the_cases_cover_every_combination_using_a_reading
+tools/surface-census/tests/surface_census_test.py::ResidualHandwrittenProofTests::test_a_malformed_paired_removal_is_refused_and_admits_nothing
+tools/surface-census/tests/surface_census_test.py::ResidualHandwrittenProofTests::test_an_output_insensitive_golden_declarer_leaves_the_supplement_and_its_cover_admissible
+tools/surface-census/tests/surface_census_test.py::ResidualHandwrittenProofTests::test_an_output_sensitive_or_unmeasured_golden_declarer_supersedes_the_supplement
+tools/surface-census/tests/surface_census_test.py::ResidualHandwrittenProofTests::test_broken_supplements_fail_at_their_boundary
+tools/surface-census/tests/surface_census_test.py::ResidualHandwrittenProofTests::test_committed_supplement_is_admitted
+tools/surface-census/tests/surface_census_test.py::ResidualWitnessKeyProducerTests::test_residual_inputs_are_derived_or_refused_with_recovery
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_a_conjunction_using_the_operator_has_exactly_one_name
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_a_cycle_of_references_terminates_and_is_counted_once_per_node
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_a_document_whose_reference_resolves_to_nothing_is_completed_over
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_a_second_resolving_descent_is_the_bound_rather_than_a_longer_chain
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_an_undeclared_spelling_of_the_operator_is_still_refused
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_the_operator_performs_the_last_segment_lookup_and_not_the_pointer_walk
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_the_operator_reads_the_target_and_not_the_referencing_node
+tools/surface-census/tests/surface_census_test.py::ResolvingDescentTests::test_the_written_descent_still_reads_the_node_it_descends_into
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_cell_outside_its_vocabulary_or_with_a_blank_member_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_failing_check_reports_on_stderr_and_exits_one
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_generate_class_must_agree_with_its_evaluation_evidence
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_generate_class_with_its_established_evaluation_reconciles
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_golden_from_another_fern_pair_or_setting_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_golden_removed_or_dropped_from_the_gate_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_malformed_diff_is_refused
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_missing_test_source_anchor_or_evidence_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_proof_of_the_wrong_kind_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_refusal_outcome_must_agree_with_its_registry_class
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_refusal_test_that_does_not_reach_its_probe_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_refuse_class_whose_note_decides_otherwise_is_refused_through_the_cli
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_registered_witness_names_its_corpus_row_and_no_residual
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_a_test_that_does_not_compare_the_golden_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_an_outcome_the_ledger_does_not_support_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_an_unknown_enum_type_fails
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_diff_hunks_count_unchanged_runs_on_both_sides
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_diff_hunks_read_the_unexplained_original_line_note
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_each_open_residual_names_the_parity_node_closing_it
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_every_differing_witness_hunk_is_attributed_exactly_once
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_every_malformed_record_is_rejected
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_every_owner_has_shapes_and_every_kind_is_read
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_malformed_catalogs_fail_rather_than_pass_empty
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_repository_paths_are_spelled_with_slashes_under_windows_path_semantics
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_rows_with_unknown_vocabulary_fail
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_sources_are_exactly_the_goldens_documents
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_summary_refuses_a_missing_table
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_the_committed_index_and_witnesses_reconcile
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_the_coverage_report_quotes_the_summary_verbatim
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_the_hunks_command_prints_what_residuals_cite
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_the_index_holds_exactly_the_plan
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_the_open_cell_is_exactly_the_shapes_committed_residuals
+tools/surface-census/tests/surface_census_test.py::ScenarioProofIndexTests::test_unreadable_or_unparsable_catalogs_fail
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_all_caps_tag_split_prefix_counts_only_an_all_caps_tag
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_an_unrequired_tag_discriminates_only_reference_members
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_blank_description_inline_response_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_clients_extensions_sites_have_a_positive_and_a_decoy_each
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_closed_empty_object_property_counts_inline_body_properties
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_complex_module_name_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_cycle_predicates_count_models_and_not_their_near_misses
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_described_object_ref_union_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_discriminated_variant_required_nullable_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_empty_properties_single_allof_ref_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_hyphenated_tag_method_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_inline_type_names_are_counted_wherever_a_property_schema_stands
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_misspelled_scalar_counts_five_type_names_and_not_their_neighbours
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_nullable_single_allof_ref_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_oneof_duplicate_members_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_request_body_predicates_skip_content_that_is_no_mapping
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_same_primitive_union_counts_a_component_and_not_its_near_misses
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_same_primitive_union_honors_datetime_override_and_canonical_precedence
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_sdk_group_name_predicates_read_both_spellings
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_sdk_method_name_sequence_reads_the_winning_spelling
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_security_scheme_reference_counts_one_per_referencing_entry
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_subset_header_string_default_counts_only_a_promotable_subset_header
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_tag_spelled_split_prefix_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_the_clients_extensions_walk_contract_agrees_with_the_shared_keys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_the_union_port_reads_the_repaired_discriminant_rules
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_two_string_enum_ref_union_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_untagged_list_or_set_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::ShapePredicateSelectorControls::test_variant_own_fields_before_base_has_a_positive_and_decoys
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_a_bad_invocation_is_refused
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_a_fixtures_root_without_the_corpus_manifest_is_refused
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_a_generated_expected_tree_is_never_read
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_a_missing_committed_source_is_a_hard_failure_not_a_silent_zero
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_a_selector_the_grammar_cannot_emit_is_refused
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_a_source_whose_root_is_not_a_mapping_is_refused
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_an_unknown_fixture_name_is_refused_with_what_the_names_are
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_an_unreadable_document_names_the_file_and_the_line
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_every_selector_the_census_emits_is_one_the_grammar_accepts
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_it_reads_every_vendored_source_and_only_its_own_document
+tools/surface-census/tests/surface_census_test.py::SourceSelectionTests::test_source_selection_flags_keep_their_legacy_aliases
+tools/surface-census/tests/surface_census_test.py::WindowsRuntimeStagingTests::test_a_venv_launcher_layout_stages_the_base_installations_standard_library
+tools/surface-census/tests/surface_census_test.py::WithdrawnWitnessSelectorTests::test_parameter_example_overrides_schema_timestamp
+tools/surface-census/tests/surface_census_test.py::WithdrawnWitnessSelectorTests::test_pointer_copies_and_inferred_type_tags
+tools/surface-census/tests/surface_census_test.py::WithdrawnWitnessSelectorTests::test_timestamp_style_requiredness_location_and_format
+tools/surface-census/tests/surface_census_test.py::WithdrawnWitnessSelectorTests::test_union_tag_conditions_are_independent
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_a_block_sequence_may_sit_at_its_key_s_own_indentation
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_a_hash_inside_a_quoted_scalar_is_not_a_comment
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_a_json_source_is_read_as_json
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_a_quoted_scalar_spans_lines_without_losing_its_escapes
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_a_scalar_may_be_written_under_its_key_and_wrap
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_an_escaped_quote_does_not_end_the_scalar_a_comment_could_follow
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_an_explicit_key_is_a_name_among_the_implicit_ones
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_anchors_aliases_and_merge_keys
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_block_scalars_fold_chomp_and_keep
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_every_explicit_key_sample_reads_on_the_standard_path
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_explicit_keys_read_as_the_pinned_full_parser_reads_them
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_flow_collections_and_url_keys
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_the_census_refuses_a_malformed_source_naming_it_and_its_line
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_the_core_schema_resolves_plain_scalars
+tools/surface-census/tests/surface_census_test.py::YamlSubsetTests::test_unsupported_constructs_are_refused_by_name_and_line

@@ -47,7 +47,7 @@ from dataclasses import asdict, dataclass
 from dataclasses import fields as dataclass_fields
 from enum import StrEnum
 from pathlib import Path, PureWindowsPath
-from types import ModuleType
+from types import CodeType, ModuleType
 from typing import Any, ClassVar, NamedTuple, ParamSpec, Protocol
 from unittest import mock
 
@@ -736,14 +736,45 @@ FROZEN_SEARCH_CONTRACT = REPO / "docs" / "openapi-surface" / "witness-search-red
 HANDWRITTEN = REPO / "docs" / "openapi-surface" / "handwritten"
 
 
-def load_script(path: str):
-    """A tooling module by repository-relative path, as the scripts load one another."""
+@functools.cache
+def _script_code(path: Path, source: bytes) -> CodeType:
+    """`source` compiled, by those bytes: never bytecode a file's size and timestamp would pass as current."""
+    return compile(source, str(path), "exec", dont_inherit=True)
+
+
+def _executed_script(path: str, source: bytes) -> Any:
+    """A new module holding exactly `source`, the bytes of the tooling script at repository-relative `path`."""
     name = Path(path).name
-    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", REPO / path)
-    assert spec and spec.loader
+    location = REPO / path
+    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", location)
+    assert spec
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    exec(_script_code(location, source), module.__dict__)  # noqa: S102 -- the repository's own script, as an import would run it
+    return module
+
+
+def fresh_script(path: str) -> Any:
+    """A tooling module executed anew: a case that rebinds its globals owns this copy."""
+    return _executed_script(path, (REPO / path).read_bytes())
+
+
+_LOADED_SCRIPTS: dict[tuple[str, bytes], ModuleType] = {}
+
+
+def load_script(path: str):
+    """A tooling module by repository-relative path, as the scripts load one another.
+
+    Executed once per file content, so the memos a script keeps by content (the
+    site resolver's above all) outlive the call; no case rebinds this copy's
+    globals, and one that must takes `fresh_script`. The bytes that key the memo
+    are the bytes executed.
+    """
+    source = (REPO / path).read_bytes()
+    key = (path, source)
+    module = _LOADED_SCRIPTS.get(key)
+    if module is None:
+        module = _LOADED_SCRIPTS[key] = _executed_script(path, source)
     return module
 
 
@@ -1171,7 +1202,7 @@ def refusal_population_is_decided(root: Path, name: str) -> bool:
     Reuse the registry's evidence and strict-diagnostic validation; a missing
     record or an SDK evaluation that no longer holds leaves the class open.
     """
-    registry = load_script("tools/fern-refusals/fern-refusals.py")
+    registry = fresh_script("tools/fern-refusals/fern-refusals.py")
     registry.REPO = root
     registry.REGISTRY = root / "docs/fern-refusals"
     registry.EVIDENCE = root / "docs/openapi-surface/fern-refusals"
@@ -1245,6 +1276,17 @@ def ruling_failure(where: str, reason: str) -> str:
 def cooccurrence_audit(root: Path) -> tuple[dict, list[str]]:
     """`combination-cooccurrence.tsv` as `key -> row`, and what its form breaks (`golden-reach.py`)."""
     return load_script("tools/surface-census/golden-reach.py").read_cooccurrence(root / COOCCURRENCE_AUDIT)
+
+
+_COMMITTED_DOCUMENTS: dict[tuple[Path, bytes], Any] = {}
+
+
+def committed_document(engine: ModuleType, path: Path) -> Any:
+    """`path` as the census reads it, parsed once per file content. Callers only read the result."""
+    key = (path, path.read_bytes())
+    if key not in _COMMITTED_DOCUMENTS:
+        _COMMITTED_DOCUMENTS[key] = engine.load_document(path)
+    return _COMMITTED_DOCUMENTS[key]
 
 
 def pointer_target(document: object, pointer: str) -> object | None:
@@ -1428,7 +1470,7 @@ def combination_proof_failures(
                 )
         engine = load_script("tools/surface-census/openapi-surface-census.py")
         try:
-            document = engine.load_document(document_path) if document_path is not None else None
+            document = committed_document(engine, document_path) if document_path is not None else None
         except (engine.DocumentError, SystemExit, ValueError):
             document = None
         if document is None or pointer_target(document, audit[key].site) is None:
@@ -2073,6 +2115,18 @@ def completeness_failures(
     named = named or {}
     failures = []
     searched = {region: compact_search_lines(text) for region, text in region_texts.items()}
+    gate = load_script("tools/surface-census/handwritten-fixtures.py")
+    # Nothing under `root` changes during this call, so each whole-tree reading is taken once.
+    e2e_covers = functools.cache(lambda: gate.e2e_cover_failures(root, gate.region_rows(root)))
+
+    @functools.cache
+    def fixture_covers() -> tuple[set[str], list[str]]:
+        """The feature-level keys every validated fixture covers, and the gate's failures."""
+        validated = gate.gate(root)
+        evidence = (gate.read_evidence(root / gate.HANDWRITTEN / name)[0] for name in validated["fixtures"])
+        keys = {cover.key for fixture in evidence if fixture for cover in fixture.covers if cover.arm is None}
+        return keys, validated["failures"]
+
     for key, (region, cells) in sorted(entries.items()):
         category = cells[3].strip("`")
         if category == "golden":
@@ -2101,18 +2155,8 @@ def completeness_failures(
         ):
             continue
         elif record is None and category == "handwritten":
-            gate = load_script("tools/surface-census/handwritten-fixtures.py")
-            if gate.E2E_EVIDENCE_CELL.match(cells[4]):
-                keys, cover_failures = gate.e2e_cover_failures(root, gate.region_rows(root))
-                covered = key in keys
-            else:
-                validated = gate.gate(root)
-                covered = False
-                for name in validated["fixtures"]:
-                    fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
-                    if fixture is not None:
-                        covered |= any(cover.key == key and cover.arm is None for cover in fixture.covers)
-                cover_failures = validated["failures"]
+            keys, cover_failures = e2e_covers() if gate.E2E_EVIDENCE_CELL.match(cells[4]) else fixture_covers()
+            covered = key in keys
             if covered and not cover_failures:
                 continue
             failures.extend(cover_failures)
@@ -2162,6 +2206,7 @@ def enumeration_census_failures(
     directory: Path,
     records: list[dict[str, str]],
     pinned: list[dict[str, str]] | None = None,
+    evidence: EvidenceDirectory | None = None,
 ) -> list[str]:
     """Reconcile one compact census row per walked document with positive records.
 
@@ -2170,17 +2215,12 @@ def enumeration_census_failures(
     copying it — and the directory's own `acquisition-manifest.tsv` otherwise. A
     gzipped `enumeration.tsv.gz` is read where no plain one is written.
     """
-    path = directory / "enumeration.tsv"
-    if not path.is_file() and (directory / "enumeration.tsv.gz").is_file():
-        path = directory / "enumeration.tsv.gz"
-    if not path.is_file():
+    evidence = evidence or EvidenceDirectory(directory)
+    if evidence.enumeration is None:
         return [f"{key}: `{source}` has no enumeration.tsv census file"]
-    opener = gzip.open if path.suffix == ".gz" else open
-    with opener(path, "rt", encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, dialect="excel-tab")
-        if tuple(reader.fieldnames or ()) != ENUMERATION_COLUMNS:
-            return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
-        census = list(reader)
+    columns, census = evidence.enumeration
+    if columns != ENUMERATION_COLUMNS:
+        return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
     failures = []
     census_by_walk: dict[str, list[dict[str, str]]] = {}
     for row in census:
@@ -2295,6 +2335,7 @@ class EvidenceDirectory:
 
     def __init__(self, directory: Path) -> None:
         self.directory = directory
+        self._layout_failures: dict[tuple[str, ...], list[str]] = {}
 
     @functools.cached_property
     def records(self) -> list[dict[str, str]]:
@@ -2306,6 +2347,25 @@ class EvidenceDirectory:
         for record in self.records:
             by_key.setdefault(record.get("key"), []).append(record)
         return by_key
+
+    @functools.cached_property
+    def enumeration(self) -> tuple[tuple[str, ...], list[dict[str, str]]] | None:
+        """`enumeration.tsv`'s (or, where no plain one is written, its gzip's) columns and rows, or None without one."""
+        path = self.directory / "enumeration.tsv"
+        if not path.is_file() and (self.directory / "enumeration.tsv.gz").is_file():
+            path = self.directory / "enumeration.tsv.gz"
+        if not path.is_file():
+            return None
+        opener = gzip.open if path.suffix == ".gz" else open
+        with opener(path, "rt", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, dialect="excel-tab")
+            return tuple(reader.fieldnames or ()), list(reader)
+
+    def layout_failures(self, layout_files: tuple[str, ...]) -> list[str]:
+        """`directory_layout_failures` over this directory: it names no key, so one walk answers every key."""
+        if layout_files not in self._layout_failures:
+            self._layout_failures[layout_files] = directory_layout_failures(self.directory, self.records, layout_files)
+        return self._layout_failures[layout_files]
 
     @functools.cached_property
     def unreached_probes(self) -> set[tuple[str, str, str]]:
@@ -2373,8 +2433,8 @@ def evidence_directory_failures(
     row: a golden-reach arm search's `probe.jsonl` holds every declarer's
     measured reach, and its publisher-tree `pins.tsv` the resolved pin.
     """
-    records = evidence.records if evidence else evidence_records(directory)
-    return [f"{key}: {failure}" for failure in directory_layout_failures(directory, records, layout_files)]
+    evidence = evidence or EvidenceDirectory(directory)
+    return [f"{key}: {failure}" for failure in evidence.layout_failures(layout_files)]
 
 
 def exhaustive_search_failures(
@@ -2386,6 +2446,7 @@ def exhaustive_search_failures(
     pinned_for: Callable[[str, list[str]], list[dict[str, str]]] | None = None,
     layout_files: tuple[str, ...] = (),
     measured_build: str | None = None,
+    evidence_for: Callable[[Path], EvidenceDirectory] = EvidenceDirectory,
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -2394,7 +2455,8 @@ def exhaustive_search_failures(
     in. Refused at any outcome: a source read `unanswered` for a rate-limit cap,
     and a table that disagrees with its evidence directory either way. Refused
     under `exhausted`: every obligation the five conditions name. Each evidence
-    file is read at most once per call.
+    file is read at most once per call, and `evidence_for` lets a caller walking
+    many keys over an unchanging tree share those readings between its calls.
     """
     failures: list[str] = []
     outcomes = {line[2].strip("`* ") for line in lines}
@@ -2429,7 +2491,7 @@ def exhaustive_search_failures(
             # An undeclared source answers for nothing and owes nothing.
             continue
         directory = directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
-        evidence = EvidenceDirectory(directory)
+        evidence = evidence_for(directory)
         records = evidence.records_by_key.get(key, [])
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
@@ -2588,7 +2650,7 @@ def exhaustive_line_failures(
         if (kind, r.get("subject"), result) not in table:
             failures.append(f"{key}: {where} carries {kind} `{r.get('subject')}` that the table accounts for nowhere")
     if capability and capability[1] and walks:
-        failures += enumeration_census_failures(key, source, walks, directory, records, pinned)
+        failures += enumeration_census_failures(key, source, walks, directory, records, pinned, evidence)
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
@@ -11691,8 +11753,14 @@ class RankedBacklogTests(unittest.TestCase):
         An arm search reads a source's shared pin rather than copying it: the
         acquisition manifest, or for the publisher trees their `documents.jsonl`.
         """
-        shared = REPO / "docs" / "openapi-surface" / f"witness-search-{source}"
         named = {tree for tree, _ref, _count in recorded_walks(line[4])}
+        return [row for row in cls.arm_search_pinned_rows(source) if row["walk"] in named]
+
+    @classmethod
+    @functools.cache
+    def arm_search_pinned_rows(cls, source: str) -> list[dict[str, str]]:
+        """A source's whole shared pin, read once: every key's line selects its walks from the same file."""
+        shared = REPO / "docs" / "openapi-surface" / f"witness-search-{source}"
         if source == "github-publisher-trees":
             # The pins resolved to bytes, held to the shared pin they resolve: the
             # same commit, path and git blob, and the same SHA-256 wherever the
@@ -11713,7 +11781,7 @@ class RankedBacklogTests(unittest.TestCase):
         else:
             with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
-        return [row for row in rows if row["walk"] in named]
+        return rows
 
     def test_a_gap_row_the_frozen_contract_does_not_own_records_its_search_compactly(self) -> None:
         """A row admitted as a `gap` after the witness-search-redo contract froze.
@@ -11845,6 +11913,7 @@ class RankedBacklogTests(unittest.TestCase):
         """
         capabilities = source_capabilities(self.DOC.read_text(encoding="utf-8"))
         linked = set()
+        shared_evidence = functools.cache(EvidenceDirectory)
         for key, (_region, cells) in sorted(self.entries.items()):
             found = re.search(r"\(golden-reach-witnesses/searches/([^)]+)\.md\)", cells[5])
             if not found:
@@ -11883,6 +11952,7 @@ class RankedBacklogTests(unittest.TestCase):
                             f"{golden_reach_search().SCREEN.LOG_DIR}/",
                         ),
                         measured_build=matched(re.search(r"(?m)^build `([0-9a-f]+)` only\.", text)).group(1),
+                        evidence_for=shared_evidence,
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"

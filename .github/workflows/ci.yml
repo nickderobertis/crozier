@@ -377,6 +377,11 @@ jobs:
       - name: Live e2e, corpus byte-match and census fallback
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
+          # An empty registry at one path for the whole step: the job's first dev
+          # build comes from it with sockets denied (`corpus-match:cold-registry-build`),
+          # and cargo reuses that build only under this same CARGO_HOME.
+          CARGO_HOME: ${{ runner.temp }}/cold-cargo-home
+          CROZIER_COLD_REGISTRY_HANDOFF: "1"
         run: just ci-check --projects=live-e2e,corpus-match,corpus-match-selection,census-fallback
       # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 

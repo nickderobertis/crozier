@@ -376,14 +376,36 @@ def _split_sites(cell: str) -> list[str]:
     return out
 
 
+class _FunctionLine(NamedTuple):
+    """A line declaring a `fn`: its 0-indexed position, name and enclosing `impl` type."""
+
+    index: int
+    name: str
+    impl: str | None
+
+
 _SITE = re.compile(r"^(?P<file>src/[a-z_]+\.rs)::(?P<item>[A-Za-z_][A-Za-z0-9_:]*)(?:\[(?P<arm>[^\]]+)\])?$")
 
 
-# Item end lines by file content: the verb resolves hundreds of sites over the
-# same few files, and bounding an item rescans the file from it, so each
-# (content, line) is bounded once per process. A handful of contents at a time.
+# Everything read off a file's content is kept by that content: the verb resolves
+# hundreds of sites over the same few files, and both bounding an item and
+# finding a function rescan the file. A handful of contents at a time.
+_SOURCES_KEPT = 64
 _ITEM_ENDS: dict[tuple[str, ...], dict[int, int | None]] = {}
-_ITEM_ENDS_KEPT = 64
+_FUNCTIONS: dict[tuple[str, ...], list[_FunctionLine]] = {}
+_SOURCE_LINES: dict[str, list[str]] = {}
+_FN = re.compile(r"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const\s+)?fn\s+(?P<name>\w+)")
+_IMPL = re.compile(r"^(?:impl(?:<[^>]*>)?\s+(?:[A-Za-z_][A-Za-z0-9_<>, ]*\s+for\s+)?(?P<type>[A-Za-z_][A-Za-z0-9_]*))")
+
+
+def _source_lines(text: str) -> list[str]:
+    """`text`'s lines, split once per content. Callers read this list and never change it."""
+    lines = _SOURCE_LINES.get(text)
+    if lines is None:
+        if len(_SOURCE_LINES) >= _SOURCES_KEPT:
+            _SOURCE_LINES.clear()
+        lines = _SOURCE_LINES[text] = text.splitlines()
+    return lines
 
 
 def _item_ends(lines: list[str]) -> Callable[[int], int | None]:
@@ -391,7 +413,7 @@ def _item_ends(lines: list[str]) -> Callable[[int], int | None]:
     key = tuple(lines)
     ends = _ITEM_ENDS.get(key)
     if ends is None:
-        if len(_ITEM_ENDS) >= _ITEM_ENDS_KEPT:
+        if len(_ITEM_ENDS) >= _SOURCES_KEPT:
             _ITEM_ENDS.clear()
         ends = _ITEM_ENDS[key] = {}
 
@@ -403,36 +425,49 @@ def _item_ends(lines: list[str]) -> Callable[[int], int | None]:
     return end
 
 
-def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
-    """Inclusive 1-indexed spans of every `fn` named by `item` (`name` or `Type::name`)."""
-    owner, _, name = item.rpartition("::")
-    fn = re.compile(rf"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const\s+)?fn\s+{re.escape(name)}\b")
-    impl = re.compile(
-        r"^(?:impl(?:<[^>]*>)?\s+(?:[A-Za-z_][A-Za-z0-9_<>, ]*\s+for\s+)?(?P<type>[A-Za-z_][A-Za-z0-9_]*))"
-    )
-    spans = []
+def _function_lines(lines: list[str]) -> list[_FunctionLine]:
+    """Every `fn` line of this content, with the `impl` it sits in, scanned once per content."""
+    key = tuple(lines)
+    functions = _FUNCTIONS.get(key)
+    if functions is not None:
+        return functions
+    functions = []
     item_end = _item_ends(lines)
     current_impl: tuple[str, int] | None = None
     for index, line in enumerate(lines):
-        header = impl.match(line)
+        header = _IMPL.match(line)
         if header:
-            end = item_end(index)
-            current_impl = (header.group("type"), end or index + 1)
+            current_impl = (header.group("type"), item_end(index) or index + 1)
         if current_impl and index + 1 > current_impl[1]:
             current_impl = None
-        if not fn.match(line):
+        found = _FN.match(line)
+        if found:
+            functions.append(_FunctionLine(index, found.group("name"), current_impl[0] if current_impl else None))
+    if len(_FUNCTIONS) >= _SOURCES_KEPT:
+        _FUNCTIONS.clear()
+    _FUNCTIONS[key] = functions
+    return functions
+
+
+def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
+    """Inclusive 1-indexed spans of every `fn` named by `item` (`name` or `Type::name`)."""
+    owner, _, name = item.rpartition("::")
+    spans = []
+    item_end = _item_ends(lines)
+    for function in _function_lines(lines):
+        if name and function.name != name:
             continue
-        if owner and (current_impl is None or current_impl[0] != owner):
+        if owner and function.impl != owner:
             continue
-        if not owner and current_impl is not None and line.startswith(" "):
+        if not owner and function.impl is not None and lines[function.index].startswith(" "):
             # A bare name means a free function; methods are named `Type::name`.
             continue
-        end = item_end(index)
+        end = item_end(function.index)
         if end is None:
             fail(
-                f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name} (`{REPIN}` re-anchors one whose code only moved)"
+                f"cannot bound the body of `fn {name}` at line {function.index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name} (`{REPIN}` re-anchors one whose code only moved)"
             )
-        spans.append((index + 1, end))
+        spans.append((function.index + 1, end))
     return spans
 
 
@@ -462,7 +497,7 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     path = repo_root / match.group("file")
     if not path.is_file():
         fail(f"site {spec!r} names {match.group('file')}, which does not exist; correct its path in {SITES_TABLE.name}")
-    lines = path.read_text(encoding="utf-8").splitlines()
+    lines = _source_lines(path.read_text(encoding="utf-8"))
     spans = _function_spans(lines, match.group("item"))
     if len(spans) != 1:
         fail(
