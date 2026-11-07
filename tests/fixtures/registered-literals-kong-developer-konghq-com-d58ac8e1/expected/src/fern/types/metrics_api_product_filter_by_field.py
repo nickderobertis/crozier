@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .metrics_api_product_filter_by_field_one import MetricsApiProductFilterByFieldOne
+from .metrics_api_product_filter_by_field_value import MetricsApiProductFilterByFieldValue
+
+MetricsApiProductFilterByField = typing.Union[MetricsApiProductFilterByFieldValue, MetricsApiProductFilterByFieldOne]

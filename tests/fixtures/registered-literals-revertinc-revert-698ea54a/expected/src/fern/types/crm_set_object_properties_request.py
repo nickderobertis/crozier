@@ -1,0 +1,5 @@
+
+
+from .crm_field_details_type_request import CrmFieldDetailsTypeRequest
+
+CrmSetObjectPropertiesRequest = CrmFieldDetailsTypeRequest

@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .selected_fulfillment_option_one import SelectedFulfillmentOptionOne
+from .selected_fulfillment_option_zero import SelectedFulfillmentOptionZero
+
+SelectedFulfillmentOption = typing.Union[SelectedFulfillmentOptionZero, SelectedFulfillmentOptionOne]

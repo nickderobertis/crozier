@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .metrics_gateway_service_filter_by_field_one import MetricsGatewayServiceFilterByFieldOne
+from .metrics_gateway_service_filter_by_field_value import MetricsGatewayServiceFilterByFieldValue
+
+MetricsGatewayServiceFilterByField = typing.Union[
+    MetricsGatewayServiceFilterByFieldValue, MetricsGatewayServiceFilterByFieldOne
+]

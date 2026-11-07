@@ -1,0 +1,24 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .block import Block
+from .consensus_state import ConsensusState
+from .revert_update_data import RevertUpdateData
+
+
+class RevertUpdate(UniversalBaseModel):
+    update: RevertUpdateData
+    state: ConsensusState
+    block: Block
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

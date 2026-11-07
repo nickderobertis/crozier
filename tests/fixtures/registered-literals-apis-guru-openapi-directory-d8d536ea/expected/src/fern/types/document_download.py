@@ -1,0 +1,61 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class DocumentDownload(UniversalBaseModel):
+    case_document_download_api: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="caseDocumentDownloadAPI"),
+        pydantic.Field(
+            alias="caseDocumentDownloadAPI",
+            description="API call to download the document again if the above fileUrl is expired.",
+        ),
+    ]
+    """
+    API call to download the document again if the above fileUrl is expired.
+    """
+
+    case_document_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="caseDocumentId"),
+        pydantic.Field(alias="caseDocumentId", description="Requested Document ID."),
+    ]
+    """
+    Requested Document ID.
+    """
+
+    expiry_date: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="expiryDate"),
+        pydantic.Field(alias="expiryDate", description="Expiry date-time for the fileUrl provided in this object."),
+    ]
+    """
+    Expiry date-time for the fileUrl provided in this object.
+    """
+
+    file_url: typing_extensions.Annotated[
+        str, FieldMetadata(alias="fileUrl"), pydantic.Field(alias="fileUrl", description="Link to download the file.")
+    ]
+    """
+    Link to download the file.
+    """
+
+    object: str = pydantic.Field()
+    """
+    Name of the object.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

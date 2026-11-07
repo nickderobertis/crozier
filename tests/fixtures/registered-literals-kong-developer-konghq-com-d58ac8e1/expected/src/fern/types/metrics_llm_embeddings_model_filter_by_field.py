@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .metrics_llm_embeddings_model_filter_by_field_one import MetricsLlmEmbeddingsModelFilterByFieldOne
+from .metrics_llm_embeddings_model_filter_by_field_value import MetricsLlmEmbeddingsModelFilterByFieldValue
+
+MetricsLlmEmbeddingsModelFilterByField = typing.Union[
+    MetricsLlmEmbeddingsModelFilterByFieldValue, MetricsLlmEmbeddingsModelFilterByFieldOne
+]

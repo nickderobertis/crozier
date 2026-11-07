@@ -1304,6 +1304,26 @@ fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         .flatten())
 }
 
+/// `binary-json-body-example` on one line, in a file other departures also touch
+/// where the whole-file form cannot hold: Fern's `request="string",` beside
+/// crozier's `request=b"string",`, in a document with a binary JSON body method.
+fn binary_json_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let (Some(fern_value), Some(crozier_value)) = (
+        fern.trim_start().strip_prefix("request="),
+        crozier.trim_start().strip_prefix("request="),
+    ) else {
+        return false;
+    };
+    fern_value == "\"string\","
+        && crozier_value == "b\"string\","
+        && fern.len() + 1 == crozier.len()
+        && !pair
+            .context
+            .request_examples()
+            .binary_json_methods
+            .is_empty()
+}
+
 fn reference_method_key(line: &str) -> Option<MethodKey> {
     let (_, after) = line.split_once("<details><summary><code>client.")?;
     let (_, after) = after.split_once("<a href=\"")?;
@@ -1962,6 +1982,7 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "binary-json-body-example" => Rule {
             region: Some(binary_json_body_example),
+            line: Some(binary_json_body_example_line),
             ..Rule::default()
         },
         "request-alias-reference-parameters" => Rule {
@@ -6843,6 +6864,33 @@ mod tests {
             ..pair
         };
         assert_eq!(closed_empty_object_example_region(&pair).unwrap(), None);
+    }
+
+    #[test]
+    fn the_binary_json_line_rule_needs_a_binary_body_method_and_the_exact_values() {
+        let holds = |context: &Context, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            binary_json_body_example_line(
+                &Pair {
+                    rel: "reference.md",
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let fern = "    request=\"string\",";
+        let crozier = "    request=b\"string\",";
+        // Without a generated binary JSON body method, nothing is excused.
+        assert!(!holds(&Context::default(), fern, crozier));
+        let raw = "class RawThingsClient:\n    def upload(\n        self,\n        *,\n        request: bytes,\n    ) -> None:\n        self._client_wrapper.httpx_client.request(\n            json=request,\n            headers={\n                \"content-type\": \"application/json\",\n            },\n        )\n";
+        let context = Context::from_sources([], [("things/raw_client.py", raw)]);
+        assert!(!context.request_examples().binary_json_methods.is_empty());
+        assert!(holds(&context, fern, crozier));
+        assert!(!holds(&context, "    request=\"other\",", crozier));
+        assert!(!holds(&context, fern, "    request=b\"other\","));
     }
 
     const NULLABLE_FERN: &str = "client.beds.list_beds(\n    rows=[\n        None\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[typing.Optional[int], typing.Sequence[typing.Optional[int]]]]` \n";

@@ -1,0 +1,5 @@
+
+
+from .common_comment_ticket_write import CommonCommentTicketWrite
+
+TicketCreateOrUpdateCommentRequest = CommonCommentTicketWrite

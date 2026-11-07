@@ -1,0 +1,33 @@
+
+
+import typing
+
+from .state_machine_cancelled_dto import StateMachineCancelledDto
+from .state_machine_finished_dto import StateMachineFinishedDto
+from .state_machine_forced_success_dto import StateMachineForcedSuccessDto
+from .state_machine_process_criterion_not_matched_dto import StateMachineProcessCriterionNotMatchedDto
+from .state_machine_processing_paused_dto import StateMachineProcessingPausedDto
+from .state_machine_started_dto import StateMachineStartedDto
+from .state_machine_state_process_result_dto import StateMachineStateProcessResultDto
+from .state_machine_transition_criterion_not_matched_dto import StateMachineTransitionCriterionNotMatchedDto
+from .state_machine_transition_made_dto import StateMachineTransitionMadeDto
+from .state_machine_transition_not_found_dto import StateMachineTransitionNotFoundDto
+from .state_machine_workflow_found_dto import StateMachineWorkflowFoundDto
+from .state_machine_workflow_not_found_dto import StateMachineWorkflowNotFoundDto
+from .state_machine_workflow_skipped_dto import StateMachineWorkflowSkippedDto
+
+StateMachineAuditEventDtoData = typing.Union[
+    StateMachineCancelledDto,
+    StateMachineFinishedDto,
+    StateMachineForcedSuccessDto,
+    StateMachineProcessCriterionNotMatchedDto,
+    StateMachineProcessingPausedDto,
+    StateMachineStartedDto,
+    StateMachineStateProcessResultDto,
+    StateMachineTransitionCriterionNotMatchedDto,
+    StateMachineTransitionMadeDto,
+    StateMachineTransitionNotFoundDto,
+    StateMachineWorkflowFoundDto,
+    StateMachineWorkflowNotFoundDto,
+    StateMachineWorkflowSkippedDto,
+]

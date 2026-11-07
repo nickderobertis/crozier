@@ -1,0 +1,46 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class CaseTypeGroup(UniversalBaseModel):
+    area_of_law: typing_extensions.Annotated[str, FieldMetadata(alias="areaOfLaw"), pydantic.Field(alias="areaOfLaw")]
+    area_of_law_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="areaOfLawId"), pydantic.Field(alias="areaOfLawId")
+    ]
+    case_class: typing_extensions.Annotated[str, FieldMetadata(alias="caseClass"), pydantic.Field(alias="caseClass")]
+    case_class_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="caseClassId"), pydantic.Field(alias="caseClassId")
+    ]
+    case_type_group_id: typing_extensions.Annotated[
+        str, FieldMetadata(alias="caseTypeGroupId"), pydantic.Field(alias="caseTypeGroupId")
+    ]
+    created_date: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdDate"),
+        pydantic.Field(
+            alias="createdDate",
+            description="The date and time when it was first created. This date and time is in UTC. Formatted as YYYY-MM-DD HH:MM:SS.",
+        ),
+    ]
+    """
+    The date and time when it was first created. This date and time is in UTC. Formatted as YYYY-MM-DD HH:MM:SS.
+    """
+
+    name: str
+    object: str
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

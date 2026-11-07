@@ -10444,6 +10444,24 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &LITERALS_APIS_GURU_D8D536EA,
+    &LITERALS_AZURE_SAMPLES_4F917FB1,
+    &LITERALS_CYODA_5CE9D613,
+    &LITERALS_GK0WK_CC8BEE73,
+    &LITERALS_KONG_D58AC8E1,
+    &LITERALS_SIAFOUNDATION_F03D7DC2,
+    &LITERALS_AGENTIC_COMMERCE_2E988128,
+    &LITERALS_AGENTIC_COMMERCE_CEA60D72,
+    &LITERALS_ARPICATO_AA02AF8D,
+    &LITERALS_ATACAN_10CA68AF,
+    &LITERALS_BLUES_9C5B2B63,
+    &LITERALS_CRATE_WORKS_F2457DA3,
+    &LITERALS_CRYSTALSHARDS_B29A3A4E,
+    &LITERALS_DCP_AI_PROTOCOL_669C2CCB,
+    &LITERALS_FOSSOLOGY_7DA1DB69,
+    &LITERALS_JENTIC_2011299D,
+    &LITERALS_KONFIG_DEV_75888823,
+    &LITERALS_REVERTINC_698EA54A,
     &LITERALS_AMRC_FACTORYPLUS_BE5E3789,
     &LITERALS_APIS_GURU_2F8C36B9,
     &LITERALS_APIS_GURU_9031AF6A,
@@ -32162,3 +32180,331 @@ fn registered_literals_zalando_incubator_agentic_identity_broker_c7fb9242_matche
     overlay_goldens::assert_literals_match(&LITERALS_ZALANDO_INCUBATO_C7FB9242);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// Certified enum-mode witness, corpus row 5600.
+const LITERALS_APIS_GURU_D8D536EA: Corpus = Corpus {
+    api: "registered-literals-apis-guru-openapi-directory-d8d536ea",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_apis_guru_openapi_directory_d8d536ea_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_APIS_GURU_D8D536EA);
+    overlay_goldens::assert_literals_match(&LITERALS_APIS_GURU_D8D536EA);
+}
+
+/// Certified enum-mode witness, corpus row 5601.
+const LITERALS_AZURE_SAMPLES_4F917FB1: Corpus = Corpus {
+    api:
+        "registered-literals-azure-samples-digitization-of-piping-and-instrument-diagrams-4f917fb1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_azure_samples_digitization_of_piping_and_instrument_diagrams_4f917fb1_matches_fern_output(
+) {
+    assert_committed_corpus_matches(&LITERALS_AZURE_SAMPLES_4F917FB1);
+    overlay_goldens::assert_literals_match(&LITERALS_AZURE_SAMPLES_4F917FB1);
+}
+
+/// Certified enum-mode witness, corpus row 5602.
+const LITERALS_CYODA_5CE9D613: Corpus = Corpus {
+    api: "registered-literals-cyoda-cyoda-go-5ce9d613",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_cyoda_cyoda_go_5ce9d613_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_CYODA_5CE9D613);
+    overlay_goldens::assert_literals_match(&LITERALS_CYODA_5CE9D613);
+}
+
+/// Certified enum-mode witness, corpus row 5603.
+const LITERALS_GK0WK_CC8BEE73: Corpus = Corpus {
+    api: "registered-literals-gk0wk-openapi-thrift-cc8bee73",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_gk0wk_openapi_thrift_cc8bee73_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_GK0WK_CC8BEE73);
+    overlay_goldens::assert_literals_match(&LITERALS_GK0WK_CC8BEE73);
+}
+
+/// Certified enum-mode witness, corpus row 5604.
+const LITERALS_KONG_D58AC8E1: Corpus = Corpus {
+    api: "registered-literals-kong-developer-konghq-com-d58ac8e1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_kong_developer_konghq_com_d58ac8e1_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_KONG_D58AC8E1);
+    overlay_goldens::assert_literals_match(&LITERALS_KONG_D58AC8E1);
+}
+
+/// Certified enum-mode witness, corpus row 5605.
+const LITERALS_SIAFOUNDATION_F03D7DC2: Corpus = Corpus {
+    api: "registered-literals-siafoundation-walletd-f03d7dc2",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_siafoundation_walletd_f03d7dc2_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_SIAFOUNDATION_F03D7DC2);
+    overlay_goldens::assert_literals_match(&LITERALS_SIAFOUNDATION_F03D7DC2);
+}
+
+/// Certified enum-mode witness, corpus row 5606.
+const LITERALS_AGENTIC_COMMERCE_2E988128: Corpus = Corpus {
+    api: "registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-2e988128",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_agentic_commerce_protocol_agentic_commerce_protocol_2e988128_matches_fern_output(
+) {
+    assert_committed_corpus_matches(&LITERALS_AGENTIC_COMMERCE_2E988128);
+    overlay_goldens::assert_literals_match(&LITERALS_AGENTIC_COMMERCE_2E988128);
+}
+
+/// Certified enum-mode witness, corpus row 5607.
+const LITERALS_AGENTIC_COMMERCE_CEA60D72: Corpus = Corpus {
+    api: "registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_agentic_commerce_protocol_agentic_commerce_protocol_cea60d72_matches_fern_output(
+) {
+    assert_committed_corpus_matches(&LITERALS_AGENTIC_COMMERCE_CEA60D72);
+    overlay_goldens::assert_literals_match(&LITERALS_AGENTIC_COMMERCE_CEA60D72);
+}
+
+/// Certified enum-mode witness, corpus row 5608.
+const LITERALS_ARPICATO_AA02AF8D: Corpus = Corpus {
+    api: "registered-literals-arpicato-messie-messenger-aa02af8d",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_arpicato_messie_messenger_aa02af8d_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_ARPICATO_AA02AF8D);
+    overlay_goldens::assert_literals_match(&LITERALS_ARPICATO_AA02AF8D);
+}
+
+/// Certified enum-mode witness, corpus row 5609.
+const LITERALS_ATACAN_10CA68AF: Corpus = Corpus {
+    api: "registered-literals-atacan-assemblyai-10ca68af",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_atacan_assemblyai_10ca68af_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_ATACAN_10CA68AF);
+    overlay_goldens::assert_literals_match(&LITERALS_ATACAN_10CA68AF);
+}
+
+/// Certified enum-mode witness, corpus row 5610.
+const LITERALS_BLUES_9C5B2B63: Corpus = Corpus {
+    api: "registered-literals-blues-notehub-js-9c5b2b63",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_blues_notehub_js_9c5b2b63_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_BLUES_9C5B2B63);
+    overlay_goldens::assert_literals_match(&LITERALS_BLUES_9C5B2B63);
+}
+
+/// Certified enum-mode witness, corpus row 5611.
+const LITERALS_CRATE_WORKS_F2457DA3: Corpus = Corpus {
+    api: "registered-literals-crate-works-ro-crate-api-f2457da3",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_crate_works_ro_crate_api_f2457da3_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_CRATE_WORKS_F2457DA3);
+    overlay_goldens::assert_literals_match(&LITERALS_CRATE_WORKS_F2457DA3);
+}
+
+/// Certified enum-mode witness, corpus row 5612.
+const LITERALS_CRYSTALSHARDS_B29A3A4E: Corpus = Corpus {
+    api: "registered-literals-crystalshards-monorepo-b29a3a4e",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_crystalshards_monorepo_b29a3a4e_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_CRYSTALSHARDS_B29A3A4E);
+    overlay_goldens::assert_literals_match(&LITERALS_CRYSTALSHARDS_B29A3A4E);
+}
+
+/// Certified enum-mode witness, corpus row 5613.
+const LITERALS_DCP_AI_PROTOCOL_669C2CCB: Corpus = Corpus {
+    api: "registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_dcp_ai_protocol_dcp_ai_669c2ccb_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_DCP_AI_PROTOCOL_669C2CCB);
+    overlay_goldens::assert_literals_match(&LITERALS_DCP_AI_PROTOCOL_669C2CCB);
+}
+
+/// Certified enum-mode witness, corpus row 5614.
+const LITERALS_FOSSOLOGY_7DA1DB69: Corpus = Corpus {
+    api: "registered-literals-fossology-fossology-rest-dotnet-7da1db69",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_fossology_fossology_rest_dotnet_7da1db69_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_FOSSOLOGY_7DA1DB69);
+    overlay_goldens::assert_literals_match(&LITERALS_FOSSOLOGY_7DA1DB69);
+}
+
+/// Certified enum-mode witness, corpus row 5615.
+const LITERALS_JENTIC_2011299D: Corpus = Corpus {
+    api: "registered-literals-jentic-jentic-public-apis-2011299d",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_jentic_jentic_public_apis_2011299d_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_JENTIC_2011299D);
+    overlay_goldens::assert_literals_match(&LITERALS_JENTIC_2011299D);
+}
+
+/// Certified enum-mode witness, corpus row 5616.
+const LITERALS_KONFIG_DEV_75888823: Corpus = Corpus {
+    api: "registered-literals-konfig-dev-konfig-75888823",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_konfig_dev_konfig_75888823_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_KONFIG_DEV_75888823);
+    overlay_goldens::assert_literals_match(&LITERALS_KONFIG_DEV_75888823);
+}
+
+/// Certified enum-mode witness, corpus row 5617.
+const LITERALS_REVERTINC_698EA54A: Corpus = Corpus {
+    api: "registered-literals-revertinc-revert-698ea54a",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_revertinc_revert_698ea54a_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_REVERTINC_698EA54A);
+    overlay_goldens::assert_literals_match(&LITERALS_REVERTINC_698EA54A);
+}

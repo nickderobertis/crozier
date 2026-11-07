@@ -1382,3 +1382,106 @@ Certified literals-overlay witnesses:
     https://raw.githubusercontent.com/zalando-incubator/agentic-identity-broker/d500f36378dd914f8a516604a08525f737e8ddff/api/enduser/openapi.yaml
     MIT; corpus row 5573 retains the publisher's immutable document
     (SHA-256 c7fb9242356484e677698b557588686e1d461e2f920fbd53042cea345357ceb6).
+
+  APIs-guru/openapi-directory: APIs/unicourt.com/1.0.0/openapi.yaml
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/unicourt.com/1.0.0/openapi.yaml
+    CC0 (repository LICENSE at the pinned revision); corpus row 5600 retains the publisher's immutable document
+    (SHA-256 d8d536ea8daca766a98ec0db6599041cfdcc449b71f689df9046b88b9796a79d).
+    Redistribution grant retained in licenses/publisher-apis-guru-openapi-directory-a2010f343487.txt.
+
+  Azure-Samples/digitization-of-piping-and-instrument-diagrams: docs/webapi-swagger.yaml
+    https://raw.githubusercontent.com/Azure-Samples/digitization-of-piping-and-instrument-diagrams/c51302e3ec34147c676ef6eedbdd7551ea908b05/docs/webapi-swagger.yaml
+    MIT (repository LICENSE.md at the pinned revision); corpus row 5601 retains the publisher's immutable document
+    (SHA-256 4f917fb1f4dd02c8b787af9d37e859c543b51a05ad56136af0eef59543dcf165).
+    Redistribution grant retained in licenses/publisher-azure-samples-digitization-of-piping-and-instrument-diagrams-d9a1b1e30d63.txt.
+
+  Cyoda/cyoda-go: docs/cyoda/openapi.yml
+    https://raw.githubusercontent.com/Cyoda/cyoda-go/0021e97806811b369a13d87701fe4a6454ac99fa/docs/cyoda/openapi.yml
+    Apache-2.0 (repository LICENSE at the pinned revision); corpus row 5602 retains the publisher's immutable document
+    (SHA-256 5ce9d61397d9e296c2de0644bfe07bb90bf500e81f5472a8773f5fddcb9432b9).
+    Redistribution grant retained in licenses/publisher-cyoda-cyoda-go-43070e2d4e53.txt.
+
+  Gk0Wk/openapi-thrift: tests/fixtures/apifox-boundary-lab.export.openapi.json
+    https://raw.githubusercontent.com/Gk0Wk/openapi-thrift/5114458f49ab086773073f37864ff2431da495e3/tests/fixtures/apifox-boundary-lab.export.openapi.json
+    MIT (repository LICENSE at the pinned revision); corpus row 5603 retains the publisher's immutable document
+    (SHA-256 cc8bee7396db0752fa53e1060eb58c0995d7e59b5042ea1ddec18bf2fc249ef5).
+    Redistribution grant retained in licenses/publisher-gk0wk-openapi-thrift-47084f7f65de.txt.
+
+  Kong/developer.konghq.com: api-specs/konnect/analytics-dashboards/v2/openapi.yaml
+    https://raw.githubusercontent.com/Kong/developer.konghq.com/158a0474ba8461a6a789585efea86e6b69dc03d3/api-specs/konnect/analytics-dashboards/v2/openapi.yaml
+    MIT (repository LICENSE at the pinned revision); corpus row 5604 retains the publisher's immutable document
+    (SHA-256 d58ac8e1769df01b92eadcbe6d443c0ae869e02670cab3ba4d948179ca423edd).
+    Redistribution grant retained in licenses/publisher-kong-developer-konghq-com-398272a5c84f.txt.
+
+  SiaFoundation/walletd: openapi.yml
+    https://raw.githubusercontent.com/SiaFoundation/walletd/aa523f95c5b2a106a3c0d9675205c90305d2d9d9/openapi.yml
+    MIT (repository LICENSE at the pinned revision); corpus row 5605 retains the publisher's immutable document
+    (SHA-256 f03d7dc2f29f154955df2fa0910f62525d6222f67915022d12b0e5de7230f18d).
+    Redistribution grant retained in licenses/publisher-siafoundation-walletd-27a2bfbff9b9.txt.
+
+  agentic-commerce-protocol/agentic-commerce-protocol: spec/2025-12-12/openapi/openapi.agentic_checkout.yaml
+    https://raw.githubusercontent.com/agentic-commerce-protocol/agentic-commerce-protocol/7fdd78df677a94dce04c770644b0fbbb1401272b/spec/2025-12-12/openapi/openapi.agentic_checkout.yaml
+    Apache-2.0 (repository LICENSE at the pinned revision); corpus row 5606 retains the publisher's immutable document
+    (SHA-256 2e988128433b9132ab956b137b72beb0b37b5a2113f15b8bb8775fe3a9c8a54c).
+    Redistribution grant retained in licenses/publisher-agentic-commerce-protocol-agentic-commerce-protocol-4458503dd48e.txt.
+
+  agentic-commerce-protocol/agentic-commerce-protocol: spec/2026-01-16/openapi/openapi.agentic_checkout.yaml
+    https://raw.githubusercontent.com/agentic-commerce-protocol/agentic-commerce-protocol/7fdd78df677a94dce04c770644b0fbbb1401272b/spec/2026-01-16/openapi/openapi.agentic_checkout.yaml
+    Apache-2.0 (repository LICENSE at the pinned revision); corpus row 5607 retains the publisher's immutable document
+    (SHA-256 cea60d723dd9cd2ee9d66a79c3bc58196f77d91d2081600ea88c6a07c236feec).
+    Redistribution grant retained in licenses/publisher-agentic-commerce-protocol-agentic-commerce-protocol-4458503dd48e.txt.
+
+  arpicato/messie-messenger: docs/mautrix-openapi.yaml
+    https://raw.githubusercontent.com/arpicato/messie-messenger/5590235194cb3ad6cbef8174fdc23ecc34498059/docs/mautrix-openapi.yaml
+    Mozilla Public License Version 2.0 / https://github.com/mautrix/go/blob/main/LICENSE; corpus row 5608 retains the publisher's immutable document
+    (SHA-256 aa02af8d8da6f67b1c26266e5aa6c1a348646b10142588e5abb928c231373a5a).
+
+  atacan/AssemblyAI: original_openapi.yaml
+    https://raw.githubusercontent.com/atacan/AssemblyAI/ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718/original_openapi.yaml
+    MIT (repository LICENSE at the pinned revision); corpus row 5609 retains the publisher's immutable document
+    (SHA-256 10ca68affcc55d46649da53ca342ee804c56af96b0a963d584562c8b21e20824).
+    Redistribution grant retained in licenses/publisher-atacan-assemblyai-772991286b16.txt.
+
+  blues/notehub-js: openapi.yaml
+    https://raw.githubusercontent.com/blues/notehub-js/c56a6b0bdaf1b0250dd068a1f5fe5ba2f956b831/openapi.yaml
+    MIT (repository LICENSE at the pinned revision); corpus row 5610 retains the publisher's immutable document
+    (SHA-256 9c5b2b63a9910cd7a1e927c75523f8cebdba31397b0c4f0a327e112b7cba2cf0).
+    Redistribution grant retained in licenses/publisher-blues-notehub-js-11e0041e0654.txt.
+
+  crate-works/ro-crate-api: openapi.yaml
+    https://raw.githubusercontent.com/crate-works/ro-crate-api/ce22c51856f181084e7b6d34d8e8d3a1ef85d978/openapi.yaml
+    MIT / MIT; corpus row 5611 retains the publisher's immutable document
+    (SHA-256 f2457da3b5a646665ac66bbc812695532ca606fd8b9cb3f9286728990442882e).
+
+  crystalshards/monorepo: apps/crystalshards/openapi.yml
+    https://raw.githubusercontent.com/crystalshards/monorepo/f5c7a1de82d7d397a31e234189fc9f1edb844a80/apps/crystalshards/openapi.yml
+    MIT / https://opensource.org/licenses/MIT; corpus row 5612 retains the publisher's immutable document
+    (SHA-256 b29a3a4e8ea20deeb6b100e53f180e431abb054443fcaeac1eeea032187eea1c).
+
+  dcp-ai-protocol/dcp-ai: api/openapi.yaml
+    https://raw.githubusercontent.com/dcp-ai-protocol/dcp-ai/808cc50bd15a276803c7d82a93404d9bfebad9d9/api/openapi.yaml
+    Apache-2.0 / https://www.apache.org/licenses/LICENSE-2.0; corpus row 5613 retains the publisher's immutable document
+    (SHA-256 669c2ccbdbdfe7ffecaaf5db7277832ecf666f17ed2a8fe60423b66fcaed085a).
+
+  fossology/FOSSology.REST.dotnet: openapi/FOSSology REST API 1.6.2.yaml
+    https://raw.githubusercontent.com/fossology/FOSSology.REST.dotnet/b362ec94ddf8ab6da0f8606183dfc2bc79b157b9/openapi/FOSSology%20REST%20API%201.6.2.yaml
+    GPL-2.0-only / https://github.com/fossology/fossology/blob/master/LICENSE; corpus row 5614 retains the publisher's immutable document
+    (SHA-256 7da1db69e60df38ffa4ae477eee68eab2e29932dad65de682d4d22bac71b9872).
+
+  jentic/jentic-public-apis: apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json
+    https://raw.githubusercontent.com/jentic/jentic-public-apis/c72e13e0f80e71997209aba985eff6ef34869cd7/apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json
+    CC0 (repository LICENSE.md at the pinned revision); corpus row 5615 retains the publisher's immutable document
+    (SHA-256 2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87).
+    Redistribution grant retained in licenses/publisher-jentic-jentic-public-apis-6d489af62926.txt.
+
+  konfig-dev/konfig: sdks/db/intermediate-fixed-specs/hathora/openapi.yaml
+    https://raw.githubusercontent.com/konfig-dev/konfig/bec3d36b9a341f30707a4ab3d9de6c4154809ada/sdks/db/intermediate-fixed-specs/hathora/openapi.yaml
+    MIT (repository LICENSE at the pinned revision); corpus row 5616 retains the publisher's immutable document
+    (SHA-256 75888823557d42cc5896fa1baa65097a83816df29eecb7639dbdf0cde6121f5e).
+    Redistribution grant retained in licenses/publisher-konfig-dev-konfig-7b718ca9eb2c.txt.
+
+  revertinc/revert: packages/backend/oas/openapi.yml
+    https://raw.githubusercontent.com/revertinc/revert/bb2c010b5e52e8458783d1770ebb6f379388eefd/packages/backend/oas/openapi.yml
+    AGPL (repository LICENSE.txt at the pinned revision); corpus row 5617 retains the publisher's immutable document
+    (SHA-256 698ea54a2330a274315c4e27c78b8ec9bcb1dcffa36da80336b1fa10269e9526).
+    Redistribution grant retained in licenses/publisher-revertinc-revert-0a4acb10f33c.txt.

@@ -46,3 +46,26 @@ exit 0
 the certified SDK's own `FernApi.__init__` annotation; the replacement does.
 
 The parity rule applies only to Python constructor examples whose parameter is annotated as an optional date. String-header placeholders and unrelated differences are not normalized; a neighboring unexplained change still fails the regression test.
+
+## Date-time headers
+
+The Agentic Commerce Protocol documents (`2e988128`, `cea60d72`, corpus rows
+registered by the residual repair) promote an optional `Timestamp` header of
+`format: date-time`. Their certified constructor examples pass
+`timestamp="YOUR_TIMESTAMP"` to a parameter annotated
+`typing.Optional[dt.datetime]`, and the wrapper sends `str(self._timestamp)`: the
+same defect as the date form above, a `YOUR_*` placeholder for a non-string type.
+crozier passes `datetime.datetime.fromisoformat("2024-01-15T09:30:00+00:00")`. The
+rule takes a sub-client docstring's annotation from the client wrapper, since a
+sub-client's own module does not declare the constructor.
+
+Type-checked against the unedited certified tree in the same way as above, with
+each call passing the document's required `api_version` and `token`:
+
+```text
+$ .venv/bin/mypy certified_call.py
+certified_call.py:6: error: Argument "timestamp" to "FernApi" has incompatible type "str"; expected "datetime | None"  [arg-type]
+Found 1 error in 1 file (checked 1 source file)
+$ .venv/bin/mypy crozier_call.py
+Success: no issues found in 1 source file
+```

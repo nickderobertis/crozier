@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-kong-developer-konghq-com-d58ac8e1",
+  "corpus_spec_ref": "158a0474ba8461a6a789585efea86e6b69dc03d3",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Kong/developer.konghq.com/158a0474ba8461a6a789585efea86e6b69dc03d3/api-specs/konnect/analytics-dashboards/v2/openapi.yaml"
+}

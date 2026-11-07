@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .metrics_ai_plugin_filter_by_field_one import MetricsAiPluginFilterByFieldOne
+from .metrics_ai_plugin_filter_by_field_value import MetricsAiPluginFilterByFieldValue
+
+MetricsAiPluginFilterByField = typing.Union[MetricsAiPluginFilterByFieldValue, MetricsAiPluginFilterByFieldOne]
