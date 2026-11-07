@@ -3983,8 +3983,8 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
         "artefact-catalogue",
         "sampling-branches",
     ] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
-        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let fixture = root.join(handwritten_or_measured(name));
+        let golden = format!("{}/fern-expected", handwritten_or_measured(name));
         let failures = filtered_tree_failures(
             name,
             &golden,
@@ -4013,11 +4013,18 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
     assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
 }
 
-/// Where a vendor-extension test bed lives: under the hand-written fixtures,
-/// except `gauge-public-fields`, a measurement since corpus row 4015 proved its row.
+/// Where a vendor-extension or composed-model test bed lives: under the hand-written
+/// fixtures, except `gauge-public-fields`, a measurement since corpus row 4015 proved
+/// its row, and a fixture a registered real specification has since superseded.
 fn handwritten_or_measured(name: &str) -> String {
     if name == "gauge-public-fields" {
         format!("docs/fern-measurements/clients-extensions/{name}")
+    } else if repo_root()
+        .join(SUPERSEDED_FIXTURES_DIR)
+        .join(name)
+        .is_dir()
+    {
+        format!("{SUPERSEDED_FIXTURES_DIR}/{name}")
     } else {
         format!("docs/openapi-surface/handwritten/{name}")
     }

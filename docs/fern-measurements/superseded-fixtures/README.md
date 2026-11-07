@@ -25,3 +25,7 @@ the cases overlaying it keep a refreshed base.
 | `request-alias` | `request-body-content`'s `resolve_form_object_alias` arm | corpus row 4203, `openiap-opencore` |
 | `request-example-deprecated` | `request-example-deprecated-property` | corpus row 4301, `nixtla-timegpt` |
 | `request-example-nulls` | `request-example-nested-null` | corpus row 2801, `dystore-api` |
+| `artefact-catalogue` | `allof-overlapping-ref-parents-flattened` | corpus row 5504, `registered-literals-apis-guru-openapi-directory-72fccf73` |
+| `nullable-observer-notes` | `nullable-anyof-member-description-dropped` | corpus row 5539, `registered-literals-hey-api-hey-api-30fbd0e5`, and corpus row 5547, `registered-literals-landing-ai-ade-cli-d11fa644` |
+| `reservoir-ledger` | `property-ref-to-nullable-component-annotation` | corpus row 5554, `registered-literals-nextcloud-client-sdks-adbf3118` |
+| `undiscriminated-ref-oneof-sibling-properties-dropped` | `undiscriminated-ref-oneof-sibling-properties-dropped` | corpus row 5515, `registered-literals-openapitools-openapi-generator-98d94419` |
