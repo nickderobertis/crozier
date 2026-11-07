@@ -124,12 +124,11 @@ Use the `just` recipes; do not hand-roll equivalents.
   it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
   project's `lint`.
 - `just test-live-e2e` / `just test-sdk-env` — the generated SDK driven against
-  a Prism mock / inside its own PyPI venv. Promoted out of the offline step; each
-  runs in its platform's test lane when affected. See [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
+  a Prism mock / inside its own PyPI venv. See [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves it, its strict form,
   the census, the refusal-class gate and the census-fallback samples with sockets
-  denied and no cache; CI runs this in its `test-linux` lane.
+  denied and no cache.
 - `just corpus-sources vendor` / `audit` — rebuild-only source fetch/verification;
   pinned URLs are provenance. `just lint-corpus-sources` checks every committed
   file's SHA-256 offline. See `tests/fixtures/corpus-sources.tsv`.
@@ -189,8 +188,6 @@ Use the `just` recipes; do not hand-roll equivalents.
   `gh-secrets sync` — the manifest is `gh-secrets.json`.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
-- **Where each tier runs.** Pull requests run the affected tier; the broader tier (`--sweep`)
-  runs by hand and on a manual dispatch.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
   merging it bumps the version, writes `CHANGELOG.md`, pushes the `vX.Y.Z` tag,
   and cuts the GitHub Release (under `RELEASE_PLZ_TOKEN`, a PAT — a tag from the

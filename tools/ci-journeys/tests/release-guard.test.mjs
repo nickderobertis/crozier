@@ -165,11 +165,13 @@ test("a same-named registry package's version is not a workspace member's", (t) 
   const h = history(t);
   const registry = '\n[[package]]\nname = "crozier"\nversion = "1.0.0"\nsource = "registry+test"\nchecksum = "abc"\n';
   const base = h.change({ "Cargo.lock": `${real("Cargo.lock")}${registry}` });
-  const head = h.change({ "Cargo.lock": `${real("Cargo.lock")}${registry.replace("1.0.0", "2.0.0")}` });
-  const run = h.guard(head, ["--base", base, "--head", head]);
-  // The two share a merge base with main, so the comparison sees the added block.
+  h.git("checkout", "--quiet", "--detach", base);
+  write(h.dir, { "Cargo.lock": `${real("Cargo.lock")}${registry.replace("1.0.0", "2.0.0")}` });
+  h.git("add", "-A");
+  h.git("commit", "--quiet", "-m", "release");
+  const run = h.guard("HEAD", ["--base", base, "--head", h.git("rev-parse", "HEAD")]);
   assert.equal(run.status, 1, run.stdout);
-  assert.match(run.stderr, /Cargo\.lock/);
+  assert.match(run.stderr, /Cargo\.lock: it changes more than workspace members' versions/);
 });
 
 test("an unrelated file, a new file, a deletion and a rename all fail, alone or beside a real bump", (t) => {

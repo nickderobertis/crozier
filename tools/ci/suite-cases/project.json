@@ -54,6 +54,8 @@
         "{workspaceRoot}/tests/nested-discriminator/golden/**/*",
         "{workspaceRoot}/scripts/share-instrumented-build.mjs",
         "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/golden-reach/**/*",
+        "{workspaceRoot}/crates/crozier-tool-journeys/**/*",
         "{workspaceRoot}/tools/surface-reach/**/*",
         "{workspaceRoot}/tools/witness-search/witness_screen.py",
         "{workspaceRoot}/docs/fern-limitations.md",

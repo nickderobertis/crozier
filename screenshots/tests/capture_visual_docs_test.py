@@ -55,7 +55,7 @@ def test_it_pins_the_toolchain_mounts_the_checkout_and_keeps_the_build_off_the_h
     assert f"{checkout / '.git'}:{checkout / '.git'}:ro" in arguments
     assert "RUSTUP_TOOLCHAIN=1.96.0" in arguments
     for tree in ("shots/current/x86_64", "shots/verify/x86_64"):
-        assert f"SHOTS_OUT={tree} bash scripts/screenshots.sh" in arguments
+        assert f"capture {tree}" in arguments
     assert 'chown -R "$HOST_OWNER" shots docs/screenshots' in arguments
 
 

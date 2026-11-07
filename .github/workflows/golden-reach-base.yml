@@ -12,14 +12,10 @@ permissions:
   contents: read
 
 jobs:
-  # The golden-reach base for this push to main: `just census-repin` steps from
-  # the nearest first-parent ancestor that has one, re-measuring only what a
-  # change touched. The job measures HEAD from the nearest earlier published base
-  # (fully past 7 days or 20 steps) and uploads `golden-reach-base-<sha>`. A newer
-  # push cancels a run in progress, so a burst of pushes yields a base for its
-  # newest commit only. Not a gate: nothing on a pull request waits for it.
-  # `actions: read` lets it list and download the earlier base; the upload uses
-  # the runner's own artifact token.
+  # Measures HEAD from the nearest earlier published base (fully past 7 days or 20 steps) and
+  # uploads `golden-reach-base-<sha>`. A newer push cancels a run in progress, so a burst of
+  # pushes yields a base for its newest commit only. `actions: read` lets it list and download
+  # the earlier base; the upload uses the runner's own artifact token.
   golden-reach-base:
     name: golden-reach-base
     runs-on: ubuntu-latest

@@ -210,9 +210,10 @@ jobs:
         run: just ci-test --exclude=tag:tier:promoted
       # The SDK environments: real PyPI installs and suites, no credential. Distinct from
       # the offline projects for what they contact, not for when they run.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
       - name: Test the affected SDK environments
         run: just ci-test --projects=tag:lane:sdk-env
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
       # Host-measured: one pool-maintenance pass builds twice and prunes, so Nx runs it alone,
       # and only when the change reaches that project.
       - name: Install cargo-prune-superseded
@@ -224,13 +225,13 @@ jobs:
       # cargo reuses that build only under this same CARGO_HOME. Live Prism, the corpus
       # byte-match (proved offline too, which no replay can), and the parser fallback.
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
-      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] External contact in the PR lanes is the user's explicit departure from the reference (docs/ci-lanes.md). The census-fallback tier needs uv to install the pinned ruamel.yaml; it reads only committed specifications and loopback servers.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] External contact in the PR lanes is the user's explicit departure from the reference (docs/ci-lanes.md), and no credential exists to require: Prism is loopback, packages are public, and the census-fallback tier reads only committed specifications and loopback servers.
       - name: Live e2e, corpus byte-match and census fallback
         env:
           CARGO_HOME: ${{ runner.temp }}/cold-cargo-home
           CROZIER_COLD_REGISTRY_HANDOFF: "1"
         run: just ci-test --projects=tag:lane:live
-      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
 
   # The Windows test lane. Measured limit: run 42345332459 spent 4307 s on this work
   # (Check 3557, SDK 363, install 387). 90 is transitional, as for test-linux.
@@ -289,9 +290,10 @@ jobs:
         run: just ci-test --exclude=tag:tier:promoted
       # The SDK environments: real PyPI installs and suites, no credential. Distinct from
       # the offline projects for what they contact, not for when they run.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
       - name: Test the affected SDK environments
         run: just ci-test --projects=tag:lane:sdk-env
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
       # The path the README tells users to run: separate from the dev bootstrap.
       - name: Install crozier (recommended end-user method)
         run: cargo install --path . --locked
@@ -354,9 +356,10 @@ jobs:
         run: just ci-test --exclude=tag:tier:promoted
       # The SDK environments: real PyPI installs and suites, no credential. Distinct from
       # the offline projects for what they contact, not for when they run.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential] The user chose external contact in the PR lanes as an explicit departure from the reference (docs/ci-lanes.md): gating merges on these suites is a stated requirement, and a separate job or schedule would stop them gating. They fetch only public PyPI packages and need no credential.
       - name: Test the affected SDK environments
         run: just ci-test --projects=tag:lane:sdk-env
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier, live_tier_compiles_and_requires_credential]
       # The path the README tells users to run: separate from the dev bootstrap.
       - name: Install crozier (recommended end-user method)
         run: cargo install --path . --locked

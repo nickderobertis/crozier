@@ -13,6 +13,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ENTRYPOINT = /^(test|test-.*|budgets|budgets-host|coverage|build|cold-registry-build)$/;
 
+const isMapping = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
+
 function refuse(message) {
   console.error(`lane-inventory: ${message}`);
   console.error("lane-inventory: restore the file, or run this from a full checkout");
@@ -47,10 +49,10 @@ for (const path of listing.stdout.split("\0").filter(Boolean)) {
   } catch (error) {
     refuse(`${path} is not JSON: ${error.message}`);
   }
-  const isDependency = (entry) => typeof entry === "string" || (typeof entry?.target === "string" && (entry.projects === undefined || Array.isArray(entry.projects)));
-  const isTarget = (target) => target !== null && typeof target === "object" && (target.dependsOn === undefined || (Array.isArray(target.dependsOn) && target.dependsOn.every(isDependency)));
+  const isDependency = (entry) => typeof entry === "string" || (typeof entry?.target === "string" && (entry.projects === undefined || (Array.isArray(entry.projects) && entry.projects.every((name) => typeof name === "string"))));
+  const isTarget = (target) => isMapping(target) && (target.dependsOn === undefined || (Array.isArray(target.dependsOn) && target.dependsOn.every(isDependency)));
   const tagsOk = project?.tags === undefined || (Array.isArray(project.tags) && project.tags.every((tag) => typeof tag === "string"));
-  const targetsOk = project?.targets === undefined || (project.targets !== null && typeof project.targets === "object" && Object.values(project.targets).every(isTarget));
+  const targetsOk = project?.targets === undefined || (isMapping(project.targets) && Object.values(project.targets).every(isTarget));
   if (typeof project?.name !== "string" || !tagsOk || !targetsOk) refuse(`${path} needs a string name, a list of string tags and a mapping of targets with valid dependsOn`);
   graph.set(project.name, project);
 }
@@ -61,8 +63,8 @@ try {
 } catch (error) {
   refuse(`tools/ci/lanes.json is not JSON: ${error.message}`);
 }
-const rows = inventory?.entrypoints && typeof inventory.entrypoints === "object" ? Object.entries(inventory.entrypoints) : undefined;
-const commands = inventory?.commands && typeof inventory.commands === "object" ? Object.entries(inventory.commands) : undefined;
+const rows = isMapping(inventory?.entrypoints) ? Object.entries(inventory.entrypoints) : undefined;
+const commands = isMapping(inventory?.commands) ? Object.entries(inventory.commands) : undefined;
 const isPlatformList = (list) => Array.isArray(list) && list.every((platform) => ["linux", "macos", "windows"].includes(platform));
 if (!rows || !commands || !Array.isArray(inventory.added) || !inventory.added.every((entry) => /^[^:]+:[^:]+$/.test(entry))
   || !rows.every(([entry, row]) => /^[^:]+:[^:]+$/.test(row?.now ?? entry) && isPlatformList(row?.platforms)) || !commands.every(([, list]) => isPlatformList(list))) {

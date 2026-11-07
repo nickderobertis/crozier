@@ -289,6 +289,12 @@ test("a manifest or inventory of the wrong shape is refused, not read past", (t)
     ["a target that is not a mapping", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [], targets: { test: null } }) })],
     ["a tag that is not a string", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [null], targets: {} }) })],
     ["a malformed dependency", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [], targets: { test: { dependsOn: [7] } } }) })],
+    ["targets that are a list", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [], targets: [] }) })],
+    ["a dependency naming no project", (root) => write(root, { "tests/runtime/project.json": JSON.stringify({ name: "runtime", tags: [], targets: { test: { dependsOn: [{ target: "x", projects: [null] }] } } }) })],
+    ["commands that are a list", (root) => {
+      const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
+      write(root, { "tools/ci/lanes.json": JSON.stringify({ ...inventory, commands: [] }) });
+    }],
     ["an inventory with no rows", (root) => write(root, { "tools/ci/lanes.json": JSON.stringify({ added: [] }) })],
     ["a row with an unknown platform", (root) => {
       const inventory = JSON.parse(readFileSync(join(root, "tools/ci/lanes.json"), "utf8"));
@@ -303,6 +309,38 @@ test("a manifest or inventory of the wrong shape is refused, not read past", (t)
     assert.match(run.stderr, /lane-inventory: .*\n.*restore the file/, what);
     gitIn(graph.root, "checkout", "--quiet", "--", ".");
   }
+});
+
+test("the manifest digest moves with every manifest, and a failed listing never matches a good one", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "crozier-digest-"));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  const SCRIPT = join(REPO, "tools/ci/project-files-digest.mjs");
+  const digest = (cwd = root) => spawnSync(process.execPath, [SCRIPT], { cwd, encoding: "utf8" });
+  gitIn(root, "init", "--quiet");
+  write(root, { "a/project.json": "{}\n", "b/project.json": "{}\n", "b/other.txt": "x\n" });
+  gitIn(root, "add", "-A");
+  const first = digest();
+  assert.equal(first.status, 0, first.stderr);
+  assert.equal(digest().stdout, first.stdout, "unchanged manifests keep their digest");
+  write(root, { "b/other.txt": "y\n" });
+  assert.equal(digest().stdout, first.stdout, "only manifests count");
+  write(root, { "a/project.json": '{"name":"a"}\n' });
+  const edited = digest().stdout;
+  assert.notEqual(edited, first.stdout, "an edit moves it");
+  write(root, { "c/project.json": "{}\n" });
+  const added = digest().stdout;
+  assert.notEqual(added, edited, "an untracked manifest moves it");
+  rmSync(join(root, "c/project.json"));
+  assert.equal(digest().stdout, edited, "and removing it moves it back");
+  rmSync(join(root, "a/project.json"));
+  const deleted = digest();
+  assert.equal(deleted.status, 0, "a tracked manifest gone from disk must not fail Nx's hashing");
+  assert.notEqual(deleted.stdout, edited, "a deletion moves it");
+  const elsewhere = mkdtempSync(join(tmpdir(), "crozier-digest-outside-"));
+  t.after(() => rmSync(elsewhere, { recursive: true, force: true }));
+  const failed = digest(elsewhere);
+  assert.equal(failed.status, 0, "a runtime input must never fail");
+  assert.notEqual(failed.stdout, digest(elsewhere).stdout, "a failed listing is never reused");
 });
 
 test("a retired row in the same change passes: only an unrecorded loss fails", (t) => {

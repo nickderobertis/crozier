@@ -40,8 +40,12 @@ docker run --rm -v "$PWD":/work -v "$git_common":"$git_common":ro -v crozier-vis
     tar -xzf /tmp/ruff.tgz -C /tmp
     install /tmp/ruff-x86_64-unknown-linux-gnu/ruff /usr/local/bin/ruff
     # llmlint: ignore[work_goes_through_command_surface] The rust image carries no `just`, and each capture needs its own SHOTS_OUT; `just screenshots` is this same one-line script.
-    SHOTS_OUT=shots/current/x86_64 bash scripts/screenshots.sh
-    SHOTS_OUT=shots/verify/x86_64 bash scripts/screenshots.sh
+    capture() {
+      SHOTS_OUT="$1" bash scripts/screenshots.sh > /tmp/capture.log 2>&1 || { cat /tmp/capture.log >&2; return 1; }
+    }
+    capture shots/current/x86_64
+    capture shots/verify/x86_64
+    echo "capture-visual-docs: shots/current and shots/verify written"
   ' || {
   status=$?
   echo "capture-visual-docs: the capture failed (status $status, above); run ./screenshots/capture-visual-docs.sh locally, or fix the download or scripts/screenshots.sh error it names" >&2
