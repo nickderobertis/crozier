@@ -40,7 +40,7 @@ inline-anyof-variants	anyof-array-variant-closed-object-item	src/ir.rs::InlineHo
 inline-anyof-variants	anyof-array-variant-composed-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	14	14
 inline-anyof-variants	anyof-array-variant-oneof-nullable-item	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	6	8
 inline-anyof-variants	anyof-oneof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	59	90
-inline-body-readonly-own-overlap	request-body-content	src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]	4	5
+inline-body-readonly-own-overlap	request-body-content	src/ir.rs::append_parent_body_fields[if let Some\(own\) = fields$]	4	5
 inline-oneof-variants	annotated-ref-shape	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]	15	16
 inline-oneof-variants	oneof-anyof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	59	90
 inline-oneof-variants	oneof-array-variant-anyof-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	45	45
@@ -67,7 +67,7 @@ nested-array-discriminated-unions	inheritance-discriminated-union	src/ir.rs::Bui
 nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
-observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	1	1
+observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date$]	1	1
 observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
 observatory-query-extensions	parameter-in-query	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	2	2
 odometer-reading	format-int64	src/ir.rs::bounded_example_literal[=^ {16}exact$]	1	1

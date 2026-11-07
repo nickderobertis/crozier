@@ -3267,7 +3267,7 @@ why. The changes that took the arm off:
 | 2 | `request-body-content` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | 1 | `exhausted` | `json-request-shapes` |
 | 2 | `request-body-content` | `src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]` | 4 | `exhausted` | `request-media-methods` |
 | 2 | `request-body-content` | `src/openapi.rs::Operation::with_sdk_method_name` | 8 | `exhausted` | `request-media-methods` |
-| 2 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `exhausted` | `inline-body-readonly-own-overlap` |
+| 2 | `request-body-content` | `src/ir.rs::append_parent_body_fields[if let Some\(own\) = fields$]` | 5 | `exhausted` | `inline-body-readonly-own-overlap` |
 | 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 31 | `search-incomplete` | `kitchen-nested-mapping-target` |
 | 3 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 32 | `exhausted` | `tidepool-survey-log` |
 | 3 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::discriminated_union_value[Some\(m\) if m\.layout\.is_wrapped\(\) => \{]` | 20 | `exhausted` | `tidepool-survey-log` |
@@ -3317,7 +3317,7 @@ why. The changes that took the arm off:
 | 34 | `array-item-empty-object` | `src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]` | 10 | `exhausted` | `nested-array-elements` |
 | 35 | `array-item-pointer-walk-allof` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 36 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 37 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
+| 37 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date$]` | 1 | `search-incomplete` | `observatory-client-date` |
 | 38 | `anyof-array-variant-anyof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
 | 39 | `anyof-array-variant-oneof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
 | 40 | `inheritance-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
