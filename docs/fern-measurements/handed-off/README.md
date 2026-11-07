@@ -261,6 +261,8 @@ enum modes; its scoped export reaches the named arm.
 | `json-request-shapes` | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `meadow-tag-code` | `format-uuid` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | `registered-literals-hey-api-hey-api-30fbd0e5` |
 | `shelf-labels-map-variants` | `property-map-value-oneof` | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `registered-literals-apis-guru-openapi-directory-9031af6a` |
+| `kitchen-nested-mapping-target` | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | `registered-literals-kong-developer-konghq-com-d58ac8e1` |
+| `library-union-shared-fields` | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | `registered-literals-arpicato-messie-messenger-aa02af8d` |
 
 The nine retired arm covers remove exactly nine rows from
 `handwritten-reach.tsv`; the remaining rows and every configuration-gate row

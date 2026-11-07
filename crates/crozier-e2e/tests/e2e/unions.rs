@@ -58,7 +58,9 @@ pub(super) fn compared() -> Vec<(String, Vec<String>)> {
 /// their arm left the site table when crozier stopped branching on it, or a
 /// registered real specification now reaches it, so they carry no cover, but
 /// their Fern trees stay byte-gated here and by Contract A.
-const PROBE_FIXTURES: [&str; 4] = [
+const PROBE_FIXTURES: [&str; 6] = [
+    "kitchen-nested-mapping-target",
+    "library-union-shared-fields",
     "harbor-nullable-inline-object",
     "thermostat-nullable-member",
     "museum-titled-array-items",

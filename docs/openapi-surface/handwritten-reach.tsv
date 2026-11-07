@@ -54,8 +54,6 @@ kiln-array-mode	anyof-array-variant-inline-enum-item	src/ir.rs::InlineHoister::h
 kiln-array-mode	oneof-anyof-variant	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	2	2
 kiln-nested-reason	oneof-anyof-variant	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	5	5
 kiln-variant-trigger	allof	src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]	1	1
-kitchen-nested-mapping-target	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]	31	31
-library-union-shared-fields	oneof-discriminated-union	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]	16	17
 measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
 measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	2	2
 multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1

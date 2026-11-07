@@ -72,7 +72,9 @@ http-scram-sha-1	absent-tree	discards	docs/openapi-surface/probe-expected/http-s
 http-scram-sha-256	absent-tree	discards	docs/openapi-surface/probe-expected/http-scram-sha-256	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
 http-vapid	absent-tree	discards	docs/openapi-surface/probe-expected/http-vapid	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
 json-binary-path	absent-tree	measured	docs/openapi-surface/probe-expected/json-binary-path	—	2e7fa2e64facc075f027e1c1e4ba00d2092e4302a4fc0022d44712dd0855a67d
+kitchen-nested-mapping-target	absent-tree	measured	docs/openapi-surface/probe-expected/kitchen-nested-mapping-target	—	ed6796d3547a0d5000c43b223bea2b049d96b53016088194b4124159350e2b82
 label-array-or-object	absent-tree	discards	docs/openapi-surface/probe-expected/label-array-or-object	—	7f01f7fc61b0777671261466638efb62ac5de274af609dafc0cd22674f6c8b34
+library-union-shared-fields	absent-tree	measured	docs/openapi-surface/probe-expected/library-union-shared-fields	—	0082ee0223a76709800831a72411437c6c0013f8eb49158f769ac5db90751b5d
 link-description	absent-tree	discards	docs/openapi-surface/probe-expected/link-description	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
 link-requestBody	absent-tree	discards	docs/openapi-surface/probe-expected/link-requestBody	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
 link-server	absent-tree	discards	docs/openapi-surface/probe-expected/link-server	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
