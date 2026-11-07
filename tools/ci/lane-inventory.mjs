@@ -157,25 +157,33 @@ for (const [command, platforms] of commands) {
   }
 }
 
-// A workflow's top-level `on:` value, through the lines up to the next top-level key.
-const triggers = (text) => /^on:[^\n]*\n(?:[ #][^\n]*\n|\n)*/m.exec(text)?.[0] ?? "";
-// Whether a push to main starts it: a `push` with no filter does, as does one whose branches name main.
-function runsOnMainPush(block) {
-  if (/^on:.*\bpush\b/.test(block)) return true;
-  const push = /^ {2}push:[^\n]*\n((?: {4,}[^\n]*\n)*)/m.exec(block);
-  if (!push) return false;
-  if (/^ {4}branches:/m.test(push[1])) return /\bmain\b/.test(push[1]);
-  return !/^ {4}tags:/m.test(push[1]);
+// Whether a push to main starts a workflow: true, false, or undefined for a form this check
+// does not read, which fails rather than being guessed at. Its forms are the repository's own:
+// a whole-line `on:` block, whose `push` has no filter, `branches: [main]` or tags alone.
+function mainPushVerdict(text) {
+  const on = /^on:([^\n]*)\n((?:[ #][^\n]*\n|\n)*)/m.exec(text);
+  if (!on) return undefined;
+  if (on[1].trim() !== "") return /\bpush\b/.test(on[1]);
+  if (/^ {2}["'](?:push|pull_request)/m.test(on[2])) return undefined;
+  const push = /^ {2}push:[ \t]*\n((?: {4,}[^\n]*\n)*)/m.exec(on[2]);
+  if (!push) return /^ {2}push\b/m.test(on[2]) ? undefined : false;
+  const filters = push[1].trimEnd();
+  if (filters === "" || filters === "    branches: [main]") return true;
+  return /^ {4}tags:/.test(filters) && !/^ {4}(?!tags:)\S/m.test(filters) ? false : undefined;
 }
+const startedByPullRequest = (text) => /^ {2}pull_request|^on:.*\bpull_request\b/m.test(text);
+
 const listedNonCheck = new Map(nonCheck);
 for (const path of listedNonCheck.keys()) {
-  const block = triggers(read(path));
-  if (!runsOnMainPush(block)) problems.push(`${path}: listed as a non-check workflow, but no push to main starts it`);
-  if (/\bpull_request/.test(block)) problems.push(`${path}: listed as a non-check workflow, but a pull request starts it`);
+  const text = read(path);
+  if (mainPushVerdict(text) === false) problems.push(`${path}: listed as a non-check workflow, but no push to main starts it`);
+  if (startedByPullRequest(text)) problems.push(`${path}: listed as a non-check workflow, but a pull request starts it`);
 }
 for (const name of readdirSync(join(ROOT, ".github/workflows"))) {
   const path = `.github/workflows/${name}`;
-  if (runsOnMainPush(triggers(read(path))) && !listedNonCheck.has(path)) problems.push(`${path}: runs on push to main and is not in nonCheckWorkflows; CI's proof belongs in a pull request lane`);
+  const verdict = mainPushVerdict(read(path));
+  if (verdict === undefined) problems.push(`${path}: cannot tell whether a push to main starts it; write its trigger as a whole-line \`on:\` block whose \`push\` has no filter, \`branches: [main]\` or tags alone`);
+  else if (verdict && !listedNonCheck.has(path)) problems.push(`${path}: runs on push to main and is not in nonCheckWorkflows; CI's proof belongs in a pull request lane`);
 }
 
 if (problems.length > 0) {

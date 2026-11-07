@@ -595,7 +595,9 @@ fn main_caches_are_written_under_the_keys_the_lanes_restore() {
 
 /// The gh-pages root gallery comes from a push to main: the visual-docs action deploys to the
 /// root only on a `push` event, so it needs a workflow that event starts, publishing what the
-/// lint lane holds to the same baseline.
+/// lint lane holds to the same baseline. Configuration assertions, because running the
+/// publish would push to the real gh-pages branch: the capture and comparison run for real
+/// in the lint lane on every pull request, and the deploy step is screencomp's own.
 #[test]
 fn the_root_gallery_is_published_from_a_push_to_main() {
     let gallery: Value =
