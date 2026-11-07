@@ -1,9 +1,12 @@
 # Bounded continuation of the schema witness search
 
-Base: `92be4edfa6378d3e509c775f8f9796de40cb9b54`. [`targets.tsv`](targets.tsv)
-freezes all 124 targets: 51 feature/supplement rows and 73 distinct arm
-covers in the schemas region. Duplicate covers of one arm count once. The
-remote-document supplement is covered by the existing loopback journey.
+Base: `3c405b50a4b82c6d6ad8002bb4d6161e1996cf10`. [`targets.tsv`](targets.tsv)
+freezes the 116 targets the ledger names there: 48 feature/supplement rows and
+68 distinct arm covers in the schemas region. Duplicate covers of one arm count
+once. The remote-document supplement is covered by the existing loopback journey.
+The search began at an earlier base with 124 targets; the 8 that main settled
+before this base left the list, each named in [`settled-at-base.tsv`](settled-at-base.tsv)
+with what settled it, and their sections below say so.
 This continuation makes no new GitHub code search and changes no generated output.
 
 ## Populations screened
@@ -14,18 +17,20 @@ This continuation makes no new GitHub code search and changes no generated outpu
    are unscreened, rather than current certified-pair refusals (manager ruling 275).
    The two files retain all 15,553 candidate-target entries and their immutable
    revisions and digests, representing 2,459 distinct byte strings.
-2. Exactly the seven [newly admitted documents](../../fern-measurements/handed-off/README.md#newly-admitted-documents).
-   [`newly-admitted.tsv`](newly-admitted.tsv) lists the committed sources, smallest
-   first; all seven SHA-256 values were verified against the handed-off pins.
-   [`selector-prefilters.tsv`](selector-prefilters.tsv) records native census
-   counts, including zeroes, for every target key.
-   [`newly-admitted-shape-screen.tsv`](newly-admitted-shape-screen.tsv) records
-   every target/document decision and the rejected complete trigger. A broad selector is only a
-   necessary condition; the previous search's complete-trigger detector and the
-   handling path must also apply. None provides a new remaining target witness.
-   The formerly declared description, nullable-member, closed-object and sole
-   nullable-object targets have already been settled on this base; they are
-   excluded from the frozen target set.
+2. Exactly the 78 [newly admitted documents](../../fern-measurements/handed-off/README.md#newly-admitted-documents)
+   this base lists. [`newly-admitted.tsv`](newly-admitted.tsv) lists the committed
+   sources, smallest first, each SHA-256 verified against the handed-off pin. Seven
+   were screened at the earlier base; the other 71 arrived with the merge of this base.
+   All 78 are registered corpus rows, so their certified goldens already exist and no
+   Fern generation was spent on them.
+   [`selector-prefilters.tsv`](selector-prefilters.tsv) records native census counts,
+   including zeroes, for every target key.
+   [`newly-admitted-shape-screen.tsv`](newly-admitted-shape-screen.tsv) records every
+   target/document decision, 9,048 of them, and the reason. A broad selector is only a
+   necessary condition: a witness must also meet the complete trigger and be
+   output-sensitive, meaning that removing the trigger moves crozier's output.
+   [`removal-sensitivity.json`](removal-sensitivity.json) records each removal run.
+   An arm target is decided by the measured reach ledger, which reads every registered golden.
 
 Ranking covers the 1,026 retained byte strings only. The 1,433 without retained
 bytes are named individually in [`retained-availability.tsv`](retained-availability.tsv),
@@ -88,9 +93,37 @@ witness: removing both declarations changes none of its 231 crozier files.
 [`rsserver-removal.json`](rsserver-removal.json) records the two paths and the
 empty whole-tree diff, under the same sensitivity rule as Isaacus.
 
-## Outcome: no fixture-only promotion
+## Real witnesses
 
-**This node promotes no fixture-only target and retires no hand-written cover.**
+Five feature rows are now proven by documents this base already registered. None was
+registered by this node, so none takes a row of its range; rows 5504 to 5554 belong to
+the registration node that admitted them. Each row's complete certified golden
+byte-matches in both enum modes, and each reads its new proof class in
+[`schemas.md`](../schemas.md). Each output-sensitive result is in
+[`removal-sensitivity.json`](removal-sensitivity.json).
+
+| key | corpus row | witness | what moves when the trigger is removed |
+|---|---|---|---|
+| `allof-overlapping-ref-parents-flattened` | 5504 | `registered-literals-apis-guru-openapi-directory-72fccf73` | `GetAllAccountResponse` stops being one flat model and subclasses its parents |
+| `nullable-anyof-member-description-dropped` | 5539, 5547 | `registered-literals-hey-api-hey-api-30fbd0e5`, `registered-literals-landing-ai-ade-cli-d11fa644` | changing a member's description moves the inline enum's field and type, and the hoisted object's docstring |
+| `number-format-uint64-typed-int` | 5522, 5536 | `registered-literals-trueblocks-trueblocks-core-2a176f14`, `registered-literals-gleez-nats-http-gateway-e8767ae7` | `int` becomes `float` in 26 and 23 files |
+| `property-ref-to-nullable-component-annotation` | 5554 | `registered-literals-nextcloud-client-sdks-adbf3118` | `typing.Optional[…] = None` becomes a required field in 2 files |
+| `undiscriminated-ref-oneof-sibling-properties-dropped` | 5515 | `registered-literals-openapitools-openapi-generator-98d94419` | `Pet = typing.Union[Cat, Dog]` becomes a model carrying `name` |
+
+The covers these superseded retired as the fixture rules say:
+`artefact-catalogue`, `nullable-observer-notes`, `reservoir-ledger` and
+`undiscriminated-ref-oneof-sibling-properties-dropped` moved unchanged to
+[`superseded-fixtures`](../../fern-measurements/superseded-fixtures/README.md), which
+other measurements and tests read. `material-register` loses its `uint64` cover and
+stays for `string-json-format-typed-any`.
+
+Declarers rejected for the same features are in the shape screen. The closest calls:
+Konfig's `CardPaymentInstrument` meets three `allOf` triggers, but it is its parent's
+sole `oneOf` branch and its golden has no superclass, deferred import or merged branch.
+OpenBanking's pointers into component responses sit on error responses, which take the
+shared `NotFoundErrorBody` name, not the union-variant naming the arm's fixture proves.
+
+## The earlier registration: Eqivo
 
 Eqivo matches the certified trees in both enum modes and is registered as corpus
 row 5300, `eqivo-apostrophe-enums`. It stands as a witness of
@@ -113,7 +146,8 @@ one of the three.
 ## GitHub requests
 
 No GitHub code search was made. No GitHub request was made outside the guard.
-No live GitHub request was made at all. The guarded acquirer read 88 exact-commit
+No live GitHub request was made at all, in either session of this node; the second,
+which screened the 71 later documents, read only committed sources. The guarded acquirer read 88 exact-commit
 raw responses from the shared response cache; its own
 [`github-cache-hits.jsonl`](guard-logs/github-cache-hits.jsonl) retains those hits.
 There are no call or wait logs because neither occurred. Other retained files
@@ -128,11 +162,11 @@ SwaggerHub route was used. Certified-tree reuse is not a response-cache hit.
 
 ## Verdicts
 
-Final totals: 75 `exhausted`, 49
-`search-incomplete`, none promoted to a registered corpus row. Exhaustion is restricted to
-these two assigned populations; it makes no claim about previously truncated
-search pages. [`census.tsv`](census.tsv) names every outstanding candidate for
-each key and arm and gives its current reason beside its prior reading.
+Final totals over the 116 targets: 5 registered corpus rows, 74 `exhausted`,
+37 `search-incomplete`. Exhaustion is restricted to these two assigned populations;
+it makes no claim about previously truncated search pages. [`census.tsv`](census.tsv)
+names every outstanding candidate for each key and arm still open and gives its current
+reason beside its prior reading.
 [`known-declarers.tsv`](known-declarers.tsv) keeps earlier measured differences
 separate from candidates awaiting their first certified screen.
 
@@ -188,7 +222,7 @@ separate from candidates awaiting their first certified screen.
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `allof-overlapping-ref-parents-flattened` | feature | `-` | `search-incomplete` | `none-registrable` | 38 |
+| `allof-overlapping-ref-parents-flattened` | feature | `-` | `registered corpus row 5504` | `witness-registered` | 0 |
 
 ### Target 10: allof-union-branch-not-schema-overrides-property
 
@@ -344,19 +378,19 @@ separate from candidates awaiting their first certified screen.
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `combo-annotated-ref-property-example` | feature | `-` | `exhausted` | `none-registrable` | 0 |
+| `combo-annotated-ref-property-example` | feature | `-` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 36: combo-anyof-beside-properties
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `combo-anyof-beside-properties` | feature | `-` | `search-incomplete` | `none-registrable` | 3 |
+| `combo-anyof-beside-properties` | feature | `-` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 37: combo-oneof-beside-properties
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `combo-oneof-beside-properties` | feature | `-` | `search-incomplete` | `none-registrable` | 4 |
+| `combo-oneof-beside-properties` | feature | `-` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 38: discriminated-variant-date-value-snippet
 
@@ -398,19 +432,19 @@ separate from candidates awaiting their first certified screen.
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `format-binary` | arm | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `search-incomplete` | `none-registrable` | 440 |
+| `format-binary` | arm | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 45: format-binary
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `format-binary` | arm | `src/ir.rs::scalar_body[=Some\("binary"\)]` | `search-incomplete` | `none-registrable` | 442 |
+| `format-binary` | arm | `src/ir.rs::scalar_body[=Some\("binary"\)]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 46: format-byte
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `format-byte` | arm | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | `search-incomplete` | `none-registrable` | 228 |
+| `format-byte` | arm | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 47: format-email
 
@@ -494,7 +528,7 @@ separate from candidates awaiting their first certified screen.
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `format-uuid` | arm | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | `search-incomplete` | `none-registrable` | 473 |
+| `format-uuid` | arm | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 61: forward-refs-omit-hoisted-variant-models
 
@@ -546,13 +580,13 @@ backslash or non-ASCII enum value; the 48 entries in [`census.tsv`](census.tsv) 
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `nullable-anyof-member-description-dropped` | feature | `-` | `search-incomplete` | `none-registrable` | 9 |
+| `nullable-anyof-member-description-dropped` | feature | `-` | `registered corpus row 5539, 5547` | `witness-registered` | 0 |
 
 ### Target 69: number-format-uint64-typed-int
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `number-format-uint64-typed-int` | feature | `-` | `search-incomplete` | `none-registrable` | 1 |
+| `number-format-uint64-typed-int` | feature | `-` | `registered corpus row 5522, 5536` | `witness-registered` | 0 |
 
 ### Target 70: oneof
 
@@ -666,7 +700,7 @@ backslash or non-ASCII enum value; the 48 entries in [`census.tsv`](census.tsv) 
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `property-map-value-oneof` | arm | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `search-incomplete` | `none-registrable` | 29 |
+| `property-map-value-oneof` | arm | `src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]` | `settled-at-base` | `see settled-at-base.tsv` | 0 |
 
 ### Target 89: property-oneof-residual
 
@@ -684,7 +718,7 @@ backslash or non-ASCII enum value; the 48 entries in [`census.tsv`](census.tsv) 
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `property-ref-to-nullable-component-annotation` | feature | `-` | `search-incomplete` | `none-registrable` | 11 |
+| `property-ref-to-nullable-component-annotation` | feature | `-` | `registered corpus row 5554` | `witness-registered` | 0 |
 
 ### Target 92: property-sole-anyof-closed-object-member
 
@@ -876,7 +910,7 @@ backslash or non-ASCII enum value; the 48 entries in [`census.tsv`](census.tsv) 
 
 | key | kind | arm | verdict | result | outstanding entries |
 |---|---|---|---|---|---:|
-| `undiscriminated-ref-oneof-sibling-properties-dropped` | feature | `-` | `search-incomplete` | `none-registrable` | 56 |
+| `undiscriminated-ref-oneof-sibling-properties-dropped` | feature | `-` | `registered corpus row 5515` | `witness-registered` | 0 |
 
 ### Target 124: union-of-enum-ref-const-and-string-members
 

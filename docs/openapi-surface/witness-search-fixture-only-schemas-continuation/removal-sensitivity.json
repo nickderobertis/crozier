@@ -1,0 +1,236 @@
+[
+ {
+  "changed": [
+   "reference.md",
+   "src/fern/accounts/client.py",
+   "src/fern/accounts/raw_client.py",
+   "src/fern/admin/client.py",
+   "src/fern/admin/raw_client.py",
+   "src/fern/chain_data/client.py",
+   "src/fern/chain_data/raw_client.py",
+   "src/fern/other/client.py",
+   "src/fern/other/raw_client.py",
+   "src/fern/types/block_count.py",
+   "src/fern/types/bounds.py",
+   "src/fern/types/cache_item.py",
+   "src/fern/types/chain.py",
+   "src/fern/types/chunk_address.py",
+   "src/fern/types/chunk_bloom.py",
+   "src/fern/types/chunk_index.py",
+   "src/fern/types/chunk_stats.py",
+   "src/fern/types/count.py",
+   "src/fern/types/name.py",
+   "src/fern/types/report_check.py",
+   "src/fern/types/token.py",
+   "src/fern/types/trace.py",
+   "src/fern/types/trace_count.py",
+   "src/fern/types/trace_filter.py",
+   "src/fern/types/transfer.py",
+   "src/fern/types/uint64.py"
+  ],
+  "fixture": "registered-literals-trueblocks-trueblocks-core-2a176f14",
+  "key": "number-format-uint64-typed-int",
+  "mutation": "uint64",
+  "sites": 50
+ },
+ {
+  "changed": [
+   "reference.md",
+   "src/fern/extended_kv_entry_operations/client.py",
+   "src/fern/extended_kv_entry_operations/raw_client.py",
+   "src/fern/kv_api/client.py",
+   "src/fern/kv_api/raw_client.py",
+   "src/fern/kv_management_api/client.py",
+   "src/fern/kv_management_api/raw_client.py",
+   "src/fern/kv_management_api/types/kv_store_info_response.py",
+   "src/fern/kv_management_api/types/kv_store_watch_response.py",
+   "src/fern/nats_core_messaging_experimental/client.py",
+   "src/fern/nats_core_messaging_experimental/raw_client.py",
+   "src/fern/object_store_api/client.py",
+   "src/fern/object_store_api/raw_client.py",
+   "src/fern/object_store_entry_operations/types/obj_create_entry_response.py",
+   "src/fern/object_store_management_api/client.py",
+   "src/fern/object_store_management_api/raw_client.py",
+   "src/fern/object_store_management_api/types/obj_store_watch_response.py",
+   "src/fern/object_store_management_api/types/objm_store_info_response.py",
+   "src/fern/types/bucket.py",
+   "src/fern/types/bucket_config.py",
+   "src/fern/types/object_info.py",
+   "src/fern/types/value.py",
+   "src/fern/types/value_event.py"
+  ],
+  "fixture": "registered-literals-gleez-nats-http-gateway-e8767ae7",
+  "key": "number-format-uint64-typed-int",
+  "mutation": "uint64",
+  "sites": 52
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-geoserver-geoserver-b34cf587",
+  "key": "schema-example-array-null-element",
+  "mutation": "nullel",
+  "sites": 1
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-opengeospatial-t17-api-d166-ffbd86a7",
+  "key": "schema-example-array-null-element",
+  "mutation": "nullel",
+  "sites": 1
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-jentic-jentic-public-apis-a96f8580",
+  "key": "oneof-bare-object-example-variant",
+  "mutation": "oneofex",
+  "sites": 1
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-konfig-dev-konfig-614a2b05",
+  "key": "oneof-bare-object-example-variant",
+  "mutation": "oneofex",
+  "sites": 1
+ },
+ {
+  "changed": [
+   "src/fern/extract/types/v2extract_get_job_response_result.py",
+   "src/fern/ground/types/v2ground_get_job_response_result.py",
+   "src/fern/v2workflow/types/v2workflow_get_job_response_result.py"
+  ],
+  "fixture": "registered-literals-landing-ai-ade-cli-d11fa644",
+  "key": "nullable-anyof-member-description-dropped",
+  "mutation": "anyofdesc",
+  "sites": 3
+ },
+ {
+  "changed": [
+   "src/fern/types/workflow_object.py",
+   "src/fern/types/workflow_object_deactivated.py"
+  ],
+  "fixture": "registered-literals-observation-management-service-ewms-workflow-management-service-2b4dea85",
+  "key": "nullable-anyof-member-description-dropped",
+  "mutation": "anyofdesc",
+  "sites": 1
+ },
+ {
+  "changed": [
+   "src/fern/me/types/me_get_response.py",
+   "src/fern/me/types/me_get_response_tier.py",
+   "src/fern/types/basic_legacy_val.py",
+   "src/fern/types/basic_legacy_val_author.py",
+   "src/fern/types/extended_legacy_val.py",
+   "src/fern/types/extended_legacy_val_author.py",
+   "src/fern/types/membership.py",
+   "src/fern/types/membership_role.py",
+   "src/fern/val/types/get_v3val_viewer_response.py",
+   "src/fern/val/types/get_v3val_viewer_response_type.py"
+  ],
+  "fixture": "registered-literals-hey-api-hey-api-30fbd0e5",
+  "key": "nullable-anyof-member-description-dropped",
+  "mutation": "anyofdesc",
+  "sites": 5
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-openapitools-openapi-generator-3d039741",
+  "key": "ref-with-nullable-sibling-made-optional",
+  "mutation": "nullsib",
+  "sites": 2
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242",
+  "key": "ref-with-nullable-sibling-made-optional",
+  "mutation": "nullsib",
+  "sites": 2
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-teunmooij-payload-tools-ecbf9ccc",
+  "key": "ref-with-nullable-sibling-made-optional",
+  "mutation": "nullsib",
+  "sites": 1
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-confluentinc-schema-registry-sdk-go-aa65c204",
+  "key": "property-ref-to-nullable-component-annotation",
+  "mutation": "compnull",
+  "sites": 2
+ },
+ {
+  "changed": [
+   "src/fern/types/core_unified_search_result.py",
+   "src/fern/types/files_sharing_share.py"
+  ],
+  "fixture": "registered-literals-nextcloud-client-sdks-adbf3118",
+  "key": "property-ref-to-nullable-component-annotation",
+  "mutation": "compnull",
+  "sites": 2
+ },
+ {
+  "changed": [],
+  "fixture": "registered-literals-resemble-ai-resemble-mcp-48c5814b",
+  "key": "property-ref-to-nullable-component-annotation",
+  "mutation": "compnull",
+  "sites": 3
+ },
+ {
+  "changed": [
+   "src/fern/types/pet.py"
+  ],
+  "fixture": "registered-literals-openapitools-openapi-generator-98d94419",
+  "key": "undiscriminated-ref-oneof-sibling-properties-dropped",
+  "mutation": "oneofsib",
+  "sites": 1
+ },
+ {
+  "changed": [
+   "src/fern/types/get_all_account_response.py",
+   "src/fern/types/vsm_account_response.py",
+   "src/fern/types/wa_account_response.py"
+  ],
+  "fixture": "registered-literals-apis-guru-openapi-directory-72fccf73",
+  "key": "allof-overlapping-ref-parents-flattened",
+  "mutation": "overlap",
+  "sites": 10
+ },
+ {
+  "changed": [
+   "src/fern/__init__.py",
+   "src/fern/types/__init__.py",
+   "src/fern/types/card_payment_instrument.py",
+   "src/fern/types/payment_instrument.py",
+   "src/fern/types/payment_instrument_type.py"
+  ],
+  "fixture": "registered-literals-konfig-dev-konfig-1115ef92",
+  "key": "allof-extends-oneof-object-refused",
+  "mutation": "parentoneof",
+  "sites": 1
+ },
+ {
+  "changed": [
+   "src/fern/__init__.py",
+   "src/fern/errors/bad_request_error.py",
+   "src/fern/errors/internal_server_error.py",
+   "src/fern/errors/method_not_allowed_error.py",
+   "src/fern/errors/too_many_requests_error.py",
+   "src/fern/risk_coverages/raw_client.py",
+   "src/fern/survival_coverages/raw_client.py",
+   "src/fern/types/__init__.py",
+   "src/fern/types/bad_request_error_body.py",
+   "src/fern/types/bad_request_error_body_errors_item.py",
+   "src/fern/types/internal_server_error_body.py",
+   "src/fern/types/internal_server_error_body_errors_item.py",
+   "src/fern/types/method_not_allowed_error_body.py",
+   "src/fern/types/method_not_allowed_error_body_errors_item.py",
+   "src/fern/types/too_many_requests_error_body.py",
+   "src/fern/types/too_many_requests_error_body_errors_item.py"
+  ],
+  "fixture": "registered-literals-openbanking-brasil-areadesenvolvedor-7fb4ca57",
+  "key": "ref-into-component-response-schema-named-by-last-segment",
+  "mutation": "inlineresp",
+  "sites": 4
+ }
+]
