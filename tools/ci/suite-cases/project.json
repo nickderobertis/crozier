@@ -79,7 +79,11 @@
       "cache": true,
       "inputs": [
         "default",
-        "boundaries"
+        "boundaries",
+        "{workspaceRoot}/scripts/share-instrumented-build.mjs",
+        {
+          "runtime": "node --version"
+        }
       ]
     }
   }

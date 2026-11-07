@@ -17,6 +17,8 @@
 - `cache-key.mjs` is the runtime input of `test` and, with `python`, of
   `surface-census:test-reuse`: Nx does not hash the host, so a tool, variable or
   file that decides what the suites compile, collect or read belongs there.
+  `lint` keys only on Node's version and its files; a file it checks from outside
+  this project is a declared input, and a test fails until it is.
   `tests/cache-key.test.mjs` proves other hosts, interpreters and flags take no
   cached result. Files a suite reads go in the target's `inputs`, not there, with
   one exception: both targets run `uv run --locked --all-packages`, so every uv

@@ -288,6 +288,86 @@ for (const [project, target] of TARGETS) {
   }
 }
 
+const LINT_PROJECT = "tools/ci/suite-cases";
+const SHARED_BUILD = "scripts/share-instrumented-build.mjs";
+const REPLAYED = /existing outputs match the cache|local cache/i;
+const realLint = () => JSON.parse(readFileSync(join(ROOT, LINT_PROJECT, "project.json"), "utf8")).targets.lint;
+const syntaxChecked = () => realLint().options.commands.filter((command) => command.startsWith("node --check ")).map((command) => command.slice("node --check ".length));
+
+/**
+ * The real `suite-cases:lint`, real inputs and real `node --check` commands, over copies of
+ * the files it checks. Its boundary command is left out: it needs the real project graph
+ * and `cargo metadata`, and no file here decides it.
+ */
+function lintWorkspace(t) {
+  const { root, nx } = scratchWorkspace(t, LINT_PROJECT, "lint");
+  const lint = realLint();
+  for (const path of syntaxChecked()) {
+    mkdirSync(dirname(join(root, path)), { recursive: true });
+    cpSync(join(ROOT, path), join(root, path));
+  }
+  writeFileSync(join(root, LINT_PROJECT, "project.json"), JSON.stringify({
+    name: "suite-cases",
+    targets: {
+      lint: {
+        executor: lint.executor,
+        cache: lint.cache,
+        inputs: lint.inputs,
+        options: { ...lint.options, commands: syntaxChecked().map((path) => `node --check ${path}`) },
+      },
+    },
+  }));
+  return { root, nx };
+}
+
+function assertRan(run, because) {
+  assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
+  assert.doesNotMatch(run.stdout, REPLAYED, because);
+}
+
+function assertReplayed(run, because) {
+  assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
+  assert.match(run.stdout, REPLAYED, because);
+}
+
+test("suite-cases:lint replays while its inputs hold, and a syntax error in the shared-build script reruns it and fails", (t) => {
+  const { root, nx } = lintWorkspace(t);
+  const script = join(root, SHARED_BUILD);
+  const original = readFileSync(script, "utf8");
+  assertRan(nx(), "the first run has nothing to replay");
+  assertReplayed(nx(), "unchanged inputs replay the success");
+
+  writeFileSync(script, `${original}\nfunction {\n`);
+  for (const attempt of ["first", "second"]) {
+    const broken = nx();
+    assert.notEqual(broken.status, 0, `the ${attempt} run after the edit replayed a stale success:\n${broken.stdout}`);
+    assert.doesNotMatch(broken.stdout, REPLAYED, "a failing edit is checked, not replayed");
+    assert.match(`${broken.stdout}\n${broken.stderr}`, /SyntaxError/);
+    assert.ok(`${broken.stdout}\n${broken.stderr}`.includes("share-instrumented-build.mjs"), "the failure names the script");
+  }
+
+  writeFileSync(script, original);
+  assertReplayed(nx(), "the original script replays its own success");
+});
+
+test("suite-cases:lint takes no cached result from another Node version", (t) => {
+  const { root, nx } = lintWorkspace(t);
+  const otherNode = standIn(root, "node", "--version", "v0.0.0-crozier-probe", process.execPath);
+  assertRan(nx(), "the first run has nothing to replay");
+  assertReplayed(nx(), "the same Node replays");
+  assertRan(nx(otherNode), "another Node version must check the files itself");
+  assertReplayed(nx(otherNode), "that version replays its own success");
+  assertReplayed(nx(), "the original Node still replays its own success");
+});
+
+test("every file suite-cases:lint syntax-checks decides its cache key", () => {
+  const { inputs } = realLint();
+  assert.ok(inputs.includes("default"), "the project's own files come from `default`");
+  const outside = syntaxChecked().filter((path) => !path.startsWith(`${LINT_PROJECT}/`));
+  assert.ok(outside.includes(SHARED_BUILD));
+  for (const path of outside) assert.ok(inputs.includes(`{workspaceRoot}/${path}`), `${path} is checked but is no input of suite-cases:lint`);
+});
+
 test("every member's manifest is either declared by both targets or hashed by the key", () => {
   const { tooling, tier } = members();
   const lines = keyLines(ROOT);
