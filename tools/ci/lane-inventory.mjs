@@ -80,7 +80,7 @@ if (!rows || !commands || !added || !added.every(([name, list]) => isEntrypoint(
 const ci = read(".github/workflows/ci.yml");
 const problems = [];
 const at = (from, to) => ci.slice(ci.indexOf(`  ${from}:\n`), to ? ci.indexOf(`  ${to}:\n`) : undefined);
-const lanes = { linux: at("test-linux", "test-windows"), windows: at("test-windows", "test-macos"), macos: at("test-macos", "gate") };
+const lanes = { linux: at("test-linux", "test-windows"), windows: at("test-windows", "test-macos"), macos: at("test-macos") };
 
 // What each platform's recipes start, through every `dependsOn`: a row whose target nothing
 // starts on a platform it owes runs nowhere there, however present it is.

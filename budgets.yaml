@@ -1,0 +1,56 @@
+# The repository-wide delivery budgets, checked by `onebudgetspec check budgets.yaml`.
+#
+# The three `release-tail` budgets are this repository's CI figures, measured after a release
+# has published by scripts/actions-budget-figures.sh (a verbatim copy of dero-skills
+# create-repo's, held to it by scripts/reference-copies.json) from onevcs's read-only answers,
+# as the last step of release.yml's `major-tag` job, whose result nothing reads: an over
+# figure turns that step red with its breakdown in the log, after the release has published.
+# GitHub Actions produces what they read (each ci.yml lane's run and job records); the tests
+# that replay recorded answers only exercise the reader. The strict check `just budgets` runs
+# excludes the `release-tail` and `onepipeline` labels, so the gate never reads GitHub.
+# docs/ci-lanes.md states why each line is where it is.
+schema_version: 1
+budgets:
+  - id: crozier-ci-check-time
+    measure: reported
+    command: [bash, scripts/actions-budget-figures.sh, longest-job, --stage, pr]
+    unit: seconds
+    direction: max
+    threshold: 1800
+    labels: [release-tail]
+    description: >-
+      Longest pull-request CI job: the longest counted job of each pull request's last-head
+      runs, over the pull requests one release carries, with detail per workflow, job and
+      runner OS, under the reference counted-job and last-head rules. GitHub Actions'
+      run and job records for ci.yml's lint (just lint) and test-linux, test-windows and
+      test-macos (just ci-test) are what it reads: status, runner allocation and attempt
+      timestamps, captured as those lanes execute. It is an intentional inner line beside
+      queue-inclusive delivery, protecting how long one runner holds a shared slot; the
+      lanes' timeout-minutes stay at their measured ceilings, so this line is reported at
+      each release rather than imposed on a job.
+  - id: crozier-ci-job-count
+    measure: reported
+    command: [bash, scripts/actions-budget-figures.sh, job-count, --stage, pr]
+    unit: jobs
+    direction: max
+    threshold: 4
+    labels: [release-tail]
+    description: >-
+      Jobs per pull-request push: the most counted jobs over every pull_request workflow at
+      any of a release's pull requests' last heads, each matrix or reusable leg counted, with
+      detail by workflow and runner OS, from the same GitHub Actions run and job records of
+      ci.yml's lanes. It protects this repository's share of the account-wide 20 concurrent
+      jobs: an ordinary push runs the four lanes, a guarded release pull request lint alone.
+  - id: crozier-pr-read-requests
+    measure: reported
+    command: [bash, scripts/actions-budget-figures.sh, pr-read-requests]
+    unit: requests
+    direction: max
+    threshold: 2
+    labels: [release-tail]
+    description: >-
+      GitHub reads per pull request: the most cost.rest_requests onevcs host change-checks
+      made for any one pull request of the release, as its HTTP runtime recorded them at read
+      time, with every request listed. A saved answer reports what its read cost when it was
+      made, so reuse within the tail never hides a read. It protects the reads each pull
+      request costs from growing with the workflows a pull request starts.

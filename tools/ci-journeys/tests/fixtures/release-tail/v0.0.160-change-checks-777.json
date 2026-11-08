@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "repository": "nickderobertis/crozier",
+  "change": {
+    "number": 777,
+    "head_sha": "d9f9f4c157d91fad5b608cddb540c096eb3e3f3a",
+    "merged_at": "2026-11-08T07:43:57Z"
+  },
+  "runs": [
+    {
+      "id": 42459459557,
+      "workflow_id": 310336254,
+      "workflow_name": "ci",
+      "event": "pull_request",
+      "head_sha": "d9f9f4c157d91fad5b608cddb540c096eb3e3f3a",
+      "head_branch": "release-plz-2026-11-06T04-33-27Z",
+      "run_attempt": 1,
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T07:35:57Z",
+      "run_started_at": "2026-11-08T07:35:57Z",
+      "updated_at": "2026-11-08T07:43:36Z",
+      "jobs": [
+        {
+          "id": 128665401589,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "lint",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "runner_name": "GitHub Actions 1000304665",
+          "runner_os": "Linux",
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "created_at": "2026-11-08T07:35:58Z",
+          "started_at": "2026-11-08T07:35:59Z",
+          "completed_at": "2026-11-08T07:43:02Z"
+        },
+        {
+          "id": 128665401782,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "commitlint",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "runner_name": "GitHub Actions 1000304666",
+          "runner_os": "Linux",
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "created_at": "2026-11-08T07:35:58Z",
+          "started_at": "2026-11-08T07:36:00Z",
+          "completed_at": "2026-11-08T07:36:05Z"
+        },
+        {
+          "id": 128665401791,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "llmlint",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "runner_name": "GitHub Actions 1000304667",
+          "runner_os": "Linux",
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "created_at": "2026-11-08T07:35:58Z",
+          "started_at": "2026-11-08T07:36:00Z",
+          "completed_at": "2026-11-08T07:41:30Z"
+        },
+        {
+          "id": 128665402276,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "test-windows",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "skipped",
+          "runner_name": null,
+          "runner_os": "Windows",
+          "labels": [
+            "windows-latest"
+          ],
+          "created_at": "2026-11-08T07:35:58Z",
+          "started_at": "2026-11-08T07:35:58Z",
+          "completed_at": "2026-11-08T07:35:58Z"
+        },
+        {
+          "id": 128665402414,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "test-macos",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "skipped",
+          "runner_name": null,
+          "runner_os": "macOS",
+          "labels": [
+            "macos-latest"
+          ],
+          "created_at": "2026-11-08T07:35:58Z",
+          "started_at": "2026-11-08T07:35:58Z",
+          "completed_at": "2026-11-08T07:35:58Z"
+        },
+        {
+          "id": 128665402683,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "test-linux",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "skipped",
+          "runner_name": null,
+          "runner_os": "Linux",
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "created_at": "2026-11-08T07:35:58Z",
+          "started_at": "2026-11-08T07:35:58Z",
+          "completed_at": "2026-11-08T07:35:58Z"
+        },
+        {
+          "id": 128666797860,
+          "run_id": 42459459557,
+          "run_attempt": 1,
+          "name": "gate",
+          "workflow_name": "ci",
+          "status": "completed",
+          "conclusion": "success",
+          "runner_name": "GitHub Actions 1000304673",
+          "runner_os": "Linux",
+          "labels": [
+            "ubuntu-latest"
+          ],
+          "created_at": "2026-11-08T07:43:02Z",
+          "started_at": "2026-11-08T07:43:04Z",
+          "completed_at": "2026-11-08T07:43:35Z"
+        }
+      ]
+    }
+  ],
+  "cost": {
+    "graphql_points": 0,
+    "rest_requests": 2,
+    "requests": [
+      "repos/nickderobertis/crozier/actions/runs?per_page=100&head_sha=d9f9f4c157d91fad5b608cddb540c096eb3e3f3a&event=pull_request",
+      "repos/nickderobertis/crozier/actions/runs/42459459557/jobs?per_page=100&filter=latest"
+    ]
+  }
+}

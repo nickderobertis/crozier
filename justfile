@@ -118,10 +118,12 @@ base := env("NX_BASE", "origin/main")
 # targets (`just budgets all` for every project), then the root budgets.yaml when
 # one exists. Excludes `pool-maintenance`, whose measurement builds the repository
 # twice: its own lane step runs it when affected (`ci-budgets-host`), and
-# `budgets-pool-maintenance` runs it by hand.
+# `budgets-pool-maintenance` runs it by hand. The root file's `release-tail` budgets
+# read GitHub after a release (release.yml's `major-tag` reports them) and its
+# `onepipeline` ones are the delivery hook's, so this strict check leaves both out.
 budgets tier="affected":
     @just nx {{ if tier == "all" { "run-many" } else if tier == "affected" { "affected --base=" + base } else { error("unknown tier '" + tier + "' — use 'affected' (the default) or 'all'") } }} -t budgets budgets-host --exclude=pool-maintenance
-    @[ ! -f budgets.yaml ] || bunx onebudgetspec check budgets.yaml
+    @[ ! -f budgets.yaml ] || bunx onebudgetspec check budgets.yaml --exclude-label release-tail --exclude-label onepipeline
 
 # The `crozier-pool-maintenance-seconds` budget (pool-maintenance/budgets.yaml):
 # one steady-state `pool-maintenance` pass, timed. Builds the test targets twice

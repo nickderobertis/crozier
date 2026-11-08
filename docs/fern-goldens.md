@@ -459,7 +459,7 @@ phases.
 There is one, on the branch **`fern-goldens/update`**, labelled
 **`fern-goldens`** (created when missing), titled `test(fern-goldens):
 regenerate at Fern CLI <cli> / fern-python-sdk <generator>` — a Conventional
-Commit, as the required `commitlint` check asks. A later run updates it rather
+Commit, as the required `lint` lane's title check asks. A later run updates it rather
 than opening another, and pushes the branch only with a lease on what it read.
 
 - **Diff** — crozier's comparison fails for at least one item, a reference
