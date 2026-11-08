@@ -128,7 +128,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           npm install -g @anthropic-ai/claude-code
-          ./scripts/setup-llmlint.sh
+          just setup-llmlint
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       # Prove the rule set still resolves with its origin unreachable. CROZIER_REQUIRE_LLMLINT
       # turns the "llmlint absent" skip into a failure, so this cannot silently no-op.

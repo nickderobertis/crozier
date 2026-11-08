@@ -217,7 +217,10 @@ fn pull_request_push_jobs() -> Vec<(String, String, String, Value)> {
                         .unwrap_or_else(|_| panic!("{file}:{id} calls a missing {local}")),
                 )
                 .unwrap_or_else(|_| panic!("{local} is valid YAML"));
-                expand(local, &callee, &format!("{context} / "), into);
+                // A matrix over a reusable call starts the callee once per leg.
+                for _ in 0..matrix_legs(file, id, job) {
+                    expand(local, &callee, &format!("{context} / "), into);
+                }
                 continue;
             }
             for _ in 0..matrix_legs(file, id, job) {
