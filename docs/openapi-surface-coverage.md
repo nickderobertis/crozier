@@ -132,19 +132,19 @@ split five ways:
 544 + 70 + 112 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
-([the list](openapi-surface/combinations.md)): 28 are `gap`, 72 are `golden` and 7 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 30 are `gap`, 73 are `golden` and 4 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**35** are byte-matched against a registered real specification at their
+**37** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **3** rest on a hand-written fixture (0 of them witness-blocked, 1 of them co-occurrences proven on the fixture), **57** remain
-open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 35 + 0 + 0 + 3 + 57 + 12 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **58** remain
+open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 37 + 0 + 0 + 0 + 58 + 12 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -2936,7 +2936,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **549** golden rows reach every handling site and tie below every row
+then key. **550** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3149,7 +3149,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **549** reach every handling site their
+The golden rows split in two. **550** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **68** carry at least one handling site no golden-only witness executes: 89 unreached arms in all. By the verdict each arm's linked record states, 64 read `exhausted`, 25 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
