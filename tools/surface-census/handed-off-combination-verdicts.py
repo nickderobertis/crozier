@@ -93,6 +93,14 @@ class Verdict(StrEnum):
 
 
 OUTSTANDING_VERDICTS = {Verdict.NO_EXCLUSIVE_ARM, Verdict.POOLED_ARM_EXECUTED}
+# The record's vocabulary table is rendered from these, so its prose cannot drift from the enum.
+MEANINGS = {
+    Verdict.NOT_DECLARED: "The exact bytes do not declare the combination.",
+    Verdict.ARM_NOT_EXECUTED: "The document declares it, and its run never executes the arm.",
+    Verdict.WITNESS: "The document declares it and its run executes the exclusive arm.",
+    Verdict.NO_EXCLUSIVE_ARM: "The document declares it, but crozier has no exclusive region to screen.",
+    Verdict.POOLED_ARM_EXECUTED: "The document declares it and its run executes a region pooled with other cases.",
+}
 REASONS = {
     Verdict.NOT_DECLARED: "fresh exact-byte source census does not declare this combination",
     Verdict.ARM_NOT_EXECUTED: "registered byte-matching golden declares it, and its instrumented run never executes the arm",
@@ -159,6 +167,8 @@ class VerdictRow:
         arm = None
         if (executed, total) != (NOT_MEASURED, NOT_MEASURED):
             arm = ArmCount(_count(executed, f"{where}: executed regions"), _count(total, f"{where}: total regions"))
+            if arm.total == 0:
+                raise ValueError(f"{where}: a measured arm holds at least one region")
             if arm.executed > arm.total:
                 raise ValueError(f"{where}: executes {arm.executed} of only {arm.total} regions")
         try:
@@ -566,8 +576,10 @@ def restated_index(root: Path, rows: list[CensusRow]) -> str:
     return written.getvalue()
 
 
-def restated_readme(root: Path, rows: list[CensusRow]) -> str:
+def restated_readme(root: Path, rows: list[CensusRow], verdicts: list[VerdictRow]) -> str:
+    """The record with its candidate, vocabulary and per-verdict tables restated from the evidence."""
     text = (root / RECORD / "README.md").read_text(encoding="utf-8")
+    text = _restated_verdict_tables(text, verdicts)
     proven = proven_keys(root)
     candidates: dict[str, int] = {}
     outstanding: dict[str, int] = {}
@@ -589,6 +601,44 @@ def restated_readme(root: Path, rows: list[CensusRow]) -> str:
     )
 
 
+def _restated_verdict_tables(text: str, verdicts: list[VerdictRow]) -> str:
+    vocabulary = "| Verdict | State | Meaning |\n|---|---|---|\n" + "".join(
+        f"| `{verdict}` | {'outstanding' if verdict in OUTSTANDING_VERDICTS else 'decided'} | {MEANINGS[verdict]} |\n"
+        for verdict in Verdict
+    )
+    text, found = re.subn(
+        r"^\| Verdict \| State \| Meaning \|\n\|---\|---\|---\|\n(?:\| `[^`]+` \|.*\n)+", vocabulary, text, flags=re.M
+    )
+    if found != 1:
+        raise ValueError("README.md: the verdict vocabulary table is missing or repeated")
+    tallies: dict[str, dict[Verdict, int]] = {}
+    for row in verdicts:
+        tally = tallies.setdefault(row.key, dict.fromkeys(Verdict, 0))
+        tally[row.verdict] += 1
+
+    def totals(match: re.Match[str]) -> str:
+        keys = re.findall(r"^\| `(combo-[^`]+)` \|", match.group(0), flags=re.M)
+        unknown = [key for key in keys if key not in tallies]
+        if unknown:
+            raise ValueError(f"README.md: the verdict totals name {unknown[0]}, which has no verdict")
+        header = "| Combination | " + " | ".join(f"`{verdict}`" for verdict in Verdict) + " |\n"
+        rule = "|---|" + "---:|" * len(Verdict) + "\n"
+        body = "".join(
+            f"| `{key}` | " + " | ".join(str(tallies[key][verdict]) for verdict in Verdict) + " |\n" for key in keys
+        )
+        return header + rule + body
+
+    text, found = re.subn(
+        r"^\| Combination(?: \| `[^`]+`)+ \|\n\|---\|(?:---:\|)+\n(?:\| `combo-[^`]+` \|(?: \d+ \|)+\n)+",
+        totals,
+        text,
+        flags=re.M,
+    )
+    if found != 1:
+        raise ValueError("README.md: the per-verdict totals table is missing or repeated")
+    return text
+
+
 class PartialWrite(OSError):
     """A failure after some artifacts were already replaced; its message names them."""
 
@@ -607,28 +657,34 @@ def write(root: Path) -> None:
     writer.writerows(row.cells() for row in rows)
     compressed = gzip.compress(rendered_census(columns, census).encode("utf-8"), compresslevel=9, mtime=0)
     index = restated_index(root, census)
-    readme = restated_readme(root, census)
+    readme = restated_readme(root, census, rows)
+    # The verdict record goes last: the others restate it, so a failure part-way leaves it the old one.
     artifacts = {
-        "handed-off-verdicts.tsv": written.getvalue().encode("utf-8"),
         "census.tsv.gz": compressed,
         "outstanding-candidates.tsv": index.encode("utf-8"),
         "README.md": readme.encode("utf-8"),
+        "handed-off-verdicts.tsv": written.getvalue().encode("utf-8"),
     }
     staged = {name: root / RECORD / f".{name}.staged" for name in artifacts}
+    created: list[Path] = []
+
+    def discard() -> None:
+        for path in created:
+            path.unlink(missing_ok=True)
+
     try:
         for name, data in artifacts.items():
             staged[name].write_bytes(data)
+            created.append(staged[name])
     except OSError:
-        for path in staged.values():
-            path.unlink(missing_ok=True)
+        discard()
         raise
     replaced: list[str] = []
     for name in artifacts:
         try:
             os.replace(staged[name], root / RECORD / name)
         except OSError as error:
-            for path in staged.values():
-                path.unlink(missing_ok=True)
+            discard()
             done = ", ".join(replaced) if replaced else "none"
             raise PartialWrite(f"replaced {done} before failing on {name} ({error}); rerun `write`") from error
         replaced.append(name)
@@ -721,7 +777,7 @@ def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> li
         index = (root / RECORD / "outstanding-candidates.tsv").read_text(encoding="utf-8")
         if index != restated_index(root, census):
             found.append("outstanding-candidates.tsv does not restate census.tsv.gz; run this script's `write`")
-        if (root / RECORD / "README.md").read_text(encoding="utf-8") != restated_readme(root, census):
+        if (root / RECORD / "README.md").read_text(encoding="utf-8") != restated_readme(root, census, rows):
             found.append("the record's verdict table does not restate census.tsv.gz; run this script's `write`")
     except (OSError, ValueError) as error:
         found.append(f"cannot restate the record ({error}); restore it from git, then run this script's `write`")

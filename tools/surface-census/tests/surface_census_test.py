@@ -10248,6 +10248,38 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         self.rewrite_cell(key, fixture, "verdict", "probably")
         self.assertTrue(any("unknown verdict" in f for f in self.tool.failures(self.root, self.counts)))
 
+    def test_the_record_restates_its_verdict_vocabulary_and_totals(self) -> None:
+        readme = self.root / self.tool.RECORD / "README.md"
+        text = readme.read_text(encoding="utf-8")
+        for label, edited in (
+            ("vocabulary", text.replace("| `witness` | decided |", "| `witness` | outstanding |", 1)),
+            (
+                "totals",
+                text.replace(
+                    "| `combo-inline-body-read-only-property` | 75 |",
+                    "| `combo-inline-body-read-only-property` | 74 |",
+                    1,
+                ),
+            ),
+        ):
+            with self.subTest(label):
+                self.assertNotEqual(text, edited)
+                readme.write_text(edited, encoding="utf-8")
+                self.assertIn(
+                    "the record's verdict table does not restate census.tsv.gz; run this script's `write`",
+                    self.tool.failures(self.root, self.counts),
+                )
+        readme.write_text(text, encoding="utf-8")
+        self.assertEqual([], self.tool.failures(self.root, self.counts))
+
+    def test_a_measured_arm_without_regions_is_refused(self) -> None:
+        # No region measured is missing evidence, never a nonexecution.
+        row = next(row for row in self.tool.read_rows(REPO) if row.arm is not None and not row.arm.executed)
+        self.rewrite_cell(row.key, row.fixture, "arm_regions_total", "0")
+        self.assertTrue(
+            any("a measured arm holds at least one region" in f for f in self.tool.failures(self.root, self.counts))
+        )
+
     def test_a_malformed_admitted_entry_is_refused(self) -> None:
         readme = self.root / self.tool.HANDED_OFF / "README.md"
         text = readme.read_text(encoding="utf-8")
@@ -10451,6 +10483,41 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         self.assertEqual(before, (target.read_bytes(), census.read_bytes()))
         readme.write_text(text, encoding="utf-8")
         self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        names = ("handed-off-verdicts.tsv", "census.tsv.gz", "outstanding-candidates.tsv", "README.md")
+        published = {name: (record / name).read_bytes() for name in names}
+        # A staging write that fails publishes nothing and leaves no staged file of its own.
+        blocker = record / ".README.md.staged"
+        blocker.mkdir()
+        (blocker / "occupied").write_text("", encoding="utf-8")
+        staged = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, staged.returncode)
+        self.assertIn("wrote nothing", staged.stderr)
+        self.assertNotIn("Traceback", staged.stderr)
+        self.assertEqual(published, {name: (record / name).read_bytes() for name in names})
+        self.assertEqual([".README.md.staged"], sorted(path.name for path in record.glob(".*.staged")))
+        shutil.rmtree(blocker)
+        # A replacement that fails part-way names what it replaced, cleans up, and a rerun recovers.
+        (self.root / self.tool.RECORD / "census.tsv.gz").write_bytes(
+            gzip.compress(gzip.decompress(census.read_bytes()), compresslevel=1, mtime=0)
+        )
+        verdicts = record / "handed-off-verdicts.tsv"
+        verdicts.unlink()
+        verdicts.mkdir()
+        (verdicts / "occupied").write_text("", encoding="utf-8")
+        partial = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, partial.returncode)
+        self.assertIn(
+            "replaced census.tsv.gz, outstanding-candidates.tsv, README.md before failing on handed-off-verdicts.tsv",
+            partial.stderr,
+        )
+        self.assertNotIn("wrote nothing", partial.stderr)
+        self.assertNotIn("Traceback", partial.stderr)
+        self.assertEqual(published["census.tsv.gz"], census.read_bytes())
+        self.assertEqual([], sorted(path.name for path in record.glob(".*.staged")))
+        shutil.rmtree(verdicts)
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        self.assertEqual(published, {name: (record / name).read_bytes() for name in names})
+        self.assertEqual(0, self.run_tool("check", "--repo-root", str(self.root)).returncode)
 
     def test_source_bytes_other_than_the_pinned_ones_are_refused(self) -> None:
         documents = self.root / self.tool.HANDED_OFF / "documents.tsv"

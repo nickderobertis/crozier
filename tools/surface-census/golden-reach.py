@@ -308,7 +308,6 @@ def cooccurrence_proof(cell: str) -> CombinationProof | None:
         or any(p in {"", ".", ".."} for p in search.split("/"))
     ):
         raise ValueError("search record must be a repository-relative path without traversal")
-    # The checks above admit exactly these four shapes: a search with `handwritten` or `open` only.
     match CombinationProofClass(kind), search:
         case CombinationProofClass.HANDWRITTEN | CombinationProofClass.OPEN as searched, str() as record:
             return SearchedCombinationProof(searched, record)
