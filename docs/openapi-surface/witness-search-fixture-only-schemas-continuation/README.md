@@ -182,11 +182,12 @@ it opens a session are not this node's commands and are not counted.
 | re-dispatch to reconcile this record (2026-11-08) | 0 | 0 | 0 | none: it made no GitHub request of any kind and edited only this record's text |
 | re-dispatch to verify the finished branch (2026-11-08) | 0 | 0 | 1 | the branch's published head and `main`, to see which local commits were not yet published and whether `main` had moved; no change request, run or log was read |
 | publication retry after `test-linux` failed (2026-11-08) | 6 | 0 | 1 | the branch's published head and `main`; the failed run: two `gh run view --log-failed` (both refused while the run was still in progress), the run's status and job listing, two reads of the failed job's log (the first refused for its terminal escape sequences) and the job's step listing, to diagnose the failing check, which was the pinned e2e case count and digest in `tools/ci/lanes.json` not counting this record's new corpus golden test |
-| **total** | **29** | **2** | **11** | |
+| publication retry after `test-macos` and `test-windows` did not settle (2026-11-08) | 0 | 0 | 1 | the branch's published head, to confirm the repair builds on it; no change request, run or job log was read, because the refusal named checks still unsettled rather than a failure |
+| **total** | **29** | **2** | **12** | |
 
-The table has fourteen dispatch rows. Its totals are column sums: 29 REST reads
-(4 + 10 + 5 + 4 + 6), 2 GraphQL reads (1 + 1) and 11 `git fetch origin` runs
-(1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1). It supersedes every count earlier text of this
+The table has fifteen dispatch rows. Its totals are column sums: 29 REST reads
+(4 + 10 + 5 + 4 + 6), 2 GraphQL reads (1 + 1) and 12 `git fetch origin` runs
+(1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1 + 1 + 1). It supersedes every count earlier text of this
 record stated.
 
 | bucket | live requests | response-cache hits | waits |
@@ -196,7 +197,7 @@ record stated.
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
 | core (merge-path diagnostics, unguarded) | 29 | 0 | 0 |
 | graphql (merge-path diagnostics, unguarded) | 2 | 0 | 0 |
-| git protocol fetch of `origin` (unguarded) | 11 | 0 | 0 |
+| git protocol fetch of `origin` (unguarded) | 12 | 0 | 0 |
 
 ## Verdicts
 
