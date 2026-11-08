@@ -178,7 +178,8 @@ it opens a session are not this node's commands and are not counted.
 | `-r5` | 0 | 1 | 1 | this branch's change request (`gh pr list`); the branch's published head and `main` |
 | `-r6`, attempt 1 | 0 | 0 | 1 | the branch's published head and `main`, to find what the retry had to repair |
 | `-r6`, attempt 2 (publication retry) | 4 | 0 | 1 | the failed `lint` job: one `gh run view --log-failed` (refused while its run was still in progress) and three reads of the job's log, to diagnose the failing check, which stopped at `just bootstrap` with `just: command not found` after the runner's tool downloads met HTTP 502s; the branch's published head and `main` |
-| **total** | **23** | **2** | **8** | |
+| re-dispatch after the `-r6` review | 0 | 0 | 1 | the branch's published head and `main`, to see which local commit was not yet published; the red CI it inherited failed on HTTP 502/504 while installing `just` in the lint jobs, which the planner had already diagnosed, so no run or log was read |
+| **total** | **23** | **2** | **9** | |
 
 Earlier text of this record counted 18 REST reads and listed no `git fetch` before
 the fifth dispatch; the transcripts show the 19th (`-r3` attempt 3's read of a run's
@@ -191,7 +192,7 @@ head commit and trigger) and the six fetches the table now lists.
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
 | core (merge-path diagnostics, unguarded) | 23 | 0 | 0 |
 | graphql (merge-path diagnostics, unguarded) | 2 | 0 | 0 |
-| git protocol fetch of `origin` (unguarded) | 8 | 0 | 0 |
+| git protocol fetch of `origin` (unguarded) | 9 | 0 | 0 |
 
 ## Verdicts
 
