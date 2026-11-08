@@ -7,6 +7,7 @@ mod yaml;
 use serde_json::Value;
 
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
+const CI_LANES_DOC: &str = include_str!("../../../docs/ci-lanes.md");
 
 #[test]
 fn marking_a_draft_ready_does_not_rerun_ci() {
@@ -273,6 +274,10 @@ fn a_pull_request_push_runs_exactly_the_governed_lanes() {
             job.get("timeout-minutes").and_then(Value::as_u64),
             Some(ceiling),
             "{id}'s timeout-minutes"
+        );
+        assert!(
+            CI_LANES_DOC.contains(&format!("| `{id}` | {ceiling} min |")),
+            "docs/ci-lanes.md's table must state {id}'s limit as {ceiling} min"
         );
     }
     let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");

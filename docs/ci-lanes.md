@@ -28,7 +28,7 @@ has too: a whole-graph change's `ci-test` step alone took 84 minutes in run
 90, so a cold one needs about 110. On 2026-11-08 broad pull requests took about 95 minutes on
 Linux, 77 to more than 90 on Windows and more than 120 on macOS; the old 90-minute Windows limit
 cancelled #790 and #792, and the old 120-minute macOS limit cancelled #792, with nothing failed.
-The Windows and Mac limits are 150, matching Linux. Mac's stands until that lane has a warm result
+Both limits now match Linux's. Mac's stands until that lane has a warm result
 cache (main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
 decision) or the follow-up on the cold Mac leg is resolved.
 
