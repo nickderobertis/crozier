@@ -23046,6 +23046,41 @@ HANDED_OFF_SOURCES = tuple(
 TRIAGE_VERDICTS = {member.value for member in HandedOffVerdict}
 
 
+def handed_off_area_attributions(
+    directory: pathlib.Path, areas: Mapping[str, pathlib.Path]
+) -> set[tuple[str, str, str]]:
+    """Every (document hash, cause, README) an area README attributes one of its own causes to.
+
+    A table row naming one document hash attributes each cell token that is one of that
+    area's causes; a per-document section (`sha256 `<hash>``) attributes the causes on its
+    "this node's cause" line.
+    """
+    owned: dict[str, set[str]] = {}
+    for cause, path in areas.items():
+        owned.setdefault(path.stem, set()).add(cause)
+    found: set[tuple[str, str, str]] = set()
+    for area, causes in sorted(owned.items()):
+        readme = directory / area / "README.md"
+        if not readme.is_file():
+            continue
+        label = str(readme.relative_to(directory))
+        current = None
+        for line in readme.read_text(encoding="utf-8").splitlines():
+            if heading := re.search(r"sha256 `([0-9a-f]{64})`", line):
+                current = heading[1]
+            if current and line.startswith("- this node's cause"):
+                found |= {
+                    (current, cause, label)
+                    for cause in re.findall(r"`([^`]+)`", line.split(";", 1)[0])
+                    if cause in causes
+                }
+            if line.startswith("| ") and len(hashes := set(re.findall(r"\b[0-9a-f]{64}\b", line))) == 1:
+                (sha,) = hashes
+                tokens = re.split(r"[,;\s]+", re.sub(r"[`*]", " ", line.replace(sha, " ")))
+                found |= {(sha, token, label) for token in tokens if token in causes}
+    return found
+
+
 def reconcile_handed_off(root: pathlib.Path) -> None:
     """Read the source records and on-disk evidence, refusing triage drift."""
     directory = root / "docs/fern-measurements/handed-off"
@@ -23095,6 +23130,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
         documents = [HandedOffDocumentRecord.parse(row) for row in reader]
     residuals: dict[str, set[str]] = {}
+    residual_causes: set[tuple[str, str]] = set()
     residual_path = directory / "residuals.tsv"
     if residual_path.is_file():
         with residual_path.open(encoding="utf-8", newline="") as stream:
@@ -23103,6 +23139,8 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             for row in reader:
                 assert row["file"] and row["root_cause"] and row["area"] and row["note"], "incomplete residual"
                 residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
+                if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", row["root_cause"]):
+                    residual_causes.add((row["sha256"], row["root_cause"]))
     hashes: set[str] = set()
     registered = set()
     for row in documents:
@@ -23172,6 +23210,18 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 assert row.note.strip(), f"{sha}: missing could-not-check reason"
 
     assert residuals.keys() <= hashes, "residual for an unmeasured document"
+    listed = {str(row.sha256): set(row.root_causes.split(";")) for row in documents}
+    unlisted = sorted(
+        f"{sha[:8]} {cause} ({readme})"
+        for sha, cause, readme in handed_off_area_attributions(directory, seen)
+        if sha in listed and cause not in listed[sha]
+    )
+    unlisted += sorted(
+        f"{sha[:8]} {cause} (residuals.tsv)"
+        for sha, cause in residual_causes
+        if sha in listed and cause not in listed[sha]
+    )
+    assert not unlisted, f"missing applicable cause in documents.tsv root_causes: {unlisted}"
     for source in HANDED_OFF_SOURCES:
         section = (
             (root / source).read_text(encoding="utf-8").split("## Handed-off differences\n", 1)[1].split("\n## ", 1)[0]
@@ -23366,6 +23416,66 @@ class HandedOffReconciliationTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(AssertionError, "invalid status not-compared"):
             reconcile_handed_off(self.root)
+
+    def test_a_cause_an_area_record_attributes_must_be_listed_on_its_document(self) -> None:
+        sha = "a" * 64
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        evidence.write_text(
+            f"sha256: {sha}\nresult: could-not-check\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
+        )
+        document = {
+            "document": "publisher/api:openapi.yml@" + "b" * 40,
+            "sha256": sha,
+            "source": HANDED_OFF_SOURCES[0],
+            "root_causes": "cause-1",
+            "status": HandedOffStatus.COULD_NOT_CHECK.value,
+            "corpus_row": "-",
+            "note": "Measured elsewhere",
+        }
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [document])
+        area = self.directory / "sample" / "README.md"
+        area.parent.mkdir()
+        attributions = (
+            (
+                "table row",
+                f"| `publisher/api` | `{sha}` | `cause-0`; `cause-1` | differs ([record](../comparisons/{sha}.txt)) |\n",
+            ),
+            (
+                "section line",
+                f"### `publisher/api`\n\n- sha256 `{sha}`\n- this node's cause: `cause-0`; every cause: `cause-0`\n",
+            ),
+        )
+        for label, text in attributions:
+            with self.subTest(attribution=label):
+                area.write_text(text, encoding="utf-8")
+                with self.assertRaisesRegex(
+                    AssertionError, r"missing applicable cause.*aaaaaaaa cause-0 \(sample/README\.md\)"
+                ):
+                    reconcile_handed_off(self.root)
+                self.write_rows(
+                    self.directory / "documents.tsv", DOCUMENT_COLUMNS, [{**document, "root_causes": "cause-1;cause-0"}]
+                )
+                reconcile_handed_off(self.root)
+                self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [document])
+        # A cause the area does not own, or one the document already lists, attributes nothing.
+        area.write_text(
+            f"| `publisher/api` | `{sha}` | `cause-1`, `unowned-cause` | byte-matches |\n", encoding="utf-8"
+        )
+        reconcile_handed_off(self.root)
+        area.unlink()
+        residuals = self.directory / "residuals.tsv"
+        residuals.write_text(
+            f"sha256\tfile\troot_cause\tarea\tnote\n{sha}\treference.md\tcause-0\tsample\tMeasured\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, r"missing applicable cause.*aaaaaaaa cause-0 \(residuals\.tsv\)"):
+            reconcile_handed_off(self.root)
+        self.write_rows(
+            self.directory / "documents.tsv", DOCUMENT_COLUMNS, [{**document, "root_causes": "cause-0;cause-1"}]
+        )
+        reconcile_handed_off(self.root)
 
     def test_refusals_require_matching_nonzero_modes_and_a_decided_class(self) -> None:
         sha = "a" * 64
