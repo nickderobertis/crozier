@@ -5766,8 +5766,8 @@ mod tests {
     /// apart from `ir::error_class_name` because the importer writes acronyms
     /// whole (`URITooLongError` where the Python class is `UriTooLongError`).
     /// This holds the two to each other: every class crozier names is one of
-    /// them, case aside, and the only names left over are the five the importer
-    /// gives statuses crozier's table leaves unnamed (419, 420, 444, 449, 450).
+    /// them, case aside, and the only names left over are the four the importer
+    /// gives statuses crozier's table leaves unnamed (419, 420, 444, 450).
     #[test]
     fn fern_error_names_are_the_error_classes_crozier_names_and_four_more() {
         use std::collections::BTreeSet;
