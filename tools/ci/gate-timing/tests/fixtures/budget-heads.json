@@ -1,0 +1,623 @@
+{
+ "accepted": [
+  {
+   "run": {
+    "id": 42489795217,
+    "name": "ci",
+    "path": ".github/workflows/ci.yml",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "76e15eb439bd3c4560dab0f9cfc4f22ead00b8b3",
+    "head_branch": "nick/749/gate-context-cleanup",
+    "run_attempt": 1,
+    "created_at": "2026-11-08T14:26:11Z",
+    "pull_requests": [],
+    "head_repository": {
+     "full_name": "nickderobertis/crozier"
+    }
+   },
+   "attempts": {
+    "1": [
+     {
+      "id": 128759556184,
+      "run_id": 42489795217,
+      "run_attempt": 1,
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:26:34Z",
+      "started_at": "2026-11-08T14:26:35Z",
+      "completed_at": "2026-11-08T14:39:58Z"
+     },
+     {
+      "id": 128759556371,
+      "run_id": 42489795217,
+      "run_attempt": 1,
+      "name": "test-windows",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:26:34Z",
+      "started_at": "2026-11-08T14:26:35Z",
+      "completed_at": "2026-11-08T15:46:25Z"
+     },
+     {
+      "id": 128759556421,
+      "run_id": 42489795217,
+      "run_attempt": 1,
+      "name": "test-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:26:34Z",
+      "started_at": "2026-11-08T14:28:49Z",
+      "completed_at": "2026-11-08T16:08:40Z"
+     },
+     {
+      "id": 128759556526,
+      "run_id": 42489795217,
+      "run_attempt": 1,
+      "name": "test-linux",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:26:34Z",
+      "started_at": "2026-11-08T14:26:36Z",
+      "completed_at": "2026-11-08T16:45:51Z"
+     }
+    ]
+   }
+  }
+ ],
+ "rerun": [
+  {
+   "run": {
+    "id": 42481455354,
+    "name": "ci",
+    "path": ".github/workflows/ci.yml",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "397371d3dca9b9238d78ad9d04ff3cce53e8f2d2",
+    "head_branch": "nick/779/crozier-bus",
+    "run_attempt": 3,
+    "created_at": "2026-11-08T12:41:53Z",
+    "pull_requests": [
+     {
+      "url": "https://api.github.com/repos/nickderobertis/crozier/pulls/790",
+      "id": 5204094416,
+      "number": 790,
+      "head": {
+       "ref": "nick/779/crozier-bus",
+       "sha": "397371d3dca9b9238d78ad9d04ff3cce53e8f2d2",
+       "repo": {
+        "id": 1295898197,
+        "url": "https://api.github.com/repos/nickderobertis/crozier",
+        "name": "crozier"
+       }
+      },
+      "base": {
+       "ref": "main",
+       "sha": "1834a1896b9f846950a36f18bca7116480dd1ee7",
+       "repo": {
+        "id": 1295898197,
+        "url": "https://api.github.com/repos/nickderobertis/crozier",
+        "name": "crozier"
+       }
+      }
+     }
+    ],
+    "head_repository": {
+     "full_name": "nickderobertis/crozier"
+    }
+   },
+   "attempts": {
+    "1": [
+     {
+      "id": 128734086598,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "test-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T12:41:53Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T14:09:01Z"
+     },
+     {
+      "id": 128734086770,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "llmlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T12:41:53Z",
+      "started_at": "2026-11-08T12:41:55Z",
+      "completed_at": "2026-11-08T12:49:18Z"
+     },
+     {
+      "id": 128734086817,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "test-windows",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "created_at": "2026-11-08T12:41:53Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T14:12:10Z"
+     },
+     {
+      "id": 128734086821,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T12:41:53Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T12:48:00Z"
+     },
+     {
+      "id": 128734086833,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "test-linux",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T12:41:53Z",
+      "started_at": "2026-11-08T12:41:55Z",
+      "completed_at": "2026-11-08T14:02:07Z"
+     },
+     {
+      "id": 128734086850,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "commitlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T12:41:53Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T12:42:01Z"
+     },
+     {
+      "id": 128755917827,
+      "run_id": 42481455354,
+      "run_attempt": 1,
+      "name": "gate",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-11-08T14:12:10Z",
+      "started_at": "2026-11-08T14:12:12Z",
+      "completed_at": "2026-11-08T14:12:43Z"
+     }
+    ],
+    "2": [
+     {
+      "id": 128758533697,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "test-windows",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "created_at": "2026-11-08T14:22:29Z",
+      "started_at": "2026-11-08T14:22:32Z",
+      "completed_at": "2026-11-08T15:52:47Z"
+     },
+     {
+      "id": 128758534639,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "llmlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:22:29Z",
+      "started_at": "2026-11-08T12:41:55Z",
+      "completed_at": "2026-11-08T12:49:18Z"
+     },
+     {
+      "id": 128758534955,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "commitlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:22:29Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T12:42:01Z"
+     },
+     {
+      "id": 128758535203,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "test-linux",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:22:30Z",
+      "started_at": "2026-11-08T12:41:55Z",
+      "completed_at": "2026-11-08T14:02:07Z"
+     },
+     {
+      "id": 128758535557,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "test-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:22:30Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T14:09:01Z"
+     },
+     {
+      "id": 128758564097,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:22:36Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T12:48:00Z"
+     },
+     {
+      "id": 128781442861,
+      "run_id": 42481455354,
+      "run_attempt": 2,
+      "name": "gate",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-11-08T15:52:47Z",
+      "started_at": "2026-11-08T15:52:49Z",
+      "completed_at": "2026-11-08T15:53:20Z"
+     }
+    ],
+    "3": [
+     {
+      "id": 128782142876,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "test-windows",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T15:55:35Z",
+      "started_at": "2026-11-08T15:55:38Z",
+      "completed_at": "2026-11-08T17:14:36Z"
+     },
+     {
+      "id": 128782144021,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "llmlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T15:55:35Z",
+      "started_at": "2026-11-08T12:41:55Z",
+      "completed_at": "2026-11-08T12:49:18Z"
+     },
+     {
+      "id": 128782144180,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "commitlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T15:55:35Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T12:42:01Z"
+     },
+     {
+      "id": 128782144573,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T15:55:36Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T12:48:00Z"
+     },
+     {
+      "id": 128782173404,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "test-macos",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T15:55:43Z",
+      "started_at": "2026-11-08T12:41:56Z",
+      "completed_at": "2026-11-08T14:09:01Z"
+     },
+     {
+      "id": 128782175639,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "test-linux",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T15:55:43Z",
+      "started_at": "2026-11-08T12:41:55Z",
+      "completed_at": "2026-11-08T14:02:07Z"
+     },
+     {
+      "id": 128802493878,
+      "run_id": 42481455354,
+      "run_attempt": 3,
+      "name": "gate",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T17:14:36Z",
+      "started_at": "2026-11-08T17:14:39Z",
+      "completed_at": "2026-11-08T17:15:11Z"
+     }
+    ]
+   }
+  }
+ ],
+ "release": [
+  {
+   "run": {
+    "id": 42459459557,
+    "name": "ci",
+    "path": ".github/workflows/ci.yml",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "d9f9f4c157d91fad5b608cddb540c096eb3e3f3a",
+    "head_branch": "release-plz-2026-11-06T04-33-27Z",
+    "run_attempt": 1,
+    "created_at": "2026-11-08T07:35:57Z",
+    "pull_requests": [],
+    "head_repository": {
+     "full_name": "nickderobertis/crozier"
+    }
+   },
+   "attempts": {
+    "1": [
+     {
+      "id": 128665401589,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T07:35:58Z",
+      "started_at": "2026-11-08T07:35:59Z",
+      "completed_at": "2026-11-08T07:43:02Z"
+     },
+     {
+      "id": 128665401782,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "commitlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T07:35:58Z",
+      "started_at": "2026-11-08T07:36:00Z",
+      "completed_at": "2026-11-08T07:36:05Z"
+     },
+     {
+      "id": 128665401791,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "llmlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T07:35:58Z",
+      "started_at": "2026-11-08T07:36:00Z",
+      "completed_at": "2026-11-08T07:41:30Z"
+     },
+     {
+      "id": 128665402276,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "test-windows",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-08T07:35:58Z",
+      "started_at": "2026-11-08T07:35:58Z",
+      "completed_at": "2026-11-08T07:35:58Z"
+     },
+     {
+      "id": 128665402414,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "test-macos",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-08T07:35:58Z",
+      "started_at": "2026-11-08T07:35:58Z",
+      "completed_at": "2026-11-08T07:35:58Z"
+     },
+     {
+      "id": 128665402683,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "test-linux",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-08T07:35:58Z",
+      "started_at": "2026-11-08T07:35:58Z",
+      "completed_at": "2026-11-08T07:35:58Z"
+     },
+     {
+      "id": 128666797860,
+      "run_id": 42459459557,
+      "run_attempt": 1,
+      "name": "gate",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T07:43:02Z",
+      "started_at": "2026-11-08T07:43:04Z",
+      "completed_at": "2026-11-08T07:43:35Z"
+     }
+    ]
+   }
+  },
+  {
+   "run": {
+    "id": 42459981916,
+    "name": "Visual docs maintenance",
+    "path": ".github/workflows/visual-docs.yml",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "success",
+    "head_sha": "d9f9f4c157d91fad5b608cddb540c096eb3e3f3a",
+    "head_branch": "release-plz-2026-11-06T04-33-27Z",
+    "run_attempt": 1,
+    "created_at": "2026-11-08T07:44:00Z",
+    "pull_requests": [],
+    "head_repository": {
+     "full_name": "nickderobertis/crozier"
+    }
+   },
+   "attempts": {
+    "1": [
+     {
+      "id": 128667740328,
+      "run_id": 42459981916,
+      "run_attempt": 1,
+      "name": "cleanup-preview",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T07:47:42Z",
+      "started_at": "2026-11-08T07:47:44Z",
+      "completed_at": "2026-11-08T07:47:50Z"
+     },
+     {
+      "id": 128667741089,
+      "run_id": 42459981916,
+      "run_attempt": 1,
+      "name": "prune-history",
+      "status": "completed",
+      "conclusion": "skipped",
+      "created_at": "2026-11-08T07:47:42Z",
+      "started_at": "2026-11-08T07:47:42Z",
+      "completed_at": "2026-11-08T07:47:42Z"
+     }
+    ]
+   }
+  }
+ ],
+ "cancelled": [
+  {
+   "run": {
+    "id": 42490892875,
+    "name": "ci",
+    "path": ".github/workflows/ci.yml",
+    "event": "pull_request",
+    "status": "completed",
+    "conclusion": "cancelled",
+    "head_sha": "bface37c44e50c0196d06105560a44100dad886e",
+    "head_branch": "nick/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/residual-differences-repair",
+    "run_attempt": 1,
+    "created_at": "2026-11-08T14:39:41Z",
+    "pull_requests": [
+     {
+      "url": "https://api.github.com/repos/nickderobertis/crozier/pulls/793",
+      "id": 5210875492,
+      "number": 793,
+      "head": {
+       "ref": "nick/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/residual-differences-repair",
+       "sha": "4763609f00b71fdb866dd409a0e8c9dc1c884883",
+       "repo": {
+        "id": 1295898197,
+        "url": "https://api.github.com/repos/nickderobertis/crozier",
+        "name": "crozier"
+       }
+      },
+      "base": {
+       "ref": "main",
+       "sha": "1834a1896b9f846950a36f18bca7116480dd1ee7",
+       "repo": {
+        "id": 1295898197,
+        "url": "https://api.github.com/repos/nickderobertis/crozier",
+        "name": "crozier"
+       }
+      }
+     }
+    ],
+    "head_repository": {
+     "full_name": "nickderobertis/crozier"
+    }
+   },
+   "attempts": {
+    "1": [
+     {
+      "id": 128762808574,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "test-macos",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "created_at": "2026-11-08T14:39:42Z",
+      "started_at": "2026-11-08T15:00:44Z",
+      "completed_at": "2026-11-08T16:24:47Z"
+     },
+     {
+      "id": 128762808747,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "lint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:39:42Z",
+      "started_at": "2026-11-08T14:39:43Z",
+      "completed_at": "2026-11-08T14:49:55Z"
+     },
+     {
+      "id": 128762808771,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "commitlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:39:42Z",
+      "started_at": "2026-11-08T14:39:43Z",
+      "completed_at": "2026-11-08T14:39:47Z"
+     },
+     {
+      "id": 128762808797,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "test-windows",
+      "status": "completed",
+      "conclusion": "cancelled",
+      "created_at": "2026-11-08T14:39:42Z",
+      "started_at": "2026-11-08T14:39:43Z",
+      "completed_at": "2026-11-08T16:09:58Z"
+     },
+     {
+      "id": 128762808852,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "test-linux",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-11-08T14:39:42Z",
+      "started_at": "2026-11-08T14:39:44Z",
+      "completed_at": "2026-11-08T15:31:41Z"
+     },
+     {
+      "id": 128762808885,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "llmlint",
+      "status": "completed",
+      "conclusion": "success",
+      "created_at": "2026-11-08T14:39:42Z",
+      "started_at": "2026-11-08T14:39:44Z",
+      "completed_at": "2026-11-08T15:01:31Z"
+     },
+     {
+      "id": 128789722523,
+      "run_id": 42490892875,
+      "run_attempt": 1,
+      "name": "gate",
+      "status": "completed",
+      "conclusion": "failure",
+      "created_at": "2026-11-08T16:24:47Z",
+      "started_at": "2026-11-08T16:24:49Z",
+      "completed_at": "2026-11-08T16:25:23Z"
+     }
+    ]
+   }
+  }
+ ]
+}

@@ -9,7 +9,11 @@
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
-      "{workspaceRoot}/tools/ci/gate-timing.mjs"
+      "{workspaceRoot}/tools/ci/gate-timing.mjs",
+      "{workspaceRoot}/budgets.yaml",
+      "{workspaceRoot}/justfile",
+      "{workspaceRoot}/.github/workflows/ci.yml",
+      "{workspaceRoot}/.github/workflows/release.yml"
     ],
     "production": [
       "{projectRoot}/core.mjs",
@@ -20,7 +24,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test tools/ci/gate-timing/tests/gate-timing.test.mjs"
+        "command": "node --test tools/ci/gate-timing/tests/gate-timing.test.mjs tools/ci/gate-timing/tests/budget.test.mjs"
       },
       "cache": true,
       "inputs": [
@@ -34,6 +38,7 @@
           "node --check tools/ci/gate-timing.mjs",
           "node --check tools/ci/gate-timing/core.mjs",
           "node --check tools/ci/gate-timing/tests/gate-timing.test.mjs",
+          "node --check tools/ci/gate-timing/tests/budget.test.mjs",
           "node scripts/check-project-boundaries.mjs gate-timing"
         ],
         "parallel": false

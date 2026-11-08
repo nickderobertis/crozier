@@ -12,6 +12,10 @@ export const CI_WORKFLOW_PATH = '.github/workflows/ci.yml';
 const isCIWorkflow = (run) => run.path.split('@')[0] === CI_WORKFLOW_PATH;
 export const CLI_OPTIONS = Object.freeze({ since: 'RFC3339', until: 'RFC3339', limit: 'N', 'head-contains': 'SHA', 'cache-dir': 'DIR', format: 'json|markdown' });
 export const HELP = `usage: node tools/ci/gate-timing.mjs runs ${Object.entries(CLI_OPTIONS).map(([name, value]) => ['since', 'until'].includes(name) ? `--${name} ${value}` : `[--${name} ${value}]`).join(' ')}
+       node tools/ci/gate-timing.mjs budget
+budget reads one landed head for the delivery hook: it needs ONEPIPELINE_RUN_ID,
+ONEPIPELINE_NODE_ID, ONEPIPELINE_RUNS_DIR and ONEBUDGETSPEC_RESULT, writes
+{value,detail} there, and exits 0 measured, 1 missing data, 2 invalid invocation.
 Defaults: repository ${REPOSITORY}; format json; cache
   \${XDG_CACHE_HOME:-$HOME/.cache}/crozier/gate-timing.
 JSON schema_version: ${SCHEMA_VERSION}; required_contexts, window, runs, summary.
@@ -90,8 +94,14 @@ export function requiredContexts(protection, rules) {
 
 export function parseArgs(args) {
   if (args.length === 1 && ['--help', '-h'].includes(args[0])) return { help: true };
-  if (args.shift() !== 'runs') throw new TypeError('expected runs (see --help)');
-  const options = { format: 'json', limit: 100, 'cache-dir': join(process.env.XDG_CACHE_HOME || join(homedir(), '.cache'), 'crozier/gate-timing') };
+  const verb = args.shift();
+  const cacheDir = join(process.env.XDG_CACHE_HOME || join(homedir(), '.cache'), 'crozier/gate-timing');
+  if (verb === 'budget') {
+    if (args.length) throw new TypeError(`budget takes no arguments, got ${args[0]}`);
+    return { budget: true, 'cache-dir': cacheDir };
+  }
+  if (verb !== 'runs') throw new TypeError('expected runs or budget (see --help)');
+  const options = { format: 'json', limit: 100, 'cache-dir': cacheDir };
   const seen = new Set();
   while (args.length) {
     const flag = args.shift();
@@ -140,18 +150,11 @@ export function validateAttempt(attempt) {
 }
 // llmlint: ignore-end[contracts_have_one_source_or_a_drift_gate]
 
-export function calculateHead(attempts, required) {
-  if (!attempts.length) throw new Error('missing head attempts');
-  attempts.forEach(validateAttempt);
-  const sorted = [...attempts].sort((a, b) => Date.parse(a.run.created_at) - Date.parse(b.run.created_at) || a.run.run_attempt - b.run.run_attempt);
-  const first = sorted[0].run;
-  const last = sorted.at(-1).run;
-  const kind = first.event === 'push' ? 'main' : first.head_branch.startsWith('release-plz-') ? 'release-pr' : 'pr';
-  const allJobs = sorted.flatMap(({ run, jobs }) => jobs.map((job) => ({ ...job, run_id: run.id, run_attempt: run.run_attempt })));
-  // A later attempt replaces only contexts it supplies: successful contexts
-  // survive a failed-job-only retry. Attempt number outranks timestamp order.
+// A later attempt replaces only contexts it supplies: successful contexts
+// survive a failed-job-only retry. Attempt number outranks timestamp order.
+export function latestAttempts(attempts) {
   const latest = new Map();
-  for (const { run, jobs } of [...sorted].sort((a, b) => a.run.run_attempt - b.run.run_attempt)) {
+  for (const { run, jobs } of [...attempts].sort((a, b) => a.run.run_attempt - b.run.run_attempt)) {
     const merged = new Map();
     for (const job of latest.get(run.id)?.jobs ?? []) {
       if (!merged.has(job.name)) merged.set(job.name, []);
@@ -165,6 +168,18 @@ export function calculateHead(attempts, required) {
     for (const [name, results] of supplied) merged.set(name, results);
     latest.set(run.id, { run, jobs: [...merged.values()].flat() });
   }
+  return latest;
+}
+
+export function calculateHead(attempts, required) {
+  if (!attempts.length) throw new Error('missing head attempts');
+  attempts.forEach(validateAttempt);
+  const sorted = [...attempts].sort((a, b) => Date.parse(a.run.created_at) - Date.parse(b.run.created_at) || a.run.run_attempt - b.run.run_attempt);
+  const first = sorted[0].run;
+  const last = sorted.at(-1).run;
+  const kind = first.event === 'push' ? 'main' : first.head_branch.startsWith('release-plz-') ? 'release-pr' : 'pr';
+  const allJobs = sorted.flatMap(({ run, jobs }) => jobs.map((job) => ({ ...job, run_id: run.id, run_attempt: run.run_attempt })));
+  const latest = latestAttempts(sorted);
   const finalJobs = [...latest.values()].flatMap(({ jobs }) => jobs);
   const mainJobs = [...latest.values()].filter(({ run }) => isCIWorkflow(run)).flatMap(({ jobs }) => jobs);
   const contexts = kind === 'main' ? mainJobs : required.flatMap((name) => { const matches = finalJobs.filter((job) => job.name === name); return matches.length ? matches : [undefined]; });
@@ -240,14 +255,10 @@ function command(program, args) {
   try { return JSON.parse(result.stdout); } catch { throw new Error(`${program} returned invalid JSON`); }
 }
 
-export async function collect(options) {
-  const dir = options['cache-dir'];
-  mkdirSync(dir, { recursive: true });
-  const observed_at = new Date().toISOString();
-  const events = [];
-  // Every scan observes the budget before issuing reads. Secondary-limit errors
-  // are propagated immediately; they must never be retried by a quota loop.
-  const guard = async () => {
+// Every scan observes the budget before issuing reads. Secondary-limit errors
+// are propagated immediately; they must never be retried by a quota loop.
+function quotaGuard(events) {
+  return async () => {
     for (;;) {
       const core = validateQuota(command('gh', ['api', 'rate_limit']));
       if (core.remaining >= core.limit * .4) return;
@@ -259,13 +270,75 @@ export async function collect(options) {
       console.error('gate-timing: quota_resume');
     }
   };
-  const get = async (path) => { await guard(); return command('gh', ['api', '--method', 'GET', path]); };
+}
+
+async function observedContexts(get, dir, observed_at) {
   const root = `repos/${REPOSITORY}`;
   const protection = await get(`${root}/branches/main/protection`);
   const rules = await get(`${root}/rules/branches/main`);
   const required = requiredContexts(protection, rules);
   if (!required.length) throw new Error('missing required contexts at observation');
   writeFileSync(join(dir, `contexts-${observed_at.replaceAll(':', '-')}.json`), JSON.stringify({ observed_at, required_contexts: required, protection, rules }, null, 2));
+  return required;
+}
+
+// Every attempt of one workflow run, from the persistent cache where completed.
+async function runAttempts(run, { get, guard, dir, observed_at, required }) {
+  const root = `repos/${REPOSITORY}`;
+  // Refresh metadata even for a cached run: a rerun adds immutable attempts.
+  const fresh = await get(`${root}/actions/runs/${run.id}`);
+  validateRun(fresh);
+  if (fresh.id !== run.id || fresh.head_sha !== run.head_sha) throw new Error(`run identity mismatch for ${run.id}`);
+  writeFileSync(join(dir, `run-${run.id}-metadata.json`), JSON.stringify({ observed_at, run: fresh }, null, 2));
+  const attempts = [];
+  for (let attempt = 1; attempt <= fresh.run_attempt; attempt++) {
+    const file = join(dir, `run-${run.id}-attempt-${attempt}.json`);
+    let raw;
+    if (existsSync(file)) {
+      try { raw = JSON.parse(readFileSync(file, 'utf8')); } catch (error) { throw new Error(`invalid cached attempt ${file}; remove this cache file and retry: ${error.message}`); }
+    }
+    else {
+      let jobs;
+      let useGh = attempt !== fresh.run_attempt;
+      if (!useGh) {
+        await guard();
+        // onevcs supports latest jobs, not historical attempt selection.
+        try {
+          jobs = command('onevcs', ['host', 'run-jobs', '--repo', REPOSITORY, '--run', String(run.id), '--json']).jobs;
+        } catch (error) {
+          if (error.code !== 'ENOENT' && !/unrecognized subcommand/.test(error.message)) throw error;
+          useGh = true;
+        }
+      }
+      if (useGh) {
+        jobs = [];
+        for (let page = 1;; page++) {
+          const response = await get(`${root}/actions/runs/${run.id}/attempts/${attempt}/jobs?per_page=100&page=${page}`);
+          if (!Array.isArray(response.jobs)) throw new Error('missing jobs');
+          jobs.push(...response.jobs);
+          if (response.jobs.length < 100) break;
+        }
+      }
+      if (!Array.isArray(jobs) || jobs.some((j) => !j || j.run_attempt !== attempt)) throw new Error(`missing or mismatched jobs for ${run.id}/${attempt}`);
+      raw = { observed_at, required_contexts: required, run: { ...fresh, run_attempt: attempt }, jobs };
+      validateAttempt(raw);
+      if ((attempt < fresh.run_attempt || fresh.status === 'completed') && ACTION_CONCLUSIONS.includes(fresh.conclusion) && jobs.every((j) => j.status === 'completed')) writeFileSync(file, JSON.stringify(raw, null, 2));
+    }
+    if (raw?.run?.id !== fresh.id || raw?.run?.run_attempt !== attempt || raw?.run?.head_sha !== fresh.head_sha) throw new Error(`cached attempt identity mismatch: ${file}; remove this cache file and retry`);
+    attempts.push(validateAttempt(attempt === fresh.run_attempt ? { ...raw, run: fresh } : raw));
+  }
+  return { key: `${fresh.event}:${fresh.head_sha}`, attempts };
+}
+
+export async function collect(options) {
+  const dir = options['cache-dir'];
+  mkdirSync(dir, { recursive: true });
+  const observed_at = new Date().toISOString();
+  const events = [];
+  const guard = quotaGuard(events);
+  const get = async (path) => { await guard(); return command('gh', ['api', '--method', 'GET', path]); };
+  const root = `repos/${REPOSITORY}`;
+  const required = await observedContexts(get, dir, observed_at);
   const runs = [];
   let complete = true;
   for (let page = 1;; page++) {
@@ -282,49 +355,9 @@ export async function collect(options) {
   if (!selected.length) throw new Error('no matching runs in window');
   const groups = new Map();
   for (const run of selected) {
-    // Refresh metadata even for a cached run: a rerun adds immutable attempts.
-    const fresh = await get(`${root}/actions/runs/${run.id}`);
-    validateRun(fresh);
-    if (fresh.id !== run.id || fresh.head_sha !== run.head_sha) throw new Error(`run identity mismatch for ${run.id}`);
-    writeFileSync(join(dir, `run-${run.id}-metadata.json`), JSON.stringify({ observed_at, run: fresh }, null, 2));
-    const key = `${fresh.event}:${fresh.head_sha}`;
+    const { key, attempts } = await runAttempts(run, { get, guard, dir, observed_at, required });
     if (!groups.has(key)) groups.set(key, []);
-    for (let attempt = 1; attempt <= fresh.run_attempt; attempt++) {
-      const file = join(dir, `run-${run.id}-attempt-${attempt}.json`);
-      let raw;
-      if (existsSync(file)) {
-        try { raw = JSON.parse(readFileSync(file, 'utf8')); } catch (error) { throw new Error(`invalid cached attempt ${file}; remove this cache file and retry: ${error.message}`); }
-      }
-      else {
-        let jobs;
-        let useGh = attempt !== fresh.run_attempt;
-        if (!useGh) {
-          await guard();
-          // onevcs supports latest jobs, not historical attempt selection.
-          try {
-            jobs = command('onevcs', ['host', 'run-jobs', '--repo', REPOSITORY, '--run', String(run.id), '--json']).jobs;
-          } catch (error) {
-            if (error.code !== 'ENOENT' && !/unrecognized subcommand/.test(error.message)) throw error;
-            useGh = true;
-          }
-        }
-        if (useGh) {
-          jobs = [];
-          for (let page = 1;; page++) {
-            const response = await get(`${root}/actions/runs/${run.id}/attempts/${attempt}/jobs?per_page=100&page=${page}`);
-            if (!Array.isArray(response.jobs)) throw new Error('missing jobs');
-            jobs.push(...response.jobs);
-            if (response.jobs.length < 100) break;
-          }
-        }
-        if (!Array.isArray(jobs) || jobs.some((j) => !j || j.run_attempt !== attempt)) throw new Error(`missing or mismatched jobs for ${run.id}/${attempt}`);
-        raw = { observed_at, required_contexts: required, run: { ...fresh, run_attempt: attempt }, jobs };
-        validateAttempt(raw);
-        if ((attempt < fresh.run_attempt || fresh.status === 'completed') && ACTION_CONCLUSIONS.includes(fresh.conclusion) && jobs.every((j) => j.status === 'completed')) writeFileSync(file, JSON.stringify(raw, null, 2));
-      }
-      if (raw?.run?.id !== fresh.id || raw?.run?.run_attempt !== attempt || raw?.run?.head_sha !== fresh.head_sha) throw new Error(`cached attempt identity mismatch: ${file}; remove this cache file and retry`);
-      groups.get(key).push(validateAttempt(attempt === fresh.run_attempt ? { ...raw, run: fresh } : raw));
-    }
+    groups.get(key).push(...attempts);
   }
   const measured = [...groups.values()].map((attempts) => calculateHead(attempts, required));
   const report = validateReport({ schema_version: SCHEMA_VERSION, required_contexts: required, window: { since: options.since, until: options.until }, runs: measured, summary: summarize(measured),
@@ -334,6 +367,97 @@ export async function collect(options) {
   return report;
 }
 
+// A hook that names no landed node asked the wrong question: exit 2, not missing data.
+class InvocationError extends Error {}
+
+const SKIPPED_ON_RELEASE = /^test-/;
+
+// A required context's verdict on the landed head. Null, pending and cancelled are
+// missing verdicts; skipped counts only where ci.yml's guarded release path produced it.
+export function contextVerdicts(head, attempts, required) {
+  const finalAttempts = [...latestAttempts(attempts).values()];
+  const finalJobs = finalAttempts.flatMap(({ jobs }) => jobs);
+  const lintPassed = finalJobs.some((job) => job.name === 'lint' && job.conclusion === 'success');
+  const sameRepository = finalAttempts.every(({ run }) => run.head_repository?.full_name === REPOSITORY);
+  const releaseGuarded = head.kind === 'release-pr' && lintPassed && sameRepository;
+  return required.flatMap((context) => {
+    const jobs = finalJobs.filter((job) => job.name === context);
+    if (!jobs.length) return [{ context, conclusion: null, accepted: false, why: 'no job reported this context' }];
+    return jobs.map((job) => {
+      const conclusion = job.status === 'completed' ? job.conclusion ?? null : null;
+      if (conclusion === 'success') return { context, conclusion, accepted: true };
+      if (conclusion === 'skipped' && SKIPPED_ON_RELEASE.test(context) && releaseGuarded) return { context, conclusion, accepted: true, why: 'skipped on the guarded release path' };
+      const why = conclusion === 'skipped' ? 'skipped outside the guarded release path' : `${conclusion ?? job.status} is not an accepted verdict`;
+      return { context, conclusion, accepted: false, why };
+    });
+  });
+}
+
+function budgetDetail(head, pull, required, verdicts, attempts) {
+  const first = Date.parse(head.created_at);
+  const jobs = head.jobs.map((job) => {
+    const needs = job.created_at ? (Date.parse(job.created_at) - first) / 1000 : null;
+    return `${job.name}[run ${job.run_id} attempt ${job.attempt}] ${job.conclusion ?? 'none'} needs=${needs ?? 'unknown'}s queue=${job.queue_seconds ?? 'unknown'}s execution=${job.run_seconds ?? 'unknown'}s`;
+  });
+  // An attempt's own verdict is its jobs: run metadata only describes the latest attempt.
+  const failed = attempts.flatMap(({ run, jobs }) => {
+    const bad = jobs.filter((job) => job.conclusion && !['success', 'skipped', 'neutral'].includes(job.conclusion));
+    return bad.length ? [`run ${run.id} attempt ${run.run_attempt}: ${bad.map((job) => `${job.name}=${job.conclusion}`).join(', ')}`] : [];
+  });
+  return [
+    `head ${head.head_sha} of change #${pull.number}, merged ${pull.merged_at}`,
+    `start ${head.created_at} is the first pull_request workflow's created_at, a push proxy seconds after the push`,
+    `required contexts observed now (${required.join(', ')}): ${verdicts.map((v) => `${v.context}=${v.conclusion}`).join(', ')}`,
+    `terminal: ${head.critical_path.join(', ')}`,
+    `jobs: ${jobs.join('; ')}`,
+    `failed attempts: ${failed.length ? failed.join('; ') : 'none'}`,
+  ].join('. ');
+}
+
+async function landedPull(run, node, get) {
+  const telemetry = command('onepipeline', ['telemetry', run, '--changes', '--json']);
+  if (telemetry?.schema_version !== 1 || telemetry.run_id !== run || !Array.isArray(telemetry.changes)) throw new Error(`invalid per-change telemetry for run ${run}`);
+  const change = telemetry.changes.find((c) => c?.repository === `github.com/${REPOSITORY}` && (c.node === node || c.lineage?.includes(node)));
+  if (!change) throw new Error(`run ${run} recorded no ${REPOSITORY} change for node ${node}`);
+  const match = /^https:\/\/github\.com\/nickderobertis\/crozier\/pull\/([1-9]\d*)$/.exec(change.change_url ?? '');
+  if (!match) throw new Error(`node ${node} of run ${run} records no change request (outcome ${change.outcome})`);
+  const status = command('onevcs', ['status', change.change_url, '--json']);
+  if (status?.publication?.landed?.state !== 'yes') throw new Error(`${change.change_url} has not landed according to onevcs`);
+  const pull = await get(`repos/${REPOSITORY}/pulls/${match[1]}`);
+  if (pull?.number !== Number(match[1]) || !/^[a-f0-9]{40}$/.test(pull.head?.sha ?? '') || !validTimestamp(pull.merged_at)) throw new Error(`${change.change_url} reports no merged head`);
+  return pull;
+}
+
+export async function budget(options, env = process.env) {
+  const { ONEPIPELINE_RUN_ID: run, ONEPIPELINE_NODE_ID: node, ONEPIPELINE_RUNS_DIR: runs, ONEBUDGETSPEC_RESULT: result } = env;
+  for (const [name, value] of Object.entries({ ONEPIPELINE_RUN_ID: run, ONEPIPELINE_NODE_ID: node, ONEPIPELINE_RUNS_DIR: runs, ONEBUDGETSPEC_RESULT: result })) {
+    if (!value) throw new InvocationError(`${name} is not set; this budget is measured by the delivery hook through onebudgetspec`);
+  }
+  const dir = options['cache-dir'];
+  mkdirSync(dir, { recursive: true });
+  const observed_at = new Date().toISOString();
+  const guard = quotaGuard([]);
+  const get = async (path) => { await guard(); return command('gh', ['api', '--method', 'GET', path]); };
+  const pull = await landedPull(run, node, get);
+  const required = await observedContexts(get, dir, observed_at);
+  const listed = [];
+  for (let page = 1;; page++) {
+    const answer = await get(`repos/${REPOSITORY}/actions/runs?head_sha=${pull.head.sha}&event=pull_request&per_page=100&page=${page}`);
+    if (!Array.isArray(answer.workflow_runs)) throw new Error('missing workflow_runs');
+    listed.push(...answer.workflow_runs.map(validateRun));
+    if (answer.workflow_runs.length < 100) break;
+  }
+  if (!listed.length) throw new Error(`no pull_request workflow run at landed head ${pull.head.sha}`);
+  const attempts = [];
+  for (const entry of listed) attempts.push(...(await runAttempts(entry, { get, guard, dir, observed_at, required })).attempts);
+  const head = calculateHead(attempts, required);
+  const verdicts = contextVerdicts(head, attempts, required);
+  const refused = verdicts.filter((verdict) => !verdict.accepted);
+  if (refused.length) throw new Error(`missing required verdict at ${pull.head.sha}: ${refused.map((v) => `${v.context}: ${v.why}`).join('; ')}`);
+  if (head.gate_seconds === null) throw new Error(`no measurable span at ${pull.head.sha}: ${head.reason}`);
+  writeFileSync(result, JSON.stringify({ value: head.gate_seconds, detail: budgetDetail(head, pull, required, verdicts, attempts) }));
+}
+
 export function markdown(report) {
   return `Window: ${report.window.since} — ${report.window.until}\n\n| Kind | Passing n | Median seconds | p95 | Max | Unsuccessful |\n|---|---:|---:|---:|---:|---:|\n` + Object.entries(report.summary.kinds).map(([kind, s]) => `| ${kind} | ${s.n} | ${s.median ?? 'unknown'} | ${s.p95 ?? 'unknown'} | ${s.max ?? 'unknown'} | ${s.unsuccessful} |`).join('\n') + '\n';
 }
@@ -341,6 +465,13 @@ export function markdown(report) {
 export async function main(args = process.argv.slice(2)) {
   let options;
   try { options = parseArgs(args); } catch (e) { console.error(`gate-timing: ${e.message}`); process.exitCode = 2; }
-  if (options?.help) console.log(HELP);
-  else if (options) try { const report = await collect(options); console.log(options.format === 'markdown' ? markdown(report) : JSON.stringify(report, null, 2)); } catch (e) { console.error(`gate-timing: ${e.message}`); process.exitCode = 1; }
+  if (!options) return;
+  if (options.help) { console.log(HELP); return; }
+  try {
+    if (options.budget) await budget(options);
+    else { const report = await collect(options); console.log(options.format === 'markdown' ? markdown(report) : JSON.stringify(report, null, 2)); }
+  } catch (e) {
+    console.error(`gate-timing: ${e.message}`);
+    process.exitCode = e instanceof InvocationError ? 2 : 1;
+  }
 }
