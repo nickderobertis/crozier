@@ -6,6 +6,16 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.160](https://github.com/nickderobertis/crozier/compare/v0.0.159...v0.0.160) - 2026-11-08
+
+### Other
+
+- *(gate)* cut repeated work and introduce the fixed four-lane shape ([#791](https://github.com/nickderobertis/crozier/pull/791))
+- *(parity)* prove schema combinations at their interaction branch or record why none exists ([#776](https://github.com/nickderobertis/crozier/pull/776))
+- *(ci)* cut repeated work in crozier's slowest test suites ([#781](https://github.com/nickderobertis/crozier/pull/781))
+- *(parity)* register the handed-off documents that already byte-match with their literals overlays ([#780](https://github.com/nickderobertis/crozier/pull/780))
+- *(parity)* seek real witnesses for the remaining fixture-only parameter, security and extension features ([#775](https://github.com/nickderobertis/crozier/pull/775))
+
 ## [0.0.159](https://github.com/nickderobertis/crozier/compare/v0.0.158...v0.0.159) - 2026-11-04
 
 ### Other
