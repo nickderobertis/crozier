@@ -296,3 +296,5 @@ mod tests {
         );
     }
 }
+
+// DO NOT MERGE: gate-time-remeasure broad-source measurement sample.
