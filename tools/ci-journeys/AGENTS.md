@@ -11,3 +11,7 @@
 - `release_checkout.rs` reads `release.yml` through
   `tools/ci/tests/support/release.rs`, included by path, so the structural test
   and the journey can never disagree on which steps precede a checkout.
+- `selection.test.mjs` reads every project's real `project.json`. The boundary rule lets a
+  tooling target name none of a tier's, so `tools/ci/project-files-digest.mjs` hashes them as
+  a runtime input, which only misses this suite's cache. What fails on a tier manifest edit
+  is `lane-inventory:lint` (`tests/lane_inventory/`), whose inputs may name them.

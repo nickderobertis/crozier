@@ -8,7 +8,9 @@
     "cost:expensive",
     "lang:javascript",
     "lang:python",
-    "lang:bash"
+    "lang:bash",
+    "lane:packaging",
+    "platform:linux"
   ],
   "targets": {
     "test": {

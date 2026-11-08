@@ -26,6 +26,7 @@ llmlint.buildout.yml
 # README images (docs/screenshots/) ARE tracked; the regenerated capture trees and
 # the rendered gallery are throwaway.
 /shots/current
+/shots/verify
 /shots/review
 /site
 
@@ -48,3 +49,4 @@ __pycache__/
 /.venv
 /.coverage-data
 /.ruff_cache
+/.ci-results

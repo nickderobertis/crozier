@@ -50,12 +50,28 @@
         "default",
         "cargo",
         "{workspaceRoot}/.github/**/*",
+        "{workspaceRoot}/scripts/release-branch-guard.mjs",
         "{workspaceRoot}/scripts/update-major-tag.sh",
         "{workspaceRoot}/scripts/install.sh",
         "{workspaceRoot}/tools/fern-goldens/weekly.py",
         "{workspaceRoot}/release-plz.toml",
         "{workspaceRoot}/src/yaml.rs"
       ]
+    },
+    "lint-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-ci --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "{workspaceRoot}/src/yaml.rs"
+      ],
+      "metadata": {
+        "description": "This crate's cfg(unix)/cfg(windows) gates compile different code on Windows, so clippy there reads code `lint` on Linux never sees (tools/ci/lanes.json)."
+      }
     }
   }
 }
