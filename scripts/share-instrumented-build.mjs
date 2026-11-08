@@ -5,7 +5,10 @@
 // on. The profiles sit at each directory's top; the compiled tree is `debug/`, and
 // the two directories hold one of those: cargo's own fingerprints then decide what
 // is fresh, so a changed input still rebuilds. Idempotent; quiet on success.
-import { lstatSync, mkdirSync, readlinkSync, rmSync, symlinkSync } from "node:fs";
+// The link is made afresh on every run, never trusted: a restored build cache
+// brings it back by name, and on Windows the archive restores it before its
+// target exists, as a file symlink cargo cannot enter as a directory.
+import { mkdirSync, rmSync, symlinkSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -13,24 +16,13 @@ const root = process.env.CROZIER_SHARED_BUILD_ROOT ?? resolve(dirname(fileURLToP
 const shared = join(root, "target", "llvm-cov-target", "debug");
 const link = join(root, "target", "llvm-cov-gate", "debug");
 
-function current(path) {
-  try {
-    return lstatSync(path).isSymbolicLink() ? readlinkSync(path).replace(/[\\/]$/, "") : "not a link";
-  } catch (error) {
-    if (error.code === "ENOENT") return null;
-    throw error;
-  }
-}
-
 try {
   mkdirSync(shared, { recursive: true });
   mkdirSync(dirname(link), { recursive: true });
-  const found = current(link);
-  if (found !== shared) {
-    if (found !== null) rmSync(link, { recursive: true, force: true });
-    // A junction takes no privilege on Windows; everywhere else the type is ignored.
-    symlinkSync(shared, link, "junction");
-  }
+  // Removes the link itself, never what it points at.
+  rmSync(link, { recursive: true, force: true });
+  // A junction takes no privilege on Windows; everywhere else the type is ignored.
+  symlinkSync(shared, link, "junction");
 } catch (error) {
   console.error(`share-instrumented-build: cannot link ${link} to ${shared}: ${error.message}`);
   console.error("share-instrumented-build: remove target/llvm-cov-gate by hand and re-run");
