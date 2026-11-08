@@ -4098,6 +4098,57 @@ fn object_union_extension_generates_every_union_base_and_keeps_a_scalar_base_ref
     );
 }
 
+/// A declared `449` response raises the named `RetryWithError`, the class the
+/// certified pair writes for vercel's `449` (`errors/retry_with_error.py`,
+/// measured in `docs/fern-measurements/handed-off/example-values/`): the
+/// error-responses fixture with its `422` renumbered `449` gets the error
+/// module, its export and the raw client's dispatch, and the unedited fixture,
+/// which declares no `449`, gets none of them.
+#[test]
+fn a_retry_with_response_raises_its_named_error() {
+    let original = include_str!("../../../tests/fixtures/error-responses/openapi.yml");
+    let renumbered = original.replacen("        \"422\":\n", "        \"449\":\n", 1);
+    assert_ne!(renumbered, original, "the fixture no longer declares a 422");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    for (document, declared) in [(renumbered.as_str(), true), (original, false)] {
+        let out = dir
+            .path()
+            .join(if declared { "retry-with" } else { "control" });
+        std::fs::write(&spec, document).unwrap();
+        probe_command(&spec, &out).assert().success();
+        let errors = out.join("src/fern/errors");
+        let error_module = errors.join("retry_with_error.py");
+        let exports = std::fs::read_to_string(errors.join("__init__.py")).unwrap();
+        let raw_clients: String = std::fs::read_dir(out.join("src/fern"))
+            .unwrap()
+            .filter_map(|entry| {
+                std::fs::read_to_string(entry.unwrap().path().join("raw_client.py")).ok()
+            })
+            .collect();
+        if declared {
+            let module = std::fs::read_to_string(&error_module).unwrap();
+            assert!(
+                module.contains("class RetryWithError(ApiError):")
+                    && module
+                        .contains("super().__init__(status_code=449, headers=headers, body=body)"),
+                "{module}"
+            );
+            assert!(exports.contains("\"RetryWithError\""), "{exports}");
+            assert!(
+                raw_clients.contains(
+                    "            if _response.status_code == 449:\n                raise RetryWithError(\n"
+                ),
+                "{raw_clients}"
+            );
+        } else {
+            assert!(!error_module.exists());
+            assert!(!exports.contains("RetryWithError"), "{exports}");
+            assert!(!raw_clients.contains("RetryWithError"), "{raw_clients}");
+        }
+    }
+}
+
 #[test]
 fn remaining_model_shapes_match_the_certified_fern_trees() {
     let root = repo_root();
