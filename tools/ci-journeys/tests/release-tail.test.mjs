@@ -7,7 +7,9 @@
 // fixtures/release-tail/v0.0.160-*.json were captured on 2026-11-08 with onevcs 0.60.0
 // against the public v0.0.160 release: #791 is an ordinary pull request of the four-lane
 // shape (its head still ran the transitional jobs, which these fixtures drop), #777 a
-// release-plz pull request whose test lanes the content guard let skip.
+// release-plz pull request whose test lanes the content guard let skip. The same three
+// questions asked through onevcs-cli@0.57.6, the version release.yml installs, returned
+// answers identical to these (compared with `jq -S`, 2026-11-08).
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";

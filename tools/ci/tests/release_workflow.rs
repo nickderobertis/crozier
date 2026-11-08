@@ -149,6 +149,11 @@ const BUDGETS: &str = include_str!("../../../budgets.yaml");
 /// writes outputs. Its tools are pinned: onevcs at the release dero-skills a73a309's
 /// create-repo pins, onebudgetspec at package.json's pin. The shell this asserts is the one
 /// `tools/ci-journeys/tests/release-tail.test.mjs` runs over recorded host answers.
+/// The install step is held here by shape rather than run by that journey: running it
+/// needs the npm registry, which an offline suite cannot reach. What it installs is
+/// what the journey already drives: onebudgetspec at the pin asserted below, which the
+/// journey runs from the workspace's node_modules, and onevcs, the host boundary the
+/// journey doubles, whose pinned 0.57.6 answers were checked against the recordings.
 #[test]
 fn the_release_tail_is_the_last_step_of_major_tag_and_nothing_reads_it() {
     let workflow = workflow();
