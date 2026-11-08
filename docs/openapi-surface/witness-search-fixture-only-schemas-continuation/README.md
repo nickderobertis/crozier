@@ -164,10 +164,12 @@ third attempt made 9 more of the same kind: `gh run view` reads of two failed CI
 runs on this branch (two job listings and four job logs), and three `gh run list`
 reads of the branch's, `main`'s and the merged base commit's runs. Its fourth
 attempt made 6 more, each one `gh` command: a `gh pr list` read of this branch's
-own change request (GitHub's GraphQL API, the only GraphQL request of the node),
-a `gh run list` of this branch's runs and one of `main`'s `ci` runs, a `gh run
+own change request (GitHub's GraphQL API), a `gh run list` of this branch's runs and one of `main`'s `ci` runs, a `gh run
 view` job listing of the failed run, and the failed-step logs of its two failed
-jobs. None of them searched for or fetched a candidate.
+jobs. Its fifth attempt made 1 more: a `gh pr list` read of this branch's own
+change request (GraphQL), beside one `git fetch` of `origin` to compare the
+branch with its published head and `main`. None of them searched for or fetched
+a candidate.
 
 | bucket | live requests | response-cache hits | waits |
 |---|---:|---:|---:|
@@ -175,7 +177,7 @@ jobs. None of them searched for or fetched a candidate.
 | core (candidate screening, guarded) | 0 | 0 | 0 |
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
 | core (retry CI diagnostics, unguarded) | 18 | 0 | 0 |
-| graphql (retry CI diagnostics, unguarded) | 1 | 0 | 0 |
+| graphql (retry CI diagnostics, unguarded) | 2 | 0 | 0 |
 
 ## Verdicts
 
