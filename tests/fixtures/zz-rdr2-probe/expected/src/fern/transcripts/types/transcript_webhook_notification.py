@@ -1,8 +1,0 @@
-
-
-import typing
-
-from .redacted_audio_notification import RedactedAudioNotification
-from .transcript_ready_notification import TranscriptReadyNotification
-
-TranscriptWebhookNotification = typing.Union[TranscriptReadyNotification, RedactedAudioNotification]
