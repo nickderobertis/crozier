@@ -3150,7 +3150,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **548** reach every handling site their
+The golden rows split in two. **549** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **68** carry at least one handling site no golden-only witness executes: 87 unreached arms in all. By the verdict each arm's linked record states, 64 read `exhausted`, 23 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3317,38 +3317,38 @@ why. The changes that took the arm off:
 | 34 | `array-item-pointer-walk-anyof` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 35 | `type-single` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]` | 1 | `search-incomplete` | `verified-seal` |
 | 36 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date$]` | 1 | `search-incomplete` | `observatory-client-date` |
-| 37 | `anyof-array-variant-anyof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
-| 38 | `anyof-array-variant-oneof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
-| 39 | `inheritance-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
-| 40 | `property-sole-anyof-closed-object-member` | `src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]` | 8 | `exhausted` | `inline-property-unions` |
-| 41 | `property-sole-anyof-struct-member` | `src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]` | 8 | `exhausted` | `inline-property-unions` |
-| 42 | `array-item-pointer-walk-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
-| 43 | `parameter-in-query` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | 2 | `exhausted` | `observatory-query-extensions` |
-| 44 | `enum` | `src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]` | 2 | `search-incomplete` | `harbour-window`, `measurement-phase` |
-| 45 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
-| 46 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
-| 47 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
-| 48 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
-| 49 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `exhausted` | `slashless-json-response` |
-| 50 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 51 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `search-incomplete` | `enum-media-selection` |
-| 52 | `anyof-array-variant-inline-enum-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(list\) = self\.hoist_array_item_enum\(&variant_name, variant\) \{]` | 1 | `search-incomplete` | `kiln-array-mode` |
-| 53 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
-| 54 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
-| 55 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 56 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 57 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 58 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
-| 59 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 60 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 61 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 62 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 63 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 64 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 65 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 66 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 67 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
-| 68 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
+| 39 | `anyof-array-variant-anyof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
+| 40 | `anyof-array-variant-oneof-nullable-item` | `src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]` | 8 | `exhausted` | `inline-anyof-variants` |
+| 41 | `inheritance-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 42 | `property-sole-anyof-closed-object-member` | `src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]` | 8 | `exhausted` | `inline-property-unions` |
+| 43 | `property-sole-anyof-struct-member` | `src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]` | 8 | `exhausted` | `inline-property-unions` |
+| 44 | `array-item-pointer-walk-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
+| 45 | `parameter-in-query` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | 2 | `exhausted` | `observatory-query-extensions` |
+| 46 | `enum` | `src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]` | 2 | `search-incomplete` | `harbour-window`, `measurement-phase` |
+| 47 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
+| 48 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
+| 49 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
+| 50 | `enum-leading-zero-member` | `src/naming.rs::enum_words[if leads_with_zero_led_digits \{]` | 1 | `exhausted` | — |
+| 51 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `exhausted` | `slashless-json-response` |
+| 52 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 53 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | 2 | `search-incomplete` | `enum-media-selection` |
+| 54 | `anyof-array-variant-inline-enum-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(list\) = self\.hoist_array_item_enum\(&variant_name, variant\) \{]` | 1 | `search-incomplete` | `kiln-array-mode` |
+| 55 | `enum-empty-identifier-member` | `src/naming.rs::finalize_enum_ident[if name.is_empty\(\) \{]` | 1 | `exhausted` | — |
+| 56 | `enum-leading-digit-identifier` | `src/naming.rs::finalize_enum_ident[if name.starts_with]` | 1 | `exhausted` | — |
+| 57 | `format-email` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 58 | `format-hostname` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 59 | `format-idn-hostname` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 60 | `format-int64` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | 1 | `search-incomplete` | `odometer-reading` |
+| 61 | `format-ipv4` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 62 | `format-iri` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 63 | `format-json-pointer` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 64 | `format-password` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 65 | `format-regex` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 66 | `format-time` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 67 | `format-uri` | `src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 68 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 69 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
+| 70 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
 <!-- END GENERATED ARM TABLE -->
 
 **Configuration-gated arms.** An arm only a generation setting reaches is
