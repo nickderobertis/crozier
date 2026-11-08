@@ -8886,7 +8886,7 @@ class SourceSelectionTests(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         payload = json.loads(completed.stdout)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual([str(fixture / "openapi.yml")], [source["path"] for source in payload["sources"]])
+        self.assertEqual([(fixture / "openapi.yml").as_posix()], [source["path"] for source in payload["sources"]])
         self.assertEqual([], [row for row in payload["rows"] if row["selector"] == "pathItem.trace"])
 
     def test_source_selection_flags_keep_their_legacy_aliases(self) -> None:
@@ -23075,7 +23075,7 @@ def handed_off_area_attributions(
         readme = directory / area / "README.md"
         if not readme.is_file():
             continue
-        label = str(readme.relative_to(directory))
+        label = readme.relative_to(directory).as_posix()
         current = None
         for line in readme.read_text(encoding="utf-8").splitlines():
             if heading := re.search(r"sha256 `([0-9a-f]{64})`", line):

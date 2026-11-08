@@ -85,7 +85,7 @@ class DocumentError(Exception):
     """A source document this census cannot read, with the site that stopped it."""
 
     def __init__(self, path: Path, line: int, message: str) -> None:
-        super().__init__(f"{path}:{line}: {message}")
+        super().__init__(f"{path.as_posix()}:{line}: {message}")
         self.path = path
         self.line = line
 
@@ -9015,7 +9015,7 @@ def path_of(source: Source, repo_root: Path) -> str | None:
         return None
     if source.path.is_relative_to(repo_root):
         return source.path.relative_to(repo_root).as_posix()
-    return str(source.path)
+    return source.path.as_posix()
 
 
 def report(rows: dict[tuple[str, str], int], selectors: list[str]) -> str:
@@ -9103,7 +9103,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         if not isinstance(document, dict):
             print(
-                f"openapi-surface-census: {source.fixture}: {source.path} is not an "
+                f"openapi-surface-census: {source.fixture}: {source.path.as_posix()} is not an "
                 "OpenAPI document (its root is not a mapping)",
                 file=sys.stderr,
             )
