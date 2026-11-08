@@ -5,17 +5,22 @@ from __future__ import annotations
 
 import ctypes
 import errno
+import hashlib
+import json
 import os
 import platform
 import subprocess
 import sys
 import tempfile
 import unittest
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import ClassVar
 
 REPO = Path(__file__).resolve().parents[2]
+HANDOFF_ENV = "CROZIER_COLD_REGISTRY_HANDOFF"
+CARGO_TEST = ("cargo", "test", "--locked", "--no-run", "-p", "crozier-e2e", "--test", "e2e")
+CARGO_BIN = ("cargo", "build", "--locked", "--quiet", "-p", "crozier", "--bin", "crozier")
 
 
 def deny_network() -> None:
@@ -74,6 +79,132 @@ def warm_dependencies(case: unittest.TestCase, env: Mapping[str, str]) -> None:
         case.assertEqual(0, warm.returncode, warm.stderr)
 
 
+def denied(*command: str, env: Mapping[str, str]) -> subprocess.CompletedProcess[str]:
+    """`command` with sockets denied, from the repository root."""
+    argv = [sys.executable, str(Path(__file__).resolve()), "--deny-network", *command]
+    return subprocess.run(argv, cwd=REPO, env=env, capture_output=True, text=True)
+
+
+def denied_cargo_test(env: Mapping[str, str]) -> subprocess.CompletedProcess[str]:
+    """The proof's build: the e2e suite, compiled and linked, with sockets denied."""
+    return denied(*CARGO_TEST, "--message-format=json", env=env)
+
+
+def assert_unwarmed_refusal(case: unittest.TestCase, env: Mapping[str, str]) -> None:
+    """The control: from an unwarmed registry, the same command reaches for the network."""
+    unwarmed = denied_cargo_test(env)
+    case.assertNotEqual(0, unwarmed.returncode, unwarmed.stderr)
+    case.assertIn("crates.io", unwarmed.stderr)
+
+
+def crozier_artifacts(stdout: str) -> dict[str, bool]:
+    """Each crozier or e2e artifact file a JSON-message build reports -> whether cargo compiled it."""
+    artifacts: dict[str, bool] = {}
+    for line in stdout.splitlines():
+        message = json.loads(line) if line.startswith("{") else {}
+        if message.get("reason") == "compiler-artifact" and message["target"]["name"] in {"crozier", "e2e"}:
+            for path in [*message["filenames"], *filter(None, [message.get("executable")])]:
+                if not path.endswith(".rmeta") or Path(path).is_file():
+                    artifacts[path] = not message["fresh"]
+    return artifacts
+
+
+def digests(paths: Iterable[str]) -> dict[str, str]:
+    return {path: hashlib.sha256(Path(path).read_bytes()).hexdigest() for path in paths}
+
+
+def handoff_record() -> Path:
+    target = os.environ.get("CARGO_TARGET_DIR")
+    return (Path(target) if target else REPO / "target") / "cold-registry-handoff.json"
+
+
+def denied_handoff_build() -> tuple[dict[str, bool], str]:
+    """The suite and the binary from this job's CARGO_HOME, sockets denied: what each compiled, or why it failed."""
+    env = {**os.environ, "RUSTC_WRAPPER": ""}
+    artifacts: dict[str, bool] = {}
+    for command in (CARGO_TEST, CARGO_BIN):
+        run = denied(*command, "--message-format=json", env=env)
+        if run.returncode != 0:
+            return artifacts, run.stderr
+        # The second command sees what the first just compiled as fresh: compiled by either is compiled.
+        for path, compiled in crozier_artifacts(run.stdout).items():
+            artifacts[path] = artifacts.get(path, False) or compiled
+    return artifacts, ""
+
+
+def record_handoff(artifacts: Iterable[str]) -> None:
+    """Name exactly the bytes a denied build left, for this CARGO_HOME, for later steps to be held to."""
+    record = {"cargo_home": os.environ["CARGO_HOME"], "artifacts": digests(artifacts)}
+    handoff_record().parent.mkdir(parents=True, exist_ok=True)
+    handoff_record().write_text(json.dumps(record, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+
+
+def handoff_answers(case: unittest.TestCase) -> bool:
+    """Whether the build this job's later steps use came from the cold registry with sockets denied.
+
+    Cargo decides what is current, and each current artifact needs its own provenance:
+    one compiled in this denied run has it, and one reused must be the bytes the record
+    names. A single reused artifact outside the record came from a build with sockets up,
+    whatever else was rebuilt beside it, so the caller proves it from a cold registry
+    itself and the record stands unchanged.
+    """
+    if not handoff_record().is_file() or HANDOFF_ENV not in os.environ:
+        return False
+    record = json.loads(handoff_record().read_text(encoding="utf-8"))
+    if record["cargo_home"] != os.environ.get("CARGO_HOME"):
+        return False
+    artifacts, failure = denied_handoff_build()
+    case.assertEqual("", failure, "the job's build needed the network once its registry was warmed")
+    rebuilt = [path for path, compiled in artifacts.items() if compiled]
+    reused = digests(path for path, compiled in artifacts.items() if not compiled)
+    unproven = sorted(path for path, digest in reused.items() if record["artifacts"].get(path) != digest)
+    if unproven:
+        names = ", ".join(Path(path).name for path in unproven)
+        print(
+            f"cold-registry: rejected the handoff; {len(rebuilt)} artifact(s) rebuilt with sockets denied, "
+            f"but these reused ones were not made that way: {names}",
+            file=sys.stderr,
+        )
+        return False
+    if rebuilt:
+        record_handoff(artifacts)
+        print("cold-registry: rebuilt a changed input with sockets denied", file=sys.stderr)
+        return True
+    print("cold-registry: the job's build is the one made with sockets denied", file=sys.stderr)
+    return True
+
+
+def cold_registry_build() -> int:
+    """The first dev build of a job that asks for the handoff; every other caller only builds the binary.
+
+    `CARGO_HOME` stays the job's, because cargo fingerprints a crate's absolute source
+    path: only a later step under this same path can reuse what this builds.
+    """
+    home = os.environ.get("CARGO_HOME")
+    if HANDOFF_ENV in os.environ and not handoff_record().is_file():
+        if not home:
+            print(f"cold-registry: {HANDOFF_ENV} needs CARGO_HOME; set both on the job's step", file=sys.stderr)
+            return 2
+        if (Path(home) / "registry" / "src").exists():
+            print(
+                f"cold-registry: {home} already holds crates; point CARGO_HOME at an empty directory", file=sys.stderr
+            )
+            return 2
+        case = unittest.TestCase()
+        env = {**os.environ, "RUSTC_WRAPPER": ""}
+        assert_unwarmed_refusal(case, env)
+        warm_dependencies(case, env)
+        artifacts, failure = denied_handoff_build()
+        if failure:
+            print(
+                f"cold-registry: the build needed the network once its registry was warmed:\n{failure}", file=sys.stderr
+            )
+            return 1
+        record_handoff(artifacts)
+        return 0
+    return subprocess.run(CARGO_BIN, cwd=REPO, check=False).returncode
+
+
 @unittest.skipUnless(
     sys.platform == "linux" and platform.machine() in {"x86_64", "aarch64"}, "network-denial proof uses Linux seccomp"
 )
@@ -81,29 +212,23 @@ class OfflineCorpusRecipes(unittest.TestCase):
     def test_warmed_build_needs_no_network_from_a_cold_registry(self) -> None:
         # CI's runner starts with no crates cached; a denied recipe then failed
         # resolving static.crates.io. Reproduce that cold registry here.
+        if handoff_answers(self):
+            return
+        # No build of the job's came from a cold registry, so this one does it, in
+        # its own target directory: another CARGO_HOME's build replaces the
+        # fingerprints the job's normal builds use.
         with tempfile.TemporaryDirectory(dir=REPO / ".local") as cold:
-            env = {**os.environ, "CARGO_HOME": cold, "RUSTC_WRAPPER": ""}
+            env = {
+                **os.environ,
+                "CARGO_HOME": cold,
+                "CARGO_TARGET_DIR": str(Path(cold) / "target"),
+                "RUSTC_WRAPPER": "",
+            }
+            assert_unwarmed_refusal(self, env)
             warm_dependencies(self, env)
-            build = subprocess.run(
-                [
-                    sys.executable,
-                    str(Path(__file__).resolve()),
-                    "--deny-network",
-                    "cargo",
-                    "test",
-                    "--locked",
-                    "--no-run",
-                    "-p",
-                    "crozier-e2e",
-                    "--test",
-                    "e2e",
-                ],
-                cwd=REPO,
-                env=env,
-                capture_output=True,
-                text=True,
-            )
+            build = denied_cargo_test(env)
             self.assertEqual(0, build.returncode, build.stderr)
+            self.assertNotIn("Downloading", build.stderr)
 
     def test_real_recipes_without_network_or_cache(self) -> None:
         # The registered corpus cache, and the cache the census-fallback samples
@@ -181,5 +306,8 @@ if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "--deny-network":
         deny_network()
         os.execvp(sys.argv[2], sys.argv[2:])
+    if len(sys.argv) > 1 and sys.argv[1] == "--cold-registry-build":
+        (REPO / ".local").mkdir(exist_ok=True)
+        sys.exit(cold_registry_build())
     (REPO / ".local").mkdir(exist_ok=True)
     unittest.main()

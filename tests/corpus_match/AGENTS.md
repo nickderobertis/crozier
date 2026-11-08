@@ -9,3 +9,9 @@
 - Python: `format`, `lint` and `typecheck` only. `test` keeps its own runner and
   these files stay out of the combined coverage floor, because its suites need a
   release build and the denied-socket environment.
+- In `live-e2e` the job's first dev build is `cold-registry-build`: an empty
+  `CARGO_HOME`, sockets denied, and the real test build. Cargo fingerprints a crate's
+  absolute source path, so every later step shares that `CARGO_HOME`. A target here
+  or in a sibling tier that compiles crozier depends on it, not on `crozier:build`,
+  or the race can put a sockets-up build first. The proof then rejects that build
+  and compiles again.

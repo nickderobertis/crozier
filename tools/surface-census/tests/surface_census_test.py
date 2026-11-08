@@ -47,7 +47,7 @@ from dataclasses import asdict, dataclass
 from dataclasses import fields as dataclass_fields
 from enum import StrEnum
 from pathlib import Path, PureWindowsPath
-from types import ModuleType
+from types import CodeType, ModuleType
 from typing import Any, ClassVar, NamedTuple, ParamSpec, Protocol
 from unittest import mock
 
@@ -736,14 +736,45 @@ FROZEN_SEARCH_CONTRACT = REPO / "docs" / "openapi-surface" / "witness-search-red
 HANDWRITTEN = REPO / "docs" / "openapi-surface" / "handwritten"
 
 
-def load_script(path: str):
-    """A tooling module by repository-relative path, as the scripts load one another."""
+@functools.cache
+def _script_code(path: Path, source: bytes) -> CodeType:
+    """`source` compiled, by those bytes: never bytecode a file's size and timestamp would pass as current."""
+    return compile(source, str(path), "exec", dont_inherit=True)
+
+
+def _executed_script(path: str, source: bytes) -> Any:
+    """A new module holding exactly `source`, the bytes of the tooling script at repository-relative `path`."""
     name = Path(path).name
-    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", REPO / path)
-    assert spec and spec.loader
+    location = REPO / path
+    spec = importlib.util.spec_from_file_location(f"census_test_{name.replace('-', '_')[:-3]}", location)
+    assert spec
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
+    exec(_script_code(location, source), module.__dict__)  # noqa: S102 -- the repository's own script, as an import would run it
+    return module
+
+
+def fresh_script(path: str) -> Any:
+    """A tooling module executed anew: a case that rebinds its globals owns this copy."""
+    return _executed_script(path, (REPO / path).read_bytes())
+
+
+_LOADED_SCRIPTS: dict[tuple[str, bytes], ModuleType] = {}
+
+
+def load_script(path: str):
+    """A tooling module by repository-relative path, as the scripts load one another.
+
+    Executed once per file content, so the memos a script keeps by content (the
+    site resolver's above all) outlive the call; no case rebinds this copy's
+    globals, and one that must takes `fresh_script`. The bytes that key the memo
+    are the bytes executed.
+    """
+    source = (REPO / path).read_bytes()
+    key = (path, source)
+    module = _LOADED_SCRIPTS.get(key)
+    if module is None:
+        module = _LOADED_SCRIPTS[key] = _executed_script(path, source)
     return module
 
 
@@ -814,7 +845,7 @@ COMBINATION_PREFIX = "combo-"
 COMBINATIONS_LIST = Path("docs") / "openapi-surface" / "combinations.md"
 COMBINATION_COLUMNS = ("key", "selector", "region", "seam", "owner", "why")
 # Owners opt in when their classified audit lands; unconverted siblings retain their previous bar.
-ENFORCED_COMBINATION_OWNERS = frozenset({"prove-operation-combinations"})
+ENFORCED_COMBINATION_OWNERS = frozenset({"prove-operation-combinations", "prove-schema-combinations"})
 COMBINATION_OWNERS = {
     "examples": "prove-schema-combinations",
     "models-unions-refs": "prove-schema-combinations",
@@ -1173,7 +1204,7 @@ def refusal_population_is_decided(root: Path, name: str) -> bool:
     Reuse the registry's evidence and strict-diagnostic validation; a missing
     record or an SDK evaluation that no longer holds leaves the class open.
     """
-    registry = load_script("tools/fern-refusals/fern-refusals.py")
+    registry = fresh_script("tools/fern-refusals/fern-refusals.py")
     registry.REPO = root
     registry.REGISTRY = root / "docs/fern-refusals"
     registry.EVIDENCE = root / "docs/openapi-surface/fern-refusals"
@@ -1247,6 +1278,17 @@ def ruling_failure(where: str, reason: str) -> str:
 def cooccurrence_audit(root: Path) -> tuple[dict, list[str]]:
     """`combination-cooccurrence.tsv` as `key -> row`, and what its form breaks (`golden-reach.py`)."""
     return load_script("tools/surface-census/golden-reach.py").read_cooccurrence(root / COOCCURRENCE_AUDIT)
+
+
+_COMMITTED_DOCUMENTS: dict[tuple[Path, bytes], Any] = {}
+
+
+def committed_document(engine: ModuleType, path: Path) -> Any:
+    """`path` as the census reads it, parsed once per file content. Callers only read the result."""
+    key = (path, path.read_bytes())
+    if key not in _COMMITTED_DOCUMENTS:
+        _COMMITTED_DOCUMENTS[key] = engine.load_document(path)
+    return _COMMITTED_DOCUMENTS[key]
 
 
 def pointer_target(document: object, pointer: str) -> object | None:
@@ -1516,7 +1558,7 @@ def combination_proof_failures(
                 )
         engine = load_script("tools/surface-census/openapi-surface-census.py")
         try:
-            document = engine.load_document(document_path) if document_path is not None else None
+            document = committed_document(engine, document_path) if document_path is not None else None
         except (engine.DocumentError, SystemExit, ValueError):
             document = None
         if document is None or pointer_target(document, audit[key].site) is None:
@@ -2303,6 +2345,18 @@ def completeness_failures(
     named = named or {}
     failures = []
     searched = {region: compact_search_lines(text) for region, text in region_texts.items()}
+    gate = load_script("tools/surface-census/handwritten-fixtures.py")
+    # Nothing under `root` changes during this call, so each whole-tree reading is taken once.
+    e2e_covers = functools.cache(lambda: gate.e2e_cover_failures(root, gate.region_rows(root)))
+
+    @functools.cache
+    def fixture_covers() -> tuple[set[str], list[str]]:
+        """The feature-level keys every validated fixture covers, and the gate's failures."""
+        validated = gate.gate(root)
+        evidence = (gate.read_evidence(root / gate.HANDWRITTEN / name)[0] for name in validated["fixtures"])
+        keys = {cover.key for fixture in evidence if fixture for cover in fixture.covers if cover.arm is None}
+        return keys, validated["failures"]
+
     for key, (region, cells) in sorted(entries.items()):
         category = cells[3].strip("`")
         if category == "golden":
@@ -2331,18 +2385,8 @@ def completeness_failures(
         ):
             continue
         elif record is None and category == "handwritten":
-            gate = load_script("tools/surface-census/handwritten-fixtures.py")
-            if gate.E2E_EVIDENCE_CELL.match(cells[4]):
-                keys, cover_failures = gate.e2e_cover_failures(root, gate.region_rows(root))
-                covered = key in keys
-            else:
-                validated = gate.gate(root)
-                covered = False
-                for name in validated["fixtures"]:
-                    fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
-                    if fixture is not None:
-                        covered |= any(cover.key == key and cover.arm is None for cover in fixture.covers)
-                cover_failures = validated["failures"]
+            keys, cover_failures = e2e_covers() if gate.E2E_EVIDENCE_CELL.match(cells[4]) else fixture_covers()
+            covered = key in keys
             if covered and not cover_failures:
                 continue
             failures.extend(cover_failures)
@@ -2392,6 +2436,7 @@ def enumeration_census_failures(
     directory: Path,
     records: list[dict[str, str]],
     pinned: list[dict[str, str]] | None = None,
+    evidence: EvidenceDirectory | None = None,
 ) -> list[str]:
     """Reconcile one compact census row per walked document with positive records.
 
@@ -2400,17 +2445,12 @@ def enumeration_census_failures(
     copying it — and the directory's own `acquisition-manifest.tsv` otherwise. A
     gzipped `enumeration.tsv.gz` is read where no plain one is written.
     """
-    path = directory / "enumeration.tsv"
-    if not path.is_file() and (directory / "enumeration.tsv.gz").is_file():
-        path = directory / "enumeration.tsv.gz"
-    if not path.is_file():
+    evidence = evidence or EvidenceDirectory(directory)
+    if evidence.enumeration is None:
         return [f"{key}: `{source}` has no enumeration.tsv census file"]
-    opener = gzip.open if path.suffix == ".gz" else open
-    with opener(path, "rt", encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, dialect="excel-tab")
-        if tuple(reader.fieldnames or ()) != ENUMERATION_COLUMNS:
-            return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
-        census = list(reader)
+    columns, census = evidence.enumeration
+    if columns != ENUMERATION_COLUMNS:
+        return [f"{key}: `{source}` enumeration.tsv has wrong columns"]
     failures = []
     census_by_walk: dict[str, list[dict[str, str]]] = {}
     for row in census:
@@ -2525,6 +2565,7 @@ class EvidenceDirectory:
 
     def __init__(self, directory: Path) -> None:
         self.directory = directory
+        self._layout_failures: dict[tuple[str, ...], list[str]] = {}
 
     @functools.cached_property
     def records(self) -> list[dict[str, str]]:
@@ -2536,6 +2577,25 @@ class EvidenceDirectory:
         for record in self.records:
             by_key.setdefault(record.get("key"), []).append(record)
         return by_key
+
+    @functools.cached_property
+    def enumeration(self) -> tuple[tuple[str, ...], list[dict[str, str]]] | None:
+        """`enumeration.tsv`'s (or, where no plain one is written, its gzip's) columns and rows, or None without one."""
+        path = self.directory / "enumeration.tsv"
+        if not path.is_file() and (self.directory / "enumeration.tsv.gz").is_file():
+            path = self.directory / "enumeration.tsv.gz"
+        if not path.is_file():
+            return None
+        opener = gzip.open if path.suffix == ".gz" else open
+        with opener(path, "rt", encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, dialect="excel-tab")
+            return tuple(reader.fieldnames or ()), list(reader)
+
+    def layout_failures(self, layout_files: tuple[str, ...]) -> list[str]:
+        """`directory_layout_failures` over this directory: it names no key, so one walk answers every key."""
+        if layout_files not in self._layout_failures:
+            self._layout_failures[layout_files] = directory_layout_failures(self.directory, self.records, layout_files)
+        return self._layout_failures[layout_files]
 
     @functools.cached_property
     def unreached_probes(self) -> set[tuple[str, str, str]]:
@@ -2603,8 +2663,8 @@ def evidence_directory_failures(
     row: a golden-reach arm search's `probe.jsonl` holds every declarer's
     measured reach, and its publisher-tree `pins.tsv` the resolved pin.
     """
-    records = evidence.records if evidence else evidence_records(directory)
-    return [f"{key}: {failure}" for failure in directory_layout_failures(directory, records, layout_files)]
+    evidence = evidence or EvidenceDirectory(directory)
+    return [f"{key}: {failure}" for failure in evidence.layout_failures(layout_files)]
 
 
 def exhaustive_search_failures(
@@ -2616,6 +2676,7 @@ def exhaustive_search_failures(
     pinned_for: Callable[[str, list[str]], list[dict[str, str]]] | None = None,
     layout_files: tuple[str, ...] = (),
     measured_build: str | None = None,
+    evidence_for: Callable[[Path], EvidenceDirectory] = EvidenceDirectory,
 ) -> list[str]:
     """Every way one key's exhaustive-search record falls short of Contract B.
 
@@ -2624,7 +2685,8 @@ def exhaustive_search_failures(
     in. Refused at any outcome: a source read `unanswered` for a rate-limit cap,
     and a table that disagrees with its evidence directory either way. Refused
     under `exhausted`: every obligation the five conditions name. Each evidence
-    file is read at most once per call.
+    file is read at most once per call, and `evidence_for` lets a caller walking
+    many keys over an unchanging tree share those readings between its calls.
     """
     failures: list[str] = []
     outcomes = {line[2].strip("`* ") for line in lines}
@@ -2659,7 +2721,7 @@ def exhaustive_search_failures(
             # An undeclared source answers for nothing and owes nothing.
             continue
         directory = directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
-        evidence = EvidenceDirectory(directory)
+        evidence = evidence_for(directory)
         records = evidence.records_by_key.get(key, [])
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
@@ -2818,7 +2880,7 @@ def exhaustive_line_failures(
         if (kind, r.get("subject"), result) not in table:
             failures.append(f"{key}: {where} carries {kind} `{r.get('subject')}` that the table accounts for nowhere")
     if capability and capability[1] and walks:
-        failures += enumeration_census_failures(key, source, walks, directory, records, pinned)
+        failures += enumeration_census_failures(key, source, walks, directory, records, pinned, evidence)
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
@@ -12150,8 +12212,14 @@ class RankedBacklogTests(unittest.TestCase):
         An arm search reads a source's shared pin rather than copying it: the
         acquisition manifest, or for the publisher trees their `documents.jsonl`.
         """
-        shared = REPO / "docs" / "openapi-surface" / f"witness-search-{source}"
         named = {tree for tree, _ref, _count in recorded_walks(line[4])}
+        return [row for row in cls.arm_search_pinned_rows(source) if row["walk"] in named]
+
+    @classmethod
+    @functools.cache
+    def arm_search_pinned_rows(cls, source: str) -> list[dict[str, str]]:
+        """A source's whole shared pin, read once: every key's line selects its walks from the same file."""
+        shared = REPO / "docs" / "openapi-surface" / f"witness-search-{source}"
         if source == "github-publisher-trees":
             # The pins resolved to bytes, held to the shared pin they resolve: the
             # same commit, path and git blob, and the same SHA-256 wherever the
@@ -12172,7 +12240,7 @@ class RankedBacklogTests(unittest.TestCase):
         else:
             with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
                 rows = list(csv.DictReader(handle, dialect="excel-tab"))
-        return [row for row in rows if row["walk"] in named]
+        return rows
 
     def test_a_gap_row_the_frozen_contract_does_not_own_records_its_search_compactly(self) -> None:
         """A row admitted as a `gap` after the witness-search-redo contract froze.
@@ -12304,6 +12372,7 @@ class RankedBacklogTests(unittest.TestCase):
         """
         capabilities = source_capabilities(self.DOC.read_text(encoding="utf-8"))
         linked = set()
+        shared_evidence = functools.cache(EvidenceDirectory)
         for key, (_region, cells) in sorted(self.entries.items()):
             found = re.search(r"\(golden-reach-witnesses/searches/([^)]+)\.md\)", cells[5])
             if not found:
@@ -12342,6 +12411,7 @@ class RankedBacklogTests(unittest.TestCase):
                             f"{golden_reach_search().SCREEN.LOG_DIR}/",
                         ),
                         measured_build=matched(re.search(r"(?m)^build `([0-9a-f]+)` only\.", text)).group(1),
+                        evidence_for=shared_evidence,
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
@@ -13572,6 +13642,34 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
 
+    def test_schema_owner_cannot_leave_a_combination_unclassified(self) -> None:
+        key = "combo-allof-with-required"
+        table = self.root / "docs/openapi-surface/golden-reach-sites.tsv"
+        lines = table.read_text().splitlines()
+        for index, line in enumerate(lines):
+            fields = line.split("\t")
+            if fields[0] == key:
+                fields[2] = "co-occurrence"
+                lines[index] = "\t".join(fields)
+        table.write_text("\n".join(lines) + "\n")
+        audit = self.root / COOCCURRENCE_AUDIT
+        original = audit.read_text(encoding="utf-8")
+        line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
+        fields = line.split("\t")
+        fields[4] = fields[4].partition("; ")[2]
+        audit.write_text(original.replace(line, "\t".join(fields), 1), encoding="utf-8")
+        failures = finished_state_failures(self.root)
+        self.assertTrue(any(key in failure and "must declare class:" in failure for failure in failures))
+        listing = self.root / COMBINATIONS_LIST
+        selected = next(line for line in listing.read_text().splitlines() if line.startswith(f"| `{key}` |"))
+        listing.write_text(
+            listing.read_text().replace(
+                selected, selected.replace("`prove-schema-combinations`", "`deferred-combination-proof`"), 1
+            )
+        )
+        failures = finished_state_failures(self.root)
+        self.assertEqual([], [failure for failure in failures if key in failure])
+
     def test_classification_is_required_only_for_an_enforced_owner(self) -> None:
         key = "combo-query-param-ref-string-enum"
         table = self.root / "docs/openapi-surface/golden-reach-sites.tsv"
@@ -14200,9 +14298,9 @@ class FinishedStateGateTests(unittest.TestCase):
         document = fixture / "openapi.yml"
         original = document.read_text(encoding="utf-8")
         # A renamed operationId renames the generated client method, so crozier's output differs.
-        operation = re.search(r'"operationId": "([^"]+)"', original)
+        operation = re.search(r'^\s*"?operationId"?: "?([^"\n,]+)"?', original, re.M)
         assert operation is not None, "the audited fixture's document declares no operationId"
-        renamed = f'"operationId": "{operation.group(1)}_renamed"'
+        renamed = operation.group(0).replace(operation.group(1), f"{operation.group(1)}_renamed", 1)
         document.write_text(original.replace(operation.group(0), renamed, 1), encoding="utf-8", newline="\n")
         self.assertEqual(tree, certified_tree_digest(fixture / "fern-expected"))
         self.assertIn(
@@ -21404,6 +21502,75 @@ class CoverageRestatementTests(unittest.TestCase):
             return [int(found[n]) for n in range(1, 4)]
 
         surface = self.root / "docs/openapi-surface"
+        # These are tally inputs, not fixture admissions; their classes and
+        # covers must not depend on which proofs the live repository retains.
+        staged = {
+            "combo-body-property-named-as-header-param": "co-occurrence",
+            "combo-success-oneof-nullable": "src/ir.rs::base_type_ref",
+        }
+        for region in surface.glob("*.md"):
+            lines = region.read_text(encoding="utf-8").splitlines(keepends=True)
+            for index, line in enumerate(lines):
+                cells = line.split(" | ")
+                if cells[0].strip("| " + chr(96)) in staged and len(cells) == 8:
+                    cells[3] = "handwritten"
+                    lines[index] = " | ".join(cells)
+            region.write_text("".join(lines), encoding="utf-8")
+        site_path = surface / "golden-reach-sites.tsv"
+        lines = site_path.read_text(encoding="utf-8").splitlines()
+        for index, line in enumerate(lines):
+            cells = line.split("\t")
+            if cells[0] in staged:
+                cells[2] = staged[cells[0]]
+                lines[index] = "\t".join(cells)
+        site_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        ledger_path = surface / "golden-reach.tsv"
+        ledger_path.write_text(
+            "\n".join(
+                line
+                for line in ledger_path.read_text(encoding="utf-8").splitlines()
+                if line.split("\t")[1:2] not in ([key] for key in staged)
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        audit_path = self.root / COOCCURRENCE_AUDIT
+        lines = audit_path.read_text(encoding="utf-8").splitlines()
+        rows = {line.split("\t")[0]: line for line in lines[1:]}
+        for key in staged:
+            rows[key] = "\t".join(
+                (
+                    key,
+                    "subtotal-staging",
+                    "/components/schemas/Parcel",
+                    "first: src/ir.rs::build_endpoint ; second: src/emit.rs::generate",
+                    "class:handwritten search:docs/openapi-surface/search/README.md; Staged subtotal fixture.",
+                )
+            )
+        audit_path.write_text(lines[0] + "\n" + "\n".join(rows[key] for key in sorted(rows)) + "\n", encoding="utf-8")
+        for evidence in (surface / "handwritten").glob("*/evidence.toml"):
+            prefix, *covers = evidence.read_text(encoding="utf-8").split("[[covers]]")
+            kept = [cover for cover in covers if tomllib.loads("[[covers]]" + cover)["covers"][0]["key"] not in staged]
+            if kept:
+                evidence.write_text(prefix + "".join("[[covers]]" + cover for cover in kept), encoding="utf-8")
+            else:
+                evidence.unlink()
+        directory = surface / "handwritten/subtotal-staging"
+        directory.mkdir()
+        pair = json.loads((REPO / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
+        header = (
+            f'fern_cli_version = "{pair["cliVersion"]}"\n'
+            f'fern_python_sdk_version = "{pair["generatorVersion"]}"\n'
+            f'digest = "{"0" * 64}"\n'
+        )
+        covers = "".join(
+            f'\n[[covers]]\nkey = "{key}"\n'
+            'search = "docs/openapi-surface/search/README.md"\n'
+            'verdict = "search-incomplete"\n'
+            'renewed = "docs/openapi-surface/search/README.md"\n'
+            for key in staged
+        )
+        (directory / "evidence.toml").write_text(header + covers, encoding="utf-8")
         self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
         original = self.index.read_text(encoding="utf-8")
         blocked, together, ruled = subtotals()
@@ -21502,11 +21669,31 @@ class CoverageRestatementTests(unittest.TestCase):
             found = matched(re.search(r"\*\*Combinations by proof\.\*\*.*?: ([\d +]+) = (\d+)\.", flat))
             return [int(count) for count in found[1].split(" + ")]
 
-        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
-        before = stated()
+        key = "combo-annotated-ref-property-example"
+        surface = self.root / "docs/openapi-surface"
+        region = surface / "schemas.md"
+        source = region.read_text(encoding="utf-8")
+        row = next(line for line in source.splitlines() if line.startswith(f"| {key} |"))
+        cells = row.split(" | ")
+        cells[3] = "handwritten"
+        region.write_text(source.replace(row, " | ".join(cells), 1), encoding="utf-8")
+        ledger = surface / "golden-reach.tsv"
+        ledger.write_text(
+            "\n".join(
+                line for line in ledger.read_text(encoding="utf-8").splitlines() if line.split("\t")[1:2] != [key]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         audit = self.root / COOCCURRENCE_AUDIT
         original = audit.read_text(encoding="utf-8")
-        key = "combo-annotated-ref-property-example"
+        line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
+        fields = line.split("\t")
+        fields[4] = "class:handwritten search:docs/openapi-surface/search/README.md; Staged historical fixture."
+        audit.write_text(original.replace(line, "\t".join(fields), 1), encoding="utf-8")
+        self.assertEqual(0, self.run_restater("--combinations-only", "--write").returncode)
+        before = stated()
+        original = audit.read_text(encoding="utf-8")
         line = next(line for line in original.splitlines() if line.startswith(key + "\t"))
         fields = line.split("\t")
         fields[4] = (

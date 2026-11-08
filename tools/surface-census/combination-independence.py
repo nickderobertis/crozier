@@ -17,6 +17,7 @@ from types import ModuleType
 from typing import NewType
 
 MANIFEST = Path("docs/openapi-surface/combination-independence.toml")
+CombinationKey = NewType("CombinationKey", str)
 
 
 class Feature(StrEnum):
@@ -46,9 +47,6 @@ class Condition:
 class Document:
     document: Path
     trees: dict[Mode, Path]
-
-
-CombinationKey = NewType("CombinationKey", str)
 
 
 @dataclass(frozen=True)
@@ -82,9 +80,9 @@ def relative_path(value: object) -> Path:
     return Path(value)
 
 
-def read_records(root: Path) -> tuple[dict[str, IndependenceProof], list[str]]:
+def read_records(root: Path) -> tuple[dict[CombinationKey, IndependenceProof], list[str]]:
     """Validate manifest v1 before any source or subprocess is used as evidence."""
-    records: dict[str, IndependenceProof] = {}
+    records: dict[CombinationKey, IndependenceProof] = {}
     failures = []
     reach = reach_reader()
     try:
@@ -101,8 +99,11 @@ def read_records(root: Path) -> tuple[dict[str, IndependenceProof], list[str]]:
             try:
                 if not isinstance(row, dict) or set(row) != {"key", "modes", "conditions", "documents"}:
                     raise ValueError("each combination needs key, modes, conditions and documents")
-                key = row["key"]
-                if not isinstance(key, str) or not re.fullmatch(r"combo-[a-z0-9-]+", key) or key in records:
+                raw_key = row["key"]
+                if not isinstance(raw_key, str) or not re.fullmatch(r"combo-[a-z0-9-]+", raw_key):
+                    raise ValueError("key must be a unique combo-* key")
+                key = CombinationKey(raw_key)
+                if key in records:
                     raise ValueError("key must be a unique combo-* key")
                 if (
                     not isinstance(row["modes"], list)

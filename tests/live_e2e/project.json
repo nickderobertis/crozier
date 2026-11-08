@@ -28,6 +28,14 @@
         "{workspaceRoot}/tests/fixtures/corpus-sources/bunq.com/**/*",
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "corpus-match"
+          ],
+          "target": "cold-registry-build"
+        }
       ]
     },
     "lint-boundaries": {

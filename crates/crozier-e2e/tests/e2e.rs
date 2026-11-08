@@ -3364,11 +3364,12 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
     );
 }
 
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Two `crozier compare` runs over the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Two `crozier compare` runs over the retained harbor-parcel-requests authored diagnostic, a diagnostic gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let fixture =
+        repo_root().join("docs/fern-measurements/combination-diagnostics/harbor-parcel-requests");
     let source = fixture.join("openapi.yml");
     let expected = fixture.join("fern-expected");
     let (code, result) = compare_with_certified_reference(&source, &expected, None);
@@ -3385,11 +3386,12 @@ fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
     );
 }
 
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over edited copies of the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over edited copies of the retained harbor-parcel-requests authored diagnostic, a diagnostic gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn declared_reference_example_restrictions_hold_through_compare() {
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let fixture =
+        repo_root().join("docs/fern-measurements/combination-diagnostics/harbor-parcel-requests");
     let original: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(fixture.join("openapi.yml")).unwrap())
             .unwrap();
