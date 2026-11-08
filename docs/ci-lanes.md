@@ -11,7 +11,7 @@ once the transition below ends.
 | `lint` | 30 min | Release guard, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), visual docs |
 | `test-linux` | 150 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
 | `test-windows` | 90 min | Offline projects, SDK environments, install and smoke |
-| `test-macos` | 90 min | Offline projects, SDK environments, install and smoke |
+| `test-macos` | 120 min | Offline projects, SDK environments, install and smoke |
 
 **The limits above 30 are transitional and measured.** Run
 [42345332459](https://github.com/nickderobertis/crozier/actions/runs/42345332459), a broad pull
@@ -19,7 +19,13 @@ request, spent this work across its old jobs: Linux 7371 s (Check 3053, SDK 160,
 live/corpus/fallback 3814, packaging 168, install 176), Windows 4307 s (Check 3557, SDK 363,
 install 387), macOS 3767 s (Check 2451, SDK 1153, install 163). That split includes lint work
 that has since moved. No lane has run in this shape yet, so whether it fits is for the
-re-measure, which tightens these toward the 30-minute line.
+re-measure, which tightens these toward the 30-minute line. The Mac lane has since run in this
+shape: a whole-graph change's `ci-test` step alone took 84 minutes in run
+[42402692714](https://github.com/nickderobertis/crozier/actions/runs/42402692714), and run
+[42422342228](https://github.com/nickderobertis/crozier/actions/runs/42422342228) was cancelled at
+90, so a cold one needs about 110. Its limit is 120 until the Mac lane has a warm result cache
+(main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
+decision) or the follow-up on the cold Mac leg is resolved.
 
 **Transition.** `gate`, `commitlint` and `llmlint` report the contexts main requires today, so
 seven jobs run per pull request. Only `gate` has a `needs` edge, and it accepts a skipped test

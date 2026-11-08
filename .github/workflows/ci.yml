@@ -303,14 +303,18 @@ jobs:
         run: crozier --version
 
   # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
-  # The Mac test lane, one job per run. Measured limit: run 42345332459 spent 3767 s on this
-  # work (Check 2451, SDK 1153, install 163). 90 is transitional, as for test-linux.
+  # The Mac test lane, one job per run. Measured limit (manager ruling c-602a8b0c568f2b4c9e7f3104a9e7a581):
+  # in run 42402692714 a whole-graph change's ci-test step alone took 84 minutes, and run
+  # 42422342228 was cancelled at 90 before its SDK step (about 1153 s) and install (about 163 s),
+  # so a cold whole-graph change needs about 110. 120 stands until the Mac lane has a warm
+  # result cache (main's cache writer runs lint, Linux and Windows only; whether Mac joins it
+  # is the user's open decision) or the follow-up on the cold Mac leg is resolved.
   test-macos:
     if: >-
       (github.event_name == 'pull_request' && !(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')))
       || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
     runs-on: macos-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     steps:
       # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4

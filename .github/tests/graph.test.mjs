@@ -231,8 +231,9 @@ test('an ordinary pull request push runs exactly seven jobs: four independent la
   assert.deepEqual(rows.filter(r => r.needs.length).map(r => r.job), ['gate'], 'only the transitional gate has a needs edge');
   assert.deepEqual([...by.gate.needs].sort(), ['commitlint', 'lint', 'llmlint', 'test-linux', 'test-macos', 'test-windows']);
   for (const id of ['lint', 'commitlint', 'llmlint', 'gate']) assert.equal(by[id].timeout, 30, id);
-  // Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed: measured transitional ceilings until the re-measure.
-  assert.equal(by['test-linux'].timeout, 150); assert.equal(by['test-windows'].timeout, 90); assert.equal(by['test-macos'].timeout, 90);
+  // Manager rulings c-de8af5d0b87584fa7cfb48d4c2b4deed and c-602a8b0c568f2b4c9e7f3104a9e7a581 (Mac):
+  // measured transitional ceilings until the re-measure.
+  assert.equal(by['test-linux'].timeout, 150); assert.equal(by['test-windows'].timeout, 90); assert.equal(by['test-macos'].timeout, 120);
   const ci = workflows().find(w => w.path.endsWith('/ci.yml')).value;
   for (const id of ['test-linux', 'test-windows', 'test-macos']) assert.equal(ci.jobs[id].strategy, undefined, `${id} is one job, no matrix or shards`);
 });
