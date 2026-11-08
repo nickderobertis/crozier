@@ -25,7 +25,7 @@ jobs:
           persist-credentials: false
       - uses: nickderobertis/screencomp@v0.4.2
         with:
-          version: 0.4.2
+          version: v0.4.2
       - name: Capture the visual docs
         run: ./screenshots/capture-visual-docs.sh
       - uses: nickderobertis/screencomp/visual-docs@v0.4.2
