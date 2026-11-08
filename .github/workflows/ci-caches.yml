@@ -91,7 +91,7 @@ jobs:
         run: just ci-caches-lint
       # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]
 
-  # Limits are the lanes' measured transitional ones (ci.yml), which this offline subset fits.
+  # Limits are the lanes' measured ones (ci.yml), which this offline subset fits.
   test-linux:
     name: main caches (test-linux)
     runs-on: ubuntu-latest

@@ -3,17 +3,18 @@
 `.github/workflows/ci.yml` runs one `lint` job and one test job per platform. None waits for
 another. `tools/ci/lanes.json` is the executable inventory: every test, build, coverage and
 budget entrypoint, with the platforms that owe it. `lane-inventory:lint` fails a change that
-loses one, and `.github/governance.json` declares the contexts branch protection requires
-once the transition below ends.
+loses one, and `.github/governance.json` declares the contexts branch protection requires:
+the four job ids, and nothing else a pull request push starts (`ci:test` expands every
+workflow, reusable call and matrix leg against it).
 
 | Lane | Limit | Runs |
 | --- | --- | --- |
-| `lint` | 30 min | Release guard, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), visual docs |
+| `lint` | 30 min | Release guard, pull request title, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), judged lint over the diff, visual docs |
 | `test-linux` | 150 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
 | `test-windows` | 90 min | Offline projects, SDK environments, install and smoke |
 | `test-macos` | 120 min | Offline projects, SDK environments, install and smoke |
 
-**The limits above 30 are transitional and measured.** Run
+**The limits above 30 are the measured ceilings on main.** Run
 [42345332459](https://github.com/nickderobertis/crozier/actions/runs/42345332459), a broad pull
 request, spent this work across its old jobs: Linux 7371 s (Check 3053, SDK 160,
 live/corpus/fallback 3814, packaging 168, install 176), Windows 4307 s (Check 3557, SDK 363,
@@ -28,11 +29,16 @@ has too: a whole-graph change's `ci-test` step alone took 84 minutes in run
 (main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
 decision) or the follow-up on the cold Mac leg is resolved.
 
-**Transition.** `gate`, `commitlint` and `llmlint` report the contexts main requires today, so
-seven jobs run per pull request. Only `gate` has a `needs` edge, and it accepts a skipped test
-lane only when lint's release guard step really passed. Once protection moves to the four
-lanes, cleanup folds the title and judged checks into `lint`, removes the three jobs and
-registers the CI budgets (`scripts/actions-budget-figures.sh` is ready for them).
+**CI budgets.** The root `budgets.yaml` registers three `release-tail` budgets:
+`crozier-ci-check-time` (the longest counted job, 1800 s), `crozier-ci-job-count` (jobs per
+pull-request push, 4) and `crozier-pr-read-requests` (GitHub reads per pull request, 2). The
+last step of release.yml's `major-tag` job measures them over the release's pull requests with
+`scripts/actions-budget-figures.sh` (dero-skills' copy) from `onevcs host` answers. GitHub
+Actions' run and job records for these lanes are what they read. Nothing reads that step's
+result, so an over figure turns it red after everything has published. The 30-minute line is a
+budget reading at each release, not a job timeout, while the lanes above need more. `just
+budgets` excludes the `release-tail` and `onepipeline` labels, so the gate never reads GitHub.
+`tools/ci-journeys/tests/release-tail.test.mjs` runs that step over recorded answers.
 
 ## What selects a suite
 
