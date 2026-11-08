@@ -158,14 +158,17 @@ SwaggerHub route was used. Certified-tree reuse is not a response-cache hit.
 The node's publication retry made 4 live GitHub API requests outside the guard,
 none of them part of the search: `gh run view` reads of this branch's own failed
 CI run (one job listing and three job logs), to diagnose the failing check. They
-fetched no candidate document, made no search, and appear in no guard log.
+fetched no candidate document, made no search, and appear in no guard log. Its
+third attempt made 9 more of the same kind: `gh run view` reads of two failed CI
+runs on this branch (two job listings and four job logs), and three `gh run list`
+reads of the branch's, `main`'s and the merged base commit's runs.
 
 | bucket | live requests | response-cache hits | waits |
 |---|---:|---:|---:|
 | code_search | 0 | 0 | 0 |
 | core (candidate screening, guarded) | 0 | 0 | 0 |
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
-| core (retry CI diagnostics, unguarded) | 4 | 0 | 0 |
+| core (retry CI diagnostics, unguarded) | 13 | 0 | 0 |
 
 ## Verdicts
 
