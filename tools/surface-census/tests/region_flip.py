@@ -11,14 +11,17 @@ tree no longer holds one.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
 REGIONS = REPO / "docs" / "openapi-surface"
+# The record a `handwritten` row's evidence cell links: `search: <verdict> ([record](<path>#<anchor>))`.
+RECORD_LINK = re.compile(r"search: [\w-]+ \(\[record\]\(([^)#]+)#")
 
 
 def flipped_regions(target: Path, key: str, record: str = "schemas.md#witness-search-exhaustive") -> Path:
-    """Copy the region files and the tracked key set into `target`, `key`'s row flipped."""
+    """Copy the region files, the records their search links name and the tracked key set into `target`, `key`'s row flipped."""
     target.mkdir(parents=True, exist_ok=True)
     flipped = 0
     for path in sorted(REGIONS.glob("*.md")):
@@ -37,6 +40,14 @@ def flipped_regions(target: Path, key: str, record: str = "schemas.md#witness-se
                 flipped += 1
             lines.append(line)
         (target / path.name).write_text("".join(lines), encoding="utf-8")
+        # A `handwritten` row's search link resolves relative to its region file,
+        # and may name a record in a subdirectory: copy each one so the copy's
+        # links resolve as the tree's do.
+        for link in RECORD_LINK.findall("".join(lines)):
+            source = REGIONS / link
+            if "/" in link and source.is_file() and not (target / link).exists():
+                (target / link).parent.mkdir(parents=True, exist_ok=True)
+                (target / link).write_bytes(source.read_bytes())
     (target / "witness-search-keys.tsv").write_bytes((REGIONS / "witness-search-keys.tsv").read_bytes())
     assert flipped == 1, f"{key} is not exactly one region row"
     return target
