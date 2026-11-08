@@ -1,0 +1,19 @@
+# The journeys of the repository's own tooling surfaces: the GitHub Action's scripts, the
+# release's floating major tag, and the "Migrating from Fern" guide, each driving the built
+# `crozier` where it needs one. Their own Nx project, so an edit to one of those surfaces
+# never pays for the golden suite in crozier-e2e. Test-only and never published.
+[package]
+name = "crozier-tool-journeys"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+# The pinned certified Fern pair and comparison engine the journeys hold reports to.
+crozier = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+serde-saphyr = { workspace = true }
+tempfile = { workspace = true }

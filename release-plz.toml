@@ -29,6 +29,10 @@ name = "crozier-e2e"
 release = false
 
 [[package]]
+name = "crozier-tool-journeys"
+release = false
+
+[[package]]
 name = "crozier-ci"
 release = false
 

@@ -19,7 +19,7 @@
       "parallelism": false,
       "inputs": [
         "default",
-        "{workspaceRoot}/tools/surface-census/*",
+        "censusScripts",
         "{workspaceRoot}/tools/witness-search/*.py",
         "{workspaceRoot}/tools/corpus/*.py",
         "{workspaceRoot}/scripts/census-python.sh",

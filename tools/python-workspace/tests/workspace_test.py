@@ -82,8 +82,13 @@ class EveryMeasuredProjectIsAWorkspaceProject(unittest.TestCase):
             json.loads((REPO / source / "project.json").read_text(encoding="utf-8"))["name"]
             for source in measured_directories()
         }
-        self.assertEqual(measured - {aggregate["name"]}, set(aggregate["implicitDependencies"]))
-        self.assertEqual(["^test", "test"], aggregate["targets"]["coverage"]["dependsOn"])
+        depends_on = aggregate["targets"]["coverage"]["dependsOn"]
+        # Task-only, not a project edge: its suite reads every tracked Markdown file, and an
+        # edge would make any documentation edit rerun every tooling suite through the floor.
+        task_only = {name for entry in depends_on if isinstance(entry, dict) for name in entry["projects"]}
+        self.assertEqual({"corpus-licensing"}, task_only)
+        self.assertEqual(measured - {aggregate["name"]}, set(aggregate["implicitDependencies"]) | task_only)
+        self.assertEqual(["^test", "test", {"projects": ["corpus-licensing"], "target": "test"}], depends_on)
 
     def test_the_floor_the_target_enforces_is_the_one_recorded(self) -> None:
         aggregate = json.loads((REPO / "tools" / "python-workspace" / "project.json").read_text(encoding="utf-8"))

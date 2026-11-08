@@ -6,7 +6,8 @@
     "type:tier",
     "cost:expensive",
     "tier:promoted",
-    "lang:rust"
+    "lang:rust",
+    "lane:sdk-env"
   ],
   "targets": {
     "test": {

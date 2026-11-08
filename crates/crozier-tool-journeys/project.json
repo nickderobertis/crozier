@@ -1,0 +1,76 @@
+{
+  "name": "crozier-tool-journeys",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tooling",
+    "measures:crozier-e2e",
+    "lang:rust"
+  ],
+  "implicitDependencies": [
+    "crozier"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -p crozier-tool-journeys -- --check"
+      },
+      "configurations": {
+        "write": {
+          "command": "cargo fmt -p crozier-tool-journeys"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo clippy -p crozier-tool-journeys --all-targets --all-features --locked -- -D warnings",
+          "node scripts/check-project-boundaries.mjs crozier-tool-journeys"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "boundaries"
+      ]
+    },
+    "lint-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-tool-journeys --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource"
+      ],
+      "metadata": {
+        "description": "Its journey modules are cfg(unix), so clippy on Windows reads a different crate than `lint` on Linux (tools/ci/lanes.json)."
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-tool-journeys"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "toolJourneyReads",
+        "generator"
+      ],
+      "dependsOn": [
+        "^build"
+      ]
+    }
+  }
+}

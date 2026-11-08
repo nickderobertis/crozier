@@ -1,0 +1,21 @@
+{
+  "source": "github.com/nickderobertis/dero-skills",
+  "commit": "a73a309",
+  "files": {
+    "scripts/release-branch-guard.mjs": {
+      "from": "skills/bootstrap/create-repo/assets/release-branch-guard.mjs",
+      "sha256": "d47c310ad82282cd6187924545e277d6578719c9669c5e0b84ec7a1a12e2d987",
+      "replacedLine": {
+        "index": 6,
+        "why": "llmlint refuses a directive naming a rule this repository does not configure, so this copy carries its own directive on that line; the sha256 is the reference's, over the file with the original line, held encoded here, restored",
+        "base64": "Ly8gbGxtbGludDogaWdub3JlW3R5cGVzY3JpcHRfYW5kX25wbV9sYXVuY2hlZF92aWFfYnVuXSBUaGUgY29tcG9zZWQgcmVwb3NpdG9yeSBydW5zIHRoaXMgY29weSwgYmVmb3JlIGl0cyBsaW50IGpvYiBpbnN0YWxscyBidW4gb3IgYW55IGRlcGVuZGVuY3ksIG9uIHRoZSBydW5uZXIncyBvd24gTm9kZSB3aXRoIGJ1aWx0LWlucyBvbmx5OyBidW4gaXMgZGVyby1za2lsbHMnIGxhdW5jaCBjb252ZW50aW9uLCBub3Qgb25lIGEgY29tcG9zZWQgcmVwb3NpdG9yeSdzIGxpbnQgam9iIGhhcyBzZXQgdXAgYXQgdGhpcyBzdGVwLg=="
+      }
+    },
+    "scripts/actions-budget-figures.sh": {
+      "from": "skills/bootstrap/create-repo/assets/budgets/actions-budget-figures.sh",
+      "sha256": "20f01083698bc1de298af37f78f8da8ce14bc07e2b4dd841920fdcbdaf285969",
+      "version": 10,
+      "bodySha256": "13ac7d79aaa3902dc7cfe87449283a05ba397fbc0612701e9b788ed59daf438d"
+    }
+  }
+}

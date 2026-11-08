@@ -118,17 +118,17 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just check` — the gate (`--sweep` for the broader tier). Must pass before any
   commit/PR.
 - `just test` / `just test-e2e` / `just lint` / `just format` — individual steps.
+- [`docs/ci-lanes.md`](docs/ci-lanes.md) — which lane owns what, and what selects a suite.
 - A target's `inputs` are both its cache key and its affected trigger: code that
   starts reading a new path adds it there, or a change to that path never reruns
   it. Where an edge may go is `nx.json`'s `boundaries`, enforced by every
   project's `lint`.
 - `just test-live-e2e` / `just test-sdk-env` — the generated SDK driven against
-  a Prism mock / inside its own PyPI venv. Promoted out of the affected tier; each
-  is a required CI leg. See [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
+  a Prism mock / inside its own PyPI venv. See [`tests/live_e2e/AGENTS.md`](tests/live_e2e/AGENTS.md).
 - `just test-corpus-match` — byte-compare every registered corpus against Fern
   using committed sources. `just test-corpus-offline` proves it, its strict form,
   the census, the refusal-class gate and the census-fallback samples with sockets
-  denied and no cache; CI runs this in its live-e2e leg.
+  denied and no cache.
 - `just corpus-sources vendor` / `audit` — rebuild-only source fetch/verification;
   pinned URLs are provenance. `just lint-corpus-sources` checks every committed
   file's SHA-256 offline. See `tests/fixtures/corpus-sources.tsv`.
@@ -180,30 +180,19 @@ Use the `just` recipes; do not hand-roll equivalents.
   protected: merge/rebase disabled, so one PR is one squash commit whose subject
   is the PR title. Queue with `gh pr merge --auto --squash`; merged branches
   auto-delete. Admins may break-glass.
-- **All gating checks required:** `gate` (aggregates the e2e-inclusive `check`,
-  `sdk-env` and `install` matrix legs plus the `package` and `live-e2e` legs), `commitlint`
-  (PR-title Conventional Commits), and
-  `llmlint` — plus linear history, conversation resolution, no
-  force-push/branch-deletion. **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`
+- **All gating checks required** ([`docs/ci-lanes.md`](docs/ci-lanes.md)), plus linear history,
+  conversation resolution, no force-push/branch-deletion. **Required secrets:** `CLAUDE_CODE_OAUTH_TOKEN`
   (llmlint's Claude Code harness) and `RELEASE_PLZ_TOKEN` (a PAT for releases)
   must be set in repo settings, or those checks fail fast by design. Sync them
   (with the crates.io/PyPI publishing tokens) from Bitwarden via
   `gh-secrets sync` — the manifest is `gh-secrets.json`.
 - **PRs follow `.github/pull_request_template.md`** (What / Why); it becomes the
   squash body.
-- **Where each tier runs.** Releases are batched — the release-plz pull request
-  accumulates merges until a person merges it — so pull requests and pushes to
-  main run the affected tier (`just ci-check`, against the merge base or the
-  commit the push replaced) and the broader tier runs at release-prep, on the
-  release-plz pull request (`release-plz-*`), split across the `check`,
-  `sdk-env` and `live-e2e` legs by toolchain. `release.yml` sweeps again before
-  publishing — a standing exception: a hand-cut Release can tag any commit. No
-  measured affected-tier threshold is recorded yet.
 - **Releases:** `release-plz` opens a release PR from merged Conventional Commits;
   merging it bumps the version, writes `CHANGELOG.md`, pushes the `vX.Y.Z` tag,
   and cuts the GitHub Release (under `RELEASE_PLZ_TOKEN`, a PAT — a tag from the
   default `GITHUB_TOKEN` would not fire `release.yml`). That Release's
-  `published` event drives `release.yml`, which re-gates on `just check --sweep` then, in
+  `published` event drives `release.yml`, which runs no test sweep and, in
   parallel: builds/attests/uploads the per-platform archives (+ `.sha256` +
   `.sigstore.json`), publishes the crate to **crates.io**, and builds +
   publishes the **PyPI** wheels + sdist. Fully automated — the only human action
@@ -301,8 +290,8 @@ witness-search 86.16. Two files are 0% here by structure, 529 lines between them
 `witness-search-recensus.py`, whose suite needs the census-fallback tier's
 ruamel.yaml pin (kept out of the workspace venv because the golden-reach suites
 assert its absence), and `probe-differential-isolation.py`, which only the Rust
-e2e harness drives. It holds on the Linux and macOS check legs and the sweep; the
-Windows leg runs every suite without the floor, because the suites skip their
+e2e harness drives. It holds in the Linux and macOS test lanes and the sweep; the
+Windows lane runs every suite without the floor, because the suites skip their
 POSIX-only cases there. Raise it as those lines get reached; never lower it
 without a new measurement here.
 <!-- llmlint: ignore-end[agents_md_durable_and_terse] -->

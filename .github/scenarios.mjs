@@ -26,7 +26,7 @@ export function recordingDigest(telemetry) {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 export function validateTelemetry(telemetry, sourceDigest) {
-  if (telemetry.schemaVersion !== 7 || telemetry.sourceDigest !== sourceDigest) throw new Error('missing/stale telemetry: run github-workflows:test on this tree');
+  if (telemetry.schemaVersion !== 8 || telemetry.sourceDigest !== sourceDigest) throw new Error('missing/stale telemetry: run github-workflows:test on this tree');
   if (telemetry.recordingDigest !== recordingDigest(telemetry)) throw new Error('incomplete/corrupted workload telemetry: rerun github-workflows:test');
   const scenarios=telemetry.scenarios, lifecycles=telemetry.lifecycles;
   if (!Array.isArray(scenarios) || !Array.isArray(lifecycles) || JSON.stringify(scenarios.map(s=>s.id).sort()) !== JSON.stringify(scenarioIds()) || JSON.stringify(lifecycles.map(l=>JSON.stringify([l.fork,l.diff,l.crates,l.pypi])).sort()) !== JSON.stringify(lifecycleIds())) throw new Error('incomplete workload telemetry: run github-workflows:test');
@@ -37,7 +37,7 @@ export function validateTelemetry(telemetry, sourceDigest) {
       const [eventClass,diff,ownership,crates,pypi]=scenario.id.split('/');
       if (scenario.class !== eventClass || scenario.diff !== diff || scenario.fork !== (ownership === 'fork') || scenario.publish?.crates !== crates.slice(7) || scenario.publish?.pypi !== pypi.slice(5)) throw new Error(`invalid telemetry scenario identity ${scenario.id}`);
     }
-    if (!Array.isArray(scenario.runs) || typeof scenario.decision?.macosRequired !== 'boolean') throw new Error(`invalid telemetry scenario ${scenario.id}`);
+    if (!Array.isArray(scenario.runs)) throw new Error(`invalid telemetry scenario ${scenario.id}`);
     const expected = graph.filter(workflow => triggered(workflow.value, scenario)).map(workflow => workflow.path).sort();
     if (JSON.stringify(scenario.runs.map(run => run.workflow).sort()) !== JSON.stringify(expected)) throw new Error(`incomplete workflow runs for ${scenario.id}`);
     for (const run of scenario.runs) {

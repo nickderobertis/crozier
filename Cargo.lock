@@ -276,6 +276,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "crozier-tool-journeys"
+version = "0.0.0"
+dependencies = [
+ "crozier",
+ "serde",
+ "serde-saphyr",
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -5,7 +5,7 @@
 // which projects the tier selected and ran.
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chmodSync, existsSync, mkdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { taskTimings } from "../../ci/gate-timing.mjs";
@@ -147,12 +147,25 @@ test("a promoted project leaves the affected tier unless --projects names it", (
 
   const skipped = just(root, ["check"]);
   assert.equal(skipped.status, 0, skipped.output);
-  assert.match(skipped.stdout, /promoted, run by their own CI legs: b/);
+  assert.match(skipped.stdout, /promoted, run by their own lane steps: b/);
   assert.ok(!ran(root, "b"));
 
   const named = just(root, ["check", "--projects=b"]);
   assert.equal(named.status, 0, named.output);
   assert.ok(ran(root, "b"), named.output);
+});
+
+test("--every-project takes both projects with no base to resolve, keeps the cache, and refuses --sweep", (t) => {
+  const root = scratchWorkspace(t);
+  git(root, "remote", "remove", "origin");
+  const run = just(root, ["check", "--every-project"]);
+  assert.equal(run.status, 0, run.output);
+  assert.match(run.stdout, /every project \(--every-project\), through the cache/);
+  assert.match(run.stdout, /gate: projects: a, b/);
+  assert.ok(ran(root, "a") && ran(root, "b"));
+  const both = just(root, ["check", "--every-project", "--sweep"]);
+  assert.equal(both.status, 2, both.output);
+  assert.match(both.stderr, /--sweep skips the cache and --every-project keeps it/);
 });
 
 test("--sweep runs a promoted project without --projects naming it", (t) => {
@@ -179,12 +192,31 @@ test("an unknown argument or project is refused before anything runs", (t) => {
   assert.ok(!ran(root, "a") && !ran(root, "b"));
   // A switch given a value is refused, not read as set: `--plan=false` would
   // otherwise run nothing, and `--sweep=false` would sweep.
-  for (const flag of ["--plan", "--sweep"]) {
+  for (const flag of ["--plan", "--sweep", "--every-project"]) {
     const run = just(root, ["check", `${flag}=false`]);
     assert.equal(run.status, 2, run.output);
     assert.match(run.output, new RegExp(`${flag} takes no value, not 'false'`));
   }
   assert.ok(!ran(root, "a") && !ran(root, "b"));
+});
+
+test("--platform holds the selection to what a project's own tags owe that platform", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { "a/project.json": project("a", { tags: ["type:tooling", "platform:linux"] }), "b/project.json": project("b", { tags: ["type:tooling", "platform:linux", "platform:macos"] }) });
+  commitChange(root, "a/src.txt", "a changed\n");
+  commitChange(root, "b/src.txt", "b changed\n");
+  const base = git(root, "rev-parse", "origin/main");
+  const selected = (platform) => /gate: projects: (.*)\n/.exec(just(root, ["check", "--plan", `--platform=${platform}`], { NX_BASE: base }).stdout)[1];
+  assert.equal(selected("linux"), "a, b");
+  assert.equal(selected("macos"), "b");
+  assert.equal(selected("windows"), "(none)");
+  const host = { linux: "a, b", darwin: "b", win32: "(none)" }[process.platform];
+  assert.equal(selected("host"), host);
+  const untagged = just(root, ["check", "--plan", "--sweep", "--projects=a", "--platform=windows"]);
+  assert.match(untagged.stdout, /gate: projects: \(none\)/);
+  const refused = just(root, ["check", "--plan", "--platform=solaris"], { NX_BASE: base });
+  assert.equal(refused.status, 2, refused.output);
+  assert.match(refused.stderr, /--platform takes host, linux, macos or windows, not 'solaris'/);
 });
 
 test("--plan prints the selection and the command, and runs nothing", (t) => {
@@ -195,7 +227,7 @@ test("--plan prints the selection and the command, and runs nothing", (t) => {
 
   assert.equal(run.status, 0, run.output);
   assert.match(run.stdout, /gate: projects: a\n/);
-  assert.match(run.stdout, /gate: would run: nx run-many --targets=format,lint,typecheck,test,build,coverage,supply-chain,doc --projects=a /);
+  assert.match(run.stdout, /gate: would run: nx run-many --targets=format,lint,typecheck,test,build,coverage,budgets,supply-chain,doc --projects=a /);
   assert.ok(!ran(root, "a") && !ran(root, "b"));
 });
 
@@ -490,4 +522,67 @@ test('gate emits exact profile conversion and cache-replay status without execut
   assert.equal(second.status,0,second.output);
   assert.match(second.stdout,/gate: task a:test: [0-9.]+s \((local-cache|local-cache-kept-existing|remote-cache)\)/);
   assert.equal(readFileSync(join(root,'ran-a'),'utf8'),'once');
+});
+
+test("an Nx panic reruns the targets once, and only that run's status decides", (t) => {
+  const root = scratchWorkspace(t);
+  // Nx itself is the one thing doubled, and only its first `run-many` calls, because no input
+  // provokes the panic: everything else, the rerun included, is the real Nx.
+  rmSync(join(root, "node_modules"), { recursive: true, force: true });
+  mkdirSync(join(root, "node_modules/.bin"), { recursive: true });
+  for (const entry of readdirSync(join(REPO, "node_modules"))) {
+    if (entry !== ".bin") symlinkSync(join(REPO, "node_modules", entry), join(root, "node_modules", entry), "junction");
+  }
+  const stub = join(root, "node_modules/.bin/nx-stub.cjs");
+  writeFileSync(stub, `const fs = require("fs");
+const { spawnSync } = require("child_process");
+const args = process.argv.slice(2);
+if (args[0] === "run-many") {
+  const calls = fs.existsSync("nx-calls") ? fs.readFileSync("nx-calls", "utf8").length : 0;
+  fs.appendFileSync("nx-calls", "x");
+  if (calls < Number(process.env.STUB_PANICS)) {
+    console.log(" NX   Successfully ran targets test");
+    console.error(" NX   Panic in async function");
+    process.exit(1);
+  }
+}
+const real = spawnSync(process.execPath, [${JSON.stringify(join(REPO, "node_modules/nx/dist/bin/nx.js"))}, ...args], { stdio: "inherit" });
+process.exit(real.status ?? 1);
+`);
+  if (process.platform === "win32") {
+    writeFileSync(join(root, "node_modules/.bin/nx.cmd"), `@"${process.execPath}" "${stub}" %*\r\n`);
+  } else {
+    writeFileSync(join(root, "node_modules/.bin/nx"), `#!/bin/sh\nexec "${process.execPath}" "${stub}" "$@"\n`);
+    chmodSync(join(root, "node_modules/.bin/nx"), 0o755);
+  }
+  write(root, { ".gitignore": "/node_modules\n/.nx\nran-*\nnx-calls\n" });
+  const failing = project("a", { targets: { test: { command: `node -e "console.error('the real failure'); process.exit(3)"` } } });
+  const scenario = (panics, projectJson) => {
+    rmSync(join(root, "nx-calls"), { force: true });
+    rmSync(join(root, "ran-a"), { force: true });
+    write(root, { "a/project.json": projectJson });
+    const run = just(root, ["check", "--every-project", "--projects=a"], { STUB_PANICS: String(panics) });
+    return { ...run, calls: readFileSync(join(root, "nx-calls"), "utf8").length };
+  };
+
+  const recovered = scenario(1, project("a"));
+  assert.equal(recovered.status, 0, recovered.output);
+  assert.equal(recovered.calls, 2, recovered.output);
+  assert.match(recovered.stderr, /gate: Nx itself panicked/);
+  assert.ok(ran(root, "a"), "the rerun ran the target for real");
+
+  const twice = scenario(2, project("a"));
+  assert.equal(twice.status, 1, "a second panic is a failure, not a further rerun");
+  assert.equal(twice.calls, 2, twice.output);
+  assert.match(twice.output, /Panic in async function/);
+  assert.match(twice.output, /gate: a target failed/);
+
+  const realFailure = scenario(1, failing);
+  assert.equal(realFailure.status, 1, "the rerun's real failure stands");
+  assert.equal(realFailure.calls, 2, realFailure.output);
+  assert.match(realFailure.output, /the real failure/);
+
+  const noPanic = scenario(0, failing);
+  assert.equal(noPanic.status, 1, noPanic.output);
+  assert.equal(noPanic.calls, 1, "an ordinary failure is not rerun");
 });

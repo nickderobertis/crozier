@@ -68,18 +68,48 @@ pool-maintenance:
 #   just check --sweep    the broader tier: the same targets over every project,
 #                         promoted tiers included, uncached.
 #   just check --plan     either tier's selection and Nx command, without running it.
-# `--projects=` / `--exclude=` (names or tag:<tag>) scope either tier; CI uses them
-# to run each promoted tier on the runner that holds its toolchain. Fails on any
+# `--projects=` / `--exclude=` (names or tag:<tag>) scope either tier; `--platform=`
+# and `--include-promoted` hold it to what a platform or lane owes. Fails on any
 # issue (no warnings-only mode); e2e is part of the gate, not opt-in.
 check *args:
-    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=format,lint,typecheck,test,build,coverage,supply-chain,doc
+    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=format,lint,typecheck,test,build,coverage,budgets,supply-chain,doc
 
-# What CI runs: the tier the GitHub event owes (tools/ci/ci-tier.mjs) — the
-# broader tier on the release-plz release pull request, the affected tier against
-# an explicitly derived base on every other pull request and on a push to main —
-# then `check` with it. Arguments pass through to `check`.
-ci-check *args:
-    @node tools/ci/ci-tier.mjs -- "$@"
+# What CI runs, in the tier the GitHub event owes (tools/ci/ci-tier.mjs): the affected
+# tier against an explicitly derived merge base. Arguments pass through to the gate.
+# The lint lane, once on Linux: every affected project's platform-independent checks.
+ci-lint *args:
+    @node tools/ci/ci-tier.mjs --recipe=lane-lint -- "$@"
+
+# One platform's test lane: tests, builds, e2e and per-project budgets of what the
+# change reaches and this platform owes. Its target set is disjoint from `ci-lint`'s;
+# a platform-specific lint is one that reads different code there.
+ci-test *args:
+    @node tools/ci/ci-tier.mjs --recipe=lane-test -- "$@"
+
+# The host-measured budgets (`pool-maintenance`'s two-build prune), when affected.
+ci-budgets-host *args:
+    @node tools/ci/ci-tier.mjs --recipe=lane-budgets-host -- "$@"
+
+# The lanes' gate commands; call them through `ci-lint`, `ci-test` and
+# `ci-budgets-host`, which derive the base.
+lane-lint *args:
+    @node tools/ci/gate.mjs --include-promoted "$@" -- nx run-many --targets=format,lint,typecheck,supply-chain,doc
+
+lane_test_targets := if os() == "windows" { "test,build,coverage,budgets,lint-windows,typecheck" } else if os() == "macos" { "test,build,coverage,budgets,lint-macos" } else { "test,build,coverage,budgets" }
+
+lane-test *args:
+    @node tools/ci/gate.mjs --platform=host "$@" -- nx run-many --targets={{ lane_test_targets }}
+
+lane-budgets-host *args:
+    @node tools/ci/gate.mjs --platform=host "$@" -- nx run-many --targets=budgets-host
+
+# What main's cache writer (ci-caches.yml) runs: the same lane targets over every project
+# through the result cache, so a pull request's lanes restore what main has proved.
+ci-caches-lint:
+    @just lane-lint --every-project
+
+ci-caches-test:
+    @just lane-test --every-project --exclude=tag:tier:promoted
 
 # The commit `budgets` measures the affected projects against.
 base := env("NX_BASE", "origin/main")
@@ -87,15 +117,16 @@ base := env("NX_BASE", "origin/main")
 # The onebudgetspec budgets: every affected project's `budgets` and `budgets-host`
 # targets (`just budgets all` for every project), then the root budgets.yaml when
 # one exists. Excludes `pool-maintenance`, whose measurement builds the repository
-# twice: only the release pull request runs it, via `budgets-pool-maintenance`.
+# twice: its own lane step runs it when affected (`ci-budgets-host`), and
+# `budgets-pool-maintenance` runs it by hand.
 budgets tier="affected":
     @just nx {{ if tier == "all" { "run-many" } else if tier == "affected" { "affected --base=" + base } else { error("unknown tier '" + tier + "' — use 'affected' (the default) or 'all'") } }} -t budgets budgets-host --exclude=pool-maintenance
     @[ ! -f budgets.yaml ] || bunx onebudgetspec check budgets.yaml
 
 # The `crozier-pool-maintenance-seconds` budget (pool-maintenance/budgets.yaml):
 # one steady-state `pool-maintenance` pass, timed. Builds the test targets twice
-# and really prunes this clone's target dir; ci.yml runs it on the release pull
-# request after the gate.
+# and really prunes this clone's target dir. By hand; CI runs it through
+# `ci-budgets-host` when a change reaches the project.
 budgets-pool-maintenance:
     @just nx run pool-maintenance:budgets-host
 
@@ -108,10 +139,11 @@ nx *args:
 fmt-check:
     @just nx run-many --targets=format
 
-# Every affected project's `lint` (clippy with warnings as errors, ruff check, the
-# module-boundary rule, the corpus/licence lints); `--sweep` for all of them.
+# Every affected project's `format`, `lint` (clippy with warnings as errors, ruff
+# check, the module-boundary rule, the corpus/licence lints) and `typecheck`;
+# `--sweep` for all of them.
 lint *args:
-    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=lint
+    @node tools/ci/gate.mjs "$@" -- nx run-many --targets=format,lint,typecheck
 
 # Every affected project's `test`, then the line-coverage floors: the crate's 95%
 # (`workspace:coverage`, over the profiles `crozier:test` writes) and the Python
@@ -252,7 +284,7 @@ test-fern-probe-refusal:
 # golden-reach suite runs twice: the second time without `fcntl` and the other
 # POSIX-only modules, as on Windows, on every host.
 test-fixtures-coverage:
-    @just nx run-many --targets=test-fixtures-coverage --projects=surface-census,surface-reach
+    @just nx run-many --targets=test-fixtures-coverage --projects=golden-reach,surface-reach
 
 # The arm search's YAML fallback against the census's stdlib loader: identical
 # counts on every registered YAML source, and each refused form's committed sample
@@ -328,7 +360,7 @@ golden-reach:
 census-repin *args:
     python3 tools/surface-census/census-repin.py "$@"
 
-# CI's base-publishing job (ci.yml `golden-reach-base`): measure HEAD from the
+# CI's base-publishing job (golden-reach-base.yml): measure HEAD from the
 # nearest earlier published base and package DIR/base.json.gz, which the job
 # uploads as the artifact golden-reach-base-<sha>.
 golden-reach-base dir:
