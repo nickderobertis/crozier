@@ -180,11 +180,12 @@ it opens a session are not this node's commands and are not counted.
 | `-r6`, attempt 2 (publication retry) | 4 | 0 | 1 | the failed `lint` job: one `gh run view --log-failed` (refused while its run was still in progress) and three reads of the job's log, to diagnose the failing check, which stopped at `just bootstrap` with `just: command not found` after the runner's tool downloads met HTTP 502s; the branch's published head and `main` |
 | re-dispatch after the `-r6` review | 0 | 0 | 1 | the branch's published head and `main`, to see which local commit was not yet published; the red CI it inherited failed on HTTP 502/504 while installing `just` in the lint jobs, which the planner had already diagnosed, so no run or log was read |
 | re-dispatch to reconcile this record (2026-11-08) | 0 | 0 | 0 | none: it made no GitHub request of any kind and edited only this record's text |
-| **total** | **23** | **2** | **9** | |
+| re-dispatch to verify the finished branch (2026-11-08) | 0 | 0 | 1 | the branch's published head and `main`, to see which local commits were not yet published and whether `main` had moved; no change request, run or log was read |
+| **total** | **23** | **2** | **10** | |
 
-The table has twelve dispatch rows. Its totals are column sums: 23 REST reads
-(4 + 10 + 5 + 4), 2 GraphQL reads (1 + 1) and 9 `git fetch origin` runs
-(1 + 1 + 2 + 1 + 1 + 1 + 1 + 1). It supersedes every count earlier text of this
+The table has thirteen dispatch rows. Its totals are column sums: 23 REST reads
+(4 + 10 + 5 + 4), 2 GraphQL reads (1 + 1) and 10 `git fetch origin` runs
+(1 + 1 + 2 + 1 + 1 + 1 + 1 + 1 + 1). It supersedes every count earlier text of this
 record stated.
 
 | bucket | live requests | response-cache hits | waits |
@@ -194,7 +195,7 @@ record stated.
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
 | core (merge-path diagnostics, unguarded) | 23 | 0 | 0 |
 | graphql (merge-path diagnostics, unguarded) | 2 | 0 | 0 |
-| git protocol fetch of `origin` (unguarded) | 9 | 0 | 0 |
+| git protocol fetch of `origin` (unguarded) | 10 | 0 | 0 |
 
 ## Verdicts
 
