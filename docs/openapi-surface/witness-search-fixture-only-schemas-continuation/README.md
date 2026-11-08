@@ -176,8 +176,9 @@ it opens a session are not this node's commands and are not counted.
 | `-r3`, attempt 3 | 10 | 0 | 0 | two failed runs on this branch: two job listings, one run's head commit and trigger, and four failed-job logs; three `gh run list` reads, of the branch's runs, of `main`'s `ci` runs and of the runs at the merged `main` commit, to tell a branch failure from one on `main` |
 | `-r4` | 5 | 1 | 1 | this branch's change request (`gh pr list`); the branch's runs and `main`'s `ci` runs (`gh run list`); the failed run's job listing and the failed-step logs of its two failed jobs; the branch's published head and `main` |
 | `-r5` | 0 | 1 | 1 | this branch's change request (`gh pr list`); the branch's published head and `main` |
-| `-r6` | 0 | 0 | 1 | the branch's published head and `main`, to find what the retry had to repair |
-| **total** | **19** | **2** | **7** | |
+| `-r6`, attempt 1 | 0 | 0 | 1 | the branch's published head and `main`, to find what the retry had to repair |
+| `-r6`, attempt 2 (publication retry) | 4 | 0 | 1 | the failed `lint` job: one `gh run view --log-failed` (refused while its run was still in progress) and three reads of the job's log, to diagnose the failing check, which stopped at `just bootstrap` with `just: command not found` after the runner's tool downloads met HTTP 502s; the branch's published head and `main` |
+| **total** | **23** | **2** | **8** | |
 
 Earlier text of this record counted 18 REST reads and listed no `git fetch` before
 the fifth dispatch; the transcripts show the 19th (`-r3` attempt 3's read of a run's
@@ -188,9 +189,9 @@ head commit and trigger) and the six fetches the table now lists.
 | code_search | 0 | 0 | 0 |
 | core (candidate screening, guarded) | 0 | 0 | 0 |
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
-| core (merge-path diagnostics, unguarded) | 19 | 0 | 0 |
+| core (merge-path diagnostics, unguarded) | 23 | 0 | 0 |
 | graphql (merge-path diagnostics, unguarded) | 2 | 0 | 0 |
-| git protocol fetch of `origin` (unguarded) | 7 | 0 | 0 |
+| git protocol fetch of `origin` (unguarded) | 8 | 0 | 0 |
 
 ## Verdicts
 
