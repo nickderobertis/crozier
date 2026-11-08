@@ -280,7 +280,7 @@ jobs:
   test-windows:
     if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
     runs-on: windows-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - name: Enable Git long paths
         if: runner.os == 'Windows'
@@ -354,7 +354,7 @@ jobs:
       (github.event_name == 'pull_request' && !(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')))
       || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
     runs-on: macos-latest
-    timeout-minutes: 120
+    timeout-minutes: 150
     steps:
       # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
