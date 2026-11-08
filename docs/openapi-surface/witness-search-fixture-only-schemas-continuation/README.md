@@ -146,38 +146,51 @@ one of the three.
 ## GitHub requests
 
 No GitHub code search was made. Candidate screening made no GitHub request
-outside the guard, and no live GitHub request at all, in either session of this
-node; the second, which screened the 71 later documents, read only committed
-sources. The guarded acquirer read 88 exact-commit raw responses from the shared
-response cache; its own
-[`github-cache-hits.jsonl`](guard-logs/github-cache-hits.jsonl) retains those hits.
-There are no call or wait logs because neither occurred. Other retained files
-were read locally by digest, not fetched. No GraphQL, Sourcegraph, Postman or
+outside the guard, and no live GitHub request at all: the session that acquired
+candidates read 88 exact-commit raw responses from the shared response cache
+through the guarded acquirer, whose own
+[`github-cache-hits.jsonl`](guard-logs/github-cache-hits.jsonl) retains those hits,
+and the later session that screened the 71 later documents read only committed
+sources. There are no call or wait logs because neither occurred. Other retained
+files were read locally by digest, not fetched. No GraphQL, Sourcegraph, Postman or
 SwaggerHub route was used to search for or fetch a candidate. Certified-tree reuse
 is not a response-cache hit.
 
-The node's publication retry made 4 live GitHub API requests outside the guard,
-none of them part of the search: `gh run view` reads of this branch's own failed
-CI run (one job listing and three job logs), to diagnose the failing check. They
-fetched no candidate document, made no search, and appear in no guard log. Its
-third attempt made 9 more of the same kind: `gh run view` reads of two failed CI
-runs on this branch (two job listings and four job logs), and three `gh run list`
-reads of the branch's, `main`'s and the merged base commit's runs. Its fourth
-attempt made 6 more, each one `gh` command: a `gh pr list` read of this branch's
-own change request (GitHub's GraphQL API), a `gh run list` of this branch's runs and one of `main`'s `ci` runs, a `gh run
-view` job listing of the failed run, and the failed-step logs of its two failed
-jobs. Its fifth attempt made 1 more: a `gh pr list` read of this branch's own
-change request (GraphQL), beside one `git fetch` of `origin` to compare the
-branch with its published head and `main`. None of them searched for or fetched
-a candidate.
+Every other GitHub request this node made, in every dispatch of it, read only this
+repository's refs, change request and CI runs, jobs and logs (this branch's or
+`main`'s), to diagnose this branch's merge path or to give the judged lint its
+`origin/main` base. None searched for or fetched a candidate, and none went through
+the guard or appears in its logs. They are counted per command, from each
+dispatch's transcript: a `gh run view --log` may issue more than one HTTP request
+internally. A check log read with `onevcs artifact cat` came from the harness's
+local artifact store and is not counted. The fetches the harness itself makes when
+it opens a session are not this node's commands and are not counted.
+
+| dispatch | `gh` (REST) | `gh` (GraphQL) | `git fetch origin` | what was read, and why |
+|---|---:|---:|---:|---|
+| first search session (2026-11-05) | 0 | 0 | 0 | candidate acquisition, cache hits only (above) |
+| `-r1` | 0 | 0 | 0 | none |
+| `-r2` | 0 | 0 | 1 | `main`, as the judged lint's base |
+| `-r3`, attempt 1 | 0 | 0 | 1 | `main`, as the judged lint's base |
+| `-r3`, attempt 2 (publication retry) | 4 | 0 | 2 | the failed run's job listing and three of its job logs, to diagnose the failing check; the branch's published head, and `main` as the judged lint's base |
+| `-r3`, attempt 3 | 10 | 0 | 0 | two failed runs on this branch: two job listings, one run's head commit and trigger, and four failed-job logs; three `gh run list` reads, of the branch's runs, of `main`'s `ci` runs and of the runs at the merged `main` commit, to tell a branch failure from one on `main` |
+| `-r4` | 5 | 1 | 1 | this branch's change request (`gh pr list`); the branch's runs and `main`'s `ci` runs (`gh run list`); the failed run's job listing and the failed-step logs of its two failed jobs; the branch's published head and `main` |
+| `-r5` | 0 | 1 | 1 | this branch's change request (`gh pr list`); the branch's published head and `main` |
+| `-r6` | 0 | 0 | 1 | the branch's published head and `main`, to find what the retry had to repair |
+| **total** | **19** | **2** | **7** | |
+
+Earlier text of this record counted 18 REST reads and listed no `git fetch` before
+the fifth dispatch; the transcripts show the 19th (`-r3` attempt 3's read of a run's
+head commit and trigger) and the six fetches the table now lists.
 
 | bucket | live requests | response-cache hits | waits |
 |---|---:|---:|---:|
 | code_search | 0 | 0 | 0 |
 | core (candidate screening, guarded) | 0 | 0 | 0 |
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
-| core (retry CI diagnostics, unguarded) | 18 | 0 | 0 |
-| graphql (retry CI diagnostics, unguarded) | 2 | 0 | 0 |
+| core (merge-path diagnostics, unguarded) | 19 | 0 | 0 |
+| graphql (merge-path diagnostics, unguarded) | 2 | 0 | 0 |
+| git protocol fetch of `origin` (unguarded) | 7 | 0 | 0 |
 
 ## Verdicts
 
