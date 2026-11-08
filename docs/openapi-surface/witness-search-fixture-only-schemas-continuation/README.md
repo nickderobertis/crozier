@@ -145,20 +145,27 @@ one of the three.
 
 ## GitHub requests
 
-No GitHub code search was made. No GitHub request was made outside the guard.
-No live GitHub request was made at all, in either session of this node; the second,
-which screened the 71 later documents, read only committed sources. The guarded acquirer read 88 exact-commit
-raw responses from the shared response cache; its own
+No GitHub code search was made. Candidate screening made no GitHub request
+outside the guard, and no live GitHub request at all, in either session of this
+node; the second, which screened the 71 later documents, read only committed
+sources. The guarded acquirer read 88 exact-commit raw responses from the shared
+response cache; its own
 [`github-cache-hits.jsonl`](guard-logs/github-cache-hits.jsonl) retains those hits.
 There are no call or wait logs because neither occurred. Other retained files
 were read locally by digest, not fetched. No GraphQL, Sourcegraph, Postman or
 SwaggerHub route was used. Certified-tree reuse is not a response-cache hit.
 
+The node's publication retry made 4 live GitHub API requests outside the guard,
+none of them part of the search: `gh run view` reads of this branch's own failed
+CI run (one job listing and three job logs), to diagnose the failing check. They
+fetched no candidate document, made no search, and appear in no guard log.
+
 | bucket | live requests | response-cache hits | waits |
 |---|---:|---:|---:|
 | code_search | 0 | 0 | 0 |
-| core | 0 | 0 | 0 |
-| raw candidate fetch | 0 | 88 | 0 |
+| core (candidate screening, guarded) | 0 | 0 | 0 |
+| raw candidate fetch (guarded) | 0 | 88 | 0 |
+| core (retry CI diagnostics, unguarded) | 4 | 0 | 0 |
 
 ## Verdicts
 
