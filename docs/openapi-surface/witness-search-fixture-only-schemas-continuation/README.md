@@ -153,7 +153,8 @@ response cache; its own
 [`github-cache-hits.jsonl`](guard-logs/github-cache-hits.jsonl) retains those hits.
 There are no call or wait logs because neither occurred. Other retained files
 were read locally by digest, not fetched. No GraphQL, Sourcegraph, Postman or
-SwaggerHub route was used. Certified-tree reuse is not a response-cache hit.
+SwaggerHub route was used to search for or fetch a candidate. Certified-tree reuse
+is not a response-cache hit.
 
 The node's publication retry made 4 live GitHub API requests outside the guard,
 none of them part of the search: `gh run view` reads of this branch's own failed
@@ -161,14 +162,20 @@ CI run (one job listing and three job logs), to diagnose the failing check. They
 fetched no candidate document, made no search, and appear in no guard log. Its
 third attempt made 9 more of the same kind: `gh run view` reads of two failed CI
 runs on this branch (two job listings and four job logs), and three `gh run list`
-reads of the branch's, `main`'s and the merged base commit's runs.
+reads of the branch's, `main`'s and the merged base commit's runs. Its fourth
+attempt made 6 more, each one `gh` command: a `gh pr list` read of this branch's
+own change request (GitHub's GraphQL API, the only GraphQL request of the node),
+a `gh run list` of this branch's runs and one of `main`'s `ci` runs, a `gh run
+view` job listing of the failed run, and the failed-step logs of its two failed
+jobs. None of them searched for or fetched a candidate.
 
 | bucket | live requests | response-cache hits | waits |
 |---|---:|---:|---:|
 | code_search | 0 | 0 | 0 |
 | core (candidate screening, guarded) | 0 | 0 | 0 |
 | raw candidate fetch (guarded) | 0 | 88 | 0 |
-| core (retry CI diagnostics, unguarded) | 13 | 0 | 0 |
+| core (retry CI diagnostics, unguarded) | 18 | 0 | 0 |
+| graphql (retry CI diagnostics, unguarded) | 1 | 0 | 0 |
 
 ## Verdicts
 
