@@ -10331,12 +10331,18 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         region = [site.start, site.start_col, site.start, site.start_col + 1]
         views = self.root / self.tool.VIEWS
         (views / "tests").mkdir(parents=True)
-        files = {
-            reach.resolve_site(table[key].sites[0], REPO).file
+        # One region inside each exclusive arm site: an arm the universe holds no region of is refused.
+        arms = [
+            reach.resolve_site(table[key].sites[0], REPO)
             for key in self.tool.contract(REPO)
             if key in table and not table[key].cooccurrence
+        ]
+        files = {arm.file for arm in arms}
+        universe_regions = {
+            file: sorted({(a.start, a.start_col, a.start, a.start_col + 1) for a in arms if a.file == file})
+            for file in files
         }
-        (views / "universe.json").write_text(json.dumps({file: [region] for file in files}), encoding="utf-8")
+        (views / "universe.json").write_text(json.dumps(universe_regions), encoding="utf-8")
         witness = "registered-literals-apis-guru-openapi-directory-cdcf7865"
         for fixture, test in {(row.fixture, row.golden_test) for row in rows}:
             hit = [region] if fixture == witness else []
@@ -10366,7 +10372,74 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
             self.assertIn("just census-repin", refused.stderr)
             self.assertNotIn("Traceback", refused.stderr)
             self.assertEqual(before, target.read_bytes())
-        universe.write_text(good, encoding="utf-8")
+        # A universe without the arm's regions, or a hit it does not hold, is another tree's view.
+        hit_view = views / "tests" / f"{proved.golden_test}.json"
+        good_hit = hit_view.read_text(encoding="utf-8")
+        emptied = {file: [r for r in spans if r != region] for file, spans in json.loads(good).items()}
+        for view, restored_text, broken, said in (
+            (universe, good, json.dumps(emptied), "holds no region of its arm site"),
+            (
+                hit_view,
+                good_hit,
+                json.dumps({file: [[1, 1, 1, 2]] for file in files}),
+                "regions the universe does not hold",
+            ),
+        ):
+            with self.subTest(said):
+                view.write_text(broken, encoding="utf-8")
+                refused = self.run_tool("write", "--repo-root", str(self.root))
+                self.assertEqual(1, refused.returncode)
+                self.assertIn(said, refused.stderr)
+                self.assertIn("wrote nothing", refused.stderr)
+                self.assertEqual(before, target.read_bytes())
+                view.write_text(restored_text, encoding="utf-8")
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        # A census row the record lost is written back from its verdict, and check then passes.
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        header = lines[0].rstrip("\n").split("\t")
+        cell = next(
+            i for i, line in enumerate(lines) if line.startswith(f"{proved.key}\t") and f"\t{proved.document}\t" in line
+        )
+        census.write_bytes(gzip.compress("".join(lines[:cell] + lines[cell + 1 :]).encode("utf-8"), mtime=0))
+        self.assertIn("does not name it", self.run_tool("check", "--repo-root", str(self.root)).stderr)
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        restored = {
+            tuple(row[: len(header)])
+            for row in csv.reader(
+                io.StringIO(gzip.decompress(census.read_bytes()).decode("utf-8"), newline=""), delimiter="\t"
+            )
+            if row[:1] == [proved.key] and proved.document in row
+        }
+        self.assertEqual(1, len(restored))
+        written_back = dict(zip(header, next(iter(restored)), strict=True))
+        self.assertEqual(proved.sha256, written_back["sha256"])
+        self.assertEqual(str(proved.declared_sites), written_back["sites"])
+        self.assertEqual(str(proved.outcome()), written_back["outcome"])
+        self.assertEqual(0, self.run_tool("check", "--repo-root", str(self.root)).returncode)
+        # A census pinning other bytes is refused by write, which then changes no artifact.
+        record = self.root / self.tool.RECORD
+        names = ("handed-off-verdicts.tsv", "census.tsv.gz", "outstanding-candidates.tsv", "README.md")
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        cell = next(
+            i for i, line in enumerate(lines) if line.startswith(f"{proved.key}\t") and f"\t{proved.document}\t" in line
+        )
+        pinned = lines.copy()
+        pinned[cell] = pinned[cell].replace(proved.sha256, "0" * 64)
+        census.write_bytes(gzip.compress("".join(pinned).encode("utf-8"), mtime=0))
+        unchanged = {name: (record / name).read_bytes() for name in names}
+        refused = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("census.tsv.gz pins", refused.stderr)
+        self.assertEqual(unchanged, {name: (record / name).read_bytes() for name in names})
+        self.assertEqual([], sorted(path.name for path in record.glob(".*.staged")))
+        # Corrupt deflate data is a diagnostic, never a traceback, in both modes.
+        census.write_bytes(census.read_bytes()[:20] + b"\xff" * 64)
+        for mode in ("write", "check"):
+            corrupt = self.run_tool(mode, "--repo-root", str(self.root))
+            self.assertEqual(1, corrupt.returncode, mode)
+            self.assertNotIn("Traceback", corrupt.stderr, mode)
+        census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
         self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
         # The record's README is read before anything is written, so losing it changes nothing.
         readme = self.root / self.tool.RECORD / "README.md"

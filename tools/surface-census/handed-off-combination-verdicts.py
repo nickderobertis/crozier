@@ -29,8 +29,10 @@ import hashlib
 import importlib.util
 import io
 import json
+import os
 import re
 import sys
+import zlib
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -368,9 +370,23 @@ def measure(root: Path) -> list[VerdictRow]:
                 site = REACH.resolve_site(table[key].sites[0], root)
                 if site.file not in universe or site.file not in hit:
                     raise ValueError(f"{registration.test}: no measurement of {site.file}; run `just census-repin`")
+                # An empty arm or a hit the universe lacks is a view of other code, never a nonexecution.
+                if hit[site.file] - universe[site.file]:
+                    raise ValueError(
+                        f"{registration.test}: executed {site.file} regions the universe does not hold; "
+                        "run `just census-repin`"
+                    )
                 regions = {region for region in universe[site.file] if site.holds(region)}
+                if not regions:
+                    raise ValueError(f"{key}: the universe holds no region of its arm site; run `just census-repin`")
                 arm = ArmCount(len(regions & hit[site.file]), len(regions))
             proof = audit[key].proof_class if key in audit else None
+            verdict = verdict_of(proof, cooccurrence, declared, arm)
+            if verdict is Verdict.WITNESS and registration.unmatched:
+                raise ValueError(
+                    f"{key} on {document.fixture}: a witness must byte-match whole; "
+                    f"{len(registration.unmatched)} of its golden's files are unmatched"
+                )
             rows.append(
                 VerdictRow(
                     CombinationKey(key),
@@ -381,7 +397,7 @@ def measure(root: Path) -> list[VerdictRow]:
                     len(registration.unmatched),
                     declared,
                     arm,
-                    verdict_of(proof, cooccurrence, declared, arm),
+                    verdict,
                 )
             )
     return rows
@@ -573,8 +589,16 @@ def restated_readme(root: Path, rows: list[CensusRow]) -> str:
     )
 
 
+class PartialWrite(OSError):
+    """A failure after some artifacts were already replaced; its message names them."""
+
+
 def write(root: Path) -> None:
-    """Render all four artifacts from validated inputs, then write them: nothing changes on a refusal."""
+    """Render all four artifacts from validated inputs, then publish them.
+
+    A refusal before publication changes nothing; each artifact is staged beside its
+    target and swapped in whole, and a failure part-way names what was replaced.
+    """
     rows = measure(root)
     columns, census = restated_census(root, rows)
     written = io.StringIO(newline="")
@@ -584,10 +608,30 @@ def write(root: Path) -> None:
     compressed = gzip.compress(rendered_census(columns, census).encode("utf-8"), compresslevel=9, mtime=0)
     index = restated_index(root, census)
     readme = restated_readme(root, census)
-    (root / RECORD / "handed-off-verdicts.tsv").write_text(written.getvalue(), encoding="utf-8", newline="\n")
-    (root / RECORD / "census.tsv.gz").write_bytes(compressed)
-    (root / RECORD / "outstanding-candidates.tsv").write_text(index, encoding="utf-8", newline="\n")
-    (root / RECORD / "README.md").write_text(readme, encoding="utf-8", newline="\n")
+    artifacts = {
+        "handed-off-verdicts.tsv": written.getvalue().encode("utf-8"),
+        "census.tsv.gz": compressed,
+        "outstanding-candidates.tsv": index.encode("utf-8"),
+        "README.md": readme.encode("utf-8"),
+    }
+    staged = {name: root / RECORD / f".{name}.staged" for name in artifacts}
+    try:
+        for name, data in artifacts.items():
+            staged[name].write_bytes(data)
+    except OSError:
+        for path in staged.values():
+            path.unlink(missing_ok=True)
+        raise
+    replaced: list[str] = []
+    for name in artifacts:
+        try:
+            os.replace(staged[name], root / RECORD / name)
+        except OSError as error:
+            for path in staged.values():
+                path.unlink(missing_ok=True)
+            done = ", ".join(replaced) if replaced else "none"
+            raise PartialWrite(f"replaced {done} before failing on {name} ({error}); rerun `write`") from error
+        replaced.append(name)
 
 
 def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> list[str]:
@@ -603,7 +647,7 @@ def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> li
         audit, table = classes(root)
         registrations = CENSUS.golden_registrations(root / "crates/crozier-e2e/tests/e2e.rs")
         _columns, census = read_census(root)
-    except (OSError, ValueError, KeyError, EOFError) as error:
+    except (OSError, ValueError, KeyError, EOFError, zlib.error) as error:
         return [f"handed-off-verdicts.tsv: {error}"]
     found = []
     by_document = {document.document: document for document in documents}
@@ -673,11 +717,14 @@ def failures(root: Path, counts: dict[tuple[str, str], int] | None = None) -> li
             found.append(
                 f"{cell[1]} on {cell[0]}: census.tsv.gz counts {stated.sites} declarations, not {row.declared_sites}"
             )
-    index = (root / RECORD / "outstanding-candidates.tsv").read_text(encoding="utf-8")
-    if index != restated_index(root, census):
-        found.append("outstanding-candidates.tsv does not restate census.tsv.gz; run this script's `write`")
-    if (root / RECORD / "README.md").read_text(encoding="utf-8") != restated_readme(root, census):
-        found.append("the record's verdict table does not restate census.tsv.gz; run this script's `write`")
+    try:
+        index = (root / RECORD / "outstanding-candidates.tsv").read_text(encoding="utf-8")
+        if index != restated_index(root, census):
+            found.append("outstanding-candidates.tsv does not restate census.tsv.gz; run this script's `write`")
+        if (root / RECORD / "README.md").read_text(encoding="utf-8") != restated_readme(root, census):
+            found.append("the record's verdict table does not restate census.tsv.gz; run this script's `write`")
+    except (OSError, ValueError) as error:
+        found.append(f"cannot restate the record ({error}); restore it from git, then run this script's `write`")
     return found
 
 
@@ -689,7 +736,10 @@ def main() -> int:
     if args.mode == "write":
         try:
             write(args.repo_root.resolve())
-        except (OSError, ValueError, KeyError, EOFError) as error:
+        except PartialWrite as error:
+            print(f"handed-off-combination-verdicts: {error}", file=sys.stderr)
+            return 1
+        except (OSError, ValueError, KeyError, EOFError, zlib.error) as error:
             print(f"handed-off-combination-verdicts: wrote nothing \u2014 {error}", file=sys.stderr)
             return 1
         return 0
