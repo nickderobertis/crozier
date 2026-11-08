@@ -14,6 +14,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
+from typing import NewType
 
 MANIFEST = Path("docs/openapi-surface/combination-independence.toml")
 
@@ -47,9 +48,12 @@ class Document:
     trees: dict[Mode, Path]
 
 
+CombinationKey = NewType("CombinationKey", str)
+
+
 @dataclass(frozen=True)
 class IndependenceProof:
-    key: str
+    key: CombinationKey
     modes: tuple[Mode, ...]
     conditions: tuple[Condition, ...]
     documents: dict[Case, Document]

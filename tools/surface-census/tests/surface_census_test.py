@@ -10231,6 +10231,17 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.tool.verdict_of("proven", False, 1, arm)
 
+    def test_the_tool_knows_exactly_the_handed_off_statuses(self) -> None:
+        self.assertEqual({str(status) for status in HandedOffStatus}, set(self.tool.HANDED_OFF_STATUSES))
+
+    def test_an_unknown_document_status_is_refused(self) -> None:
+        documents = self.root / self.tool.HANDED_OFF / "documents.tsv"
+        lines = documents.read_text(encoding="utf-8").splitlines(keepends=True)
+        index = next(i for i, line in enumerate(lines) if "\tregistered\t" in line)
+        lines[index] = lines[index].replace("\tregistered\t", "\tregisterd\t", 1)
+        documents.write_text("".join(lines), encoding="utf-8")
+        self.assertTrue(any("unknown status 'registerd'" in f for f in self.tool.failures(self.root)))
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],

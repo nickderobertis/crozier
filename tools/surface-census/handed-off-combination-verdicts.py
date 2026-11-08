@@ -34,7 +34,7 @@ import sys
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import Any, NamedTuple, Protocol
+from typing import Any, NamedTuple, NewType, Protocol
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -65,6 +65,19 @@ FORMER_HANDWRITTEN = (
     "combo-success-oneof-nullable",
 )
 NOT_MEASURED = "-"
+# Every `status` documents.tsv may carry; the census suite holds this set to its own record type.
+HANDED_OFF_STATUSES = frozenset(
+    {
+        "registered",
+        "byte-matches-not-admissible",
+        "refused-by-ruling",
+        "differs",
+        "could-not-check",
+        "registration-incomplete",
+    }
+)
+CombinationKey = NewType("CombinationKey", str)
+Sha256 = NewType("Sha256", str)
 SHA256 = re.compile(r"[0-9a-f]{64}")
 FIXTURE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 
@@ -95,7 +108,7 @@ REASONS = {
 
 class Document(NamedTuple):
     document: str
-    sha256: str
+    sha256: Sha256
     fixture: str
 
 
@@ -123,9 +136,9 @@ def _count(text: str, what: str) -> int:
 class VerdictRow:
     """One combination on one document, as `handed-off-verdicts.tsv` holds it."""
 
-    key: str
+    key: CombinationKey
     document: str
-    sha256: str
+    sha256: Sha256
     fixture: str
     golden_test: str
     unmatched_files: int
@@ -151,9 +164,9 @@ class VerdictRow:
         except ValueError as error:
             raise ValueError(f"{where}: unknown verdict {cells['verdict']!r}") from error
         return cls(
-            cells["key"],
+            CombinationKey(cells["key"]),
             cells["document"],
-            cells["sha256"],
+            Sha256(cells["sha256"]),
             cells["fixture"],
             cells["golden_test"],
             _count(cells["unmatched_files"], f"{where}: unmatched files"),
@@ -218,6 +231,8 @@ def population(root: Path) -> list[Document]:
         for row in reader:
             if None in row or None in row.values():
                 raise ValueError(f"documents.tsv line {reader.line_num}: extra or missing cells")
+            if row["status"] not in HANDED_OFF_STATUSES:
+                raise ValueError(f"{row['document']}: unknown status {row['status']!r} in documents.tsv")
             if row["status"] != "registered":
                 continue
             named = re.fullmatch(r"\d+ \((.+)\)", row["corpus_row"])
@@ -227,7 +242,7 @@ def population(root: Path) -> list[Document]:
                 raise ValueError(f"{row['document']}: {row['sha256']!r} is no SHA-256")
             if row["document"] in found:
                 raise ValueError(f"{row['document']}: registered twice in documents.tsv")
-            found[row["document"]] = Document(row["document"], row["sha256"], named.group(1))
+            found[row["document"]] = Document(row["document"], Sha256(row["sha256"]), named.group(1))
     readme = (root / HANDED_OFF / "README.md").read_text(encoding="utf-8")
     _before, heading, admitted = readme.partition("## Newly admitted documents")
     if not heading:
@@ -351,7 +366,7 @@ def measure(root: Path) -> list[VerdictRow]:
             proof = audit[key].proof_class if key in audit else None
             rows.append(
                 VerdictRow(
-                    key,
+                    CombinationKey(key),
                     document.document,
                     document.sha256,
                     document.fixture,
@@ -408,9 +423,9 @@ class Outcome(NamedTuple):
 class CensusRow:
     """One candidate of `census.tsv.gz`; columns this tool does not read travel in `other`."""
 
-    key: str
+    key: CombinationKey
     document: str
-    sha256: str
+    sha256: Sha256
     # None where the census recorded no count, because the source bytes were unavailable.
     sites: int | None
     outcome: Outcome
@@ -426,9 +441,9 @@ class CensusRow:
         sites = None if cells["sites"] == NOT_MEASURED else _count(cells["sites"], f"{where}: sites")
         known = {"key", "document", "sha256", "sites", "outcome"}
         return cls(
-            cells["key"],
+            CombinationKey(cells["key"]),
             cells["document"],
-            cells["sha256"],
+            Sha256(cells["sha256"]),
             sites,
             Outcome.parse(cells["outcome"], where),
             {name: value for name, value in cells.items() if name not in known},
