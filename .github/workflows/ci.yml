@@ -4,12 +4,8 @@
 # affected, from an explicit merge base) through the same gate the recipes run locally.
 # CI does not run on push to main: the squash commit's tree is what its pull request's
 # lanes proved. See docs/ci-lanes.md for which lane owns what, and tools/ci/lanes.json for
-# the executable inventory.
-#
-# TRANSITIONAL: `gate`, `commitlint` and `llmlint` stay under the contexts main requires
-# today, so seven jobs run per pull request until protection moves to the four lanes in
-# .github/governance.json. Then cleanup folds the title and judged checks into `lint` and
-# removes these three jobs.
+# the executable inventory. The four job ids are the contexts branch protection requires,
+# declared in .github/governance.json.
 
 name: ci
 
@@ -45,8 +41,6 @@ jobs:
     permissions:
       contents: write  # visual docs: push the pull request's gallery preview to gh-pages
       pull-requests: write  # the suppressions and visual docs comments
-    outputs:
-      releaseGuard: ${{ steps.release-guard.outputs.releaseGuard }}
     steps:
       # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
@@ -55,14 +49,21 @@ jobs:
           persist-credentials: false
       # The test lanes skip the release branch, which is sound only while its tree is a
       # tested main plus release-plz's version and changelog edits. The guard reads each
-      # change by content, and `gate` accepts a skipped test lane only on this step's output.
+      # change by content and fails this required lane on anything else.
       - name: Hold the release branch to the release tool's edits
         id: release-guard
         if: github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')
         shell: bash
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: node scripts/release-branch-guard.mjs --base "$BASE_SHA" --head HEAD && echo "releaseGuard=passed" >> "$GITHUB_OUTPUT"
+        run: node scripts/release-branch-guard.mjs --base "$BASE_SHA" --head HEAD
+      # Under squash-merge the pull request title becomes the release-driving commit, so it
+      # must be a valid Conventional Commit.
+      - name: Lint the pull request title
+        if: github.event_name == 'pull_request'
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       # A fork's pull request is granted a read-only token, so the comment upsert would fail
       # on something the contributor has no way to fix. A review artifact, not a gate.
       # `@v0` floats over 0.x releases and moves only once a release has published.
@@ -116,6 +117,43 @@ jobs:
         run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       - name: Format, lint, type-check and audit the affected projects
         run: just ci-lint
+      # The LLM-judge tier (llmlint): non-deterministic and harness-backed, so never inside
+      # the gate, and scoped to the merge-base diff. It REQUIRES its credential and fails
+      # fast without it; fork pull requests are gated by the repository's
+      # require-approval-for-fork-workflows setting. The rule plugins are vendored
+      # (llmlint-plugins/), so nothing is fetched at job time; docs/llmlint-plugins.md.
+      # llmlint.yml pins no harness; the committed fallback oneharness.toml tries codex, which
+      # is not on the runner, then claude-code, whose binary this installs.
+      - name: Install the judged tier's harness and llmlint
+        if: github.event_name == 'pull_request'
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          ./scripts/setup-llmlint.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      # Prove the rule set still resolves with its origin unreachable. CROZIER_REQUIRE_LLMLINT
+      # turns the "llmlint absent" skip into a failure, so this cannot silently no-op.
+      - name: Plugin-resolution boundary tests
+        if: github.event_name == 'pull_request'
+        env:
+          CROZIER_REQUIRE_LLMLINT: "1"
+        run: just test-llmlint-plugins
+      - name: Validate llmlint config
+        if: github.event_name == 'pull_request'
+        run: just lint-llm-validate --diff-base origin/main
+      - name: Judge the changed files
+        if: github.event_name == 'pull_request'
+        env:
+          # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN for
+          # non-interactive auth. Sync it from Bitwarden with `gh-secrets sync`; see gh-secrets.json.
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
+            echo "::error::llmlint needs a Claude Code credential. Add CLAUDE_CODE_OAUTH_TOKEN" \
+                 "(Settings → Secrets and variables → Actions; sync it via gh-secrets). Fork PRs" \
+                 "are gated by the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
+            exit 1
+          fi
+          just lint-llm-diff origin/main
       # The visual docs as steps of this lane, not screencomp's reusable workflow, whose
       # jobs would each hold a slot: capture in the pinned container, compare against the
       # committed x86_64 baseline, publish the gallery preview and comment the before/after.
@@ -140,8 +178,9 @@ jobs:
   # exercise no platform-specific code path of crozier's.
   # Measured limit: run 42345332459 spent 7371 s on this work across its jobs (Check 3053,
   # SDK 160, live/corpus/fallback 3814, packaging 168, install 176). In this shape, run
-  # 42433200026's job took 136 minutes (it failed one corpus-match test, since fixed). 150 is
-  # the transitional ceiling until the re-measure tightens it to the 30-minute line.
+  # 42433200026's job took 136 minutes (it failed one corpus-match test, since fixed). 150
+  # stands until a re-measure shows the lane fits less; crozier-ci-check-time reports the
+  # 30-minute line at each release.
   test-linux:
     if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
     runs-on: ubuntu-latest
@@ -237,7 +276,7 @@ jobs:
 
   # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
   # The Windows test lane. Measured limit: run 42345332459 spent 4307 s on this work
-  # (Check 3557, SDK 363, install 387). 90 is transitional, as for test-linux.
+  # (Check 3557, SDK 363, install 387). 90 stands until a re-measure, as for test-linux.
   test-windows:
     if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
     runs-on: windows-latest
@@ -373,102 +412,3 @@ jobs:
         run: cargo install --path . --locked
       - name: Smoke-test the installed binary
         run: crozier --version
-
-  # TRANSITIONAL, until protection moves to the four lanes: the `gate` context main requires
-  # today. It runs no work of its own. Fails unless every lane and transitional check really
-  # succeeded; a skipped test lane counts only when the release guard really passed.
-  gate:
-    name: gate
-    needs: [lint, test-linux, test-windows, test-macos, commitlint, llmlint]
-    if: always() && github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - name: Require every lane to have succeeded
-        env:
-          CI_NEEDS: ${{ toJSON(needs) }}
-        run: node .github/require-ci-results.mjs
-
-  # TRANSITIONAL, then a step of `lint`. PR-title lint: under squash-merge the PR title
-  # becomes the release-driving commit, so it must be a valid Conventional Commit.
-  commitlint:
-    name: commitlint
-    if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      pull-requests: read
-    steps:
-      - uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # TRANSITIONAL, then steps of `lint`. LLM-judge tier (llmlint) — a blocking PR check, SEPARATE from `just check`.
-  # Non-deterministic and harness-backed, so it never runs inside the gate. Scoped
-  # to the merge-base diff. It REQUIRES its credential and fails fast without it;
-  # fork PRs are gated by the repo's require-approval-for-fork-workflows setting.
-  # The rule plugins are vendored in the tree (llmlint-plugins/), so this job
-  # resolves them with no job-time fetch to flake; docs/llmlint-plugins.md.
-  llmlint:
-    name: llmlint
-    if: github.event_name == 'pull_request' && github.event.action != 'edited'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
-      - name: Fetch main (diff base)
-        run: git fetch --no-tags --depth=2147483647 origin main
-      - uses: extractions/setup-just@v2
-      # setup-llmlint.sh installs the llmlint toolchain via `uv tool`; uv is not
-      # preinstalled on GitHub runners, so provide it before that step runs.
-      - uses: astral-sh/setup-uv@v8.3.2
-      # llmlint.yml pins no harness; the committed fallback oneharness.toml tries
-      # codex, which is not on the runner, then claude-code. The `claude` binary
-      # is not on the runner either, so install it; it authenticates from
-      # CLAUDE_CODE_OAUTH_TOKEN below.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-      - run: npm install -g @anthropic-ai/claude-code
-      - name: Install oneharness + llmlint
-        run: |
-          ./scripts/setup-llmlint.sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      # This job skips `just bootstrap`, so it installs Nx itself: without it
-      # `just test-llmlint-plugins` cannot start.
-      - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version-file: package.json
-      - name: Install Nx (bun.lock)
-        run: just install-nx
-      # Prove the rule set still resolves with its origin unreachable — the exact
-      # failure that used to fail this required check on a flaked connection.
-      # CROZIER_REQUIRE_LLMLINT turns the "llmlint absent" skip into a failure,
-      # so this step cannot silently no-op on the one runner that has the binary.
-      - name: Plugin-resolution boundary tests
-        env:
-          CROZIER_REQUIRE_LLMLINT: "1"
-        run: just test-llmlint-plugins
-      - name: Validate llmlint config
-        run: just lint-llm-validate --diff-base origin/main
-      - name: Lint changed files
-        env:
-          # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN
-          # from the environment for non-interactive auth. Sync it (and the
-          # publishing tokens) from Bitwarden with `gh-secrets sync`; see gh-secrets.json.
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-        run: |
-          if [ -z "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]; then
-            echo "::error::llmlint needs a Claude Code credential. Add CLAUDE_CODE_OAUTH_TOKEN" \
-                 "(Settings → Secrets and variables → Actions; sync it via gh-secrets). Fork PRs" \
-                 "are gated by the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
-            exit 1
-          fi
-          just lint-llm-diff origin/main

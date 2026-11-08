@@ -75,7 +75,6 @@
         "{workspaceRoot}/Cargo.toml",
         "{workspaceRoot}/Cargo.lock",
         "{workspaceRoot}/pyproject.toml",
-        "{workspaceRoot}/.github/require-ci-results.mjs",
         "^production",
         {
           "runtime": "node tools/ci/project-files-digest.mjs"
