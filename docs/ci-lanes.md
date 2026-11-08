@@ -18,9 +18,10 @@ once the transition below ends.
 request, spent this work across its old jobs: Linux 7371 s (Check 3053, SDK 160,
 live/corpus/fallback 3814, packaging 168, install 176), Windows 4307 s (Check 3557, SDK 363,
 install 387), macOS 3767 s (Check 2451, SDK 1153, install 163). That split includes lint work
-that has since moved. No lane has run in this shape yet, so whether it fits is for the
-re-measure, which tightens these toward the 30-minute line. The Mac lane has since run in this
-shape: a whole-graph change's `ci-test` step alone took 84 minutes in run
+that has since moved. The re-measure tightens these toward the 30-minute line. Linux has since
+run in this shape: run [42433200026](https://github.com/nickderobertis/crozier/actions/runs/42433200026)'s
+`test-linux` took 136 minutes (it failed one corpus-match test, since fixed). The Mac lane
+has too: a whole-graph change's `ci-test` step alone took 84 minutes in run
 [42402692714](https://github.com/nickderobertis/crozier/actions/runs/42402692714), and run
 [42422342228](https://github.com/nickderobertis/crozier/actions/runs/42422342228) was cancelled at
 90, so a cold one needs about 110. Its limit is 120 until the Mac lane has a warm result cache

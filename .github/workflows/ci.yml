@@ -139,8 +139,9 @@ jobs:
   # The Linux test lane: the only platform for the Prism, corpus and packaging proof, which
   # exercise no platform-specific code path of crozier's.
   # Measured limit: run 42345332459 spent 7371 s on this work across its jobs (Check 3053,
-  # SDK 160, live/corpus/fallback 3814, packaging 168, install 176). 150 is the transitional
-  # ceiling until the re-measure tightens it to the 30-minute line.
+  # SDK 160, live/corpus/fallback 3814, packaging 168, install 176). In this shape, run
+  # 42433200026's job took 136 minutes (it failed one corpus-match test, since fixed). 150 is
+  # the transitional ceiling until the re-measure tightens it to the 30-minute line.
   test-linux:
     if: "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))"
     runs-on: ubuntu-latest
