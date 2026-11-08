@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "repository": "nickderobertis/crozier",
+  "tag": "v0.0.160",
+  "commit": "1834a1896b9f846950a36f18bca7116480dd1ee7",
+  "previous_tag": "v0.0.159",
+  "previous_commit": "ad8ebc09ab67203e2d96399cbdf8acd4fb683de2",
+  "commits": [
+    {
+      "sha": "04aeff07e994f1337c43d01f80e84ace0d07c030",
+      "change": 772
+    },
+    {
+      "sha": "92be4edfa6378d3e509c775f8f9796de40cb9b54",
+      "change": 773
+    },
+    {
+      "sha": "8cbca1f51b1a6a5702cb8e9ddc9db06f21d45a73",
+      "change": 767
+    },
+    {
+      "sha": "6c42a71928d4d40c7ca0dc6b8c1ff377ded63ab1",
+      "change": 775
+    },
+    {
+      "sha": "a643e6ab2c13e20c1d5a143b9e56ffb47d1c4ac9",
+      "change": 778
+    },
+    {
+      "sha": "56f1f7cc81ccb340a8cda9e0c3e45a75cd9a5d1e",
+      "change": 780
+    },
+    {
+      "sha": "6f4b6138cad11a72d5a3e2f6c09ab698c5ccad8c",
+      "change": 785
+    },
+    {
+      "sha": "50903f7c9f3bdef41a614511c5cd8790a0ac765d",
+      "change": 781
+    },
+    {
+      "sha": "3c405b50a4b82c6d6ad8002bb4d6161e1996cf10",
+      "change": 776
+    },
+    {
+      "sha": "94d22c08869cec535601b5d4c1e2986b9ef1ab51",
+      "change": 791
+    },
+    {
+      "sha": "1834a1896b9f846950a36f18bca7116480dd1ee7",
+      "change": 777
+    }
+  ],
+  "changes": [
+    {
+      "number": 772,
+      "title": "test(parity): settle the Nexmo behaviours, authored probes and the Webflow v2 residual",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "62e12a2ba03c30d4da1d10b7eb9d1993191b6082",
+      "created_at": "2026-11-04T20:06:34Z",
+      "merged_at": "2026-11-05T00:51:36Z",
+      "merge_commit_sha": "04aeff07e994f1337c43d01f80e84ace0d07c030"
+    },
+    {
+      "number": 773,
+      "title": "test(parity): seek real witnesses for the remaining fixture-only body and path features",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "343c5237e01651ab45fa5653e4c61ce8ae625b25",
+      "created_at": "2026-11-05T01:56:40Z",
+      "merged_at": "2026-11-05T05:54:57Z",
+      "merge_commit_sha": "92be4edfa6378d3e509c775f8f9796de40cb9b54"
+    },
+    {
+      "number": 767,
+      "title": "feat(census): pin only Python ports that can drift, blind to layout, with failures that say what to re-read",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "4da646d1a2bcdef5d66fd0baf1e7e5f4eccc6dd1",
+      "created_at": "2026-11-04T16:23:06Z",
+      "merged_at": "2026-11-05T10:16:18Z",
+      "merge_commit_sha": "8cbca1f51b1a6a5702cb8e9ddc9db06f21d45a73"
+    },
+    {
+      "number": 775,
+      "title": "test(parity): seek real witnesses for the remaining fixture-only parameter, security and extension features",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "639977e61ee9083afcd521ee357dcea24beaae46",
+      "created_at": "2026-11-05T09:45:46Z",
+      "merged_at": "2026-11-06T04:20:49Z",
+      "merge_commit_sha": "6c42a71928d4d40c7ca0dc6b8c1ff377ded63ab1"
+    },
+    {
+      "number": 778,
+      "title": "chore(census): land the repin-cost harness and measure repins after the incremental census tooling",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "95112bfd887a2c5086b5a5dfba7abf6889792844",
+      "created_at": "2026-11-06T08:42:44Z",
+      "merged_at": "2026-11-06T20:16:36Z",
+      "merge_commit_sha": "a643e6ab2c13e20c1d5a143b9e56ffb47d1c4ac9"
+    },
+    {
+      "number": 780,
+      "title": "test(parity): register the handed-off documents that already byte-match with their literals overlays",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "b4adfe45a10e5935c6611b51f9661dfefd14acc2",
+      "created_at": "2026-11-06T13:50:18Z",
+      "merged_at": "2026-11-07T02:27:24Z",
+      "merge_commit_sha": "56f1f7cc81ccb340a8cda9e0c3e45a75cd9a5d1e"
+    },
+    {
+      "number": 785,
+      "title": "fix(census): keep host run identifiers out of the published repin measurement",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "8fc842923aadd53a09f1193143785ffe43a88086",
+      "created_at": "2026-11-07T01:49:16Z",
+      "merged_at": "2026-11-07T02:29:06Z",
+      "merge_commit_sha": "6f4b6138cad11a72d5a3e2f6c09ab698c5ccad8c"
+    },
+    {
+      "number": 781,
+      "title": "perf(ci): cut repeated work in crozier's slowest test suites",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "9974ca7b72837ef6639782117c358793222b14fb",
+      "created_at": "2026-11-06T20:14:55Z",
+      "merged_at": "2026-11-07T08:19:41Z",
+      "merge_commit_sha": "50903f7c9f3bdef41a614511c5cd8790a0ac765d"
+    },
+    {
+      "number": 776,
+      "title": "test(parity): prove schema combinations at their interaction branch or record why none exists",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "48537e6e390e8a72c1c8ff5b743c5cd5d95c2ef0",
+      "created_at": "2026-11-06T03:45:45Z",
+      "merged_at": "2026-11-07T19:56:32Z",
+      "merge_commit_sha": "3c405b50a4b82c6d6ad8002bb4d6161e1996cf10"
+    },
+    {
+      "number": 791,
+      "title": "ci(gate): cut repeated work and introduce the fixed four-lane shape",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "99cebe6ac74b092cc368df379de4af900896d2ab",
+      "created_at": "2026-11-07T18:43:26Z",
+      "merged_at": "2026-11-08T07:33:26Z",
+      "merge_commit_sha": "94d22c08869cec535601b5d4c1e2986b9ef1ab51"
+    },
+    {
+      "number": 777,
+      "title": "chore: release v0.0.160",
+      "state": "closed",
+      "base_ref": "main",
+      "head_sha": "d9f9f4c157d91fad5b608cddb540c096eb3e3f3a",
+      "created_at": "2026-11-06T04:33:31Z",
+      "merged_at": "2026-11-08T07:43:57Z",
+      "merge_commit_sha": "1834a1896b9f846950a36f18bca7116480dd1ee7"
+    }
+  ],
+  "cost": {
+    "graphql_points": 0,
+    "rest_requests": 3,
+    "requests": [
+      "repos/nickderobertis/crozier/releases?per_page=100",
+      "repos/nickderobertis/crozier/compare/v0.0.159...v0.0.160?per_page=100",
+      "repos/nickderobertis/crozier/pulls?state=closed&sort=updated&direction=desc&per_page=100"
+    ]
+  }
+}

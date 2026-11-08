@@ -185,6 +185,19 @@ def history(tmp_path: Path) -> tuple[Path, list[str]]:
     return root, commits
 
 
+def no_login_env(scratch: Path) -> dict[str, str]:
+    """What a no-token lookup adds: no gh login, no session bus, and a `dbus-launch` that records a call and starts nothing."""
+    guard = scratch / "bus-guard"
+    guard.mkdir(exist_ok=True)
+    (guard / "dbus-launch").write_text('#!/bin/sh\necho "$@" >> "$0.called"\nexit 1\n', encoding="utf-8")
+    (guard / "dbus-launch").chmod(0o755)
+    return {
+        "GH_CONFIG_DIR": str(scratch / "empty-gh-config"),
+        "DBUS_SESSION_BUS_ADDRESS": "disabled:",
+        "PATH": f"{guard}{os.pathsep}{os.environ['PATH']}",
+    }
+
+
 def lookup(
     root: Path,
     cache: Path,
@@ -211,7 +224,7 @@ def lookup(
         (tools / "gh").chmod(0o755)
         env["PATH"] = str(tools)
     else:
-        env["GH_CONFIG_DIR"] = str(cache.parent / "empty-gh-config")
+        env |= no_login_env(cache.parent)
     run = subprocess.run(
         [sys.executable, str(VERB), "--repo-root", str(root), "--base-only"],
         capture_output=True,
@@ -220,7 +233,26 @@ def lookup(
         timeout=120,
     )
     assert run.returncode == 0, run.stderr
+    assert not (cache.parent / "bus-guard/dbus-launch.called").exists(), "gh autolaunched a session bus: " + run.stdout
     return run
+
+
+# llmlint: ignore-block[shell_test_tiers_stay_split] The no-token lookups in this file already reach the host's `gh`; this control proves their bus guard can fire, and it skips where `gh` is absent.
+@pytest.mark.skipif(not sys.platform.startswith("linux") or shutil.which("gh") is None, reason="no bus can start here")
+def test_the_no_token_guard_sees_gh_ask_for_a_bus_once_the_variable_is_removed(tmp_path: Path) -> None:
+    env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")} | no_login_env(tmp_path)
+    del env["DBUS_SESSION_BUS_ADDRESS"]
+    called = tmp_path / "bus-guard/dbus-launch.called"
+    run = subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, text=True, timeout=30)
+    assert not run.stdout.strip(), "with an empty GH_CONFIG_DIR, gh found a login to send to the real API"
+    if not called.exists():
+        pytest.skip("this gh asks for no session bus even without the variable, so none can leak")
+    assert len(called.read_text(encoding="utf-8").splitlines()) == 1, (
+        "gh asked the recording dbus-launch more than once"
+    )
+
+
+# llmlint: ignore-end[shell_test_tiers_stay_split]
 
 
 def cached(cache: Path, commit: str) -> Path:
@@ -232,7 +264,7 @@ def cached(cache: Path, commit: str) -> Path:
 def test_the_nearest_first_parent_ancestor_with_an_artifact_is_chosen_and_cached(
     history: tuple[Path, list[str]], github: str, tmp_path: Path
 ) -> None:
-    root, (c1, _c2, c3, c4) = history
+    root, (c1, _c2, c3, _c4) = history
     cache = tmp_path / "cache"
     side = git(root, "rev-parse", "side")
     # c4 has no artifact of its own; its parent c3 has; c1 is farther; the merged

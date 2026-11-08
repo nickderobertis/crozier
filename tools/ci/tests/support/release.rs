@@ -4,7 +4,7 @@
 //! `tools/ci-journeys/tests/release_checkout.rs` (the real-git checkout journey).
 
 #[path = "../../../../src/yaml.rs"]
-mod yaml;
+pub mod yaml;
 
 use serde_json::Value;
 type Mapping = serde_json::Map<String, Value>;

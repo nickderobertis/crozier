@@ -42,6 +42,8 @@ fn every_windows_release_job_enables_long_paths_before_checkout() {
 /// the GitHub Release, runs only when none of them failed (a skipped registry is
 /// fine), and leaves the decision to `scripts/update-major-tag.sh`, which it
 /// tells whether the Release is flagged as a pre-release.
+const MOVE_MAJOR_TAG: &str = "Move the floating major tag onto this release";
+
 #[test]
 fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
     let workflow = workflow();
@@ -112,6 +114,7 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
     let runs: Vec<&str> = steps
         .iter()
         .filter_map(|step| step.get("run").and_then(Value::as_str))
+        .filter(|run| run.contains("major-tag"))
         .collect();
     assert_eq!(
         runs,
@@ -122,7 +125,7 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
     // never interpolated into the `run:` (crates/crozier-tool-journeys/tests/tool_journeys/major_tag.rs runs the step).
     let step = steps
         .iter()
-        .find(|step| step.get("run").is_some())
+        .find(|step| text(step, "name") == Some(MOVE_MAJOR_TAG))
         .expect("major-tag runs the script");
     assert_eq!(
         step.get("env")
@@ -130,5 +133,152 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
             .and_then(Value::as_str),
         Some("${{ github.event.release.prerelease }}"),
         "the script must be told when the Release is flagged as a pre-release"
+    );
+}
+
+fn text<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
+    value.get(key).and_then(Value::as_str)
+}
+
+const PACKAGE_JSON: &str = include_str!("../../../package.json");
+const BUDGETS: &str = include_str!("../../../budgets.yaml");
+
+/// The release tail: `major-tag`'s final step reports budgets.yaml's `release-tail`
+/// budgets, after the tag has moved, and nothing reads its result: no job needs
+/// `major-tag`, and the step neither continues on error (so an over figure shows red) nor
+/// writes outputs. Its tools are pinned: onevcs at the release dero-skills a73a309's
+/// create-repo pins, onebudgetspec at package.json's pin. The shell this asserts is the one
+/// `tools/ci-journeys/tests/release-tail.test.mjs` runs over recorded host answers.
+/// The install step is held here by shape rather than run by that journey: running it
+/// needs the npm registry, which an offline suite cannot reach. What it installs is
+/// what the journey already drives: onebudgetspec at the pin asserted below, which the
+/// journey runs from the workspace's node_modules, and onevcs, the host boundary the
+/// journey doubles, whose pinned 0.57.6 answers were checked against the recordings.
+#[test]
+fn the_release_tail_is_the_last_step_of_major_tag_and_nothing_reads_it() {
+    let workflow = workflow();
+    let jobs = workflow
+        .get("jobs")
+        .and_then(Value::as_object)
+        .expect("release.yml has jobs");
+    for (id, job) in jobs {
+        let needs: Vec<&str> = match job.get("needs") {
+            Some(Value::String(need)) => vec![need.as_str()],
+            Some(Value::Array(needs)) => needs.iter().filter_map(Value::as_str).collect(),
+            _ => vec![],
+        };
+        assert!(
+            !needs.contains(&"major-tag"),
+            "{id} depends on the release tail's job"
+        );
+    }
+    let job = &jobs["major-tag"];
+    for (scope, level) in [
+        ("contents", "write"),
+        ("actions", "read"),
+        ("pull-requests", "read"),
+    ] {
+        assert_eq!(
+            job["permissions"].get(scope).and_then(Value::as_str),
+            Some(level),
+            "the tail reads runs, jobs and pull requests"
+        );
+    }
+    let steps = job["steps"].as_array().expect("major-tag has steps");
+    let names: Vec<&str> = steps.iter().filter_map(|step| text(step, "name")).collect();
+    assert_eq!(
+        names[names.len() - 3..],
+        [
+            MOVE_MAJOR_TAG,
+            "Install onevcs and onebudgetspec for the release tail",
+            "Report the release-tail budgets"
+        ],
+        "the tail runs after the tag has moved, last"
+    );
+    let tail = steps.last().unwrap();
+    assert_eq!(
+        text(tail, "run"),
+        Some("onebudgetspec check budgets.yaml --label release-tail")
+    );
+    assert_eq!(text(tail, "shell"), Some("bash"));
+    assert_eq!(
+        tail["env"]
+            .as_object()
+            .map(|env| env.keys().collect::<Vec<_>>()),
+        Some(vec![&"GH_TOKEN".to_string()])
+    );
+    assert_eq!(text(&tail["env"], "GH_TOKEN"), Some("${{ github.token }}"));
+    for key in ["continue-on-error", "id", "if"] {
+        assert!(tail.get(key).is_none(), "the tail step's {key}");
+    }
+    let package: Value = serde_json::from_str(PACKAGE_JSON).expect("package.json is JSON");
+    let pin = package["devDependencies"]["@onebudgetspec/cli"]
+        .as_str()
+        .expect("package.json pins onebudgetspec");
+    let install = text(&steps[steps.len() - 2], "run").expect("the install step runs");
+    let words: Vec<&str> = install.split_whitespace().collect();
+    for package in [
+        format!("@onebudgetspec/cli@{pin}"),
+        "onevcs-cli@0.57.6".to_string(),
+    ] {
+        assert!(
+            words.contains(&package.as_str()),
+            "{install} installs {package}"
+        );
+    }
+    let budgets: Value = release::yaml::from_str(BUDGETS).expect("budgets.yaml is YAML");
+    let tail_budgets: Vec<(&str, Vec<&str>)> = budgets["budgets"]
+        .as_array()
+        .expect("budgets.yaml lists budgets")
+        .iter()
+        .filter(|budget| {
+            budget["labels"]
+                .as_array()
+                .is_some_and(|labels| labels.iter().any(|label| label == "release-tail"))
+        })
+        .map(|budget| {
+            (
+                budget["id"].as_str().unwrap(),
+                budget["command"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|part| part.as_str().unwrap())
+                    .collect(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        tail_budgets,
+        [
+            (
+                "crozier-ci-check-time",
+                vec![
+                    "bash",
+                    "scripts/actions-budget-figures.sh",
+                    "longest-job",
+                    "--stage",
+                    "pr"
+                ]
+            ),
+            (
+                "crozier-ci-job-count",
+                vec![
+                    "bash",
+                    "scripts/actions-budget-figures.sh",
+                    "job-count",
+                    "--stage",
+                    "pr"
+                ]
+            ),
+            (
+                "crozier-pr-read-requests",
+                vec![
+                    "bash",
+                    "scripts/actions-budget-figures.sh",
+                    "pr-read-requests"
+                ]
+            ),
+        ]
     );
 }
