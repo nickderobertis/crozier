@@ -1909,9 +1909,12 @@ class RegionUnionReport:
                     or ":" in file
                 ):
                     raise ValueError(f"{path}: region file must be a repository-relative Rust source")
-                parsed.append(
-                    ReachedRegion(file, number(start_line), number(start_column), number(end_line), number(end_column))
+                reached = ReachedRegion(
+                    file, number(start_line), number(start_column), number(end_line), number(end_column)
                 )
+                if (reached.start_line, reached.start_column) > (reached.end_line, reached.end_column):
+                    raise ValueError(f"{path}: a region must end at or after where it starts")
+                parsed.append(reached)
             if parsed != sorted(set(parsed)):
                 raise ValueError(f"{path}: regions must be sorted and unique")
             return tuple(parsed)
@@ -1961,6 +1964,9 @@ class RegionUnionReportTest(unittest.TestCase):
             variants.append(raw)
             raw = json.loads(original)
             raw["both_only"] = [["src/ir.rs", 1]]
+            variants.append(raw)
+            raw = json.loads(original)
+            raw["both_only"] = [["src/ir.rs", 9, 4, 9, 1]]
             variants.append(raw)
             raw = json.loads(original)
             raw["handlers"] = ["not-a-handler"]
