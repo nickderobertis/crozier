@@ -265,7 +265,7 @@ fn a_pull_request_push_runs_exactly_the_governed_lanes() {
         // At or above what each lane's records on main show.
         let ceiling = match id.as_str() {
             "lint" => 30,
-            "test-linux" => 150,
+            "test-linux" => 240,
             "test-windows" => 150,
             "test-macos" => 150,
             other => panic!("{other} is not a lane"),

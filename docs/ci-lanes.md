@@ -10,7 +10,7 @@ workflow, reusable call and matrix leg against it).
 | Lane | Limit | Runs |
 | --- | --- | --- |
 | `lint` | 30 min | Release guard, pull request title, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), judged lint over the diff, visual docs |
-| `test-linux` | 150 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
+| `test-linux` | 240 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
 | `test-windows` | 150 min | Offline projects, SDK environments, install and smoke |
 | `test-macos` | 150 min | Offline projects, SDK environments, install and smoke |
 
@@ -28,7 +28,9 @@ has too: a whole-graph change's `ci-test` step alone took 84 minutes in run
 90, so a cold one needs about 110. On 2026-11-08 broad pull requests took about 95 minutes on
 Linux, 77 to more than 90 on Windows and more than 120 on macOS; the old 90-minute Windows limit
 cancelled #790 and #792, and the old 120-minute macOS limit cancelled #792, with nothing failed.
-Both limits now match Linux's. Mac's stands until that lane has a warm result
+The old 150-minute Linux limit cancelled #793 the same day: its main
+tier ran about 60 minutes and its final census-fallback, corpus-match and live-e2e step more
+than 78 before the cut-off. Windows and macOS are now at 150 and Linux at 240. Mac's stands until that lane has a warm result
 cache (main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
 decision) or the follow-up on the cold Mac leg is resolved.
 
