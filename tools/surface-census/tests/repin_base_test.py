@@ -242,9 +242,14 @@ def lookup(
 def test_the_no_token_guard_sees_gh_ask_for_a_bus_once_the_variable_is_removed(tmp_path: Path) -> None:
     env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN")} | no_login_env(tmp_path)
     del env["DBUS_SESSION_BUS_ADDRESS"]
-    subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, timeout=30)
-    if not (tmp_path / "bus-guard/dbus-launch.called").exists():
+    called = tmp_path / "bus-guard/dbus-launch.called"
+    run = subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, text=True, timeout=30)
+    assert not run.stdout.strip(), "with an empty GH_CONFIG_DIR, gh found a login to send to the real API"
+    if not called.exists():
         pytest.skip("this gh asks for no session bus even without the variable, so none can leak")
+    assert len(called.read_text(encoding="utf-8").splitlines()) == 1, (
+        "gh asked the recording dbus-launch more than once"
+    )
 
 
 # llmlint: ignore-end[shell_test_tiers_stay_split]
