@@ -55,6 +55,8 @@
         "{workspaceRoot}/scripts/install.sh",
         "{workspaceRoot}/tools/fern-goldens/weekly.py",
         "{workspaceRoot}/release-plz.toml",
+        "{workspaceRoot}/budgets.yaml",
+        "{workspaceRoot}/package.json",
         "{workspaceRoot}/src/yaml.rs"
       ]
     },

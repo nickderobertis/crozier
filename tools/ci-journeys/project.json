@@ -46,7 +46,7 @@
       "options": {
         "commands": [
           "cargo nextest run --locked -p crozier-ci-journeys",
-          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs tools/ci-journeys/tests/release-guard.test.mjs tools/ci-journeys/tests/selection.test.mjs"
+          "node --test tools/ci-journeys/tests/gate.test.mjs tools/ci-journeys/tests/ci-tier.test.mjs tools/ci-journeys/tests/boundaries.test.mjs tools/ci-journeys/tests/release-guard.test.mjs tools/ci-journeys/tests/release-tail.test.mjs tools/ci-journeys/tests/selection.test.mjs"
         ],
         "parallel": false
       },
@@ -72,6 +72,8 @@
         "{workspaceRoot}/scripts/release-branch-guard.mjs",
         "{workspaceRoot}/scripts/actions-budget-figures.sh",
         "{workspaceRoot}/scripts/reference-copies.json",
+        "{workspaceRoot}/budgets.yaml",
+        "{workspaceRoot}/.github/governance.json",
         "{workspaceRoot}/Cargo.toml",
         "{workspaceRoot}/Cargo.lock",
         "{workspaceRoot}/pyproject.toml",

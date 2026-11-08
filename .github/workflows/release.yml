@@ -6,7 +6,11 @@
 #   * publishes the crate to crates.io (when CARGO_REGISTRY_TOKEN is set), and
 #   * builds PyPI wheels + sdist and publishes them (when PYPI_TOKEN is set),
 #   * then, last, moves the floating major tag (`v0`) the GitHub Action's
-#     consumers pin onto this release (`major-tag`).
+#     consumers pin onto this release (`major-tag`), and
+#   * as that job's final step, reports budgets.yaml's `release-tail` budgets: this
+#     release's CI figures, measured by scripts/actions-budget-figures.sh from onevcs's
+#     read-only answers. Reporting only: an over figure turns that step red with its
+#     breakdown in the log, after everything has published, and nothing reads its result.
 #
 # Every install surface must construct the SAME archive/.sha256 name this produces
 # (crozier-<tag>-<target>.tar.gz, .zip on Windows); see scripts/install.sh and the
@@ -468,9 +472,12 @@ jobs:
     runs-on: ubuntu-latest
     # Force-updating a tag is a write to refs/tags, and the only write this job
     # makes; a tag the GITHUB_TOKEN pushes triggers no workflow, so this cannot
-    # re-enter the release.
+    # re-enter the release. The release tail's reads (the release, its pull
+    # requests and the runs and jobs that carried them) need only read access.
     permissions:
       contents: write
+      actions: read
+      pull-requests: read
     steps:
       # Full history and every tag: the script decides whether this release is
       # the newest one with its major, which a shallow checkout cannot answer.
@@ -482,3 +489,18 @@ jobs:
           # `true` for a Release flagged as a pre-release, whatever its tag.
           PRERELEASE: ${{ github.event.release.prerelease }}
         run: bash scripts/update-major-tag.sh --tag "$GITHUB_REF_NAME" --prerelease "$PRERELEASE"
+      # The release tail: onevcs at the release dero-skills a73a309's create-repo pins,
+      # onebudgetspec at the version package.json pins. Last, so the tag and artifacts
+      # above are already published whatever it reports; no job needs this one.
+      - name: Install onevcs and onebudgetspec for the release tail
+        shell: bash
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund --prefix "$RUNNER_TEMP/release-tail" onevcs-cli@0.57.6 @onebudgetspec/cli@0.1.3
+          echo "$RUNNER_TEMP/release-tail/node_modules/.bin" >> "$GITHUB_PATH"
+      # Every figure reads the answers the first one saved under RUNNER_TEMP, so each GitHub
+      # read is made once; a figure over its line or missing its data fails this step.
+      - name: Report the release-tail budgets
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: onebudgetspec check budgets.yaml --label release-tail
