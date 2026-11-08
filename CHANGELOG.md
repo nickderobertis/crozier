@@ -4,6 +4,10 @@ All notable changes to this project are documented here. This file is maintained
 by [release-plz](https://github.com/release-plz/release-plz) from Conventional
 Commit messages; do not edit released sections by hand.
 
+## [0.0.161]
+
+- DO NOT MERGE: guard-compliant demonstration release candidate.
+
 ## [Unreleased]
 
 ## [0.0.160](https://github.com/nickderobertis/crozier/compare/v0.0.159...v0.0.160) - 2026-11-08
