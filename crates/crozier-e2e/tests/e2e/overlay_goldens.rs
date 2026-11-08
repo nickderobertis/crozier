@@ -103,8 +103,6 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
-            // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This enum-sensitive real witness is proven in both modes through the existing overlay engine.
-            "adyen-capital",
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literals proofs extend the existing corpus overlay inventory and subprocess gate; this task cannot split the shared e2eReads family into another project.
             "happy-hamster",
             "seldon-wrapper",
