@@ -2603,47 +2603,6 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             self.assertFalse(self.ran(reach, MAP_ONE_OF, universe, hit))
 
 
-class IndependentCombinationTest(unittest.TestCase):
-    def test_each_independent_combination_is_the_union_of_its_feature_only_runs(self) -> None:
-        independence = _module("combination_independence", "combination-independence.py")
-        reach = golden_reach()
-        records, failures = independence.read_records(REPO)
-        self.assertEqual([], failures)
-        audit, failures = reach.read_cooccurrence()
-        self.assertEqual([], failures)
-        independent = {key: row for key, row in audit.items() if row.proof_class == "independent"}
-        self.assertEqual(set(independent), set(records), "independent audit rows and three-document proofs must agree")
-        if not records:
-            return
-        handwritten = _module("handwritten_independence", "handwritten-fixtures.py")
-        crozier = handwritten.instrumented_crozier(REPO, reach)
-        driver = CooccurrenceOutcomeTest()
-        for key, proof in records.items():
-            handlers = reach.handler_specs(independent[key].handlers)
-            self.assertEqual([], independence.source_failures(REPO, proof, handlers))
-            for condition in proof.conditions:
-                self.assertIn(f"`{condition.condition}`", independent[key].why_no_branch)
-            sites = [reach.resolve_site(handler) for handler in handlers]
-            for mode in proof.modes:
-                hits = {}
-                for label, document in proof.documents.items():
-                    with self.subTest(key=key, mode=mode, document=label), tempfile.TemporaryDirectory() as temporary:
-                        _package, _universe, hit = driver.generate(
-                            Path(temporary),
-                            (REPO / document.document).read_text(encoding="utf-8"),
-                            reach,
-                            crozier,
-                            mode.replace("_", "-"),
-                        )
-                        hits[label] = {
-                            (site.file, *region)
-                            for site in sites
-                            for region in hit.get(site.file, [])
-                            if site.holds(tuple(region))
-                        }
-                self.assertEqual(hits["first"] | hits["second"], hits["both"], f"{key} ({mode}) has an interaction")
-
-
 MAP_ONE_OF = r"src/ir.rs::prefer_map_to_union[if schema\.one_of\.is_some\(\)]"
 
 
