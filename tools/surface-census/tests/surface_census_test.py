@@ -8953,7 +8953,7 @@ class SourceSelectionTests(unittest.TestCase):
             write_fixture(root, "listy", "- openapi: 3.0.3\n")
             completed = run("--vendored-only", "--fixtures-root", str(root))
         self.assertEqual(1, completed.returncode, completed.stdout)
-        self.assertIn("is not an OpenAPI document", completed.stderr)
+        self.assertIn("listy/openapi.yml is not an OpenAPI document", completed.stderr)
         self.assertIn("root is not a mapping", completed.stderr)
 
     def test_a_fixtures_root_without_the_corpus_manifest_is_refused(self) -> None:
@@ -9255,8 +9255,8 @@ class YamlSubsetTests(unittest.TestCase):
                 completed = run("--vendored-only", "--fixtures-root", str(root))
                 self.assertNotEqual(0, completed.returncode, completed.stdout)
                 self.assertIn("malformed", completed.stderr)
-                # A source outside the repo is named by its own path, in the host's spelling.
-                self.assertIn(f"{Path('malformed', 'openapi.yml')}:{line}: ", completed.stderr)
+                # A source outside the repo is named by its own path, with forward slashes on every host.
+                self.assertIn(f"malformed/openapi.yml:{line}: ", completed.stderr)
                 self.assertIn(expected, completed.stderr)
                 self.assertNotIn("Traceback", completed.stderr)
 
@@ -23119,7 +23119,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             continue
         with path.open(encoding="utf-8", newline="") as stream:
             reader = csv.DictReader(stream, delimiter="\t")
-            assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path}: triage header"
+            assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path.as_posix()}: triage header"
             for raw in reader:
                 row = HandedOffTriageRecord.parse(raw)
                 name = row.root_cause
