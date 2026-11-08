@@ -10242,6 +10242,13 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
         documents.write_text("".join(lines), encoding="utf-8")
         self.assertTrue(any("unknown status 'registerd'" in f for f in self.tool.failures(self.root)))
 
+    def test_a_truncated_contract_row_is_refused(self) -> None:
+        contract = self.root / self.tool.RECORD / "contract.tsv"
+        lines = contract.read_text(encoding="utf-8").splitlines(keepends=True)
+        lines[1] = lines[1].rsplit("\t", 1)[0] + "\n"
+        contract.write_text("".join(lines), encoding="utf-8")
+        self.assertTrue(any("contract.tsv line 2" in f for f in self.tool.failures(self.root)))
+
     def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],

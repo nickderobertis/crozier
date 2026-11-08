@@ -266,7 +266,14 @@ def contract(root: Path) -> dict[str, str]:
             raise ValueError(f"contract.tsv columns must be {CONTRACT_COLUMNS}")
         for row in reader:
             key, selector = row["key"], row["selector"]
-            if None in row or not key or not selector or key in selectors:
+            if (
+                None in row
+                or None in row.values()
+                or not row["census_status"]
+                or not key
+                or not selector
+                or key in selectors
+            ):
                 raise ValueError(f"contract.tsv line {reader.line_num}: a key must appear once, with a selector")
             problem = CENSUS.selector_error(selector)
             if problem:
