@@ -67,6 +67,7 @@ members = [
     "tools/fern-references-check",
     "tools/fern-refusals",
     "tools/fern-refusals-strict",
+    "tools/golden-reach",
     "tools/llmlint",
     "tools/llmlint-resolution",
     "tools/python-workspace",
@@ -211,6 +212,7 @@ omit = ["*/tests/*", "*/.venv/*", "*/site-packages/*"]
 "fern-references-check" = ["tools/fern-references-check/", "*/tools/fern-references-check/"]
 "fern-refusals" = ["tools/fern-refusals/", "*/tools/fern-refusals/"]
 "fern-refusals-strict" = ["tools/fern-refusals-strict/", "*/tools/fern-refusals-strict/"]
+"golden-reach" = ["tools/golden-reach/", "*/tools/golden-reach/"]
 "llmlint" = ["tools/llmlint/", "*/tools/llmlint/"]
 "llmlint-resolution" = ["tools/llmlint-resolution/", "*/tools/llmlint-resolution/"]
 "python-workspace" = ["tools/python-workspace/", "*/tools/python-workspace/"]

@@ -107,7 +107,7 @@
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/justfile",
-        "{workspaceRoot}/**/*.md",
+        "{workspaceRoot}/docs/licence-rescreening.md",
         "{workspaceRoot}/docs/openapi-surface/*.md",
         "pythonTooling"
       ],

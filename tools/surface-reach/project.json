@@ -23,7 +23,7 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/tools/surface-census/*",
+        "censusScripts",
         "crateTests",
         "e2eSource",
         "generator",
@@ -50,12 +50,14 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/tools/surface-census/*",
+        "censusScripts",
         "crateTests",
         "e2eSource",
         "generator",
         "{workspaceRoot}/docs/openapi-surface/*.md",
         "{workspaceRoot}/docs/openapi-surface/*.tsv",
+        "{workspaceRoot}/docs/openapi-surface/combination-open-unions/**/*",
+        "{workspaceRoot}/docs/openapi-surface/combination-interaction-controls/**/*",
         "{workspaceRoot}/docs/openapi-surface/handwritten/**/*",
         "{workspaceRoot}/docs/openapi-surface/probe-expected/MANIFEST.tsv",
         "{workspaceRoot}/docs/openapi-surface/**/*.md",
@@ -65,7 +67,9 @@
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
         "{workspaceRoot}/justfile",
-        "pythonTooling"
+        "pythonTooling",
+        "{workspaceRoot}/docs/openapi-surface/combination-independence.toml",
+        "{workspaceRoot}/docs/openapi-surface/witness-search-operation-combinations/controls/**/*"
       ],
       "parallelism": false,
       "outputs": [
@@ -86,7 +90,7 @@
       "cache": true,
       "inputs": [
         "default",
-        "{workspaceRoot}/tools/surface-census/*",
+        "censusScripts",
         "{workspaceRoot}/tools/witness-search/*.py",
         "{workspaceRoot}/tools/corpus/*.py",
         "{workspaceRoot}/scripts/**/*",
@@ -134,7 +138,7 @@
         "default",
         "crateSource",
         "generator",
-        "{workspaceRoot}/tools/surface-census/*",
+        "censusScripts",
         "{workspaceRoot}/tools/surface-census/tests/surface_census_test.py",
         "e2eSource",
         "{workspaceRoot}/tests/fixtures/**/*",
@@ -234,7 +238,7 @@
         "default",
         "crateSource",
         "generator",
-        "{workspaceRoot}/tools/surface-census/*.py",
+        "censusScripts",
         "{workspaceRoot}/tools/corpus/*.py",
         "{workspaceRoot}/justfile",
         "pythonTooling",

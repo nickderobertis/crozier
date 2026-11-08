@@ -8,10 +8,12 @@
 - **Paths are repository-relative**: read the tree through `repo_root()`;
   `include_str!` paths are relative to this crate (`../../../docs/...`).
 - **The harness runs other projects' tooling** — `corpus_sources.py` for every
-  golden, the census and hand-written gates, the Action's scripts. Each is an
+  golden, the census and hand-written gates. Each is an
   input of this project's `test` (`e2eReads` in `nx.json`): a script the suite
   starts running must be added there, or a change to it never reruns the
   suite; one it stops running comes out, or a change to it reruns the suite
   for nothing.
 - `#[ignore]` is not a tiering mechanism here; the `sdk_env_*` journeys (PyPI)
   are the one exception, run by the `sdk-env` and `runtime` projects.
+- Tooling surfaces with no golden behind them belong in `crates/crozier-tool-journeys`, so an
+  edit to them does not pay for this suite.

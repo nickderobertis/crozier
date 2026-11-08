@@ -21,21 +21,6 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
-/// The "Migrating from Fern" guide's workflow, run from its own code blocks.
-#[cfg(unix)]
-#[path = "e2e/migration.rs"]
-mod migration;
-
-/// The GitHub Action's scripts (`tools/github-action/`) over a real `crozier`.
-#[cfg(unix)]
-#[path = "e2e/action.rs"]
-mod action;
-
-/// `scripts/update-major-tag.sh`, the release's floating major tag.
-#[cfg(unix)]
-#[path = "e2e/major_tag.rs"]
-mod major_tag;
-
 /// `enum-type: literals` through the binary.
 #[path = "e2e/literals.rs"]
 mod literals;
@@ -67,6 +52,11 @@ mod examples_docs;
 /// unexplained bytes beside each of those shapes that still fail.
 #[path = "e2e/naming_wire.rs"]
 mod naming_wire;
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These certified-tree replays use the same compiled-binary suite and parity engine as every corpus and hand-written golden comparison (crates/crozier-e2e/AGENTS.md); splitting the shared golden edge belongs to the existing generator-replay graph follow-up, while this declaration keeps the new runner on that established boundary.
+#[path = "e2e/combination_independence.rs"]
+mod combination_independence;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 /// The worked-example value causes the fixture-only witness searches handed
@@ -3359,11 +3349,12 @@ fn residual_null_example_is_absent_from_matching_request_snippets() {
     );
 }
 
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Two `crozier compare` runs over the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Two `crozier compare` runs over the retained harbor-parcel-requests authored diagnostic, a diagnostic gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let fixture =
+        repo_root().join("docs/fern-measurements/combination-diagnostics/harbor-parcel-requests");
     let source = fixture.join("openapi.yml");
     let expected = fixture.join("fern-expected");
     let (code, result) = compare_with_certified_reference(&source, &expected, None);
@@ -3380,11 +3371,12 @@ fn declared_reference_examples_reject_an_adjacent_unexplained_argument() {
     );
 }
 
-// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over edited copies of the committed harbor-parcel-requests hand-written fixture, a hand-written gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] `crozier compare` over edited copies of the retained harbor-parcel-requests authored diagnostic, a diagnostic gate on the crozier-e2e edge every golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 #[cfg(unix)]
 #[test]
 fn declared_reference_example_restrictions_hold_through_compare() {
-    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-parcel-requests");
+    let fixture =
+        repo_root().join("docs/fern-measurements/combination-diagnostics/harbor-parcel-requests");
     let original: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(fixture.join("openapi.yml")).unwrap())
             .unwrap();
@@ -8335,52 +8327,6 @@ fn crozier_base_path_alias_matches_and_wins() {
         !client.contains("edition"),
         "the literal base path alone lifted a parameter: {client}"
     );
-}
-
-/// The gate's name keeps it out of the golden-only tier, which selects every
-/// `*matches_fern_output*` test in `tools/surface-census/fixtures-coverage.sh` and in
-/// `tools/surface-census/openapi-surface-census.py`, whose selector `tools/surface-census/golden-reach.py`
-/// imports: a hand-written fixture never counts as a corpus golden.
-#[test]
-fn the_handwritten_gate_is_outside_the_golden_only_tier() {
-    let root = repo_root();
-    for (script, selector) in [
-        (
-            "tools/surface-census/fixtures-coverage.sh",
-            "test(/matches_fern_output/)",
-        ),
-        (
-            "tools/surface-census/openapi-surface-census.py",
-            "GOLDEN_TEST = re.compile(r\"matches_fern_output\")",
-        ),
-        (
-            "tools/surface-census/golden-reach.py",
-            "_census_module().GOLDEN_TEST",
-        ),
-    ] {
-        let text = std::fs::read_to_string(root.join(script)).expect("tier selector script");
-        assert!(
-            text.contains(selector),
-            "{script} no longer selects the golden-only tier by {selector}; re-read this check"
-        );
-    }
-    let source = std::fs::read_to_string(root.join("crates/crozier-e2e/tests/e2e.rs"))
-        .expect("this suite's source");
-    let declared: Vec<&str> = source
-        .lines()
-        .filter_map(|line| line.strip_prefix("fn "))
-        .filter_map(|rest| rest.split('(').next())
-        .collect();
-    assert!(
-        declared.contains(&"handwritten_fixtures_match_fern_goldens"),
-        "the hand-written gate is no longer declared under the name the contract gives it"
-    );
-    for name in declared.iter().filter(|name| name.contains("handwritten")) {
-        assert!(
-            !name.contains("matches_fern_output"),
-            "{name} would join the golden-only tier, which never reads a hand-written fixture"
-        );
-    }
 }
 
 /// The contract states the pin in prose and in its `evidence.toml` example; the
@@ -14831,9 +14777,11 @@ fn cyclonedx_transparency_exchange_matches_fern_output() {
     assert_committed_corpus_matches(&CYCLONEDX_TRANSPARENCY_EXCHANGE);
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This existing corpus journey now proves its interaction witness in both enum modes through the shared overlay engine. All corpus golden comparisons use this project's established edge (crates/crozier-e2e/AGENTS.md); splitting the whole family is outside this operation-combination proof.
 #[test]
 fn adyen_capital_matches_fern_output() {
     assert_committed_corpus_matches(&ADYEN_CAPITAL);
+    overlay_goldens::assert_literals_match(&ADYEN_CAPITAL);
 }
 
 #[test]

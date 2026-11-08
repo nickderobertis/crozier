@@ -98,6 +98,36 @@
       "dependsOn": [
         "^build"
       ]
+    },
+    "lint-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-e2e --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads"
+      ],
+      "metadata": {
+        "description": "This crate's cfg(unix)/cfg(windows) gates compile different code on Windows, so clippy there reads code `lint` on Linux never sees (tools/ci/lanes.json)."
+      }
+    },
+    "lint-macos": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-e2e --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "e2eReads"
+      ],
+      "metadata": {
+        "description": "cfg(target_os = \"linux\") in the e2e suite compiles different code on macOS, so clippy there reads code `lint` on Linux never sees (tools/ci/lanes.json)."
+      }
     }
   }
 }

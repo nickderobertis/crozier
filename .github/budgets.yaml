@@ -1,5 +1,7 @@
 schema_version: 1
 budgets:
+  # Preserves the existing one-slot Mac contract beside the all-platform crozier-ci-job-count
+  # budget cleanup registers; this deliberate overlap avoids silently relaxing Mac scheduling.
   - id: crozier-macos-jobs-per-run
     description: >-
       Maximum resolved Mac runner instances per workflow run over 12 event

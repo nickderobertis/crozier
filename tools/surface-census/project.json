@@ -81,6 +81,7 @@
         "{workspaceRoot}/tools/fern-references-check/pyproject.toml",
         "{workspaceRoot}/tools/fern-refusals/pyproject.toml",
         "{workspaceRoot}/tools/fern-refusals-strict/pyproject.toml",
+        "{workspaceRoot}/tools/golden-reach/pyproject.toml",
         "{workspaceRoot}/tools/llmlint/pyproject.toml",
         "{workspaceRoot}/tools/llmlint-resolution/pyproject.toml",
         "{workspaceRoot}/tools/python-workspace/pyproject.toml",
@@ -112,108 +113,11 @@
         "{workspaceRoot}/.coverage-data/surface-census/test-reuse"
       ]
     },
-    "test-reach": {
-      "metadata": {
-        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 89 s (measured with `just nx run surface-census:test-reach --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
-      },
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "uv run --locked --all-packages coverage erase",
-          "uv run --locked --all-packages coverage run tools/surface-census/tests/golden_reach_test.py",
-          "uv run --locked --all-packages coverage combine --quiet"
-        ],
-        "parallel": false,
-        "env": {
-          "COVERAGE_FILE": ".coverage-data/surface-census/test-reach/.coverage"
-        }
-      },
-      "cache": true,
-      "inputs": [
-        "default",
-        "crateTests",
-        "e2eSource",
-        "generator",
-        "{workspaceRoot}/docs/openapi-surface/**/*",
-        "{workspaceRoot}/docs/openapi-surface-coverage.md",
-        "{workspaceRoot}/docs/fern-limitations.md",
-        "{workspaceRoot}/docs/fern-refusals/**/*",
-        "{workspaceRoot}/docs/corpus-licensing.md",
-        "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/tools/corpus/corpus_sources.py",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
-        "witnessIndexReads",
-        "{workspaceRoot}/tools/witness-search/witness-scrape-wide.py",
-        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
-        "{workspaceRoot}/tools/witness-search/witness-search-local-census.py",
-        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
-        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
-        "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile",
-        "pythonTooling"
-      ],
-      "outputs": [
-        "{workspaceRoot}/.coverage-data/surface-census/test-reach"
-      ]
-    },
-    "test-reach-portable": {
-      "metadata": {
-        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 102 s (measured with `just nx run surface-census:test-reach-portable --skipNxCache`). A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are."
-      },
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "uv run --locked --all-packages coverage erase",
-          "uv run --locked --all-packages coverage run tools/surface-census/tests/golden_reach_test.py",
-          "uv run --locked --all-packages coverage combine --quiet"
-        ],
-        "parallel": false,
-        "env": {
-          "PYTHONPATH": "tools/surface-census/tests/without-posix-modules",
-          "COVERAGE_FILE": ".coverage-data/surface-census/test-reach-portable/.coverage"
-        }
-      },
-      "cache": true,
-      "inputs": [
-        "default",
-        "crateTests",
-        "e2eSource",
-        "generator",
-        "{workspaceRoot}/docs/openapi-surface/**/*",
-        "{workspaceRoot}/docs/openapi-surface-coverage.md",
-        "{workspaceRoot}/docs/fern-limitations.md",
-        "{workspaceRoot}/docs/fern-refusals/**/*",
-        "{workspaceRoot}/docs/corpus-licensing.md",
-        "{workspaceRoot}/tests/fixtures/**/*",
-        "{workspaceRoot}/tools/corpus/corpus_sources.py",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
-        "witnessIndexReads",
-        "{workspaceRoot}/tools/witness-search/witness-scrape-wide.py",
-        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
-        "{workspaceRoot}/tools/witness-search/witness-search-local-census.py",
-        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
-        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
-        "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile",
-        "pythonTooling"
-      ],
-      "outputs": [
-        "{workspaceRoot}/.coverage-data/surface-census/test-reach-portable"
-      ]
-    },
-    "test-fixtures-coverage": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "test-reach",
-        "test-reach-portable"
-      ]
-    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
         "test-census",
-        "test-reuse",
-        "test-fixtures-coverage"
+        "test-reuse"
       ]
     },
     "lint-boundaries": {

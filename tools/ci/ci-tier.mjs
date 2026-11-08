@@ -1,23 +1,22 @@
 #!/usr/bin/env node
 // Which tier of the gate a CI run owes, derived from the GitHub event.
 //
-//   node tools/ci/ci-tier.mjs [--print] [-- GATE-ARGS...]
+//   node tools/ci/ci-tier.mjs [--print] [--recipe=NAME] [-- GATE-ARGS...]
 //
-// crozier batches releases: release-plz's release pull request accumulates the
-// merges since the last tag, and a person merges it. So (references/ci.md,
-// "Where the broader tier runs"):
-//   * the release pull request (head branch `release-plz-*`) runs the broader
-//     tier — the one sweep each release gets before it ships;
-//   * every other pull request runs the affected tier against the merge base
-//     of its head with its base branch;
-//   * a push to main runs the affected tier against the commit the push
-//     replaced (`github.event.before`, passed as CROZIER_PUSH_BEFORE);
-//   * anything else, a base branch it cannot refresh from origin, or a base this
-//     checkout cannot resolve, runs the broader tier and says why — a scoped run
-//     must never pass as a full one.
+// CI runs on pull requests, each from an explicitly derived base:
+//   * every pull request runs the affected tier against the merge base of its
+//     head with its base branch. A release pull request is no exception: its lint
+//     lane holds it to version and changelog edits (scripts/release-branch-guard.mjs)
+//     and its test lanes skip it;
+//   * anything else (a manual diagnostic run), a base branch it cannot refresh from
+//     origin, or a base this checkout cannot resolve, runs the broader tier and says
+//     why: a scoped run must never pass as a full one.
 //
 // `--print` prints the decision as JSON and runs nothing (the workflow-contract
-// test drives it that way); otherwise it runs `just check` with the decision.
+// test drives it that way); otherwise it runs the named recipe (`check` by default)
+// with the decision: `lane-lint`, `lane-test` and `lane-budgets-host` are what the
+// lint and test lanes call through `just ci-lint`, `just ci-test` and
+// `just ci-budgets-host`.
 import { spawnSync } from "node:child_process";
 import { existsSync, realpathSync } from "node:fs";
 import { dirname, resolve } from "node:path";
@@ -25,7 +24,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const NAME = "ci-tier";
-const RELEASE_BRANCH_PREFIX = "release-plz-";
+const RECIPES = new Set(["check", "lane-lint", "lane-test", "lane-budgets-host"]);
 const SHA40 = /^[0-9a-f]{40}$/;
 const BRANCH = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 
@@ -39,10 +38,6 @@ export function decide(env = process.env) {
   const event = env.GITHUB_EVENT_NAME ?? "";
   const sweep = (reason) => ({ tier: "sweep", reason });
   if (event === "pull_request") {
-    const head = env.GITHUB_HEAD_REF ?? "";
-    if (head.startsWith(RELEASE_BRANCH_PREFIX)) {
-      return sweep(`release pull request (${head}): the broader tier runs at release-prep`);
-    }
     const baseRef = env.GITHUB_BASE_REF ?? "";
     if (!BRANCH.test(baseRef) || baseRef.includes("..")) {
       return sweep(`pull request with no usable base branch ('${baseRef}')`);
@@ -57,19 +52,6 @@ export function decide(env = process.env) {
     }
     return { tier: "affected", base: base.out, reason: `pull request: merge base with origin/${baseRef}` };
   }
-  if (event === "push") {
-    const before = env.CROZIER_PUSH_BEFORE ?? "";
-    if (!SHA40.test(before) || /^0+$/.test(before)) {
-      return sweep(`push with no previous commit to compare against ('${before}')`);
-    }
-    if (!git(["cat-file", "-e", `${before}^{commit}`]).ok) {
-      git(["fetch", "--no-tags", "--quiet", "origin", before]);
-      if (!git(["cat-file", "-e", `${before}^{commit}`]).ok) {
-        return sweep(`push: the replaced commit ${before} is not in this checkout`);
-      }
-    }
-    return { tier: "affected", base: before, reason: "push: the commit the push replaced" };
-  }
   return sweep(`event '${event || "(none)"}' has no change to scope against`);
 }
 
@@ -78,10 +60,12 @@ function main() {
   const split = argv.indexOf("--");
   const own = split < 0 ? argv : argv.slice(0, split);
   const gateArgs = split < 0 ? [] : argv.slice(split + 1);
-  const unknown = own.filter((arg) => arg !== "--print");
-  if (unknown.length > 0) {
-    console.error(`${NAME}: unknown argument '${unknown[0]}'`);
-    console.error(`${NAME}: usage: node tools/ci/ci-tier.mjs [--print] [-- GATE-ARGS...]`);
+  const recipeArg = own.find((arg) => arg.startsWith("--recipe="));
+  const recipe = recipeArg ? recipeArg.slice("--recipe=".length) : "check";
+  const unknown = own.filter((arg) => arg !== "--print" && arg !== recipeArg);
+  if (unknown.length > 0 || !RECIPES.has(recipe)) {
+    console.error(`${NAME}: unknown argument '${unknown[0] ?? recipeArg}'`);
+    console.error(`${NAME}: usage: node tools/ci/ci-tier.mjs [--print] [--recipe=${[...RECIPES].join("|")}] [-- GATE-ARGS...]`);
     process.exit(2);
   }
   // On Windows `just` is started through a shell, which would read these before
@@ -99,7 +83,7 @@ function main() {
   }
   console.log(`${NAME}: ${decision.tier} — ${decision.reason}`);
   const env = { ...process.env };
-  const args = ["check", ...(decision.tier === "sweep" ? ["--sweep"] : []), ...gateArgs];
+  const args = [recipe, ...(decision.tier === "sweep" ? ["--sweep"] : []), ...gateArgs];
   if (decision.tier === "affected") env.NX_BASE = decision.base;
   else delete env.NX_BASE;
   const run = spawnSync("just", args, { cwd: ROOT, env, stdio: "inherit", shell: process.platform === "win32" });

@@ -70,6 +70,20 @@
         "crateTestRun",
         "{workspaceRoot}/scripts/share-instrumented-build.mjs"
       ]
+    },
+    "lint-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "crateTests",
+        "crateTestReads"
+      ],
+      "metadata": {
+        "description": "This crate's cfg(unix)/cfg(windows) gates compile different code on Windows, so clippy there reads code `lint` on Linux never sees (tools/ci/lanes.json)."
+      }
     }
   }
 }
