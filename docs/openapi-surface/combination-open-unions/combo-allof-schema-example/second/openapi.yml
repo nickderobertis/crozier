@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Dispatch archive",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/dispatches": {
+      "get": {
+        "operationId": "getDispatch",
+        "responses": {
+          "200": {
+            "description": "dispatch",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Dispatch"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Dispatch": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "example": {
+          "label": "morning"
+        }
+      }
+    }
+  }
+}

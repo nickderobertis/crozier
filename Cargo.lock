@@ -202,6 +202,7 @@ dependencies = [
  "clap",
  "fancy-regex",
  "indexmap",
+ "libc",
  "minijinja",
  "regex-syntax",
  "schemars",

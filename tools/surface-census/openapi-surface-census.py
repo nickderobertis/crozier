@@ -2922,7 +2922,7 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/ir.rs::base_type_ref",
         "that scalar union members still convert to the same primitive kinds",
-        "2ed5d7c0ead13fa7",
+        "bc4f2c4324cbd25b",
     ),
     PortPin(
         "last_composed_variant",

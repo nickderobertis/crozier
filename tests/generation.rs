@@ -15263,8 +15263,9 @@ fn union_shape_fixtures(repo: &Path) -> Vec<String> {
 }
 
 /// A union fixture's document and its python-enums Fern tree. A fixture kept
-/// as a `measured` probe (its arm left the site table) lives with the probes;
-/// every other one is a hand-written fixture.
+/// as a `measured` probe (its arm left the site table) lives with the probes,
+/// a retired fallback lives with the combination diagnostics, and every other
+/// one is a hand-written fixture.
 fn union_fixture(repo: &Path, name: &str) -> (PathBuf, PathBuf) {
     let probe = repo
         .join("docs/openapi-surface/probes")
@@ -15275,7 +15276,14 @@ fn union_fixture(repo: &Path, name: &str) -> (PathBuf, PathBuf) {
             repo.join("docs/openapi-surface/probe-expected").join(name),
         );
     }
-    let fixture = repo.join("docs/openapi-surface/handwritten").join(name);
+    let retained = repo
+        .join("docs/fern-measurements/combination-diagnostics")
+        .join(name);
+    let fixture = if retained.is_dir() {
+        retained
+    } else {
+        repo.join("docs/openapi-surface/handwritten").join(name)
+    };
     (fixture.join("openapi.yml"), fixture.join("fern-expected"))
 }
 

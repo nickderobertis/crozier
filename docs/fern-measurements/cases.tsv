@@ -180,7 +180,7 @@ union-literals/harbor-nullable-inline-object	docs/openapi-surface/probes/harbor-
 union-literals/kitchen-nested-mapping-target	docs/openapi-surface/probes/kitchen-nested-mapping-target.yml	literals	packaged	fern-expected:docs/openapi-surface/probe-expected/kitchen-nested-mapping-target
 union-literals/library-union-shared-fields	docs/openapi-surface/probes/library-union-shared-fields.yml	literals	packaged	fern-expected:docs/openapi-surface/probe-expected/library-union-shared-fields
 union-literals/museum-titled-array-items	docs/openapi-surface/probes/museum-titled-array-items.yml	literals	packaged	fern-expected:docs/openapi-surface/probe-expected/museum-titled-array-items
-union-literals/orchard-dispatch-schemas	docs/openapi-surface/handwritten/orchard-dispatch-schemas/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/orchard-dispatch-schemas/fern-expected
+union-literals/orchard-dispatch-schemas	docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas/fern-expected
 union-literals/pharmacy-nullable-scalar-unions	docs/openapi-surface/probes/pharmacy-nullable-scalar-unions.yml	literals	packaged	fern-expected:docs/openapi-surface/probe-expected/pharmacy-nullable-scalar-unions
 union-literals/quiz-nullable-response-union	docs/openapi-surface/handwritten/quiz-nullable-response-union/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/quiz-nullable-response-union/fern-expected
 union-literals/survey-map-value-union	docs/openapi-surface/handwritten/survey-map-value-union/openapi.yml	literals	packaged	fern-expected:docs/openapi-surface/handwritten/survey-map-value-union/fern-expected
@@ -345,3 +345,9 @@ handed-off/remeasure/enum-member-digit-separator	docs/fern-measurements/handed-o
 handed-off/remeasure/enum-member-digit-separator/expected-literals	docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/openapi.yml	literals	packaged	fern-expected:docs/fern-measurements/handed-off/remeasure/enum-member-digit-separator/fern-expected
 handed-off/remeasure/typed-single-ref-allof-alias	docs/fern-measurements/handed-off/remeasure/typed-single-ref-allof-alias/openapi.yml	python-enums	packaged	-
 handed-off/remeasure/ignored-multipart-query-collision	docs/fern-measurements/handed-off/remeasure/ignored-multipart-query-collision/openapi.yml	python-enums	packaged	-
+operation-independence/error-multiple-media-first	docs/fern-measurements/operation-independence/error-multiple-media-first/openapi.yml	python-enums	packaged	-
+operation-independence/error-multiple-media-second	docs/fern-measurements/operation-independence/error-multiple-media-second/openapi.yml	python-enums	packaged	-
+operation-independence/error-multiple-media-both	docs/fern-measurements/operation-independence/error-multiple-media-both/openapi.yml	python-enums	packaged	-
+operation-independence/header-array-enum-second	docs/fern-measurements/operation-independence/header-array-enum-second/openapi.yml	python-enums	packaged	-
+combination-diagnostics/harbor-parcel-requests	docs/fern-measurements/combination-diagnostics/harbor-parcel-requests/openapi.yml	python-enums	packaged	-
+combination-diagnostics/orchard-dispatch-schemas	docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas/openapi.yml	python-enums	packaged	-
