@@ -17,6 +17,9 @@ files:
   # List committed files that shouldn't be judged (lock files, generated output).
   exclude:
     - "**/.git/**"
+    # A verbatim upstream copy, held by its checksum in scripts/reference-copies.json: an
+    # in-file directive would break the copy, and its fixes belong in dero-skills.
+    - "scripts/actions-budget-figures.sh"
     # Vendored Fern output — the golden target, not crozier's own code, so it is
     # never LLM-judged. This top-level exclude is the single source of truth (the
     # diff-scoped run self-discovers files and honors it; needs llmlint >= 0.3.12).

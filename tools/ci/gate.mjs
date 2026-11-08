@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // The gate: one recipe (`just check`), two tiers, chosen by a flag.
 //
-//   node tools/ci/gate.mjs [--sweep] [--projects=p,q] [--exclude=p,q] -- nx run-many --targets=a,b
+//   node tools/ci/gate.mjs [--sweep] [--every-project] [--include-promoted] [--platform=host|linux|macos|windows]
+//     [--projects=p,q] [--exclude=p,q] -- nx run-many --targets=a,b
 //
 // The recipe names the Nx command it runs (`just check`, `just test` and `just
 // lint` differ only in their target list); this driver validates the base,
@@ -16,11 +17,21 @@
 // The selection compares that base with the working tree, so uncommitted work
 // is included. Projects tagged `tier:promoted` (the suites that leave the
 // affected tier because of what they touch) run only when `--projects` names
-// them, which is how CI runs each one on the runner holding its toolchain.
+// them, which is how CI's test lanes run each one under its own toolchain and
+// credential policy, or when `--include-promoted` asks for all of them, which is how
+// the lint lane reads every affected project once.
+//
+// `--platform` holds the selection to what a platform owes: a project carrying
+// `platform:<name>` tags runs only on those platforms, so which platform proves what
+// is the project's own declaration, never a list here or in a workflow.
 //
 // The broader tier (`--sweep`) runs the same targets over every project,
 // promoted ones included, with the cache skipped: it exists to catch what
 // affected detection or a stale cache could miss.
+//
+// `--every-project` selects like the broader tier but keeps the cache, promoted
+// projects still needing `--projects` or `--include-promoted`: main's cache writer
+// (ci-caches.yml) replays what an earlier push proved and adds what this one changed.
 //
 // Exit status: 0 when every selected target passed (or none was selected); 2
 // for an invocation it does not take — an unknown flag, a list that is not
@@ -33,7 +44,8 @@
 // completion line. Nx's own output goes to a
 // log that is printed in full when a target fails.
 import { taskTimings } from "./gate-timing.mjs";
-import { execFileSync, spawnSync } from "node:child_process";
+import { serveResults } from "./result-cache.mjs";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -43,6 +55,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TOOL = "gate";
 const PROMOTED_TAG = "tier:promoted";
 const DEFAULT_BASE_REF = "origin/main";
+const NX_PANIC = "Panic in async function";
 
 function die(message, action, code = 1) {
   console.error(`${TOOL}: ${message}`);
@@ -55,7 +68,11 @@ const USAGE = `usage: just check|test|lint [--sweep] [--projects=p,q] [--exclude
                the base is NX_BASE (a ref name or commit SHA) or the merge base
                of HEAD with ${DEFAULT_BASE_REF}
   --sweep      broader tier: every project, promoted tiers included, uncached
+  --every-project  every project, through the cache; no base is compared against
   --plan       print the selection and the Nx command, and run nothing
+  --include-promoted  promoted tiers too, when the change reaches them
+  --platform   only what this platform owes (host, linux, macos or windows),
+               by each project's platform:<name> tags
   --projects   only these projects (promoted ones run only when named)
   --exclude    never these projects
   Each list takes project names and tag:<tag> patterns.`;
@@ -70,9 +87,11 @@ const PROJECT_NAME = new RegExp(`^${PROJECT}$`);
 
 // The one command a recipe may hand over: `nx run-many --targets=<names>`.
 const COMMAND = /^--targets=(.+)$/;
+const PLATFORMS = new Map([["linux", "linux"], ["darwin", "macos"], ["win32", "windows"]]);
+const PLATFORM_TAG = "platform:";
 
 function parseArgs(argv) {
-  const options = { sweep: false, plan: false, targets: undefined, projects: undefined, exclude: [] };
+  const options = { sweep: false, everyProject: false, plan: false, includePromoted: false, platform: undefined, targets: undefined, projects: undefined, exclude: [] };
   const split = argv.indexOf("--");
   const command = split < 0 ? [] : argv.slice(split + 1);
   const targets = command.length === 3 && command[0] === "nx" && command[1] === "run-many" && COMMAND.exec(command[2]);
@@ -91,16 +110,31 @@ function parseArgs(argv) {
       }
       return v.split(",");
     };
-    if ((flag === "--sweep" || flag === "--plan") && inline !== undefined) {
+    if ((flag === "--sweep" || flag === "--every-project" || flag === "--plan" || flag === "--include-promoted") && inline !== undefined) {
       die(`${flag} takes no value, not '${inline}'`, USAGE, 2);
     }
     switch (flag) {
       case "--sweep":
         options.sweep = true;
         break;
+      case "--every-project":
+        options.everyProject = true;
+        break;
       case "--plan":
         options.plan = true;
         break;
+      case "--include-promoted":
+        options.includePromoted = true;
+        break;
+      case "--platform": {
+        const named = inline ?? argv[++i];
+        const platform = named === "host" ? PLATFORMS.get(process.platform) : named;
+        if (![...PLATFORMS.values()].includes(platform)) {
+          die(`--platform takes host, linux, macos or windows, not '${named ?? ""}'`, USAGE, 2);
+        }
+        options.platform = platform;
+        break;
+      }
       case "--projects":
         options.projects = value();
         break;
@@ -116,6 +150,7 @@ function parseArgs(argv) {
         die(`unknown argument '${arg}'`, USAGE, 2);
     }
   }
+  if (options.sweep && options.everyProject) die("--sweep skips the cache and --every-project keeps it; pass one", USAGE, 2);
   return options;
 }
 
@@ -253,9 +288,22 @@ function ensureRustToolchain() {
   return output;
 }
 
-function main() {
+/** What a child printed and how it ended, with this process's event loop still running. */
+function runCaptured(command, args, options) {
+  return new Promise((done) => {
+    const child = spawn(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
+    const out = [];
+    const err = [];
+    child.stdout.on("data", (chunk) => out.push(chunk));
+    child.stderr.on("data", (chunk) => err.push(chunk));
+    child.on("error", (error) => done({ status: 1, stdout: "", stderr: `${error.message}\n` }));
+    child.on("close", (status) => done({ status, stdout: Buffer.concat(out).toString("utf8"), stderr: Buffer.concat(err).toString("utf8") }));
+  });
+}
+
+async function main() {
   const options = parseArgs(process.argv.slice(2));
-  const base = options.sweep ? undefined : resolveBase();
+  const base = options.sweep || options.everyProject ? undefined : resolveBase();
   const tags = projectTags();
   const expand = (list) =>
     list.flatMap((entry) => {
@@ -278,6 +326,9 @@ function main() {
   if (options.sweep) {
     candidates = Object.keys(tags);
     tierLine = "broader tier (--sweep): every project, cache skipped";
+  } else if (options.everyProject) {
+    candidates = Object.keys(tags);
+    tierLine = "every project (--every-project), through the cache";
   } else {
     candidates = nxJson(["show", "projects", "--affected", `--base=${base.sha}`, "--json"]);
     const unknown = Array.isArray(candidates) ? candidates.filter((name) => typeof name !== "string" || !Object.hasOwn(tags, name)) : [];
@@ -290,15 +341,21 @@ function main() {
     tierLine = `affected tier against ${base.sha.slice(0, 12)} (${base.how})`;
   }
   const named = options.projects ? new Set(options.projects) : undefined;
+  const everyPromoted = options.sweep || options.includePromoted;
+  const owedHere = (name) => {
+    const owners = tags[name].filter((tag) => tag.startsWith(PLATFORM_TAG));
+    return !options.platform || owners.length === 0 || owners.includes(`${PLATFORM_TAG}${options.platform}`);
+  };
   const selected = candidates
-    .filter((name) => (named ? named.has(name) : options.sweep || !tags[name].includes(PROMOTED_TAG)))
+    .filter((name) => (named ? named.has(name) : everyPromoted || !tags[name].includes(PROMOTED_TAG)))
     .filter((name) => !options.exclude.includes(name))
+    .filter(owedHere)
     .sort();
-  const skippedPromoted = named || options.sweep ? [] : candidates.filter((name) => tags[name].includes(PROMOTED_TAG)).sort();
+  const skippedPromoted = named || everyPromoted ? [] : candidates.filter((name) => tags[name].includes(PROMOTED_TAG)).sort();
   console.log(`${TOOL}: ${tierLine}`);
   console.log(`${TOOL}: projects: ${selected.join(", ") || "(none)"}`);
   if (skippedPromoted.length > 0) {
-    console.log(`${TOOL}: promoted, run by their own CI legs: ${skippedPromoted.join(", ")}`);
+    console.log(`${TOOL}: promoted, run by their own lane steps: ${skippedPromoted.join(", ")}`);
   }
   if (selected.length === 0) {
     console.log(`${TOOL}: ok (nothing to run)`);
@@ -320,8 +377,22 @@ function main() {
   mkdirSync(logDir, { recursive: true });
   const log = join(logDir, `gate-${process.pid}.log`);
   const profile = `.nx/logs/gate-${process.pid}.profile.json`;
-  const run = spawnSync(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, NX_PROFILE: profile }, encoding: "utf8", maxBuffer: 1024 * 1024 * 1024, shell: process.platform === "win32" });
-  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
+  // Set by CI's lanes: results earlier runners left, which this run may replay and add to.
+  const results = process.env.CROZIER_RESULT_CACHE && !options.sweep ? await serveResults(resolve(ROOT, process.env.CROZIER_RESULT_CACHE)) : undefined;
+  // Asynchronous, unlike every other child here: this process serves the cache Nx calls.
+  const nxRun = () => runCaptured(nxBin(), args, { cwd: ROOT, env: { ...NX_ENV, ...results?.env, NX_PROFILE: profile }, shell: process.platform === "win32" });
+  let run = await nxRun();
+  // Nx 23's tracing layer can panic inside a native async call, cache calls included, and then
+  // Nx exits 1 whatever its targets did: lint saw it print success first. It says nothing about
+  // the targets, so one rerun answers for them: what passed replays and what failed fails again.
+  let panicked = "";
+  if (run.status !== 0 && `${run.stdout}${run.stderr}`.includes(NX_PANIC)) {
+    console.error(`${TOOL}: Nx itself panicked (${NX_PANIC}); rerunning once, and that run's status decides`);
+    panicked = `${run.stdout}${run.stderr}\n${TOOL}: Nx itself panicked; the rerun follows\n`;
+    run = await nxRun();
+  }
+  await results?.stop();
+  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${panicked}${run.stdout}${run.stderr}`);
   let timing;
   let timingError = false;
   try {
@@ -350,4 +421,4 @@ function main() {
 
 // Node names its main module by its real path, so the path it was started by is
 // resolved the same way: through macOS's /var -> /private/var, say.
-if (process.argv[1] && existsSync(process.argv[1]) && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+if (process.argv[1] && existsSync(process.argv[1]) && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) await main();

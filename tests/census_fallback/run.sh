@@ -68,7 +68,7 @@ case "${1:-}" in
   parsers)
     search_pin="$(pinned tools/surface-census/golden-reach-search.py)"
     recensus_pin="$(pinned tools/witness-search/witness-search-recensus.py)"
-    CROZIER_REQUIRE_CORPUS=1 suite "$search_pin" python3 tools/surface-census/tests/golden_reach_test.py
+    CROZIER_REQUIRE_CORPUS=1 suite "$search_pin" python3 tools/golden-reach/tests/golden_reach_test.py
     suite "$recensus_pin" python3 tools/witness-search/tests/witness_search_recensus_test.py
     ;;
   pin)

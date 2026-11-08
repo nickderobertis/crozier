@@ -461,11 +461,11 @@ def test_the_ci_jobs_packaged_base_is_found_by_the_verb_on_a_later_commit(
     history: tuple[Path, list[str]], github: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """The job's own command (`golden-reach.py base --package`, which `just golden-reach-base` runs) packages
-    `base.json.gz`; uploaded under the name `ci.yml` gives it, the verb at a child commit with no artifact of
+    `base.json.gz`; uploaded under the name its workflow gives it, the verb at a child commit with no artifact of
     its own takes it. Only the instrumented measurement is stood in for: its stores are proven elsewhere."""
     root, (c1, _c2, c3, c4) = history
-    workflow = (REPO / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    job = workflow.split("\n  golden-reach-base:\n", 1)[1].split("\n  gate:\n", 1)[0]
+    workflow = (REPO / ".github" / "workflows" / "golden-reach-base.yml").read_text(encoding="utf-8")
+    job = workflow.split("\n  golden-reach-base:\n", 1)[1]
     assert 'run: just golden-reach-base "$RUNNER_TEMP/golden-reach-base"' in job
     assert "path: ${{ runner.temp }}/golden-reach-base/base.json.gz" in job
     assert "name: golden-reach-base-${{ github.sha }}" in job

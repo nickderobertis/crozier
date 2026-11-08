@@ -66,7 +66,7 @@ suite.
   from the venv (`ruamel.yaml`, the census fallback's PEP 723 pin, whose absence
   a suite asserts; `fern`, the SDK the runtime suite generates). Every
   `ty: ignore` and `cast` carries its reason on the line above.
-- **ty checks for the host's platform**, so the Windows check leg sees Windows'
+- **ty checks for the host's platform**, so the Windows test lane sees Windows'
   stubs: a POSIX-only call (`os.geteuid`, `fcntl`, `signal.alarm`) needs a
   `sys.platform` or `os.name` test ty can narrow on, not `getattr` or a `None`
   module. Before pushing such code, run `uv run ty check --python-platform win32`.

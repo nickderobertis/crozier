@@ -197,7 +197,7 @@ checksum = "7f8f80099a98041a3d1622845c271458a2d73e688351bf3cb999266764b81d48"
 
 [[package]]
 name = "crozier"
-version = "0.0.159"
+version = "0.0.160"
 dependencies = [
  "clap",
  "fancy-regex",
@@ -271,6 +271,17 @@ dependencies = [
 name = "crozier-pool-maintenance"
 version = "0.0.0"
 dependencies = [
+ "serde_json",
+ "tempfile",
+]
+
+[[package]]
+name = "crozier-tool-journeys"
+version = "0.0.0"
+dependencies = [
+ "crozier",
+ "serde",
+ "serde-saphyr",
  "serde_json",
  "tempfile",
 ]

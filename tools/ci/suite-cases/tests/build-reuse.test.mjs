@@ -5,7 +5,7 @@
 // over crozier's real source.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
+import { appendFileSync, cpSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, lutimesSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
@@ -27,7 +27,7 @@ function cargoArgs(command, ...extra) {
 
 function cargo(cwd, args, env = {}) {
   const { CARGO_TARGET_DIR: _outerTarget, ...inherited } = process.env;
-  const run = spawnSync("cargo", args, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, env: { ...inherited, ...env } });
+  const run = spawnSync("cargo", args, { cwd, encoding: "utf8", maxBuffer: 256 * 1024 * 1024, env: { ...inherited, CARGO_TERM_COLOR: "never", ...env } });
   assert.equal(run.status, 0, `cargo ${args.join(" ")}\n${run.stdout?.slice(-2000)}\n${run.stderr?.slice(-4000)}`);
   return run;
 }
@@ -137,6 +137,30 @@ test("the gate's and the reach recipes' instrumented runs share one compile and 
     assert.doesNotMatch(coverage(gate), /Compiling lantern/, "and the gate takes that rebuild");
     const report = cargo(root, ["llvm-cov", "report", "--fail-under-lines", "50"], gate);
     assert.match(report.stdout, /lib\.rs/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("a link a restored cache brought back is made afresh, and the build it names survives", () => {
+  const root = mkdtempSync(join(tmpdir(), "crozier-shared-build-"));
+  try {
+    const shared = join(root, "target/llvm-cov-target/debug");
+    const link = join(root, "target/llvm-cov-gate/debug");
+    mkdirSync(join(shared, "deps"), { recursive: true });
+    writeFileSync(join(shared, "deps/kept"), "the shared build\n");
+    mkdirSync(dirname(link), { recursive: true });
+    // Already naming the shared tree, as a restored archive leaves it.
+    symlinkSync(shared, link, "junction");
+    // Dated as an archive dates what it restores; an inode number can be reused.
+    const restored = new Date("2001-01-01T00:00:00Z");
+    lutimesSync(link, restored, restored);
+    const run = spawnSync(process.execPath, [SHARE], { encoding: "utf8", env: { ...process.env, CROZIER_SHARED_BUILD_ROOT: root } });
+    assert.equal(run.status, 0, run.stderr);
+    assert.ok(lstatSync(link).isSymbolicLink());
+    assert.ok(lstatSync(link).mtimeMs > restored.getTime(), "the restored link is not trusted");
+    assert.ok(statSync(link).isDirectory());
+    assert.equal(readFileSync(join(link, "deps/kept"), "utf8"), "the shared build\n");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

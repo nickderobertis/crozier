@@ -3987,7 +3987,7 @@ class ArmSearchNetworkStageTests(_StageScratch):
         self.assertEqual("", listing["gone.yaml"])
 
 
-WITHOUT_POSIX = REPO / "tools" / "surface-census" / "tests" / "without-posix-modules"
+WITHOUT_POSIX = Path(__file__).resolve().parent / "without-posix-modules"
 # The maintenance scripts `check` drives on every OS, Windows included, so each must
 # import without the POSIX-only modules; the rate-limit guard comes in through the
 # ones that search.
@@ -4120,7 +4120,7 @@ class WorkerCountTests(unittest.TestCase):
         ):
             with self.subTest(script=script, argv=argv):
                 run = subprocess.run(
-                    [sys.executable, str(Path(__file__).resolve().parents[1] / script), *argv],
+                    [sys.executable, str(REPO / "tools" / "surface-census" / script), *argv],
                     cwd=REPO,
                     capture_output=True,
                     text=True,
