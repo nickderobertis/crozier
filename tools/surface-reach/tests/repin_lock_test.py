@@ -136,6 +136,49 @@ def _stand_in_cargo(shims: Path, marker: Path) -> None:
     cargo.chmod(0o755)
 
 
+def _base_env(scratch: Path) -> dict[str, str]:
+    """No credential and no session bus: an ambient `GITHUB_REPOSITORY`, as in CI, takes `reach_base` to the real
+    `gh auth token`, so it finds an empty login to carry to no API, and a `dbus-launch` that only records a call."""
+    guard = scratch / "bus-guard"
+    (scratch / "empty-gh-config").mkdir(parents=True)
+    guard.mkdir()
+    (guard / "dbus-launch").write_text('#!/bin/sh\necho "$@" >> "$0.called"\nexit 1\n', encoding="utf-8")
+    (guard / "dbus-launch").chmod(0o755)
+    ambient = (
+        "GITHUB_TOKEN",
+        "GH_TOKEN",
+        "GH_HOST",
+        "GH_ENTERPRISE_TOKEN",
+        "GITHUB_ENTERPRISE_TOKEN",
+        "CI",
+        "VIRTUAL_ENV",
+    )
+    return {k: v for k, v in os.environ.items() if k not in ambient} | {
+        "DBUS_SESSION_BUS_ADDRESS": "disabled:",
+        "GH_CONFIG_DIR": str(scratch / "empty-gh-config"),
+        "PATH": f"{guard}{os.pathsep}{os.environ['PATH']}",
+    }
+
+
+@pytest.mark.skipif(not sys.platform.startswith("linux") or shutil.which("gh") is None, reason="no bus can start here")
+def test_the_entry_points_environment_gives_gh_no_login_and_no_session_bus(tmp_path: Path) -> None:
+    called = tmp_path / "bus-guard/dbus-launch.called"
+
+    def gh_prints_a_token(env: dict[str, str]) -> bool:
+        return bool(subprocess.run(["gh", "auth", "token"], env=env, capture_output=True, timeout=30).stdout.strip())
+
+    env = _base_env(tmp_path)
+    control = {key: value for key, value in env.items() if key != "DBUS_SESSION_BUS_ADDRESS"}
+    login_found = gh_prints_a_token(control)
+    assert not login_found, "with the entry points' environment, gh found a login to send to the real API"
+    if not called.exists():
+        pytest.skip("this gh asks for no session bus even without the variable, so none can leak")
+    called.unlink()
+    login_found = gh_prints_a_token(env)
+    assert not login_found, "with the entry points' environment, gh found a login to send to the real API"
+    assert not called.exists(), "with the entry points' environment, gh autolaunched a session bus"
+
+
 def _wait_line(process: subprocess.Popen[str], deadline: float) -> list[str]:
     """Stderr up to the line saying the process waits for the lock (or to its exit)."""
     assert process.stderr is not None
@@ -160,7 +203,7 @@ def test_every_entry_point_waits_for_the_lock_and_builds_only_once_it_is_release
     xdg = tmp_path / "xdg"
     lock = xdg / "crozier" / "instrumented-measurement.lock"
     lock.parent.mkdir(parents=True)
-    base_env = {k: v for k, v in os.environ.items() if k not in ("GITHUB_TOKEN", "GH_TOKEN", "CI", "VIRTUAL_ENV")}
+    base_env = _base_env(tmp_path)
     processes: dict[str, tuple[subprocess.Popen[str], Path]] = {}
     with lock.open("a+") as held:
         fcntl.flock(held.fileno(), fcntl.LOCK_EX)
@@ -194,3 +237,4 @@ def test_every_entry_point_waits_for_the_lock_and_builds_only_once_it_is_release
         assert process.returncode != 0, (
             f"{entry}: the cargo stand-in fails the build, so the entry point must report it"
         )
+    assert not (tmp_path / "bus-guard/dbus-launch.called").exists(), "an entry point's gh autolaunched a session bus"
