@@ -1,14 +1,14 @@
-// CI's tier routing: the selection `just ci-check` makes, fed the GitHub
+// CI's tier routing: the selection `just ci-lint` and `just ci-test` make, fed the GitHub
 // events the workflows run on, over a scratch repository with an origin/main.
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { existsSync, rmSync } from "node:fs";
 import { basename, join } from "node:path";
 import { test } from "node:test";
-import { commitChange, git, ran, scratchWorkspace, write } from "./support.mjs";
+import { commitChange, git, project, ran, scratchWorkspace, write } from "./support.mjs";
 
 function decide(root, env) {
-  const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GITHUB_") && key !== "CROZIER_PUSH_BEFORE"));
+  const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith("GITHUB_")));
   const run = spawnSync(process.execPath, [join(root, "tools/ci/ci-tier.mjs"), "--print"], {
     cwd: root, env: { ...clean, ...env }, encoding: "utf8",
   });
@@ -16,13 +16,13 @@ function decide(root, env) {
   return JSON.parse(run.stdout);
 }
 
-test("the release-plz release pull request runs the broader tier", (t) => {
+test("a release-plz pull request is scoped like any other: its lint lane holds its content", (t) => {
   const root = scratchWorkspace(t);
+  const base = git(root, "rev-parse", "HEAD");
   const decision = decide(root, {
     GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "release-plz-2026-10-07T12-00-00Z", GITHUB_BASE_REF: "main",
   });
-  assert.equal(decision.tier, "sweep");
-  assert.match(decision.reason, /release pull request/);
+  assert.deepEqual(decision, { tier: "affected", base, reason: "pull request: merge base with origin/main" });
 });
 
 test("any other pull request runs the affected tier against the merge base with its base branch", (t) => {
@@ -54,12 +54,14 @@ test("a pull request whose base branch cannot be refreshed runs the broader tier
   assert.match(decision.reason, /could not refresh origin\/main from origin/);
 });
 
-test("a push to main runs the affected tier against the commit the push replaced", (t) => {
+test("a push has no change to scope against: CI does not run on one, and if asked it sweeps", (t) => {
   const root = scratchWorkspace(t);
   const before = git(root, "rev-parse", "HEAD");
   commitChange(root, "a/src.txt", "merged\n");
-  const decision = decide(root, { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: before });
-  assert.deepEqual(decision, { tier: "affected", base: before, reason: "push: the commit the push replaced" });
+  const decision = decide(root, { GITHUB_EVENT_NAME: "push" });
+  assert.equal(decision.tier, "sweep");
+  assert.match(decision.reason, /event 'push' has no change to scope against/);
+  assert.notEqual(decision.base, before);
 });
 
 test("a pull request sharing no history with its base branch runs the broader tier", (t) => {
@@ -71,27 +73,10 @@ test("a pull request sharing no history with its base branch runs the broader ti
   assert.match(decision.reason, /no merge base between HEAD and origin\/main in this checkout/);
 });
 
-test("a push whose replaced commit this checkout lacks fetches it from origin and scopes against it", (t) => {
-  const root = scratchWorkspace(t);
-  // The replaced commit exists only on origin, as after a shallow checkout.
-  const elsewhere = join(root, "..", `${basename(root)}-elsewhere`);
-  t.after(() => rmSync(elsewhere, { recursive: true, force: true }));
-  git(root, "clone", "--quiet", git(root, "remote", "get-url", "origin"), elsewhere);
-  const before = commitChange(elsewhere, "b/src.txt", "only on origin\n");
-  git(elsewhere, "push", "--quiet", "origin", "HEAD:refs/heads/replaced");
-  assert.throws(() => git(root, "cat-file", "-e", `${before}^{commit}`));
-
-  const decision = decide(root, { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: before });
-  assert.deepEqual(decision, { tier: "affected", base: before, reason: "push: the commit the push replaced" });
-  git(root, "cat-file", "-e", `${before}^{commit}`);
-});
-
 test("an event with no derivable base runs the broader tier rather than a scoped one", (t) => {
   const root = scratchWorkspace(t);
   for (const env of [
-    { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: "0".repeat(40) },
-    { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: "not a sha" },
-    { GITHUB_EVENT_NAME: "push", CROZIER_PUSH_BEFORE: "f".repeat(40) },
+    { GITHUB_EVENT_NAME: "push" },
     { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "x", GITHUB_BASE_REF: "$(id)" },
     { GITHUB_EVENT_NAME: "workflow_dispatch" },
   ]) {
@@ -102,40 +87,63 @@ test("an event with no derivable base runs the broader tier rather than a scoped
 // The dispatch itself, through the recipe the workflows call: the tier it
 // chose, the base it hands the gate as NX_BASE, the arguments it forwards, and
 // the gate's status as its own.
-function ciCheck(root, args, env) {
+function ciLane(root, recipe, args, env) {
   const clean = Object.fromEntries(Object.entries(process.env).filter(([key]) =>
-    !key.startsWith("GITHUB_") && key !== "CROZIER_PUSH_BEFORE" && key !== "NX_BASE"));
-  const run = spawnSync("just", ["ci-check", ...args], {
+    !key.startsWith("GITHUB_") && !key.startsWith("NX_SELF_HOSTED_") && !["NX_BASE", "CROZIER_RESULT_CACHE"].includes(key)));
+  const run = spawnSync("just", [recipe, ...args], {
     cwd: root, env: { ...clean, NX_DAEMON: "false", NX_NO_CLOUD: "true", ...env }, encoding: "utf8",
     shell: process.platform === "win32",
   });
   return { status: run.status, stdout: run.stdout ?? "", output: `${run.stdout}${run.stderr}` };
 }
 
-test("ci-check runs the gate in the tier it chose, with its base and the arguments it was given", (t) => {
+test("each lane recipe runs its gate in the tier it chose, with its base and the arguments it was given", (t) => {
   const root = scratchWorkspace(t);
   const base = git(root, "rev-parse", "HEAD");
   commitChange(root, "a/src.txt", "feature\n");
 
-  const pr = ciCheck(root, [], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  const pr = ciLane(root, "ci-test", [], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
   assert.equal(pr.status, 0, pr.output);
   assert.match(pr.stdout, /ci-tier: affected — pull request: merge base with origin\/main/);
   assert.match(pr.stdout, new RegExp(`gate: affected tier against ${base.slice(0, 12)} \\(NX_BASE=${base}\\)`));
   assert.ok(ran(root, "a") && !ran(root, "b"), pr.output);
 
-  const release = ciCheck(root, ["--exclude=a"], {
-    GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "release-plz-2026-10-07T12-00-00Z", GITHUB_BASE_REF: "main",
-  });
-  assert.equal(release.status, 0, release.output);
-  assert.match(release.stdout, /gate: broader tier \(--sweep\)/);
-  assert.match(release.stdout, /gate: projects: b\n/);
-  assert.ok(ran(root, "b"), release.output);
+  rmSync(join(root, "ran-a"));
+  const narrowed = ciLane(root, "ci-test", ["--exclude=a"], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  assert.equal(narrowed.status, 0, narrowed.output);
+  assert.match(narrowed.stdout, /gate: projects: \(none\)/);
+  assert.ok(!ran(root, "a"), narrowed.output);
+
+  const dispatched = ciLane(root, "ci-test", ["--exclude=a"], { GITHUB_EVENT_NAME: "workflow_dispatch" });
+  assert.equal(dispatched.status, 0, dispatched.output);
+  assert.match(dispatched.stdout, /gate: broader tier \(--sweep\)/);
+  assert.match(dispatched.stdout, /gate: projects: b\n/);
+  assert.ok(ran(root, "b"), dispatched.output);
+});
+
+test("the lint lane reaches a promoted project's lint in the same step; the test lane leaves it to a named one", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, { "a/project.json": project("a", { tags: ["type:tier", "tier:promoted"], targets: {
+    test: { command: "node -e \"require('fs').writeFileSync('ran-a-test', '')\"" },
+    lint: { command: "node -e \"require('fs').writeFileSync('ran-a-lint', '')\"" },
+  } }) });
+  commitChange(root, "a/src.txt", "feature\n");
+  const env = { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" };
+  const linted = ciLane(root, "ci-lint", [], env);
+  assert.equal(linted.status, 0, linted.output);
+  assert.ok(ran(root, "a-lint") && !ran(root, "a-test"), linted.output);
+  const offline = ciLane(root, "ci-test", ["--exclude=tag:tier:promoted"], env);
+  assert.equal(offline.status, 0, offline.output);
+  assert.ok(!ran(root, "a-test"), offline.output);
+  const named = ciLane(root, "ci-test", ["--projects=tag:tier:promoted"], env);
+  assert.equal(named.status, 0, named.output);
+  assert.ok(ran(root, "a-test"), named.output);
 });
 
 test("a gate argument carrying shell syntax is refused before anything runs", (t) => {
   const root = scratchWorkspace(t);
   commitChange(root, "a/src.txt", "feature\n");
-  const refused = ciCheck(root, ["--projects=a;touch${IFS}pwned"], {
+  const refused = ciLane(root, "ci-test", ["--projects=a;touch${IFS}pwned"], {
     GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main",
   });
   assert.equal(refused.status, 2, refused.output);
@@ -145,29 +153,11 @@ test("a gate argument carrying shell syntax is refused before anything runs", (t
   assert.ok(!existsSync(join(root, "pwned")) && !ran(root, "a"), refused.output);
 });
 
-test("ci-check exits with the gate's own failure", (t) => {
+test("a lane recipe exits with the gate's own failure", (t) => {
   const root = scratchWorkspace(t);
   write(root, { "a/project.json": JSON.stringify({ name: "a", tags: ["type:tooling"], targets: { test: { command: "exit 3" } } }) });
   commitChange(root, "a/src.txt", "breaks\n");
-  const failed = ciCheck(root, [], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
+  const failed = ciLane(root, "ci-test", [], { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "feature/x", GITHUB_BASE_REF: "main" });
   assert.notEqual(failed.status, 0, failed.output);
   assert.match(failed.output, /gate: a target failed/);
-});
-
-// The scheduling classifier is a different decision from the release-prep
-// sweep: even mixed release-plz heads sweep Linux/Windows and owe the Mac lane.
-test("release-prep sweep and semantic Mac omission remain independent", (t) => {
-  const root = scratchWorkspace(t);
-  const base = git(root, "rev-parse", "HEAD");
-  const head = commitChange(root, "a/src.txt", "mixed release source edit\n");
-  const pr = { repository: { full_name: "nickderobertis/crozier" }, pull_request: {
-    head: { ref: "release-plz-test", repo: { full_name: "nickderobertis/crozier" } },
-    base: { repo: { full_name: "nickderobertis/crozier" } },
-  } };
-  write(root, { "event.json": JSON.stringify(pr) });
-  const env = { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "release-plz-test", GITHUB_BASE_REF: "main" };
-  assert.equal(decide(root, env).tier, "sweep");
-  const run = spawnSync(process.execPath, [join(root, ".github/macos-policy.mjs"), "classify", "--event", join(root, "event.json"), "--base", base, "--head", head], { cwd: root, env: { ...process.env, ...env }, encoding: "utf8" });
-  assert.equal(run.status, 0, run.stderr);
-  assert.equal(JSON.parse(run.stdout).macosRequired, true);
 });

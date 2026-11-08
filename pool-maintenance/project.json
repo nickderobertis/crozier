@@ -58,6 +58,22 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "bunx onebudgetspec check pool-maintenance/budgets.yaml --label host"
+      },
+      "parallelism": false,
+      "cache": false
+    },
+    "lint-windows": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo clippy -p crozier-pool-maintenance --all-targets --all-features --locked -- -D warnings"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo"
+      ],
+      "metadata": {
+        "description": "This crate's cfg(unix)/cfg(windows) gates compile different code on Windows, so clippy there reads code `lint` on Linux never sees (tools/ci/lanes.json)."
       }
     }
   }

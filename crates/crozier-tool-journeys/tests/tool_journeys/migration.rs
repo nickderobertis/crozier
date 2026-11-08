@@ -132,7 +132,8 @@ fn the_migration_guide_workflow_runs_as_written() {
         &in_repo(repo, spec),
     );
     copy_file(
-        &root().join("crates/crozier-e2e/tests/e2e/migration/fern-reference.sh"),
+        &root()
+            .join("crates/crozier-tool-journeys/tests/tool_journeys/migration/fern-reference.sh"),
         &in_repo(repo, command),
     );
     write(&repo.join("fern/generators.yml"), &generators_yml(true));

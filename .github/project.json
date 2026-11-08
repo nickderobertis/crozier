@@ -84,9 +84,6 @@
         ],
         "parallel": false
       },
-      "dependsOn": [
-        "budgets"
-      ],
       "cache": false,
       "inputs": [
         "default",

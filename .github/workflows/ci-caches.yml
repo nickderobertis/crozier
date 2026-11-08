@@ -1,0 +1,204 @@
+# Writes the main-scoped caches a pull request's lanes restore, because GitHub lets a pull
+# request read only its own ref's caches and its base branch's. A cache writer, not a check:
+# no pull request push starts it, nothing requires it, and each job's display name differs
+# from its lane's context. A job's id is the lane's, because the cache keys carry
+# `github.job`; tools/ci/tests/ci_workflow.rs holds the keys to the lanes' restore keys.
+#
+# Each job runs every project through the result cache, so a push pays only for what it
+# changed, and a run that follows a cold one still leaves a complete store.
+#
+# No Mac job: it would spend a Mac runner on every push to main, which
+# crozier-macos-runs-per-change (.github/budgets.yaml) holds to 2 per change, and the pull
+# request and release runs already spend both. So test-macos's first push on a pull request
+# starts cold.
+name: ci-caches
+
+on:
+  push:
+    branches: [main]
+
+# A newer push waits for the run in progress, which saves its caches, instead of cancelling it.
+concurrency:
+  group: ci-caches
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  CROZIER_RESULT_CACHE: .ci-results
+
+jobs:
+  lint:
+    name: main caches (lint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # Full history, as in the lanes: suites whose results these seed run over the same checkout.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: extractions/setup-just@v2
+      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
+      # installs it with bun, on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Bootstrap
+        run: just bootstrap
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .ci-results
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      # github-workflows:lint runs the workflow syntax checker.
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+      - name: Install workflow syntax checker
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+      # A red target must not cost the results the others proved: actions/cache saves only
+      # from a job that succeeded, and nothing gates on this run.
+      # llmlint: ignore-block[no_second_broader_sweep_over_an_already_gated_commit] Manager-ruled exception: the node's amendment requires this main-push cache writer, and running these targets on main is how main-scoped caches are produced, since a pull request's own results cannot reach that scope. A cache producer only: it is not a required check and gates no merge or release.
+      - name: Prove the lint targets into the cache
+        continue-on-error: true
+        run: just ci-caches-lint
+      # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]
+
+  # Limits are the lanes' measured transitional ones (ci.yml), which this offline subset fits.
+  test-linux:
+    name: main caches (test-linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      # Full history, as in the lanes: suites whose results these seed run over the same checkout.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: extractions/setup-just@v2
+      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
+      # installs it with bun, on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Bootstrap
+        run: just bootstrap
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .ci-results
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      # A red target must not cost the results the others proved: actions/cache saves only
+      # from a job that succeeded, and nothing gates on this run.
+      # llmlint: ignore-block[no_second_broader_sweep_over_an_already_gated_commit] Manager-ruled exception: the node's amendment requires this main-push cache writer, and running these targets on main is how main-scoped caches are produced, since a pull request's own results cannot reach that scope. A cache producer only: it is not a required check and gates no merge or release.
+      - name: Prove the test targets into the cache
+        continue-on-error: true
+        run: just ci-caches-test
+      # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]
+
+  test-windows:
+    name: main caches (test-windows)
+    runs-on: windows-latest
+    timeout-minutes: 90
+    steps:
+      - name: Enable Git long paths
+        if: runner.os == 'Windows'
+        run: git config --global core.longpaths true
+      # Full history, as in the lanes: suites whose results these seed run over the same checkout.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: extractions/setup-just@v2
+      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
+      # installs it with bun, on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      # `rustflags: ""` keeps the compiler flags every recipe builds with locally.
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          cache-key: ${{ github.job }}
+          rustflags: ""
+          matcher: false
+      # Prebuilt binaries, so `just bootstrap` finds them and skips building from source.
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
+      # uv provisions the locked Python workspace and the SDK venvs; its cache holds wheels only.
+      - uses: astral-sh/setup-uv@v8.3.2
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Bootstrap
+        run: just bootstrap
+      # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
+      - name: Key the results on this host
+        id: host
+        shell: bash
+        run: echo "key=$(node tools/ci/suite-cases/cache-key.mjs | node -e 'process.stdin.pipe(require("crypto").createHash("sha256")).on("finish",function(){console.log(this.digest("hex"))})')" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: .ci-results
+          key: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-${{ github.sha }}
+          restore-keys: nx-${{ github.job }}-${{ runner.os }}-${{ runner.arch }}-${{ steps.host.outputs.key }}-${{ hashFiles('bun.lock', 'Cargo.lock', 'uv.lock', 'rust-toolchain.toml', '.cargo/config.toml', '.ruff-version', '.github/workflows/ci.yml') }}-
+      # A red target must not cost the results the others proved: actions/cache saves only
+      # from a job that succeeded, and nothing gates on this run.
+      # llmlint: ignore-block[no_second_broader_sweep_over_an_already_gated_commit] Manager-ruled exception: the node's amendment requires this main-push cache writer, and running these targets on main is how main-scoped caches are produced, since a pull request's own results cannot reach that scope. A cache producer only: it is not a required check and gates no merge or release.
+      - name: Prove the test targets into the cache
+        continue-on-error: true
+        run: just ci-caches-test
+      # llmlint: ignore-end[no_second_broader_sweep_over_an_already_gated_commit]

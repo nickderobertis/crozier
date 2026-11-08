@@ -9,7 +9,7 @@ client's request/response *shaping* matches Fern — this proves the compiled cl
 actually talks to a server.
 
 It reaches npm (Prism) and PyPI (the venv), so it is promoted out of the
-affected tier and runs in CI's own required `live-e2e` leg.
+offline step and runs in the `test-linux` lane when affected.
 
 ## How it works
 

@@ -37,7 +37,7 @@ class ThePinMustInstall(unittest.TestCase):
         )
         self.assertNotEqual(0, result.returncode, result.stderr)
         self.assertIn(
-            f"census-fallback: python3 tools/surface-census/tests/golden_reach_test.py exited "
+            f"census-fallback: python3 tools/golden-reach/tests/golden_reach_test.py exited "
             f"{result.returncode} under {pin}",
             result.stderr,
         )

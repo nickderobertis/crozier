@@ -2,7 +2,7 @@
 //! metadata and security shape, `docs/github-action.md`'s inputs and outputs
 //! tables, the consumer example workflow the page embeds, and that example's
 //! own shape as a workflow. (The Action's behaviour is driven for real in
-//! `crates/crozier-e2e/tests/e2e/action.rs`; the recipe the example inlines is held to its docs
+//! `crates/crozier-tool-journeys/tests/tool_journeys/action.rs`; the recipe the example inlines is held to its docs
 //! page in `tests/fern_reference_recipe.rs`.)
 
 #[path = "../../../src/yaml.rs"]

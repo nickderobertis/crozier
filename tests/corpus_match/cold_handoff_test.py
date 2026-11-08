@@ -18,6 +18,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 
@@ -63,6 +64,12 @@ def copy_into(root: Path, relative: str) -> None:
         shutil.copy2(source, destination)
 
 
+def workspace_members() -> set[str]:
+    """Every member the root manifest declares: cargo reads each one to load the workspace at all."""
+    manifest = tomllib.loads((REPO / "Cargo.toml").read_text(encoding="utf-8"))
+    return {member for member in manifest["workspace"]["members"] if member != "."}
+
+
 def embedded_by_the_suite() -> set[str]:
     """Every committed file the e2e suite compiles in."""
     found: set[str] = set()
@@ -78,7 +85,7 @@ def embedded_by_the_suite() -> set[str]:
 class ColdRegistryHandoff(unittest.TestCase):
     def setUp(self) -> None:
         self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
-        for relative in sorted({*COPIED, *embedded_by_the_suite()}):
+        for relative in sorted({*COPIED, *workspace_members(), *embedded_by_the_suite()}):
             if not (self.root / relative).exists():
                 copy_into(self.root, relative)
         self.env = {

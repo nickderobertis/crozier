@@ -9,11 +9,13 @@
   (`fixtures-coverage`, `handwritten-reach`, the real `llvm-profdata` case) are
   the `surface-reach` project's, so an edit to an offline census script never
   pays for an instrumented build.
+- The golden-reach suites are the `golden-reach` project's: their inputs name the scripts
+  they load, so an edit only the census reads never reruns them.
 - The census suites run under the workspace's locked environment
   (`uv run --locked`) in the gate and the census recipes under
   `scripts/census-python.sh` (which honours that `.venv` first), never a bare
   `python3`, so a foreign virtualenv cannot answer for this repository.
-- **`test-reach` and `test-reach-portable` keep their own runner** (a departure
+- **`golden-reach:test-reach` and `test-reach-portable` keep their own runner** (a departure
   from `languages/python.md`'s pytest): they run `golden_reach_test.py` as
   `__main__` under `coverage run` rather than through pytest. Its in-process
   calls into `golden-reach-search.py` fan out to a `ProcessPoolExecutor`, whose

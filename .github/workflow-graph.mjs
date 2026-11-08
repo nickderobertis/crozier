@@ -1,5 +1,6 @@
-// Repository-local resolver. Remote reusable workflows are reviewed snapshots;
-// any new call, dynamic runner or output producer must be resolved explicitly.
+// Repository-local resolver: a remote reusable workflow is refused, because its jobs
+// are slots this graph could not count; a dynamic runner or output producer must be
+// resolved explicitly.
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -87,21 +88,9 @@ export function triggered(workflow, scenario) {
 }
 function reusable(call) {
   if (call.startsWith('./.github/workflows/')) return { path: call.slice(2), value: parse(readFileSync(resolve(root, call), 'utf8')) };
-  const snapshots = JSON.parse(readFileSync(resolve(root, '.github/tests/reusable/lock.json'), 'utf8'));
-  const entry = snapshots[call];
-  if (!entry) throw new Error(`unresolved reusable workflow: ${call}`);
-  const content = readFileSync(resolve(root, entry.path));
-  if (createHash('sha256').update(content).digest('hex') !== entry.sha256) throw new Error(`reusable snapshot digest mismatch: ${call}`);
-  if (entry.upstreamSha256 && createHash('sha256').update(content.toString().split('\n').slice(1).join('\n')).digest('hex') !== entry.upstreamSha256) throw new Error(`upstream snapshot bytes changed: ${call}`);
-  return { path: call, value: parse(content.toString()) };
+  throw new Error(`unresolved reusable workflow: ${call}`);
 }
-let captureArches;
 const guardOutputs=new Map();
-function policyOutput(job,decision) {
-  const step=job.steps?.find(s=>s.id==='policy');
-  if (job.outputs?.macosRequired !== '${{ steps.policy.outputs.macosRequired }}' || step?.run.trim() !== 'node .github/macos-policy.mjs classify --event "$GITHUB_EVENT_PATH" --base "$PR_BASE" --head "$PR_HEAD"' || step.env?.PR_BASE !== '${{ github.event.pull_request.base.sha }}' || step.env?.PR_HEAD !== '${{ github.event.pull_request.head.sha }}' || step.env?.GITHUB_EVENT_NAME !== undefined) throw new Error('unresolved macos-policy producer wiring');
-  return {macosRequired:String(decision.macosRequired)};
-}
 function registryOutputs(job,publish) {
   const step=job.steps?.find(s=>s.id==='check');
   if (job.outputs?.crates !== '${{ steps.check.outputs.crates }}' || job.outputs?.pypi !== '${{ steps.check.outputs.pypi }}' || step?.env?.CARGO_TOKEN !== '${{ secrets.CARGO_REGISTRY_TOKEN }}' || step?.env?.PYPI_TOKEN !== '${{ secrets.PYPI_TOKEN }}' || typeof step.run !== 'string') throw new Error('unresolved registry guard producer wiring');
@@ -120,7 +109,7 @@ function registryOutputs(job,publish) {
   }
   return guardOutputs.get(key);
 }
-export function resolveRun(workflow, scenario, decision, ancestry = []) {
+export function resolveRun(workflow, scenario, ancestry = []) {
   if (ancestry.includes(workflow.path)) throw new Error('recursive reusable workflow');
   const jobs = workflow.value.jobs;
   const rows = [], needs = {}, pending = new Set(Object.keys(jobs));
@@ -133,23 +122,12 @@ export function resolveRun(workflow, scenario, decision, ancestry = []) {
       progress = true; pending.delete(id);
       const outcomes = dependencies.map(d => needs[d].result);
       const context = {
-        github: { event_name: scenario.eventName, event: scenario.event, repository: 'nickderobertis/crozier', ref: `refs/heads/${scenario.branch}`, ref_name: scenario.tag ?? scenario.branch, workflow: workflow.value.name },
+        github: { event_name: scenario.eventName, event: scenario.event, repository: 'nickderobertis/crozier', ref: `refs/heads/${scenario.branch}`, ref_name: scenario.tag ?? scenario.branch, workflow: workflow.value.name, head_ref: scenario.event.pull_request?.head?.ref ?? '', job: id },
         needs: Object.fromEntries(dependencies.map(d => [d, needs[d]])), inputs: scenario.inputs ?? {}, matrix: {}, runner: {},
       };
       const enabled = job.if ? expression(job.if, context, outcomes).coerceString() === 'true' && (/\b(always|failure|cancelled|success)\(/.test(job.if) || outcomes.every(o => o === 'success')) : outcomes.every(o => o === 'success');
       needs[id] = { result: enabled ? 'success' : 'skipped', outputs: {} };
-      if (id === 'macos-policy') needs[id].outputs=policyOutput(job,decision);
       if (workflow.path.includes('release.yml') && id === 'guard') needs[id].outputs = registryOutputs(job,scenario.publish ?? { crates: 'false', pypi: 'false' });
-      if (id === 'arches' && workflow.path.startsWith('nickderobertis/screencomp/')) {
-        // The reusable workflow runs `screencomp arches --format json` on this
-        // exact configuration; parse the declared architecture source offline.
-        const producer=job.steps?.find(s=>s.id==='read');
-        if (job.outputs?.matrix !== '${{ steps.read.outputs.matrix }}' || producer?.env?.ARCHES_OVERRIDE !== '${{ inputs.arches }}' || !producer.run.includes('matrix="$(screencomp arches --format json)"') || !producer.run.includes('matrix="$ARCHES_OVERRIDE"') || !producer.run.includes('echo "matrix=$matrix"')) throw new Error('unresolved capture producer wiring');
-        const configured = captureArches ??= JSON.parse(execFileSync('python3', ['-c', 'import tomllib,json; print(json.dumps(tomllib.load(open("screencomp.toml","rb"))["capture"]["arches"]))'], { cwd: root, encoding: 'utf8' }));
-        const arches=context.inputs.arches ? JSON.parse(context.inputs.arches) : configured;
-        if (!Array.isArray(arches) || !arches.length || arches.some(a=>!['x86_64','amd64','arm64','aarch64'].includes(a))) throw new Error(`unresolved capture architectures: ${JSON.stringify(arches)}`);
-        needs[id].outputs.matrix = JSON.stringify(arches);
-      }
       if (!enabled) { rows.push({ workflow: workflow.path, event: scenario.id, job: id, result: 'skipped', macos: false }); continue; }
       if (job.uses) {
         const child = reusable(job.uses), declared = child.value.on?.workflow_call?.inputs ?? {};
@@ -166,14 +144,14 @@ export function resolveRun(workflow, scenario, decision, ancestry = []) {
           if (typeof input !== definition.type || (definition.type === 'number' && !Number.isFinite(input))) throw new Error(`unresolved reusable input: ${key} must be ${definition.type}`);
           inputs[key] = input;
         }
-        rows.push(...resolveRun(child, { ...scenario, inputs }, decision, [...ancestry, workflow.path]));
+        rows.push(...resolveRun(child, { ...scenario, inputs }, [...ancestry, workflow.path]));
         continue;
       }
       for (const matrix of matrixRows(job.strategy?.matrix, context)) {
         const runner = value(job['runs-on'], { ...context, matrix }, outcomes);
         const labels = Array.isArray(runner) ? runner : [runner];
         if (!labels.length || labels.some(l => typeof l !== 'string' || !/^(ubuntu|windows|macos)-[\w.-]+$/.test(l))) throw new Error(`unresolved runner ${workflow.path}:${id}: ${JSON.stringify(runner)}`);
-        rows.push({ workflow: workflow.path, event: scenario.id, job: id, matrix, runner, result: 'success', macos: labels.some(l => l.startsWith('macos-')), targets: job.env?.DARWIN_TARGET ? [job.env.DARWIN_TARGET] : (matrix.target ? [matrix.target] : []) });
+        rows.push({ workflow: workflow.path, event: scenario.id, job: id, matrix, runner, result: 'success', macos: labels.some(l => l.startsWith('macos-')), targets: job.env?.DARWIN_TARGET ? [job.env.DARWIN_TARGET] : (matrix.target ? [matrix.target] : []), timeout: job['timeout-minutes'] ?? null, needs: typeof job.needs === 'string' ? [job.needs] : job.needs ?? [] });
       }
     }
     if (!progress) throw new Error(`unresolved/cyclic job graph ${workflow.path}`);

@@ -21,21 +21,6 @@ use predicates::prelude::*;
 #[path = "e2e/compare.rs"]
 mod compare;
 
-/// The "Migrating from Fern" guide's workflow, run from its own code blocks.
-#[cfg(unix)]
-#[path = "e2e/migration.rs"]
-mod migration;
-
-/// The GitHub Action's scripts (`tools/github-action/`) over a real `crozier`.
-#[cfg(unix)]
-#[path = "e2e/action.rs"]
-mod action;
-
-/// `scripts/update-major-tag.sh`, the release's floating major tag.
-#[cfg(unix)]
-#[path = "e2e/major_tag.rs"]
-mod major_tag;
-
 /// `enum-type: literals` through the binary.
 #[path = "e2e/literals.rs"]
 mod literals;
@@ -8342,52 +8327,6 @@ fn crozier_base_path_alias_matches_and_wins() {
         !client.contains("edition"),
         "the literal base path alone lifted a parameter: {client}"
     );
-}
-
-/// The gate's name keeps it out of the golden-only tier, which selects every
-/// `*matches_fern_output*` test in `tools/surface-census/fixtures-coverage.sh` and in
-/// `tools/surface-census/openapi-surface-census.py`, whose selector `tools/surface-census/golden-reach.py`
-/// imports: a hand-written fixture never counts as a corpus golden.
-#[test]
-fn the_handwritten_gate_is_outside_the_golden_only_tier() {
-    let root = repo_root();
-    for (script, selector) in [
-        (
-            "tools/surface-census/fixtures-coverage.sh",
-            "test(/matches_fern_output/)",
-        ),
-        (
-            "tools/surface-census/openapi-surface-census.py",
-            "GOLDEN_TEST = re.compile(r\"matches_fern_output\")",
-        ),
-        (
-            "tools/surface-census/golden-reach.py",
-            "_census_module().GOLDEN_TEST",
-        ),
-    ] {
-        let text = std::fs::read_to_string(root.join(script)).expect("tier selector script");
-        assert!(
-            text.contains(selector),
-            "{script} no longer selects the golden-only tier by {selector}; re-read this check"
-        );
-    }
-    let source = std::fs::read_to_string(root.join("crates/crozier-e2e/tests/e2e.rs"))
-        .expect("this suite's source");
-    let declared: Vec<&str> = source
-        .lines()
-        .filter_map(|line| line.strip_prefix("fn "))
-        .filter_map(|rest| rest.split('(').next())
-        .collect();
-    assert!(
-        declared.contains(&"handwritten_fixtures_match_fern_goldens"),
-        "the hand-written gate is no longer declared under the name the contract gives it"
-    );
-    for name in declared.iter().filter(|name| name.contains("handwritten")) {
-        assert!(
-            !name.contains("matches_fern_output"),
-            "{name} would join the golden-only tier, which never reads a hand-written fixture"
-        );
-    }
 }
 
 /// The contract states the pin in prose and in its `evidence.toml` example; the

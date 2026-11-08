@@ -81,6 +81,7 @@
         "{workspaceRoot}/tools/fern-refusals/**/*",
         "{workspaceRoot}/tools/fern-refusals-strict/**/*",
         "{workspaceRoot}/tools/github-action/**/*",
+        "{workspaceRoot}/tools/golden-reach/**/*",
         "{workspaceRoot}/tools/llmlint/**/*",
         "{workspaceRoot}/tools/llmlint-resolution/**/*",
         "{workspaceRoot}/tools/python-workspace/**/*",
