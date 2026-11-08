@@ -91,7 +91,7 @@ pub struct GenerateArgs {
 }
 
 /// Run the full pipeline: parse the spec, build the IR, render, and write files.
-/// Returns the files written so the caller can report a count.
+/// Returns the files written, so the caller can report how many it produced.
 pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     document_refusals::check_version_file(&args.spec, args.fern_strict)?;
     document_refusals::check_structure_file(&args.spec, args.fern_strict)?;
