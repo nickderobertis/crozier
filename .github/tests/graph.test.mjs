@@ -25,7 +25,7 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
       const expected = wMac(run.workflow, s);
       assert.deepEqual(mac.map(r => r.job), expected, s.id + ' ' + run.workflow);
       if (run.workflow.endsWith('/ci.yml') && eventName === 'pull_request') {
-        for (const name of ['lint','commitlint','gate','llmlint']) assert.equal(run.rows.find(r => r.job === name)?.result, 'success', name);
+        assert.equal(run.rows.find(r => r.job === 'lint')?.result, 'success', 'lint');
         assert.deepEqual(run.rows.filter(r => r.job.startsWith('test-')).map(r => [r.job, r.runner]), [['test-linux','ubuntu-latest'],['test-windows','windows-latest'],['test-macos','macos-latest']]);
       }
     }
@@ -40,7 +40,7 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     for (const run of runs.filter(r=>r.workflow.endsWith('/ci.yml'))) {
       const sameRepositoryRelease = pr === release || pr.pull_request?.head.ref === 'release-plz-mixed';
       assert.deepEqual(run.rows.filter(r=>r.macos).map(r=>r.job), sameRepositoryRelease ? [] : ['test-macos'], s.id);
-      for (const name of ['lint','commitlint','gate','llmlint']) assert.equal(run.rows.find(r=>r.job===name)?.result,'success');
+      assert.equal(run.rows.find(r=>r.job==='lint')?.result,'success');
     }
     scenarios.push({...s,runs});
   }
@@ -64,7 +64,7 @@ test('marking a draft ready starts no run; the head\'s opened or synchronize run
     const scenario = { id: `pr-${action}`, eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
     assert.equal(triggered(ci.value, scenario), true, action);
     const rows = resolveRun(ci, scenario);
-    for (const name of ['lint', 'commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', `${action} ${name}`);
+    assert.equal(rows.find(row => row.job === 'lint')?.result, 'success', `${action} lint`);
     assert.deepEqual(rows.filter(row => row.macos).map(row => [row.job, row.runner]), [['test-macos', 'macos-latest']], action);
   }
   const lift = event(); lift.action = 'ready_for_review';
@@ -223,19 +223,22 @@ test('the budget wrapper accepts actual telemetry and rejects each exceeded limi
 const pushed = () => { const pr = event(); pr.action = 'synchronize'; return { id: 'push', eventName: 'pull_request', event: pr, branch: 'main', inputs: {} }; };
 const prRows = (scenario, graph = workflows()) => graph.filter(w => triggered(w.value, scenario)).flatMap(w => resolveRun(w, scenario).map(row => ({ ...row, workflow: w.path })));
 
-test('an ordinary pull request push runs exactly seven jobs: four independent lanes and three transitional ones', () => {
+test('an ordinary pull request push runs exactly the four governed lanes, none waiting on another', () => {
   const rows = prRows(pushed());
-  assert.deepEqual(rows.map(r => r.job).sort(), ['commitlint', 'gate', 'lint', 'llmlint', 'test-linux', 'test-macos', 'test-windows']);
+  const governance = JSON.parse(readFileSync(resolve(root, '.github/governance.json'), 'utf8'));
+  assert.deepEqual(rows.map(r => r.job), governance.required_checks);
   assert.ok(rows.every(r => r.workflow === '.github/workflows/ci.yml' && r.result === 'success'));
   const by = Object.fromEntries(rows.map(r => [r.job, r]));
-  assert.deepEqual(rows.filter(r => r.needs.length).map(r => r.job), ['gate'], 'only the transitional gate has a needs edge');
-  assert.deepEqual([...by.gate.needs].sort(), ['commitlint', 'lint', 'llmlint', 'test-linux', 'test-macos', 'test-windows']);
-  for (const id of ['lint', 'commitlint', 'llmlint', 'gate']) assert.equal(by[id].timeout, 30, id);
-  // Manager rulings c-de8af5d0b87584fa7cfb48d4c2b4deed and c-602a8b0c568f2b4c9e7f3104a9e7a581 (Mac):
-  // measured transitional ceilings until the re-measure.
-  assert.equal(by['test-linux'].timeout, 150); assert.equal(by['test-windows'].timeout, 90); assert.equal(by['test-macos'].timeout, 120);
+  assert.deepEqual(rows.filter(r => r.needs.length).map(r => r.job), [], 'no lane has a needs edge');
+  // The amendment's measured ceilings on main; crozier-ci-check-time reports the 30-minute line.
+  assert.equal(by.lint.timeout, 30); assert.equal(by['test-linux'].timeout, 150); assert.equal(by['test-windows'].timeout, 90); assert.equal(by['test-macos'].timeout, 120);
   const ci = workflows().find(w => w.path.endsWith('/ci.yml')).value;
   for (const id of ['test-linux', 'test-windows', 'test-macos']) assert.equal(ci.jobs[id].strategy, undefined, `${id} is one job, no matrix or shards`);
+  // The title and judged checks are steps of lint, once, rather than jobs of their own.
+  const steps = ci.jobs.lint.steps;
+  assert.equal(steps.filter(s => s.uses?.startsWith('amannn/action-semantic-pull-request@')).length, 1);
+  assert.equal(steps.filter(s => s.run?.trim().endsWith('just lint-llm-diff origin/main')).length, 1);
+  assert.equal(steps.filter(s => s.run === 'just test-llmlint-plugins').length, 1);
 });
 
 test('no run on push to main comes from CI: only delivery and the workflows that gate nothing', () => {
@@ -247,18 +250,19 @@ test('no run on push to main comes from CI: only delivery and the workflows that
   assert.equal(Object.keys(base.on).join(), 'push', 'a pull request push never starts the measurement');
 });
 
-test('a release branch runs lint, its guard and the transitional checks; a fork or other branch of that name owes every lane', () => {
+test('a release branch runs lint alone, its guard among its steps; a fork or other branch of that name owes every lane', () => {
   const ci = workflows().find(w => w.path.endsWith('/ci.yml'));
   const release = event('release-plz-2026-10-12'); release.action = 'synchronize';
   const rows = resolveRun(ci, { id: 'release', eventName: 'pull_request', event: release, branch: 'main', inputs: {} });
-  assert.deepEqual(rows.filter(r => r.result === 'success').map(r => r.job).sort(), ['commitlint', 'gate', 'lint', 'llmlint']);
+  assert.deepEqual(rows.filter(r => r.result === 'success').map(r => r.job), ['lint']);
   assert.deepEqual(rows.filter(r => r.result === 'skipped').map(r => r.job).sort(), ['test-linux', 'test-macos', 'test-windows']);
   const fork = event('release-plz-2026-10-12', true); fork.action = 'synchronize';
   const forked = resolveRun(ci, { id: 'fork', eventName: 'pull_request', event: fork, branch: 'main', inputs: {} });
   assert.deepEqual(forked.filter(r => r.job.startsWith('test-')).map(r => r.result), ['success', 'success', 'success']);
   const guard = ci.value.jobs.lint.steps.find(s => s.id === 'release-guard');
   assert.equal(guard.if, "github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')");
-  assert.equal(ci.value.jobs.lint.outputs.releaseGuard, '${{ steps.release-guard.outputs.releaseGuard }}');
+  assert.equal(guard['continue-on-error'], undefined, 'a refused release edit fails lint');
+  assert.equal(ci.value.jobs.lint.outputs, undefined, 'no aggregator reads a guard output');
 });
 
 test('the final governance declaration names the four lanes, non-strict, and every one is a real job', () => {
