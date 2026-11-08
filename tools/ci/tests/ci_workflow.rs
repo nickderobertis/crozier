@@ -240,8 +240,8 @@ fn pull_request_push_jobs() -> Vec<(String, String, String, Value)> {
 /// The required contexts are reported on every pull request under exactly their names, and
 /// nothing else runs: expanding every workflow a pull request push starts, every reusable
 /// call and every matrix leg yields the four lanes `.github/governance.json` declares, once
-/// each, in `ci.yml` alone. No lane waits on another, each holds the timeout its measured
-/// ceiling on main needs, and no path or branch filter can leave a context unreported.
+/// each, in `ci.yml` alone. No lane waits on another, each holds the timeout that lets
+/// its work on main finish, and no path or branch filter can leave a context unreported.
 #[test]
 fn a_pull_request_push_runs_exactly_the_governed_lanes() {
     let expanded = pull_request_push_jobs();
@@ -261,12 +261,12 @@ fn a_pull_request_push_runs_exactly_the_governed_lanes() {
         );
         assert!(job.get("needs").is_none(), "{id} waits on another job");
         assert!(job.get("name").is_none(), "{id}'s context is its job id");
-        // The amendment's ceilings, at or above what each lane's records on main show.
+        // At or above what each lane's records on main show.
         let ceiling = match id.as_str() {
             "lint" => 30,
             "test-linux" => 150,
-            "test-windows" => 90,
-            "test-macos" => 120,
+            "test-windows" => 150,
+            "test-macos" => 150,
             other => panic!("{other} is not a lane"),
         };
         assert_eq!(

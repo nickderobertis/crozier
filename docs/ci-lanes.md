@@ -11,10 +11,10 @@ workflow, reusable call and matrix leg against it).
 | --- | --- | --- |
 | `lint` | 30 min | Release guard, pull request title, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), judged lint over the diff, visual docs |
 | `test-linux` | 150 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
-| `test-windows` | 90 min | Offline projects, SDK environments, install and smoke |
-| `test-macos` | 120 min | Offline projects, SDK environments, install and smoke |
+| `test-windows` | 150 min | Offline projects, SDK environments, install and smoke |
+| `test-macos` | 150 min | Offline projects, SDK environments, install and smoke |
 
-**The limits above 30 are the measured ceilings on main.** Run
+**The limits above 30 let a broad change finish; none is meant to cut off work that would pass.** Run
 [42345332459](https://github.com/nickderobertis/crozier/actions/runs/42345332459), a broad pull
 request, spent this work across its old jobs: Linux 7371 s (Check 3053, SDK 160,
 live/corpus/fallback 3814, packaging 168, install 176), Windows 4307 s (Check 3557, SDK 363,
@@ -25,8 +25,11 @@ run in this shape: run [42433200026](https://github.com/nickderobertis/crozier/a
 has too: a whole-graph change's `ci-test` step alone took 84 minutes in run
 [42402692714](https://github.com/nickderobertis/crozier/actions/runs/42402692714), and run
 [42422342228](https://github.com/nickderobertis/crozier/actions/runs/42422342228) was cancelled at
-90, so a cold one needs about 110. Its limit is 120 until the Mac lane has a warm result cache
-(main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
+90, so a cold one needs about 110. On 2026-11-08 broad pull requests took about 95 minutes on
+Linux, 77 to more than 90 on Windows and more than 120 on macOS; the old 90-minute Windows limit
+cancelled #790 and #792, and the old 120-minute macOS limit cancelled #792, with nothing failed.
+The Windows and Mac limits are 150, matching Linux. Mac's stands until that lane has a warm result
+cache (main's cache writer serves lint, Linux and Windows only; whether Mac joins it is an open
 decision) or the follow-up on the cold Mac leg is resolved.
 
 **CI budgets.** The root `budgets.yaml` registers three `release-tail` budgets:
