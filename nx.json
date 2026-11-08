@@ -148,6 +148,7 @@
       "{workspaceRoot}/tools/surface-census/fixtures-coverage-report.py",
       "{workspaceRoot}/tools/surface-census/golden-reach-search.py",
       "{workspaceRoot}/tools/surface-census/golden-reach.py",
+      "{workspaceRoot}/tools/surface-census/handed-off-combination-verdicts.py",
       "{workspaceRoot}/tools/surface-census/handwritten-fixtures.py",
       "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
       "{workspaceRoot}/tools/surface-census/output-insensitive.py",
