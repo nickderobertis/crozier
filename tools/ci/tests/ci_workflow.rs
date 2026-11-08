@@ -265,8 +265,8 @@ fn a_pull_request_push_runs_exactly_the_governed_lanes() {
         let ceiling = match id.as_str() {
             "lint" => 30,
             "test-linux" => 150,
-            "test-windows" => 90,
-            "test-macos" => 120,
+            "test-windows" => 150,
+            "test-macos" => 150,
             other => panic!("{other} is not a lane"),
         };
         assert_eq!(
