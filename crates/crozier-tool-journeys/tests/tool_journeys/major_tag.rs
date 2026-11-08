@@ -167,9 +167,18 @@ fn release_step() -> (String, Vec<(String, String)>) {
     let steps = workflow["jobs"]["major-tag"]["steps"]
         .as_array()
         .expect("release.yml has a major-tag job with steps");
-    let mut runs = steps.iter().filter(|step| step.get("run").is_some());
-    let step = runs.next().expect("the major-tag job runs a script");
-    assert!(runs.next().is_none(), "the major-tag job runs one script");
+    // The job's later steps are the release tail (tools/ci/tests/release_workflow.rs);
+    // exactly one step moves the tag.
+    let mut runs = steps.iter().filter(|step| {
+        step.get("run")
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|run| run.contains("scripts/update-major-tag.sh"))
+    });
+    let step = runs.next().expect("the major-tag job runs the tag script");
+    assert!(
+        runs.next().is_none(),
+        "one step of the major-tag job moves the tag"
+    );
     let env = step
         .get("env")
         .and_then(serde_json::Value::as_object)

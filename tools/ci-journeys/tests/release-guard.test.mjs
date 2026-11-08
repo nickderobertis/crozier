@@ -219,17 +219,20 @@ test("the workflow's own guard command, as written in ci.yml, holds a branch to 
   const workflow = real(".github/workflows/ci.yml");
   const command = /^\s+run: (node scripts\/release-branch-guard\.mjs .*)$/m.exec(workflow)?.[1];
   assert.ok(command, "ci.yml runs the guard");
+  // The step's own failure is what fails lint, the one lane a release branch runs: nothing
+  // downstream reads an output of it.
+  assert.doesNotMatch(command, /GITHUB_OUTPUT/);
   const asWritten = (head) => {
     h.git("checkout", "--quiet", "--detach", head);
-    return spawnSync("bash", ["-e", "-c", command.replace("scripts/release-branch-guard.mjs", JSON.stringify(GUARD))], {
-      cwd: h.dir, env: { ...process.env, BASE_SHA: h.base, GITHUB_OUTPUT: join(h.dir, ".git/outputs") }, encoding: "utf8",
+    return spawnSync("bash", ["--noprofile", "--norc", "-eo", "pipefail", "-c", command.replace("scripts/release-branch-guard.mjs", JSON.stringify(GUARD))], {
+      cwd: h.dir, env: { ...process.env, BASE_SHA: h.base }, encoding: "utf8",
     });
   };
-  assert.equal(asWritten(h.change({ "CHANGELOG.md": "notes\n" })).status, 0);
-  assert.match(readFileSync(join(h.dir, ".git/outputs"), "utf8"), /^releaseGuard=passed$/m);
-  rmSync(join(h.dir, ".git/outputs"));
-  assert.equal(asWritten(h.change({ "src/lib.rs": "// not a release edit\n" })).status, 1);
-  assert.throws(() => statSync(join(h.dir, ".git/outputs")), "a failed guard records no pass the gate could read");
+  const accepted = asWritten(h.change({ "CHANGELOG.md": "notes\n" }));
+  assert.equal(accepted.status, 0, accepted.stderr);
+  const refused = asWritten(h.change({ "src/lib.rs": "// not a release edit\n" }));
+  assert.equal(refused.status, 1);
+  assert.match(refused.stderr, /src\/lib\.rs: the release tool edits only versions and changelogs/);
 });
 
 test("the copied reference scripts match the adopted reference's checksums, with its command contract", () => {

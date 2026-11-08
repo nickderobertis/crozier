@@ -46,12 +46,235 @@ fn steps(job: &Value) -> &[Value] {
         .expect("the job has steps")
 }
 
-/// The contexts branch protection requires today are reported on every pull request
-/// under exactly their names: no path or branch filter on `pull_request`, and each
-/// job's condition is the one that keeps it reporting. `gate` aggregates the four lanes
-/// and the two transitional checks, and is the only job with a `needs` edge.
+const GOVERNANCE: &str = include_str!("../../../.github/governance.json");
+
+/// The contexts branch protection requires, as `.github/governance.json` declares them.
+fn required_checks() -> Vec<String> {
+    let governance: Value = serde_json::from_str(GOVERNANCE).expect("governance.json is JSON");
+    governance["required_checks"]
+        .as_array()
+        .expect("governance lists its checks")
+        .iter()
+        .map(|check| check.as_str().expect("checks are strings").to_string())
+        .collect()
+}
+
+/// Every committed workflow, by file name, read from disk so a workflow added beside the
+/// others is counted without anyone listing it here.
+fn every_workflow() -> Vec<(String, Value)> {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../.github/workflows");
+    let mut files: Vec<_> = std::fs::read_dir(&dir)
+        .expect("read .github/workflows")
+        .map(|entry| entry.expect("a directory entry").path())
+        .filter(|path| {
+            path.extension()
+                .is_some_and(|ext| ext == "yml" || ext == "yaml")
+        })
+        .collect();
+    files.sort();
+    files
+        .into_iter()
+        .map(|path| {
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            let source = std::fs::read_to_string(&path).expect("read a workflow");
+            let value =
+                crate::yaml::from_str(&source).unwrap_or_else(|_| panic!("{name} is valid YAML"));
+            (name, value)
+        })
+        .collect()
+}
+
+/// Whether a pull request push (`opened`, `synchronize` or `reopened`) starts the workflow.
+/// GitHub's default types are exactly those three.
+fn starts_on_a_pull_request_push(file: &str, workflow: &Value) -> bool {
+    let on = workflow
+        .get("on")
+        .unwrap_or_else(|| panic!("{file} names its triggers"));
+    let config = match on {
+        Value::String(event) => (event == "pull_request").then_some(&Value::Null),
+        Value::Array(events) => events
+            .iter()
+            .any(|event| event.as_str() == Some("pull_request"))
+            .then_some(&Value::Null),
+        Value::Object(events) => {
+            for unsupported in ["pull_request_target", "workflow_run"] {
+                assert!(
+                    !events.contains_key(unsupported),
+                    "{file}: `{unsupported}` starts a run a pull request causes, outside the lanes"
+                );
+            }
+            events.get("pull_request")
+        }
+        _ => panic!("{file}: unreadable triggers"),
+    };
+    let Some(config) = config else {
+        return false;
+    };
+    let types: Vec<&str> = match config.get("types") {
+        None => vec!["opened", "synchronize", "reopened"],
+        Some(types) => types
+            .as_array()
+            .unwrap_or_else(|| panic!("{file}: pull_request types are a list"))
+            .iter()
+            .map(|kind| kind.as_str().expect("types are strings"))
+            .collect(),
+    };
+    types
+        .iter()
+        .any(|kind| ["opened", "synchronize", "reopened"].contains(kind))
+}
+
+/// The legs of a job's matrix, expanded as GitHub expands it: the product of its axes,
+/// less `exclude`, plus each `include` that matches no leg. A matrix computed at run time
+/// cannot be counted here, so it fails rather than counting as one job.
+fn matrix_legs(file: &str, id: &str, job: &Value) -> usize {
+    let Some(matrix) = job
+        .get("strategy")
+        .and_then(|strategy| strategy.get("matrix"))
+    else {
+        return 1;
+    };
+    let matrix = matrix
+        .as_object()
+        .unwrap_or_else(|| panic!("{file}:{id}: a computed matrix's legs cannot be counted"));
+    let mut legs: Vec<serde_json::Map<String, Value>> = vec![serde_json::Map::new()];
+    for (axis, values) in matrix {
+        if axis == "include" || axis == "exclude" {
+            continue;
+        }
+        let values = values
+            .as_array()
+            .unwrap_or_else(|| panic!("{file}:{id}: matrix axis {axis} is not a list"));
+        legs = legs
+            .into_iter()
+            .flat_map(|leg| {
+                values.iter().map(move |value| {
+                    let mut next = leg.clone();
+                    next.insert(axis.clone(), value.clone());
+                    next
+                })
+            })
+            .collect();
+    }
+    let rows = |key: &str| -> Vec<serde_json::Map<String, Value>> {
+        matrix.get(key).map_or_else(Vec::new, |rows| {
+            rows.as_array()
+                .unwrap_or_else(|| panic!("{file}:{id}: matrix {key} is not a list"))
+                .iter()
+                .map(|row| row.as_object().expect("matrix rows are mappings").clone())
+                .collect()
+        })
+    };
+    let matches = |leg: &serde_json::Map<String, Value>, row: &serde_json::Map<String, Value>| {
+        row.iter()
+            .all(|(key, value)| leg.get(key).is_none_or(|have| have == value))
+    };
+    let excluded = rows("exclude");
+    legs.retain(|leg| {
+        !excluded
+            .iter()
+            .any(|row| matches(leg, row) && row.keys().all(|key| leg.contains_key(key)))
+    });
+    let axes = matrix
+        .keys()
+        .any(|key| key != "include" && key != "exclude");
+    let mut count = if axes { legs.len() } else { 0 };
+    for row in rows("include") {
+        if !axes || !legs.iter().any(|leg| matches(leg, &row)) {
+            count += 1;
+        }
+    }
+    count
+}
+
+/// Every job a pull request push starts, over every workflow, through every local reusable
+/// workflow, one entry per matrix leg: `(workflow, job id, context, job)`. A remote reusable
+/// workflow's jobs are slots this cannot see, so one fails the expansion.
+fn pull_request_push_jobs() -> Vec<(String, String, String, Value)> {
+    fn expand(
+        file: &str,
+        workflow: &Value,
+        prefix: &str,
+        into: &mut Vec<(String, String, String, Value)>,
+    ) {
+        let jobs = workflow
+            .get("jobs")
+            .and_then(Value::as_object)
+            .unwrap_or_else(|| panic!("{file} has jobs"));
+        for (id, job) in jobs {
+            let context = format!("{prefix}{}", text(job, "name").unwrap_or(id));
+            if let Some(uses) = text(job, "uses") {
+                let local = uses
+                    .strip_prefix("./.github/workflows/")
+                    .unwrap_or_else(|| {
+                        panic!("{file}:{id} calls {uses}, whose jobs cannot be counted")
+                    });
+                let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                    .join("../../.github/workflows")
+                    .join(local);
+                let callee: Value = crate::yaml::from_str(
+                    &std::fs::read_to_string(&path)
+                        .unwrap_or_else(|_| panic!("{file}:{id} calls a missing {local}")),
+                )
+                .unwrap_or_else(|_| panic!("{local} is valid YAML"));
+                // A matrix over a reusable call starts the callee once per leg.
+                for _ in 0..matrix_legs(file, id, job) {
+                    expand(local, &callee, &format!("{context} / "), into);
+                }
+                continue;
+            }
+            for _ in 0..matrix_legs(file, id, job) {
+                into.push((file.to_string(), id.clone(), context.clone(), job.clone()));
+            }
+        }
+    }
+    let mut jobs = Vec::new();
+    for (file, workflow) in every_workflow() {
+        if starts_on_a_pull_request_push(&file, &workflow) {
+            expand(&file, &workflow, "", &mut jobs);
+        }
+    }
+    jobs
+}
+
+/// The required contexts are reported on every pull request under exactly their names, and
+/// nothing else runs: expanding every workflow a pull request push starts, every reusable
+/// call and every matrix leg yields the four lanes `.github/governance.json` declares, once
+/// each, in `ci.yml` alone. No lane waits on another, each holds the timeout its measured
+/// ceiling on main needs, and no path or branch filter can leave a context unreported.
 #[test]
-fn the_required_contexts_report_on_every_pull_request() {
+fn a_pull_request_push_runs_exactly_the_governed_lanes() {
+    let expanded = pull_request_push_jobs();
+    let contexts: Vec<&str> = expanded
+        .iter()
+        .map(|(_, _, context, _)| context.as_str())
+        .collect();
+    assert_eq!(
+        contexts,
+        required_checks(),
+        "the jobs a pull request push starts"
+    );
+    for (file, id, _, job) in &expanded {
+        assert_eq!(
+            file, "ci.yml",
+            "{id} runs in a separately triggered workflow"
+        );
+        assert!(job.get("needs").is_none(), "{id} waits on another job");
+        assert!(job.get("name").is_none(), "{id}'s context is its job id");
+        // The amendment's ceilings, at or above what each lane's records on main show.
+        let ceiling = match id.as_str() {
+            "lint" => 30,
+            "test-linux" => 150,
+            "test-windows" => 90,
+            "test-macos" => 120,
+            other => panic!("{other} is not a lane"),
+        };
+        assert_eq!(
+            job.get("timeout-minutes").and_then(Value::as_u64),
+            Some(ceiling),
+            "{id}'s timeout-minutes"
+        );
+    }
     let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let pull_request = workflow
         .get("on")
@@ -63,49 +286,91 @@ fn the_required_contexts_report_on_every_pull_request() {
             "a `{filter}` filter on pull_request could leave a required context unreported"
         );
     }
-    for (name, condition) in [
-        (
-            "gate",
-            Some("always() && github.event_name == 'pull_request'"),
-        ),
-        ("commitlint", Some("github.event_name == 'pull_request'")),
-        (
-            "llmlint",
-            Some("github.event_name == 'pull_request' && github.event.action != 'edited'"),
-        ),
-    ] {
-        let job = job(&workflow, name);
-        assert_eq!(
-            text(job, "name"),
-            Some(name),
-            "the `{name}` context's job name"
-        );
-        assert_eq!(text(job, "if"), condition, "the `{name}` job's condition");
-    }
-    let needs: Vec<&str> = job(&workflow, "gate")
-        .get("needs")
-        .and_then(Value::as_array)
-        .expect("gate aggregates its legs")
-        .iter()
-        .map(|need| need.as_str().expect("needs are job ids"))
-        .collect();
-    assert_eq!(
-        needs,
-        [
-            "lint",
-            "test-linux",
-            "test-windows",
-            "test-macos",
-            "commitlint",
-            "llmlint"
-        ]
+    assert!(
+        workflow.get("on").and_then(|on| on.get("push")).is_none(),
+        "ci.yml does not run on a push, to main or anywhere"
     );
-    for (name, job) in workflow.get("jobs").and_then(Value::as_object).unwrap() {
-        assert!(
-            name.as_str() == "gate" || job.get("needs").is_none(),
-            "{name} waits on another job; only the transitional gate may"
+    // Main runs no CI: whatever a push to main starts reports none of the required contexts.
+    for (file, workflow) in every_workflow() {
+        if workflow.get("on").and_then(|on| on.get("push")).is_some() {
+            assert_reports_no_required_context(&file, &workflow);
+        }
+    }
+}
+
+/// The expansion counts what it cannot see as a failure rather than as nothing: a matrix leg
+/// is a job, a computed matrix or a remote reusable workflow fails, and a `pull_request`
+/// workflow with default types is counted as starting on a push.
+#[test]
+fn the_expansion_counts_matrix_legs_and_refuses_what_it_cannot_resolve() {
+    let job = |source: &str| -> Value { crate::yaml::from_str(source).expect("valid YAML") };
+    assert_eq!(matrix_legs("t.yml", "j", &job("runs-on: x\n")), 1);
+    assert_eq!(
+        matrix_legs("t.yml", "j", &job("strategy:\n  matrix:\n    os: [a, b, c]\n    exclude:\n      - os: b\n    include:\n      - os: c\n        extra: 1\n      - os: d\n")),
+        3,
+        "a and c, plus the include matching no leg"
+    );
+    assert_eq!(
+        matrix_legs(
+            "t.yml",
+            "j",
+            &job("strategy:\n  matrix:\n    include:\n      - target: a\n      - target: b\n")
+        ),
+        2
+    );
+    let computed = job("strategy:\n  matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}\n");
+    assert!(std::panic::catch_unwind(|| matrix_legs("t.yml", "j", &computed)).is_err());
+    for (on, starts) in [
+        ("on: pull_request\n", true),
+        ("on: [push, pull_request]\n", true),
+        ("on:\n  pull_request:\n", true),
+        ("on:\n  pull_request:\n    types: [closed]\n", false),
+        ("on:\n  push:\n    branches: [main]\n", false),
+    ] {
+        assert_eq!(
+            starts_on_a_pull_request_push("t.yml", &job(on)),
+            starts,
+            "{on}"
         );
     }
+    let target = job("on:\n  pull_request_target:\n");
+    assert!(std::panic::catch_unwind(|| starts_on_a_pull_request_push("t.yml", &target)).is_err());
+}
+
+/// The test lanes skip a same-repository `release-plz-` branch, and only that: lint has no
+/// condition, so on that branch it is the one job that executes, and its release guard step
+/// runs under the same predicate, so the skip is held to the release tool's own edits
+/// (`tools/ci-journeys/tests/release-guard.test.mjs` drives the guard).
+#[test]
+fn only_lint_executes_on_the_content_guarded_release_branch() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let release = "github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-')";
+    let lint = job(&workflow, "lint");
+    assert!(lint.get("if").is_none(), "lint runs on every pull request");
+    let guard = steps(lint)
+        .iter()
+        .find(|step| text(step, "id") == Some("release-guard"))
+        .expect("lint holds the release guard");
+    assert_eq!(text(guard, "if"), Some(release));
+    assert!(
+        guard.get("continue-on-error").is_none(),
+        "a refused release edit fails lint"
+    );
+    assert!(text(guard, "run")
+        .is_some_and(|run| run.starts_with("node scripts/release-branch-guard.mjs ")));
+    let skip = format!("!({release})");
+    assert_eq!(
+        text(job(&workflow, "test-linux"), "if"),
+        Some(skip.as_str())
+    );
+    assert_eq!(
+        text(job(&workflow, "test-windows"), "if"),
+        Some(skip.as_str())
+    );
+    assert_eq!(
+        text(job(&workflow, "test-macos"), "if"),
+        Some(format!("(github.event_name == 'pull_request' && {skip}) || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)").as_str())
+    );
 }
 
 const LANES: [&str; 4] = ["lint", "test-linux", "test-windows", "test-macos"];
@@ -450,8 +715,6 @@ fn the_golden_reach_base_is_published_for_each_push_to_main() {
 
 const CI_CACHES: &str = include_str!("../../../.github/workflows/ci-caches.yml");
 const GALLERY: &str = include_str!("../../../.github/workflows/visual-docs-gallery.yml");
-const GOVERNANCE: &str = include_str!("../../../.github/governance.json");
-
 /// The workflow's triggers are a push to main and nothing else, so no pull request push
 /// starts it.
 fn assert_starts_only_on_a_push_to_main(file: &str, workflow: &Value) {
@@ -474,19 +737,11 @@ fn assert_starts_only_on_a_push_to_main(file: &str, workflow: &Value) {
 /// Neither workflow reports a context branch protection requires, so it gates nothing,
 /// whatever its job ids are.
 fn assert_reports_no_required_context(file: &str, workflow: &Value) {
-    let governance: Value = serde_json::from_str(GOVERNANCE).expect("governance.json is JSON");
-    let mut required: Vec<&str> = governance["required_checks"]
-        .as_array()
-        .expect("governance lists its checks")
-        .iter()
-        .map(|check| check.as_str().expect("checks are strings"))
-        .collect();
-    // The transitional contexts main requires until protection moves to the four lanes.
-    required.extend(["gate", "commitlint", "llmlint"]);
+    let required = required_checks();
     for (id, job) in workflow.get("jobs").and_then(Value::as_object).unwrap() {
         let context = text(job, "name").unwrap_or(id);
         assert!(
-            !required.contains(&context),
+            !required.iter().any(|check| check == context),
             "{file}: job `{id}` reports the required context `{context}`"
         );
     }
