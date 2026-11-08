@@ -50,6 +50,7 @@
         "default",
         "cargo",
         "{workspaceRoot}/.github/**/*",
+        "{workspaceRoot}/docs/ci-lanes.md",
         "{workspaceRoot}/scripts/release-branch-guard.mjs",
         "{workspaceRoot}/scripts/update-major-tag.sh",
         "{workspaceRoot}/scripts/install.sh",
