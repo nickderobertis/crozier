@@ -7221,6 +7221,7 @@ mod tests {
         assert_eq!(closed_empty_object_example_region(&pair).unwrap(), None);
     }
 
+    // llmlint: ignore[changed_behavior_has_e2e] Each further rejection needs a reference tree Fern never writes, so these cases feed the rule the crafted line directly; required_null_union_departure.rs proves acceptance and an adjacent-field rejection through real SDK trees.
     #[test]
     fn a_required_null_union_field_line_is_excused_only_on_its_own_model() {
         let zero = "ThingValueZero = typing.Union[\n    str, float, typing.Any\n]\n";

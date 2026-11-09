@@ -8,9 +8,11 @@
 #[path = "../../../src/yaml.rs"]
 mod yaml;
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every binary-driving journey runs in this one suite by the project's design (crates/crozier-e2e/AGENTS.md); a separate Nx edge for these would be a graph change for the whole family, outside this repair.
 /// Journeys for the generator rules the residual-differences repair corrected.
 #[path = "e2e/residual_rule_repairs.rs"]
 mod residual_rule_repairs;
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 use std::path::{Path, PathBuf};
 
