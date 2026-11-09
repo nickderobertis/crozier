@@ -19,9 +19,9 @@ The population index retains all 9,024 recorded identities. The candidate
 ledger names every unresolved candidate and all handed-off documents per
 combination; other negative declarations are checkable in the exact-byte
 JSONL source census, joined by SHA-256 to population.tsv. Anonymous bytes are explicitly ineligible for corpus
-registration. Each newly admitted and registered handed-off document is named
-individually, including a negative selector verdict for each former handwritten
-combination. Neither missing documents nor declarations count as matches.
+registration. Each newly admitted and registered handed-off document has a measured
+verdict for each combination, in [handed-off-verdicts.tsv](handed-off-verdicts.tsv).
+Neither missing documents nor declarations count as matches.
 
 The search bound was one pinned archive acquisition, retained local exact-byte
 recovery, and the recorded instrumented control experiments. A candidate with
@@ -38,70 +38,128 @@ selectors in `contract.tsv`; all recovered bytes were SHA-256 verified first.
 | `earlier-census.jsonl` | 552 |
 | `handed-off-census.jsonl` | 25 |
 
+`handed-off-census.jsonl` is the census taken before the merged base registered the
+rest of the handed-off population; [Handed-off verdicts](#handed-off-verdicts) supersedes
+it for all 78 documents.
+
 ## Verdicts
 
-The interaction row retains its search history here; its proof is its exclusive
-region and the registered Adyen golden run. Every other row is search-incomplete.
+An `interaction-proven` row retains its search history here; its proof is its
+exclusive region and the registered golden run its audit row names, so it has no
+outstanding candidate. Every other row is search-incomplete.
 The complete outstanding list for each row is in
 [outstanding-candidates.tsv](outstanding-candidates.tsv), with every affected combination explicitly listed and one reason per
 candidate. It is also the open-row list for the completion report.
 
 | Combination | State | Candidates | Outstanding |
 |---|---|---:|---:|
-| `combo-basic-auth-document-requirement` | `search-incomplete` | 3041 | 2938 |
-| `combo-basic-auth-operation-requirement` | `search-incomplete` | 3244 | 3138 |
-| `combo-body-property-named-as-header-param` | `search-incomplete` | 2960 | 2847 |
-| `combo-body-property-named-as-path-param` | `search-incomplete` | 3535 | 3438 |
-| `combo-document-operation-security` | `search-incomplete` | 3165 | 3069 |
-| `combo-document-security-security-empty` | `search-incomplete` | 3059 | 2957 |
-| `combo-echo-body-effective-anonymous` | `search-incomplete` | 3123 | 3013 |
-| `combo-echo-body-effective-non-oauth-required` | `search-incomplete` | 3094 | 2990 |
-| `combo-echo-body-effective-oauth2` | `search-incomplete` | 3248 | 3137 |
-| `combo-error-multiple-media` | `search-incomplete` | 3084 | 2979 |
-| `combo-error-object` | `search-incomplete` | 3344 | 3256 |
-| `combo-errors-shared-ref` | `search-incomplete` | 3568 | 3499 |
-| `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 3004 | 2894 |
-| `combo-form-urlencoded-body-with-params` | `search-incomplete` | 3129 | 3024 |
-| `combo-form-urlencoded-union-body` | `search-incomplete` | 2973 | 2860 |
-| `combo-header-param-ref-string-enum` | `search-incomplete` | 2975 | 2864 |
-| `combo-inline-body-read-only-property` | `search-incomplete` | 2990 | 2882 |
-| `combo-multipart-beside-json-body` | `search-incomplete` | 2993 | 2885 |
-| `combo-multipart-body-with-params` | `search-incomplete` | 3186 | 3096 |
-| `combo-oas31-grouped-response` | `search-incomplete` | 3288 | 3217 |
-| `combo-oas31-root-response` | `search-incomplete` | 3030 | 2927 |
-| `combo-octet-stream-body-header-param` | `search-incomplete` | 2977 | 2867 |
-| `combo-optional-ref-map-body` | `search-incomplete` | 3019 | 2912 |
-| `combo-optional-ref-union-body` | `search-incomplete` | 2979 | 2868 |
-| `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2863 |
-| `combo-params-beside-inline-anyof-body` | `search-incomplete` | 3041 | 2933 |
-| `combo-params-beside-inline-oneof-body` | `search-incomplete` | 3058 | 2954 |
-| `combo-path-param-ref-string-enum` | `search-incomplete` | 3010 | 2903 |
-| `combo-query-param-anyof` | `search-incomplete` | 3050 | 2946 |
-| `combo-query-param-array-inline-enum-items` | `search-incomplete` | 3171 | 3070 |
-| `combo-query-param-array-ref-enum-items` | `search-incomplete` | 3066 | 2957 |
-| `combo-query-param-inline-object` | `search-incomplete` | 3007 | 2897 |
-| `combo-query-param-oneof` | `search-incomplete` | 3007 | 2902 |
-| `combo-query-param-ref-date-time` | `search-incomplete` | 2965 | 2853 |
-| `combo-query-param-ref-object` | `search-incomplete` | 3009 | 2901 |
-| `combo-query-param-ref-string-enum` | `search-incomplete` | 3189 | 3091 |
-| `combo-streaming-method-name` | `search-incomplete` | 2984 | 2873 |
-| `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2868 |
-| `combo-success-json-beside-binary-schema` | `search-incomplete` | 3009 | 2908 |
-| `combo-success-json-beside-download` | `search-incomplete` | 2998 | 2891 |
-| `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2851 |
-| `combo-success-statuses-mixed-media` | `search-incomplete` | 3139 | 3037 |
-| `combo-success-text-beside-download` | `search-incomplete` | 2969 | 2861 |
+| `combo-basic-auth-document-requirement` | `search-incomplete` | 3041 | 2922 |
+| `combo-basic-auth-operation-requirement` | `search-incomplete` | 3244 | 3124 |
+| `combo-body-property-named-as-header-param` | `search-incomplete` | 2960 | 2830 |
+| `combo-body-property-named-as-path-param` | `search-incomplete` | 3535 | 3414 |
+| `combo-document-operation-security` | `interaction-proven` | 3165 | 0 |
+| `combo-document-security-security-empty` | `interaction-proven` | 3059 | 0 |
+| `combo-echo-body-effective-anonymous` | `interaction-proven` | 3123 | 0 |
+| `combo-echo-body-effective-non-oauth-required` | `interaction-proven` | 3094 | 0 |
+| `combo-echo-body-effective-oauth2` | `interaction-proven` | 3248 | 0 |
+| `combo-error-multiple-media` | `search-incomplete` | 3084 | 2963 |
+| `combo-error-object` | `interaction-proven` | 3344 | 0 |
+| `combo-errors-shared-ref` | `search-incomplete` | 3568 | 3485 |
+| `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 3004 | 2878 |
+| `combo-form-urlencoded-body-with-params` | `search-incomplete` | 3129 | 3008 |
+| `combo-form-urlencoded-union-body` | `interaction-proven` | 2973 | 0 |
+| `combo-header-param-ref-string-enum` | `interaction-proven` | 2975 | 0 |
+| `combo-inline-body-read-only-property` | `interaction-proven` | 2990 | 0 |
+| `combo-multipart-beside-json-body` | `search-incomplete` | 2993 | 2868 |
+| `combo-multipart-body-with-params` | `search-incomplete` | 3186 | 3081 |
+| `combo-oas31-grouped-response` | `search-incomplete` | 3288 | 3207 |
+| `combo-oas31-root-response` | `search-incomplete` | 3030 | 2916 |
+| `combo-octet-stream-body-header-param` | `search-incomplete` | 2977 | 2850 |
+| `combo-optional-ref-map-body` | `search-incomplete` | 3019 | 2895 |
+| `combo-optional-ref-union-body` | `search-incomplete` | 2979 | 2851 |
+| `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2846 |
+| `combo-params-beside-inline-anyof-body` | `search-incomplete` | 3041 | 2917 |
+| `combo-params-beside-inline-oneof-body` | `search-incomplete` | 3058 | 2937 |
+| `combo-path-param-ref-string-enum` | `interaction-proven` | 3010 | 0 |
+| `combo-query-param-anyof` | `search-incomplete` | 3050 | 2933 |
+| `combo-query-param-array-inline-enum-items` | `search-incomplete` | 3171 | 3054 |
+| `combo-query-param-array-ref-enum-items` | `search-incomplete` | 3066 | 2941 |
+| `combo-query-param-inline-object` | `search-incomplete` | 3007 | 2880 |
+| `combo-query-param-oneof` | `search-incomplete` | 3007 | 2885 |
+| `combo-query-param-ref-date-time` | `interaction-proven` | 2965 | 0 |
+| `combo-query-param-ref-object` | `interaction-proven` | 3009 | 0 |
+| `combo-query-param-ref-string-enum` | `interaction-proven` | 3189 | 0 |
+| `combo-streaming-method-name` | `interaction-proven` | 2984 | 0 |
+| `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2849 |
+| `combo-success-json-beside-binary-schema` | `interaction-proven` | 3009 | 0 |
+| `combo-success-json-beside-download` | `interaction-proven` | 2998 | 0 |
+| `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2833 |
+| `combo-success-statuses-mixed-media` | `search-incomplete` | 3139 | 3021 |
+| `combo-success-text-beside-download` | `interaction-proven` | 2969 | 0 |
+
+## Handed-off verdicts
+
+[handed-off-verdicts.tsv](handed-off-verdicts.tsv) has one row for each combination
+on each of the 78 documents the handed-off record lists as `registered`, which are
+exactly its newly admitted documents. All 78 have committed source bytes, so none is
+withheld or awaiting acquisition. Each row records the census declarations in those
+exact bytes (the pinned SHA-256 is checked first), the document's golden test, its
+unmatched files, and how many regions of the combination's declared interaction arm
+that test's instrumented run executed.
+
+| Verdict | State | Meaning |
+|---|---|---|
+| `not-declared` | decided | The exact bytes do not declare the combination. |
+| `declared-arm-not-executed` | decided | The document declares it, and its run never executes the arm. |
+| `witness` | decided | The document declares it and its run executes the exclusive arm. |
+| `declared-no-exclusive-arm` | outstanding | The document declares it, but crozier has no exclusive region to screen. |
+| `declared-pooled-arm-executed` | outstanding | The document declares it and its run executes a region pooled with other cases. |
+
+The verdicts on the five combinations that rested on a hand-written fixture at this
+node's base:
+
+| Combination | `not-declared` | `declared-arm-not-executed` | `witness` | `declared-no-exclusive-arm` | `declared-pooled-arm-executed` |
+|---|---:|---:|---:|---:|---:|
+| `combo-body-property-named-as-header-param` | 78 | 0 | 0 | 0 | 0 |
+| `combo-body-property-named-as-path-param` | 68 | 10 | 0 | 0 | 0 |
+| `combo-inline-body-read-only-property` | 75 | 0 | 3 | 0 | 0 |
+| `combo-success-anyof-nullable` | 75 | 3 | 0 | 0 | 0 |
+| `combo-success-oneof-nullable` | 77 | 1 | 0 | 0 | 0 |
+
+`combo-inline-body-read-only-property` is proven by this screen: the split read-only
+arm runs on `registered-literals-apis-guru-openapi-directory-cdcf7865` (osf.io), whose
+`POST /preprints/` inline body declares read-only `id` and `links`, and its hand-written
+cover is retired. The other four stay open, with their hand-written fixtures still
+byte-matched but not counted as proof. Their declarers here are decided negatively, and
+their outstanding candidates are the documents whose bytes or arm comparison this bound
+did not reach. The `exhausted` verdict the
+[earlier continuation record](../witness-search-fixture-only-bodies-paths-continuation/README.md#verdicts)
+gives them is historical: it read only that record's two narrower populations.
+
+## Renewed screen outcomes
+
+Each of the four fixtures' covers cites this table: this search found no registrable
+real witness among the populations it finished, and its outstanding candidates remain.
+
+| Combination | Outcome | Note |
+|---|---|---|
+| `combo-body-property-named-as-header-param` | `none-registrable` | No handed-off document declares it, and no registered region implies a header collision. |
+| `combo-body-property-named-as-path-param` | `none-registrable` | Its handed-off and registered declarers never execute the arm. |
+| `combo-success-anyof-nullable` | `none-registrable` | Its handed-off and registered declarers never execute the dropped-null region. |
+| `combo-success-oneof-nullable` | `none-registrable` | Its handed-off and registered declarers never execute the dropped-null region. |
+
+`tools/surface-census/handed-off-combination-verdicts.py write` restates the table, the
+census cells, the outstanding index and the verdict table above from `just census-repin`'s
+views. Its `check` mode, in the census suite, recomputes everything except the arm counts
+from committed bytes; those are measured, and record the reach store's commit `259d5bc9125c`.
 
 ## Census encoding
 
 `census.tsv.gz` retains the fixture-only search census columns, sorted by all
 column values, with UTF-8 and LF records. It uses gzip level 9, timestamp 0,
-and an empty original filename. The census suite requires that header and that
-the decoded rows equal their sorted serialization on every host. It does not pin
-the deflate stream, because a Windows check rebuilt a different stream from the
-same bytes. That the cause is zlib-ng is an inference, not read from that host:
-the rebuilt stream's leading bytes and length match zlib-ng 2.3.3's level 9
-output. The plain
+and an empty original filename. The census suite requires that header and that its
+decompressed content is sorted and serialized canonically; the compressed bytes
+themselves are the compressor's, so they are not compared. The plain
 [outstanding index](outstanding-candidates.tsv) lists every affected combination
 for each candidate and the reason its screening is unfinished.
 
@@ -117,9 +175,7 @@ commit `daa26ba3013e2c6158e22a63a857ed65d0c8871e`. The refresh started from
 the complete saved base, but the tool selected full measurement because its
 change attribution considered the new `Document::tree` test helper reachable
 from golden tests. No declaration was promoted from a pooled hit.
-The nullable-response declarations pool the two union keywords;
-the inline-readOnly predicate pools writable fields. Its pruning helper also
-pools dropped and kept fields in one closure. The historical co-occurrence
+The nullable-response declarations pool the two union keywords. The historical co-occurrence
 audit identifies the pooled operands or absence of a conjunctive condition for
 each other row. These stay open until an exclusive arm and a matching real
 witness settle them.
@@ -144,6 +200,39 @@ documents and found 44 both-only and 22 single-union-only regions. The certified
 pair also refused the header document, so that screen establishes no refusal
 parity gap. Its document and Contract A result are in
 [the measurement](../../fern-measurements/operation-independence/header-array-enum-second/README.md).
+
+## Registered arm screen
+
+Each `interaction-proven` row below was screened over every golden-only registered
+declarer the reach ledger names, with the instrumented crozier, on 2026-11-06 (the
+inline read-only row on 2026-11-07, over the merged base's registrations). Its
+witness has an empty `unmatched` list, and its scoped golden test byte-matches.
+
+| Combination | Declarers screened | Executed the arm | Witness |
+|---|---:|---:|---|
+| `combo-document-operation-security` | 47 | 13 | `ahasend-api` |
+| `combo-document-security-security-empty` | 21 | 18 | `billie` |
+| `combo-echo-body-effective-anonymous` | 16 | 16 | `apache.org` |
+| `combo-echo-body-effective-non-oauth-required` | 14 | 14 | `alma-france` |
+| `combo-echo-body-effective-oauth2` | 6 | 6 | `swagger-petstore` |
+| `combo-error-object` | 29 | 28 | `apideck.com-proxy` |
+| `combo-form-urlencoded-union-body` | 1 | 1 | `grantly` |
+| `combo-header-param-ref-string-enum` | 1 | 1 | `ecommerce-ai-skills-runtime` |
+| `combo-path-param-ref-string-enum` | 7 | 7 | `apicurio.local-registry` |
+| `combo-query-param-ref-date-time` | 1 | 1 | `openepcis-dpp-ready` |
+| `combo-query-param-ref-object` | 16 | 2 | `seldon-wrapper` |
+| `combo-inline-body-read-only-property` | 4 | 4 | `registered-literals-apis-guru-openapi-directory-cdcf7865` |
+| `combo-streaming-method-name` | 3 | 3 | `truefoundry-trueforge` |
+| `combo-success-json-beside-binary-schema` | 3 | 3 | `apicurio.local-registry` |
+| `combo-success-json-beside-download` | 2 | 2 | `osparc-simcore-webserver` |
+| `combo-success-text-beside-download` | 3 | 3 | `chat-rest-api` |
+
+The same screen ran the three arms below and none executed, so they were removed
+and those rows stay open: a required inline query object over its 3 declarers (none
+declares the parameter required), and each keyword's dropped-`null` response over its 1
+and 3 declarers. A declared-`false` referenced map or union body over 10 and 4 declarers
+did not execute either: each declares `required` nowhere or `true`, which is what the
+selector's `!requestBody.required` measures.
 
 ## Adyen interaction proof
 

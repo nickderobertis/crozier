@@ -141,29 +141,29 @@ split five ways:
 549 + 70 + 107 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
-([the list](openapi-surface/combinations.md)): 30 are `gap`, 72 are `golden` and 5 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 30 are `gap`, 73 are `golden` and 4 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**21** are byte-matched against a registered real specification at their
+**37** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **74** remain
-open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 21 + 0 + 0 + 0 + 74 + 12 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **58** remain
+open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 37 + 0 + 0 + 0 + 58 + 12 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 622 `golden` rows declare 1083 handling sites in
+same way. The 623 `golden` rows declare 1099 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv). The
 [ledger](openapi-surface/golden-reach.tsv) retains the base measurement's
 provenance and records scoped updates beside their rows.
 
-- **994 are reached by a registered real specification.** Its scoped
+- **1010 are reached by a registered real specification.** Its scoped
   golden test executes the site; file-level residuals remain recorded separately.
 - **86 are reached only by a hand-written fixture.** Each arm-level
   cover executes the site and byte-matches the certified tree. Thus each of the 86 is still one of the 89 [unreached arms](#every-unreached-arm-and-its-search-verdict).
@@ -176,7 +176,7 @@ provenance and records scoped updates beside their rows.
   before/after trees in both generators recorded in [the shared table](openapi-surface/output-insensitive.tsv).
 - **0 are named gaps**, whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).
 
-994 + 86 + 3 + 0 + 0 = 1083. Fourteen sites left the table with the two functions
+1010 + 86 + 3 + 0 + 0 = 1099. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. Twelve more left with the
@@ -2945,7 +2945,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **554** golden rows reach every handling site and tie below every row
+then key. **555** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -3003,7 +3003,7 @@ unreached by any Fern-accepted document.
 | 10 | `parameter-in-path` | `parameters` | **2** | **28** | **284** | open — real-specification witness search remains open |
 | 11 | `parameter-schema` | `parameters` | **2** | **26** | **327** | open — real-specification witness search remains open |
 | 12 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **5** | open — real-specification witness search remains open |
-| 13 | `media-type-multipart` | `bodies-media` | **2** | **7** | **29** | open — real-specification witness search remains open |
+| 13 | `media-type-multipart` | `bodies-media` | **2** | **8** | **29** | open — real-specification witness search remains open |
 | 14 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **4** | open — real-specification witness search remains open |
 | 15 | `anyof-discriminated-union` | `schemas` | **1** | **198** | **29** | owned — first-pass search record below |
 | 16 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **192** | **19** | open — real-specification witness search remains open |
@@ -3158,7 +3158,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **554** reach every handling site their
+The golden rows split in two. **555** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **68** carry at least one handling site no golden-only witness executes: 89 unreached arms in all. By the verdict each arm's linked record states, 64 read `exhausted`, 25 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3572,11 +3572,11 @@ ledger, so a registration that adds a second witness removes the row here.
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | `schemas` | `registered-literals-openapitools-openapi-generator-98d94419` |
 | `union-of-two-enum-refs-alias` | `schemas` | `chrome-webstatus-backend` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
-| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
+| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
+| `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
 | `enum-digit-word-member` | `schemas` | `reverb.com` |
 | `oneof-array-variant-composed-item` | `schemas` | `hse` |
-| `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
 | `oneof-array-variant-empty-object-item` | `schemas` | `milvus-vector-operations` |
 | `allof-single-ref-empty-properties-alias` | `schemas` | `azure-databox-management` |
 | `camel-case-tag-group-and-prefix` | `document-paths` | `kompaz-web-frontend` |
@@ -4219,15 +4219,19 @@ there, VTEX's Marketplace Protocol, is corpus row 3479, so the row reads `golden
 and its hand-written fixture is retired
 ([`vtex-output-parity.md`](vtex-output-parity.md)).
 
-Four more joined with the worked-example repairs, `handwritten` from the start:
-`unread-date-time-example` here, and three `bodies-media` rows
+Four more joined with the worked-example repairs, `handwritten` from the start
+in the same way: `unread-date-time-example` here, and three `bodies-media` rows
 (`allof-parent-request-body`, `request-example-nested-null`,
-`request-example-deprecated-property`). The latter two now have registered real
-witnesses, corpus rows 2801 and 4301. The bodies and paths
-[continuation](openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md)
-names the remaining bounded search population and its decisions; the
-[earlier example search](openapi-surface/witness-search-example-shapes/README.md)
-retains its original measurements.
+`request-example-deprecated-property`). Their
+[hand-written fixtures](openapi-surface/handwritten/AGENTS.md) are the
+measurement, each line reads `search-incomplete` because no declared source has
+been walked or queried for it, and their
+[renewed search](openapi-surface/witness-search-example-shapes/README.md) read
+941 documents a bounded code search returned and found none registrable. The
+table below names `unread-date-time-example`'s candidates; the three
+`bodies-media` keys' lines, and the candidates each search found, are under
+[`bodies-media.md`'s Witness search (exhaustive)](openapi-surface/bodies-media.md#witness-search-exhaustive)
+and in that record.
 
 **Five read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its

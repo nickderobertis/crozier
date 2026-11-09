@@ -1381,6 +1381,46 @@ class MeasuredReach(Protocol):
     def unreached_sites(self) -> int: ...
 
 
+def open_handwritten_presentation_failures(root: Path, key: str, record: str | None, row: CombinationRow) -> list[str]:
+    """An `open` row with a surviving fixture must not read as a current `exhausted` hand-written proof.
+
+    Its evidence cell and every feature-level cover state `search-incomplete` and cite the
+    bounded search its audit row cites; an older verdict stays in its own record as history.
+    """
+    surface = root / "docs" / "openapi-surface"
+    failures = []
+    cell = re.fullmatch(r"handwritten: [^;]+; search: ([a-z-]+) \(\[record\]\(([^)#]+)#[^)]*\)\)", row.cells[4])
+    if cell is None or cell.group(1) != SEARCH_INCOMPLETE or f"docs/openapi-surface/{cell.group(2)}" != record:
+        failures.append(
+            f"{key}: its audit class is open, but its region row presents `{row.cells[4][:100]}`; "
+            f"an open row's evidence reads `{SEARCH_INCOMPLETE}` and cites `{record}`"
+        )
+    for evidence in sorted((surface / "handwritten").glob("*/evidence.toml")):
+        try:
+            with evidence.open("rb") as handle:
+                covers = tomllib.load(handle).get("covers", [])
+        except (OSError, tomllib.TOMLDecodeError) as error:
+            failures.append(f"{key}: cannot read `{evidence.parent.name}`'s evidence.toml: {error}")
+            continue
+        if not isinstance(covers, list):
+            failures.append(f"{key}: `{evidence.parent.name}`'s `covers` is not a list of tables")
+            continue
+        for cover in covers:
+            if not isinstance(cover, dict) or not all(
+                isinstance(cover.get(field), str) for field in ("key", "search", "verdict")
+            ):
+                failures.append(f"{key}: `{evidence.parent.name}` has a cover without string key, search and verdict")
+                continue
+            if cover["key"] != key or "arm" in cover:
+                continue
+            if cover["verdict"] != SEARCH_INCOMPLETE or cover["search"].partition("#")[0] != record:
+                failures.append(
+                    f"{key}: its audit class is open, but `{evidence.parent.name}`'s cover reads "
+                    f"`{cover['verdict']}` from `{cover['search']}`; it must read `{SEARCH_INCOMPLETE}` from `{record}`"
+                )
+    return failures
+
+
 def combination_proof_failures(
     root: Path, ledger: dict[str, MeasuredReach], covers: list[tuple[str, str, str | None]]
 ) -> list[str]:
@@ -1410,6 +1450,8 @@ def combination_proof_failures(
             failures.append(f"{key}: its audit must declare class:interaction, independent, handwritten or open")
         if row.proof_class in {"interaction", "handwritten"} and key in table and table[key].cooccurrence:
             failures.append(f"{key}: {row.proof_class} proof needs an exclusive interaction site, not co-occurrence")
+        if row.proof_class == "open" and key in rows and rows[key].cells[3].strip("`") == "handwritten":
+            failures += open_handwritten_presentation_failures(root, key, row.search_record, rows[key])
         if row.proof_class in {"open", "handwritten"}:
             state = CombinationSearchState.OPEN if row.proof_class == "open" else CombinationSearchState.EXHAUSTED
             failures += combination_search_failures(
@@ -1666,7 +1708,13 @@ def combination_search_failures(
             if not heading:
                 raise ValueError("handed-off README omits Newly admitted documents")
             admitted = admitted.split("\n## ", 1)[0]
-            required |= set(re.findall(r"^- `([^`]+)` \| `[0-9a-f]{64}`", admitted, re.M))
+            for entry in admitted.splitlines():
+                if not entry.startswith("- "):
+                    continue
+                listed = re.match(r"- `([^`]+)` \| `[0-9a-f]{64}`", entry)
+                if not listed:
+                    raise ValueError(f"handed-off README has a malformed newly admitted entry: {entry[:120]!r}")
+                required.add(listed.group(1))
         except (OSError, UnicodeError, csv.Error, ValueError, AssertionError) as error:
             return [*failures, f"{key}: cannot read the required handed-off population: {error}"]
         missing = required - set(names)
@@ -1674,6 +1722,27 @@ def combination_search_failures(
             failures.append(
                 f"{key}: its renewed search omits newly admitted or registered handed-off documents: {sorted(missing)}"
             )
+    return failures
+
+
+def canonical_census_failures(payload: bytes) -> list[str]:
+    """What keeps a compressed search census from its one canonical content and gzip header."""
+    failures = []
+    flags, mtime = payload[3], int.from_bytes(payload[4:8], "little")
+    if flags:
+        failures.append(f'its gzip header sets flags {flags:#x}, such as a file name; write it with `filename=""`')
+    if mtime:
+        failures.append(f"its gzip header records mtime {mtime}; write it with `mtime=0`")
+    written = gzip.decompress(payload).decode("utf-8")
+    header, *rows = csv.reader(io.StringIO(written), delimiter="\t")
+    canonical = io.StringIO(newline="")
+    writer = csv.writer(canonical, delimiter="\t", lineterminator="\n")
+    writer.writerow(header)
+    writer.writerows(sorted(rows))
+    if header != ["key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome"]:
+        failures.append(f"its header reads {header}")
+    if written != canonical.getvalue():
+        failures.append("its rows or quoting differ from the sorted tab-separated form")
     return failures
 
 
@@ -10090,6 +10159,375 @@ class EscalationRestatementTests(unittest.TestCase):
                 self.assertEqual(expected[name], self.number(found[1]))
 
 
+class HandedOffCombinationVerdictsTests(unittest.TestCase):
+    """The operation search's per-combination verdicts, against the committed bytes and audit."""
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.tool = load_script("tools/surface-census/handed-off-combination-verdicts.py")
+        cls.counts = cls.tool.declared_sites(REPO, cls.tool.population(REPO), cls.tool.contract(REPO))
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name)
+        for relative in (self.tool.RECORD, self.tool.HANDED_OFF / "documents.tsv", self.tool.HANDED_OFF / "README.md"):
+            target = self.root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            (shutil.copytree if (REPO / relative).is_dir() else shutil.copy)(REPO / relative, target)
+        for relative in ("tests", "crates"):
+            (self.root / relative).symlink_to(REPO / relative, target_is_directory=True)
+        for name in ("combination-cooccurrence.tsv", "golden-reach-sites.tsv"):
+            shutil.copy(REPO / "docs/openapi-surface" / name, self.root / "docs/openapi-surface" / name)
+        self.record = self.root / self.tool.RECORD / "handed-off-verdicts.tsv"
+
+    def rewrite_cell(self, key: str, fixture: str, column: str, value: str) -> None:
+        columns = self.tool.COLUMNS
+        lines = self.record.read_text(encoding="utf-8").split("\n")
+        for index, line in enumerate(lines):
+            cells = line.split("\t")
+            if cells[0] == key and len(cells) == len(columns) and cells[columns.index("fixture")] == fixture:
+                cells[columns.index(column)] = value
+                lines[index] = "\t".join(cells)
+                self.record.write_text("\n".join(lines), encoding="utf-8")
+                return
+        self.fail(f"{key} has no verdict on {fixture}")
+
+    def test_the_committed_verdicts_hold(self) -> None:
+        self.assertEqual([], self.tool.failures(REPO, self.counts))
+
+    def test_every_former_handwritten_combination_has_a_verdict_on_every_document(self) -> None:
+        rows = self.tool.read_rows(REPO)
+        documents = {document.document for document in self.tool.population(REPO)}
+        self.assertEqual(78, len(documents))
+        for key in self.tool.FORMER_HANDWRITTEN:
+            self.assertEqual(documents, {row.document for row in rows if row.key == key}, key)
+
+    def test_the_inline_read_only_arm_rests_on_the_measured_witness(self) -> None:
+        witnesses = {
+            row.fixture
+            for row in self.tool.read_rows(REPO)
+            if row.key == "combo-inline-body-read-only-property" and row.verdict is self.tool.Verdict.WITNESS
+        }
+        self.assertIn("registered-literals-apis-guru-openapi-directory-cdcf7865", witnesses)
+
+    def test_a_verdict_its_measurements_do_not_support_is_refused(self) -> None:
+        key, fixture = (
+            "combo-inline-body-read-only-property",
+            "registered-literals-apis-guru-openapi-directory-cdcf7865",
+        )
+        self.rewrite_cell(key, fixture, "arm_regions_executed", "0")
+        self.assertTrue(
+            any("does not follow from its measurements" in f for f in self.tool.failures(self.root, self.counts))
+        )
+
+    def test_a_declaration_count_the_bytes_do_not_hold_is_refused(self) -> None:
+        self.rewrite_cell(
+            "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239", "declared_sites", "15"
+        )
+        self.assertTrue(any("the bytes declare 14" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_document_with_no_verdict_is_refused(self) -> None:
+        lines = self.record.read_text(encoding="utf-8").splitlines(keepends=True)
+        self.record.write_text("".join(line for line in lines if "osf.io" not in line), encoding="utf-8")
+        self.assertTrue(any("no verdict on" in f and "osf.io" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_census_cell_disagreeing_with_its_verdict_is_refused(self) -> None:
+        self.rewrite_cell(
+            "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239", "verdict", "not-declared"
+        )
+        self.assertTrue(any("census.tsv.gz does not state" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_fixture_or_digest_other_than_the_populations_is_refused(self) -> None:
+        key, fixture = "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239"
+        self.rewrite_cell(key, fixture, "sha256", "0" * 64)
+        self.assertTrue(any("not the handed-off" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_malformed_verdict_row_is_refused(self) -> None:
+        key, fixture = "combo-success-anyof-nullable", "registered-literals-msgbyte-tianji-1843a239"
+        self.rewrite_cell(key, fixture, "verdict", "probably")
+        self.assertTrue(any("unknown verdict" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_the_record_restates_its_verdict_vocabulary_and_totals(self) -> None:
+        readme = self.root / self.tool.RECORD / "README.md"
+        text = readme.read_text(encoding="utf-8")
+        for label, edited in (
+            ("vocabulary", text.replace("| `witness` | decided |", "| `witness` | outstanding |", 1)),
+            (
+                "totals",
+                text.replace(
+                    "| `combo-inline-body-read-only-property` | 75 |",
+                    "| `combo-inline-body-read-only-property` | 74 |",
+                    1,
+                ),
+            ),
+        ):
+            with self.subTest(label):
+                self.assertNotEqual(text, edited)
+                readme.write_text(edited, encoding="utf-8")
+                self.assertIn(
+                    "the record's verdict table does not restate census.tsv.gz; run this script's `write`",
+                    self.tool.failures(self.root, self.counts),
+                )
+        readme.write_text(text, encoding="utf-8")
+        self.assertEqual([], self.tool.failures(self.root, self.counts))
+
+    def test_a_measured_arm_without_regions_is_refused(self) -> None:
+        # No region measured is missing evidence, never a nonexecution.
+        row = next(row for row in self.tool.read_rows(REPO) if row.arm is not None and not row.arm.executed)
+        self.rewrite_cell(row.key, row.fixture, "arm_regions_total", "0")
+        self.assertTrue(
+            any("a measured arm holds at least one region" in f for f in self.tool.failures(self.root, self.counts))
+        )
+
+    def test_a_malformed_admitted_entry_is_refused(self) -> None:
+        readme = self.root / self.tool.HANDED_OFF / "README.md"
+        text = readme.read_text(encoding="utf-8")
+        readme.write_text(
+            text.replace("## Newly admitted documents\n", "## Newly admitted documents\n\n- `x` | `short`\n", 1),
+            encoding="utf-8",
+        )
+        self.assertTrue(any("malformed" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_malformed_census_cell_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        lines[1] = lines[1].replace("\tdecided:", "\tperhaps:").replace("\toutstanding:", "\tperhaps:")
+        census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
+        self.assertTrue(any("unknown candidate state" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_census_row_naming_a_verdict_cell_twice_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        repeated = next(line for line in lines if "osf.io" in line)
+        census.write_bytes(gzip.compress("".join([*lines, repeated]).encode("utf-8"), mtime=0))
+        self.assertTrue(any("names it twice" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_census_header_repeating_a_column_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        header, separator, rest = gzip.decompress(census.read_bytes()).decode("utf-8").partition("\n")
+        census.write_bytes(gzip.compress(f"{header}\tkey{separator}{rest}".encode(), mtime=0))
+        self.assertTrue(any("repeats a column" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_a_census_digest_other_than_the_verdicts_is_refused(self) -> None:
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        row = next(line for line in self.tool.read_rows(REPO) if line.declared_sites)
+        index = next(i for i, line in enumerate(lines) if f"\t{row.document}\t" in line and line.startswith(row.key))
+        lines[index] = lines[index].replace(row.sha256, "0" * 64)
+        census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
+        self.assertTrue(any("census.tsv.gz pins" in f for f in self.tool.failures(self.root, self.counts)))
+
+    def test_an_unknown_proof_class_never_reads_as_a_witness(self) -> None:
+        arm = self.tool.ArmCount(1, 1)
+        self.assertIs(self.tool.Verdict.WITNESS, self.tool.verdict_of("interaction", False, 1, arm))
+        self.assertIs(self.tool.Verdict.POOLED_ARM_EXECUTED, self.tool.verdict_of("open", False, 1, arm))
+        with self.assertRaises(ValueError):
+            self.tool.verdict_of("proven", False, 1, arm)
+
+    def test_the_tool_knows_exactly_the_handed_off_statuses(self) -> None:
+        self.assertEqual({str(status) for status in HandedOffStatus}, set(self.tool.HANDED_OFF_STATUSES))
+
+    def test_an_unknown_document_status_is_refused(self) -> None:
+        documents = self.root / self.tool.HANDED_OFF / "documents.tsv"
+        lines = documents.read_text(encoding="utf-8").splitlines(keepends=True)
+        index = next(i for i, line in enumerate(lines) if "\tregistered\t" in line)
+        lines[index] = lines[index].replace("\tregistered\t", "\tregisterd\t", 1)
+        documents.write_text("".join(lines), encoding="utf-8")
+        self.assertTrue(any("unknown status 'registerd'" in f for f in self.tool.failures(self.root)))
+
+    def test_a_truncated_contract_row_is_refused(self) -> None:
+        contract = self.root / self.tool.RECORD / "contract.tsv"
+        lines = contract.read_text(encoding="utf-8").splitlines(keepends=True)
+        lines[1] = lines[1].rsplit("\t", 1)[0] + "\n"
+        contract.write_text("".join(lines), encoding="utf-8")
+        self.assertTrue(any("contract.tsv line 2" in f for f in self.tool.failures(self.root)))
+
+    def run_tool(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/handed-off-combination-verdicts.py"), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+            cwd=REPO,
+        )
+
+    def test_write_measures_the_views_and_then_check_passes(self) -> None:
+        """The whole journey over the CLI: views to verdicts, a refused view, then recovery."""
+        reach = load_script("tools/surface-census/golden-reach.py")
+        (self.root / "src").symlink_to(REPO / "src", target_is_directory=True)
+        rows = self.tool.read_rows(REPO)
+        table = reach.read_sites_table(REPO / "docs/openapi-surface/golden-reach-sites.tsv")
+        site = reach.resolve_site(table["combo-inline-body-read-only-property"].sites[0], REPO)
+        region = [site.start, site.start_col, site.start, site.start_col + 1]
+        views = self.root / self.tool.VIEWS
+        (views / "tests").mkdir(parents=True)
+        # One region inside each exclusive arm site: an arm the universe holds no region of is refused.
+        arms = [
+            reach.resolve_site(table[key].sites[0], REPO)
+            for key in self.tool.contract(REPO)
+            if key in table and not table[key].cooccurrence
+        ]
+        files = {arm.file for arm in arms}
+        universe_regions = {
+            file: sorted({(a.start, a.start_col, a.start, a.start_col + 1) for a in arms if a.file == file})
+            for file in files
+        }
+        (views / "universe.json").write_text(json.dumps(universe_regions), encoding="utf-8")
+        witness = "registered-literals-apis-guru-openapi-directory-cdcf7865"
+        for fixture, test in {(row.fixture, row.golden_test) for row in rows}:
+            hit = [region] if fixture == witness else []
+            (views / "tests" / f"{test}.json").write_text(json.dumps(dict.fromkeys(files, hit)), encoding="utf-8")
+        target = self.root / self.tool.RECORD / "handed-off-verdicts.tsv"
+        target.unlink()
+        written = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(0, written.returncode, written.stderr)
+        verdicts = {(row.key, row.fixture): row for row in self.tool.read_rows(self.root)}
+        proved = verdicts["combo-inline-body-read-only-property", witness]
+        self.assertIs(self.tool.Verdict.WITNESS, proved.verdict)
+        self.assertEqual((1, 1), proved.arm)
+        other = "registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265"
+        self.assertIs(
+            self.tool.Verdict.ARM_NOT_EXECUTED, verdicts["combo-inline-body-read-only-property", other].verdict
+        )
+        checked = self.run_tool("check", "--repo-root", str(self.root))
+        self.assertEqual(0, checked.returncode, checked.stderr)
+        # A view that cannot be read writes nothing and says what to run; restoring it recovers.
+        universe = views / "universe.json"
+        good = universe.read_text(encoding="utf-8")
+        before = target.read_bytes()
+        for malformed in ('{"src/ir.rs": [[1, 2]]}', '{"src/ir.rs": [[9, 1, 2, 1]]}'):
+            universe.write_text(malformed, encoding="utf-8")
+            refused = self.run_tool("write", "--repo-root", str(self.root))
+            self.assertEqual(1, refused.returncode)
+            self.assertIn("just census-repin", refused.stderr)
+            self.assertNotIn("Traceback", refused.stderr)
+            self.assertEqual(before, target.read_bytes())
+        # A universe without the arm's regions, or a hit it does not hold, is another tree's view.
+        hit_view = views / "tests" / f"{proved.golden_test}.json"
+        good_hit = hit_view.read_text(encoding="utf-8")
+        emptied = {file: [r for r in spans if r != region] for file, spans in json.loads(good).items()}
+        for view, restored_text, broken, said in (
+            (universe, good, json.dumps(emptied), "holds no region of its arm site"),
+            (
+                hit_view,
+                good_hit,
+                json.dumps({file: [[1, 1, 1, 2]] for file in files}),
+                "regions the universe does not hold",
+            ),
+        ):
+            with self.subTest(said):
+                view.write_text(broken, encoding="utf-8")
+                refused = self.run_tool("write", "--repo-root", str(self.root))
+                self.assertEqual(1, refused.returncode)
+                self.assertIn(said, refused.stderr)
+                self.assertIn("wrote nothing", refused.stderr)
+                self.assertEqual(before, target.read_bytes())
+                view.write_text(restored_text, encoding="utf-8")
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        # A census row the record lost is written back from its verdict, and check then passes.
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        header = lines[0].rstrip("\n").split("\t")
+        cell = next(
+            i for i, line in enumerate(lines) if line.startswith(f"{proved.key}\t") and f"\t{proved.document}\t" in line
+        )
+        census.write_bytes(gzip.compress("".join(lines[:cell] + lines[cell + 1 :]).encode("utf-8"), mtime=0))
+        self.assertIn("does not name it", self.run_tool("check", "--repo-root", str(self.root)).stderr)
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        restored = {
+            tuple(row[: len(header)])
+            for row in csv.reader(
+                io.StringIO(gzip.decompress(census.read_bytes()).decode("utf-8"), newline=""), delimiter="\t"
+            )
+            if row[:1] == [proved.key] and proved.document in row
+        }
+        self.assertEqual(1, len(restored))
+        written_back = dict(zip(header, next(iter(restored)), strict=True))
+        self.assertEqual(proved.sha256, written_back["sha256"])
+        self.assertEqual(str(proved.declared_sites), written_back["sites"])
+        self.assertEqual(str(proved.outcome()), written_back["outcome"])
+        self.assertEqual(0, self.run_tool("check", "--repo-root", str(self.root)).returncode)
+        # A census pinning other bytes is refused by write, which then changes no artifact.
+        record = self.root / self.tool.RECORD
+        names = ("handed-off-verdicts.tsv", "census.tsv.gz", "outstanding-candidates.tsv", "README.md")
+        lines = gzip.decompress(census.read_bytes()).decode("utf-8").splitlines(keepends=True)
+        cell = next(
+            i for i, line in enumerate(lines) if line.startswith(f"{proved.key}\t") and f"\t{proved.document}\t" in line
+        )
+        pinned = lines.copy()
+        pinned[cell] = pinned[cell].replace(proved.sha256, "0" * 64)
+        census.write_bytes(gzip.compress("".join(pinned).encode("utf-8"), mtime=0))
+        unchanged = {name: (record / name).read_bytes() for name in names}
+        refused = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("census.tsv.gz pins", refused.stderr)
+        self.assertEqual(unchanged, {name: (record / name).read_bytes() for name in names})
+        self.assertEqual([], sorted(path.name for path in record.glob(".*.staged")))
+        # Corrupt deflate data is a diagnostic, never a traceback, in both modes.
+        census.write_bytes(census.read_bytes()[:20] + b"\xff" * 64)
+        for mode in ("write", "check"):
+            corrupt = self.run_tool(mode, "--repo-root", str(self.root))
+            self.assertEqual(1, corrupt.returncode, mode)
+            self.assertNotIn("Traceback", corrupt.stderr, mode)
+        census.write_bytes(gzip.compress("".join(lines).encode("utf-8"), mtime=0))
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        # The record's README is read before anything is written, so losing it changes nothing.
+        readme = self.root / self.tool.RECORD / "README.md"
+        text = readme.read_text(encoding="utf-8")
+        census = self.root / self.tool.RECORD / "census.tsv.gz"
+        before = target.read_bytes(), census.read_bytes()
+        readme.unlink()
+        self.assertEqual(1, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        self.assertEqual(before, (target.read_bytes(), census.read_bytes()))
+        readme.write_text(text, encoding="utf-8")
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        names = ("handed-off-verdicts.tsv", "census.tsv.gz", "outstanding-candidates.tsv", "README.md")
+        published = {name: (record / name).read_bytes() for name in names}
+        # A staging write that fails publishes nothing and leaves no staged file of its own.
+        blocker = record / ".README.md.staged"
+        blocker.mkdir()
+        (blocker / "occupied").write_text("", encoding="utf-8")
+        staged = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, staged.returncode)
+        self.assertIn("wrote nothing", staged.stderr)
+        self.assertNotIn("Traceback", staged.stderr)
+        self.assertEqual(published, {name: (record / name).read_bytes() for name in names})
+        self.assertEqual([".README.md.staged"], sorted(path.name for path in record.glob(".*.staged")))
+        shutil.rmtree(blocker)
+        # A replacement that fails part-way names what it replaced, cleans up, and a rerun recovers.
+        (self.root / self.tool.RECORD / "census.tsv.gz").write_bytes(
+            gzip.compress(gzip.decompress(census.read_bytes()), compresslevel=1, mtime=0)
+        )
+        verdicts = record / "handed-off-verdicts.tsv"
+        verdicts.unlink()
+        verdicts.mkdir()
+        (verdicts / "occupied").write_text("", encoding="utf-8")
+        partial = self.run_tool("write", "--repo-root", str(self.root))
+        self.assertEqual(1, partial.returncode)
+        self.assertIn(
+            "replaced census.tsv.gz, outstanding-candidates.tsv, README.md before failing on handed-off-verdicts.tsv",
+            partial.stderr,
+        )
+        self.assertNotIn("wrote nothing", partial.stderr)
+        self.assertNotIn("Traceback", partial.stderr)
+        self.assertEqual(published["census.tsv.gz"], census.read_bytes())
+        self.assertEqual([], sorted(path.name for path in record.glob(".*.staged")))
+        shutil.rmtree(verdicts)
+        self.assertEqual(0, self.run_tool("write", "--repo-root", str(self.root)).returncode)
+        self.assertEqual(published, {name: (record / name).read_bytes() for name in names})
+        self.assertEqual(0, self.run_tool("check", "--repo-root", str(self.root)).returncode)
+
+    def test_source_bytes_other_than_the_pinned_ones_are_refused(self) -> None:
+        documents = self.root / self.tool.HANDED_OFF / "documents.tsv"
+        pinned = self.tool.population(REPO)[0].sha256
+        documents.write_text(documents.read_text(encoding="utf-8").replace(pinned, "0" * 64), encoding="utf-8")
+        readme = documents.with_name("README.md")
+        readme.write_text(readme.read_text(encoding="utf-8").replace(pinned, "0" * 64), encoding="utf-8")
+        self.assertTrue(any("not the handed-off" in f for f in self.tool.failures(self.root)))
+
+
 class RankedBacklogTests(unittest.TestCase):
     """The index's synthesis restates the six region files; recompute it from them.
 
@@ -13071,25 +13509,23 @@ class CombinationSearchRecordTests(unittest.TestCase):
             census.write_text(valid)
             self.assertEqual([], combination_search_failures(root, key, relative, CombinationSearchState.OPEN))
 
-    def test_committed_operation_search_is_canonical_and_host_independent(self) -> None:
-        # The content and the gzip header are the contract, not the deflate stream, which varies by
-        # encoder; see the search record's "Census encoding" section.
-        path = REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz"
-        committed = path.read_bytes()
-        self.assertEqual(b"\x1f\x8b\x08", committed[:3], "the search census must be a deflated gzip member")
-        self.assertEqual(
-            0, committed[3], "the search census gzip header must carry no file name or other optional field"
-        )
-        self.assertEqual(b"\0\0\0\0", committed[4:8], "the search census gzip header must carry no timestamp")
-        content = gzip.decompress(committed).decode("utf-8")
-        reader = csv.reader(io.StringIO(content, newline=""), delimiter="\t")
-        header, *rows = reader
-        self.assertEqual(["key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome"], header)
-        text = io.StringIO(newline="")
-        writer = csv.writer(text, delimiter="\t", lineterminator="\n")
-        writer.writerow(header)
-        writer.writerows(sorted(rows))
-        self.assertEqual(text.getvalue(), content, "the search census must hold its sorted canonical rows")
+    def test_committed_operation_search_is_canonical_whichever_deflate_wrote_it(self) -> None:
+        committed = (REPO / "docs/openapi-surface/witness-search-operation-combinations/census.tsv.gz").read_bytes()
+        self.assertEqual([], canonical_census_failures(committed))
+        # Deflate output is the compressor's own: CPython links zlib on some hosts and
+        # zlib-ng on others, so only the content and the gzip header are the record's.
+        text = gzip.decompress(committed)
+        self.assertEqual([], canonical_census_failures(gzip.compress(text, compresslevel=1, mtime=0)))
+        self.assertNotEqual(committed, gzip.compress(text, compresslevel=1, mtime=0))
+        header, first, second, *rest = text.decode("utf-8").splitlines(keepends=True)
+        swapped = "".join((header, second, first, *rest)).encode("utf-8")
+        self.assertIn("rows or quoting", canonical_census_failures(gzip.compress(swapped, mtime=0))[0])
+        stamped = gzip.compress(text, mtime=1)
+        self.assertIn("mtime", canonical_census_failures(stamped)[0])
+        named = io.BytesIO()
+        with gzip.GzipFile(filename="census.tsv", mode="wb", fileobj=named, mtime=0) as stream:
+            stream.write(text)
+        self.assertIn("file name", canonical_census_failures(named.getvalue())[0])
 
     def test_compressed_searches_preserve_open_and_exhausted_obligations(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -14173,6 +14609,50 @@ class FinishedStateGateTests(unittest.TestCase):
         # The positive cover must declare and reach the combination it claims.
         fixture = "harbor-relay-registration"
         self.assertEqual([], [f for f in finished_state_failures(self.root) if "witness-blocked" in f or fixture in f])
+
+    def test_an_open_row_presented_as_a_current_exhausted_handwritten_proof_is_refused(self) -> None:
+        key = "combo-body-property-named-as-path-param"
+        current = "docs/openapi-surface/witness-search-operation-combinations/README.md"
+        historical = "witness-search-fixture-only-bodies-paths-continuation/README.md"
+
+        def presented(failures: list[str]) -> list[str]:
+            return [failure for failure in failures if failure.startswith(f"{key}: its audit class is open")]
+
+        self.assertEqual([], presented(finished_state_failures(self.root)))
+        cell = "search: search-incomplete ([record](witness-search-operation-combinations/README.md#verdicts))"
+        region = "docs/openapi-surface/document-paths.md"
+        line = next(
+            line
+            for line in (self.root / region).read_text(encoding="utf-8").splitlines()
+            if line.startswith(f"| {key} |")
+        )
+        stale = line.replace(cell, f"search: exhausted ([record]({historical}#verdicts))")
+        self.assertNotEqual(line, stale)
+        self.edit(region, line, stale)
+        self.assertTrue(presented(finished_state_failures(self.root)))
+        self.edit(region, stale, line)
+        evidence = "docs/openapi-surface/handwritten/beacon-signal-results/evidence.toml"
+        text = (self.root / evidence).read_text(encoding="utf-8")
+        cover = f'key = "{key}"\nsearch = "{current}#verdicts"\nverdict = "search-incomplete"\nrenewed = "{current}"'
+        self.assertIn(cover, text)
+        self.edit(
+            evidence,
+            cover,
+            f'key = "{key}"\nsearch = "docs/openapi-surface/{historical}#verdicts"\nverdict = "exhausted"',
+        )
+        self.assertTrue(presented(finished_state_failures(self.root)))
+
+    def test_a_malformed_cover_is_reported_by_the_open_row_check(self) -> None:
+        root = self.root / "docs/openapi-surface/handwritten/beacon-signal-results"
+        record = "docs/openapi-surface/witness-search-operation-combinations/README.md"
+        key = "combo-body-property-named-as-path-param"
+        row = combination_rows(self.root)[key]
+        (root / "evidence.toml").write_text('covers = "none"\n', encoding="utf-8")
+        failures = open_handwritten_presentation_failures(self.root, key, record, row)
+        self.assertIn("is not a list of tables", "\n".join(failures))
+        (root / "evidence.toml").write_text('[[covers]]\nkey = "combo-sample"\n', encoding="utf-8")
+        failures = open_handwritten_presentation_failures(self.root, key, record, row)
+        self.assertIn("without string key, search and verdict", "\n".join(failures))
 
     def test_a_witness_blocked_cover_on_a_feature_key_is_refused(self) -> None:
         fixture = self.add_cover("request-body-content", f"{self.BLOCKED_RECORD}#blocked-witnesses")
@@ -19591,6 +20071,7 @@ class LegacyLocaleEncodingTests(unittest.TestCase):
         "apis-guru-gap-screen.py": ("\u2014",),
         "combination-independence.py": ("--json", "\u2014"),
         "fixtures-coverage-report.py": ("--repo-root", ".", "--tier", ".", "--golden-tier", ".", "\u2014"),
+        "handed-off-combination-verdicts.py": ("check", "--repo-root", "missing-root"),
         "golden-reach-search.py": ("\u2014",),
         "golden-reach.py": ("\u2014",),
         "handwritten-fixtures.py": ("\u2014",),

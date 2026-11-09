@@ -71,6 +71,14 @@ logs to commit. A certified-tree reuse is not a GitHub response-cache hit.
 
 ## Verdicts
 
+These verdicts are this record's own, over its two assigned populations at its base.
+Four of its combination rows are **historical**, not the current state:
+`combo-body-property-named-as-path-param`, `combo-body-property-named-as-header-param`,
+`combo-success-oneof-nullable` and `combo-success-anyof-nullable`. A later, wider
+[bounded search](../witness-search-operation-combinations/README.md#verdicts) reads
+`search-incomplete` for them, and their rows and covers cite that. Its proof of
+`combo-inline-body-read-only-property` on a registered document likewise supersedes that row here.
+
 `exhausted` below decides only the assigned candidates. It does not claim to
 complete earlier truncated code-search windows, or to fix previously measured
 differences. Those earlier, already-screened declarers are not outstanding
