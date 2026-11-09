@@ -646,6 +646,10 @@ struct RequestExampleContext {
         std::collections::BTreeMap<String, GeneratedParameter>,
     >,
     json_object_methods: BTreeSet<MethodKey>,
+    /// Models with no field of their own or from a base; only the runtime base.
+    fieldless_models: BTreeSet<String>,
+    /// Methods whose raw request sends the literal `json={}`.
+    empty_json_methods: BTreeSet<MethodKey>,
     wire_fields: std::collections::BTreeMap<MethodKey, std::collections::BTreeMap<String, String>>,
 }
 
@@ -850,6 +854,15 @@ fn request_example_context<'a>(
             current = next;
         }
     }
+    out.fieldless_models = model_bases
+        .iter()
+        .filter(|(model, bases)| {
+            !model_fields.contains_key(*model)
+                && !bases.is_empty()
+                && bases.iter().all(|base| base.starts_with("Universal"))
+        })
+        .map(|(model, _)| model.clone())
+        .collect();
     // A retained object and an alias of it have the same documentation defect
     // when the method spreads the object's fields instead of taking `request`.
     out.alias_fields.extend(model_fields);
@@ -896,6 +909,9 @@ fn request_example_context<'a>(
             }
             if line.trim() == "json={" {
                 out.json_object_methods.insert(key.clone());
+            }
+            if line.trim() == "json={}," {
+                out.empty_json_methods.insert(key.clone());
             }
             if line.trim() == "json=request," {
                 json_methods.insert(key.clone());
@@ -1400,6 +1416,44 @@ fn reference_parameters(
     out
 }
 
+/// Fern's `request` block for a field-less model the method sends as `json={}`
+/// and does not take (guardian's `Object`): crozier writes no block, so the
+/// region is the empty point before the block Fern writes next.
+fn fieldless_model_request_block(
+    pair: &Pair<'_>,
+    key: &MethodKey,
+    blocks: &[(usize, usize)],
+    actual: &[(usize, usize)],
+    context: &RequestExampleContext,
+) -> Option<Region> {
+    if !context.empty_json_methods.contains(key) {
+        return None;
+    }
+    blocks.iter().find_map(|&(start, end)| {
+        let ("request", model, close, _) = reference_parameter_block(pair.fern, start)? else {
+            return None;
+        };
+        if !context.fieldless_models.contains(model)
+            || pair.fern[start + 3] != format!("**request:** `{model}` ")
+            || !pair.fern[start + 4..close]
+                .iter()
+                .all(|line| line.trim().is_empty())
+        {
+            return None;
+        }
+        let (_, next_end) = *blocks.iter().find(|&&(first, _)| first == end)?;
+        let next = &pair.fern[end..next_end];
+        let first = actual
+            .iter()
+            .map(|&(first, _)| first)
+            .find(|&first| pair.crozier.get(first..first + next.len()) == Some(next))?;
+        Some(Region {
+            fern: start..end,
+            crozier: first..first,
+        })
+    })
+}
+
 fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != "reference.md" {
         return Ok(None);
@@ -1420,7 +1474,13 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
         let Some(parameters) = context.method_parameters.get(&key) else {
             continue;
         };
-        if parameters.contains_key("request") || !context.json_object_methods.contains(&key) {
+        if parameters.contains_key("request") {
+            continue;
+        }
+        if let Some(region) = fieldless_model_request_block(pair, &key, &blocks, actual, context) {
+            return Ok(Some(region));
+        }
+        if !context.json_object_methods.contains(&key) {
             continue;
         }
         for (start, end) in blocks {
@@ -6537,7 +6597,56 @@ mod tests {
         };
         assert!(holds(&raw("tags")));
         // Without the wire entry the converter names, nothing is spread.
-        assert!(!holds(&raw("tags").replace("object_=tags", "object_=other")));
+        assert!(!holds(
+            &raw("tags").replace("object_=tags", "object_=other")
+        ));
+    }
+
+    #[test]
+    fn alias_reference_correction_drops_a_fieldless_models_request_block() {
+        let raw =
+            "    def stop(self, policy_id: str, *, request_options=None):\n        json={},\n";
+        let block = |name: &str, ty: &str, doc: &str| {
+            format!("<dl>\n<dd>\n\n**{name}:** `{ty}`{doc}\n    \n</dd>\n</dl>\n\n")
+        };
+        let head = "<details><summary><code>client.<a href=\"src/fern/record/client.py\">stop</a>(...)</code></summary>\n";
+        let path = block("policy_id", "str", " — Policy.");
+        let options = block(
+            "request_options",
+            "typing.Optional[RequestOptions]",
+            " — Options.",
+        );
+        let fern = format!("{head}{path}{}{options}", block("request", "Empty", " "));
+        let crozier = format!("{head}{path}{options}");
+        let model = "class Empty(UniversalBaseModel):\n    pass\n";
+        let holds = |raw_client: &str, model: &str, crozier: &str| {
+            let sources = [
+                ("src/fern/record/raw_client.py", raw_client),
+                ("src/fern/types/empty.py", model),
+            ];
+            let context = Context::from_sources([], sources);
+            let (fern, crozier): (Vec<&str>, Vec<&str>) =
+                (fern.lines().collect(), crozier.lines().collect());
+            alias_reference_parameters(&Pair {
+                rel: "reference.md",
+                fern: &fern,
+                crozier: &crozier,
+                context: &context,
+            })
+            .unwrap()
+        };
+        let region = holds(raw, model, &crozier).expect("the block is recognised");
+        assert_eq!(region.crozier.start, region.crozier.end);
+        assert_eq!(region.fern.len(), 8);
+        // The method must really send nothing.
+        assert!(holds(&raw.replace("json={},", "json=body,"), model, &crozier).is_none());
+        // A model holding a field, or only a base's, is a different shape.
+        let with_field = "class Empty(UniversalBaseModel):\n    id: str\n";
+        assert!(holds(raw, with_field, &crozier).is_none());
+        assert!(holds(raw, "class Empty(Base):\n    pass\n", &crozier).is_none());
+        // The next block must follow unchanged.
+        let changed = crozier.replace("— Options.", "— Altered.");
+        assert!(holds(raw, model, &changed).is_none());
     }
 
     #[test]
