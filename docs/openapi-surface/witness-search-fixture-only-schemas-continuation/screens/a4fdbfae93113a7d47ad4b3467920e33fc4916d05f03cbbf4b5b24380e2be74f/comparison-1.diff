@@ -1,0 +1,309 @@
+# crozier compare: <scratch>/screen-runs/a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f/compare.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (1367 unchanged line(s))
+  
+  ```python
+  from fern import FernApi
+- import datetime
+  
+  client = FernApi(
+      token="<token>",
+      ⋮ (2 unchanged line(s))
+  
+  client.external_summaries.get_data_summary(
+      user_id="user_id",
+-     start_date=datetime.datetime.fromisoformat("2023-11-07T05:31:56+00:00"),
+-     end_date=datetime.datetime.fromisoformat("2023-11-07T05:31:56+00:00"),
+  )
+  
+  ```
+      ⋮ (89 unchanged line(s))
+  
+  ```python
+  from fern import FernApi
+- import datetime
+  
+  client = FernApi(
+      token="<token>",
+      ⋮ (2 unchanged line(s))
+  
+  client.external_summaries.get_data_timeline(
+      user_id="user_id",
+-     start_date=datetime.datetime.fromisoformat("2023-11-07T05:31:56+00:00"),
+-     end_date=datetime.datetime.fromisoformat("2023-11-07T05:31:56+00:00"),
+  )
+  
+  ```
+      ⋮ (1116 unchanged line(s))
+  
+  ```python
+  from fern import FernApi
+- import datetime
+  
+  client = FernApi(
+      token="<token>",
+      ⋮ (2 unchanged line(s))
+  
+  client.external_health_scores.list_health_scores(
+      user_id="user_id",
+-     start_date=datetime.datetime.fromisoformat("2023-11-07T05:31:56+00:00"),
+-     end_date=datetime.datetime.fromisoformat("2023-11-07T05:31:56+00:00"),
+  )
+  
+  ```
+      ⋮ (632 unchanged line(s))
+  
+  client.internal_providers.bulk_update_providers(
+      providers={
+-         "key": True
++         "apple": True,
++         "garmin": True,
++         "polar": False,
++         "suunto": True
+      },
+  )
+  
+      ⋮ (2491 unchanged line(s))
+                          "timestamp": "2026-02-24T06:01:00Z",
+                          "type": "heartRate",
+                          "unit": "bpm",
+-                         "value": 110
++                         "value": 110.0
+                      },
+                      {
+                          "timestamp": "2026-02-24T06:01:00Z",
+                          "type": "cadence",
+                          "unit": "spm",
+-                         "value": 155
++                         "value": 155.0
+                      },
+                      {
+                          "timestamp": "2026-02-24T06:01:00Z",
+      ⋮ (5455 unchanged line(s))
+
+Unexplained original crozier line(s): 3250, 3251, 3252, 3253, 5751, 5757
+
+--- reference/src/fern/external_health_scores/client.py
++++ crozier/src/fern/external_health_scores/client.py
+      ⋮ (69 unchanged line(s))
+  
+          Examples
+          --------
+-         import datetime
+- 
+          from fern import FernApi
+  
+          client = FernApi(
+      ⋮ (2 unchanged line(s))
+          )
+          client.external_health_scores.list_health_scores(
+              user_id="user_id",
+-             start_date=datetime.datetime.fromisoformat(
+-                 "2023-11-07 05:31:56+00:00",
+-             ),
+-             end_date=datetime.datetime.fromisoformat(
+-                 "2023-11-07 05:31:56+00:00",
+-             ),
+          )
+          """
+          _response = self._raw_client.list_health_scores(
+      ⋮ (70 unchanged line(s))
+          Examples
+          --------
+          import asyncio
+-         import datetime
+  
+          from fern import AsyncFernApi
+  
+      ⋮ (6 unchanged line(s))
+          async def main() -> None:
+              await client.external_health_scores.list_health_scores(
+                  user_id="user_id",
+-                 start_date=datetime.datetime.fromisoformat(
+-                     "2023-11-07 05:31:56+00:00",
+-                 ),
+-                 end_date=datetime.datetime.fromisoformat(
+-                     "2023-11-07 05:31:56+00:00",
+-                 ),
+              )
+  
+  
+      ⋮ (14 unchanged line(s))
+
+--- reference/src/fern/external_mobile_sdk/client.py
++++ crozier/src/fern/external_mobile_sdk/client.py
+      ⋮ (365 unchanged line(s))
+                          ],
+                          route=[
+                              {
+-                                 "altitudeM": 142,
++                                 "altitudeM": 142.0,
+                                  "horizontalAccuracyM": 3.5,
+                                  "latitude": 52.229676,
+                                  "longitude": 21.012229,
+      ⋮ (5 unchanged line(s))
+                                  "timestamp": "2026-02-24T06:01:00Z",
+                                  "type": "heartRate",
+                                  "unit": "bpm",
+-                                 "value": 110,
++                                 "value": 110.0,
+                              },
+                              {
+                                  "timestamp": "2026-02-24T06:01:00Z",
+                                  "type": "cadence",
+                                  "unit": "spm",
+-                                 "value": 155,
++                                 "value": 155.0,
+                              },
+                              {
+                                  "timestamp": "2026-02-24T06:01:00Z",
+      ⋮ (528 unchanged line(s))
+                              ],
+                              route=[
+                                  {
+-                                     "altitudeM": 142,
++                                     "altitudeM": 142.0,
+                                      "horizontalAccuracyM": 3.5,
+                                      "latitude": 52.229676,
+                                      "longitude": 21.012229,
+      ⋮ (5 unchanged line(s))
+                                      "timestamp": "2026-02-24T06:01:00Z",
+                                      "type": "heartRate",
+                                      "unit": "bpm",
+-                                     "value": 110,
++                                     "value": 110.0,
+                                  },
+                                  {
+                                      "timestamp": "2026-02-24T06:01:00Z",
+                                      "type": "cadence",
+                                      "unit": "spm",
+-                                     "value": 155,
++                                     "value": 155.0,
+                                  },
+                                  {
+                                      "timestamp": "2026-02-24T06:01:00Z",
+      ⋮ (200 unchanged line(s))
+
+Unexplained original crozier line(s): 369, 381, 387, 922, 934, 940
+
+--- reference/src/fern/external_summaries/client.py
++++ crozier/src/fern/external_summaries/client.py
+      ⋮ (351 unchanged line(s))
+  
+          Examples
+          --------
+-         import datetime
+- 
+          from fern import FernApi
+  
+          client = FernApi(
+      ⋮ (2 unchanged line(s))
+          )
+          client.external_summaries.get_data_summary(
+              user_id="user_id",
+-             start_date=datetime.datetime.fromisoformat(
+-                 "2023-11-07 05:31:56+00:00",
+-             ),
+-             end_date=datetime.datetime.fromisoformat(
+-                 "2023-11-07 05:31:56+00:00",
+-             ),
+          )
+          """
+          _response = self._raw_client.get_data_summary(
+      ⋮ (55 unchanged line(s))
+  
+          Examples
+          --------
+-         import datetime
+- 
+          from fern import FernApi
+  
+          client = FernApi(
+      ⋮ (2 unchanged line(s))
+          )
+          client.external_summaries.get_data_timeline(
+              user_id="user_id",
+-             start_date=datetime.datetime.fromisoformat(
+-                 "2023-11-07 05:31:56+00:00",
+-             ),
+-             end_date=datetime.datetime.fromisoformat(
+-                 "2023-11-07 05:31:56+00:00",
+-             ),
+          )
+          """
+          _response = self._raw_client.get_data_timeline(
+      ⋮ (374 unchanged line(s))
+          Examples
+          --------
+          import asyncio
+-         import datetime
+  
+          from fern import AsyncFernApi
+  
+      ⋮ (6 unchanged line(s))
+          async def main() -> None:
+              await client.external_summaries.get_data_summary(
+                  user_id="user_id",
+-                 start_date=datetime.datetime.fromisoformat(
+-                     "2023-11-07 05:31:56+00:00",
+-                 ),
+-                 end_date=datetime.datetime.fromisoformat(
+-                     "2023-11-07 05:31:56+00:00",
+-                 ),
+              )
+  
+  
+      ⋮ (59 unchanged line(s))
+          Examples
+          --------
+          import asyncio
+-         import datetime
+  
+          from fern import AsyncFernApi
+  
+      ⋮ (6 unchanged line(s))
+          async def main() -> None:
+              await client.external_summaries.get_data_timeline(
+                  user_id="user_id",
+-                 start_date=datetime.datetime.fromisoformat(
+-                     "2023-11-07 05:31:56+00:00",
+-                 ),
+-                 end_date=datetime.datetime.fromisoformat(
+-                     "2023-11-07 05:31:56+00:00",
+-                 ),
+              )
+  
+  
+      ⋮ (13 unchanged line(s))
+
+--- reference/src/fern/internal_providers/client.py
++++ crozier/src/fern/internal_providers/client.py
+      ⋮ (58 unchanged line(s))
+              base_url="https://yourhost.com/path/to/api",
+          )
+          client.internal_providers.bulk_update_providers(
+-             providers={"key": True},
++             providers={"apple": True, "garmin": True, "polar": False, "suunto": True},
+          )
+          """
+          _response = self._raw_client.bulk_update_providers(providers=providers, request_options=request_options)
+      ⋮ (102 unchanged line(s))
+  
+          async def main() -> None:
+              await client.internal_providers.bulk_update_providers(
+-                 providers={"key": True},
++                 providers={
++                     "apple": True,
++                     "garmin": True,
++                     "polar": False,
++                     "suunto": True,
++                 },
+              )
+  
+  
+      ⋮ (63 unchanged line(s))
+
+Unexplained original crozier line(s): 62, 171, 172, 173, 174, 175, 176

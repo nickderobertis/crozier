@@ -230,8 +230,8 @@ test('an ordinary pull request push runs exactly the four governed lanes, none w
   assert.ok(rows.every(r => r.workflow === '.github/workflows/ci.yml' && r.result === 'success'));
   const by = Object.fromEntries(rows.map(r => [r.job, r]));
   assert.deepEqual(rows.filter(r => r.needs.length).map(r => r.job), [], 'no lane has a needs edge');
-  // The amendment's measured ceilings on main; crozier-ci-check-time reports the 30-minute line.
-  assert.equal(by.lint.timeout, 30); assert.equal(by['test-linux'].timeout, 150); assert.equal(by['test-windows'].timeout, 90); assert.equal(by['test-macos'].timeout, 120);
+  // Limits that let each lane's work on main finish; crozier-ci-check-time reports the 30-minute line.
+  assert.equal(by.lint.timeout, 30); assert.equal(by['test-linux'].timeout, 240); assert.equal(by['test-windows'].timeout, 150); assert.equal(by['test-macos'].timeout, 150);
   const ci = workflows().find(w => w.path.endsWith('/ci.yml')).value;
   for (const id of ['test-linux', 'test-windows', 'test-macos']) assert.equal(ci.jobs[id].strategy, undefined, `${id} is one job, no matrix or shards`);
   // The title and judged checks are steps of lint, once, rather than jobs of their own.

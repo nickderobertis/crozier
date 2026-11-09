@@ -4,12 +4,10 @@ digest = "e73e2992607927585383e5e803c21ce07c4bac5505b85aab744eb942e0d43b12"
 
 [[covers]]
 key = "schema-example-temporal-duplicate-element"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-116-schema-example-temporal-duplicate-element"
+verdict = "exhausted"
 
 [[covers]]
 key = "schema-example-union-ref-sentinel"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-117-schema-example-union-ref-sentinel"
+verdict = "exhausted"

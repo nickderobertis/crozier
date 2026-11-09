@@ -10,50 +10,50 @@ digest = "632e79f5953c125a0ffee6327974d6948590f845ad21433adf72524a715d88cd"
 
 [[covers]]
 key = "oneof-array-variant-annotated-ref-item"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-75-oneof-array-variant-annotated-ref-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-array-variant-anyof-discriminated-union-item"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-76-oneof-array-variant-anyof-discriminated-union-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-array-variant-anyof-nullable-item"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-78-oneof-array-variant-anyof-nullable-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-bare-object-example-variant"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-81-oneof-bare-object-example-variant"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-anyof-variant"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-anyof-variant.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-73-oneof-anyof-variant"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-array-variant-anyof-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-anyof-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-77-oneof-array-variant-anyof-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "annotated-ref-shape"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/annotated-ref-shape.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-11-annotated-ref-shape"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-array-variant-closed-object-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-closed-object-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-79-oneof-array-variant-closed-object-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "oneof-closed-empty-object-variant"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-closed-empty-object-variant.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-82-oneof-closed-empty-object-variant"
 verdict = "exhausted"

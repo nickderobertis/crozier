@@ -1,0 +1,24 @@
+compare: found config <scratch>/eqivo-literals/compare.yml
+compare: <scratch>/eqivo-literals/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/55ee4066528bb30b032bced3d919a18512babd89ff6845ae4a346efb4e43c7a3/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/eqivo-literals/compare.yml python: reference command finished in 0.05s (exit 0)
+compare: <scratch>/eqivo-literals/compare.yml python: crozier generation starting
+compare: <scratch>/eqivo-literals/compare.yml python: crozier generation finished in 2.67s
+compare: <scratch>/eqivo-literals/compare.yml python: matched
+
+crozier compare report
+
+<scratch>/eqivo-literals/compare.yml
+  python: matched (layout packaged, 141 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/55ee4066528bb30b032bced3d919a18512babd89ff6845ae4a346efb4e43c7a3/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (6):
+      .fern/metadata.json:5 fern-metadata-generator-config
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:41 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:42 sdk-identity-header-prefix
+    timing: reference 0.05s, crozier 2.67s, speed-up 0.02x, saved -2.63s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.05s, crozier 2.67s, speed-up 0.02x, saved -2.63s
+Result: every checked generator matched the reference (1 of 1, exit 0)

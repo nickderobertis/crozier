@@ -358,7 +358,7 @@ fn property_metadata_survives_the_public_generation_pipeline() {
             "point: Point",
         ),
     ] {
-        let source = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let source = std::fs::read_to_string(composed_model_fixture(&root, fixture)).unwrap();
         let files = render(&source);
         assert!(files[file].contains(expected), "{fixture}: {}", files[file]);
     }
@@ -386,9 +386,26 @@ fn property_metadata_survives_the_public_generation_pipeline() {
     );
     let restored = source.replace("x-fern-ignore: true", "x-crozier-ignore: false");
     assert!(render(&restored)["src/acme/types/gauge.py"].contains("calibration_note"));
-    let source = std::fs::read_to_string(root.join("reservoir-ledger/openapi.yml")).unwrap();
+    let source = std::fs::read_to_string(
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/superseded-fixtures/reservoir-ledger/openapi.yml"),
+    )
+    .unwrap();
     let files = render(&source);
     assert!(files["src/acme/raw_client.py"].contains("annotation=typing.Optional[Reservoir]"));
+}
+
+/// A fixture's document: hand-written, except those a registered real specification
+/// has superseded.
+fn composed_model_fixture(handwritten: &Path, fixture: &str) -> std::path::PathBuf {
+    if matches!(fixture, "artefact-catalogue" | "nullable-observer-notes") {
+        Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-measurements/superseded-fixtures")
+            .join(fixture)
+            .join("openapi.yml")
+    } else {
+        handwritten.join(fixture).join("openapi.yml")
+    }
 }
 
 #[test]
@@ -413,7 +430,7 @@ fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
         ),
     ];
     for (fixture, module, expected) in cases {
-        let spec = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let spec = std::fs::read_to_string(composed_model_fixture(&root, fixture)).unwrap();
         let files = render(&spec);
         let model = &files[&format!("src/acme/types/{module}.py")];
         assert!(model.contains(expected), "{fixture}:\n{model}");
@@ -455,7 +472,7 @@ fn flattened_cyclic_parent_reach_is_retained_only_for_that_shape() {
         ("garden-crown", "Flower", vec![]),
         ("artefact-catalogue", "Artifact", vec![]),
     ] {
-        let spec = root.join(fixture).join("openapi.yml");
+        let spec = composed_model_fixture(&root, fixture);
         let doc = crozier::openapi::load(&spec).unwrap();
         let config = crozier::config::GenerateConfig::new(
             spec,

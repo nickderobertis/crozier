@@ -1,0 +1,16 @@
+{
+  "source_sha256": "b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40",
+  "removed_paths": [
+    "/components/schemas/AccessForbiddenError/properties/instance",
+    "/components/schemas/AccountOverdueError/properties/instance",
+    "/components/schemas/ChunkingOptions/properties/overlap_tokens",
+    "/components/schemas/ILGSv1 Quote/properties/source_segment",
+    "/components/schemas/InternalServerError/properties/instance",
+    "/components/schemas/RequestTooLargeError/properties/instance",
+    "/components/schemas/RerankingRequest/properties/top_n",
+    "/components/schemas/UnauthorizedAPIKeyError/properties/instance",
+    "/components/schemas/ValidationError/properties/instance"
+  ],
+  "files_compared": 127,
+  "different_files": []
+}

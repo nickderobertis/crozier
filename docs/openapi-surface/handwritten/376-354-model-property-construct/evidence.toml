@@ -4,6 +4,5 @@ digest = "d82a96444819f3373bddec4037a5c363227d21279ca55b88ac29807a855cad8a"
 
 [[covers]]
 key = "model-property-construct"
-search = "docs/openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-ledger-remainders/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-67-model-property-construct"
+verdict = "exhausted"

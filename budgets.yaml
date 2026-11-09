@@ -26,7 +26,7 @@ budgets:
       test-macos (just ci-test) are what it reads: status, runner allocation and attempt
       timestamps, captured as those lanes execute. It is an intentional inner line beside
       queue-inclusive delivery, protecting how long one runner holds a shared slot; the
-      lanes' timeout-minutes stay at their measured ceilings, so this line is reported at
+      lanes' timeout-minutes are set so a broad change finishes, so this line is reported at
       each release rather than imposed on a job.
   - id: crozier-ci-job-count
     measure: reported

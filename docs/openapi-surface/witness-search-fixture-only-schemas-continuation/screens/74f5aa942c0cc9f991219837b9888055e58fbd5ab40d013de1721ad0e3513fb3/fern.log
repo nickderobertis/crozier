@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.dH7v8LD3C6/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> types -> IMetadata
+                  __package__.yml
+                  [error] Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> IMetadata%0A__package__.yml%0A[error] Discriminant value _t is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk Found 1 errors and 3 warnings in 0.442 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 1 errors and 3 warnings in 0.442 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

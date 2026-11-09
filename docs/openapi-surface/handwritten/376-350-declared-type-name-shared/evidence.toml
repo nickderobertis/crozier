@@ -4,6 +4,5 @@ digest = "330814526514ff775b53d9d6fb656f29a313d3973d9ea83b13e6fcd0617ac265"
 
 [[covers]]
 key = "schema-type-name-component"
-search = "docs/openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-ledger-remainders/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-119-schema-type-name-component"
+verdict = "exhausted"

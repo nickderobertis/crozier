@@ -5,41 +5,41 @@ digest = "ab9812a1d3cc7adb2c09399b87e66277d2d7c138be990712aadf693168f552fb"
 [[covers]]
 key = "anyof-oneof-variant"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-oneof-variant.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-25-anyof-oneof-variant"
 verdict = "exhausted"
 
 [[covers]]
 key = "anyof-array-variant-annotated-ref-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-annotated-ref-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-16-anyof-array-variant-annotated-ref-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "anyof-array-variant-composed-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-composed-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-19-anyof-array-variant-composed-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "anyof-array-variant-closed-object-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-closed-object-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-18-anyof-array-variant-closed-object-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "anyof-allof-variant"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {8}\{$]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-allof-variant.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-15-anyof-allof-variant"
 verdict = "exhausted"
 
 [[covers]]
 key = "anyof-array-variant-anyof-nullable-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-anyof-nullable-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-17-anyof-array-variant-anyof-nullable-item"
 verdict = "exhausted"
 
 [[covers]]
 key = "anyof-array-variant-oneof-nullable-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/anyof-array-variant-oneof-nullable-item.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-21-anyof-array-variant-oneof-nullable-item"
 verdict = "exhausted"

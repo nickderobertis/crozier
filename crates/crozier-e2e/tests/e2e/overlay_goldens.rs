@@ -103,6 +103,8 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This literal overlay belongs to the existing corpus golden inventory required by the fixture contract; one inventory entry cannot define a separate project edge.
+            "eqivo-apostrophe-enums",
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literals proofs extend the existing corpus overlay inventory and subprocess gate; this task cannot split the shared e2eReads family into another project.
             "happy-hamster",
             "seldon-wrapper",

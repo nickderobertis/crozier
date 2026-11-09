@@ -1,0 +1,27 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.sXYEsBHw17/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> GET_mostemailed-section-time-period-json
+                  __package__.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> GET_mostemailed-section-time-period-json%0A__package__.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk __package__.yml -> service -> endpoints -> GET_mostshared-section-time-period-json
+                  __package__.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> GET_mostshared-section-time-period-json%0A__package__.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk __package__.yml -> service -> endpoints -> GET_mostviewed-section-time-period-json
+                  __package__.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> GET_mostviewed-section-time-period-json%0A__package__.yml%0A[error] Endpoint requires auth, but no auth is defined.
+[api]: python-sdk Found 3 errors and 0 warnings in 0.569 seconds.
+::error title=[api]%3A python-sdk::Found 3 errors and 0 warnings in 0.569 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

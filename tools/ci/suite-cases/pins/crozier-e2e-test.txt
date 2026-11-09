@@ -313,6 +313,7 @@ crozier-e2e::e2e eos_extra_fields_forbid_flat_matches_fern
 crozier-e2e::e2e eos_extra_fields_forbid_matches_fern_output
 crozier-e2e::e2e eos_matches_fern_output
 crozier-e2e::e2e eozilla_matches_fern_output
+crozier-e2e::e2e eqivo_apostrophe_enums_matches_fern_output
 crozier-e2e::e2e ere_ps_app_matches_fern_output
 crozier-e2e::e2e error_body_shapes_match_certified_output_in_both_enum_modes
 crozier-e2e::e2e error_responses_matches_fern_output

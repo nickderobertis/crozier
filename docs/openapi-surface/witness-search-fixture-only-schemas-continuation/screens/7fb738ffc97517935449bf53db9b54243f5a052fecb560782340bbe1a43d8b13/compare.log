@@ -1,0 +1,21 @@
+compare: found config <scratch>/screen-runs/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/compare.yml
+compare: <scratch>/screen-runs/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/compare.yml python: could_not_check (crozier could not read the generator's settings: could not parse OpenAPI document <scratch>/screen-runs/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/openapi.yaml: error: line 122 column 9: too many consecutive comments before resolving collection entry)
+
+crozier compare report
+
+<scratch>/screen-runs/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/compare.yml
+  python: could_not_check
+    reason: crozier could not read the generator's settings: could not parse OpenAPI document <scratch>/screen-runs/7fb738ffc97517935449bf53db9b54243f5a052fecb560782340bbe1a43d8b13/openapi.yaml: error: line 122 column 9: too many consecutive comments before resolving collection entry
+               --> <input>:122:9
+                |
+            120 |         # authorizationCode:
+            121 |         #   authorizationUrl: https://auth.example.com/oauth2/authorize
+            122 |         #   tokenUrl: https://auth.example.com/oauth2/token
+                |         ^ too many consecutive comments before resolving collection entry
+            123 |         #   scopes:
+            124 |         #     read:observations: Read access to observations
+                |
+
+Totals: 0 matched, 0 mismatched, 1 could not check
+Timing totals: no generator ran both sides
+Result: no mismatch, but 1 could not be checked (exit 4)

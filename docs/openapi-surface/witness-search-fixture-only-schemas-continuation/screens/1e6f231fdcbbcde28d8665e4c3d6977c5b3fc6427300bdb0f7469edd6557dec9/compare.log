@@ -1,0 +1,30 @@
+compare: found config <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml
+compare: <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml python: reference command finished in 0.04s (exit 0)
+compare: <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml python: crozier generation finished in 4.83s
+compare: <scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml python: mismatched
+
+crozier compare report
+
+<scratch>/screen-runs/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/compare.yml
+  python: mismatched (layout packaged, 193 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/1e6f231fdcbbcde28d8665e4c3d6977c5b3fc6427300bdb0f7469edd6557dec9/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (6):
+      reference.md
+      src/fern/measurement/raw_client.py
+      src/fern/optimize/client.py
+      src/fern/prediction/types/fastapi_prediction_import_provider_v1prediction_import_provider_id_put_request_body.py
+      src/fern/types/pydantic_date_time_data_value.py
+      src/fern/types/pydantic_date_time_data_value_one_item.py
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:34 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:35 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+    timing: reference 0.04s, crozier 4.83s, speed-up 0.01x, saved -4.79s
+
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.04s, crozier 4.83s, speed-up 0.01x, saved -4.79s
+Result: 1 generator(s) mismatched the reference (exit 3)
