@@ -2242,6 +2242,7 @@ pub fn rule(id: &str) -> Option<Rule> {
             region: Some(alias_reference_parameters),
             ..none
         },
+        // llmlint: ignore[changed_behavior_has_e2e] Each rejection needs a reference tree Fern never writes, so declared_values.rs feeds the rule the crafted input directly; corpus row 5623 proves the acceptance path through real SDK trees.
         "optional-raw-body-example-argument" => Rule {
             region: Some(declared_values::optional_raw_body_example_argument),
             ..none
