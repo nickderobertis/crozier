@@ -9,10 +9,11 @@ import { tmpdir } from 'node:os';
 import { delimiter, join } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { RELEASE_SKIPPED_LANES } from '../../ci/gate-timing/core.mjs';
 
-const REPO = fileURLToPath(new URL('../../../../', import.meta.url));
+const REPO = fileURLToPath(new URL('../../../', import.meta.url));
 const CLI = join(REPO, 'tools/ci/gate-timing.mjs');
-const recorded = JSON.parse(readFileSync(new URL('./fixtures/budget-heads.json', import.meta.url), 'utf8'));
+const recorded = JSON.parse(readFileSync(new URL('./fixtures/gate-timing-budget-heads.json', import.meta.url), 'utf8'));
 const CONTEXTS = ['lint', 'test-linux', 'test-macos', 'test-windows'];
 const posix = { skip: process.platform === 'win32' ? 'the doubles are POSIX executables' : false };
 const RUN = 'landing-run';
@@ -33,17 +34,17 @@ if (program === 'onepipeline') {
 }
 if (program === 'onevcs' && args[0] === 'status') out(a.status);
 const byId = (id) => a.runs.find((r) => r.run.id === Number(id));
-if (program === 'onevcs' && args[1] === 'run-jobs') { const r = byId(args[args.indexOf('--run') + 1]); out({ jobs: r.attempts[r.run.run_attempt] }); }
+if (program === 'onevcs' && args[1] === 'run-jobs') { const id = Number(args[args.indexOf('--run') + 1]); const r = byId(id); out({ jobs: r ? r.attempts[r.run.run_attempt] : [] }); }
 const path = args.at(-1);
 if (args.includes('rate_limit')) out({ resources: { core: { limit: 5000, remaining: 5000, reset: 0 } } });
 if (path.endsWith('/protection')) out({ required_status_checks: { contexts: a.contexts } });
 if (path.endsWith('/rules/branches/main')) out([]);
 if (/\\/pulls\\/\\d+$/.test(path)) out(a.pull);
-if (path.includes('/actions/runs?')) { if (!path.includes('head_sha=' + a.pull.head.sha) || !path.includes('event=pull_request')) refuse('gh double: asked another head: ' + path); out({ workflow_runs: a.runs.map((r) => r.run) }); }
+if (path.includes('/actions/runs?')) { if (!path.includes('head_sha=' + a.pull.head.sha) || !path.includes('event=pull_request')) refuse('gh double: asked another head: ' + path); const page = Number(new URL('https://api.invalid/' + path).searchParams.get('page')); const listed = a.runs.map((r) => r.run); out({ workflow_runs: a.paginate ? (page === 1 ? [...listed, ...Array.from({ length: 100 - listed.length }, (_, i) => ({ ...listed[0], id: 7000000 + i }))] : []) : listed }); }
 let m = /\\/actions\\/runs\\/(\\d+)\\/attempts\\/(\\d+)\\/jobs/.exec(path);
 if (m) out({ jobs: byId(m[1]).attempts[m[2]] });
 m = /\\/actions\\/runs\\/(\\d+)$/.exec(path);
-if (m) out(byId(m[1]).run);
+if (m) out(byId(m[1])?.run ?? { ...a.runs[0].run, id: Number(m[1]) });
 refuse('unexpected external request: ' + program + ' ' + args.join(' '));
 `;
 
@@ -146,6 +147,34 @@ test('an unlanded node has no landing to measure', posix, (t) => errored(t, 'acc
 test('a change onevcs says did not land is an error', posix, (t) => errored(t, 'accepted', (a) => { a.status.publication.landed.state = 'no'; }, /has not landed according to onevcs/));
 test('a node this run never recorded is an error', posix, (t) => errored(t, 'accepted', (a) => { a.telemetry.changes = []; }, /recorded no nickderobertis\/crozier change for node landing-node/));
 test('a head with no pull_request run is an error', posix, (t) => errored(t, 'accepted', (a) => { a.runs = []; a.pull.head.sha = 'a'.repeat(40); }, /no pull_request workflow run at landed head/));
+
+test('a node named only in a retry lineage selects its change', posix, (t) => {
+  const h = hook(t, 'release', (a) => { a.telemetry.changes[0].node = 'landing-node-r1'; a.telemetry.changes[0].lineage = [NODE, 'landing-node-r1']; });
+  assert.equal(h.check().result.actual, 425);
+});
+test('malformed telemetry is an error', posix, (t) => errored(t, 'accepted', (a) => { a.telemetry.run_id = 'other'; }, /invalid per-change telemetry for run landing-run/));
+test('a string lineage cannot select a change by substring', posix, (t) => errored(t, 'accepted', (a) => { a.telemetry.changes[0].node = 'other'; a.telemetry.changes[0].lineage = 'prefix-landing-node-suffix'; }, /recorded no nickderobertis\/crozier change for node landing-node/));
+test('a pull request without merged metadata is an error', posix, (t) => errored(t, 'accepted', (a) => { a.pull.merged_at = null; }, /reports no merged head/));
+test('a listed run at another head is an error', posix, (t) => errored(t, 'accepted', ({ runs }) => { runs[0].run.head_sha = 'b'.repeat(40); }, /is not a pull_request run at landed head/));
+test('a listed run from another event is an error', posix, (t) => errored(t, 'accepted', ({ runs }) => { runs[0].run.event = 'push'; }, /is not a pull_request run at landed head/));
+test('accepted verdicts on an unknown workflow state are an error, never a span', posix, (t) => errored(t, 'accepted', ({ runs }) => { runs[0].run.status = 'mystery'; }, /no measurable span at .*unknown workflow state/));
+test('every page of a head\'s workflow runs is read', posix, (t) => {
+  const h = hook(t, 'release', (a) => { a.paginate = true; });
+  assert.equal(h.check().result.actual, 425);
+  const pages = h.calls().filter((call) => call.at(-1).includes('/actions/runs?')).map((call) => new URL('https://api.invalid/' + call.at(-1)).searchParams.get('page'));
+  assert.deepEqual(pages, ['1', '2']);
+});
+
+test('the guarded release exception is exactly what ci.yml skips', posix, () => {
+  const workflow = readFileSync(join(REPO, '.github/workflows/ci.yml'), 'utf8');
+  const required = JSON.parse(readFileSync(join(REPO, '.github/governance.json'), 'utf8')).required_checks;
+  const guardExpression = "!(github.event.pull_request.head.repo.full_name == github.repository && startsWith(github.head_ref, 'release-plz-'))";
+  const condition = (lane) => { const job = workflow.slice(workflow.indexOf(`\n  ${lane}:\n`) + 1); return job.slice(0, job.indexOf('runs-on:')); };
+  const skipped = required.filter((lane) => condition(lane).includes(guardExpression));
+  assert.deepEqual([...RELEASE_SKIPPED_LANES].sort(), [...skipped].sort());
+  assert.ok(workflow.includes('scripts/release-branch-guard.mjs'), 'lint holds the release branch to the guard');
+  assert.ok(!RELEASE_SKIPPED_LANES.includes('lint'));
+});
 
 test('exit codes: 0 measured, 1 missing data, 2 invalid invocation', posix, (t) => {
   const measured = hook(t, 'release');

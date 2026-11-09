@@ -54,6 +54,7 @@ budgets:
       time, with every request listed. A saved answer reports what its read cost when it was
       made, so reuse within the tail never hides a read. It protects the reads each pull
       request costs from growing with the workflows a pull request starts.
+  # llmlint: ignore[names_match_behavior] The id is the one the approved plan and its delivery hook name; its unit field states seconds.
   - id: crozier-pr-gate-minutes
     measure: reported
     command: [node, tools/ci/gate-timing.mjs, budget]

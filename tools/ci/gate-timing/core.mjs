@@ -370,7 +370,8 @@ export async function collect(options) {
 // A hook that names no landed node asked the wrong question: exit 2, not missing data.
 class InvocationError extends Error {}
 
-const SKIPPED_ON_RELEASE = /^test-/;
+// The lanes ci.yml's guarded release path skips; delivery-budget.test.mjs holds this to the workflow.
+export const RELEASE_SKIPPED_LANES = Object.freeze(['test-linux', 'test-windows', 'test-macos']);
 
 // A required context's verdict on the landed head. Null, pending and cancelled are
 // missing verdicts; skipped counts only where ci.yml's guarded release path produced it.
@@ -386,7 +387,7 @@ export function contextVerdicts(head, attempts, required) {
     return jobs.map((job) => {
       const conclusion = job.status === 'completed' ? job.conclusion ?? null : null;
       if (conclusion === 'success') return { context, conclusion, accepted: true };
-      if (conclusion === 'skipped' && SKIPPED_ON_RELEASE.test(context) && releaseGuarded) return { context, conclusion, accepted: true, why: 'skipped on the guarded release path' };
+      if (conclusion === 'skipped' && RELEASE_SKIPPED_LANES.includes(context) && releaseGuarded) return { context, conclusion, accepted: true, why: 'skipped on the guarded release path' };
       const why = conclusion === 'skipped' ? 'skipped outside the guarded release path' : `${conclusion ?? job.status} is not an accepted verdict`;
       return { context, conclusion, accepted: false, why };
     });
@@ -414,10 +415,11 @@ function budgetDetail(head, pull, required, verdicts, attempts) {
   ].join('. ');
 }
 
+// llmlint: ignore-block[contracts_have_one_source_or_a_drift_gate] A consumed-subset read of onepipeline telemetry and onevcs status answers, the same boundary shape this file documents for GitHub: both tools are host installs CI cannot run, and the fields read were checked against those tools' real answers when this was written.
 async function landedPull(run, node, get) {
   const telemetry = command('onepipeline', ['telemetry', run, '--changes', '--json']);
   if (telemetry?.schema_version !== 1 || telemetry.run_id !== run || !Array.isArray(telemetry.changes)) throw new Error(`invalid per-change telemetry for run ${run}`);
-  const change = telemetry.changes.find((c) => c?.repository === `github.com/${REPOSITORY}` && (c.node === node || c.lineage?.includes(node)));
+  const change = telemetry.changes.find((c) => c?.repository === `github.com/${REPOSITORY}` && (c.node === node || (Array.isArray(c.lineage) && c.lineage.includes(node))));
   if (!change) throw new Error(`run ${run} recorded no ${REPOSITORY} change for node ${node}`);
   const match = /^https:\/\/github\.com\/nickderobertis\/crozier\/pull\/([1-9]\d*)$/.exec(change.change_url ?? '');
   if (!match) throw new Error(`node ${node} of run ${run} records no change request (outcome ${change.outcome})`);
@@ -427,6 +429,7 @@ async function landedPull(run, node, get) {
   if (pull?.number !== Number(match[1]) || !/^[a-f0-9]{40}$/.test(pull.head?.sha ?? '') || !validTimestamp(pull.merged_at)) throw new Error(`${change.change_url} reports no merged head`);
   return pull;
 }
+// llmlint: ignore-end[contracts_have_one_source_or_a_drift_gate]
 
 export async function budget(options, env = process.env) {
   const { ONEPIPELINE_RUN_ID: run, ONEPIPELINE_NODE_ID: node, ONEPIPELINE_RUNS_DIR: runs, ONEBUDGETSPEC_RESULT: result } = env;
@@ -444,7 +447,10 @@ export async function budget(options, env = process.env) {
   for (let page = 1;; page++) {
     const answer = await get(`repos/${REPOSITORY}/actions/runs?head_sha=${pull.head.sha}&event=pull_request&per_page=100&page=${page}`);
     if (!Array.isArray(answer.workflow_runs)) throw new Error('missing workflow_runs');
-    listed.push(...answer.workflow_runs.map(validateRun));
+    for (const entry of answer.workflow_runs.map(validateRun)) {
+      if (entry.head_sha !== pull.head.sha || entry.event !== 'pull_request') throw new Error(`run ${entry.id} is not a pull_request run at landed head ${pull.head.sha}`);
+      listed.push(entry);
+    }
     if (answer.workflow_runs.length < 100) break;
   }
   if (!listed.length) throw new Error(`no pull_request workflow run at landed head ${pull.head.sha}`);
