@@ -2,7 +2,7 @@
 
 ## After: goal unmet
 
-**Goal unmet.** No ordinary sampled head with accepted required verdicts on the finished four-lane configuration reached required checks in under 3600 seconds: ordinary heads took 8380 s (#794, broad tool selection), 12324 s (#796 first head, macOS queue) and 6551 s (#796 merged-main head, macOS queue). The broad-source head #800 is 11632 s and is **a lower bound with no accepted macOS verdict**: test-macos failed on a test unrelated to timing and was not re-run. Only the release path is inside the line: 860 s for a guard-compliant release candidate (#798), and 425 s for genuine release #777 before the compatibility jobs left. Under-an-hour remains open: the user's decision on runners is pending and their standing default is to accept about two hours; [the manager records it](#goal-status-and-escalation). This section is a measurement record, not a completion claim.
+**Goal unmet.** No ordinary sampled head with accepted required verdicts on the finished four-lane configuration reached required checks in under 3600 seconds: ordinary heads took 8380 s (#794, broad tool selection), 12324 s (#796 first head, macOS queue) and 6551 s (#796 merged-main head, macOS queue). No broad-source run completed all four lanes: the best available, #800, is 11632 s and is **a lower bound with no accepted macOS verdict**, because test-macos failed on a test unrelated to timing after 2917 s and was not re-run. Only the release path is inside the line: 860 s for a guard-compliant release candidate (#798), and 425 s for genuine release #777 before the compatibility jobs left. Under-an-hour remains open: the user's decision on runners is pending and their standing default is to accept about two hours; [the manager records it](#goal-status-and-escalation). This section is a measurement record, not a completion claim.
 
 ### Reproduce
 
@@ -32,9 +32,9 @@ Corrective configurations during this measurement: none. No limit, shard, job, c
 
 Demonstration records. Heads were throwaway PRs based on the session branch and closed after capture:
 
-- [#797](https://github.com/nickderobertis/crozier/pull/797) heads `feda075ad`, `459cc01c6`, `eeefbf409`: **discarded, not configuration measurements.** They hand-applied 150-minute limits, and the runs failed the repository's own pins of those limits and a stale residual-attribution digest that any src change must refresh; their test-linux stopped before the live/corpus step, so their spans are lower bounds of a demonstration's own making.
+- [#797](https://github.com/nickderobertis/crozier/pull/797): four attempts that all ended early, recorded separately [below](#demonstration-attempts-that-ended-early); **none is a sample**.
 - [#798](https://github.com/nickderobertis/crozier/pull/798) head `74678c4b8`: guard-compliant version/changelog candidate. It carries no limit edit: changing `ci.yml` on a release branch would fail the release guard, and its platform lanes skip anyway, so the instructed 150-minute limit could not apply and has no effect there. #799 changed only skipped lanes for this path.
-- [#800](https://github.com/nickderobertis/crozier/pull/800) head `19cda960f`: broad source sample based on main with #799, so it carries the 150-minute limit from main and no hand edit.
+- [#800](https://github.com/nickderobertis/crozier/pull/800) head `19cda960f`: broad source demonstration based on main with #799, so it carries the 150-minute limit from main and no hand edit. **No broad-source run completed all four lanes.** #800 is the best available measurement only: lint, test-linux and test-windows completed; test-macos failed after 2917 s with no accepted verdict; its 11632 s span is a lower bound. The failure is `crates/crozier-e2e/tests/e2e.rs:26804`, `could not run crozier: No such file or directory`, recorded as the follow-up "macOS e2e reports 'could not run crozier: No such file or directory'". Per the manager's ruling it was not re-run and no third attempt was made.
 - [#801](https://github.com/nickderobertis/crozier/pull/801): a genuine release PR built on top of this dispatch's session commit `09bc6900a` and refused by the release guard. The cause appears to be #798's branch name beginning `release-plz-`. Not a timing sample; it is reported to the manager, recorded as a follow-up, and nothing reached main.
 
 ### Finished-configuration heads
@@ -100,7 +100,7 @@ Largest tasks per lane (Nx task seconds, parallel so they exceed job time):
 - **test-windows** (10 tasks, 0 cache-replayed, 5 projects): `ci-journeys:test` 569s, `suite-cases:test` 376s, `fern-goldens-git:test-certified-pair` 77s, `ci:test` 63s, `fern-goldens-git:test-lifecycle` 6s, `ci:lint-windows` 3s
 - **test-macos** (49 tasks, 0 cache-replayed, 6 projects): `surface-census:test-census` 1103s, `fern-goldens-weekly:test` 882s, `witness-search:test-github` 556s, `witness-search:test-acquisition` 551s, `surface-reach:test-handwritten-reach` 427s, `fern-refusals:test` 357s
 
-#### #800 broad source (src/lib.rs doc edit + its attribution record), demonstration
+#### #800 broad source (src/lib.rs doc edit + its attribution record), demonstration: best available measurement, macOS incomplete
 
 Head `19cda960fc654beb513317ea9b53037a091d69ce`, run [42532483422](https://github.com/nickderobertis/crozier/actions/runs/42532483422), attempts 1, kind pr, configuration finished: 1a278de16 base (includes #799 limits). Gate **11632** s, conclusion **failure**, terminal: test-macos.
 
@@ -154,6 +154,17 @@ Head `d9f9f4c157d91fad5b608cddb540c096eb3e3f3a`, run [42459459557](https://githu
 | test-windows | 1 | skipped | 1 | 0 | 0 |
 
 9 jobs at this head. 
+### Demonstration attempts that ended early
+
+These are #797's runs in order. **They ended early on a failure or a cancellation and are not samples; their durations are not lane costs.** Each failure came from the demonstration itself, not crozier's code: the placeholder comment, the hand-applied limit's stale pins, or the residual-attribution digest a source edit must refresh. Seconds are queue/execution.
+
+| Run | Head | Lint (job) | test-linux (job) | test-windows (job) | test-macos (job) | Why it ended |
+|---|---|---|---|---|---|---|
+| [42509093015](https://github.com/nickderobertis/crozier/actions/runs/42509093015) | `c5e71a9be4` | cancelled 2/285 (128818030840) | cancelled 3/285 (128818030942) | cancelled 2/284 (128818030798) | cancelled 0/272 (128818030599) | Superseded by the push that raised the limits to 150 minutes; the concurrency group cancelled it. |
+| [42509483184](https://github.com/nickderobertis/crozier/actions/runs/42509483184) | `feda075ada` | failure 2/554 (128819295738) | cancelled 2/3218 (128819295755) | cancelled 1/3218 (128819295437) | cancelled 343/2903 (128819295737) | Judged lint rejected the demo's placeholder `DO NOT MERGE` source comment; the next push cancelled the test lanes. |
+| [42513978896](https://github.com/nickderobertis/crozier/actions/runs/42513978896) | `459cc01c63` | success 2/692 (128833029326) | failure 2/3861 (128833029283) | failure 2/3804 (128833029301) | failure 1198/5112 (128833029012) | Stale residual-attribution digest for the source edit, and `ci_workflow.rs` still pinning the old limits (90 against 150). |
+| [42524007437](https://github.com/nickderobertis/crozier/actions/runs/42524007437) | `eeefbf4090` | success 2/583 (128863420757) | failure 2/3951 (128863420759) | failure 2/4327 (128863420440) | failure 1128/4811 (128863420573) | The ci-journeys selection test still expected the old limit (90 against 150). |
+
 ### Every observed head at the cutoff
 
 Configuration differs across this table; compatibility jobs appear on heads before #794. Null gates carry a reason in the JSON.
@@ -231,7 +242,7 @@ The baseline predicted a broad source change selects the crozier, crozier-e2e, s
 | corpus-match, live-e2e, census-fallback (Linux only, retained on the PR lane) | ran on test-linux; `corpus-match:test-offline` 2575 s, `test-match` 2447 s, `test-strict` 2343 s | corpus-match ran on test-linux, live-e2e did not | not run |
 | SDK env / runtime | ran on test-linux and test-windows | not run | not run |
 
-Broad-source coverage held: full census, reach and the live end-to-end and corpus byte-match suites all ran in the PR lane of #800 on the platforms ci.yml assigns them; none was moved, dropped, lightened or sharded to obtain these numbers.
+Broad-source coverage held: full census, reach and the live end-to-end and corpus byte-match suites all ran in the PR lane of #800 on the platforms ci.yml assigns them; none was moved, dropped, lightened or sharded to obtain these numbers. The macOS lane of #800 still ended on one failed e2e test, so its macOS proof and duration are incomplete.
 
 The baseline's planning intervals (lint [1293,5330]+U; test-linux [386,7260]+U; test-windows [593,6467]+U; test-macos [1446,9297]+U) were explicitly not feasibility claims. Observed lane execution for broad changes: lint 803-973 s; test-linux 8355-9190 s; test-windows 4790-5070 s; test-macos 5991 s on #794 (no complete broad-source figure, because #800 failed at 2917 s). Linux exceeds its interval's upper proxy by 1095-1930 s, and every test lane exceeds the 30-minute inner line.
 
