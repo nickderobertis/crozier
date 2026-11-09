@@ -779,10 +779,25 @@ fn request_example_context<'a>(
     let mut out = RequestExampleContext::default();
     let mut model_fields: std::collections::BTreeMap<String, BTreeSet<String>> =
         std::collections::BTreeMap::new();
+    let mut model_bases: std::collections::BTreeMap<String, Vec<String>> =
+        std::collections::BTreeMap::new();
     for (_, text) in &sources {
         let mut model = None;
         for line in text.lines() {
-            if let Some(name) = line
+            if let Some((name, bases)) = line
+                .strip_prefix("class ")
+                .and_then(|line| line.strip_suffix("):"))
+                .and_then(|line| line.split_once('('))
+            {
+                model = Some(name.to_string());
+                model_bases.insert(
+                    name.to_string(),
+                    bases
+                        .split(',')
+                        .map(|base| base.trim().to_string())
+                        .collect::<Vec<_>>(),
+                );
+            } else if let Some(name) = line
                 .strip_prefix("class ")
                 .and_then(|line| line.split_once('(').map(|(name, _)| name))
             {
@@ -799,6 +814,22 @@ fn request_example_context<'a>(
                         .or_default()
                         .insert(name.to_string());
                 }
+            }
+        }
+    }
+    // A model's fields include what it inherits: Revert's
+    // `CrmSetObjectPropertiesRequest` aliases a model adding `additional` to a
+    // base holding `name`, `type` and `description`, and the method spreads all
+    // four.
+    let declared_fields = model_fields.clone();
+    for (model, fields) in &mut model_fields {
+        let mut pending: Vec<&String> = model_bases.get(model).into_iter().flatten().collect();
+        let mut visited = BTreeSet::new();
+        while let Some(base) = pending.pop() {
+            // The runtime's own base classes hold no request field.
+            if !base.starts_with("Universal") && visited.insert(base) {
+                fields.extend(declared_fields.get(base).into_iter().flatten().cloned());
+                pending.extend(model_bases.get(base).into_iter().flatten());
             }
         }
     }
@@ -1273,6 +1304,26 @@ fn binary_json_body_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         .flatten())
 }
 
+/// `binary-json-body-example` on one line, in a file other departures also touch
+/// where the whole-file form cannot hold: Fern's `request="string",` beside
+/// crozier's `request=b"string",`, in a document with a binary JSON body method.
+fn binary_json_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let (Some(fern_value), Some(crozier_value)) = (
+        fern.trim_start().strip_prefix("request="),
+        crozier.trim_start().strip_prefix("request="),
+    ) else {
+        return false;
+    };
+    fern_value == "\"string\","
+        && crozier_value == "b\"string\","
+        && fern.len() + 1 == crozier.len()
+        && !pair
+            .context
+            .request_examples()
+            .binary_json_methods
+            .is_empty()
+}
+
 fn reference_method_key(line: &str) -> Option<MethodKey> {
     let (_, after) = line.split_once("<details><summary><code>client.")?;
     let (_, after) = after.split_once("<a href=\"")?;
@@ -1390,7 +1441,12 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
                     (!description.is_empty()).then_some(description),
                 );
                 let expected = format!("**{name}:** `{annotation}`{suffix}\n    ");
-                if annotation != crate::emit::reference_param_annotation(&parameter.annotation)
+                // The reference documents a signature's `typing.Sequence` as
+                // `typing.List`.
+                let documented = parameter
+                    .annotation
+                    .replace("typing.Sequence[", "typing.List[");
+                if annotation != crate::emit::reference_param_annotation(&documented)
                     || pair.crozier[first + 3..close].join("\n") != expected
                     || !seen.insert(name.to_string())
                     || range.as_ref().is_some_and(|previous| {
@@ -1767,7 +1823,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 43] = [
+pub const RULE_IDS: [&str; 44] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1789,6 +1845,7 @@ pub const RULE_IDS: [&str; 43] = [
     "init-type-checking-import-order",
     "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
+    "minimal-worked-call-optional-parameter",
     "multipart-object-required-file-example",
     "nested-discriminator-flat-wire",
     "non-string-client-header-example",
@@ -1926,10 +1983,15 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "binary-json-body-example" => Rule {
             region: Some(binary_json_body_example),
+            line: Some(binary_json_body_example_line),
             ..Rule::default()
         },
         "request-alias-reference-parameters" => Rule {
             region: Some(alias_reference_parameters),
+            ..none
+        },
+        "minimal-worked-call-optional-parameter" => Rule {
+            region: Some(declared_values::minimal_call_optional_parameter),
             ..none
         },
         "multipart-object-required-file-example" => Rule {
@@ -1946,6 +2008,7 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "nullable-items-docs" => Rule {
             region: Some(nullable_items_docs),
+            line: Some(nullable_items_docs_line),
             ..none
         },
         "pattern-narrowed-enum-example" => Rule {
@@ -2720,10 +2783,38 @@ fn closed_empty_object_example_region(pair: &Pair<'_>) -> Result<Option<Region>,
             .zip(&collapsed[begin..end])
             .all(|(crozier, collapsed)| crozier == collapsed)
     });
-    Ok(equal.then_some(Region {
-        fern: begin..fern_end,
-        crozier: begin..end,
-    }))
+    if equal {
+        return Ok(Some(Region {
+            fern: begin..fern_end,
+            crozier: begin..end,
+        }));
+    }
+    Ok(sole_closed_empty_object_block(pair))
+}
+
+/// One `closed-empty-object-example` placeholder in a file other departures
+/// also touch, where the two sides' lines no longer start the region together:
+/// the first of Fern's three-line placeholders with crozier's `<keyword>={},`
+/// between the same two neighbours.
+fn sole_closed_empty_object_block(pair: &Pair<'_>) -> Option<Region> {
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    (1..fern.len().saturating_sub(3)).find_map(|index| {
+        let block = &fern[index..index + 3];
+        let (indent, keyword) = keyword_argument(block[0], "{")?;
+        let line = format!("{indent}{keyword}={{}},");
+        if !closed_empty_object_example_block(block, &line) {
+            return None;
+        }
+        let at = (1..crozier.len().saturating_sub(1)).find(|&at| {
+            crozier[at] == line
+                && crozier[at - 1] == fern[index - 1]
+                && crozier[at + 1] == fern[index + 3]
+        })?;
+        Some(Region {
+            fern: index..index + 3,
+            crozier: at..at + 1,
+        })
+    })
 }
 
 /// `closed-empty-object-example` written on one line, as a method docstring's
@@ -2739,7 +2830,7 @@ fn closed_empty_object_example_line(_: &Pair<'_>, fern: &str, crozier: &str) -> 
 /// runtime line must conservatively prevent normalization too. The public-API
 /// integration control is `tests/generation.rs::narrowed_enum_departure_requires_source_validity_and_rejects_other_changes`;
 /// it checks missing source, non-Python fences and duplicated runtime lines.
-fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
+pub(super) fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
     let mut in_doc = false;
     let mut example = false;
     let mut found = false;
@@ -3911,24 +4002,48 @@ fn lifted_base_path_docs_examples(pair: &Pair<'_>) -> Result<Option<Region>, Str
     Ok(differing_window(pair.fern, pair.crozier))
 }
 
-/// Constructor examples must supply a date, rather than a placeholder string.
-/// Only constructor parameters typed as optional dates qualify. After replacing
+/// Constructor examples must supply a date or date-time, rather than a placeholder
+/// string. Only constructor parameters typed as optional dates or date-times qualify. After replacing
 /// those exact placeholders and accounting for the example import, every line
 /// must match; string-header placeholders remain untouched.
 fn date_header_constructor_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if !pair.rel.ends_with("client.py") || pair.rel.ends_with("raw_client.py") {
         return Ok(None);
     }
-    let names: BTreeSet<&str> = pair
-        .fern
+    // Each annotation's parameters, with the value crozier's example passes.
+    // A sub-client's docstring constructs the root client, whose wrapper is
+    // where a parameter's annotation stands.
+    let wrappers: Vec<String> = pair
+        .context
+        .roots
         .iter()
-        .filter_map(|line| {
-            line.trim()
-                .split_once(": typing.Optional[dt.date] = None")
-                .map(|(name, _)| name)
-        })
+        .flat_map(|(_, root)| python_sources(root))
+        .filter(|(rel, _)| is_client_wrapper(rel))
+        .map(|(_, text)| text)
         .collect();
-    if names.is_empty() {
+    let names_typed = |annotation: &str| -> BTreeSet<String> {
+        pair.fern
+            .iter()
+            .copied()
+            .chain(wrappers.iter().flat_map(|text| text.lines()))
+            .filter_map(|line| {
+                line.trim()
+                    .split_once(&format!(": typing.Optional[{annotation}] = None"))
+                    .map(|(name, _)| name.to_string())
+            })
+            .collect()
+    };
+    let corrections: Vec<(String, &str)> = names_typed("dt.date")
+        .into_iter()
+        .map(|name| (name, "datetime.date.fromisoformat(\"2023-01-15\")"))
+        .chain(names_typed("dt.datetime").into_iter().map(|name| {
+            (
+                name,
+                "datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\")",
+            )
+        }))
+        .collect();
+    if corrections.is_empty() {
         return Ok(None);
     }
     let mut changed = false;
@@ -3937,14 +4052,11 @@ fn date_header_constructor_example(pair: &Pair<'_>) -> Result<Option<Region>, St
         .iter()
         .map(|line| {
             let mut line = (*line).to_string();
-            for name in &names {
+            for (name, value) in &corrections {
                 let placeholder = format!("{name}=\"YOUR_{}\"", name.to_uppercase());
                 if line.contains(&placeholder) {
                     changed = true;
-                    line = line.replace(
-                        &placeholder,
-                        &format!("{name}=datetime.date.fromisoformat(\"2023-01-15\")"),
-                    );
+                    line = line.replace(&placeholder, &format!("{name}={value}"));
                 }
             }
             line
@@ -4123,10 +4235,53 @@ fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, Str
         kept.push(lines[index]);
         index += 1;
     }
-    if !removed || kept != pair.crozier {
+    if !removed {
         return Ok(None);
     }
-    Ok(differing_window(pair.fern, pair.crozier))
+    if kept == pair.crozier {
+        return Ok(differing_window(pair.fern, pair.crozier));
+    }
+    Ok(sole_constant_block_region(pair, &documented))
+}
+
+/// One `constant-header-docs-arguments` block in a `reference.md` other
+/// departures also touch, where the whole-file comparison above cannot hold:
+/// Fern's block whose `**NAME:**` line crozier does not have, set where
+/// crozier's text resumes. The block's neighbours must be crozier's, and every
+/// other difference stays for its own rule.
+fn sole_constant_block_region(pair: &Pair<'_>, documented: &BTreeSet<String>) -> Option<Region> {
+    let is_constant = |line: &str| {
+        line.strip_prefix("**")
+            .and_then(|rest| rest.split_once(":** `typing.Literal`"))
+            .is_some_and(|(name, after)| {
+                documented.contains(name) && (after == " " || after.starts_with(" — "))
+            })
+    };
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    let ops = crate::parity::align_lines(fern, crozier);
+    let mut equal = Vec::new();
+    for op in ops {
+        match op {
+            crate::parity::Op::Equal(left, right) => equal.push((left, right)),
+            crate::parity::Op::Delete(line) if is_constant(fern[line]) && line >= 3 => {
+                let start = line - 3;
+                parameter_block(fern, start, is_constant)?;
+                // The block's frame may have paired with crozier's next block,
+                // so crozier resumes after the last pair ahead of the frame.
+                let &(left, right) = equal.iter().rev().find(|(left, _)| *left < start)?;
+                let at = right + (start - left);
+                return (start > 0
+                    && crozier.get(at.checked_sub(1)?) == fern.get(start - 1)
+                    && crozier.get(at) == fern.get(start + 8))
+                .then_some(Region {
+                    fern: start..start + 8,
+                    crozier: at..at,
+                });
+            }
+            _ => {}
+        }
+    }
+    None
 }
 
 /// `nullable-items-docs`: in `README.md` or `reference.md`, Fern's file is
@@ -4190,6 +4345,23 @@ fn nullable_items_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `nullable-items-docs` on one `reference.md` type line, where the whole-file
+/// form above cannot hold: another parameter sharing the name keeps its plain
+/// type, or another departure touches the file. Fern's line is crozier's with
+/// the type's items' `Optional` restored, and nothing else.
+fn nullable_items_docs_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    pair.rel == "reference.md"
+        && documented_parameter(crozier).is_some_and(|(_, annotation)| {
+            annotation
+                .strip_prefix("typing.Optional[typing.Union[")
+                .and_then(|rest| rest.split_once(", typing.Sequence["))
+                .is_some_and(|(item, _)| {
+                    let (restored, plain) = nullable_items_types(item);
+                    plain == annotation && crozier.replacen(&plain, &restored, 1) == fern
+                })
+        })
 }
 
 /// Whether `rel` is an SDK's client wrapper, where the identity headers are set.
@@ -6548,24 +6720,35 @@ mod tests {
             &context
         )
         .is_some());
+        // One more difference leaves the block alone explained: the region is the
+        // block, and the other difference and a worked call still passing the
+        // constant (Fern 5.41.3 leaves it out, as crozier does) stay unexplained.
         for (fern, crozier) in [
-            // One more difference, a block typed otherwise, a header crozier
-            // does not send as a constant, and a worked call still passing the
-            // constant (Fern 5.41.3 leaves it out, as crozier does).
             (format!("{CONSTANT_FERN}x"), format!("{CONSTANT_CROZIER}y")),
+            (
+                CONSTANT_FERN.replace(
+                    "    section=\"section\",\n",
+                    "    section=\"section\",\n    mist_mode=\"fine\",\n",
+                ),
+                CONSTANT_CROZIER.to_string(),
+            ),
+        ] {
+            let region = region_of(rule, "reference.md", &fern, &crozier, &context).unwrap();
+            assert_eq!(region.fern.len(), 8, "{fern}");
+            assert!(region.crozier.is_empty(), "{fern}");
+            let compared =
+                crate::parity::compare_file(&context, "reference.md", &crozier, &fern).unwrap();
+            assert!(compared.residual.is_some(), "{fern}");
+        }
+        for (fern, crozier) in [
+            // A block typed otherwise, and a header crozier does not send as a
+            // constant.
             (
                 CONSTANT_FERN.replace("`typing.Literal`", "`str`"),
                 CONSTANT_CROZIER.to_string(),
             ),
             (
                 CONSTANT_FERN.replace("**mist_mode:**", "**fan_speed:**"),
-                CONSTANT_CROZIER.to_string(),
-            ),
-            (
-                CONSTANT_FERN.replace(
-                    "    section=\"section\",\n",
-                    "    section=\"section\",\n    mist_mode=\"fine\",\n",
-                ),
                 CONSTANT_CROZIER.to_string(),
             ),
         ] {
@@ -6597,6 +6780,122 @@ mod tests {
             region_of(rule, "reference.md", CONSTANT_FERN, CONSTANT_FERN, &context),
             None
         );
+    }
+
+    #[test]
+    fn a_constant_header_block_composes_with_a_line_departure_in_the_same_file() {
+        let context = Context::from_sources(
+            [],
+            [(
+                "raw_client.py",
+                "headers={\n    \"X-Mist-Mode\": \"fine\",\n},\n",
+            )],
+        );
+        // A `closed-empty-object-example` docstring line sits above the block.
+        let fern = format!("    plot={{\"key\": \"value\"}},\n{CONSTANT_FERN}");
+        let crozier = format!("    plot={{}},\n{CONSTANT_CROZIER}");
+        let compared =
+            crate::parity::compare_file(&context, "reference.md", &crozier, &fern).unwrap();
+        assert!(compared.residual.is_none());
+        let ids: Vec<_> = compared.departures.iter().map(|found| found.id).collect();
+        assert!(ids.contains(&"constant-header-docs-arguments"), "{ids:?}");
+        assert!(ids.contains(&"closed-empty-object-example"), "{ids:?}");
+    }
+
+    #[test]
+    fn the_nullable_items_line_rule_takes_only_the_restored_type() {
+        let context = Context::default();
+        let rel = "reference.md";
+        let holds = |fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            nullable_items_docs_line(
+                &Pair {
+                    rel,
+                    fern: &left,
+                    crozier: &right,
+                    context: &context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let plain = "**rows:** `typing.Optional[typing.Union[int, typing.Sequence[int]]]` — Rows.";
+        let restored = "**rows:** `typing.Optional[typing.Union[typing.Optional[int], typing.Sequence[typing.Optional[int]]]]` — Rows.";
+        assert!(holds(restored, plain));
+        // Another description, another item type, and the same line on both sides.
+        assert!(!holds(&restored.replace("Rows", "Pots"), plain));
+        assert!(!holds(&restored.replace("int", "str"), plain));
+        assert!(!holds(plain, plain));
+        // Only `reference.md` documents the type.
+        let (left, right) = ([restored], [plain]);
+        assert!(!nullable_items_docs_line(
+            &Pair {
+                rel: "src/acme/client.py",
+                fern: &left,
+                crozier: &right,
+                context: &context,
+            },
+            restored,
+            plain,
+        ));
+    }
+
+    #[test]
+    fn a_closed_empty_placeholder_composes_with_a_line_count_shift_above_it() {
+        // A departure above shifted crozier's lines, so the regions no longer
+        // start together: the one placeholder is still taken, and a neighbour
+        // of another call is not.
+        let fern = "a\nb\nc\nfirst(\n    plot={\n        \"key\": \"value\"\n    },\n)";
+        let crozier = "z\nc\nfirst(\n    plot={},\n)";
+        let (fern, crozier): (Vec<&str>, Vec<&str>) =
+            (fern.split('\n').collect(), crozier.split('\n').collect());
+        let context = Context::default();
+        let pair = Pair {
+            rel: "reference.md",
+            fern: &fern,
+            crozier: &crozier,
+            context: &context,
+        };
+        assert_eq!(
+            closed_empty_object_example_region(&pair).unwrap(),
+            Some(Region {
+                fern: 4..7,
+                crozier: 3..4,
+            })
+        );
+        let other = ["z", "c", "second(", "    plot={},", ")"];
+        let pair = Pair {
+            crozier: &other,
+            ..pair
+        };
+        assert_eq!(closed_empty_object_example_region(&pair).unwrap(), None);
+    }
+
+    #[test]
+    fn the_binary_json_line_rule_needs_a_binary_body_method_and_the_exact_values() {
+        let holds = |context: &Context, fern: &str, crozier: &str| {
+            let (left, right) = ([fern], [crozier]);
+            binary_json_body_example_line(
+                &Pair {
+                    rel: "reference.md",
+                    fern: &left,
+                    crozier: &right,
+                    context,
+                },
+                fern,
+                crozier,
+            )
+        };
+        let fern = "    request=\"string\",";
+        let crozier = "    request=b\"string\",";
+        // Without a generated binary JSON body method, nothing is excused.
+        assert!(!holds(&Context::default(), fern, crozier));
+        let raw = "class RawThingsClient:\n    def upload(\n        self,\n        *,\n        request: bytes,\n    ) -> None:\n        self._client_wrapper.httpx_client.request(\n            json=request,\n            headers={\n                \"content-type\": \"application/json\",\n            },\n        )\n";
+        let context = Context::from_sources([], [("things/raw_client.py", raw)]);
+        assert!(!context.request_examples().binary_json_methods.is_empty());
+        assert!(holds(&context, fern, crozier));
+        assert!(!holds(&context, "    request=\"other\",", crozier));
+        assert!(!holds(&context, fern, "    request=b\"other\","));
     }
 
     const NULLABLE_FERN: &str = "client.beds.list_beds(\n    rows=[\n        None\n    ],\n)\n\n**rows:** `typing.Optional[typing.Union[typing.Optional[int], typing.Sequence[typing.Optional[int]]]]` \n";
@@ -6732,13 +7031,17 @@ mod tests {
             closed_empty_object_example_region(&pair("src/fern/client.py", &fern, &crozier)),
             Ok(None)
         );
-        // Anything else differing inside the region, or a placeholder crozier
-        // keeps, is not this departure.
+        // Anything else differing inside the region leaves only the placeholder
+        // with both neighbours intact, and a placeholder crozier keeps is not
+        // this departure.
         let mut other = crozier;
         other[3] = ");";
         assert_eq!(
             closed_empty_object_example_region(&pair("README.md", &fern, &other)),
-            Ok(None)
+            Ok(Some(Region {
+                fern: 7..10,
+                crozier: 5..6
+            }))
         );
         let open = ["    profile={", "        \"key\": \"value\"", "    },"];
         assert_eq!(
@@ -8001,6 +8304,48 @@ mod tests {
                 "properties": {field: schema}
             }}}
         })
+    }
+
+    #[test]
+    fn a_wrapped_one_item_repair_holds_only_in_an_example_and_only_for_the_repair() {
+        let schema = serde_json::json!({"type": "array",
+            "items": {"type": "string", "pattern": "^[a-f]{64}$"}});
+        let repaired = "a".repeat(64);
+        let docstring = |argument: &str| {
+            format!("        \"\"\"\n        Examples\n        --------\n        client.post_check(\n{argument}        )\n        \"\"\"\n")
+        };
+        let runtime = |argument: &str| format!("        client.post_check(\n{argument}        )\n");
+        let fern_arg = "            addresses=[\"addresses\"],\n";
+        let wrapped =
+            format!("            addresses=[\n                \"{repaired}\"\n            ],\n");
+        let compare = |source: serde_json::Value, crozier: String, fern: String| {
+            let context = Context::default()
+                .with_source_document(serde_json::from_value(source).expect("a document"));
+            crate::parity::compare_file(&context, "src/fern/batch/client.py", &crozier, &fern)
+                .unwrap()
+        };
+        let source_again = || rejected_example_source("addresses", schema.clone());
+        let source = source_again();
+        let held = compare(source.clone(), docstring(&wrapped), docstring(fern_arg));
+        assert!(held.residual.is_none(), "{held:?}");
+        assert!(held
+            .departures
+            .iter()
+            .any(|found| found.id == "schema-rejected-name-example"));
+        // The same lines as runtime code are no example.
+        assert!(compare(source, runtime(&wrapped), runtime(fern_arg))
+            .residual
+            .is_some());
+        // A wrapped value the schema's repair does not choose is no repair.
+        let other = format!(
+            "            addresses=[\n                \"{}\"\n            ],\n",
+            "b".repeat(64)
+        );
+        assert!(
+            compare(source_again(), docstring(&other), docstring(fern_arg))
+                .residual
+                .is_some()
+        );
     }
 
     #[test]

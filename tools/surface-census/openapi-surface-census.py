@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 362 of the 393 registered sources live in `corpus-sources/` (a split
+  and 380 of the 411 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -85,7 +85,7 @@ class DocumentError(Exception):
     """A source document this census cannot read, with the site that stopped it."""
 
     def __init__(self, path: Path, line: int, message: str) -> None:
-        super().__init__(f"{path}:{line}: {message}")
+        super().__init__(f"{path.as_posix()}:{line}: {message}")
         self.path = path
         self.line = line
 
@@ -2985,7 +2985,7 @@ PORT_PINS = (
         "Census.same_primitive_unions",
         "src/openapi.rs::<LiteralTypeOverride as From>::from",
         "that the same literal and datetime override spellings still select primitive kinds",
-        "d560f3ebb3112f41",
+        "1f3cfbacddab1a91",
     ),
     PortPin(
         "is_closed_empty_object",
@@ -8421,7 +8421,7 @@ class Census:
                 case "float":
                     return "float"
                 case "string":
-                    if override == "datetime":
+                    if override in ("datetime", "optional<datetime>"):
                         return "datetime"
                     return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
                 case "integer":
@@ -9015,7 +9015,7 @@ def path_of(source: Source, repo_root: Path) -> str | None:
         return None
     if source.path.is_relative_to(repo_root):
         return source.path.relative_to(repo_root).as_posix()
-    return str(source.path)
+    return source.path.as_posix()
 
 
 def report(rows: dict[tuple[str, str], int], selectors: list[str]) -> str:
@@ -9103,7 +9103,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         if not isinstance(document, dict):
             print(
-                f"openapi-surface-census: {source.fixture}: {source.path} is not an "
+                f"openapi-surface-census: {source.fixture}: {source.path.as_posix()} is not an "
                 "OpenAPI document (its root is not a mapping)",
                 file=sys.stderr,
             )

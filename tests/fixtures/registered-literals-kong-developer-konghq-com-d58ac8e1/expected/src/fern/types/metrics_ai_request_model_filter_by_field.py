@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .metrics_ai_request_model_filter_by_field_one import MetricsAiRequestModelFilterByFieldOne
+from .metrics_ai_request_model_filter_by_field_value import MetricsAiRequestModelFilterByFieldValue
+
+MetricsAiRequestModelFilterByField = typing.Union[
+    MetricsAiRequestModelFilterByFieldValue, MetricsAiRequestModelFilterByFieldOne
+]

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-fossology-fossology-rest-dotnet-7da1db69",
+  "corpus_spec_ref": "b362ec94ddf8ab6da0f8606183dfc2bc79b157b9",
+  "corpus_spec_url": "https://raw.githubusercontent.com/fossology/FOSSology.REST.dotnet/b362ec94ddf8ab6da0f8606183dfc2bc79b157b9/openapi/FOSSology%20REST%20API%201.6.2.yaml"
+}

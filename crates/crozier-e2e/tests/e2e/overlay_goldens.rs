@@ -103,6 +103,26 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+            "registered-literals-apis-guru-openapi-directory-d8d536ea",
+            "registered-literals-azure-samples-digitization-4f917fb1",
+            "registered-literals-cyoda-cyoda-go-5ce9d613",
+            "registered-literals-gk0wk-openapi-thrift-cc8bee73",
+            "registered-literals-kong-developer-konghq-com-d58ac8e1",
+            "registered-literals-siafoundation-walletd-f03d7dc2",
+            "registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-2e988128",
+            "registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72",
+            "registered-literals-arpicato-messie-messenger-aa02af8d",
+            "registered-literals-atacan-assemblyai-10ca68af",
+            "registered-literals-blues-notehub-js-9c5b2b63",
+            "registered-literals-crate-works-ro-crate-api-f2457da3",
+            "registered-literals-crystalshards-monorepo-b29a3a4e",
+            "registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb",
+            "registered-literals-fossology-fossology-rest-dotnet-7da1db69",
+            "registered-literals-jentic-jentic-public-apis-2011299d",
+            "registered-literals-konfig-dev-konfig-75888823",
+            "registered-literals-revertinc-revert-698ea54a",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
             // llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This literal overlay belongs to the existing corpus golden inventory required by the fixture contract; one inventory entry cannot define a separate project edge.
             "eqivo-apostrophe-enums",
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These required literals proofs extend the existing corpus overlay inventory and subprocess gate; this task cannot split the shared e2eReads family into another project.

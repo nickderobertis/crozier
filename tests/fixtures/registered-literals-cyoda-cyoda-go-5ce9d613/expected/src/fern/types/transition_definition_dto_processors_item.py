@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .externalized_processor_definition_dto import ExternalizedProcessorDefinitionDto
+from .scheduled_transition_processor_definition_dto import ScheduledTransitionProcessorDefinitionDto
+
+TransitionDefinitionDtoProcessorsItem = typing.Union[
+    ExternalizedProcessorDefinitionDto, ScheduledTransitionProcessorDefinitionDto
+]

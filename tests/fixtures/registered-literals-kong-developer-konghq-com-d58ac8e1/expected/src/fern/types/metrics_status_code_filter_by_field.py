@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .metrics_status_code_filter_by_field_one import MetricsStatusCodeFilterByFieldOne
+from .metrics_status_code_filter_by_field_value import MetricsStatusCodeFilterByFieldValue
+
+MetricsStatusCodeFilterByField = typing.Union[MetricsStatusCodeFilterByFieldValue, MetricsStatusCodeFilterByFieldOne]

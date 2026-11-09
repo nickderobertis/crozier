@@ -185,6 +185,13 @@ pub fn observed_rows(
     }
     let mut rows = BTreeSet::new();
     let mut failures = Vec::new();
+    let generated_lines: BTreeMap<&str, Vec<String>> = by_file
+        .keys()
+        .filter_map(|rel| {
+            let text = std::fs::read_to_string(out.join(rel)).ok()?;
+            Some((*rel, text.split('\n').map(str::to_string).collect()))
+        })
+        .collect();
     for (rel, values) in by_file {
         let read = |path: std::path::PathBuf| {
             std::fs::read_to_string(&path).map_err(|error| format!("{}: {error}", path.display()))
@@ -211,7 +218,29 @@ pub fn observed_rows(
         let crozier_lines: Vec<&str> = generated.split('\n').collect();
         for value in values {
             let line = value.line.get();
-            let Some(fern_line) = mapped.get(line - 1).copied().flatten() else {
+            // A declared value crozier keeps where Fern writes its placeholder
+            // (ruling 2) is no value of Fern's to inventory: the departure on its
+            // line already accounts for it. The apifox lab's empty `bucket` beside
+            // Fern's `bucket="bucket"`.
+            if value.finding.disposition == Disposition::DeclaredInSpec
+                && departures.iter().any(|(file, departure_line, id)| {
+                    file == rel
+                        && *departure_line == line
+                        && id == "declared-example-over-placeholder"
+                })
+            {
+                continue;
+            }
+            // A repaired one-item list too long for one line: the region pairs from
+            // its `name=[` opener, the line ahead of the value, with Fern's one line.
+            let wrapped = line >= 2
+                && mapped.get(line - 1).copied().flatten().is_none()
+                && crozier_lines[line - 2].trim_end().ends_with("=[")
+                && crozier_lines
+                    .get(line)
+                    .is_some_and(|close| close.trim() == "],");
+            let paired = if wrapped { line - 2 } else { line - 1 };
+            let Some(fern_line) = mapped.get(paired).copied().flatten() else {
                 failures.push(format!(
                     "{rel}:{}: the comparison pairs crozier's line holding {} with no Fern line",
                     value.line, value.finding.argument
@@ -243,7 +272,8 @@ pub fn observed_rows(
             if value.finding.disposition == Disposition::Repaired
                 && !departures.iter().any(|(file, departure_line, id)| {
                     file == rel
-                        && (line..=end).contains(departure_line)
+                        && ((line..=end).contains(departure_line)
+                            || wrapped && *departure_line == line - 1)
                         && Mechanism::parse(id).is_some()
                 })
             {
@@ -285,6 +315,13 @@ pub fn observed_rows(
             value.file == *file
                 && value.finding.disposition == Disposition::Repaired
                 && (value.line.get() == *line
+                    // The wrapped one-item list above: the departure stands on
+                    // the opener, and the value on the next line.
+                    || value.line.get() == *line + 1
+                        && generated_lines
+                            .get(file.as_str())
+                            .and_then(|lines| lines.get(*line - 1))
+                            .is_some_and(|opener| opener.trim_end().ends_with("=["))
                     || value.finding.mechanism == Some(Mechanism::Array)
                         && value.line.get() <= *line
                         && *line <= value.line.get() + 400)

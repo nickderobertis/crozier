@@ -1,0 +1,3288 @@
+openapi: 3.1.0
+info:
+  title: RO-Crate API
+  summary: A comprehensive API for managing RO-Crate collections
+  description: |
+    ## Introduction
+    This API offers a standardised approach to interacting with RO-Crate metadata in repositories that host diverse media archives, such as PARADISEC. Building on the RO-Crate specification, the endpoints here facilitate the creation, retrieval, and management of digital collections, ensuring metadata is compliant and discoverable.
+
+    RO-Crate (Research Object Crate) is a lightweight approach to packaging research data with machine-readable metadata. By using this API, developers and archives can programmatically interface with RO-Crate-compliant collections, enabling consistent handling of metadata and files.
+
+    This documentation covers what a valid implementation of this API should look like.
+
+    ## Authentication
+
+    It is expected that most archives will allow public access but there will typically be entities which are private or require authorization.
+
+    When authentication is required, an API implementation MUST implement OAuth2 and it is recommended that OpenID is also added for simpler configuration and discoverability.
+
+    Write operations — the deposit and RO-Crate endpoints — require the coarse OAuth2 `write` scope. Finer-grained authorisation policy (who may deposit what) is implementation-defined.
+
+    ## Rate Limiting
+
+    API implementations MAY implement rate limiting to ensure fair usage and system stability. When rate limiting is active, responses will include rate limit headers (`X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`) and will return a 429 status code when limits are exceeded.
+
+    ## Extensions
+
+    The core specification can be extended through a curated registry of extensions defined in this document. Every extension has a stable identifier, a schema, and semantics. Implementations choose which extensions to implement and declare them through the `GET /capabilities` endpoint. Extension properties appear in core schemas as optional fields tagged with an `x-extension` annotation. See the [Extensions guide](https://ro-crate-api.crate-works.org/docs/extensions) for the full extension model.
+
+    ## Deposits and RO-Crates
+
+    Deposit is part of the core specification but is optional to provide: a read-only catalog remains conformant without it. All writes flow through deposit sessions against **RO-Crates** — a metadata document plus all the files it references, deposited and stored as a unit. The implementation materialises catalog entities from RO-Crates by its own rules; entities are read-only projections and have no write endpoints of their own.
+
+    Every implementation declares where it stands: the `deposit` block in `GET /capabilities` is always present, and its required `supported` flag states plainly whether the deposit surface is available.
+
+  contact:
+    name: Issues
+    url: https://github.com/crate-works/ro-crate-api/issues
+  x-logo:
+    url: https://ro-crate-api.crate-works.org/img/logo.webp
+    altText: RO-Crate API logo
+  license:
+    name: MIT
+    identifier: MIT
+  version: 0.3.0
+servers:
+  - url: https://data.ldaca.edu.au/api
+    description: LDaCA
+  - url: https://admin-catalog.paradisec.org.au/api/v1/oni
+    description: PARADISEC
+externalDocs:
+  description: Find out more about RO-Crate
+  url: https://ro-crate-api.crate-works.org
+tags:
+  - name: capabilities
+    description: Endpoint for discovering what an implementation supports — the spec version it targets, the extensions it implements, and the search filters and facets it provides.
+    x-displayName: Capabilities
+  - name: entities
+    description: Endpoints related to the creation, retrieval, and management of RO-Crate entities.
+    x-displayName: Entities
+  - name: files
+    description: Endpoints for listing and accessing files.
+    x-displayName: Files
+  - name: search
+    description: Endpoints to perform searches on archived media and metadata.
+    x-displayName: Search
+  - name: deposits
+    description: Endpoints for depositing content — open a deposit session against an RO-Crate, stage its metadata document and files, and finalise. Optional core — provided when `deposit.supported` is `true`.
+    x-displayName: Deposits
+  - name: ro_crates
+    description: Endpoints for reading and deleting RO-Crates — the deposited metadata documents and files from which catalog entities are materialised. Optional core — provided when `deposit.supported` is `true`.
+    x-displayName: RO-Crates
+  - name: entity_model
+    x-displayName: The Entity Model
+    description: |
+      <SchemaDefinition schemaRef="#/components/schemas/Entity" exampleRef="#/components/examples/EntityResponse" />
+      This section details how the Entity schema is structured, including properties like ID, name, and conforming profile information.
+x-tagGroups:
+  - name: General
+    tags:
+      - capabilities
+      - entities
+      - files
+      - search
+      - deposits
+      - ro_crates
+  - name: Models
+    tags:
+      - entity_model
+security:
+  - ApiKey: []
+  - OAuth2:
+      - read
+  - OpenID:
+      - read
+paths:
+  /capabilities:
+    get:
+      tags:
+        - capabilities
+      summary: Get implementation capabilities
+      description: |
+        Declare what this implementation supports — the spec version it targets, the extensions it implements, and the search filters and facets it provides. Every conformant implementation MUST provide this endpoint so that clients can feature-detect rather than relying on per-archive configuration or probing.
+
+        See the [Capabilities guide](https://ro-crate-api.crate-works.org/docs/getting-started/capabilities) for how clients should use this endpoint, and the [Extensions guide](https://ro-crate-api.crate-works.org/docs/extensions) for how extensions are registered.
+      operationId: getCapabilities
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Capabilities"
+              examples:
+                CapabilitiesResponse:
+                  $ref: "#/components/examples/CapabilitiesResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /entities:
+    get:
+      tags:
+        - entities
+      summary: List entities
+      description: |
+        Retrieve and list the entities in a collection. This endpoint returns key metadata describing each entity (e.g., ID, name, description). The response can be filtered, paginated, and sorted, allowing clients to navigate large archives efficiently.
+      operationId: listEntities
+      parameters:
+        - name: memberOf
+          in: query
+          description: Indicates that an entity is a member of another entity (e.g., a sub-collection). Use this parameter to filter results to only entities that belong to a certain parent.
+          example: https://catalog.paradisec.org.au/repository/NT1
+          schema:
+            type: string
+        - name: entityType
+          in: query
+          description: Restrict the types of entities that are returned by specifying which RO-Crate profiles they conform to. Any valid entity type URI may be used; if no entities match the given type, an empty list is returned.
+          example: ["http://pcdm.org/models#Collection"]
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/EntityType"
+        - $ref: "#/components/parameters/LimitParameter"
+        - $ref: "#/components/parameters/OffsetParameter"
+        - $ref: "#/components/parameters/EntitySortParameter"
+        - $ref: "#/components/parameters/OrderParameter"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A list of entities based on the provided filters.
+                required:
+                  - total
+                  - entities
+                properties:
+                  total:
+                    description: Total number of entities (before pagination) that match the query.
+                    type: integer
+                    example: 42
+                  entities:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Entity"
+              examples:
+                EntitiesListResponse:
+                  $ref: "#/components/examples/EntitiesListResponse"
+        "400":
+          description: Bad Request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /entity/{id}:
+    get:
+      tags:
+        - entities
+      summary: Get an entity
+      description: |
+        Retrieve an entity in a collection. This endpoint returns key metadata describing each entity (e.g., ID, name, description).
+      operationId: getEntity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique RO-Crate ID representing a specific entity in the repository.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Entity"
+              examples:
+                EntityResponse:
+                  $ref: "#/components/examples/EntityResponse"
+        "400":
+          description: Bad Request - Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    delete:
+      tags:
+        - entities
+      summary: Delete a contributor-less entity
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Delete an entity that no RO-Crate contributes to — its `roCrateIds` is empty. Such entities (for example an Organisation whose last contributing RO-Crate was deleted but which the implementation chose to retain) cannot be reached by any deposit-session operation, so this is the one entity-level write.
+
+        An entity with contributing RO-Crates cannot be deleted directly — its lifecycle is governed by its RO-Crates — and the request is rejected with `409 Conflict`.
+
+        After deletion the entity's URI follows the implementation's declared `tombstonePolicy`.
+      operationId: deleteEntity
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The unique RO-Crate ID representing a specific entity in the repository.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "204":
+          description: Entity deleted
+        "400":
+          description: Bad Request - Invalid ID format
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the entity has contributing RO-Crates and must be managed through them
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /entity/{id}/metadata:
+    get:
+      tags:
+        - entities
+      summary: Get the entity's RO-Crate metadata document
+      description: |
+        Retrieve the entity's RO-Crate Metadata Document: the complete JSON-LD conforming to the RO-Crate specification. This is the metadata document itself, not the summary `Entity` object returned by `GET /entity/{id}`.
+
+        This endpoint works for any entity type: Collection, Object, or MediaObject.
+
+        The returned document's provenance is implementation-defined: it may be a stored metadata document, or a view derived from the metadata documents of the entity's contributing RO-Crates. Either way it MUST be a valid RO-Crate whose root data entity describes this entity. To retrieve the original deposited metadata document verbatim, use `GET /ro-crate/{id}/metadata` (available where the implementation supports deposit).
+      operationId: getEntityMetadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The RO-Crate entity ID.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: Returns the RO-Crate JSON-LD metadata
+          headers:
+            Content-Length:
+              required: true
+              schema:
+                type: integer
+              description: The size of the returned content in bytes
+            Content-Type:
+              required: true
+              schema:
+                type: string
+              description: The MIME type of the returned content
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+              description: The date and time the RO-Crate metadata was last modified
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for cache validation
+          content:
+            application/ld+json:
+              schema:
+                type: object
+                description: RO-Crate metadata conforming to the RO-Crate specification
+                example:
+                  "@context": "https://w3id.org/ro/crate/1.1/context"
+                  "@graph":
+                    - "@id": "ro-crate-metadata.json"
+                      "@type": "CreativeWork"
+                      conformsTo:
+                        "@id": "https://w3id.org/ro/crate/1.1"
+                      about:
+                        "@id": "./"
+                    - "@id": "./"
+                      "@type": "Dataset"
+                      name: "Recordings of West Alor languages"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    head:
+      tags:
+        - entities
+      summary: Get entity RO-Crate metadata document headers
+      description: |
+        Retrieve RO-Crate metadata headers without downloading the metadata content. Returns the same headers as GET but with no response body, useful for checking metadata availability and caching information.
+      operationId: headEntityMetadata
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The RO-Crate entity ID.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          schema:
+            $ref: "#/components/schemas/Id"
+      responses:
+        "200":
+          description: RO-Crate metadata headers
+          headers:
+            Content-Length:
+              required: true
+              schema:
+                type: integer
+              description: The size of the RO-Crate metadata content in bytes
+            Content-Type:
+              required: true
+              schema:
+                type: string
+              description: The MIME type of the RO-Crate metadata content
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+              description: The date and time the RO-Crate metadata was last modified
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for cache validation
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /search:
+    post:
+      tags:
+        - search
+      summary: Search for RO-Crate entities
+      description: |
+        Perform advanced or basic searches across the entire RO-Crate collection. This includes free text queries, as well as filters for specific fields such as `inLanguage` or `mediaType`. The search results can be paginated, sorted, and optionally returned alongside facet counts.
+      operationId: search-entities
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                searchType:
+                  type: string
+                  enum:
+                    - basic
+                    - advanced
+                  default: basic
+                  description: Specifies the search method to be used. `basic` searches across common fields, whereas `advanced` can handle Boolean queries or more complex logic.
+                query:
+                  type: string
+                  description: |
+                    The query string used in the search. Behavior depends on `searchType`. For `basic`, this can be free text. For `advanced`, Boolean operators can be used.
+
+                    When searchType is `basic` this is a free text field of text to search.
+
+                    When searchType is `advanced` this is a boolean search field.
+                    Examples:
+                      name: John
+                      name: John AND description: Engineer
+                      name: John AND (description: Engineer OR description: developer)
+
+                    NOTE: This API is implementation-agnostic. The examples above show basic boolean syntax that most search engines support.
+                    API implementors may support additional query syntax - refer to your implementation's documentation for details.
+                filters:
+                  type: object
+                  description: |
+                    A set of key-value pairs representing additional filters. Keys MUST be filter fields the implementation declares in `/capabilities` under `search.filters`; a request using an undeclared key MUST be rejected with a 400 `ValidationError`.
+
+                    Each value is either an array of acceptable values (matched as exact terms, valid for any filter type), a single range object with inclusive `gte`/`lte` bounds, or a non-empty array of range objects matched as an OR of the ranges — an entity matches when any of the ranges matches. Ranges, single or in an array, are valid only for filters declared with type `date` or `number`; a range sent to a `string` or `boolean` filter MUST be rejected with a 400 `ValidationError`. An array MUST NOT mix exact terms and range objects; such a request MUST be rejected with a 400 `ValidationError`.
+                  additionalProperties:
+                    oneOf:
+                      - type: array
+                        items:
+                          type: string
+                      - $ref: "#/components/schemas/FilterRange"
+                      - type: array
+                        minItems: 1
+                        items:
+                          $ref: "#/components/schemas/FilterRange"
+                  example:
+                    {
+                      "inLanguage": ["English", "Japanese"],
+                      "mediaType": ["image/png"],
+                      "createdAt": { "gte": "2020-01-01", "lte": "2021-01-01" },
+                    }
+                boundingBox:
+                  type: object
+                  description: Will filter the results to entities that exist inside the bounding box.
+                  required:
+                    - topRight
+                    - bottomLeft
+                  properties:
+                    topRight:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                          minimum: -90
+                          maximum: 90
+                          description: Latitude coordinate
+                        lng:
+                          type: number
+                          minimum: -180
+                          maximum: 180
+                          description: Longitude coordinate
+                      required:
+                        - lat
+                        - lng
+                    bottomLeft:
+                      type: object
+                      properties:
+                        lat:
+                          type: number
+                          minimum: -90
+                          maximum: 90
+                          description: Latitude coordinate
+                        lng:
+                          type: number
+                          minimum: -180
+                          maximum: 180
+                          description: Longitude coordinate
+                      required:
+                        - lat
+                        - lng
+                  example:
+                    {
+                      "topRight": { "lat": -33.7, "lng": 151.3 },
+                      "bottomLeft": { "lat": -34.1, "lng": 150.9 },
+                    }
+                geohashPrecision:
+                  type: integer
+                  minimum: 1
+                  maximum: 12
+                  description: If supplied, returns a geohash grid with this precision. Must be between 1 (lowest precision) and 12 (highest precision).
+                  example: 7
+                limit:
+                  description: Maximum number of entities to return per page.
+                  example: 100
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 1000
+                  default: 100
+                offset:
+                  description: Number of items to skip before returning the results, enabling paging.
+                  example: 100
+                  type: integer
+                  format: int32
+                  minimum: 0
+                  default: 0
+                sort:
+                  description: |
+                    The field on which to sort results. Defaults to `relevance`, which orders
+                    results by search score (highest first). When set to `relevance`, the
+                    `order` parameter is ignored. Use `id`, `name`, `createdAt`, or
+                    `updatedAt` to sort by a specific field.
+                  example: relevance
+                  type: string
+                  enum:
+                    - id
+                    - name
+                    - createdAt
+                    - updatedAt
+                    - relevance
+                  default: relevance
+                order:
+                  description: |
+                    Sort order:
+                    * `asc` - Ascending, from A to Z
+                    * `desc` - Descending, from Z to A
+                  example: "asc"
+                  $ref: "#/components/schemas/Order"
+                  default: "asc"
+            examples:
+              SearchRequest:
+                $ref: "#/components/examples/SearchRequest"
+
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A list of entities matching the query, plus optional facets.
+                required:
+                  - total
+                  - searchTime
+                  - entities
+                properties:
+                  total:
+                    description: Total number of entities (before pagination) matching the query.
+                    type: integer
+                    example: 42
+                  searchTime:
+                    description: The search duration in milliseconds.
+                    type: number
+                    example: 42.34
+                  entities:
+                    type: array
+                    items:
+                      allOf:
+                        - $ref: "#/components/schemas/Entity"
+                        - $ref: "#/components/schemas/SearchEntity"
+                  facets:
+                    type: object
+                    description: Contains facet counts for the search. Keys are facet fields, and values are arrays of objects indicating the facet name and count.
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            description: The facet value or label.
+                          count:
+                            type: integer
+                            description: Number of results that match this facet value.
+                    example:
+                      {
+                        "inLanguage":
+                          [
+                            { "name": "English", "count": 100 },
+                            { "name": "Japanese", "count": 5 },
+                          ],
+                      }
+                  geohashGrid:
+                    type: object
+                    description: Present when boundingBox is used with a precision. Contains counts of entities in each geohash area. Keys are geohash values, and values are the count of entities in that area.
+                    additionalProperties:
+                      type: integer
+                    example: { "r3": 30, "r6": 4 }
+              examples:
+                SearchResponse:
+                  $ref: "#/components/examples/SearchResponse"
+        "400":
+          description: Bad Request - Invalid search parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "422":
+          description: Unprocessable Entity - Invalid query syntax
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /files:
+    get:
+      tags:
+        - files
+      summary: List files
+      description: |
+        Retrieve and list file in the repository. This endpoint returns key metadata describing each file. The response can be filtered by memberOf to show files attached to a specific entity, and supports pagination and sorting.
+      operationId: listFiles
+      parameters:
+        - name: memberOf
+          in: query
+          description: Filter to only files that are directly attached to a specific entity (e.g., files within a collection or object).
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          schema:
+            type: string
+        - $ref: "#/components/parameters/LimitParameter"
+        - $ref: "#/components/parameters/OffsetParameter"
+        - $ref: "#/components/parameters/FileSortParameter"
+        - $ref: "#/components/parameters/OrderParameter"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A list of file entities based on the provided filters.
+                required:
+                  - total
+                  - files
+                properties:
+                  total:
+                    description: Total number of files (before pagination) that match the query.
+                    type: integer
+                    example: 42
+                  files:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/File"
+              examples:
+                FilesListResponse:
+                  $ref: "#/components/examples/FilesListResponse"
+        "400":
+          description: Bad Request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /file/{id}:
+    get:
+      tags:
+        - files
+      summary: Get file content
+      description: |
+        Retrieve a file. The file can be returned inline (e.g., displayed in the browser) or as an attachment for download (e.g., prompting a save dialog), based on the disposition parameter.
+        The API can serve the file directly or redirect to the location of the file.
+      operationId: getFile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the file.
+          example: https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3
+          schema:
+            $ref: "#/components/schemas/Id"
+        - name: disposition
+          in: query
+          description: The HTTP Content-Disposition for how the file should be handled by the client.
+          example: inline
+          schema:
+            type: string
+            enum:
+              - inline
+              - attachment
+            default: inline
+        - name: filename
+          in: query
+          description: When the file is served as an attachment, the name to use when saving.
+          example: foo.wav
+          schema:
+            type: string
+            maxLength: 255
+            pattern: '^[a-zA-Z0-9._\-\s]+$'
+        - name: noRedirect
+          in: query
+          description: Return the location as JSON instead of a 302 redirect.
+          example: true
+          schema:
+            type: boolean
+        - name: Range
+          in: header
+          description: Request specific byte range(s) of the file. Supports standard HTTP Range header syntax.
+          example: "bytes=0-1023"
+          schema:
+            type: string
+            pattern: '^bytes=(\d*-\d*|\d+-|(-\d+))(,(\d*-\d*|\d+-|(-\d+)))*$'
+      responses:
+        "200":
+          description: 'Returns the requested file content or { "location": "http://location/of/file" }'
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+                enum: [bytes]
+              description: Indicates that the server supports range requests for this file
+            Content-Length:
+              schema:
+                type: integer
+              description: The size of the returned content in bytes
+            Content-Type:
+              schema:
+                type: string
+              description: The MIME type of the returned file
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+              description: The date and time the file was last modified
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for cache validation
+        "206":
+          description: Partial Content - returned when Range header is present and valid
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+                enum: [bytes]
+              description: Indicates that the server supports range requests
+            Content-Range:
+              schema:
+                type: string
+                pattern: '^bytes \d+-\d+/\d+$'
+              description: Indicates the byte range returned (e.g., "bytes 200-1023/1024")
+              example: "bytes 0-1023/2048"
+            Content-Length:
+              schema:
+                type: integer
+              description: The size of the returned partial content in bytes
+            Content-Type:
+              schema:
+                type: string
+              description: The MIME type of the returned file
+        "302":
+          description: Redirects to file location
+        "400":
+          description: Bad Request - Invalid parameters or entity is not a MediaObject type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvalidEntityTypeError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "416":
+          description: Range Not Satisfiable - the requested range is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RangeNotSatisfiableError"
+              examples:
+                default:
+                  $ref: "#/components/examples/RangeNotSatisfiableErrorResponse"
+          headers:
+            Content-Range:
+              schema:
+                type: string
+                pattern: '^bytes \*/\d+$'
+              description: Indicates the total size of the file when range is not satisfiable
+              example: "bytes */2048"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    head:
+      tags:
+        - files
+      summary: Get file metadata headers
+      description: |
+        Retrieve file metadata headers without downloading the file content. Returns the same headers as GET but with no response body, useful for checking file availability, size, type, and caching information.
+      operationId: headFile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the file.
+          example: https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3
+          schema:
+            $ref: "#/components/schemas/Id"
+        - name: disposition
+          in: query
+          description: The HTTP Content-Disposition for how the file should be handled by the client.
+          example: inline
+          schema:
+            type: string
+            enum:
+              - inline
+              - attachment
+            default: inline
+        - name: filename
+          in: query
+          description: When the file is served as an attachment, the name to use when saving.
+          example: foo.wav
+          schema:
+            type: string
+            maxLength: 255
+            pattern: '^[a-zA-Z0-9._\-\s]+$'
+        - name: noRedirect
+          in: query
+          description: Return the location as JSON instead of a 302 redirect.
+          example: true
+          schema:
+            type: boolean
+        - name: Range
+          in: header
+          description: Request specific byte range(s) of the file. Supports standard HTTP Range header syntax.
+          example: "bytes=0-1023"
+          schema:
+            type: string
+            pattern: '^bytes=(\d*-\d*|\d+-|(-\d+))(,(\d*-\d*|\d+-|(-\d+)))*$'
+      responses:
+        "200":
+          description: File metadata headers
+          headers:
+            Accept-Ranges:
+              schema:
+                type: string
+                enum: [bytes]
+              description: Indicates that the server supports range requests for this file
+            Content-Length:
+              required: true
+              schema:
+                type: integer
+              description: The size of the file content in bytes
+            Content-Type:
+              required: true
+              schema:
+                type: string
+              description: The MIME type of the file
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+              description: The date and time the file was last modified
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for cache validation
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Entity not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /deposits:
+    post:
+      tags:
+        - deposits
+      summary: Create a deposit for a new RO-Crate
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Open a deposit session that will create a new RO-Crate. The RO-Crate comes into existence only at the deposit's first successful finalise — until then nothing is readable and no entities exist.
+
+        The request body MAY propose a `roCrateId` where the implementation's `idMinting` capability is `client` or `both`; when the body or the field is absent the server mints one (`server` or `both`). Proposing an ID that is not supported by the declared `idMinting` mode is rejected with `422`; proposing an ID that already exists is rejected with `409`. The RO-Crate ID is returned immediately so the client can reference it from the deposited metadata document; whether the metadata document MUST reference it is implementation-defined and enforced at finalise.
+
+        A previously deleted RO-Crate ID MAY be reused; implementations MAY refuse with `409`. Recreation is a new RO-Crate, not a continuation — no relationship to the deleted RO-Crate's history or entities is implied.
+
+        To update an existing RO-Crate, use `POST /ro-crate/{id}/deposits` instead.
+      operationId: createDeposit
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roCrateId:
+                  description: A client-proposed ID for the new RO-Crate. Only valid when the implementation's `idMinting` capability is `client` or `both`.
+                  $ref: "#/components/schemas/Id"
+      responses:
+        "201":
+          description: Deposit created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: The URL of the created deposit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+              examples:
+                DepositResponse:
+                  $ref: "#/components/examples/DepositResponse"
+        "400":
+          description: Bad Request - Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "409":
+          description: Conflict - an RO-Crate with the proposed ID already exists, or the implementation refuses to reuse a deleted ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "422":
+          description: Unprocessable Entity - the request does not match the implementation's declared `idMinting` mode (an ID was proposed but not accepted, or omitted where the client must propose one)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /deposit/{id}:
+    get:
+      tags:
+        - deposits
+      summary: Get a deposit
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Retrieve the deposit, including its lifecycle state, the files staged so far with per-file upload status, and the violations recorded by the most recent failed finalise. This is the polling resource for asynchronous finalisation: after a `202` from finalise, poll here until the state leaves `finalising`.
+      operationId: getDeposit
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/DepositIdParameter"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+              examples:
+                DepositResponse:
+                  $ref: "#/components/examples/DepositResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Deposit not found - unknown, or expired and cleaned up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    delete:
+      tags:
+        - deposits
+      summary: Abort a deposit
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Abort an `open` deposit, discarding its staged metadata document and files. Aborting is terminal; the RO-Crate is left at its prior version (or never comes into existence for a create deposit).
+
+        Deposits are also subject to implementation-defined expiry — an expired deposit behaves as aborted, and subsequent access MAY return `404`. Where the implementation declares `depositTtlSeconds` in `/capabilities`, that is the expiry horizon.
+      operationId: abortDeposit
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/DepositIdParameter"
+      responses:
+        "204":
+          description: Deposit aborted
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Deposit not found - unknown, or expired and cleaned up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the deposit is not in the `open` state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /deposit/{id}/metadata:
+    put:
+      tags:
+        - deposits
+      summary: Stage the metadata document
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Stage the RO-Crate metadata document for this deposit. This is a full replace — staging a new metadata document discards the previously staged one; there is no metadata PATCH and no metadata DELETE. The metadata document and files may be staged in any order; metadata–file association is checked at finalise.
+
+        At finalise the staged metadata document becomes the RO-Crate's authoritative file manifest: each file entity in the metadata document resolves to bytes staged in this deposit, else (for update deposits) to the file carried forward by `@id` from the baseline version, else remains an unresolved reference. Unresolved references are not protocol errors — they simply `404` when followed — but implementations MAY reject them at finalise via validation. Files present in the baseline but absent from the new metadata document drop out of the new version.
+      operationId: stageDepositMetadata
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/DepositIdParameter"
+      requestBody:
+        required: true
+        content:
+          application/ld+json:
+            schema:
+              type: object
+              description: RO-Crate metadata conforming to the RO-Crate specification
+      responses:
+        "204":
+          description: Metadata document staged
+        "400":
+          description: Bad Request - the body is not a JSON-LD document
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Deposit not found - unknown, or expired and cleaned up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the deposit is not in the `open` state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /deposit/{id}/file/{fileId}:
+    put:
+      tags:
+        - deposits
+      summary: Stage a file
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Stage a file in this deposit. `{fileId}` is the file entity's `@id` in the deposited metadata document, percent-encoded — for attached files, its crate-relative path. The metadata document and files may be staged in any order.
+
+        Two upload modes share this endpoint, discriminated by the request `Content-Type`; the implementation declares which it supports in the `fileUpload` capability:
+
+        - **Inline** (`fileUpload` contains `inline`): the request body is the file's bytes, sent with the file's own media type. Responds `204`.
+        - **Presigned** (`fileUpload` contains `presigned`): the request body is `application/json` transport metadata (size, checksum, media type) and the response is `200` with an upload target the client sends the bytes to directly. There is no per-file completion call — finalise verifies that the bytes landed and match the declared size and checksum.
+
+        Only transport metadata is carried here; descriptive metadata about the file lives in the metadata document. Staging the same `{fileId}` again replaces the earlier staging. Using a mode the implementation does not declare is rejected with `400`.
+      operationId: stageDepositFile
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/DepositIdParameter"
+        - name: fileId
+          in: path
+          required: true
+          description: The file entity's `@id` in the deposited metadata document, percent-encoded. For attached files this is the crate-relative path.
+          example: NT1-001-001A.mp3
+          schema:
+            type: string
+            format: uri-reference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FileStagingMetadata"
+          "*/*":
+            schema:
+              type: string
+              format: binary
+              description: The file's bytes, sent with the file's own media type (inline mode).
+      responses:
+        "200":
+          description: Transport metadata staged (presigned mode) - upload the bytes to the returned target
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FileUploadTarget"
+              examples:
+                FileUploadTargetResponse:
+                  $ref: "#/components/examples/FileUploadTargetResponse"
+        "204":
+          description: File staged (inline mode)
+        "400":
+          description: Bad Request - invalid transport metadata, or an upload mode the implementation does not declare
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Deposit not found - unknown, or expired and cleaned up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the deposit is not in the `open` state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "413":
+          description: Content Too Large - the file exceeds the implementation's declared `maxFileSizeBytes`
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    delete:
+      tags:
+        - deposits
+      summary: Remove a staged file
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Remove a file staged in this deposit. Valid while the deposit is `open`. This only affects the deposit's staging area — to drop a file from an existing RO-Crate, stage a metadata document that no longer references it.
+      operationId: unstageDepositFile
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/DepositIdParameter"
+        - name: fileId
+          in: path
+          required: true
+          description: The file entity's `@id` in the deposited metadata document, percent-encoded. For attached files this is the crate-relative path.
+          example: NT1-001-001A.mp3
+          schema:
+            type: string
+            format: uri-reference
+      responses:
+        "204":
+          description: Staged file removed
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Deposit or staged file not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the deposit is not in the `open` state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /deposit/{id}/finalise:
+    post:
+      tags:
+        - deposits
+      summary: Finalise a deposit
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Finalise the deposit: validate the staged content, publish it as the RO-Crate's new current version (replacing the prior version wholesale), and materialise catalog entities from it. Validation depth and materialisation rules are implementation-defined.
+
+        Finalisation MAY complete synchronously or asynchronously, at the server's discretion per request — there is no capability flag. A `200` returns the deposit in state `complete`; a `202` returns it in state `finalising`, and the client polls `GET /deposit/{id}` until the state leaves `finalising`. One client code path handles both.
+
+        For every file staged in presigned mode, finalise verifies the bytes landed and match the declared size and checksum; missing or mismatched files are validation violations.
+
+        **Failure atomicity is guaranteed**: a finalise that does not reach `complete` leaves no observable change. On validation failure the deposit returns to `open` with the violations recorded — as a `422` on the synchronous path, and in the deposit's `errors` field on the asynchronous path. Non-validation failures (including the target RO-Crate having been deleted mid-deposit) also return the deposit to `open` with the failure recorded; retry is safe, and abort covers walking away. Once `complete`, the new metadata document and all materialised entities are readable; readers are not guaranteed to observe the transition as a single atomic flip.
+
+        For update deposits, carry-forward resolves against the baseline version pinned when the deposit was opened; the last finalise wins as a unit. Implementations MAY reject a finalise whose baseline has been superseded with `409`.
+      operationId: finaliseDeposit
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/DepositIdParameter"
+      responses:
+        "200":
+          description: Finalised synchronously - the deposit is `complete` and the RO-Crate's new version is published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+              examples:
+                DepositCompleteResponse:
+                  $ref: "#/components/examples/DepositCompleteResponse"
+        "202":
+          description: Accepted - finalisation is proceeding asynchronously; poll `GET /deposit/{id}` until the state leaves `finalising`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+              examples:
+                DepositFinalisingResponse:
+                  $ref: "#/components/examples/DepositFinalisingResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: Deposit not found - unknown, or expired and cleaned up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the deposit is not in the `open` state, or the implementation rejects a finalise whose baseline has been superseded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "422":
+          description: Unprocessable Entity - validation failed; the deposit has returned to `open` with the violations recorded, staged content intact
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/FinaliseValidationErrorResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /ro-crates:
+    get:
+      tags:
+        - ro_crates
+      summary: List RO-Crates
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        List RO-Crates, paginated and sorted. The response contains whatever the caller is allowed to see under the implementation's visibility model: implementations choose whether RO-Crates are a public surface (listable by anyone, with per-object `access` governing metadata-document retrieval) or a depositor-only management surface (requiring the `write` scope).
+
+        There are no content filters — catalog-side questions belong to `/entities` and `/search`.
+      operationId: listRoCrates
+      parameters:
+        - $ref: "#/components/parameters/LimitParameter"
+        - $ref: "#/components/parameters/OffsetParameter"
+        - $ref: "#/components/parameters/RoCrateSortParameter"
+        - $ref: "#/components/parameters/OrderParameter"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: A list of RO-Crates visible to the caller.
+                required:
+                  - total
+                  - roCrates
+                properties:
+                  total:
+                    description: Total number of RO-Crates (before pagination) visible to the caller.
+                    type: integer
+                    example: 42
+                  roCrates:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/RoCrate"
+              examples:
+                RoCratesListResponse:
+                  $ref: "#/components/examples/RoCratesListResponse"
+        "400":
+          description: Bad Request - Invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ValidationErrorResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /ro-crate/{id}:
+    get:
+      tags:
+        - ro_crates
+      summary: Get an RO-Crate
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Retrieve an RO-Crate. The body is deliberately lean: identity, the entities materialised from the current version, timestamps, and access. The deposited metadata document — `GET /ro-crate/{id}/metadata` — is the single source of truth for the RO-Crate's content inventory; the RO-Crate carries no file list of its own.
+
+        `entityIds` is the authoritative answer to "what did my deposit create". It is the inverse of the entity's `roCrateIds` and can change when later deposits (of this or other RO-Crates) alter the materialisation.
+      operationId: getRoCrate
+      parameters:
+        - $ref: "#/components/parameters/RoCrateIdParameter"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RoCrate"
+              examples:
+                RoCrateResponse:
+                  $ref: "#/components/examples/RoCrateResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: RO-Crate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    delete:
+      tags:
+        - ro_crates
+      summary: Delete an RO-Crate
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Delete an RO-Crate — its metadata document and files. Deletion is not a deposit session; it is already atomic. Implementations needing slow teardown MAY return `202 Accepted`.
+
+        The spec mandates no preconditions; implementations MAY refuse per their own policy (curatorial holds, cross-references) with `409` and a reason. The effect on materialised entities is implementation-defined, mirroring re-deposit pruning: an entity no other RO-Crate contributes to MAY be removed, and deliberate retention is legitimate. An entity with other contributors survives — the deleted RO-Crate simply drops out of its `roCrateIds`.
+
+        Open deposits do not block deletion: delete wins, and a subsequent finalise of such a deposit fails back to `open` with the failure recorded. Implementations MAY auto-abort open deposits against the deleted RO-Crate.
+
+        After deletion, the RO-Crate's URIs (including `/ro-crate/{id}/metadata`) follow the implementation's declared `tombstonePolicy`.
+      operationId: deleteRoCrate
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/RoCrateIdParameter"
+      responses:
+        "204":
+          description: RO-Crate deleted
+        "202":
+          description: Accepted - deletion is proceeding asynchronously
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: RO-Crate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "409":
+          description: Conflict - the implementation refuses the deletion per its own policy; the body carries the reason
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictError"
+              examples:
+                default:
+                  $ref: "#/components/examples/ConflictErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /ro-crate/{id}/metadata:
+    get:
+      tags:
+        - ro_crates
+      summary: Get the deposited metadata document
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Retrieve the RO-Crate's current RO-Crate metadata document, verbatim as deposited. Unlike `GET /entity/{id}/metadata`, which may return a derived view, this endpoint always returns the original deposited metadata document.
+      operationId: getRoCrateMetadata
+      parameters:
+        - $ref: "#/components/parameters/RoCrateIdParameter"
+      responses:
+        "200":
+          description: Returns the deposited RO-Crate JSON-LD metadata
+          headers:
+            Content-Length:
+              required: true
+              schema:
+                type: integer
+              description: The size of the returned content in bytes
+            Content-Type:
+              required: true
+              schema:
+                type: string
+              description: The MIME type of the returned content
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+              description: The date and time the metadata document was last modified
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for cache validation
+          content:
+            application/ld+json:
+              schema:
+                type: object
+                description: RO-Crate metadata conforming to the RO-Crate specification
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: RO-Crate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+    head:
+      tags:
+        - ro_crates
+      summary: Get deposited metadata document headers
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Retrieve the deposited metadata document's headers without downloading the content. Returns the same headers as GET but with no response body, useful for checking availability and caching information.
+      operationId: headRoCrateMetadata
+      parameters:
+        - $ref: "#/components/parameters/RoCrateIdParameter"
+      responses:
+        "200":
+          description: Deposited RO-Crate headers
+          headers:
+            Content-Length:
+              required: true
+              schema:
+                type: integer
+              description: The size of the metadata document in bytes
+            Content-Type:
+              required: true
+              schema:
+                type: string
+              description: The MIME type of the metadata document
+            Last-Modified:
+              schema:
+                type: string
+                format: date-time
+              description: The date and time the metadata document was last modified
+            ETag:
+              schema:
+                type: string
+              description: Entity tag for cache validation
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: RO-Crate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+  /ro-crate/{id}/deposits:
+    post:
+      tags:
+        - deposits
+      summary: Create a deposit to update an RO-Crate
+      description: |
+        Optional core — provided when `deposit.supported` is `true`. See the [Deposits guide](https://ro-crate-api.crate-works.org/docs/deposit).
+
+        Open a deposit session against an existing RO-Crate. The deposit starts logically empty; the client stages a new metadata document plus only the files that changed. At finalise the new metadata document is the authoritative file manifest — unchanged files are carried forward from the baseline by `@id`, and files absent from the new metadata document drop out. A metadata-only fix is therefore just `PUT /deposit/{id}/metadata` followed by finalise.
+
+        The baseline for carry-forward is the RO-Crate's current version at the moment this deposit is created. Concurrent open deposits against one RO-Crate are allowed; each finalise replaces the RO-Crate wholesale, so the last finalise wins as a unit.
+      operationId: createUpdateDeposit
+      security:
+        - ApiKey: []
+        - OAuth2:
+            - write
+        - OpenID:
+            - write
+      parameters:
+        - $ref: "#/components/parameters/RoCrateIdParameter"
+      responses:
+        "201":
+          description: Deposit created
+          headers:
+            Location:
+              schema:
+                type: string
+                format: uri
+              description: The URL of the created deposit
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Deposit"
+              examples:
+                DepositResponse:
+                  $ref: "#/components/examples/DepositResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedResponse"
+        "403":
+          $ref: "#/components/responses/ForbiddenResponse"
+        "404":
+          description: RO-Crate not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotFoundError"
+              examples:
+                default:
+                  $ref: "#/components/examples/NotFoundErrorResponse"
+        "410":
+          $ref: "#/components/responses/GoneResponse"
+        "429":
+          $ref: "#/components/responses/RateLimitResponse"
+        "500":
+          $ref: "#/components/responses/InternalServerErrorResponse"
+
+components:
+  parameters:
+    LimitParameter:
+      name: limit
+      in: query
+      description: Maximum number of entities to return.
+      example: 100
+      schema:
+        type: integer
+        format: int32
+        minimum: 1
+        maximum: 1000
+        default: 100
+    OffsetParameter:
+      name: offset
+      in: query
+      description: Number of items to skip before returning the results, useful for pagination.
+      example: 100
+      schema:
+        type: integer
+        format: int32
+        minimum: 0
+        default: 0
+    EntitySortParameter:
+      name: sort
+      in: query
+      description: Field to sort by, such as `name` or `createdAt`.
+      example: id
+      schema:
+        type: string
+        enum:
+          - id
+          - name
+          - createdAt
+          - updatedAt
+        default: id
+    FileSortParameter:
+      name: sort
+      in: query
+      description: Field to sort by, such as `filename` or `createdAt`.
+      example: id
+      schema:
+        type: string
+        enum:
+          - id
+          - filename
+          - createdAt
+          - updatedAt
+        default: id
+    OrderParameter:
+      name: order
+      in: query
+      description: |
+        Sort order:
+        * `asc` - Ascending, from A to Z
+        * `desc` - Descending, from Z to A
+      example: "asc"
+      schema:
+        $ref: "#/components/schemas/Order"
+        default: "asc"
+    DepositIdParameter:
+      name: id
+      in: path
+      required: true
+      description: The deposit ID, as returned when the deposit was created.
+      example: dep_8f14e45f
+      schema:
+        type: string
+    RoCrateIdParameter:
+      name: id
+      in: path
+      required: true
+      description: The RO-Crate ID.
+      example: https://catalog.paradisec.org.au/repository/NT1/001
+      schema:
+        $ref: "#/components/schemas/Id"
+    RoCrateSortParameter:
+      name: sort
+      in: query
+      description: Field to sort by.
+      example: id
+      schema:
+        type: string
+        enum:
+          - id
+          - lastDepositedAt
+        default: id
+
+  responses:
+    RateLimitResponse:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Request limit per time window
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Requests remaining in current time window
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: Unix timestamp when the rate limit resets
+        Retry-After:
+          schema:
+            type: integer
+          description: Number of seconds to wait before retrying
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RateLimitError"
+    UnauthorizedResponse:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/UnauthorizedError"
+          examples:
+            default:
+              $ref: "#/components/examples/UnauthorizedErrorResponse"
+    ForbiddenResponse:
+      description: Access token does not have the required scope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ForbiddenError"
+          examples:
+            default:
+              $ref: "#/components/examples/ForbiddenErrorResponse"
+    InternalServerErrorResponse:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/InternalServerError"
+          examples:
+            default:
+              $ref: "#/components/examples/InternalServerErrorResponse"
+    GoneResponse:
+      description: Gone - the resource has been deleted. Returned in place of 404 when the implementation declares a `tombstonePolicy` of `"410"`; the body is a tombstone describing the deletion. Under a `tombstonePolicy` of `"404"`, deleted resources return 404 instead.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Tombstone"
+          examples:
+            default:
+              $ref: "#/components/examples/TombstoneResponse"
+
+  securitySchemes:
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for authentication. Provides a simpler alternative to OAuth2 for server-to-server integrations.
+
+    OpenID:
+      type: openIdConnect
+      description: It is recommended that API implementations implement OpenID to make discovery and implementation easier.
+      openIdConnectUrl: /.well-known/openid-configuration
+
+    OAuth2:
+      type: oauth2
+      description: API implementations that contain data which needs to be protected MUST implement authorisation using OAuth 2
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth/authorize
+          tokenUrl: /oauth/token
+          scopes:
+            read: Grants read access
+            write: Grants write access through deposit sessions. Finer-grained authorisation policy is implementation-defined.
+
+  schemas:
+    Id:
+      type: string
+      format: uri
+      description: A URI-based identifier, used to reference the entity or file in the RO-Crate. This ensures global uniqueness and enables cross-linking of entities.
+      example: "https://catalog.paradisec.org.au/repository/NT1/001"
+    EntityReference:
+      type: object
+      description: A resolved reference to an entity, containing its ID and name.
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: string
+          format: uri
+        name:
+          type: string
+    EntityType:
+      type: string
+      format: uri
+      description: >-
+        A URI identifying the nature of the entity. Implementers may use any
+        valid URI as an entity type. The following core types have specific API
+        behaviour: `http://pcdm.org/models#Collection` (collections),
+        `http://pcdm.org/models#Object` (objects),
+        `http://schema.org/MediaObject` (media objects), and `http://schema.org/Person` (people).
+      examples:
+        - http://pcdm.org/models#Collection
+        - http://pcdm.org/models#Object
+        - http://schema.org/MediaObject
+        - http://schema.org/Person
+    Order:
+      type: string
+      enum:
+        - asc
+        - desc
+      description: Used to specify the order in sorting results.
+    Capabilities:
+      type: object
+      description: Declares what an implementation supports — the spec version it targets, whether it provides the optional deposit surface, the registered extensions it implements, and the search filters and facets it provides.
+      required:
+        - apiVersion
+        - deposit
+        - tombstonePolicy
+        - extensions
+        - search
+      properties:
+        apiVersion:
+          type: string
+          description: The version of this specification that the implementation targets.
+          example: "0.3.0"
+        extensions:
+          type: object
+          description: |
+            The registered extensions this implementation provides, as a map of extension identifier to a details object describing how the extension is provided. Presence of a key means the extension is implemented; the value is an empty object when the extension has no extra details to communicate.
+
+            Unregistered experimental extensions use an `x-` prefixed identifier and are outside the scope of this specification.
+          properties:
+            segments:
+              $ref: "#/components/schemas/SegmentsCapability"
+              x-extension: segments
+          additionalProperties:
+            type: object
+          example:
+            segments: {}
+        deposit:
+          $ref: "#/components/schemas/DepositCapability"
+        tombstonePolicy:
+          type: string
+          enum:
+            - "410"
+            - "404"
+          description: |
+            What deleted resource URIs return. `"410"` - deleted URIs respond 410 Gone with a `Tombstone` body; `"404"` - deleted resources are indistinguishable from those that never existed. One policy covers RO-Crate, entity and file URIs alike; implementations MUST NOT mix them.
+
+            REQUIRED of every implementation, whether or not it provides the deposit surface: entities and files are mandatory core, so any catalog may hold a URI that no longer resolves.
+          example: "410"
+        search:
+          $ref: "#/components/schemas/SearchCapability"
+    SearchCapability:
+      type: object
+      description: |
+        Declares what the implementation's search endpoint supports — the filters that may be used in search requests and the facets returned in search responses.
+
+        Every field declared in `facets` MUST also be declared in `filters`, so that clients can always turn a facet value the user clicks into a filter on the next request. Filter-only fields (for example date fields, which are filterable but not meaningful as facets) are permitted.
+      required:
+        - filters
+        - facets
+      properties:
+        filters:
+          type: object
+          description: The fields that may be used in the search request's `filters` object, as a map of field name to a declaration of the field's type and display label. Requests using a field not declared here MUST be rejected with a 400 `ValidationError`.
+          additionalProperties:
+            $ref: "#/components/schemas/FilterCapability"
+          example:
+            inLanguage:
+              type: string
+              label: Language
+            mediaType:
+              type: string
+            createdAt:
+              type: date
+              label: Date created
+        facets:
+          type: object
+          description: The facet fields the implementation supports in search responses, as a map of facet field name to its declaration. Every field listed here MUST also appear in `filters`.
+          additionalProperties:
+            $ref: "#/components/schemas/FacetCapability"
+          example:
+            inLanguage:
+              label: Language
+            mediaType: {}
+    SegmentsCapability:
+      type: object
+      description: Details the implementation communicates about its `segments` support. The extension currently has no extra details to communicate; the value is an empty object.
+      x-extension: segments
+    DepositCapability:
+      type: object
+      description: |
+        Declares whether the implementation provides the optional deposit surface, and on what terms. This block is REQUIRED in `/capabilities`: every implementation states its position explicitly, so a client never has to infer read-only-ness from a missing key.
+
+        `supported` is the single flag clients check. When it is `true` the implementation provides the deposit and RO-Crate endpoints, and `idMinting` and `fileUpload` MUST also be present. When it is `false` the implementation is read-only, the deposit and RO-Crate endpoints are not provided, and the remaining fields MUST be omitted.
+
+        Deletion behaviour is declared separately, in the top-level `tombstonePolicy`.
+      required:
+        - supported
+      properties:
+        supported:
+          type: boolean
+          description: Whether the implementation provides the deposit surface. `true` - deposits are accepted and the deposit and RO-Crate endpoints are available; `false` - the implementation is read-only.
+          example: true
+        idMinting:
+          type: string
+          enum:
+            - client
+            - server
+            - both
+          description: How RO-Crate IDs are minted at deposit creation. `client` - the client MUST propose an ID; `server` - the server always mints one; `both` - the client MAY propose an ID and the server mints one when absent.
+          example: both
+        fileUpload:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            enum:
+              - inline
+              - presigned
+          description: The file staging modes the implementation supports on `PUT /deposit/{id}/file/{fileId}`. `inline` - the file's bytes in the request body; `presigned` - transport metadata in the request, bytes uploaded directly to a returned target. New modes may be added by revision of this specification; clients MUST ignore values they do not recognise.
+          example: [inline, presigned]
+        depositTtlSeconds:
+          type: integer
+          minimum: 1
+          description: How long an open deposit lives before expiring. When absent, expiry is implementation-defined and clients should not rely on any particular TTL.
+          example: 604800
+        maxFileSizeBytes:
+          type: integer
+          format: int64
+          minimum: 1
+          description: The largest file the implementation accepts in a deposit. When absent, no limit is declared.
+          example: 5368709120
+      examples:
+        - supported: true
+          idMinting: both
+          fileUpload: [inline, presigned]
+        - supported: false
+    FacetCapability:
+      type: object
+      description: Describes a search facet field the implementation supports.
+      properties:
+        label:
+          type: string
+          description: An optional human-readable display label for the facet field.
+          example: Language
+    FilterCapability:
+      type: object
+      description: |
+        Describes a search filter field the implementation supports. The `type` tells clients which UI element suits the field (e.g. a date picker for `date`, a toggle for `boolean`) and which request syntax the field accepts: `date` and `number` filters accept a single range object or a non-empty array of range objects (matched as an OR of the ranges) as well as an array of values; `string` and `boolean` filters accept an array of values only.
+
+        New filter types are added by revision of this specification; clients MUST hide filters with a `type` value they do not recognise rather than fail.
+      required:
+        - type
+      properties:
+        type:
+          type: string
+          enum:
+            - string
+            - date
+            - number
+            - boolean
+          description: The filter's value type. `date` values are ISO 8601 strings. `boolean` values are the strings `"true"` and `"false"`.
+          example: date
+        label:
+          type: string
+          description: An optional human-readable display label for the filter field.
+          example: Date created
+    FilterRange:
+      type: object
+      description: An inclusive range constraint for a search filter. Valid only for filters declared with type `date` or `number` in `/capabilities`. At least one bound is required; values are ISO 8601 strings for `date` filters and numbers for `number` filters. A filter value may be a single range or a non-empty array of ranges; an array is matched as an OR of its ranges — an entity matches when any of the ranges matches.
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        gte:
+          oneOf:
+            - type: string
+            - type: number
+          description: The inclusive lower bound.
+          example: "2020-01-01"
+        lte:
+          oneOf:
+            - type: string
+            - type: number
+          description: The inclusive upper bound.
+          example: "2021-01-01"
+    Segment:
+      description: |
+        A location inside a file where a full-text search match occurred, allowing clients to deep-link the user to the match. Part of the `segments` extension.
+
+        Each segment is one of the registered segment types, discriminated by `type`. New segment types are added by revision of this specification; clients MUST skip segments with a `type` value they do not recognise rather than fail.
+      x-extension: segments
+      oneOf:
+        - $ref: "#/components/schemas/PageSegment"
+        - $ref: "#/components/schemas/TimeAlignedAnnotationSegment"
+      discriminator:
+        propertyName: type
+        mapping:
+          page: "#/components/schemas/PageSegment"
+          time-aligned-annotation: "#/components/schemas/TimeAlignedAnnotationSegment"
+    PageSegment:
+      type: object
+      description: A search match located on a page of a paginated document, such as a PDF.
+      x-extension: segments
+      required:
+        - type
+        - page
+        - highlight
+      properties:
+        type:
+          type: string
+          enum:
+            - page
+          description: The segment type discriminator.
+        page:
+          type: integer
+          minimum: 1
+          description: The 1-based page number the match occurred on.
+          example: 3
+        highlight:
+          type: array
+          items:
+            type: string
+          description: Matched text fragments from this page, using the same marking convention as `searchExtra.highlight`.
+    TimeAlignedAnnotationSegment:
+      type: object
+      description: A search match located in a time-aligned annotation, such as an ELAN annotation tier.
+      x-extension: segments
+      required:
+        - type
+        - tier
+        - startMs
+        - endMs
+        - highlight
+      properties:
+        type:
+          type: string
+          enum:
+            - time-aligned-annotation
+          description: The segment type discriminator.
+        tier:
+          type: string
+          description: The identifier of the annotation tier the match occurred in (for ELAN, the TIER_ID).
+          example: A_phrase-segnum-en
+        startMs:
+          type: integer
+          minimum: 0
+          description: The start of the matching annotation, in milliseconds from the beginning of the media.
+          example: 83000
+        endMs:
+          type: integer
+          minimum: 0
+          description: The end of the matching annotation, in milliseconds from the beginning of the media.
+          example: 87500
+        highlight:
+          type: array
+          items:
+            type: string
+          description: Matched text fragments from this annotation, using the same marking convention as `searchExtra.highlight`.
+    Entity:
+      type: object
+      description: |
+        An entity represents a single collection or item within the repository, conforming to a specific RO-Crate profile.
+
+        For MediaObject entities, the entity `id` is also the file identifier. Use it directly with the `/file/{id}` and `/files` endpoints to access or list the corresponding file.
+      required:
+        - id
+        - name
+        - entityType
+        - metadataLicenseId
+        - contentLicenseId
+        - access
+      properties:
+        id:
+          description: RO-Crate ID that uniquely identifies this entity.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          $ref: "#/components/schemas/Id"
+        name:
+          description: Name of the entity.
+          type: string
+          example: Recordings of West Alor languages
+          maxLength: 255
+          minLength: 1
+        description:
+          description: A concise description of the entity’s contents or purpose.
+          type: string
+          example: A compilation of recordings featuring various West Alor languages, curated for linguistic research.
+          maxLength: 1000
+          minLength: 1
+        entityType:
+          description: The main classification of the entity
+          example: http://pcdm.org/models#Collection
+          $ref: "#/components/schemas/EntityType"
+        memberOf:
+          description: An optional parent entity that this entity belongs to.
+          oneOf:
+            - $ref: "#/components/schemas/EntityReference"
+            - type: "null"
+        rootCollection:
+          description: The top-level collection this entity is part of.
+          oneOf:
+            - $ref: "#/components/schemas/EntityReference"
+            - type: "null"
+        metadataLicenseId:
+          description: The metadata license.
+          example: "https://catalog.paradisec.org.au/licenses/metadata"
+          $ref: "#/components/schemas/Id"
+        contentLicenseId:
+          description: The content license.
+          example: "https://catalog.paradisec.org.au/licenses/content"
+          $ref: "#/components/schemas/Id"
+        access:
+          type: object
+          description: Access information for this entity, including permissions and enrolment details.
+          required:
+            - metadata
+            - content
+          properties:
+            metadata:
+              type: boolean
+              description: Whether metadata is accessible to the current user.
+            content:
+              type: boolean
+              description: Whether content is accessible to the current user.
+            metadataAuthorizationUrl:
+              type: string
+              format: uri
+              description: URL for enrolment or authorisation process if metadata access is restricted.
+            contentAuthorizationUrl:
+              type: string
+              format: uri
+              description: URL for enrolment or authorisation process if content access is restricted.
+          example:
+            metadata: true
+            content: false
+            contentAuthorizationUrl: "https://test.cadre.example.com/catalogue/application?id=https%3A%2F%2Fhttps%3A%2F%2Fcatalog.paradisec.org.au%2Flicenses%2Ftest"
+        roCrateIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Id"
+          description: |
+            Optional core — present only when `deposit.supported` is `true`.
+
+            The RO-Crates whose current versions contribute to this entity. Usually one; more when the implementation's materialisation merges contributions from several RO-Crates into a single entity. An entity MAY be removed once no RO-Crate contributes to it.
+          example:
+            - https://catalog.paradisec.org.au/repository/NT1/001
+    File:
+      type: object
+      description: |
+        A file with file-specific metadata. For files that are also represented as MediaObject entities in the RO-Crate, the file `id` and the MediaObject entity `id` are identical.
+      required:
+        - id
+        - filename
+        - mediaType
+        - size
+        - access
+      properties:
+        id:
+          description: RO-Crate ID that uniquely identifies this file.
+          example: https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3
+          $ref: "#/components/schemas/Id"
+        filename:
+          description: The name of the file.
+          type: string
+          example: NT1-001-001A.mp3
+          maxLength: 255
+          minLength: 1
+        mediaType:
+          description: The MIME type of the file.
+          type: string
+          example: audio/mpeg
+          maxLength: 127
+          pattern: '^[a-z]+/[a-z0-9\-\+\.]+$'
+        size:
+          description: The size of the file in bytes.
+          type: integer
+          format: int64
+          minimum: 0
+          example: 1024
+        access:
+          type: object
+          description: Access information for this file, including content permissions and enrolment details.
+          required:
+            - content
+          properties:
+            content:
+              type: boolean
+              description: Whether content is accessible to the current user.
+            contentAuthorizationUrl:
+              type: string
+              format: uri
+              description: URL for enrolment or authorisation process if content access is restricted.
+          example:
+            content: true
+        roCrateId:
+          description: |
+            Optional core — present only when `deposit.supported` is `true`.
+
+            The RO-Crate whose deposit supplied this file's bytes. Singular, because a file's bytes arrive in exactly one deposit. May be absent for files predating any RO-Crate, or where the implementation withholds it.
+          $ref: "#/components/schemas/Id"
+    SearchEntity:
+      description: Contains additional information returned in search contexts.
+      properties:
+        searchExtra:
+          type: object
+          description: Extra search-related metadata.
+          properties:
+            score:
+              type: number
+              description: The relevance score for this entity, based on the search.
+            highlight:
+              type: object
+              additionalProperties:
+                type: array
+                items:
+                  type: string
+              description: Selected text snippets from fields matching the query, which can be displayed to users for context. Matched terms are marked within each snippet; this specification is implementation-neutral about the specific mark tag (the examples use `<em>`).
+            segments:
+              type: array
+              items:
+                $ref: "#/components/schemas/Segment"
+              x-extension: segments
+              description: |
+                Part of the `segments` extension — see the [Extensions guide](https://ro-crate-api.crate-works.org/docs/extensions). Only present when the implementation declares the `segments` extension in `/capabilities`.
+
+                Locations inside the file where the full-text match occurred, allowing clients to deep-link the user to the match (e.g. a PDF page or an ELAN annotation's time range). Segments are optional — absent or empty for hits without structured content. They are ranked by relevance and capped at an implementation-defined limit.
+    Deposit:
+      type: object
+      description: |
+        A deposit session against an RO-Crate.
+
+        A deposit is opened against a new RO-Crate (`POST /deposits`) or an existing one (`POST /ro-crate/{id}/deposits`), staged with a metadata document and files, then finalised. Deposits are single-use: once `complete` they are finished, and further changes open a new deposit.
+      required:
+        - depositId
+        - roCrateId
+        - state
+      properties:
+        depositId:
+          type: string
+          description: Server-minted opaque identifier for this deposit.
+          example: dep_8f14e45f
+        roCrateId:
+          description: The RO-Crate this deposit targets. Once the deposit is `complete`, retrieve it via `GET /ro-crate/{id}` — its `entityIds` list is the authoritative answer to what the deposit materialised.
+          $ref: "#/components/schemas/Id"
+        state:
+          type: string
+          enum:
+            - open
+            - finalising
+            - complete
+            - aborted
+          description: |
+            The deposit's lifecycle state. `open` - accepting staging calls; `finalising` - a finalise is in progress and staging calls are rejected with 409; `complete` - the RO-Crate's new version is published (terminal); `aborted` - explicitly aborted or expired, staged content discarded (terminal). A failed finalise returns the deposit to `open` with the failure recorded in `errors`.
+          example: open
+        createdAt:
+          type: string
+          format: date-time
+          description: When the deposit was created. This is also the moment the carry-forward baseline is pinned for update deposits.
+        files:
+          type: array
+          description: The files staged in this deposit, with per-file upload status. Status MAY be updated eagerly or lazily; finalise is the authoritative verification point.
+          items:
+            $ref: "#/components/schemas/StagedFile"
+        errors:
+          type: array
+          description: The violations recorded when the most recent finalise failed and the deposit returned to `open`. Cleared when the next finalise is accepted; absent when there has been no failure.
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                description: The field or file the violation concerns
+              message:
+                type: string
+                description: Validation error message
+              value:
+                description: The invalid value
+          example:
+            - field: NT1-001-001A.wav
+              message: staged file bytes not received
+    StagedFile:
+      type: object
+      description: A file staged in a deposit, with its upload status.
+      required:
+        - fileId
+        - status
+      properties:
+        fileId:
+          type: string
+          format: uri-reference
+          description: The file entity's `@id` in the deposited metadata document. For attached files this is the crate-relative path.
+          example: NT1-001-001A.mp3
+        status:
+          type: string
+          enum:
+            - pending
+            - received
+          description: "`pending` - staged in presigned mode and the bytes have not (yet) been observed; `received` - the bytes are held. Finalise remains the authoritative verification point."
+          example: received
+        size:
+          type: integer
+          format: int64
+          minimum: 0
+          description: The file's size in bytes, where declared or known.
+          example: 2048576
+    RoCrate:
+      type: object
+      description: |
+        An RO-Crate is the unit of deposit: a metadata document plus all the files it references, stored as deposited.
+
+        Catalog entities are materialised from RO-Crates by implementation-specific rules — one RO-Crate may yield one entity or many, and several RO-Crates may contribute to a single merged entity. The deposited metadata document (`GET /ro-crate/{id}/metadata`) is the single source of truth for the RO-Crate's content inventory; the RO-Crate carries no file list of its own.
+      required:
+        - id
+        - entityIds
+        - createdAt
+        - lastDepositedAt
+        - access
+      properties:
+        id:
+          description: The RO-Crate's ID.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          $ref: "#/components/schemas/Id"
+        entityIds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Id"
+          description: The entities materialised from this RO-Crate's current version — the inverse of the entity's `roCrateIds`. Can change when later deposits (of this or other RO-Crates) alter the materialisation.
+          example:
+            - https://catalog.paradisec.org.au/repository/NT1/001
+            - https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3
+        createdAt:
+          type: string
+          format: date-time
+          description: When the RO-Crate was first created (its first successful finalise).
+        lastDepositedAt:
+          type: string
+          format: date-time
+          description: When the RO-Crate's current version was published (its most recent successful finalise).
+        access:
+          type: object
+          description: Access information for this RO-Crate. `metadata` governs this resource; `content` governs the deposited metadata document and file retrieval.
+          required:
+            - metadata
+            - content
+          properties:
+            metadata:
+              type: boolean
+              description: Whether this RO-Crate resource is accessible to the current user.
+            content:
+              type: boolean
+              description: Whether the deposited metadata document is accessible to the current user.
+            metadataAuthorizationUrl:
+              type: string
+              format: uri
+              description: URL for enrolment or authorisation process if metadata access is restricted.
+            contentAuthorizationUrl:
+              type: string
+              format: uri
+              description: URL for enrolment or authorisation process if content access is restricted.
+          example:
+            metadata: true
+            content: true
+    Tombstone:
+      type: object
+      description: |
+        A record of a deletion, returned with `410 Gone` when the implementation's top-level `tombstonePolicy` capability is `"410"`. One policy covers RO-Crate, entity and file URIs alike.
+      required:
+        - id
+        - resourceType
+        - deletedAt
+      properties:
+        id:
+          description: The ID of the deleted resource.
+          example: https://catalog.paradisec.org.au/repository/NT1/001
+          $ref: "#/components/schemas/Id"
+        resourceType:
+          type: string
+          enum:
+            - RO-Crate
+            - entity
+            - file
+          description: The kind of resource that was deleted.
+          example: RO-Crate
+        deletedAt:
+          type: string
+          format: date-time
+          description: When the resource was deleted.
+        reason:
+          type: string
+          description: An optional human-readable reason for the deletion.
+          example: Withdrawn at the depositor's request
+        roCrateId:
+          description: For entity and file tombstones, the RO-Crate whose deletion led to this resource's removal, where known.
+          $ref: "#/components/schemas/Id"
+    FileStagingMetadata:
+      type: object
+      description: |
+        Transport metadata staged for a file in presigned mode. Carries only what is needed to move and verify the bytes — descriptive metadata about the file lives in the deposited metadata document.
+      required:
+        - size
+      properties:
+        size:
+          type: integer
+          format: int64
+          minimum: 0
+          description: The file's size in bytes. Verified at finalise.
+          example: 2048576
+        checksum:
+          type: string
+          description: The file's checksum, prefixed with the algorithm (e.g. `sha256:`). Verified at finalise when supplied.
+          example: "sha256:9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
+        mediaType:
+          type: string
+          maxLength: 127
+          pattern: '^[a-z]+/[a-z0-9\-\+\.]+$'
+          description: The MIME type of the file.
+          example: audio/x-wav
+    FileUploadTarget:
+      type: object
+      description: Where to send a file's bytes after staging it in presigned mode. There is no per-file completion call — finalise verifies the upload.
+      required:
+        - uploadUrl
+      properties:
+        uploadUrl:
+          type: string
+          format: uri
+          description: The URL to upload the file's bytes to, typically a presigned object-store URL.
+          example: "https://uploads.example.org/deposit/dep_8f14e45f/NT1-001-001A.wav?signature=..."
+        method:
+          type: string
+          default: PUT
+          description: The HTTP method to use for the upload.
+          example: PUT
+        headers:
+          type: object
+          additionalProperties:
+            type: string
+          description: Headers the client MUST include in the upload request.
+          example:
+            Content-Type: audio/x-wav
+        expiresAt:
+          type: string
+          format: date-time
+          description: When the upload target stops accepting bytes. Re-stage the file to obtain a fresh target.
+    ValidationError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [VALIDATION_ERROR]
+            message:
+              type: string
+              description: Human-readable error message
+              example: Request validation failed
+            details:
+              type: object
+              description: Additional error details specific to the error type
+              properties:
+                violations:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      field:
+                        type: string
+                        description: The field that failed validation
+                      message:
+                        type: string
+                        description: Validation error message
+                      value:
+                        description: The invalid value
+                  example:
+                    - field: limit
+                      message: must be between 1 and 1000
+                      value: 2000
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+    NotFoundError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [NOT_FOUND]
+            message:
+              type: string
+              description: Human-readable error message
+              example: The requested entity was not found
+            details:
+              type: object
+              description: Additional error details specific to the error type
+              additionalProperties: true
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    ConflictError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [CONFLICT]
+            message:
+              type: string
+              description: Human-readable error message
+              example: An RO-Crate with this ID already exists
+            details:
+              type: object
+              description: Additional error details specific to the error type
+              additionalProperties: true
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    InvalidEntityTypeError:
+      description: >-
+        Returned when an operation requires a specific entity type but the
+        target entity has a different or unsupported type. For example,
+        requesting file content from an entity that is not a MediaObject.
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [INVALID_ENTITY_TYPE]
+            message:
+              type: string
+              description: Human-readable error message
+              example: This operation is only valid for MediaObject entities
+            details:
+              type: object
+              description: Additional error details specific to the error type
+              properties:
+                entityType:
+                  type: string
+                  description: The actual entity type of the requested entity
+                  example: http://pcdm.org/models#Collection
+                expectedType:
+                  type: string
+                  description: The expected entity type for this operation
+                  example: http://schema.org/MediaObject
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    RateLimitError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [RATE_LIMIT_EXCEEDED]
+            message:
+              type: string
+              description: Human-readable error message
+              example: Rate limit exceeded. Please retry after the specified time.
+            details:
+              type: object
+              description: Additional error details specific to the error type
+              properties:
+                retryAfter:
+                  type: integer
+                  description: Number of seconds to wait before retrying
+                  example: 60
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    UnauthorizedError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [UNAUTHORIZED]
+            message:
+              type: string
+              description: Human-readable error message
+              example: Authentication is required to access this resource
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    ForbiddenError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [FORBIDDEN]
+            message:
+              type: string
+              description: Human-readable error message
+              example: Access token does not have the required scope
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    RangeNotSatisfiableError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [RANGE_NOT_SATISFIABLE]
+            message:
+              type: string
+              description: Human-readable error message
+              example: The requested byte range is not satisfiable
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+    InternalServerError:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: object
+          required:
+            - code
+            - message
+          properties:
+            code:
+              type: string
+              enum: [INTERNAL_ERROR]
+            message:
+              type: string
+              description: Human-readable error message
+              example: An unexpected error occurred
+            requestId:
+              type: string
+              format: uuid
+              description: Unique identifier for this request, useful for debugging
+              example: 550e8400-e29b-41d4-a716-446655440000
+
+  examples:
+    CapabilitiesResponse:
+      summary: Example capabilities response
+      value:
+        apiVersion: "0.3.0"
+        deposit:
+          supported: true
+          idMinting: "both"
+          fileUpload: ["inline", "presigned"]
+          depositTtlSeconds: 604800
+        tombstonePolicy: "410"
+        extensions:
+          segments: {}
+        search:
+          filters:
+            inLanguage:
+              type: "string"
+              label: "Language"
+            mediaType:
+              type: "string"
+            createdAt:
+              type: "date"
+              label: "Date created"
+          facets:
+            inLanguage:
+              label: "Language"
+            mediaType: {}
+
+    EntityResponse:
+      summary: Example entity response
+      value:
+        id: "https://catalog.paradisec.org.au/repository/NT1/001"
+        name: "Recordings of West Alor languages"
+        description: "A compilation of recordings featuring various West Alor languages, curated for linguistic research."
+        entityType: "http://pcdm.org/models#Collection"
+        memberOf:
+          id: "https://catalog.paradisec.org.au/repository/NT1"
+          name: "South Efate (Vanuatu)"
+        rootCollection:
+          id: "https://catalog.paradisec.org.au/repository/NT1"
+          name: "South Efate (Vanuatu)"
+        metadataLicenseId: "https://catalog.paradisec.org.au/licenses/metadata"
+        contentLicenseId: "https://catalog.paradisec.org.au/licenses/content"
+        access:
+          metadata: true
+          content: false
+          contentAuthorizationUrl: "https://test.cadre.example.com/catalogue/application?id=https%3A%2F%2Fhttps%3A%2F%2Fcatalog.paradisec.org.au%2Flicenses%2Ftest"
+
+    EntitiesListResponse:
+      summary: Example entities list response
+      value:
+        total: 42
+        entities:
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001"
+            name: "Recordings of West Alor languages"
+            description: "A compilation of recordings featuring various West Alor languages"
+            entityType: "http://pcdm.org/models#Collection"
+            memberOf:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            rootCollection:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            metadataLicenseId: "https://catalog.paradisec.org.au/licenses/metadata"
+            contentLicenseId: "https://catalog.paradisec.org.au/licenses/content"
+            access:
+              metadata: true
+              content: false
+          - id: "https://catalog.paradisec.org.au/repository/NT1/002"
+            name: "Another collection"
+            description: "Another example collection"
+            entityType: "http://pcdm.org/models#Collection"
+            memberOf:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            rootCollection:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            metadataLicenseId: "https://catalog.paradisec.org.au/licenses/metadata"
+            contentLicenseId: "https://catalog.paradisec.org.au/licenses/content"
+            access:
+              metadata: true
+              content: true
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3"
+            name: "NT1-001-001A.mp3"
+            description: "Audio recording in WAV format"
+            entityType: "http://schema.org/MediaObject"
+            memberOf:
+              id: "https://catalog.paradisec.org.au/repository/NT1/001"
+              name: "Recordings of West Alor languages"
+            rootCollection:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            metadataLicenseId: "https://catalog.paradisec.org.au/licenses/metadata"
+            contentLicenseId: "https://catalog.paradisec.org.au/licenses/content"
+            access:
+              metadata: true
+              content: true
+    FilesListResponse:
+      summary: Example files list response
+      value:
+        total: 15
+        files:
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3"
+            filename: "NT1-001-001A.mp3"
+            mediaType: "audio/mpeg"
+            size: 2048576
+            access:
+              content: true
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001/transcript.txt"
+            filename: "transcript.txt"
+            mediaType: "text/plain"
+            size: 8192
+            access:
+              content: false
+              contentAuthorizationUrl: "https://test.cadre.example.com/catalogue/application?id=https%3A%2F%2Fcatalog.paradisec.org.au%2Frepository%2FLRB%2F001%2Ftranscript.txt"
+
+    SearchRequest:
+      summary: Example search request
+      value:
+        searchType: "advanced"
+        query: "name: West Alor AND description: linguistic"
+        filters:
+          inLanguage:
+            - "English"
+          mediaType:
+            - "audio/mpeg"
+          createdAt:
+            - gte: "1965-01-01"
+              lte: "1965-12-31"
+            - gte: "1972-01-01"
+              lte: "1972-12-31"
+        boundingBox:
+          topRight:
+            lat: -33.7
+            lng: 151.3
+          bottomLeft:
+            lat: -34.1
+            lng: 150.9
+        limit: 20
+        offset: 0
+        order: "desc"
+
+    SearchResponse:
+      summary: Example search response with facets
+      value:
+        total: 15
+        searchTime: 42.34
+        entities:
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001"
+            name: "Recordings of West Alor languages"
+            description: "A compilation of recordings featuring various West Alor languages"
+            entityType: "http://pcdm.org/models#Collection"
+            memberOf:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            rootCollection:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            metadataLicenseId: "https://catalog.paradisec.org.au/licenses/metadata"
+            contentLicenseId: "https://catalog.paradisec.org.au/licenses/content"
+            access:
+              metadata: true
+              content: false
+            searchExtra:
+              score: 0.95
+              highlight:
+                name:
+                  - "Recordings of <em>West Alor</em> languages"
+                description:
+                  - "featuring various West Alor languages, curated for <em>linguistic</em> research"
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.pdf"
+            name: "NT1-001-001A.pdf"
+            description: "Field notes and transcription for the recording"
+            entityType: "http://schema.org/MediaObject"
+            memberOf:
+              id: "https://catalog.paradisec.org.au/repository/NT1/001"
+              name: "Recordings of West Alor languages"
+            rootCollection:
+              id: "https://catalog.paradisec.org.au/repository/NT1"
+              name: "South Efate (Vanuatu)"
+            metadataLicenseId: "https://catalog.paradisec.org.au/licenses/metadata"
+            contentLicenseId: "https://catalog.paradisec.org.au/licenses/content"
+            access:
+              metadata: true
+              content: true
+            searchExtra:
+              score: 0.87
+              highlight:
+                content:
+                  - "notes on <em>West Alor</em> vocabulary"
+              segments:
+                - type: "page"
+                  page: 3
+                  highlight:
+                    - "a wordlist of <em>West Alor</em> terms for kinship"
+                - type: "time-aligned-annotation"
+                  tier: "A_phrase-segnum-en"
+                  startMs: 83000
+                  endMs: 87500
+                  highlight:
+                    - "the speaker lists <em>West Alor</em> place names"
+        facets:
+          inLanguage:
+            - name: "English"
+              count: 10
+            - name: "Italian"
+              count: 5
+          mediaType:
+            - name: "audio/mpeg"
+              count: 8
+            - name: "text/plain"
+              count: 7
+        geohashGrid:
+          r3gx: 5
+          r3gy: 3
+
+    ValidationErrorResponse:
+      summary: Example validation error response
+      value:
+        error:
+          code: "VALIDATION_ERROR"
+          message: "Request validation failed"
+          details:
+            violations:
+              - field: "limit"
+                message: "must be between 1 and 1000"
+                value: 2000
+              - field: "id"
+                message: "must be a valid URI"
+                value: "invalid-uri"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    NotFoundErrorResponse:
+      summary: Example not found error response
+      value:
+        error:
+          code: "NOT_FOUND"
+          message: "The requested entity was not found"
+          details:
+            entityId: "https://catalog.paradisec.org.au/repository/MISSING/001"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    UnauthorizedErrorResponse:
+      summary: Example unauthorized error response
+      value:
+        error:
+          code: "UNAUTHORIZED"
+          message: "Authentication is required to access this resource"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    ForbiddenErrorResponse:
+      summary: Example forbidden error response
+      value:
+        error:
+          code: "FORBIDDEN"
+          message: "Access token does not have the required scope"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    RangeNotSatisfiableErrorResponse:
+      summary: Example range not satisfiable error response
+      value:
+        error:
+          code: "RANGE_NOT_SATISFIABLE"
+          message: "The requested byte range is not satisfiable"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    InternalServerErrorResponse:
+      summary: Example internal server error response
+      value:
+        error:
+          code: "INTERNAL_ERROR"
+          message: "An unexpected error occurred"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    DepositResponse:
+      summary: Example deposit in the open state
+      value:
+        depositId: "dep_8f14e45f"
+        roCrateId: "https://catalog.paradisec.org.au/repository/NT1/001"
+        state: "open"
+        createdAt: "2026-07-21T03:24:00Z"
+        files:
+          - fileId: "NT1-001-001A.mp3"
+            status: "received"
+            size: 2048576
+          - fileId: "NT1-001-001A.wav"
+            status: "pending"
+            size: 52428800
+
+    DepositFinalisingResponse:
+      summary: Example deposit finalising asynchronously
+      value:
+        depositId: "dep_8f14e45f"
+        roCrateId: "https://catalog.paradisec.org.au/repository/NT1/001"
+        state: "finalising"
+        createdAt: "2026-07-21T03:24:00Z"
+        files:
+          - fileId: "NT1-001-001A.mp3"
+            status: "received"
+            size: 2048576
+          - fileId: "NT1-001-001A.wav"
+            status: "received"
+            size: 52428800
+
+    DepositCompleteResponse:
+      summary: Example completed deposit
+      value:
+        depositId: "dep_8f14e45f"
+        roCrateId: "https://catalog.paradisec.org.au/repository/NT1/001"
+        state: "complete"
+        createdAt: "2026-07-21T03:24:00Z"
+        files:
+          - fileId: "NT1-001-001A.mp3"
+            status: "received"
+            size: 2048576
+          - fileId: "NT1-001-001A.wav"
+            status: "received"
+            size: 52428800
+
+    RoCrateResponse:
+      summary: Example RO-Crate response
+      value:
+        id: "https://catalog.paradisec.org.au/repository/NT1/001"
+        entityIds:
+          - "https://catalog.paradisec.org.au/repository/NT1/001"
+          - "https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3"
+          - "https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.wav"
+        createdAt: "2024-03-02T09:10:00Z"
+        lastDepositedAt: "2026-07-21T03:30:00Z"
+        access:
+          metadata: true
+          content: true
+
+    RoCratesListResponse:
+      summary: Example RO-Crates list response
+      value:
+        total: 2
+        roCrates:
+          - id: "https://catalog.paradisec.org.au/repository/NT1/001"
+            entityIds:
+              - "https://catalog.paradisec.org.au/repository/NT1/001"
+              - "https://catalog.paradisec.org.au/repository/NT1/001/NT1-001-001A.mp3"
+            createdAt: "2024-03-02T09:10:00Z"
+            lastDepositedAt: "2026-07-21T03:30:00Z"
+            access:
+              metadata: true
+              content: true
+          - id: "https://catalog.paradisec.org.au/repository/NT1/002"
+            entityIds:
+              - "https://catalog.paradisec.org.au/repository/NT1/002"
+            createdAt: "2024-05-14T22:41:00Z"
+            lastDepositedAt: "2024-05-14T22:41:00Z"
+            access:
+              metadata: true
+              content: false
+
+    TombstoneResponse:
+      summary: Example tombstone response
+      value:
+        id: "https://catalog.paradisec.org.au/repository/NT1/001"
+        resourceType: "RO-Crate"
+        deletedAt: "2026-07-01T00:00:00Z"
+        reason: "Withdrawn at the depositor's request"
+
+    ConflictErrorResponse:
+      summary: Example conflict error response
+      value:
+        error:
+          code: "CONFLICT"
+          message: "An RO-Crate with this ID already exists"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"
+
+    FileUploadTargetResponse:
+      summary: Example file upload target response
+      value:
+        uploadUrl: "https://uploads.example.org/deposit/dep_8f14e45f/NT1-001-001A.wav?signature=c2ln"
+        method: "PUT"
+        headers:
+          Content-Type: "audio/x-wav"
+        expiresAt: "2026-07-22T03:24:00Z"
+
+    FinaliseValidationErrorResponse:
+      summary: Example finalise validation error response
+      value:
+        error:
+          code: "VALIDATION_ERROR"
+          message: "Deposit validation failed; the deposit has returned to the open state"
+          details:
+            violations:
+              - field: "NT1-001-001A.wav"
+                message: "staged file bytes not received"
+              - field: "./"
+                message: "root dataset does not reference the RO-Crate ID"
+          requestId: "550e8400-e29b-41d4-a716-446655440000"

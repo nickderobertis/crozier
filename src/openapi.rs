@@ -1643,7 +1643,9 @@ impl From<String> for LiteralTypeOverride {
         match value.as_str() {
             "literal<true>" => Self::True,
             "literal<false>" => Self::False,
-            "datetime" => Self::Datetime,
+            // The schema's own `type: [string, "null"]` carries the optionality:
+            // AssemblyAI's `TranscriptListItem.completed`.
+            "datetime" | "optional<datetime>" => Self::Datetime,
             _ => Self::Unsupported,
         }
     }
@@ -5764,10 +5766,10 @@ mod tests {
     /// apart from `ir::error_class_name` because the importer writes acronyms
     /// whole (`URITooLongError` where the Python class is `UriTooLongError`).
     /// This holds the two to each other: every class crozier names is one of
-    /// them, case aside, and the only names left over are the five the importer
-    /// gives statuses crozier's table leaves unnamed (419, 420, 444, 449, 450).
+    /// them, case aside, and the only names left over are the four the importer
+    /// gives statuses crozier's table leaves unnamed (419, 420, 444, 450).
     #[test]
-    fn fern_error_names_are_the_error_classes_crozier_names_and_five_more() {
+    fn fern_error_names_are_the_error_classes_crozier_names_and_four_more() {
         use std::collections::BTreeSet;
         let fern: BTreeSet<String> = FERN_ERROR_NAMES
             .iter()
@@ -5798,7 +5800,6 @@ mod tests {
             "AuthenticationTimeoutError",
             "MethodFailureError",
             "NoResponseError",
-            "RetryWithError",
             "BlockedByWindowsParentalControlsError",
         ]
         .iter()
@@ -6725,6 +6726,22 @@ components:
             assert_eq!(schema.bool_literal(), boolean);
             assert_eq!(schema.has_datetime_type_override(), datetime);
         }
+    }
+
+    #[test]
+    fn an_optional_datetime_type_override_is_a_datetime_override() {
+        let schema: Schema = serde_json::from_value(serde_json::json!({
+            "type": ["string", "null"],
+            "x-fern-type": "optional<datetime>"
+        }))
+        .unwrap();
+        assert!(schema.has_datetime_type_override());
+        let other: Schema = serde_json::from_value(serde_json::json!({
+            "type": ["string", "null"],
+            "x-fern-type": "optional<date>"
+        }))
+        .unwrap();
+        assert!(!other.has_datetime_type_override());
     }
 
     #[test]

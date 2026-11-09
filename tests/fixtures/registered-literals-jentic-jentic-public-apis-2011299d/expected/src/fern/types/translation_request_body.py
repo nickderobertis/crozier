@@ -1,0 +1,24 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .translation_request_body_translation import TranslationRequestBodyTranslation
+
+
+class TranslationRequestBody(UniversalBaseModel):
+    """
+    Request body for [Translation](https://www.assemblyai.com/docs/speech-understanding/translation).
+    """
+
+    translation: TranslationRequestBodyTranslation
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

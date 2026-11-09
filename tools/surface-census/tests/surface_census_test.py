@@ -8955,7 +8955,7 @@ class SourceSelectionTests(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         payload = json.loads(completed.stdout)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual([str(fixture / "openapi.yml")], [source["path"] for source in payload["sources"]])
+        self.assertEqual([(fixture / "openapi.yml").as_posix()], [source["path"] for source in payload["sources"]])
         self.assertEqual([], [row for row in payload["rows"] if row["selector"] == "pathItem.trace"])
 
     def test_source_selection_flags_keep_their_legacy_aliases(self) -> None:
@@ -9022,7 +9022,7 @@ class SourceSelectionTests(unittest.TestCase):
             write_fixture(root, "listy", "- openapi: 3.0.3\n")
             completed = run("--vendored-only", "--fixtures-root", str(root))
         self.assertEqual(1, completed.returncode, completed.stdout)
-        self.assertIn("is not an OpenAPI document", completed.stderr)
+        self.assertIn("listy/openapi.yml is not an OpenAPI document", completed.stderr)
         self.assertIn("root is not a mapping", completed.stderr)
 
     def test_a_fixtures_root_without_the_corpus_manifest_is_refused(self) -> None:
@@ -9324,8 +9324,8 @@ class YamlSubsetTests(unittest.TestCase):
                 completed = run("--vendored-only", "--fixtures-root", str(root))
                 self.assertNotEqual(0, completed.returncode, completed.stdout)
                 self.assertIn("malformed", completed.stderr)
-                # A source outside the repo is named by its own path, in the host's spelling.
-                self.assertIn(f"{Path('malformed', 'openapi.yml')}:{line}: ", completed.stderr)
+                # A source outside the repo is named by its own path, with forward slashes on every host.
+                self.assertIn(f"malformed/openapi.yml:{line}: ", completed.stderr)
                 self.assertIn(expected, completed.stderr)
                 self.assertNotIn("Traceback", completed.stderr)
 
@@ -10199,7 +10199,7 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
     def test_every_former_handwritten_combination_has_a_verdict_on_every_document(self) -> None:
         rows = self.tool.read_rows(REPO)
         documents = {document.document for document in self.tool.population(REPO)}
-        self.assertEqual(78, len(documents))
+        self.assertEqual(96, len(documents))
         for key in self.tool.FORMER_HANDWRITTEN:
             self.assertEqual(documents, {row.document for row in rows if row.key == key}, key)
 
@@ -10256,8 +10256,8 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
             (
                 "totals",
                 text.replace(
-                    "| `combo-inline-body-read-only-property` | 75 |",
-                    "| `combo-inline-body-read-only-property` | 74 |",
+                    "| `combo-inline-body-read-only-property` | 93 |",
+                    "| `combo-inline-body-read-only-property` | 92 |",
                     1,
                 ),
             ),
@@ -18529,11 +18529,17 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             }
 
         self.assertEqual(
-            {(selector, "legacy"): 1, (selector, "canonical"): 1, (selector, "null-canonical"): 1},
+            {
+                (selector, "legacy"): 1,
+                (selector, "optional-legacy"): 1,
+                (selector, "canonical"): 1,
+                (selector, "null-canonical"): 1,
+            },
             self.census_one(
                 selector,
                 {
                     "legacy": document({"x-fern-type": "datetime"}),
+                    "optional-legacy": document({"x-fern-type": "optional<datetime>"}),
                     "canonical": document({"x-crozier-type": "datetime", "x-fern-type": "literal<true>"}),
                     "null-canonical": document({"x-crozier-type": None, "x-fern-type": "datetime"}),
                     "near-canonical": document({"x-crozier-type": "literal<true>", "x-fern-type": "datetime"}),
@@ -23521,6 +23527,53 @@ HANDED_OFF_SOURCES = tuple(
 TRIAGE_VERDICTS = {member.value for member in HandedOffVerdict}
 
 
+@dataclass(frozen=True)
+class HandedOffAttribution:
+    """One record's statement that a cause applies to a document."""
+
+    sha256: HandedOffHash
+    root_cause: str
+    record: str
+
+    def __str__(self) -> str:
+        return f"{str(self.sha256)[:8]} {self.root_cause} ({self.record})"
+
+
+def handed_off_area_attributions(
+    directory: pathlib.Path, areas: Mapping[str, pathlib.Path]
+) -> set[HandedOffAttribution]:
+    """Every cause of its own an area README attributes to a document.
+
+    A table row naming one document hash attributes each cell token that is one of that
+    area's causes; a per-document section (`sha256 `<hash>``) attributes the causes on its
+    "this node's cause" line.
+    """
+    owned: dict[str, set[str]] = {}
+    for cause, path in areas.items():
+        owned.setdefault(path.stem, set()).add(cause)
+    found: set[HandedOffAttribution] = set()
+    for area, causes in sorted(owned.items()):
+        readme = directory / area / "README.md"
+        if not readme.is_file():
+            continue
+        label = readme.relative_to(directory).as_posix()
+        current = None
+        for line in readme.read_text(encoding="utf-8").splitlines():
+            if heading := re.search(r"sha256 `([0-9a-f]{64})`", line):
+                current = heading[1]
+            if current and line.startswith("- this node's cause"):
+                found |= {
+                    HandedOffAttribution(HandedOffHash(current), cause, label)
+                    for cause in re.findall(r"`([^`]+)`", line.split(";", 1)[0])
+                    if cause in causes
+                }
+            if line.startswith("| ") and len(hashes := set(re.findall(r"\b[0-9a-f]{64}\b", line))) == 1:
+                (sha,) = hashes
+                tokens = re.split(r"[,;\s]+", re.sub(r"[`*]", " ", line.replace(sha, " ")))
+                found |= {HandedOffAttribution(HandedOffHash(sha), token, label) for token in tokens if token in causes}
+    return found
+
+
 def reconcile_handed_off(root: pathlib.Path) -> None:
     """Read the source records and on-disk evidence, refusing triage drift."""
     directory = root / "docs/fern-measurements/handed-off"
@@ -23547,7 +23600,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             continue
         with path.open(encoding="utf-8", newline="") as stream:
             reader = csv.DictReader(stream, delimiter="\t")
-            assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path}: triage header"
+            assert tuple(reader.fieldnames or ()) == TRIAGE_COLUMNS, f"{path.as_posix()}: triage header"
             for raw in reader:
                 row = HandedOffTriageRecord.parse(raw)
                 name = row.root_cause
@@ -23570,6 +23623,7 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
         assert tuple(reader.fieldnames or ()) == DOCUMENT_COLUMNS, "documents header"
         documents = [HandedOffDocumentRecord.parse(row) for row in reader]
     residuals: dict[str, set[str]] = {}
+    residual_causes: set[HandedOffAttribution] = set()
     residual_path = directory / "residuals.tsv"
     if residual_path.is_file():
         with residual_path.open(encoding="utf-8", newline="") as stream:
@@ -23578,6 +23632,10 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
             for row in reader:
                 assert row["file"] and row["root_cause"] and row["area"] and row["note"], "incomplete residual"
                 residuals.setdefault(str(HandedOffHash(row["sha256"])), set()).add(row["file"])
+                if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", row["root_cause"]):
+                    residual_causes.add(
+                        HandedOffAttribution(HandedOffHash(row["sha256"]), row["root_cause"], "residuals.tsv")
+                    )
     hashes: set[str] = set()
     registered = set()
     for row in documents:
@@ -23647,6 +23705,13 @@ def reconcile_handed_off(root: pathlib.Path) -> None:
                 assert row.note.strip(), f"{sha}: missing could-not-check reason"
 
     assert residuals.keys() <= hashes, "residual for an unmeasured document"
+    listed = {row.sha256: set(row.root_causes.split(";")) for row in documents}
+    unlisted = sorted(
+        str(attribution)
+        for attribution in handed_off_area_attributions(directory, seen) | residual_causes
+        if attribution.sha256 in listed and attribution.root_cause not in listed[attribution.sha256]
+    )
+    assert not unlisted, f"missing applicable cause in documents.tsv root_causes: {unlisted}"
     for source in HANDED_OFF_SOURCES:
         section = (
             (root / source).read_text(encoding="utf-8").split("## Handed-off differences\n", 1)[1].split("\n## ", 1)[0]
@@ -23841,6 +23906,66 @@ class HandedOffReconciliationTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(AssertionError, "invalid status not-compared"):
             reconcile_handed_off(self.root)
+
+    def test_a_cause_an_area_record_attributes_must_be_listed_on_its_document(self) -> None:
+        sha = "a" * 64
+        evidence = self.directory / "comparisons" / f"{sha}.txt"
+        evidence.parent.mkdir()
+        evidence.write_text(
+            f"sha256: {sha}\nresult: could-not-check\ncommand: crozier compare measurement.yml\ndiffering files:\n\n",
+            encoding="utf-8",
+        )
+        document = {
+            "document": "publisher/api:openapi.yml@" + "b" * 40,
+            "sha256": sha,
+            "source": HANDED_OFF_SOURCES[0],
+            "root_causes": "cause-1",
+            "status": HandedOffStatus.COULD_NOT_CHECK.value,
+            "corpus_row": "-",
+            "note": "Measured elsewhere",
+        }
+        self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [document])
+        area = self.directory / "sample" / "README.md"
+        area.parent.mkdir()
+        attributions = (
+            (
+                "table row",
+                f"| `publisher/api` | `{sha}` | `cause-0`; `cause-1` | differs ([record](../comparisons/{sha}.txt)) |\n",
+            ),
+            (
+                "section line",
+                f"### `publisher/api`\n\n- sha256 `{sha}`\n- this node's cause: `cause-0`; every cause: `cause-0`\n",
+            ),
+        )
+        for label, text in attributions:
+            with self.subTest(attribution=label):
+                area.write_text(text, encoding="utf-8")
+                with self.assertRaisesRegex(
+                    AssertionError, r"missing applicable cause.*aaaaaaaa cause-0 \(sample/README\.md\)"
+                ):
+                    reconcile_handed_off(self.root)
+                self.write_rows(
+                    self.directory / "documents.tsv", DOCUMENT_COLUMNS, [{**document, "root_causes": "cause-1;cause-0"}]
+                )
+                reconcile_handed_off(self.root)
+                self.write_rows(self.directory / "documents.tsv", DOCUMENT_COLUMNS, [document])
+        # A cause the area does not own, or one the document already lists, attributes nothing.
+        area.write_text(
+            f"| `publisher/api` | `{sha}` | `cause-1`, `unowned-cause` | byte-matches |\n", encoding="utf-8"
+        )
+        reconcile_handed_off(self.root)
+        area.unlink()
+        residuals = self.directory / "residuals.tsv"
+        residuals.write_text(
+            f"sha256\tfile\troot_cause\tarea\tnote\n{sha}\treference.md\tcause-0\tsample\tMeasured\n",
+            encoding="utf-8",
+        )
+        with self.assertRaisesRegex(AssertionError, r"missing applicable cause.*aaaaaaaa cause-0 \(residuals\.tsv\)"):
+            reconcile_handed_off(self.root)
+        self.write_rows(
+            self.directory / "documents.tsv", DOCUMENT_COLUMNS, [{**document, "root_causes": "cause-0;cause-1"}]
+        )
+        reconcile_handed_off(self.root)
 
     def test_refusals_require_matching_nonzero_modes_and_a_decided_class(self) -> None:
         sha = "a" * 64

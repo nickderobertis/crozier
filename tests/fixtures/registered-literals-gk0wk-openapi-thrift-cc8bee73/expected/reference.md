@@ -1,0 +1,1340 @@
+# Reference
+<details><summary><code>client.<a href="src/fern/client.py">create_profile</a>(...) -> ProfileResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, CreateProfileRequestRole
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.create_profile(
+    display_name="display_name",
+    email="email",
+    contact_phone="contact_phone",
+    tags=[
+        "tags"
+    ],
+    role=CreateProfileRequestRole.USER,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateProfileRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">update_preferences</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, UpdatePreferencesRequestTheme
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.update_preferences(
+    theme=UpdatePreferencesRequestTheme.LIGHT,
+    timezone="",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**theme:** `UpdatePreferencesRequestTheme` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**timezone:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**daily_digest:** `typing.Optional[bool]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**weekly_limit:** `typing.Optional[int]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">prepare_upload_meta</a>(...) -> UploadMetaResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, PrepareUploadMetaRequestContentType
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.prepare_upload_meta(
+    bucket="bucket",
+    object_key="object_key",
+    content_type=PrepareUploadMetaRequestContentType.IMAGE_PNG,
+    size_bytes=1000000,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**bucket:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**object_key:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**content_type:** `PrepareUploadMetaRequestContentType` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**size_bytes:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**checksum:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">search_profiles</a>(...) -> SearchProfilesResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.search_profiles(
+    keyword="keyword",
+    request_id="X-Request-Id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**keyword:** `str` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_id:** `str` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**tags:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**page_size:** `typing.Optional[int]` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">validate_raw_json</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.validate_raw_json(
+    request="string",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">pattern_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, MutationPatternPayloadRegion
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.pattern_candidate(
+    phone="phone",
+    region=MutationPatternPayloadRegion.CN,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**phone:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**region:** `MutationPatternPayloadRegion` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">multiple_of_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.multiple_of_candidate(
+    price=1.1,
+    quantity=1,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**price:** `float` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**quantity:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">strict_object_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, MutationStrictObjectPayloadProfile, MutationStrictObjectPayloadProfileSource
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.strict_object_candidate(
+    profile=MutationStrictObjectPayloadProfile(
+        source=MutationStrictObjectPayloadProfileSource.MANUAL,
+        region="region",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**profile:** `MutationStrictObjectPayloadProfile` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">nullable_any_of_candidate</a>(...) -> MutationNullableResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.nullable_any_of_candidate(
+    nickname=None,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**nickname:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">union_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, MutationUnionPayload, MutationUnionPayloadContactKind
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.union_candidate(
+    request=MutationUnionPayload(
+        contact_kind=MutationUnionPayloadContactKind.EMAIL,
+        value="value",
+    ),
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `UnionCandidateRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">query_object_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.query_object_candidate()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**filter_keyword:** `typing.Optional[str]` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**limit:** `typing.Optional[int]` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">query_array_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.query_array_candidate()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**tags:** `typing.Optional[typing.Union[str, typing.Sequence[str]]]` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">upload_file_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.upload_file_candidate(
+    file="example_file",
+    bucket="bucket",
+    object_key="object_key",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**bucket:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**object_key:** `str` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**checksum:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**file:** `typing.Optional[core.File]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">ref_request_body_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi, CreateProfileRequestRole
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.ref_request_body_candidate(
+    display_name="display_name",
+    email="email",
+    contact_phone="contact_phone",
+    tags=[
+        "tags"
+    ],
+    role=CreateProfileRequestRole.USER,
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request:** `CreateProfileRequest` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">ref_parameter_candidate</a>(...) -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.ref_parameter_candidate(
+    item_id="item_id",
+)
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**item_id:** `str` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**locale:** `typing.Optional[RefParameterCandidateRequestLocale]` — 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">multi2xx_candidate</a>() -> OkResponse</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+from fern import FernApi
+
+client = FernApi(
+    base_url="https://yourhost.com/path/to/api",
+)
+
+client.multi2xx_candidate()
+
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+
+<details><summary><code>client.<a href="src/fern/client.py">non_json_success_candidate</a>() -> typing.Iterator[bytes]</code></summary>
+<dl>
+<dd>
+
+#### 📝 Description
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### 🔌 Usage
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+```python
+client.non_json_success_candidate()
+```
+</dd>
+</dl>
+</dd>
+</dl>
+
+#### ⚙️ Parameters
+
+<dl>
+<dd>
+
+<dl>
+<dd>
+
+**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
+    
+</dd>
+</dl>
+</dd>
+</dl>
+
+
+</dd>
+</dl>
+</details>
+

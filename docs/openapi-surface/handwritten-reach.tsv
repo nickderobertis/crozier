@@ -7,7 +7,7 @@ beacon-signal-results	combo-success-oneof-nullable	src/ir.rs::build_endpoint[Som
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 enum-media-selection	schema-example-outside-enum	src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]	2	2
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
-ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	899	1794
+ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::build_endpoint	899	1806
 ferry-desk-header-collision	combo-body-property-named-as-header-param	src/ir.rs::header_param_stem	9	9
 ferry-mapping-outside-schemas	ref-pointer-undeclared-component-head	src/ir.rs::Builder::discriminated_union[if all_dangling \{]	28	28
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
@@ -34,7 +34,7 @@ inline-anyof-variants	anyof-array-variant-closed-object-item	src/ir.rs::InlineHo
 inline-anyof-variants	anyof-array-variant-composed-item	src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]	14	14
 inline-anyof-variants	anyof-array-variant-oneof-nullable-item	src/ir.rs::InlineHoister::hoist_union_variant[simple_nullable_member\(item\) \{]	6	8
 inline-anyof-variants	anyof-oneof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	59	90
-inline-body-readonly-own-overlap	request-body-content	src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]	4	5
+inline-body-readonly-own-overlap	request-body-content	src/ir.rs::append_parent_body_fields[if let Some\(own\) = fields$]	4	5
 inline-oneof-variants	annotated-ref-shape	src/ir.rs::InlineHoister::hoist_union_variant[^ {20}\.map\(\x7c\(target, description\)\x7c]	15	16
 inline-oneof-variants	oneof-anyof-variant	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]	59	90
 inline-oneof-variants	oneof-array-variant-anyof-item	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]	45	45
@@ -48,8 +48,6 @@ kiln-array-mode	anyof-array-variant-inline-enum-item	src/ir.rs::InlineHoister::h
 kiln-array-mode	oneof-anyof-variant	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	2	2
 kiln-nested-reason	oneof-anyof-variant	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	5	5
 kiln-variant-trigger	allof	src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]	1	1
-kitchen-nested-mapping-target	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]	31	31
-library-union-shared-fields	oneof-discriminated-union	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]	10	10
 measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
 measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	2	2
 multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
@@ -61,7 +59,7 @@ nested-array-discriminated-unions	inheritance-discriminated-union	src/ir.rs::Bui
 nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::nested_array_element[^\s*\) \{$]	5	5
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
-observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	1	1
+observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date$]	1	1
 observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
 observatory-query-extensions	parameter-in-query	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	2	2
 odometer-reading	format-int64	src/ir.rs::bounded_example_literal[=^ {16}exact$]	1	1

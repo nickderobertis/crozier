@@ -517,6 +517,10 @@ impl Index {
 pub(super) fn holds(id: Mechanism, pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     example_file(pair.rel)
         && indexed(id, pair, fern, crozier)
+        // A value the document declares for the argument is kept, not repaired,
+        // even where a same-named schema elsewhere would repair Fern's placeholder
+        // to it: crystalshards' multipart `version` is exampled `1.0.0`.
+        && !super::declared_values::declared_example_over_placeholder(pair, fern, crozier)
         && documented_example_line(pair.rel, pair.fern, fern)
         && documented_example_line(pair.rel, pair.crozier, crozier)
 }
@@ -672,14 +676,14 @@ pub(super) fn region(id: Mechanism, pair: &Pair<'_>) -> Result<Option<Region>, S
     for fresh in [false, true] {
         let repairs = analysis(pair, fresh)?;
         if !repairs.foreign {
-            return Ok(None);
+            break;
         }
         let pending = repairs
             .pairs
             .iter()
             .find(|(i, j, found)| *found == id && pair.fern[*i] != pair.crozier[*j]);
         match pending {
-            None => return Ok(None),
+            None => break,
             Some(&(i, j, _)) if holds(id, pair, pair.fern[i], pair.crozier[j]) => {
                 return Ok(Some(Region {
                     fern: i..i + 1,
@@ -689,7 +693,43 @@ pub(super) fn region(id: Mechanism, pair: &Pair<'_>) -> Result<Option<Region>, S
             Some(_) => {}
         }
     }
-    Ok(None)
+    Ok(wrapped_single_item_region(id, pair))
+}
+
+/// A one-item list whose repaired value is too long for one line: Fern's
+/// `<indent>name=["name"],` where crozier's formatter wraps
+/// `<indent>name=[`, `<indent>    "repaired"`, `<indent>],` (walletd's
+/// `addresses`, whose `Hash256` pattern rejects the name). The repair is
+/// judged as if crozier's value stood on Fern's one line.
+fn wrapped_single_item_region(id: Mechanism, pair: &Pair<'_>) -> Option<Region> {
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    (1..crozier.len().saturating_sub(2)).find_map(|at| {
+        let open = crozier[at];
+        if !open.ends_with("=[") || crozier[at + 2].trim() != "]," {
+            return None;
+        }
+        let value = crozier[at + 1].trim();
+        let unwrapped = format!("{open}{value}],");
+        let line = (1..fern.len()).find(|&line| {
+            fern[line - 1] == crozier[at - 1]
+                && fern.get(line + 1) == crozier.get(at + 3)
+                && fern[line] != unwrapped
+                && indexed(id, pair, fern[line], &unwrapped)
+                // What `holds` asks of a one-line repair: no value the document
+                // declares, and an example line on both sides, never runtime code.
+                && !super::declared_values::declared_example_over_placeholder(
+                    pair,
+                    fern[line],
+                    &unwrapped,
+                )
+                && documented_example_line(pair.rel, pair.fern, fern[line])
+                && documented_example_line(pair.rel, pair.crozier, open)
+        })?;
+        Some(Region {
+            fern: line..line + 1,
+            crozier: at..at + 3,
+        })
+    })
 }
 
 /// One item of a list argument: its text with whitespace outside literals

@@ -128,9 +128,9 @@ record’s `with_sdk_method_name` anchor names the same per-media-type view.
 
 | key | verdict | arm | cover at base |
 |---|---|---|---|
-| `request-body-content` | `exhausted` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | `inline-body-readonly-own-overlap` |
+| `request-body-content` | `exhausted` | `src/ir.rs::append_parent_body_fields[if let Some\(own\) = fields$]` | `inline-body-readonly-own-overlap` |
 | `request-body-content` | `exhausted` | `src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]` | `json-request-shapes` |
-| `request-body-content` | `exhausted` | `src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]` | `json-request-shapes` |
+| `request-body-content` | `exhausted` | `src/ir.rs::append_parent_body_fields[let own_count = fields\.len\(\)]` | `json-request-shapes` |
 | `media-type-multipart` | `exhausted` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | `multipart-alias-object` |
 | `media-type-multipart` | `exhausted` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | `multipart-json-module` |
 | `request-body-content` | `exhausted` | `src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]` | `request-media-methods` |

@@ -1,0 +1,12 @@
+
+
+import typing
+
+from .metrics_upstream_status_code_grouped_filter_by_field_one import MetricsUpstreamStatusCodeGroupedFilterByFieldOne
+from .metrics_upstream_status_code_grouped_filter_by_field_value import (
+    MetricsUpstreamStatusCodeGroupedFilterByFieldValue,
+)
+
+MetricsUpstreamStatusCodeGroupedFilterByField = typing.Union[
+    MetricsUpstreamStatusCodeGroupedFilterByFieldValue, MetricsUpstreamStatusCodeGroupedFilterByFieldOne
+]

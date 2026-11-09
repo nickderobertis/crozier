@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .metrics_portal_filter_by_field_one import MetricsPortalFilterByFieldOne
+from .metrics_portal_filter_by_field_value import MetricsPortalFilterByFieldValue
+
+MetricsPortalFilterByField = typing.Union[MetricsPortalFilterByFieldValue, MetricsPortalFilterByFieldOne]

@@ -1,10 +1,11 @@
 sha256: 608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8
 result: differs
-command: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/crozier-final compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml --json /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/report.json --diff-dir /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/diffs
-crozier binary sha256: deeeb8376d414e3a8c45c0fff76e2e78d38ba34333ce42b23a22d5fa7fbbb441
-compare exit: 3
+command: /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/debug/crozier compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml ; /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/debug/crozier compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml
+crozier binary sha256: 6fe10e7cb84b7ffff58a581ca950db780f9c464308589c3744fcfb0e7630204c
+compare exit: python_enums 3, literals 3
 certified pair: CLI 5.163.1 / Python SDK 5.41.3
 certified cache document sha256: 608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8
+enum modes: python_enums, literals
 
 differing files:
 - src/fern/__init__.py
@@ -13,18 +14,15 @@ differing files:
 - src/fern/types/not_found_error_body.py
 - src/fern/types/shortcode_not_found.py
 
-
-compare log:
-compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml python: reference command finished in 0.21s (exit 0)
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml python: crozier generation starting
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml python: crozier generation finished in 0.70s
-compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml python: mismatched
-
+compare log (python_enums):
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml python: reference command finished in 0.25s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml python: crozier generation finished in 3.07s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml python: mismatched
 crozier compare report
-
-/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/crozier.yml
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/crozier.yml
   python: mismatched (layout packaged, 71 file(s) compared)
     reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
     differing (4):
@@ -46,11 +44,47 @@ crozier compare report
       src/fern/transfers/client.py:183 unquoted-timestamp-parameter-example
       src/fern/transfers/client.py:361 unquoted-timestamp-parameter-example
       src/fern/transfers/client.py:483 unquoted-timestamp-parameter-example
-    diff: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/1763840-82/comparisons-final/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_1763840-82_comparisons-final_608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8_crozier.yml-python.diff
-    timing: reference 0.21s, crozier 0.70s, speed-up 0.30x, saved -0.49s
-
+    diff: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/python_enums/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_3805540-22_out_608e22dc_python_enums_crozier.yml-python.diff
+    timing: reference 0.25s, crozier 3.07s, speed-up 0.08x, saved -2.82s
 Totals: 0 matched, 1 mismatched, 0 could not check
-Timing totals (1 generator(s) where both sides ran): reference 0.21s, crozier 0.70s, speed-up 0.30x, saved -0.49s
+Timing totals (1 generator(s) where both sides ran): reference 0.25s, crozier 3.07s, speed-up 0.08x, saved -2.82s
+Result: 1 generator(s) mismatched the reference (exit 3)
+
+compare log (literals):
+compare: found config /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml python: reference command starting: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml python: reference command finished in 0.26s (exit 0)
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml python: crozier generation starting
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml python: crozier generation finished in 3.63s
+compare: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml python: mismatched
+crozier compare report
+/home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/crozier.yml
+  python: mismatched (layout packaged, 70 file(s) compared)
+    reference command: cp -R /home/whoop/.cache/crozier/certified-trees/fern-5.163.1_python-5.41.3/608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8/literals/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    differing (4):
+      src/fern/__init__.py
+      src/fern/types/__init__.py
+      src/fern/types/not_found_error_body.py
+      src/fern/types/shortcode_not_found.py
+    only in crozier (1):
+      src/fern/types/account_id_not_found_error.py
+    intended departures applied (12):
+      .fern/metadata.json:5 fern-metadata-generator-config
+      reference.md:41 unquoted-timestamp-parameter-example
+      reference.md:225 unquoted-timestamp-parameter-example
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:41 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:42 sdk-identity-header-prefix
+      src/fern/transfers/client.py:77 unquoted-timestamp-parameter-example
+      src/fern/transfers/client.py:183 unquoted-timestamp-parameter-example
+      src/fern/transfers/client.py:361 unquoted-timestamp-parameter-example
+      src/fern/transfers/client.py:483 unquoted-timestamp-parameter-example
+    diff: /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/3805540-22/out/608e22dc/literals/diffs/001-_home_whoop_ai-orchestrator_runs_Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations_scratch_3805540-22_out_608e22dc_literals_crozier.yml-python.diff
+    timing: reference 0.26s, crozier 3.63s, speed-up 0.07x, saved -3.37s
+Totals: 0 matched, 1 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.26s, crozier 3.63s, speed-up 0.07x, saved -3.37s
 Result: 1 generator(s) mismatched the reference (exit 3)
 
 Licence/provenance evidence (rule: docs/corpus-licensing.md):

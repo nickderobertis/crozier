@@ -42,7 +42,7 @@ broad feature, which real sources already declare.
 
 | key | verdict | arm | renewed outcome |
 |---|---|---|---|
-| `parameter-in-header` | `search-incomplete` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | none-registrable |
+| `parameter-in-header` | `search-incomplete` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date$]` | none-registrable |
 | `parameter-in-header` | `search-incomplete` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | none-registrable |
 | `parameter-in-path` | `search-incomplete` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | none-registrable |
 | `parameter-in-query` | `search-incomplete` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | none-registrable |

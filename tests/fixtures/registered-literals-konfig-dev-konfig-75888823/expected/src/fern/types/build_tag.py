@@ -1,0 +1,6 @@
+
+
+BuildTag = str
+"""
+Tag to associate an external version with a build. It is accessible via [`GetBuildInfo()`](https://hathora.dev/api#tag/BuildV1/operation/GetBuildInfo).
+"""

@@ -1,0 +1,3 @@
+
+
+ScopedUuid = str

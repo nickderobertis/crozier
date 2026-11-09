@@ -31,9 +31,9 @@ combo-body-property-named-as-path-param	feature	document-paths	-	beacon-signal-r
 combo-body-property-named-as-header-param	feature	document-paths	-	ferry-desk-header-collision	exhausted
 combo-success-oneof-nullable	feature	document-paths	-	beacon-signal-results	exhausted
 combo-success-anyof-nullable	feature	document-paths	-	beacon-signal-results	exhausted
-request-body-content	arm	bodies-media	src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]	inline-body-readonly-own-overlap	exhausted
+request-body-content	arm	bodies-media	src/ir.rs::append_parent_body_fields[if let Some\(own\) = fields$]	inline-body-readonly-own-overlap	exhausted
 request-body-content	arm	bodies-media	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	json-request-shapes	exhausted
-request-body-content	arm	bodies-media	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	json-request-shapes	exhausted
+request-body-content	arm	bodies-media	src/ir.rs::append_parent_body_fields[let own_count = fields\.len\(\)]	json-request-shapes	exhausted
 media-type-multipart	arm	bodies-media	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	multipart-alias-object	exhausted
 media-type-multipart	arm	bodies-media	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	multipart-json-module	exhausted
 request-body-content	arm	bodies-media	src/ir.rs::request_media_variants[let mut view = op\.clone\(\);]	request-media-methods	exhausted

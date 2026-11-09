@@ -72,9 +72,10 @@ control test and registered certified comparison.
 ## Former hand-written combinations
 
 The documents `## Newly admitted documents` in
-docs/fern-measurements/handed-off/README.md lists are exactly the 78 registered
-rows of docs/fern-measurements/handed-off/documents.tsv; the first seven of them
-were screened here before the other 71 registered.
+docs/fern-measurements/handed-off/README.md listed 78 registered rows of
+docs/fern-measurements/handed-off/documents.tsv when this table was measured; the
+first seven of them were screened here before the other 71 registered, and the 18
+registered later in corpus rows 5600-5617 are outside this table.
 [handed-off-registered-verdicts.tsv](handed-off-registered-verdicts.tsv) gives each
 document, digest, corpus row and verdict for each of
 combo-param-example-beside-ref-schema, combo-annotated-ref-property-example,
@@ -94,6 +95,16 @@ declares combo-param-example-beside-ref-schema, at
 `/paths/~1predict/get/parameters/0`, and its complete golden byte-matches. It
 leaves the row `open`: the handling stays pooled, so no region's execution
 implies both features for that document to execute.
+
+Corpus row 5608, `registered-literals-arpicato-messie-messenger-aa02af8d`, registered after these screens, declares
+combo-oneof-beside-properties at `/components/schemas/LoginStep`: a `oneOf` of
+inline tagged alternatives beside the schema's own `properties`, with no `anyOf`
+anywhere in the document. Its golden-only run in the full reach measurement at
+`619b10fe0` executes the `Builder::discriminated_union` non-empty-properties arm
+(16 of its 17 regions with the other witnesses), and its complete golden
+byte-matches in both enum modes, so it witnesses that row, which is now `golden`.
+combo-anyof-beside-properties stays `open`: that arm is 0/17 for every
+`anyOf` declarer, rows 5606 and 5607 included.
 
 ## Open proof obstructions
 

@@ -1,0 +1,7 @@
+
+
+from .partial_card_card_payment_method_ach_ach_payment_method_link_link_payment_method import (
+    PartialCardCardPaymentMethodAchAchPaymentMethodLinkLinkPaymentMethod,
+)
+
+PaymentMethod = PartialCardCardPaymentMethodAchAchPaymentMethodLinkLinkPaymentMethod

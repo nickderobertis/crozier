@@ -1,5 +1,7 @@
 # Client-structure handed-off documents
 
+> **Finished-tree outcomes.** Each row or section of a document in the residual repair's 30-document scope leads with its **Finished tree** outcome, joined by SHA-256 from [`../documents.tsv`](../documents.tsv) and [`../residuals.tsv`](../residuals.tsv); the text after it, and every count or outcome stated in this file's prose, is this area's historical measurement unless it says otherwise. Other documents' rows are unchanged.
+
 The documents the three fixture-only witness-search records hand off under this
 area's root causes, re-compared on the finished tree. The causes and their
 verdicts are [`../client-structure.tsv`](../client-structure.tsv); each cause's
@@ -113,7 +115,7 @@ area, and every one is a root cause the bodies-and-paths record's
 | `whatwatt-ch/whatwatt-go-documentation:openapi/api-clean.yaml@50340b0865809c2e6f831385ccfdc900af58981b` | `29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2` | bodies-paths | init-import-order; also orphan-type-emission, example-presence | 2 files differ, each attributed to another area's cause: `example-presence` (2) |
 | `whatwatt-ch/whatwatt-go-documentation:openapi/api-complete-bundle.yaml@50340b0865809c2e6f831385ccfdc900af58981b` | `4cd56f724b38b1766080f870f357c01f5ec3c093dceac5abd6ec7210fa28463a` | bodies-paths | init-import-order; also orphan-type-emission, example-presence | 2 files differ, each attributed to another area's cause: `example-presence` (2) |
 | `core-ncsrd/katana:katana-swagger/swagger.json@2c55159fabe40a5b5428b213dba3b0fa791db846` | `7ddfc4202f397446b2a932fd41712c4b2bd62f7f828ef54e9a32a046a07a8d1e` | bodies-paths | init-import-order; also media-type-recognition, request-content-type-header | byte-matches |
-| `crystalshards/monorepo:apps/crystalshards/openapi.yml@f5c7a1de82d7d397a31e234189fc9f1edb844a80` | `b29a3a4e8ea20deeb6b100e53f180e431abb054443fcaeac1eeea032187eea1c` | bodies-paths | init-import-order; also union-modelling, example-value-source | byte-matches |
+| `crystalshards/monorepo:apps/crystalshards/openapi.yml@f5c7a1de82d7d397a31e234189fc9f1edb844a80` | `b29a3a4e8ea20deeb6b100e53f180e431abb054443fcaeac1eeea032187eea1c` | bodies-paths | init-import-order; also union-modelling, example-value-source | **Finished tree: byte-matches** in both enum modes ([record](../comparisons/b29a3a4e8ea20deeb6b100e53f180e431abb054443fcaeac1eeea032187eea1c.txt)); registered, corpus row 5612 `registered-literals-crystalshards-monorepo-b29a3a4e`. Historical, at this area's measurement: byte-matches |
 | `APIs-guru/openapi-directory:APIs/osf.io/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `cdcf786527cbc25296204b370846686f3e76083f12c7a50e419b19aa53b03e5b` | bodies-paths | reference-section-title; also media-type-recognition, orphan-type-emission, snippet-rendering | 2 files differ, each attributed to another area's cause: `snippet-rendering` (2) |
 | `AMRC-FactoryPlus/documentation:static/spec/cluster-manager.yaml@cfb2f488ff2f4b29c90235b12e9f8ed497772b59` | `be5e37894ab0582a6f6498609754319fcccdbbb140e7a055902d74534616fd8f` | operations-extensions | R2 | byte-matches |
 | `darwin-studios/darwin-cli:openapi.json@0ae98a805869b7acabd737365c193b0afcbd0d7e` | `ee5e2a219e2f0911107a11eab0d98405e91f2b6d8fddf0f0d5730f445421a952` | operations-extensions | R10; also R9 | byte-matches |

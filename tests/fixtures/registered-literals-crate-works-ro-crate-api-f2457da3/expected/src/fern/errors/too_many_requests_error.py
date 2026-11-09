@@ -1,0 +1,11 @@
+
+
+import typing
+
+from ..core.api_error import ApiError
+from ..types.rate_limit_error import RateLimitError
+
+
+class TooManyRequestsError(ApiError):
+    def __init__(self, body: RateLimitError, headers: typing.Optional[typing.Dict[str, str]] = None):
+        super().__init__(status_code=429, headers=headers, body=body)

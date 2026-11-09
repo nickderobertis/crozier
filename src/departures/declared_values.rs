@@ -15,6 +15,8 @@
 //! - `declared-examples-array-parameter-value` (ruling 5,
 //!   `declared-examples-array`): a parameter's value from its schema's
 //!   `examples` array or its own `examples` map.
+//! - `minimal-worked-call-optional-parameter` (ruling 4, `minimal-worked-call`):
+//!   an optional parameter's declared value crozier leaves out of a minimal call.
 //!
 //! Every rule checks the source document, so a value is admitted only where the
 //! document declares exactly the value crozier writes for that argument.
@@ -968,6 +970,127 @@ pub(super) fn declared_timestamp_property_example(
         })
 }
 
+/// Every optional query parameter of the two shapes ruling 4 leaves out where the
+/// certified pair passes them, with the literal the pair writes: one annotating a
+/// `$ref` through `allOf`, worked from the target's example (Kong's `sort`), and an
+/// array over `$ref` items with a parameter-level array example (ro-crate-api's
+/// `entityType`).
+fn minimal_call_omissions(source: &OpenApi) -> Vec<(&Parameter, String)> {
+    let mut out = Vec::new();
+    for (_, parameters) in source_operations(source) {
+        for parameter in parameters {
+            if parameter.required == Some(true)
+                || parameter.location != Some(ParameterLocation::Query)
+            {
+                continue;
+            }
+            let Some(schema) = parameter.schema.as_ref() else {
+                continue;
+            };
+            let references: Vec<&Schema> = schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter(|member| member.reference.is_some())
+                .collect();
+            let declared = if let ([member], true) = (
+                references.as_slice(),
+                schema.properties.is_empty() && parameter.example.is_none(),
+            ) {
+                resolve(source, member).example.as_ref()
+            } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
+                && schema
+                    .items
+                    .as_deref()
+                    .is_some_and(|items| items.reference.is_some())
+            {
+                parameter.example.as_ref().filter(|value| value.is_array())
+            } else {
+                None
+            };
+            if let Some(literal) = declared.and_then(crate::ir::example_literal) {
+                out.push((parameter, literal));
+            }
+        }
+    }
+    out
+}
+
+/// A list or scalar argument's text with its layout dropped, so a list spread over
+/// lines and its one-line spelling read alike.
+fn argument_value(text: &str) -> String {
+    text.replace(", ", ",").replace(",]", "]")
+}
+
+/// `minimal-worked-call-optional-parameter` (ruling 4, `minimal-worked-call`):
+/// Fern's argument lines passing one of [`minimal_call_omissions`] with exactly the
+/// value the document declares, where crozier's call resumes without them. Every
+/// other difference stays for its own rule.
+pub(super) fn minimal_call_optional_parameter(
+    pair: &Pair<'_>,
+) -> Result<Option<super::Region>, String> {
+    if !example_file(pair.rel) {
+        return Ok(None);
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    let omissions = minimal_call_omissions(source);
+    if omissions.is_empty() {
+        return Ok(None);
+    }
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    let mut equal = Vec::new();
+    for op in crate::parity::align_lines(fern, crozier) {
+        match op {
+            crate::parity::Op::Equal(left, right) => equal.push((left, right)),
+            crate::parity::Op::Delete(line) => {
+                let Some((indent, name, value)) = keyword_argument_line(fern[line]).or_else(|| {
+                    let opener = fern[line].strip_suffix('[')?;
+                    let (name, _) = opener.trim_start().split_once('=')?;
+                    Some((
+                        &opener[..opener.len() - opener.trim_start().len()],
+                        name,
+                        "[",
+                    ))
+                }) else {
+                    continue;
+                };
+                let (end, written) = if value == "[" {
+                    let close = format!("{indent}],");
+                    let Some(end) = (line + 1..fern.len()).find(|&at| fern[at] == close) else {
+                        continue;
+                    };
+                    let items: String =
+                        fern[line + 1..end].iter().map(|item| item.trim()).collect();
+                    (end + 1, format!("[{items}]"))
+                } else {
+                    (line + 1, value.to_string())
+                };
+                let declared = omissions.iter().any(|(parameter, literal)| {
+                    parameter_keyword(parameter, name)
+                        && argument_value(literal) == argument_value(&written)
+                });
+                if !declared || !super::documented_example_line(pair.rel, fern, fern[line]) {
+                    continue;
+                }
+                let Some(&(left, right)) = equal.iter().rev().find(|(left, _)| *left < line) else {
+                    continue;
+                };
+                let at = right + (line - left);
+                if line > 0 && at > 0 && crozier.get(at - 1) == fern.get(line - 1) {
+                    return Ok(Some(super::Region {
+                        fern: line..end,
+                        crozier: at..at,
+                    }));
+                }
+            }
+            crate::parity::Op::Insert(_) => {}
+        }
+    }
+    Ok(None)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1409,5 +1532,103 @@ mod tests {
         ));
         let quoted = document(true);
         assert!(!rule(&pair("reference.md", &[], &quoted), fern, kept));
+    }
+
+    fn minimal_call_source() -> Context {
+        context(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/things": {"get": {
+                "operationId": "listThings",
+                "parameters": [
+                    {"name": "sort", "in": "query", "schema": {"allOf": [
+                        {"$ref": "#/components/schemas/Sort"},
+                        {"description": "How."}
+                    ]}},
+                    {"name": "kinds", "in": "query", "example": ["alpha"],
+                     "schema": {"type": "array",
+                                "items": {"$ref": "#/components/schemas/Kind"}}},
+                    {"name": "plain", "in": "query", "example": ["beta"],
+                     "schema": {"type": "array", "items": {"type": "string"}}},
+                    {"name": "must", "in": "query", "required": true,
+                     "example": ["gamma"],
+                     "schema": {"type": "array",
+                                "items": {"$ref": "#/components/schemas/Kind"}}}
+                ],
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "components": {"schemas": {
+                "Sort": {"type": "string", "example": "name desc"},
+                "Kind": {"type": "string"}
+            }}
+        }))
+    }
+
+    /// `reference.md` with `arguments` between a kept argument and the call's close.
+    fn minimal_call_doc(arguments: &str) -> String {
+        format!("```python\nclient.things.list_things(\n    page=1,\n{arguments})\n```\n")
+    }
+
+    #[test]
+    fn a_minimal_call_excuses_only_the_declared_omitted_arguments() {
+        let context = minimal_call_source();
+        let crozier = minimal_call_doc("");
+        let compare = |arguments: &str| {
+            crate::parity::compare_file(
+                &context,
+                "reference.md",
+                &crozier,
+                &minimal_call_doc(arguments),
+            )
+            .unwrap()
+        };
+        for held in [
+            "    sort=\"name desc\",\n",
+            "    kinds=[\n        \"alpha\"\n    ],\n",
+            "    kinds=[\"alpha\"],\n",
+            "    sort=\"name desc\",\n    kinds=[\"alpha\"],\n",
+        ] {
+            let compared = compare(held);
+            assert!(compared.residual.is_none(), "{held}");
+            assert!(
+                compared
+                    .departures
+                    .iter()
+                    .all(|found| found.id == "minimal-worked-call-optional-parameter"),
+                "{held}"
+            );
+        }
+        for adjacent in [
+            // Another value, an argument the rule does not name, one with inline
+            // items, a required one, and a further unexplained argument beside it.
+            "    sort=\"other\",\n",
+            "    kinds=[\"other\"],\n",
+            "    limit=1,\n",
+            "    plain=[\"beta\"],\n",
+            "    must=[\"gamma\"],\n",
+            "    sort=\"name desc\",\n    limit=1,\n",
+        ] {
+            assert!(compare(adjacent).residual.is_some(), "{adjacent}");
+        }
+    }
+
+    #[test]
+    fn a_minimal_call_omission_needs_a_source_and_an_example_file() {
+        let (fern, crozier) = (
+            minimal_call_doc("    sort=\"name desc\",\n"),
+            minimal_call_doc(""),
+        );
+        let compared =
+            crate::parity::compare_file(&Context::default(), "reference.md", &crozier, &fern)
+                .unwrap();
+        assert!(compared.residual.is_some());
+        let compared = crate::parity::compare_file(
+            &minimal_call_source(),
+            "src/fern/things/raw_client.py",
+            &crozier,
+            &fern,
+        )
+        .unwrap();
+        assert!(compared.residual.is_some());
     }
 }

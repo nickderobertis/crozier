@@ -160,7 +160,7 @@ identity and reason is recorded in `candidates.tsv` and below.
 | `http-mutual` | `exhausted` | `src/ir.rs::auth_model[=_ => Auth::None,]` | `http-mutual-unrequired` |
 | `http-negotiate` | `exhausted` | `src/ir.rs::auth_model[=_ => Auth::None,]` | `http-negotiate-unrequired` |
 | `parameter-schema` | `exhausted` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | `nullable-query-union-items` |
-| `parameter-in-header` | `exhausted` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | `observatory-client-date` |
+| `parameter-in-header` | `exhausted` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date$]` | `observatory-client-date` |
 | `parameter-in-path` | `exhausted` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | `observatory-client-variable` |
 | `parameter-in-query` | `exhausted` | `src/emit.rs::method_params[if let Some\(default\) = &qp\.default]` | `observatory-query-extensions` |
 | `parameter-style-form-query-object` | `corpus rows 5370 and 5371` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | `ore-bin-screen` |

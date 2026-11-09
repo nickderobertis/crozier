@@ -29,7 +29,7 @@ acquisition was performed.
 
 The handling site is:
 
-- `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]`
+- `src/ir.rs::append_parent_body_fields[if let Some\(own\) = fields$]`
 
 ## Renewed search
 

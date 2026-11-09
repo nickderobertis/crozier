@@ -1,0 +1,224 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from ..core.api_error import ApiError
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.http_response import AsyncHttpResponse, HttpResponse
+from ..core.parse_error import ParsingError
+from ..core.pydantic_utilities import parse_obj_as
+from ..core.request_options import RequestOptions
+from ..errors.internal_server_error import InternalServerError
+from ..errors.not_found_error import NotFoundError
+from ..errors.unauthorized_error import UnauthorizedError
+from ..types.ats_proxy_response import AtsProxyResponse
+from ..types.common_base_error import CommonBaseError
+from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
+
+
+class RawAtsProxyClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def ats_proxy_tunnel(
+        self,
+        *,
+        path: str,
+        method: str,
+        body: typing.Optional[typing.Any] = OMIT,
+        query_params: typing.Optional[typing.Any] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[AtsProxyResponse]:
+        """
+        Call the native ATS api for a specific connection
+
+        Parameters
+        ----------
+        path : str
+
+        method : str
+
+        body : typing.Optional[typing.Any]
+
+        query_params : typing.Optional[typing.Any]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[AtsProxyResponse]
+
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "ats/proxy",
+            method="POST",
+            json={
+                "path": path,
+                "body": body,
+                "method": method,
+                "queryParams": query_params,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    AtsProxyResponse,
+                    parse_obj_as(
+                        type_=AtsProxyResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        CommonBaseError,
+                        parse_obj_as(
+                            type_=CommonBaseError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        CommonBaseError,
+                        parse_obj_as(
+                            type_=CommonBaseError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        CommonBaseError,
+                        parse_obj_as(
+                            type_=CommonBaseError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawAtsProxyClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def ats_proxy_tunnel(
+        self,
+        *,
+        path: str,
+        method: str,
+        body: typing.Optional[typing.Any] = OMIT,
+        query_params: typing.Optional[typing.Any] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[AtsProxyResponse]:
+        """
+        Call the native ATS api for a specific connection
+
+        Parameters
+        ----------
+        path : str
+
+        method : str
+
+        body : typing.Optional[typing.Any]
+
+        query_params : typing.Optional[typing.Any]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[AtsProxyResponse]
+
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "ats/proxy",
+            method="POST",
+            json={
+                "path": path,
+                "body": body,
+                "method": method,
+                "queryParams": query_params,
+            },
+            headers={
+                "content-type": "application/json",
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    AtsProxyResponse,
+                    parse_obj_as(
+                        type_=AtsProxyResponse,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            if _response.status_code == 401:
+                raise UnauthorizedError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        CommonBaseError,
+                        parse_obj_as(
+                            type_=CommonBaseError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 404:
+                raise NotFoundError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        CommonBaseError,
+                        parse_obj_as(
+                            type_=CommonBaseError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            if _response.status_code == 500:
+                raise InternalServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        CommonBaseError,
+                        parse_obj_as(
+                            type_=CommonBaseError,
+                            object_=_response.json(),
+                        ),
+                    ),
+                )
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

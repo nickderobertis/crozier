@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-dcp-ai-protocol-dcp-ai-669c2ccb",
+  "corpus_spec_ref": "808cc50bd15a276803c7d82a93404d9bfebad9d9",
+  "corpus_spec_url": "https://raw.githubusercontent.com/dcp-ai-protocol/dcp-ai/808cc50bd15a276803c7d82a93404d9bfebad9d9/api/openapi.yaml"
+}

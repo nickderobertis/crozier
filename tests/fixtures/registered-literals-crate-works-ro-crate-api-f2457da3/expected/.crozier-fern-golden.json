@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-crate-works-ro-crate-api-f2457da3",
+  "corpus_spec_ref": "ce22c51856f181084e7b6d34d8e8d3a1ef85d978",
+  "corpus_spec_url": "https://raw.githubusercontent.com/crate-works/ro-crate-api/ce22c51856f181084e7b6d34d8e8d3a1ef85d978/openapi.yaml"
+}

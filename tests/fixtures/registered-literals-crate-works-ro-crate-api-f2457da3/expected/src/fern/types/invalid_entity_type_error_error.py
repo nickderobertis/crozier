@@ -1,0 +1,41 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .invalid_entity_type_error_error_code import InvalidEntityTypeErrorErrorCode
+from .invalid_entity_type_error_error_details import InvalidEntityTypeErrorErrorDetails
+
+
+class InvalidEntityTypeErrorError(UniversalBaseModel):
+    code: InvalidEntityTypeErrorErrorCode
+    message: str = pydantic.Field()
+    """
+    Human-readable error message
+    """
+
+    details: typing.Optional[InvalidEntityTypeErrorErrorDetails] = pydantic.Field(default=None)
+    """
+    Additional error details specific to the error type
+    """
+
+    request_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="requestId"),
+        pydantic.Field(alias="requestId", description="Unique identifier for this request, useful for debugging"),
+    ] = None
+    """
+    Unique identifier for this request, useful for debugging
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

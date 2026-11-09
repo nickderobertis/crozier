@@ -9,6 +9,6 @@ verdict = "exhausted"
 
 [[covers]]
 key = "parameter-in-header"
-arm = 'src/ir.rs::header_py_type[=^\s*HeaderType::Date]'
+arm = 'src/ir.rs::header_py_type[=^\s*HeaderType::Date$]'
 search = "docs/openapi-surface/witness-search-fixture-only-operations-extensions-continuation/README.md#arm-verdicts"
 verdict = "exhausted"

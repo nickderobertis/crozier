@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-revertinc-revert-698ea54a",
+  "corpus_spec_ref": "bb2c010b5e52e8458783d1770ebb6f379388eefd",
+  "corpus_spec_url": "https://raw.githubusercontent.com/revertinc/revert/bb2c010b5e52e8458783d1770ebb6f379388eefd/packages/backend/oas/openapi.yml"
+}
