@@ -1,0 +1,23 @@
+compare: found config <scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml
+compare: <scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml python: reference command finished in 0.06s (exit 0)
+compare: <scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml python: crozier generation finished in 3.07s
+compare: <scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml python: matched
+
+crozier compare report
+
+<scratch>/screen-runs/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/compare.yml
+  python: matched (layout packaged, 119 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/851f0d24bc96b16645e9dd870dc2ff3b46f6c26739bc933f25c05387b83f1c16/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (5):
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    timing: reference 0.06s, crozier 3.07s, speed-up 0.02x, saved -3.01s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.06s, crozier 3.07s, speed-up 0.02x, saved -3.01s
+Result: every checked generator matched the reference (1 of 1, exit 0)

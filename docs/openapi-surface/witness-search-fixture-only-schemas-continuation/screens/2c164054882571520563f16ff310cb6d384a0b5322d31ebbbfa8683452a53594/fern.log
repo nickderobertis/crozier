@@ -1,0 +1,213 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.a1cIUgMDIZ/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk itemTag.yml -> service -> endpoints -> composition_tags_get -> examples[0] -> response
+                  itemTag.yml
+                  [error] Missing discriminant property ("_type")
+                  
+::error title=[api]%3A python-sdk::itemTag.yml -> service -> endpoints -> composition_tags_get -> examples[0] -> response%0AitemTag.yml%0A[error] Missing discriminant property ("_type")
+[api]: python-sdk itemTag.yml -> service -> endpoints -> composition_tags_update -> examples[0] -> response
+                  itemTag.yml
+                  [error] Missing discriminant property ("_type")
+                  
+::error title=[api]%3A python-sdk::itemTag.yml -> service -> endpoints -> composition_tags_update -> examples[0] -> response%0AitemTag.yml%0A[error] Missing discriminant property ("_type")
+[api]: python-sdk directory.yml -> service -> endpoints -> create -> examples[0] -> request
+                  directory.yml
+                  [error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:
+                    - HIER_OBJECT_ID
+                  
+::error title=[api]%3A python-sdk::directory.yml -> service -> endpoints -> create -> examples[0] -> request%0Adirectory.yml%0A[error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:%0A  - HIER_OBJECT_ID
+[api]: python-sdk directory.yml -> service -> endpoints -> create -> examples[0] -> response
+                  directory.yml
+                  [error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:
+                    - HIER_OBJECT_ID
+                  
+::error title=[api]%3A python-sdk::directory.yml -> service -> endpoints -> create -> examples[0] -> response%0Adirectory.yml%0A[error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:%0A  - HIER_OBJECT_ID
+[api]: python-sdk itemTag.yml -> service -> endpoints -> ehr_status_tags_get -> examples[0] -> response
+                  itemTag.yml
+                  [error] Missing discriminant property ("_type")
+                  
+::error title=[api]%3A python-sdk::itemTag.yml -> service -> endpoints -> ehr_status_tags_get -> examples[0] -> response%0AitemTag.yml%0A[error] Missing discriminant property ("_type")
+[api]: python-sdk itemTag.yml -> service -> endpoints -> ehr_status_tags_update -> examples[0] -> response
+                  itemTag.yml
+                  [error] Missing discriminant property ("_type")
+                  
+::error title=[api]%3A python-sdk::itemTag.yml -> service -> endpoints -> ehr_status_tags_update -> examples[0] -> response%0AitemTag.yml%0A[error] Missing discriminant property ("_type")
+[api]: python-sdk itemTag.yml -> service -> endpoints -> ehr_tags_get -> examples[0] -> response
+                  itemTag.yml
+                  [error] Missing discriminant property ("_type")
+                  
+::error title=[api]%3A python-sdk::itemTag.yml -> service -> endpoints -> ehr_tags_get -> examples[0] -> response%0AitemTag.yml%0A[error] Missing discriminant property ("_type")
+[api]: python-sdk directory.yml -> service -> endpoints -> getAtTime -> examples[0] -> response
+                  directory.yml
+                  [error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:
+                    - HIER_OBJECT_ID
+                  
+::error title=[api]%3A python-sdk::directory.yml -> service -> endpoints -> getAtTime -> examples[0] -> response%0Adirectory.yml%0A[error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:%0A  - HIER_OBJECT_ID
+[api]: python-sdk directory.yml -> service -> endpoints -> getByVersionId -> examples[0] -> response
+                  directory.yml
+                  [error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:
+                    - HIER_OBJECT_ID
+                  
+::error title=[api]%3A python-sdk::directory.yml -> service -> endpoints -> getByVersionId -> examples[0] -> response%0Adirectory.yml%0A[error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:%0A  - HIER_OBJECT_ID
+[api]: python-sdk directory.yml -> service -> endpoints -> update -> examples[0] -> request
+                  directory.yml
+                  [error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:
+                    - HIER_OBJECT_ID
+                  
+::error title=[api]%3A python-sdk::directory.yml -> service -> endpoints -> update -> examples[0] -> request%0Adirectory.yml%0A[error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:%0A  - HIER_OBJECT_ID
+[api]: python-sdk directory.yml -> service -> endpoints -> update -> examples[0] -> response
+                  directory.yml
+                  [error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:
+                    - HIER_OBJECT_ID
+                  
+::error title=[api]%3A python-sdk::directory.yml -> service -> endpoints -> update -> examples[0] -> response%0Adirectory.yml%0A[error] "ARCHETYPE_ID" is not a valid example for this enum. Enum values are:%0A  - HIER_OBJECT_ID
+[api]: python-sdk __package__.yml -> types -> AbstractEntry
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> AbstractEntry%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> AuditDetails
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> AuditDetails%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> CareEntry
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> CareEntry%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> ContentItem
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ContentItem%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DataStructure
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DataStructure%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DataValue
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DataValue%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvAmount
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvAmount%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvEncapsulated
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvEncapsulated%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvInterval
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvInterval%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvOrdered
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvOrdered%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvQuantified
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvQuantified%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvTemporal
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvTemporal%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvText
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvText%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> DvUri
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> DvUri%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> Item
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> Item%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> ItemStructure
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ItemStructure%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> ItemTag
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ItemTag%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> Locatable
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> Locatable%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> ObjectId
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ObjectId%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> ObjectRef
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> ObjectRef%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> PartyIdentified
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> PartyIdentified%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> PartyProxy
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> PartyProxy%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> Pathable
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> Pathable%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> UidBasedId
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> UidBasedId%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> UpdateAudit
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> UpdateAudit%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> Version
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> Version%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> Versionable
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> Versionable%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk __package__.yml -> types -> VersionedObject
+                  __package__.yml
+                  [error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> types -> VersionedObject%0A__package__.yml%0A[error] Discriminant value _type is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores.
+[api]: python-sdk Found 39 errors and 0 warnings in 0.682 seconds.
+::error title=[api]%3A python-sdk::Found 39 errors and 0 warnings in 0.682 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

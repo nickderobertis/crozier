@@ -1,0 +1,372 @@
+{
+  "base": "5d88a471fe004818ed8d541d8afc646214d62339",
+  "head": "1d2f189132a467a64da76fc938d168b54c677c2d",
+  "carried_tests": 319,
+  "carried_fixtures": 54,
+  "production_scope": [
+    "src",
+    "templates",
+    "assets",
+    "crates/*/src",
+    "crates/*/Cargo.toml",
+    "rust-toolchain.toml",
+    ".cargo/config.toml",
+    "build.rs",
+    "tools/corpus/corpus_sources.py",
+    "tools/corpus/corpus_remote_ref_pins.py",
+    "tests/support"
+  ],
+  "production_diff": [],
+  "cargo_release_only": true,
+  "changed_old_sources_or_goldens": [],
+  "row_keyed_changes": {
+    "tests/fixtures/corpus-sources.tsv": [
+      "eqivo-apostrophe-enums",
+      "tests/fixtures/corpus-sources/eqivo-apostrophe-enums/openapi.yaml"
+    ]
+  },
+  "reachable_suite_changes": [
+    {
+      "path": "crates/crozier-e2e/tests/e2e.rs",
+      "item": "const CORPORA",
+      "name": "CORPORA"
+    },
+    {
+      "path": "crates/crozier-e2e/tests/e2e.rs",
+      "item": "const EQIVO_APOSTROPHE_ENUMS",
+      "name": "EQIVO_APOSTROPHE_ENUMS"
+    },
+    {
+      "path": "crates/crozier-e2e/tests/e2e/overlay_goldens.rs",
+      "item": "const KINDS",
+      "name": "KINDS"
+    }
+  ],
+  "fixtures": [
+    {
+      "fixture": "atlas-untagged-inline-discriminator",
+      "source_sha256": "7bb06ef05817b5eb4c547bd56fb4702de29cc0b9a6e82ab4cc57ed018bcb95e6",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "base-path-client-argument",
+      "source_sha256": "eb943974483d08ac4509217c42a8a36b62a65094ec78e7cd67b3a16c93802e3c",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "beacon-signal-results",
+      "source_sha256": "06fc2e45064320f664972b465efb739e465faaf4116c91ab89e64c65d80c5f13",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "byte-text-response",
+      "source_sha256": "420074dc21ae5ed01747fcee7d45eaed03c8c0026d4bf4a32fc0fdc1fa1ec1bb",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "byte-text-response-controls",
+      "source_sha256": "6e63b98e6ec8dfe0ae55def60276de80881ba73261ad526d1398d8fb758087e3",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "composition-index-pointer",
+      "source_sha256": "75d93a6aa8710474ad40aed3977e953bb7bf7da98d3dd37ed5440a2911323aaf",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "enum-media-selection",
+      "source_sha256": "49b8f2d5b1afb1f7a3f1c8b0c0706c4ca4d6c140d7371118ad7883ed78e08d37",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "error-body-shapes",
+      "source_sha256": "7ebaabec89e85d95d81b81bdbbb820b9fa109a01f7cf000c8b7baa3e4bec1103",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "ferry-desk-header-collision",
+      "source_sha256": "6302dbeaddf1d3bda55f2721f7600faf1faefc7736ff946bcf1d74e15084693d",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "ferry-mapping-outside-schemas",
+      "source_sha256": "e056082fb1a9a1b37fca606054033061e68df9f4464b82dd1de45ebd8106698a",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "format-scalar-bodies",
+      "source_sha256": "d5c56676433700c470f7f6ea4bbd084cfe03c73397fd8dd374b55704682eb32f",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "harbor-parcel-requests",
+      "source_sha256": "bdd084f921365524a3b9fe4b86e6c537adc24813c6683efb425a7c57618202eb",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "harbor-relay-registration",
+      "source_sha256": "beaa6db7f5281004a461f51a23752d4b766a2e56cf967436c6fa72b5e7aa20d0",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "harbour-window",
+      "source_sha256": "658642de0b36aba230cb9ca008d886b00ccb395436c3938e0e2398257b40ed1d",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "http-dpop-unrequired",
+      "source_sha256": "43afaf2d864b1e45a2fb8e9263548c243b1309689a948f475213b9b70cc0a61a",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "http-mutual-unrequired",
+      "source_sha256": "5c472cbc045febfb8fe6d6d263395ba3e4b8719921b18271b7ea1356fa3b5711",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "http-negotiate-unrequired",
+      "source_sha256": "fd1b8436543dba9173e0ee2f0c73fcb74a414a6ea6ca0dc9fed9040d46197bc7",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "inline-anyof-variants",
+      "source_sha256": "d8953fd276a7e6c4ffc862de239a86eec8bb38542687682f4983861ed194943f",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "inline-body-readonly-own-overlap",
+      "source_sha256": "380f1b501295f9323980efa82b688c3b39f514e88212dab730f46fb8cc5e5692",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "inline-oneof-variants",
+      "source_sha256": "825eec1ce8524e3da98554dfcd237b670d2a34a2718591c761009e3b8a245789",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "inline-property-unions",
+      "source_sha256": "cc8ab3f3d09ade0b684683b89eaaae3f4172c66099e10b9f8cea9852fa47e2db",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "json-binary-path",
+      "source_sha256": "231d44c41db2aaa5d1cbaf590a793841b7d95bb5aa9b4751971009df019b8fa1",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "json-request-shapes",
+      "source_sha256": "3804ee01cb5ebe80501b749ac709d945774a30e56f2d4e61e3ad3711c12b7d77",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "kiln-array-mode",
+      "source_sha256": "86a9a55cdb8a8c1a5485d68dad125d3003ebd02a1387033d11e7610d5f606e0e",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "kiln-nested-reason",
+      "source_sha256": "a8a0d97fc2c9e95cb5816b5a81e25bca726efc306086235c215b89eb248a1b04",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "kiln-variant-trigger",
+      "source_sha256": "f27a3eae7c7d818069d0d985907fb744f907dd767cb764508bf68afd29648654",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "kitchen-nested-mapping-target",
+      "source_sha256": "5c7702179505ce2e220aa3caf5dc442ca561872fed888ede5496ce856ba271c1",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "library-union-shared-fields",
+      "source_sha256": "a0eb26db419acb5d3b73476a48a22a52bfb70806e4392ff433b5c15152e30d07",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "meadow-tag-code",
+      "source_sha256": "02319e506f475ca835c6d97d3bcae877670c2bcfb2ebca1fee782da35f7c5d0f",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "measurement-phase",
+      "source_sha256": "ed32cac6411213d912441b98687f5ad2390316dd288c9f53387fb81e55730547",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "multipart-alias-object",
+      "source_sha256": "e092ef7ab2635d7bef2d1b0a20b78817cbef23443b940e858440d12074d40d41",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "multipart-json-module",
+      "source_sha256": "1b3efd581a2d5503bec4297bd83dd203ff96540d5743498406677e3e1c3f52c2",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "nested-array-discriminated-unions",
+      "source_sha256": "802bd41318a564b397a81cf0950e459960ca56484052c06fea35fe2408118f4a",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "nested-array-elements",
+      "source_sha256": "8ce9fc781f89f5dec0fd560cc51c5a16c9920429e7ff2f89d71134bb98375531",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "nullable-query-union-items",
+      "source_sha256": "832d37efc057d7322be47eadee9502ff2c35eb6350b0a9e8acad47b0245ec87e",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "observatory-client-date",
+      "source_sha256": "7b754c45c426eb9a8f19b0bc45fa71af2c81620a3d956ff552f841de4def86b8",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "observatory-client-variable",
+      "source_sha256": "5eb84fb81675a2b5571168f4b9bfe5ed36f8536c138a0fad5667ca10144183ee",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "observatory-query-extensions",
+      "source_sha256": "c0f863818d1cf408011f800da258a7ce3c811166b485cf96cfca569f79b75428",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "odometer-reading",
+      "source_sha256": "88d748c7ca8c97c5c7e1c5486bddf5e0c8c2cf78a91d3b72a80d40830efbd7f6",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "orchard-dispatch-schemas",
+      "source_sha256": "60658bb7e745915e935135eb0ffea3b42ee9be492adbf7c5d20f8a68c748c964",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "ore-bin-screen",
+      "source_sha256": "d6885a6183d698155f8b5f0067161a70d967849d006d80d6d3c38d5935d693e0",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "quiz-nullable-response-union",
+      "source_sha256": "4c794b719d5e03a1070a9458d241f3fd5687f6e89671e962dc56720a4b269997",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "ref-pointer-ignored-head",
+      "source_sha256": "8f7aadd2f6e2b742ce76461ef39244b1b0269ae1acf24a9a1926bb03bbd050db",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "ref-pointer-walk",
+      "source_sha256": "cfcd2276521a438c9ac34ace29bd65e5fe0607f973727798f508ef09b0fe8b07",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "request-media-methods",
+      "source_sha256": "5ab715af86edfedd4a45612328b5d91c00c36732a6462f12e4dabf561806881e",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "sensor-batch-query",
+      "source_sha256": "604b1fc1381423231b5b423db2671509401b7c3718da10ab60536e509c654c10",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "shelf-labels-map-variants",
+      "source_sha256": "3e12b225efa0a6f436f39d3dda4a617733b7495d16e5bac6de55342e8fbd975b",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "slashless-json-response",
+      "source_sha256": "f0893f7d35c6e911e6dd263e6914fda51e9bce01a46acbb0d10a453955ce1428",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "stream-condition-union-body",
+      "source_sha256": "0e9e0948d3bc3ab75869f72651669556be9e8160bff0052b97a91a7aeb02762d",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "streaming-extension-terminator",
+      "source_sha256": "6fd19cd5982b355962cc20f76b7a2bad8d33843c2d295513e210503e7732df71",
+      "evidence_bytes_identical": true,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "survey-map-value-union",
+      "source_sha256": "17ce618955fffcbdcbcf98387a7eef32981681a69dc8d43e912ce619459ed2d7",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "tidepool-survey-log",
+      "source_sha256": "a4a07beda740e844097411b9d4119c894d0597422510268466c50416a19c8162",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "union-sample",
+      "source_sha256": "d89c5e6588087d941d7162883821b457cdbba55f3616b9fa54281efdc25cce1e",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    },
+    {
+      "fixture": "verified-seal",
+      "source_sha256": "a62e0a04bdcd99415dfed85da6a769c7d98395cc844d9d905a80cd14501ea41b",
+      "evidence_bytes_identical": false,
+      "effective_evidence_identical": true
+    }
+  ],
+  "unrelated_in_process_change": "tests/generation.rs relocates request-example-deprecated to its retained measurement; it is outside this store population"
+}

@@ -1,0 +1,34 @@
+compare: found config <scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml
+compare: <scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml python: reference command finished in 0.05s (exit 0)
+compare: <scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml python: crozier generation finished in 4.21s
+compare: <scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml python: matched
+
+crozier compare report
+
+<scratch>/screen-runs/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/compare.yml
+  python: matched (layout packaged, 231 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/a87710725b8bdea9cdeab44b61390b10718280a88432f6a4896c757c8704d27a/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (16):
+      reference.md:3816 schema-rejected-array-length-example
+      reference.md:3913 schema-rejected-array-length-example
+      src/fern/__init__.py:190 init-type-checking-import-order
+      src/fern/client.py:48 empty-root-security-optional-credential
+      src/fern/client.py:87 empty-root-security-optional-credential
+      src/fern/client.py:289 empty-root-security-optional-credential
+      src/fern/client.py:328 empty-root-security-optional-credential
+      src/fern/core/client_wrapper.py:14 empty-root-security-optional-credential
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:43 empty-root-security-optional-credential
+      src/fern/core/client_wrapper.py:70 empty-root-security-optional-credential
+      src/fern/core/client_wrapper.py:104 empty-root-security-optional-credential
+    timing: reference 0.05s, crozier 4.21s, speed-up 0.01x, saved -4.16s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.05s, crozier 4.21s, speed-up 0.01x, saved -4.16s
+Result: every checked generator matched the reference (1 of 1, exit 0)

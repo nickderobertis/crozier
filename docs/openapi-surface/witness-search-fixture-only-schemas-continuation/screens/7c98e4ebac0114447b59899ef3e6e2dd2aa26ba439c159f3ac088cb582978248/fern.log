@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.BmAe4gXXZv/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk amz.yml -> service -> endpoints -> keywordSearch -> request -> query-parameters -> numberOfProducts -> type
+                  amz.yml
+                  [error] Default value '20' is not a valid integer
+                  
+::error title=[api]%3A python-sdk::amz.yml -> service -> endpoints -> keywordSearch -> request -> query-parameters -> numberOfProducts -> type%0Aamz.yml%0A[error] Default value '20' is not a valid integer
+[api]: python-sdk Found 1 errors and 0 warnings in 0.375 seconds.
+::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.375 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

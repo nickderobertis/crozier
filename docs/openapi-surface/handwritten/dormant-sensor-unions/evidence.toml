@@ -4,12 +4,11 @@ digest = "841b493abbe7d181d5c4d0f1f11aab7d950ad1e15ff49a4cdc7966d65ec83964"
 
 [[covers]]
 key = "property-oneof-sole-string-enum-member"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-90-property-oneof-sole-string-enum-member"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"
 
 [[covers]]
 key = "property-anyof-sole-string-enum-member"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-87-property-anyof-sole-string-enum-member"
+verdict = "exhausted"

@@ -1,0 +1,25 @@
+Verification of the finished tree
+=================================
+Base 3c405b50a4b82c6d6ad8002bb4d6161e1996cf10, merged into the branch by 6ebedcbdf.
+
+Reach: `census-repin` measured the tree fully (reason: Cargo.lock changed beyond
+crozier's own version) and wrote golden-reach.tsv and the region reach cells. Each
+promoted row reaches every handling site it declares. Its interpreter lacked PyYAML,
+so the steps after the reach rewrite were run by hand, in its order, after `uv sync
+--locked --all-packages`: restate-coverage --write, scenario-proof-index write,
+witness-search-region-keys, golden-reach-search outstanding and the registries index.
+
+Gates run for this node are named in the final report with their results; this file
+records only what the tables were regenerated from.
+
+Suppression accounting
+----------------------
+- crates/crozier-e2e/tests/e2e.rs, Eqivo test block: the real-binary corpus
+  and literals gates belong to the existing corpus family; moving that family
+  to a separate project edge is outside this registration. The test installs
+  nothing and opens no socket.
+- crates/crozier-e2e/tests/e2e/overlay_goldens.rs, Eqivo inventory entry:
+  this required literal overlay uses the existing corpus golden inventory;
+  one inventory entry cannot define a separate project edge.
+Both narrow directives name expensive_tests_stay_behind_their_own_edge.
+No other directive is added, moved, rewritten, or covers a changed line.

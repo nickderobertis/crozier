@@ -4,13 +4,13 @@ digest = "94ff27c8d6f148cf3dabf7f90ed5d5b846e5d4766a5eeefec1638313144d1bfb"
 
 [[covers]]
 key = "allof-extends-oneof-object-refused"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-8-allof-extends-oneof-object-refused"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"
 
 [[covers]]
 key = "allof"
 arm = 'src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]'
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#arm-verdicts"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-2-allof"
 verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+renewed = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md"

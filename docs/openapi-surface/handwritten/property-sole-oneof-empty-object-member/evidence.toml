@@ -4,6 +4,5 @@ digest = "34c3a4c427902f3c933613cbe9860aa4456d766f39d99a3e8fb54df0c2618e18"
 
 [[covers]]
 key = "property-sole-oneof-empty-object-member"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-renewed/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-97-property-sole-oneof-empty-object-member"
+verdict = "exhausted"

@@ -1,0 +1,17 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.albJSJK82V/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk stories.yml -> service
+                  stories.yml
+                  [error] Service requires auth, but no auth is defined.
+                  
+::error title=[api]%3A python-sdk::stories.yml -> service%0Astories.yml%0A[error] Service requires auth, but no auth is defined.
+[api]: python-sdk Found 1 errors and 0 warnings in 0.340 seconds.
+::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.340 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

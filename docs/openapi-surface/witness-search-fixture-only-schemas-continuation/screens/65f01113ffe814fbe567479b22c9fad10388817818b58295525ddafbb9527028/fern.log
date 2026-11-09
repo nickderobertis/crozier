@@ -1,0 +1,161 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.varXnGGkin/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <scratch>/fern-tmp/tmp-1982368-WeBnXQEfV1rS
+[api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 3:9
+                                              Defaults to FernApiEnvironment.DEFAULT
+                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:25
+                                              client.script_deprecated.(script_tag_id=1, )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:35
+                                                  await client.script_deprecated.(script_tag_id=1, )
+                                                                                ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 4:25
+                                              client.script_deprecated.(script_tag_id=1, )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:35
+                                                  await client.script_deprecated.(script_tag_id=1, )
+                                                                                ^
+                                          ParseError: bad input
+                                          Output mode: downloadFiles
+                                          Failed to format Cannot parse: 4:25
+                                              client.script_deprecated.(script_tag_id=1, )
+                                                                      ^
+                                          ParseError: bad input
+                                          Failed to format Cannot parse: 7:35
+                                                  await client.script_deprecated.(script_tag_id=1, )
+                                                                                ^
+                                          ParseError: bad input
+                                          Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
+                                          b'fern/output/src/fern/script_deprecated/client.py:150:9: SyntaxError: Expected an identifier\n    |\n148 |         return _response.data\n149 |     \n150 |     def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> None:\n    |         ^\n151 |         """\n    |\n\nfern/output/src/fern/script_deprecated/client.py:173:38: SyntaxError: Expected an identifier\n    |\n171 |         client.script_deprecated.(script_tag_id=1, )\n172 |         """\n173 |         _response = self._raw_client.(script_tag_id, request_options=request_options)\n    |                                      ^\n174 |         return _response.data\n175 | class AsyncScriptDeprecatedClient:\n    |\n\nfern/output/src/fern/script_deprecated/client.py:340:15: SyntaxError: Expected an identifier\n    |\n338 |         return _response.data\n339 |     \n340 |     async def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> None:\n    |               ^\n341 |         """\n    |\n\nfern/output/src/fern/script_deprecated/client.py:367:44: SyntaxError: Expected an identifier\n    |\n365 |         asyncio.run(main())\n366 |         """\n367 |         _response = await self._raw_client.(script_tag_id, request_options=request_options)\n    |                                            ^\n368 |         return _response.data\n    |\n\nfern/output/src/fern/script_deprecated/raw_client.py:188:9: SyntaxError: Expected an identifier\n    |\n186 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n187 |     \n188 |     def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:\n    |         ^\n189 |         """\n    |\n\nfern/output/src/fern/script_deprecated/raw_client.py:380:15: SyntaxError: Expected an identifier\n    |\n378 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n379 |     \n380 |     async def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:\n    |               ^\n381 |         """\n    |\n\nFound 105 errors (99 fixed, 6 remaining).\n'
+                                          b''
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                          * 'smart_union' has been removed
+                                            warnings.warn(message, UserWarning)
+                                          /usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:
+                                          * 'allow_population_by_field_name' has been renamed to 'validate_by_name'
+                                            warnings.warn(message, UserWarning)
+                                          Traceback (most recent call last):
+                                            File "/src/fern_python/cli/publisher.py", line 108, in _run_command
+                                              completed_command = subprocess.run(
+                                                  command,
+                                              ...<4 lines>...
+                                                  env=env,
+                                              )
+                                            File "/usr/local/lib/python3.13/subprocess.py", line 577, in run
+                                              raise CalledProcessError(retcode, process.args,
+                                                                       output=stdout, stderr=stderr)
+                                          subprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.
+                                          
+                                          During handling of the above exception, another exception occurred:
+                                          
+                                          Traceback (most recent call last):
+                                            File "<frozen runpy>", line 203, in _run_module_as_main
+                                            File "<frozen runpy>", line 88, in _run_code
+                                            File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>
+                                              typer.run(main)
+                                              ~~~~~~~~~^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run
+                                              app()
+                                              ~~~^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__
+                                              raise e
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__
+                                              return get_command(self)(*args, **kwargs)
+                                                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__
+                                              return self.main(*args, **kwargs)
+                                                     ~~~~~~~~~^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main
+                                              return _main(
+                                                  self,
+                                              ...<5 lines>...
+                                                  **extra,
+                                              )
+                                            File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main
+                                              rv = self.invoke(ctx)
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke
+                                              return ctx.invoke(self.callback, **ctx.params)
+                                                     ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke
+                                              return callback(*args, **kwargs)
+                                            File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper
+                                              return callback(**use_params)  # type: ignore
+                                            File "/src/fern_python/generators/sdk/cli.py", line 9, in main
+                                              cli.run()
+                                              ~~~~~~~^^
+                                            File "/src/fern_python/cli/generator_cli.py", line 60, in run
+                                              raise e
+                                            File "/src/fern_python/cli/generator_cli.py", line 44, in run
+                                              self.abstract_generator.generate_project(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+                                                  generator_exec_wrapper=generator_exec_wrapper,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  ir=ir,
+                                                  ^^^^^^
+                                                  generator_config=config,
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project
+                                              publisher.run_ruff_check_fix("/fern/output", cwd="/")
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+                                            File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix
+                                              self._run_command(
+                                              ~~~~~~~~~~~~~~~~~^
+                                                  command=command,
+                                                  ^^^^^^^^^^^^^^^^
+                                                  safe_command=" ".join(command),
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                                  cwd=cwd,
+                                                  ^^^^^^^^
+                                              )
+                                              ^
+                                            File "/src/fern_python/cli/publisher.py", line 131, in _run_command
+                                              raise Exception("Failed to run command", safe_command)
+                                          Exception: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+::error title=[api]%3A python-sdk fernapi/fern-python-sdk::Container execution failed: Container exited with code 1.%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 3:9%0A    Defaults to FernApiEnvironment.DEFAULT%0A            ^%0AParseError: bad input%0AFailed to format Cannot parse: 4:25%0A    client.script_deprecated.(script_tag_id=1, )%0A                            ^%0AParseError: bad input%0AFailed to format Cannot parse: 7:35%0A        await client.script_deprecated.(script_tag_id=1, )%0A                                      ^%0AParseError: bad input%0AFailed to format Cannot parse: 4:25%0A    client.script_deprecated.(script_tag_id=1, )%0A                            ^%0AParseError: bad input%0AFailed to format Cannot parse: 7:35%0A        await client.script_deprecated.(script_tag_id=1, )%0A                                      ^%0AParseError: bad input%0AOutput mode: downloadFiles%0AFailed to format Cannot parse: 4:25%0A    client.script_deprecated.(script_tag_id=1, )%0A                            ^%0AParseError: bad input%0AFailed to format Cannot parse: 7:35%0A        await client.script_deprecated.(script_tag_id=1, )%0A                                      ^%0AParseError: bad input%0AFailed to run command: ruff check --fix --no-cache --ignore E741 /fern/output%0Ab'fern/output/src/fern/script_deprecated/client.py:150:9: SyntaxError: Expected an identifier\n    |\n148 |         return _response.data\n149 |     \n150 |     def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> None:\n    |         ^\n151 |         """\n    |\n\nfern/output/src/fern/script_deprecated/client.py:173:38: SyntaxError: Expected an identifier\n    |\n171 |         client.script_deprecated.(script_tag_id=1, )\n172 |         """\n173 |         _response = self._raw_client.(script_tag_id, request_options=request_options)\n    |                                      ^\n174 |         return _response.data\n175 | class AsyncScriptDeprecatedClient:\n    |\n\nfern/output/src/fern/script_deprecated/client.py:340:15: SyntaxError: Expected an identifier\n    |\n338 |         return _response.data\n339 |     \n340 |     async def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> None:\n    |               ^\n341 |         """\n    |\n\nfern/output/src/fern/script_deprecated/client.py:367:44: SyntaxError: Expected an identifier\n    |\n365 |         asyncio.run(main())\n366 |         """\n367 |         _response = await self._raw_client.(script_tag_id, request_options=request_options)\n    |                                            ^\n368 |         return _response.data\n    |\n\nfern/output/src/fern/script_deprecated/raw_client.py:188:9: SyntaxError: Expected an identifier\n    |\n186 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n187 |     \n188 |     def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:\n    |         ^\n189 |         """\n    |\n\nfern/output/src/fern/script_deprecated/raw_client.py:380:15: SyntaxError: Expected an identifier\n    |\n378 |         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)\n379 |     \n380 |     async def (self, script_tag_id: int, *, request_options: typing.Optional[RequestOptions] = None) -> AsyncHttpResponse[None]:\n    |               ^\n381 |         """\n    |\n\nFound 105 errors (99 fixed, 6 remaining).\n'%0Ab''%0A/usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:%0A* 'allow_population_by_field_name' has been renamed to 'validate_by_name'%0A* 'smart_union' has been removed%0A  warnings.warn(message, UserWarning)%0A/usr/local/lib/python3.13/site-packages/pydantic/_internal/_config.py:386: UserWarning: Valid config keys have changed in V2:%0A* 'allow_population_by_field_name' has been renamed to 'validate_by_name'%0A  warnings.warn(message, UserWarning)%0ATraceback (most recent call last):%0A  File "/src/fern_python/cli/publisher.py", line 108, in _run_command%0A    completed_command = subprocess.run(%0A        command,%0A    ...<4 lines>...%0A        env=env,%0A    )%0A  File "/usr/local/lib/python3.13/subprocess.py", line 577, in run%0A    raise CalledProcessError(retcode, process.args,%0A                             output=stdout, stderr=stderr)%0Asubprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.%0A%0ADuring handling of the above exception, another exception occurred:%0A%0ATraceback (most recent call last):%0A  File "<frozen runpy>", line 203, in _run_module_as_main%0A  File "<frozen runpy>", line 88, in _run_code%0A  File "/src/fern_python/generators/sdk/cli.py", line 13, in <module>%0A    typer.run(main)%0A    ~~~~~~~~~^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 1050, in run%0A    app()%0A    ~~~^^%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 328, in __call__%0A    raise e%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 311, in __call__%0A    return get_command(self)(*args, **kwargs)%0A           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1524, in __call__%0A    return self.main(*args, **kwargs)%0A           ~~~~~~~~~^^^^^^^^^^^^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 716, in main%0A    return _main(%0A        self,%0A    ...<5 lines>...%0A        **extra,%0A    )%0A  File "/usr/local/lib/python3.13/site-packages/typer/core.py", line 216, in _main%0A    rv = self.invoke(ctx)%0A  File "/usr/local/lib/python3.13/site-packages/click/core.py", line 1308, in invoke%0A    return ctx.invoke(self.callback, **ctx.params)%0A           ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%0A  File "/usr/local/lib/python3.13/site-packages/click/core.py", line 877, in invoke%0A    return callback(*args, **kwargs)%0A  File "/usr/local/lib/python3.13/site-packages/typer/main.py", line 683, in wrapper%0A    return callback(**use_params)  # type: ignore%0A  File "/src/fern_python/generators/sdk/cli.py", line 9, in main%0A    cli.run()%0A    ~~~~~~~^^%0A  File "/src/fern_python/cli/generator_cli.py", line 60, in run%0A    raise e%0A  File "/src/fern_python/cli/generator_cli.py", line 44, in run%0A    self.abstract_generator.generate_project(%0A    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^%0A        generator_exec_wrapper=generator_exec_wrapper,%0A        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%0A        ir=ir,%0A        ^^^^^^%0A        generator_config=config,%0A        ^^^^^^^^^^^^^^^^^^^^^^^^%0A    )%0A    ^%0A  File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project%0A    publisher.run_ruff_check_fix("/fern/output", cwd="/")%0A    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^%0A  File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix%0A    self._run_command(%0A    ~~~~~~~~~~~~~~~~~^%0A        command=command,%0A        ^^^^^^^^^^^^^^^^%0A        safe_command=" ".join(command),%0A        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^%0A        cwd=cwd,%0A        ^^^^^^^^%0A    )%0A    ^%0A  File "/src/fern_python/cli/publisher.py", line 131, in _run_command%0A    raise Exception("Failed to run command", safe_command)%0AException: ('Failed to run command', 'ruff check --fix --no-cache --ignore E741 /fern/output')
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

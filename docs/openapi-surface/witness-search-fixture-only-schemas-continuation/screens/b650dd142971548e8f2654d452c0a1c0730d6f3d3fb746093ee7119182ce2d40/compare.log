@@ -1,0 +1,24 @@
+compare: found config <scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml
+compare: <scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml python: reference command starting: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+compare: <scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml python: reference command finished in 0.03s (exit 0)
+compare: <scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml python: crozier generation starting
+compare: <scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml python: crozier generation finished in 2.74s
+compare: <scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml python: matched
+
+crozier compare report
+
+<scratch>/screen-runs/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/compare.yml
+  python: matched (layout packaged, 127 file(s) compared)
+    reference command: cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/b650dd142971548e8f2654d452c0a1c0730d6f3d3fb746093ee7119182ce2d40/python_enums/tree/. "$CROZIER_REFERENCE_OUTPUT"
+    intended departures applied (6):
+      src/fern/__init__.py:69 init-type-checking-import-order
+      src/fern/core/client_wrapper.py:36 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:37 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:38 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:39 sdk-identity-header-prefix
+      src/fern/core/client_wrapper.py:40 sdk-identity-header-prefix
+    timing: reference 0.03s, crozier 2.74s, speed-up 0.01x, saved -2.71s
+
+Totals: 1 matched, 0 mismatched, 0 could not check
+Timing totals (1 generator(s) where both sides ran): reference 0.03s, crozier 2.74s, speed-up 0.01x, saved -2.71s
+Result: every checked generator matched the reference (1 of 1, exit 0)

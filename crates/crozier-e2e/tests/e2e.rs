@@ -3968,8 +3968,8 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
         "artefact-catalogue",
         "sampling-branches",
     ] {
-        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
-        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let fixture = root.join(handwritten_or_measured(name));
+        let golden = format!("{}/fern-expected", handwritten_or_measured(name));
         let failures = filtered_tree_failures(
             name,
             &golden,
@@ -3998,11 +3998,18 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
     assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
 }
 
-/// Where a vendor-extension test bed lives: under the hand-written fixtures,
-/// except `gauge-public-fields`, a measurement since corpus row 4015 proved its row.
+/// Where a vendor-extension or composed-model test bed lives: under the hand-written
+/// fixtures, except `gauge-public-fields`, a measurement since corpus row 4015 proved
+/// its row, and a fixture a registered real specification has since superseded.
 fn handwritten_or_measured(name: &str) -> String {
     if name == "gauge-public-fields" {
         format!("docs/fern-measurements/clients-extensions/{name}")
+    } else if repo_root()
+        .join(SUPERSEDED_FIXTURES_DIR)
+        .join(name)
+        .is_dir()
+    {
+        format!("{SUPERSEDED_FIXTURES_DIR}/{name}")
     } else {
         format!("docs/openapi-surface/handwritten/{name}")
     }
@@ -10390,6 +10397,7 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &EQIVO_APOSTROPHE_ENUMS,
     &LITERALS_AMRC_FACTORYPLUS_BE5E3789,
     &LITERALS_APIS_GURU_2F8C36B9,
     &LITERALS_APIS_GURU_9031AF6A,
@@ -30895,6 +30903,26 @@ const REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA: Corpus = Corpus {
 fn remeasured_membrane_api_gateway_8340f5da_matches_fern_output() {
     assert_committed_corpus_matches(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
     overlay_goldens::assert_literals_match(&REMEASURED_MEMBRANE_API_GATEWAY_8340F5DA);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// Corpus row 5300: apostrophes in Eqivo's response enum wire values.
+const EQIVO_APOSTROPHE_ENUMS: Corpus = Corpus {
+    api: "eqivo-apostrophe-enums",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This registered corpus must use the existing real-binary golden and literals-overlay gates, as tests/fixtures/AGENTS.md requires. It installs nothing and opens no socket; moving the entire golden family to a narrower project edge is separate work.
+#[test]
+fn eqivo_apostrophe_enums_matches_fern_output() {
+    assert_committed_corpus_matches(&EQIVO_APOSTROPHE_ENUMS);
+    overlay_goldens::assert_literals_match(&EQIVO_APOSTROPHE_ENUMS);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

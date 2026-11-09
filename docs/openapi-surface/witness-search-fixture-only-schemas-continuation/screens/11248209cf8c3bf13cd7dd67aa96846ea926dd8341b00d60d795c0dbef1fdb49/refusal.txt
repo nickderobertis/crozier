@@ -1,0 +1,1 @@
+Local corpus screen: the named STAC document has an absolute reference to a mutable master revision. No dependency fetch and no certified generation was made. Manager ruling 280.

@@ -1,0 +1,182 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.qbRbTNRiOm/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk queries.yml -> service -> endpoints -> createsANamedEpcisEventsQuery -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> createsANamedEpcisEventsQuery -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> createsAQuerySubscription -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> createsAQuerySubscription -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> optionalEndpointThatAllowsOnDemandReleaseOfAnyResourcesAssociatedWithNextPageToken -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> optionalEndpointThatAllowsOnDemandReleaseOfAnyResourcesAssociatedWithNextPageToken -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> removesANamedQueryAndForciblyUnsubscribesAllActiveSubscriptionsWhetherByWebSocketsOrWebhooks -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> removesANamedQueryAndForciblyUnsubscribesAllActiveSubscriptionsWhetherByWebSocketsOrWebhooks -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk capture.yml -> service -> endpoints -> returnsAListOfCaptureJobs -> examples[0] -> headers
+                  capture.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::capture.yml -> service -> endpoints -> returnsAListOfCaptureJobs -> examples[0] -> headers%0Acapture.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> returnsAListOfQueriesAvailable -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> returnsAListOfQueriesAvailable -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> returnsActiveSubscriptionsWithTheOptionToUsePaginationIfNeeded -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> returnsActiveSubscriptionsWithTheOptionToUsePaginationIfNeeded -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllEpcisEventTypesCurrentlyAvailableInTheEpcisRepository -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllEpcisEventTypesCurrentlyAvailableInTheEpcisRepository -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllEpcisEventsAvailableInTheEpcisRepository -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllEpcisEventsAvailableInTheEpcisRepository -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheBusinessLocation -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheBusinessLocation -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheBusinessStep -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheBusinessStep -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheDisposition -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheDisposition -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheReadPoint -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsAllEpcisEventsRelatedToTheReadPoint -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfABusinessLocation -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfABusinessLocation -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfABusinessStep -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfABusinessStep -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfADisposition -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfADisposition -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfAReadPoint -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfAReadPoint -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfAnElectronicProductCode -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfAnElectronicProductCode -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfAnEpcisEventType -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsAllSubResourcesOfAnEpcisEventType -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsAnIndividualEpcisEvent -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsAnIndividualEpcisEvent -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsEpcisEventsMatchingTheSpecifiedElectronicProductCode -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsEpcisEventsMatchingTheSpecifiedElectronicProductCode -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk events.yml -> service -> endpoints -> returnsEpcisEventsOfAGivenAnEpcisEventType -> examples[0] -> headers
+                  events.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::events.yml -> service -> endpoints -> returnsEpcisEventsOfAGivenAnEpcisEventType -> examples[0] -> headers%0Aevents.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> returnsEpcisEventsWithTheOptionToUsePaginationIfNeededThisEndpointSupportsQuerySubscriptionsUsingWebSockets -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> returnsEpcisEventsWithTheOptionToUsePaginationIfNeededThisEndpointSupportsQuerySubscriptionsUsingWebSockets -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk capture.yml -> service -> endpoints -> returnsInformationAboutTheCaptureJob -> examples[0] -> headers
+                  capture.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::capture.yml -> service -> endpoints -> returnsInformationAboutTheCaptureJob -> examples[0] -> headers%0Acapture.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsKnownBusinessLocations -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsKnownBusinessLocations -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsKnownBusinessSteps -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsKnownBusinessSteps -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsKnownDispositions -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsKnownDispositions -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsKnownElectronicProductCodes -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsKnownElectronicProductCodes -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk topLevel.yml -> service -> endpoints -> returnsKnownReadPoints -> examples[0] -> headers
+                  topLevel.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::topLevel.yml -> service -> endpoints -> returnsKnownReadPoints -> examples[0] -> headers%0AtopLevel.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> returnsTheDetailsOfASubscriptionThisMethodIsUsefulToVerifyIfASubscriptionIsStillActive -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> returnsTheDetailsOfASubscriptionThisMethodIsUsefulToVerifyIfASubscriptionIsStillActive -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk discovery.yml -> service -> endpoints -> returnsTheListOfTopLevelResourcesAvailableForThisEpcisRepository -> examples[0] -> headers
+                  discovery.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::discovery.yml -> service -> endpoints -> returnsTheListOfTopLevelResourcesAvailableForThisEpcisRepository -> examples[0] -> headers%0Adiscovery.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> returnsTheQueryDefinition -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> returnsTheQueryDefinition -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk capture.yml -> service -> endpoints -> synchronousCaptureInterfaceForASingleEpcisEvent -> examples[0] -> headers
+                  capture.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::capture.yml -> service -> endpoints -> synchronousCaptureInterfaceForASingleEpcisEvent -> examples[0] -> headers%0Acapture.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk queries.yml -> service -> endpoints -> unsubscribe -> examples[0] -> headers
+                  queries.yml
+                  [error] Expected example to be a map. Example is: "GS1-Extensions"
+                  
+::error title=[api]%3A python-sdk::queries.yml -> service -> endpoints -> unsubscribe -> examples[0] -> headers%0Aqueries.yml%0A[error] Expected example to be a map. Example is: "GS1-Extensions"
+[api]: python-sdk Found 34 errors and 0 warnings in 0.521 seconds.
+::error title=[api]%3A python-sdk::Found 34 errors and 0 warnings in 0.521 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

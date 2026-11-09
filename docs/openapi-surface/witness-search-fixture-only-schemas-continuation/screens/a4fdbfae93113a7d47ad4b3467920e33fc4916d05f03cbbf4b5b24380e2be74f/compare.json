@@ -1,0 +1,831 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/screen-runs/a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f/compare.yml"
+  ],
+  "exit_code": 3,
+  "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 1,
+    "reference_seconds": 0.111296705,
+    "crozier_seconds": 9.968353015,
+    "speedup": 0.01116500437259043,
+    "saved_seconds": -9.85705631
+  },
+  "results": [
+    {
+      "status": "mismatched",
+      "config_file": "<scratch>/screen-runs/a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f/compare.yml",
+      "generator": "python",
+      "spec": "<scratch>/screen-runs/a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f/openapi.json",
+      "reference": {
+        "command": "cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/a4fdbfae93113a7d47ad4b3467920e33fc4916d05f03cbbf4b5b24380e2be74f/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": {
+        "layout": "packaged",
+        "files_compared": 337,
+        "differing": [
+          "reference.md",
+          "src/fern/external_health_scores/client.py",
+          "src/fern/external_mobile_sdk/client.py",
+          "src/fern/external_summaries/client.py",
+          "src/fern/internal_providers/client.py"
+        ],
+        "only_in_reference": [],
+        "only_in_crozier": [],
+        "departures": [
+          {
+            "id": "schema-rejected-name-example",
+            "file": "README.md",
+            "line": 98
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 389
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 463
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 529
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 642
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 726
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 815
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 908
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1031
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1155
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1279
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1378
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1481
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1603
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1775
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 1945
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2026
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2197
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2343
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2344
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2432
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2433
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2521
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2522
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2611
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 2743
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 3441
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 3643
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 3745
+          },
+          {
+            "id": "stream-reference-return-type",
+            "file": "reference.md",
+            "line": 3807
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 3857
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 3948
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 4036
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 4246
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 4462
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 4629
+          },
+          {
+            "id": "schema-rejected-number-example",
+            "file": "reference.md",
+            "line": 4856
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 5447
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 5919
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 6013
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 6094
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 6323
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 7520
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 7592
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 7667
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 7810
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 7882
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 7954
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 8262
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 8334
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "reference.md",
+            "line": 8416
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 36
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 37
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 38
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 39
+          },
+          {
+            "id": "sdk-identity-header-prefix",
+            "file": "src/fern/core/client_wrapper.py",
+            "line": 40
+          },
+          {
+            "id": "schema-rejected-number-example",
+            "file": "src/fern/external_apple_health_import/client.py",
+            "line": 140
+          },
+          {
+            "id": "multipart-object-required-file-example",
+            "file": "src/fern/external_apple_health_import/client.py",
+            "line": 376
+          },
+          {
+            "id": "schema-rejected-number-example",
+            "file": "src/fern/external_apple_health_import/client.py",
+            "line": 546
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_connections/client.py",
+            "line": 60
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_connections/client.py",
+            "line": 107
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_connections/client.py",
+            "line": 151
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_connections/client.py",
+            "line": 214
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_connections/client.py",
+            "line": 269
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_connections/client.py",
+            "line": 321
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sources/client.py",
+            "line": 58
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sources/client.py",
+            "line": 119
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sync/client.py",
+            "line": 129
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sync/client.py",
+            "line": 210
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sync/client.py",
+            "line": 281
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sync/client.py",
+            "line": 409
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sync/client.py",
+            "line": 498
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_data_sync/client.py",
+            "line": 577
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 104
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 164
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 244
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 332
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 391
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 392
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 435
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 436
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 479
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 480
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 579
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 647
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 734
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 829
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 896
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 897
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 948
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 949
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 1000
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_events/client.py",
+            "line": 1001
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_health_scores/client.py",
+            "line": 80
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_health_scores/client.py",
+            "line": 168
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 94
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 470
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 517
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 559
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 638
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 1031
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 1086
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_mobile_sdk/client.py",
+            "line": 1136
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_providers/client.py",
+            "line": 68
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_providers/client.py",
+            "line": 185
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 89
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 159
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 237
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 308
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 362
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 431
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 520
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 597
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 682
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 761
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 823
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_summaries/client.py",
+            "line": 900
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 83
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 132
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 176
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 313
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 443
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 501
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 553
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_sync_status/client.py",
+            "line": 706
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_timeseries/client.py",
+            "line": 100
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_timeseries/client.py",
+            "line": 217
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_users/client.py",
+            "line": 223
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_users/client.py",
+            "line": 262
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_users/client.py",
+            "line": 314
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_users/client.py",
+            "line": 551
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_users/client.py",
+            "line": 598
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/external_users/client.py",
+            "line": 658
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_api_keys/client.py",
+            "line": 118
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_api_keys/client.py",
+            "line": 153
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_api_keys/client.py",
+            "line": 188
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_api_keys/client.py",
+            "line": 323
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_api_keys/client.py",
+            "line": 366
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_api_keys/client.py",
+            "line": 409
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_developers/client.py",
+            "line": 83
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_developers/client.py",
+            "line": 116
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_developers/client.py",
+            "line": 167
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_developers/client.py",
+            "line": 265
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_developers/client.py",
+            "line": 306
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_developers/client.py",
+            "line": 365
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_invitations/client.py",
+            "line": 86
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_invitations/client.py",
+            "line": 119
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_invitations/client.py",
+            "line": 152
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_invitations/client.py",
+            "line": 293
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_invitations/client.py",
+            "line": 334
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/internal_invitations/client.py",
+            "line": 375
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/system_vendor_workouts/client.py",
+            "line": 109
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/system_vendor_workouts/client.py",
+            "line": 188
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/system_vendor_workouts/client.py",
+            "line": 305
+          },
+          {
+            "id": "schema-rejected-name-example",
+            "file": "src/fern/system_vendor_workouts/client.py",
+            "line": 392
+          }
+        ],
+        "diff_file": null
+      },
+      "timing": {
+        "reference_seconds": 0.111296705,
+        "crozier_seconds": 9.968353015,
+        "speedup": 0.01116500437259043,
+        "saved_seconds": -9.85705631
+      },
+      "reason": null
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.bJDKPBGeqA/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Failed to parse openapi/openapi.yml: duplicated mapping key
+                                            at line 429, column 9
+                                          
+                                           426 |           }
+                                           427 |         },
+                                           428 |         "deprecated": false,
+                                           429 |         "description": "覆盖必填查询参数、以 JSON ...
+                                          ---------------^
+                                           430 |       }
+                                           431 |     },
+::error title=[api]%3A python-sdk fernapi/fern-python-sdk::Failed to parse openapi/openapi.yml: duplicated mapping key%0A  at line 429, column 9%0A%0A 426 |           }%0A 427 |         },%0A 428 |         "deprecated": false,%0A 429 |         "description": "覆盖必填查询参数、以 JSON ...%0A---------------^%0A 430 |       }%0A 431 |     },
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.
+generate-fern-fixture: fern generate (python-sdk@5.41.3, packaged) exited 1 — fix the cause Fern printed above, then re-run

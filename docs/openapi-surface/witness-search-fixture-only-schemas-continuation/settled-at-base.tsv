@@ -1,0 +1,9 @@
+key	arm	prior_verdict	state_at_base
+combo-annotated-ref-property-example	-	exhausted	main retired the fixture and restated the row open under its own search record, witness-search-schema-interactions, which reads search-incomplete
+combo-anyof-beside-properties	-	search-incomplete	main retired the fixture and restated the row open under its own search record, witness-search-schema-interactions, which reads search-incomplete
+combo-oneof-beside-properties	-	search-incomplete	main retired the fixture and restated the row open under its own search record, witness-search-schema-interactions, which reads search-incomplete
+format-binary	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	search-incomplete	a registered real specification reaches this arm in golden-reach.tsv, so its cover retired on main
+format-binary	"src/ir.rs::scalar_body[=Some\(""binary""\)]"	search-incomplete	a registered real specification reaches this arm in golden-reach.tsv, so its cover retired on main
+format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	search-incomplete	a registered real specification reaches this arm in golden-reach.tsv, so its cover retired on main
+format-uuid	"src/ir.rs::scalar_body[=Some\(""uuid"" \x7c ""byte""\)]"	search-incomplete	a registered real specification reaches this arm in golden-reach.tsv, so its cover retired on main
+property-map-value-oneof	src/ir.rs::InlineHoister::prop_type_ref[if value.reference.is_none\(\) && value.declared_type_name\(\).is_none\(\) && structured \{]	search-incomplete	a registered real specification reaches this arm in golden-reach.tsv, so its cover retired on main
