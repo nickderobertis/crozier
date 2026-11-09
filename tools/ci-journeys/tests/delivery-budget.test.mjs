@@ -76,12 +76,12 @@ function hook(t, name, edit = () => {}) {
 
 const latest = (entry) => entry.attempts[entry.run.run_attempt];
 const onlyLanes = (runs) => runs[0];
-const clamp = (job, base, seconds) => { job.completed_at = new Date(Date.parse(base) + seconds * 1000).toISOString().replace(/\.000Z$/, 'Z'); };
+const completeAfter = (job, base, seconds) => { job.completed_at = new Date(Date.parse(base) + seconds * 1000).toISOString().replace(/\.000Z$/, 'Z'); };
 
 test('an accepted landed head inside the line reports its span and verdicts', posix, (t) => {
   const h = hook(t, 'accepted', ({ runs }) => {
     const entry = onlyLanes(runs);
-    for (const job of latest(entry)) clamp(job, entry.run.created_at, 1800);
+    for (const job of latest(entry)) completeAfter(job, entry.run.created_at, 1800);
   });
   const { status, result } = h.check();
   assert.equal(status, 0, JSON.stringify(result));
@@ -203,7 +203,7 @@ test('exit codes: 0 measured, 1 missing data, 2 invalid invocation', posix, (t) 
 });
 
 test('a finished attempt read once is reused from the persistent cache', posix, (t) => {
-  const h = hook(t, 'accepted', ({ runs }) => { for (const job of latest(onlyLanes(runs))) clamp(job, runs[0].run.created_at, 1800); });
+  const h = hook(t, 'accepted', ({ runs }) => { for (const job of latest(onlyLanes(runs))) completeAfter(job, runs[0].run.created_at, 1800); });
   assert.equal(h.check().status, 0);
   assert.equal(h.check().status, 0);
   assert.equal(h.calls().filter((call) => call[0] === 'onevcs' && call[1] === 'host').length, 1);
