@@ -103,6 +103,7 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            "registered-literals-hashgraph-guardian-63ba2735",
             "registered-literals-apis-guru-openapi-directory-608e22dc",
             "registered-literals-apis-guru-openapi-directory-79291d99",
             "registered-literals-atacan-assemblyai-b306bf44",

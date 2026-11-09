@@ -1532,3 +1532,8 @@ Certified literals-overlay witnesses:
     MIT (repository LICENSE at the pinned revision); corpus row 5624 retains the publisher's immutable document
     (SHA-256 61c2ac58b46017322cd051982e09c101b4402f5bc10d0a2cd4d8793025138060).
     Redistribution grant retained in licenses/publisher-workera-ai-langfuse-sdk-99172c3487cc.txt.
+
+  hashgraph/guardian: docs/.gitbook/assets/swagger (2) (1) (1).yaml
+    https://raw.githubusercontent.com/hashgraph/guardian/e585ead1c74b04dfb70e714363dc6a78f2d077ed/docs/.gitbook/assets/swagger%20%282%29%20%281%29%20%281%29.yaml
+    Apache 2.0 / http://www.apache.org/licenses/LICENSE-2.0.html; corpus row 5625 retains the publisher's immutable document
+    (SHA-256 63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4).

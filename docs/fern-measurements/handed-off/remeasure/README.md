@@ -26,7 +26,7 @@ land-now ruling leaves the named remaining differences for follow-on repairs.
 | `confluentinc/schema-registry-sdk-go:api/openapi.yaml@77f22d67c4d6bfe86842da77f76a3f1d5b69da5b` | `aa65c204008962962222defeea2e801476d3aa6a932ef981b4728b95690b39b7` | `example-value-source residual (parent-example-map-values)` | byte-matches; registered, corpus row 5526 ([record](../comparisons/aa65c204008962962222defeea2e801476d3aa6a932ef981b4728b95690b39b7.txt)) |
 | `dltkddnr04/propresenter-remote:openapi/propresenter.openapi.json@b273aeec98db96f4766d0b4e0d2a8305627396a4` | `44695afa34c9d6e1fce938a62844cf07b30ed296a5e3d2be1779827947394219` | `unresolved-reference` | refused-by-ruling ([record](../comparisons/44695afa34c9d6e1fce938a62844cf07b30ed296a5e3d2be1779827947394219.txt)) |
 | `fossology/FOSSology.REST.dotnet:openapi/FOSSology REST API 1.6.2.yaml@b362ec94ddf8ab6da0f8606183dfc2bc79b157b9` | `7da1db69e60df38ffa4ae477eee68eab2e29932dad65de682d4d22bac71b9872` | `never-compared-request-property-name-collision` | byte-matches; registered, corpus row 5614 ([record](../comparisons/7da1db69e60df38ffa4ae477eee68eab2e29932dad65de682d4d22bac71b9872.txt)) |
-| `hashgraph/guardian:docs/.gitbook/assets/swagger (2) (1) (1).yaml@e585ead1c74b04dfb70e714363dc6a78f2d077ed` | `63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4` | `json-ref-body-kept-whole` | differs; see below ([record](../comparisons/63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4.txt)) |
+| `hashgraph/guardian:docs/.gitbook/assets/swagger (2) (1) (1).yaml@e585ead1c74b04dfb70e714363dc6a78f2d077ed` | `63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4` | `json-ref-body-kept-whole` | byte-matches; registered, corpus row 5625 ([record](../comparisons/63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4.txt)) |
 | `jeffmikels/ProPresenter-API:pro7.9.openapi-spec.json@6e7490671c94a7c9e588274bdf5df6ece1934248` | `694f7ec93b5aafa776ab61f7e049432f2ac01f8db5ffce4aedbde9f1a38616cc` | `unresolved-reference` | refused-by-ruling ([record](../comparisons/694f7ec93b5aafa776ab61f7e049432f2ac01f8db5ffce4aedbde9f1a38616cc.txt)) |
 | `jentic/jentic-public-apis:apis/openapi/assemblyai.com/main/1.3.4/meta/import/input-bundle.json@c72e13e0f80e71997209aba985eff6ef34869cd7` | `2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87` | `enum-member-digit-separator`; `group-placed-nested-type-placement`; `typed-single-ref-allof-alias`; `unresolved-reference` | byte-matches; registered, corpus row 5615 ([record](../comparisons/2011299d2095426af64fdf2209daa58c58152a09d34980717a048cf406b67a87.txt)) |
 | `jentic/jentic-public-apis:apis/openapi/codat.io/sync-for-expenses/prealpha/openapi.json@1700c576aa658b5dc3bd06cb376cc959d84e12f8` | `827e170f0c2a997418cfe3682b68f42cd81481396d663c0013d5ddae00128679` | `unresolved-reference` | refused-by-ruling ([record](../comparisons/827e170f0c2a997418cfe3682b68f42cd81481396d663c0013d5ddae00128679.txt)) |
@@ -52,10 +52,6 @@ land-now ruling leaves the named remaining differences for follow-on repairs.
 - `reference.md` — `composed-schema-example-source` (residual-repair).
 - `src/fern/transcripts/client.py` — `composed-schema-example-source` (residual-repair).
 
-## Remaining files: 63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4
-
-- `reference.md` — `request-alias-converted-field` (residual-repair).
-
 ## Remaining files: d7497fa8a725dfea1f77f5c50653f3ee1d9d866e27b1592b6f6c7911ea77f972
 
 - `reference.md` — `non-json-body-property-example` (residual-repair).
@@ -78,11 +74,10 @@ land-now ruling leaves the named remaining differences for follow-on repairs.
 
 ## Residual repair: dispositions
 
-`residual-differences-repair-2` decided every cause the first repair handed on; each decided cause has a row in [`remeasure.tsv`](../remeasure.tsv) and a directory here. Seven documents now byte-match in both enum modes and are registered in corpus rows 5618-5624. Four still differ, every remaining file attributed in [`residuals.tsv`](../residuals.tsv) to one of these deferred causes:
+`residual-differences-repair-2` decided every cause the first repair handed on; each decided cause has a row in [`remeasure.tsv`](../remeasure.tsv) and a directory here. Eight documents now byte-match in both enum modes and are registered in corpus rows 5618-5624. Four still differ, every remaining file attributed in [`residuals.tsv`](../residuals.tsv) to one of these deferred causes:
 
 | Document | Cause | Rule that differs | Follow-up ticket draft | Why it exceeds this step |
 |---|---|---|---|---|
 | 62844bc1, 65e9c34e | union-member-nullability-and-object-models | A nullable union member keeps `typing.Optional`, a `null` member adds no `typing.Any`, a closed object member becomes a named model, and nullable members stay inline. | Match the certified pair's union member nullability and closed-object member models | Four rules in `variant_ref`, `field_type_ref`, `hoist_union_variant` (`src/ir.rs`) and union rendering (`src/emit.rs`), moving the 50-odd listed files. |
 | d7497fa8 | webhook-allof-base-type-placement | A multi-level overridden `allOf` parent inlines as its own model lists it; a restated property with no `enum` keeps the parent's. | Match the pair's multi-level allOf parent inlining and restated-enum inheritance on webhooks | Two rules, `add_object` and `merge_restated_parent_properties` in `src/ir.rs`, moving nine files; the first shares code with Vonage Messages and Zulip goldens. |
 | 65e9c34e | union-body-item-example | A list of union items whose member requires a union of unions is `items=[]` in Markdown and omits the required field in the docstring. | Work a list item union like the pair and catalogue its docstring missing a required field | A generator rule in `src/emit.rs` plus a new `fern-defect` departure, moving `reference.md` and `edge_config/client.py`; the document still differs on the union cause. |
-| 63ba2735 | request-alias-empty-model-block | The pair documents `request` for a field-less `Object` body the method does not take. | Cover a field-less model's request block in the request-alias departure | `alias_reference_parameters` in `src/departures.rs`, moving `reference.md`; stopped at the manager's attempt bound. |

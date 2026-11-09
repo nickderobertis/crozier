@@ -59,6 +59,7 @@ cargo build --locked --quiet -p crozier --bin crozier
 threads=8
 
 inventory=(
+  registered_literals_hashgraph_guardian_63ba2735_matches_fern_output
   registered_literals_apis_guru_openapi_directory_608e22dc_matches_fern_output
   registered_literals_apis_guru_openapi_directory_79291d99_matches_fern_output
   registered_literals_atacan_assemblyai_b306bf44_matches_fern_output

@@ -10452,6 +10452,7 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &LITERALS_HASHGRAPH_63BA2735,
     &LITERALS_APIS_GURU_608E22DC,
     &LITERALS_APIS_GURU_79291D99,
     &LITERALS_ATACAN_B306BF44,
@@ -32671,4 +32672,22 @@ const LITERALS_WORKERA_AI_61C2AC58: Corpus = Corpus {
 fn registered_literals_workera_ai_langfuse_sdk_61c2ac58_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_WORKERA_AI_61C2AC58);
     overlay_goldens::assert_literals_match(&LITERALS_WORKERA_AI_61C2AC58);
+}
+
+/// Certified enum-mode witness, corpus row 5625.
+const LITERALS_HASHGRAPH_63BA2735: Corpus = Corpus {
+    api: "registered-literals-hashgraph-guardian-63ba2735",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_hashgraph_guardian_63ba2735_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_HASHGRAPH_63BA2735);
+    overlay_goldens::assert_literals_match(&LITERALS_HASHGRAPH_63BA2735);
 }

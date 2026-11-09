@@ -1586,8 +1586,20 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-608e22dc/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-608e22dc/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected": {},
     "tests/fixtures/registered-literals-apis-guru-openapi-directory-72fccf73/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-79291d99/expected": {},
+    "tests/fixtures/registered-literals-apis-guru-openapi-directory-79291d99/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -1630,6 +1642,12 @@
     },
     "tests/fixtures/registered-literals-atacan-assemblyai-10ca68af/expected": {},
     "tests/fixtures/registered-literals-atacan-assemblyai-10ca68af/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-atacan-assemblyai-b306bf44/expected": {},
+    "tests/fixtures/registered-literals-atacan-assemblyai-b306bf44/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -1784,6 +1802,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected": {},
+    "tests/fixtures/registered-literals-hashgraph-guardian-63ba2735/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected": {},
     "tests/fixtures/registered-literals-hey-api-hey-api-30fbd0e5/expected-literals": {
       "excluded": [
@@ -1880,6 +1904,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-mithileshchellappan-pushboy-4ff65943/expected": {},
+    "tests/fixtures/registered-literals-mithileshchellappan-pushboy-4ff65943/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected": {},
     "tests/fixtures/registered-literals-msgbyte-tianji-1843a239/expected-literals": {
       "excluded": [
@@ -1948,6 +1978,12 @@
     },
     "tests/fixtures/registered-literals-openresponses-openresponses-ee8c96e1/expected": {},
     "tests/fixtures/registered-literals-openresponses-openresponses-ee8c96e1/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-pai-os-paios-413656b4/expected": {},
+    "tests/fixtures/registered-literals-pai-os-paios-413656b4/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
@@ -2066,6 +2102,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/registered-literals-tryagi-assemblyai-215ec23d/expected": {},
+    "tests/fixtures/registered-literals-tryagi-assemblyai-215ec23d/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected": {},
     "tests/fixtures/registered-literals-webr0m-teldrive-nodejs-bb74a9e2/expected-literals": {
       "excluded": [
@@ -2080,6 +2122,12 @@
     },
     "tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected": {},
     "tests/fixtures/registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/registered-literals-workera-ai-langfuse-sdk-61c2ac58/expected": {},
+    "tests/fixtures/registered-literals-workera-ai-langfuse-sdk-61c2ac58/expected-literals": {
       "excluded": [
         ".crozier-overlay.json"
       ]
