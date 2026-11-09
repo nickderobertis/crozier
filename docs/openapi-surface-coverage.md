@@ -2139,7 +2139,7 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 50 rows are the 27 generator categories and the 23 scenarios later
+These 51 rows are the 27 generator categories and the 24 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
@@ -2173,6 +2173,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | union-param-write-serialization | Scalar and union query value serialization | Fern behaviour | `fix-parameters` | tests/fixtures/ego-microservices/expected | `ego_microservices_matches_fern_output` | — |
 | form-urlencoded-body | JSON Body_* request model retention by operation shape; body/query wire-key collision, multipart required-file examples and aliased-body reference arguments corrected | Fern behaviour + Fern defect | `fix-bodies-responses` | tests/fixtures/millenium-falcon-challenge/expected; tests/fixtures/waylay-queries/expected; docs/openapi-surface/handwritten/multipart-alias-object/fern-expected; docs/openapi-surface/handwritten/multipart-json-module/fern-expected; docs/fern-measurements/superseded-fixtures/request-alias/fern-expected | `millenium_falcon_challenge_matches_fern_output; waylay_queries_matches_fern_output; handwritten_fixtures_match_fern_goldens; multipart_object_encoding_matches_certified_output_in_both_enum_modes; alias_object_request_matches_certified_output_in_both_enum_modes` | `body-query-parameter-value, multipart-object-required-file-example, request-alias-reference-parameters` |
 | content-type-header | JSON content-type selection by request shape and OpenAPI version; binary JSON body examples corrected | Fern behaviour + Fern defect | `fix-bodies-responses` | tests/fixtures/g4brym-download-manager/expected; docs/openapi-surface/probe-expected/json-binary-path | `g4brym_download_manager_matches_fern_output; handwritten_fixtures_match_fern_goldens; json_request_shapes_match_certified_output_in_both_enum_modes` | `binary-json-body-example` |
+| optional-raw-body-example | Optional raw `application/octet-stream` body with `x-codeSamples` whose certified worked call omits the required `request` keyword; crozier passes `request=b"string"` | Fern defect | `residual-differences-repair` | tests/fixtures/registered-literals-tryagi-assemblyai-215ec23d/expected | `registered_literals_tryagi_assemblyai_215ec23d_matches_fern_output` | `optional-raw-body-example-argument` |
 | authorization-header-parameter | Declared authorization header exposed as an operation argument | Fern behaviour | `fix-parameters` | tests/fixtures/lootlog-battlelog/expected | `lootlog_battlelog_matches_fern_output` | — |
 | header-string-default-literal | Defaulted string headers sent as constants; documentation arguments corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/fern-measurements/parameter-lowering/header-default-constants/fern-expected | `parameter_lowering_measurements_match_fern` | `constant-header-docs-arguments` |
 | status-code-key-with-suffix | Numeric response statuses with nonnumeric suffixes | Fern behaviour | `fix-bodies-responses` | tests/fixtures/chat-rest-api/expected | `chat_rest_api_matches_fern_output` | — |
