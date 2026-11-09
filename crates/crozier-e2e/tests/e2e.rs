@@ -168,6 +168,8 @@ mod document_acceptance;
 /// the certified pair's tree.
 #[path = "e2e/client_structure.rs"]
 mod client_structure;
+#[path = "e2e/required_null_union_departure.rs"]
+mod required_null_union_departure;
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and compares it whole, on the crozier-e2e edge every other golden comparison shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
@@ -32546,8 +32548,6 @@ fn registered_literals_revertinc_revert_698ea54a_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_REVERTINC_698EA54A);
     overlay_goldens::assert_literals_match(&LITERALS_REVERTINC_698EA54A);
 }
-// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
-
 /// Certified enum-mode witness, corpus row 5618.
 const LITERALS_APIS_GURU_608E22DC: Corpus = Corpus {
     api: "registered-literals-apis-guru-openapi-directory-608e22dc",
@@ -32691,3 +32691,4 @@ fn registered_literals_hashgraph_guardian_63ba2735_matches_fern_output() {
     assert_committed_corpus_matches(&LITERALS_HASHGRAPH_63BA2735);
     overlay_goldens::assert_literals_match(&LITERALS_HASHGRAPH_63BA2735);
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]

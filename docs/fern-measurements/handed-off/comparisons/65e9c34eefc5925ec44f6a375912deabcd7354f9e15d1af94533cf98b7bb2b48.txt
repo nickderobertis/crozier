@@ -1,7 +1,7 @@
 sha256: 65e9c34eefc5925ec44f6a375912deabcd7354f9e15d1af94533cf98b7bb2b48
 result: differs
 command: /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/2/worktree/target/debug/crozier compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/2849306-2/out/65e9c34e/python_enums/crozier.yml ; /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/2/worktree/target/debug/crozier compare /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-departures-and-unproven-features-and-combinations/scratch/2849306-2/out/65e9c34e/literals/crozier.yml
-crozier binary sha256: 718fca52c8a8e05bb5e4a98772139f3e23c54058e428e1facbfd85c6e4b2001e
+crozier binary sha256: 3b3f3d0720eba9f83d6d01534560408e0be2f724c83eac981f6e86d9e54f0528
 compare exit: python_enums 3, literals 3
 certified pair: CLI 5.163.1 / Python SDK 5.41.3
 certified cache document sha256: 65e9c34eefc5925ec44f6a375912deabcd7354f9e15d1af94533cf98b7bb2b48

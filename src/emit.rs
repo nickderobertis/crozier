@@ -2700,7 +2700,7 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
     endpoint_has_worked_example(ep)
         && !root_binary_download_undocumented(ep)
         && path_object_documented(ep, types, tag_decls)
-        && !required_raw_body(ep)
+        && !raw_body_without_worked_example(ep)
 }
 
 /// Whether the endpoint's request is a raw byte body `required: true` makes
@@ -2708,7 +2708,7 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
 /// example. The certified pair works an optional one the operation samples:
 /// tryAGI's AssemblyAI `files.upload` declares `x-codeSamples` and its README
 /// anchors on that call; atacan's revision of the same operation does not.
-fn required_raw_body(ep: &Endpoint) -> bool {
+fn raw_body_without_worked_example(ep: &Endpoint) -> bool {
     matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         && (ep.request_body_required || !ep.raw_body_has_code_samples)
 }
@@ -3570,7 +3570,7 @@ fn reference_entry(
         example_gap: if !endpoint_has_worked_example(ep)
             || root_binary_download_undocumented(ep)
             || !path_object_documented(ep, &ir.types, &ir.tag_types)
-            || required_raw_body(ep)
+            || raw_body_without_worked_example(ep)
         {
             ""
         } else {
@@ -11494,7 +11494,7 @@ fn build_example_inner(
     environment: Option<&crate::ir::Environment>,
     reference: bool,
 ) -> Option<Vec<String>> {
-    if required_raw_body(ep) || !endpoint_has_worked_example(ep) {
+    if raw_body_without_worked_example(ep) || !endpoint_has_worked_example(ep) {
         return None;
     }
 

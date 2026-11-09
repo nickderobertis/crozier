@@ -9228,6 +9228,34 @@ class YamlSubsetTests(unittest.TestCase):
                 """),
         )
 
+    def test_a_plain_scalar_folds_each_blank_line_of_a_run_to_a_newline(self) -> None:
+        self.assertEqual(
+            {"description": "one\n\nthree", "next": 1},
+            self.load("""\
+                description:
+                  one
+
+
+                  three
+                next: 1
+                """),
+        )
+
+    def test_blank_lines_after_a_plain_scalar_add_no_newline_and_keep_its_type(self) -> None:
+        self.assertEqual(
+            {"description": "one two", "port": 8080, "next": 1},
+            self.load("""\
+                description:
+                  one
+                  two
+
+                port:
+                  8080
+
+                next: 1
+                """),
+        )
+
     def test_a_scalar_may_be_written_under_its_key_and_wrap(self) -> None:
         self.assertEqual(
             {"description": "one two", "next": 1},

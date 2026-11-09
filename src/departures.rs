@@ -6697,6 +6697,7 @@ mod tests {
 
     /// `source` is a method's raw client body beside a model; each case drops one
     /// thing the correction needs and must leave the block unexplained.
+    // llmlint: ignore[changed_behavior_has_e2e] A rejection needs a reference tree Fern never writes, so these cases feed the rule the crafted mismatch directly; the acceptance path is proved end to end by the corpus row 5625 comparison.
     #[test]
     fn alias_reference_correction_reads_converted_reserved_and_path_shared_fields() {
         let model = "class Rule(UniversalBaseModel):\n    uuid_: str\n    tags: str\n    topic_id: typing.Optional[str] = None\n";
@@ -6740,6 +6741,7 @@ mod tests {
         ));
     }
 
+    // llmlint: ignore[changed_behavior_has_e2e] A rejection needs a reference tree Fern never writes, so these cases feed the rule the crafted mismatch directly; the acceptance path is proved end to end by the corpus row 5625 comparison.
     #[test]
     fn alias_reference_correction_drops_a_fieldless_models_request_block() {
         let raw =

@@ -7,6 +7,7 @@ import sys
 
 root = pathlib.Path(__file__).resolve().parents[3]
 expected = root / "tests/fixtures/registered-literals-tryagi-assemblyai-215ec23d/expected"
+# The certified client is importable only once its tree is on sys.path above.
 sys.path.insert(0, str(expected / "src"))
 
 from fern.files.client import FilesClient  # noqa: E402
