@@ -246,7 +246,7 @@ real-specification match.
   and `enum-extension-names-dropped-under-literals` retains member descriptions
   under `python_enums`. Complete certified trees and negative comparisons are
   held by the naming-wire and literals-mode gates.
-- **Features and arms resting on hand-written fixtures only (112 features, 84
+- **Features and arms resting on hand-written fixtures only (107 features, 84
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
 - **Behaviours the Nexmo withdrawal left on a hand-written fixture alone (4):** a
@@ -2458,8 +2458,8 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 427 sources. The walk reads the
-  **410** registered sources, of which **410** carry a committed golden; the 17
+  acquires 428 sources. The walk reads the
+  **411** registered sources, of which **411** carry a committed golden; the 17
   others carry none and are acquisition evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -2945,7 +2945,7 @@ the tests run and carried.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **550** golden rows reach every handling site and tie below every row
+then key. **555** golden rows reach every handling site and tie below every row
 listed here: the [ledger](openapi-surface/golden-reach.tsv)'s rows whose
 `unreached_sites` is 0, its combination rows among them. Each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
@@ -2992,7 +2992,7 @@ unreached by any Fern-accepted document.
 | rank | key | region | unreached sites | unreached regions | golden-only witnesses | boundary |
 |---|---|---|---|---|---|---|
 | 1 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
-| 2 | `request-body-content` | `bodies-media` | **4** | **35** | **355** | open — real-specification witness search remains open |
+| 2 | `request-body-content` | `bodies-media` | **4** | **35** | **356** | open — real-specification witness search remains open |
 | 3 | `oneof-anyof-variant` | `schemas` | **3** | **102** | **7** | open — real-specification witness search remains open |
 | 4 | `allof` | `schemas` | **3** | **27** | **154** | open — real-specification witness search remains open |
 | 5 | `discriminator-mapping` | `schemas` | **2** | **175** | **58** | open — real-specification witness search remains open |
@@ -3025,7 +3025,7 @@ unreached by any Fern-accepted document.
 | 33 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
 | 34 | `array-item-pointer-walk-allof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
 | 35 | `array-item-pointer-walk-anyof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
-| 36 | `type-single` | `schemas` | **1** | **10** | **407** | open — real-specification witness search remains open |
+| 36 | `type-single` | `schemas` | **1** | **10** | **408** | open — real-specification witness search remains open |
 | 37 | `parameter-in-header` | `parameters` | **1** | **9** | **114** | open — real-specification witness search remains open |
 | 38 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **2** | open — real-specification witness search remains open |
 | 39 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
@@ -3034,7 +3034,7 @@ unreached by any Fern-accepted document.
 | 42 | `property-sole-anyof-struct-member` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 43 | `array-item-pointer-walk-properties` | `schemas` | **1** | **6** | **3** | open — real-specification witness search remains open |
 | 44 | `parameter-in-query` | `parameters` | **1** | **6** | **289** | open — real-specification witness search remains open |
-| 45 | `enum` | `schemas` | **1** | **5** | **314** | open — real-specification witness search remains open |
+| 45 | `enum` | `schemas` | **1** | **5** | **315** | open — real-specification witness search remains open |
 | 46 | `http-dpop` | `security` | **1** | **5** | **3** | open — real-specification witness search remains open |
 | 47 | `http-mutual` | `security` | **1** | **5** | **1** | open — real-specification witness search remains open |
 | 48 | `http-negotiate` | `security` | **1** | **5** | **2** | open — real-specification witness search remains open |
@@ -3159,7 +3159,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 #### Every unreached arm, and its search verdict
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
-The golden rows split in two. **550** reach every handling site their
+The golden rows split in two. **555** reach every handling site their
 [site table](openapi-surface/golden-reach-sites.tsv) declares, and **68** carry at least one handling site no golden-only witness executes: 87 unreached arms in all. By the verdict each arm's linked record states, 64 read `exhausted`, 23 read `search-incomplete`, 0 read `config-gated`, and 0 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
@@ -3540,7 +3540,7 @@ file, so they confirm the map typing without proving what the example does.
 
 #### Rows resting on one document
 
-**69** golden rows rest on one document: a single golden-only witness declares
+**72** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
