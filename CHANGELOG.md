@@ -6,6 +6,17 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.161](https://github.com/nickderobertis/crozier/compare/v0.0.160...v0.0.161) - 2026-11-09
+
+### Fixed
+
+- *(parity)* repair the remaining byte differences of the handed-off documents ([#793](https://github.com/nickderobertis/crozier/pull/793))
+
+### Other
+
+- *(parity)* prove operation combinations at their interaction branch or record why none exists ([#774](https://github.com/nickderobertis/crozier/pull/774))
+- *(parity)* seek real witnesses for the remaining fixture-only schema features ([#792](https://github.com/nickderobertis/crozier/pull/792))
+
 ## [0.0.160](https://github.com/nickderobertis/crozier/compare/v0.0.159...v0.0.160) - 2026-11-08
 
 ### Other
