@@ -10240,7 +10240,7 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
     def test_every_former_handwritten_combination_has_a_verdict_on_every_document(self) -> None:
         rows = self.tool.read_rows(REPO)
         documents = {document.document for document in self.tool.population(REPO)}
-        self.assertEqual(96, len(documents))
+        self.assertEqual(104, len(documents))
         for key in self.tool.FORMER_HANDWRITTEN:
             self.assertEqual(documents, {row.document for row in rows if row.key == key}, key)
 
@@ -10297,8 +10297,8 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
             (
                 "totals",
                 text.replace(
-                    "| `combo-inline-body-read-only-property` | 93 |",
-                    "| `combo-inline-body-read-only-property` | 92 |",
+                    "| `combo-inline-body-read-only-property` | 101 |",
+                    "| `combo-inline-body-read-only-property` | 100 |",
                     1,
                 ),
             ),

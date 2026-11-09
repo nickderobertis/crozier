@@ -40,7 +40,7 @@ selectors in `contract.tsv`; all recovered bytes were SHA-256 verified first.
 
 `handed-off-census.jsonl` is the census taken before the merged base registered the
 rest of the handed-off population; [Handed-off verdicts](#handed-off-verdicts) supersedes
-it for all 96 documents.
+it for all 104 documents.
 
 ## Verdicts
 
@@ -53,48 +53,48 @@ candidate. It is also the open-row list for the completion report.
 
 | Combination | State | Candidates | Outstanding |
 |---|---|---:|---:|
-| `combo-basic-auth-document-requirement` | `search-incomplete` | 3041 | 2920 |
-| `combo-basic-auth-operation-requirement` | `search-incomplete` | 3244 | 3122 |
-| `combo-body-property-named-as-header-param` | `search-incomplete` | 2960 | 2828 |
-| `combo-body-property-named-as-path-param` | `search-incomplete` | 3535 | 3410 |
+| `combo-basic-auth-document-requirement` | `search-incomplete` | 3041 | 2918 |
+| `combo-basic-auth-operation-requirement` | `search-incomplete` | 3244 | 3120 |
+| `combo-body-property-named-as-header-param` | `search-incomplete` | 2960 | 2826 |
+| `combo-body-property-named-as-path-param` | `search-incomplete` | 3535 | 3407 |
 | `combo-document-operation-security` | `interaction-proven` | 3165 | 0 |
 | `combo-document-security-security-empty` | `interaction-proven` | 3059 | 0 |
 | `combo-echo-body-effective-anonymous` | `interaction-proven` | 3123 | 0 |
 | `combo-echo-body-effective-non-oauth-required` | `interaction-proven` | 3094 | 0 |
 | `combo-echo-body-effective-oauth2` | `interaction-proven` | 3248 | 0 |
-| `combo-error-multiple-media` | `search-incomplete` | 3084 | 2961 |
+| `combo-error-multiple-media` | `search-incomplete` | 3084 | 2959 |
 | `combo-error-object` | `interaction-proven` | 3344 | 0 |
-| `combo-errors-shared-ref` | `search-incomplete` | 3568 | 3484 |
-| `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 3004 | 2876 |
-| `combo-form-urlencoded-body-with-params` | `search-incomplete` | 3129 | 3006 |
+| `combo-errors-shared-ref` | `search-incomplete` | 3568 | 3482 |
+| `combo-form-urlencoded-beside-json-body` | `search-incomplete` | 3004 | 2874 |
+| `combo-form-urlencoded-body-with-params` | `search-incomplete` | 3129 | 3004 |
 | `combo-form-urlencoded-union-body` | `interaction-proven` | 2973 | 0 |
 | `combo-header-param-ref-string-enum` | `interaction-proven` | 2975 | 0 |
 | `combo-inline-body-read-only-property` | `interaction-proven` | 2990 | 0 |
-| `combo-multipart-beside-json-body` | `search-incomplete` | 2993 | 2866 |
-| `combo-multipart-body-with-params` | `search-incomplete` | 3186 | 3080 |
-| `combo-oas31-grouped-response` | `search-incomplete` | 3288 | 3206 |
-| `combo-oas31-root-response` | `search-incomplete` | 3030 | 2915 |
-| `combo-octet-stream-body-header-param` | `search-incomplete` | 2977 | 2848 |
-| `combo-optional-ref-map-body` | `search-incomplete` | 3019 | 2893 |
-| `combo-optional-ref-union-body` | `search-incomplete` | 2979 | 2849 |
-| `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2844 |
-| `combo-params-beside-inline-anyof-body` | `search-incomplete` | 3041 | 2915 |
-| `combo-params-beside-inline-oneof-body` | `search-incomplete` | 3058 | 2935 |
+| `combo-multipart-beside-json-body` | `search-incomplete` | 2993 | 2864 |
+| `combo-multipart-body-with-params` | `search-incomplete` | 3186 | 3078 |
+| `combo-oas31-grouped-response` | `search-incomplete` | 3288 | 3205 |
+| `combo-oas31-root-response` | `search-incomplete` | 3030 | 2913 |
+| `combo-octet-stream-body-header-param` | `search-incomplete` | 2977 | 2846 |
+| `combo-optional-ref-map-body` | `search-incomplete` | 3019 | 2892 |
+| `combo-optional-ref-union-body` | `search-incomplete` | 2979 | 2847 |
+| `combo-paginated-grouped-operation` | `search-incomplete` | 2974 | 2842 |
+| `combo-params-beside-inline-anyof-body` | `search-incomplete` | 3041 | 2913 |
+| `combo-params-beside-inline-oneof-body` | `search-incomplete` | 3058 | 2933 |
 | `combo-path-param-ref-string-enum` | `interaction-proven` | 3010 | 0 |
-| `combo-query-param-anyof` | `search-incomplete` | 3050 | 2931 |
-| `combo-query-param-array-inline-enum-items` | `search-incomplete` | 3171 | 3052 |
-| `combo-query-param-array-ref-enum-items` | `search-incomplete` | 3066 | 2939 |
-| `combo-query-param-inline-object` | `search-incomplete` | 3007 | 2878 |
-| `combo-query-param-oneof` | `search-incomplete` | 3007 | 2883 |
+| `combo-query-param-anyof` | `search-incomplete` | 3050 | 2929 |
+| `combo-query-param-array-inline-enum-items` | `search-incomplete` | 3171 | 3050 |
+| `combo-query-param-array-ref-enum-items` | `search-incomplete` | 3066 | 2937 |
+| `combo-query-param-inline-object` | `search-incomplete` | 3007 | 2876 |
+| `combo-query-param-oneof` | `search-incomplete` | 3007 | 2881 |
 | `combo-query-param-ref-date-time` | `interaction-proven` | 2965 | 0 |
 | `combo-query-param-ref-object` | `interaction-proven` | 3009 | 0 |
 | `combo-query-param-ref-string-enum` | `interaction-proven` | 3189 | 0 |
 | `combo-streaming-method-name` | `interaction-proven` | 2984 | 0 |
-| `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2847 |
+| `combo-success-anyof-nullable` | `search-incomplete` | 2979 | 2845 |
 | `combo-success-json-beside-binary-schema` | `interaction-proven` | 3009 | 0 |
 | `combo-success-json-beside-download` | `interaction-proven` | 2998 | 0 |
-| `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2831 |
-| `combo-success-statuses-mixed-media` | `search-incomplete` | 3139 | 3019 |
+| `combo-success-oneof-nullable` | `search-incomplete` | 2963 | 2829 |
+| `combo-success-statuses-mixed-media` | `search-incomplete` | 3139 | 3017 |
 | `combo-success-text-beside-download` | `interaction-proven` | 2969 | 0 |
 
 ## Handed-off verdicts
@@ -120,11 +120,11 @@ node's base:
 
 | Combination | `not-declared` | `declared-arm-not-executed` | `witness` | `declared-no-exclusive-arm` | `declared-pooled-arm-executed` |
 |---|---:|---:|---:|---:|---:|
-| `combo-body-property-named-as-header-param` | 96 | 0 | 0 | 0 | 0 |
-| `combo-body-property-named-as-path-param` | 84 | 12 | 0 | 0 | 0 |
-| `combo-inline-body-read-only-property` | 93 | 0 | 3 | 0 | 0 |
-| `combo-success-anyof-nullable` | 93 | 3 | 0 | 0 | 0 |
-| `combo-success-oneof-nullable` | 95 | 1 | 0 | 0 | 0 |
+| `combo-body-property-named-as-header-param` | 104 | 0 | 0 | 0 | 0 |
+| `combo-body-property-named-as-path-param` | 91 | 13 | 0 | 0 | 0 |
+| `combo-inline-body-read-only-property` | 101 | 0 | 3 | 0 | 0 |
+| `combo-success-anyof-nullable` | 101 | 3 | 0 | 0 | 0 |
+| `combo-success-oneof-nullable` | 103 | 1 | 0 | 0 | 0 |
 
 `combo-inline-body-read-only-property` is proven by this screen: the split read-only
 arm runs on `registered-literals-apis-guru-openapi-directory-cdcf7865` (osf.io), whose
