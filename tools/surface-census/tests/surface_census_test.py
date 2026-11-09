@@ -9215,6 +9215,19 @@ class YamlSubsetTests(unittest.TestCase):
         self.assertEqual("one two\nthree", loaded["folded"])
         self.assertEqual("one\n\n", loaded["kept"])
 
+    def test_a_plain_scalar_folds_a_blank_line_to_a_newline(self) -> None:
+        self.assertEqual(
+            {"description": "one two\nthree", "next": 1},
+            self.load("""\
+                description:
+                  one
+                  two
+
+                  three
+                next: 1
+                """),
+        )
+
     def test_a_scalar_may_be_written_under_its_key_and_wrap(self) -> None:
         self.assertEqual(
             {"description": "one two", "next": 1},

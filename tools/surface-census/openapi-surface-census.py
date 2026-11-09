@@ -489,21 +489,31 @@ class _YamlReader:
                     self.fail(index, f"unexpected text after a quoted scalar: {trailing!r}")
                 return self.unquote(self.line_at(index), rest[:end])
             return self.multiline_quoted(rest, indent, index)
-        pieces = [rest]
+        folded = rest
+        lines_read = 1
+        blanks = 0
         cursor = index + 1
         while cursor < len(self.lines):
             candidate = self.strip_comment(self.lines[cursor]).rstrip()
             if not candidate.strip():
-                break
+                if self.lines[cursor].strip():
+                    break  # a comment line ends a plain scalar
+                # A blank line inside the scalar folds to a newline, as in a quoted one.
+                blanks += 1
+                cursor += 1
+                continue
             candidate_indent = len(candidate) - len(candidate.lstrip(" "))
             if candidate_indent <= indent:
                 break
-            pieces.append(candidate.strip())
+            separator = chr(10) * blanks if blanks else " "
+            folded = f"{folded}{separator}{candidate.strip()}"
+            lines_read += 1
+            blanks = 0
             cursor += 1
         self.pos = cursor
-        if len(pieces) == 1:
+        if lines_read == 1:
             return self.scalar(rest.strip())
-        return " ".join(pieces)
+        return folded
 
     def multiline_quoted(self, rest: str, indent: int, index: int) -> str:
         """A quoted scalar whose closing quote is on a later line.
