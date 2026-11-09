@@ -1,5 +1,261 @@
 # CI gate timing
 
+## After: goal unmet
+
+**Goal unmet.** No ordinary sampled head with accepted required verdicts on the finished four-lane configuration reached required checks in under 3600 seconds: ordinary heads took 8380 s (#794, broad tool selection), 12324 s (#796 first head, macOS queue) and 6551 s (#796 merged-main head, macOS queue). No broad-source run completed all four lanes: the best available, #800, is 11632 s and is **a lower bound with no accepted macOS verdict**, because test-macos failed on a test unrelated to timing after 2917 s and was not re-run. Only the release path is inside the line: 860 s for a guard-compliant release candidate (#798), and 425 s for genuine release #777 before the compatibility jobs left. The line was not reached, and the measurements stand as taken. The under-hour goal is **closed by an owner-approved exception, not by these results**: on 2026-11-09 the owner accepted crozier's current CI speed, covering the overrun of all three samples and #800's missing macOS verdict, and left further speed work to a later plan ([exception recorded below](#goal-status-and-escalation)). This section is a measurement record, not a claim that the goal was met.
+
+### Reproduce
+
+Exactly the baseline command at an explicit observation cutoff:
+
+```sh
+node tools/ci/gate-timing.mjs runs --since 2026-11-08T07:33:26Z --until 2026-11-09T02:15:00Z --limit 200
+```
+
+Definitions are the baseline's, unchanged and imported from the same [calculation functions](../tools/ci/gate-timing/core.mjs): gate seconds run from the first workflow created_at at a head (a push proxy seconds after the push) to the last required-context completion across attempts; queue is job created-to-started; needs delay is first workflow creation to job creation. A cancelled or missing required context yields null, and failed heads are never in the passing distribution. The window opens at #791's merge, when the four-lane shape first applied, and contains every completed qualifying run at the cutoff: **64 workflow runs, 266 jobs, complete: true**. Complete output: [after.json.gz](ci-gate-timing/after.json.gz) (schema 1, every head, attempt and job timestamp); per-task lane telemetry: [after-tasks.json.gz](ci-gate-timing/after-tasks.json.gz), parsed from each lane's `gate: task` lines. The `--format markdown` output, verbatim:
+
+Window: 2026-11-08T07:33:26Z — 2026-11-09T02:15:00Z
+
+| Kind | Passing n | Median seconds | p95 | Max | Unsuccessful |
+|---|---:|---:|---:|---:|---:|
+| pr | 7 | 9247 | 16363 | 16363 | 23 |
+| release-pr | 2 | 642.5 | 860 | 860 | 1 |
+| main | 0 | unknown | unknown | unknown | 6 |
+
+Required contexts observed at the cutoff from main protection and active rules: **lint, test-linux, test-macos, test-windows**. This matches the human migration's step (`.github/governance.json` required_checks, and the four job ids in ci.yml); no mismatch.
+
+### Configurations measured
+
+Three live-run changes reach the finished shape, in order: [#781](https://github.com/nickderobertis/crozier/pull/781) (repeated suite work removed), [#791](https://github.com/nickderobertis/crozier/pull/791) (four lanes, compatibility jobs still running) and [#794](https://github.com/nickderobertis/crozier/pull/794) (compatibility jobs retired). [#799](https://github.com/nickderobertis/crozier/pull/799) then raised test-windows and test-macos to 150-minute limits; it changes no lane's work, so it is configuration, not a speed change. Heads carry the configuration at which they ran; earlier heads are kept separate below. Main CI is deliberately no longer run: where the baseline's main kind measured a push run (median 8160.5 s, max 9901 s), the push now starts only `main caches`, release-plz, the golden-reach base and gallery jobs, so no main gate span exists to compare. The cost is intentional removal, not an improvement in the same metric.
+
+Corrective configurations during this measurement: none. No limit, shard, job, coverage or protection changed, because no change inside the rules (no larger runners, shards, or moved, dropped or lightened tests) closes a gap of this size.
+
+Demonstration records. Heads were throwaway PRs based on the session branch and closed after capture:
+
+- [#797](https://github.com/nickderobertis/crozier/pull/797): four attempts that all ended early, recorded separately [below](#demonstration-attempts-that-ended-early); **none is a sample**.
+- [#798](https://github.com/nickderobertis/crozier/pull/798) head `74678c4b8`: guard-compliant version/changelog candidate. It carries no limit edit: changing `ci.yml` on a release branch would fail the release guard, and its platform lanes skip anyway, so the instructed 150-minute limit could not apply and has no effect there. #799 changed only skipped lanes for this path.
+- [#800](https://github.com/nickderobertis/crozier/pull/800) head `19cda960f`: broad source demonstration based on main with #799, so it carries the 150-minute limit from main and no hand edit. **No broad-source run completed all four lanes.** #800 is the best available measurement only: lint, test-linux and test-windows completed; test-macos failed after 2917 s with no accepted verdict; its 11632 s span is a lower bound. The failure is `crates/crozier-e2e/tests/e2e.rs:26804`, `could not run crozier: No such file or directory`, recorded as the follow-up "macOS e2e reports 'could not run crozier: No such file or directory'". Per the manager's ruling it was not re-run and no third attempt was made.
+- [#801](https://github.com/nickderobertis/crozier/pull/801): a genuine release PR built on top of this dispatch's session commit `09bc6900a` and refused by the release guard. The cause appears to be #798's branch name beginning `release-plz-`. Not a timing sample; it is reported to the manager, recorded as a follow-up, and nothing reached main.
+
+### Finished-configuration heads
+
+Seconds. Needs delay is before job creation, queue is job creation to runner start, execution is runner start to completion. Every workflow's jobs are listed.
+
+#### #794 ordinary, CI configuration change (broad tool selection)
+
+Head `76e15eb439bd3c4560dab0f9cfc4f22ead00b8b3`, run [42489795217](https://github.com/nickderobertis/crozier/actions/runs/42489795217), attempts 1, kind pr, configuration finished: cd5cebc66 tree (lanes 30/150/90/120 min). Gate **8380** s, conclusion **success**, terminal: test-linux.
+
+| Job | Attempt | Conclusion | Needs | Queue | Execution |
+|---|---:|---|---:|---:|---:|
+| cleanup-preview | 1 | success | 11112 | 1 | 5 |
+| lint | 1 | success | 23 | 1 | 803 |
+| prune-history | 1 | skipped | 11112 | 0 | 0 |
+| test-linux | 1 | success | 23 | 2 | 8355 |
+| test-macos | 1 | success | 23 | 135 | 5991 |
+| test-windows | 1 | success | 23 | 1 | 4790 |
+
+6 jobs at this head. 
+Largest tasks per lane (Nx task seconds, parallel so they exceed job time):
+
+- **lint** (109 tasks, 91 cache-replayed, 26 projects): `github-workflows:lint` 3s, `census-fallback:lint` 0s, `corpus:lint-sources` 0s, `corpus:lint-remote-ref-pins` 0s, `corpus:lint-licence-rescreening` 0s, `corpus:lint-boundaries` 0s
+- **test-linux** (69 tasks, 0 cache-replayed, 26 projects): `corpus-match:test-offline` 2394s, `corpus-match:test-match` 2082s, `corpus-match:test-strict` 1952s, `crozier-e2e:test` 1600s, `fern-goldens-weekly:test` 1231s, `corpus-match:test-cold-handoff` 849s
+- **test-windows** (68 tasks, 0 cache-replayed, 23 projects): `crozier-e2e:test` 2760s, `surface-census:test-census` 1718s, `ci-journeys:test` 991s, `suite-cases:test` 685s, `surface-reach:test-handwritten-reach` 550s, `witness-search:test-acquisition` 505s
+- **test-macos** (58 tasks, 0 cache-replayed, 24 projects): `crozier-e2e:test` 3082s, `fern-goldens-weekly:test` 1777s, `surface-census:test-census` 1045s, `ci-journeys:test` 648s, `witness-search:test-acquisition` 545s, `witness-search:test-github` 518s
+
+#### #796 ordinary, gate-timing tooling, first head
+
+Head `09bc6900a78cd3dd6647a5792af5bf3b30655908`, run [42509048346](https://github.com/nickderobertis/crozier/actions/runs/42509048346), attempts 1, kind pr, configuration finished: cd5cebc66 base. Gate **12324** s, conclusion **success**, terminal: test-macos.
+
+| Job | Attempt | Conclusion | Needs | Queue | Execution |
+|---|---:|---|---:|---:|---:|
+| lint | 1 | success | 1 | 2 | 818 |
+| test-linux | 1 | success | 1 | 2 | 505 |
+| test-macos | 1 | success | 1 | 9002 | 3321 |
+| test-windows | 1 | success | 1 | 2 | 1159 |
+
+4 jobs at this head. 
+Largest tasks per lane (Nx task seconds, parallel so they exceed job time):
+
+- **lint** (16 tasks, 13 cache-replayed, 6 projects): `gate-timing:lint` 2s, `python-workspace:lint` 0s, `fern-goldens-git:lint` 0s, `fern-goldens-git:lint-boundaries` 0s, `fern-goldens-git:lint-ruff` 0s, `python-workspace:lint-boundaries` 0s
+- **test-linux** (49 tasks, 33 cache-replayed, 6 projects): `ci-journeys:test` 181s, `suite-cases:test` 122s, `gate-timing:test` 89s, `ci:test` 39s, `fern-goldens-git:test-certified-pair` 18s, `screenshots:test` 9s
+- **test-windows** (10 tasks, 0 cache-replayed, 5 projects): `ci-journeys:test` 567s, `suite-cases:test` 380s, `fern-goldens-git:test-certified-pair` 78s, `ci:test` 63s, `fern-goldens-git:test-lifecycle` 5s, `ci:lint-windows` 3s
+- **test-macos** (49 tasks, 0 cache-replayed, 6 projects): `fern-goldens-weekly:test` 923s, `surface-census:test-census` 844s, `witness-search:test-acquisition` 542s, `witness-search:test-github` 490s, `ci-journeys:test` 376s, `surface-reach:test-handwritten-reach` 373s
+
+#### #796 ordinary, gate-timing tooling, merged main
+
+Head `f0b5007c194511e8936430485a95b9fafa010538`, run [42532383652](https://github.com/nickderobertis/crozier/actions/runs/42532383652), attempts 1, kind pr, configuration finished: 1a278de16 base (includes #799 limits). Gate **6551** s, conclusion **success**, terminal: test-macos.
+
+| Job | Attempt | Conclusion | Needs | Queue | Execution |
+|---|---:|---|---:|---:|---:|
+| lint | 1 | success | 1 | 1 | 719 |
+| test-linux | 1 | success | 1 | 2 | 2299 |
+| test-macos | 1 | success | 1 | 3058 | 3492 |
+| test-windows | 1 | success | 1 | 1 | 1125 |
+
+4 jobs at this head. 
+Largest tasks per lane (Nx task seconds, parallel so they exceed job time):
+
+- **lint** (16 tasks, 13 cache-replayed, 6 projects): `gate-timing:lint` 2s, `fern-goldens-git:lint` 0s, `python-workspace:lint` 0s, `fern-goldens-git:lint-boundaries` 0s, `fern-goldens-git:lint-ruff` 0s, `python-workspace:lint-boundaries` 0s
+- **test-linux** (49 tasks, 0 cache-replayed, 6 projects): `fern-goldens-weekly:test` 571s, `surface-census:test-census` 546s, `witness-search:test-acquisition` 483s, `witness-search:test-github` 378s, `surface-reach:test-handwritten-reach` 344s, `fern-refusals:test` 244s
+- **test-windows** (10 tasks, 0 cache-replayed, 5 projects): `ci-journeys:test` 569s, `suite-cases:test` 376s, `fern-goldens-git:test-certified-pair` 77s, `ci:test` 63s, `fern-goldens-git:test-lifecycle` 6s, `ci:lint-windows` 3s
+- **test-macos** (49 tasks, 0 cache-replayed, 6 projects): `surface-census:test-census` 1103s, `fern-goldens-weekly:test` 882s, `witness-search:test-github` 556s, `witness-search:test-acquisition` 551s, `surface-reach:test-handwritten-reach` 427s, `fern-refusals:test` 357s
+
+#### #800 broad source (src/lib.rs doc edit + its attribution record), demonstration: best available measurement, macOS incomplete
+
+Head `19cda960fc654beb513317ea9b53037a091d69ce`, run [42532483422](https://github.com/nickderobertis/crozier/actions/runs/42532483422), attempts 1, kind pr, configuration finished: 1a278de16 base (includes #799 limits). Gate **11632** s, conclusion **failure**, terminal: test-macos.
+
+| Job | Attempt | Conclusion | Needs | Queue | Execution |
+|---|---:|---|---:|---:|---:|
+| lint | 1 | success | 1 | 2 | 973 |
+| test-linux | 1 | success | 1 | 2 | 9190 |
+| test-macos | 1 | failure | 1 | 8714 | 2917 |
+| test-windows | 1 | success | 1 | 1 | 5070 |
+
+4 jobs at this head. 
+Largest tasks per lane (Nx task seconds, parallel so they exceed job time):
+
+- **lint** (107 tasks, 84 cache-replayed, 24 projects): `crozier-e2e:lint` 36s, `crozier-tool-journeys:lint` 33s, `crozier:lint` 26s, `workspace:doc` 10s, `crozier:format` 3s, `nested-discriminator-golden:lint` 2s
+- **test-linux** (70 tasks, 0 cache-replayed, 24 projects): `corpus-match:test-offline` 2575s, `corpus-match:test-match` 2447s, `corpus-match:test-strict` 2343s, `live-e2e:test` 1583s, `crozier-e2e:test` 1580s, `fern-goldens-weekly:test` 1112s
+- **test-windows** (52 tasks, 0 cache-replayed, 18 projects): `crozier-e2e:test` 2758s, `surface-census:test-census` 1931s, `surface-reach:test-handwritten-reach` 629s, `suite-cases:test` 625s, `witness-search:test-acquisition` 511s, `witness-search:test-github` 484s
+- **test-macos** (53 tasks, 0 cache-replayed, 16 projects): `surface-census:test-census` 885s, `fern-goldens-weekly:test` 823s, `witness-search:test-github` 538s, `witness-search:test-acquisition` 536s, `surface-reach:test-handwritten-reach` 388s, `fern-refusals:test` 333s
+
+#### #798 guard-compliant version/changelog release candidate, demonstration
+
+Head `74678c4b8fc280785be7ee25fc102fe50fd73d74`, run [42509110093](https://github.com/nickderobertis/crozier/actions/runs/42509110093), attempts 1, kind release-pr, configuration finished: cd5cebc66 base; lint lane unchanged by #799. Gate **860** s, conclusion **success**, terminal: lint.
+
+| Job | Attempt | Conclusion | Needs | Queue | Execution |
+|---|---:|---|---:|---:|---:|
+| cleanup-preview | 1 | success | 24650 | 2 | 5 |
+| lint | 1 | success | 0 | 2 | 858 |
+| prune-history | 1 | skipped | 24650 | 0 | 0 |
+| test-linux | 1 | skipped | 1 | 0 | unknown |
+| test-macos | 1 | skipped | 1 | 0 | unknown |
+| test-windows | 1 | skipped | 1 | 0 | unknown |
+
+6 jobs at this head. 
+Largest tasks per lane (Nx task seconds, parallel so they exceed job time):
+
+- **lint** (101 tasks, 0 cache-replayed, 26 projects): `crozier-e2e:lint` 24s, `ci:lint` 21s, `crozier:lint` 18s, `ci-journeys:lint` 6s, `github-action:lint` 3s, `github-workflows:lint` 3s
+
+#### #777 genuine release PR v0.0.160 (compatibility jobs still present)
+
+Head `d9f9f4c157d91fad5b608cddb540c096eb3e3f3a`, run [42459459557](https://github.com/nickderobertis/crozier/actions/runs/42459459557), attempts 1, kind release-pr, configuration pre-#794: #791 four lanes plus compatibility jobs. Gate **425** s, conclusion **success**, terminal: lint.
+
+| Job | Attempt | Conclusion | Needs | Queue | Execution |
+|---|---:|---|---:|---:|---:|
+| cleanup-preview | 1 | success | 705 | 2 | 6 |
+| commitlint | 1 | success | 1 | 2 | 5 |
+| gate | 1 | success | 425 | 2 | 31 |
+| lint | 1 | success | 1 | 1 | 423 |
+| llmlint | 1 | success | 1 | 2 | 330 |
+| prune-history | 1 | skipped | 705 | 0 | 0 |
+| test-linux | 1 | skipped | 1 | 0 | 0 |
+| test-macos | 1 | skipped | 1 | 0 | 0 |
+| test-windows | 1 | skipped | 1 | 0 | 0 |
+
+9 jobs at this head. 
+### Demonstration attempts that ended early
+
+These are #797's runs in order. **They ended early on a failure or a cancellation and are not samples; their durations are not lane costs.** Each failure came from the demonstration itself, not crozier's code: the placeholder comment, the hand-applied limit's stale pins, or the residual-attribution digest a source edit must refresh. Seconds are queue/execution.
+
+| Run | Head | Lint (job) | test-linux (job) | test-windows (job) | test-macos (job) | Why it ended |
+|---|---|---|---|---|---|---|
+| [42509093015](https://github.com/nickderobertis/crozier/actions/runs/42509093015) | `c5e71a9be4` | cancelled 2/285 (128818030840) | cancelled 3/285 (128818030942) | cancelled 2/284 (128818030798) | cancelled 0/272 (128818030599) | Superseded by the push that raised the limits to 150 minutes; the concurrency group cancelled it. |
+| [42509483184](https://github.com/nickderobertis/crozier/actions/runs/42509483184) | `feda075ada` | failure 2/554 (128819295738) | cancelled 2/3218 (128819295755) | cancelled 1/3218 (128819295437) | cancelled 343/2903 (128819295737) | Judged lint rejected the demo's placeholder `DO NOT MERGE` source comment; the next push cancelled the test lanes. |
+| [42513978896](https://github.com/nickderobertis/crozier/actions/runs/42513978896) | `459cc01c63` | success 2/692 (128833029326) | failure 2/3861 (128833029283) | failure 2/3804 (128833029301) | failure 1198/5112 (128833029012) | Stale residual-attribution digest for the source edit, and `ci_workflow.rs` still pinning the old limits (90 against 150). |
+| [42524007437](https://github.com/nickderobertis/crozier/actions/runs/42524007437) | `eeefbf4090` | success 2/583 (128863420757) | failure 2/3951 (128863420759) | failure 2/4327 (128863420440) | failure 1128/4811 (128863420573) | The ci-journeys selection test still expected the old limit (90 against 150). |
+
+### Every observed head at the cutoff
+
+Configuration differs across this table; compatibility jobs appear on heads before #794. Null gates carry a reason in the JSON.
+
+| Run | Kind | PR | Head | Attempts | Outcome | Gate seconds | Jobs |
+|---|---|---|---|---:|---|---:|---:|
+| [42543621639](https://github.com/nickderobertis/crozier/actions/runs/42543621639) | release-pr | 801 | 733331003bf9 | 1 | failure | 51 | 4 |
+| [42509110093](https://github.com/nickderobertis/crozier/actions/runs/42509110093) | release-pr | — | 74678c4b8fc2 | 1 | success | 860 | 6 |
+| [42543394021](https://github.com/nickderobertis/crozier/actions/runs/42543394021) | main | — | bad5d6cae406 | 1 | none | unknown | 7 |
+| [42530351454](https://github.com/nickderobertis/crozier/actions/runs/42530351454) | pr | — | 210980f53cd7 | 1 | success | 9247 | 4 |
+| [42539881675](https://github.com/nickderobertis/crozier/actions/runs/42539881675) | pr | 793 | 66f2db252073 | 1 | none | unknown | 4 |
+| [42532483422](https://github.com/nickderobertis/crozier/actions/runs/42532483422) | pr | 800 | 19cda960fc65 | 1 | failure | 11632 | 4 |
+| [42524007437](https://github.com/nickderobertis/crozier/actions/runs/42524007437) | pr | — | eeefbf409014 | 1 | failure | 5940 | 6 |
+| [42532383652](https://github.com/nickderobertis/crozier/actions/runs/42532383652) | pr | 796 | f0b5007c1945 | 1 | success | 6551 | 4 |
+| [42530023747](https://github.com/nickderobertis/crozier/actions/runs/42530023747) | main | — | 1a278de16cf7 | 1 | cancelled | unknown | 7 |
+| [42516086127](https://github.com/nickderobertis/crozier/actions/runs/42516086127) | pr | — | 9ffeacc4484e | 1 | success | 6720 | 6 |
+| [42525424004](https://github.com/nickderobertis/crozier/actions/runs/42525424004) | pr | 793 | 354b35ab95d0 | 1 | cancelled | unknown | 4 |
+| [42519971743](https://github.com/nickderobertis/crozier/actions/runs/42519971743) | pr | 774 | 416a36a38100 | 2 | cancelled | unknown | 8 |
+| [42518267781](https://github.com/nickderobertis/crozier/actions/runs/42518267781) | main | — | e7c3a8db4a35 | 1 | none | unknown | 7 |
+| [42481455354](https://github.com/nickderobertis/crozier/actions/runs/42481455354) | pr | 790 | 397371d3dca9 | 3 | success | 16363 | 23 |
+| [42513978896](https://github.com/nickderobertis/crozier/actions/runs/42513978896) | pr | — | 459cc01c6358 | 1 | failure | 6352 | 4 |
+| [42512011009](https://github.com/nickderobertis/crozier/actions/runs/42512011009) | pr | — | d5c91216c06a | 1 | cancelled | unknown | 4 |
+| [42509483184](https://github.com/nickderobertis/crozier/actions/runs/42509483184) | pr | — | feda075ada47 | 1 | cancelled | unknown | 4 |
+| [42509093015](https://github.com/nickderobertis/crozier/actions/runs/42509093015) | pr | — | c5e71a9be4ac | 1 | cancelled | unknown | 4 |
+| [42509048346](https://github.com/nickderobertis/crozier/actions/runs/42509048346) | pr | 796 | 09bc6900a78c | 1 | success | 12324 | 4 |
+| [42506906241](https://github.com/nickderobertis/crozier/actions/runs/42506906241) | pr | — | 97054c5e75af | 2 | success | 14850 | 8 |
+| [42489795217](https://github.com/nickderobertis/crozier/actions/runs/42489795217) | pr | — | 76e15eb439bd | 1 | success | 8380 | 6 |
+| [42505020291](https://github.com/nickderobertis/crozier/actions/runs/42505020291) | main | — | cd5cebc6649f | 1 | cancelled | unknown | 7 |
+| [42500282017](https://github.com/nickderobertis/crozier/actions/runs/42500282017) | pr | 774 | 08dc1a569ad6 | 2 | cancelled | unknown | 14 |
+| [42499728596](https://github.com/nickderobertis/crozier/actions/runs/42499728596) | pr | 793 | 4763609f00b7 | 2 | cancelled | unknown | 14 |
+| [42490892875](https://github.com/nickderobertis/crozier/actions/runs/42490892875) | pr | 793 | bface37c44e5 | 1 | cancelled | unknown | 7 |
+| [42490347595](https://github.com/nickderobertis/crozier/actions/runs/42490347595) | pr | 774 | e5c5323f29c0 | 1 | failure | 2744 | 7 |
+| [42489423129](https://github.com/nickderobertis/crozier/actions/runs/42489423129) | pr | — | fe54f2a98d74 | 2 | cancelled | unknown | 14 |
+| [42487287801](https://github.com/nickderobertis/crozier/actions/runs/42487287801) | pr | — | c68704414e74 | 1 | cancelled | unknown | 4 |
+| [42483082162](https://github.com/nickderobertis/crozier/actions/runs/42483082162) | pr | 774 | 297df8111822 | 1 | failure | 5159 | 7 |
+| [42483040498](https://github.com/nickderobertis/crozier/actions/runs/42483040498) | pr | — | c3a7f51f0f75 | 1 | cancelled | unknown | 7 |
+| [42481508824](https://github.com/nickderobertis/crozier/actions/runs/42481508824) | pr | — | 5100dc422c47 | 1 | cancelled | unknown | 4 |
+| [42475322856](https://github.com/nickderobertis/crozier/actions/runs/42475322856) | pr | 793 | ed2c6995beb4 | 1 | cancelled | unknown | 7 |
+| [42472362509](https://github.com/nickderobertis/crozier/actions/runs/42472362509) | pr | — | 2e3ee269bec1 | 1 | failure | 5530 | 7 |
+| [42462730498](https://github.com/nickderobertis/crozier/actions/runs/42462730498) | pr | — | aaf606c399bd | 1 | failure | 3716 | 7 |
+| [42460231103](https://github.com/nickderobertis/crozier/actions/runs/42460231103) | pr | — | 8425594385a5 | 1 | cancelled | unknown | 7 |
+| [42459981394](https://github.com/nickderobertis/crozier/actions/runs/42459981394) | main | — | 1834a1896b9f | 1 | none | unknown | 7 |
+| [42459459557](https://github.com/nickderobertis/crozier/actions/runs/42459459557) | release-pr | — | d9f9f4c157d9 | 1 | success | 425 | 9 |
+| [42459286346](https://github.com/nickderobertis/crozier/actions/runs/42459286346) | pr | — | 99cebe6ac74b | 1 | none | unknown | 2 |
+| [42459285764](https://github.com/nickderobertis/crozier/actions/runs/42459285764) | main | — | 94d22c08869c | 1 | cancelled | unknown | 7 |
+
+### Comparison with the baseline, like kinds
+
+Passing heads only; a window spanning configurations, so this is the CLI's raw distribution, and the finished-configuration heads are named above.
+
+| Kind | Baseline median / p95 / max (n) | After median / p95 / max (n passing) |
+|---|---|---|
+| pr | 9046 / 10069 / 10069 (18) | 9247 / 16363 / 16363 (7) |
+| release-pr | 7937 / 9275 / 9275 (5) | 642.5 / 860 / 860 (2) |
+| main | 8160.5 / 9901 / 9901 (8) | not comparable: main CI deliberately removed |
+
+The improvements that are real are structural. The release path dropped from about 8000 s to under 900 s because it now runs one guarded lane. Job count per ordinary push fell to 4 from about 20. Ordinary PR gate time did **not** improve: a four-lane broad change is 8380-11632+ s against a baseline median of 9046 s. Execution moved into the lanes rather than vanishing, because test-linux alone holds all Linux-only proof.
+
+**Separating causes.** Queue versus execution, for the finished-configuration heads:
+
+- Execution-dominated: #794 (test-linux 8355 s, queue under 3 s) and #800 test-linux (9190 s).
+- Queue-dominated: #796's two heads, a narrow change whose gate is the macOS lane (queue 3058 s, about 51 min, on the second head and 9002 s, about 2.5 h, on the first).
+- #800 macOS queued about 2 h 25 min before failing.
+
+Account load: between 5 and 11 other crozier PR heads overlapped each finished-configuration sample (this dispatch's own demonstrations among them, for #796's first head), and the account's macOS capacity is shared with the user's other repositories, whose use is not observable from crozier's records, so a queue cannot be attributed to any single other job. Cache state: `remote-cache` replays appear per lane above. Lint replayed most tasks (91 of 109 on #794). Test lanes replayed almost nothing: 0 on every sampled lane except #796's first head on test-linux (33 of 49), whose result cache came from a run at the same base; after main moved, its later head replayed none. The expensive suites ran cold on every sample.
+
+### Predicted versus observed selection
+
+The baseline predicted a broad source change selects the crozier, crozier-e2e, surface-census (census, reach, portable), SDK, runtime, live-e2e, corpus-match, corpus-match-selection and census-fallback suites (each at 16 or 17 heads of 20, e2e 20/20), with lane costs bounded by planning intervals only.
+
+| Prediction | Observed on #800 (broad source) | Observed on #794 (CI tool change) | Observed on #796 (tooling change) |
+|---|---|---|---|
+| crozier and crozier-e2e affected | `crozier:test` and `crozier-e2e:test` ran on every test lane; crozier-e2e:test 2758 s on Windows, and macOS failed in it | both tasks ran on every test lane, reached through their task closure | not run |
+| surface-census and reach | ran on every test lane | ran on every test lane | `surface-census:test-census` ran on test-linux and test-macos, not test-windows (test-linux result replayed on the first head) |
+| corpus-match, live-e2e, census-fallback (Linux only, retained on the PR lane) | ran on test-linux; `corpus-match:test-offline` 2575 s, `test-match` 2447 s, `test-strict` 2343 s | corpus-match ran on test-linux, live-e2e did not | not run |
+| SDK env / runtime | ran on test-linux and test-windows | not run | not run |
+
+Broad-source coverage held: full census, reach and the live end-to-end and corpus byte-match suites all ran in the PR lane of #800 on the platforms ci.yml assigns them; none was moved, dropped, lightened or sharded to obtain these numbers. The macOS lane of #800 still ended on one failed e2e test, so its macOS proof and duration are incomplete.
+
+The baseline's planning intervals (lint [1293,5330]+U; test-linux [386,7260]+U; test-windows [593,6467]+U; test-macos [1446,9297]+U) were explicitly not feasibility claims. Observed lane execution for broad changes: lint 803-973 s; test-linux 8355-9190 s; test-windows 4790-5070 s; test-macos 5991 s on #794 (no complete broad-source figure, because #800 failed at 2917 s). Linux exceeds its interval's upper proxy by 1095-1930 s, and every test lane exceeds the 30-minute inner line.
+
+### Goal status and escalation
+
+The under-hour goal is **unmet at the finished configuration**. The remaining gap for a broad change is execution on test-linux: about 2.3-2.6 times the whole line, before any queue. The gap for narrow changes is account macOS queue. Under the standing rules there is no honest correction within reach: the slowest proof (corpus-match, live-e2e, census) is retained and cannot be moved, shrunk or sharded, and the account has no larger runner. Each result at or above 3600 s was reported to the manager as it occurred (correlations c-15d444f3df4df557c4ab4d4d5584a955, c-9d3a6985de2de8a0161a811fdbf1fbfb, c-479e1b2e6f6819ad7b53aa37a03e35a0); the owner's decision is recorded below.
+
+**Decision first requested.** The manager was asked (correlation c-f0855d9b8e2943de29a298457122e63c) for either corrective work preserving all required proof, or an explicit owner-approved infeasibility exception covering both the timing overrun and the incomplete broad-source sample with its missing macOS verdict. The manager's answer at that point was that neither was available yet: paid or larger runners, sharding and accepting the overrun were all the owner's decision, and the three measurements (8380 s, 6551 s, and the 11632 s broad-source lower bound) were put to the owner. No corrective work was done and no further demonstration run was started. A standing preference for about two hours, or permission to stop rerunning, was not treated as an exception.
+
+**Owner-approved exception.** On 2026-11-09 the owner accepted crozier's current CI speed (manager question item hi-9134c7be2133c735a64c, answered "Accept the overrun"; the owner's words: "accept current speed and we'll leave further improvements for another run"). The exception closes the under-hour goal. It covers the measured overrun of all three samples (#794 8380 s, #796 6551 s, #800 at least 11632 s) and the broad-source sample #800's missing macOS verdict, so no broad-source run with four accepted verdicts exists and none is claimed. Further speed work is left to a later plan; one candidate is reducing test-linux's serial live/corpus/fallback span by honest dependency work, without sharding. Nothing was re-measured for this record, and the 3599-second budget is unchanged, so a landed head over it still reports over.
+
+`crozier-pr-gate-minutes` (threshold 3599) is registered and read by this host's delivery hook for each landed head; it is not an on-CI check and reports each landed head's figure, over or within. Its contract proof is `tools/ci-journeys/tests/delivery-budget.test.mjs`, which runs it under real onebudgetspec with recorded answers: for head 76e15eb439 it reports 8380 seconds, verdict over.
+
 ## Baseline
 
 **The existing jobs exceed both timing lines. This baseline does not prove that all tests fit four lanes, 30 minutes per job, or an hour outside.** No workflow, suite, platform, corpus case, or enforcement threshold changes here.

@@ -54,3 +54,20 @@ budgets:
       time, with every request listed. A saved answer reports what its read cost when it was
       made, so reuse within the tail never hides a read. It protects the reads each pull
       request costs from growing with the workflows a pull request starts.
+  # llmlint: ignore[names_match_behavior] The id is the one the approved plan and its delivery hook name; its unit field states seconds.
+  - id: crozier-pr-gate-minutes
+    measure: reported
+    command: [node, tools/ci/gate-timing.mjs, budget]
+    unit: seconds
+    direction: max
+    threshold: 3599
+    labels: [onepipeline]
+    description: >-
+      Seconds from the first pull_request workflow's creation at a landed head, a proxy
+      seconds after the push, to the last required-check completion across attempts, queue
+      included, with detail naming the head, contexts, every job's queue, needs and execution
+      time and failed attempts. A missing required verdict errors rather than reading within.
+      GitHub Actions' run and job records for ci.yml's lint (just lint) and test-linux,
+      test-windows and test-macos (just ci-test) are what it reads: status, runner allocation
+      and attempt timestamps, captured as those lanes execute; replay tests only exercise the
+      reader. Only this host's delivery hook selects it, per landed node.

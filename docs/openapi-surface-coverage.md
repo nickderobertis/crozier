@@ -141,19 +141,19 @@ split five ways:
 549 + 70 + 107 + 0 + 0 = 726.
 
 **Feature combinations are counted apart.** 107 combinations are selected
-([the list](openapi-surface/combinations.md)): 29 are `gap`, 73 are `golden` and 5 are `handwritten`.
+([the list](openapi-surface/combinations.md)): 30 are `gap`, 73 are `golden` and 4 are `handwritten`.
 12 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
 [the census suite](../tools/surface-census/tests/surface_census_test.py) validates the recorded evidence, with
 [the hand-written fixture format](openapi-surface/handwritten/AGENTS.md) it reads.
-**22** are byte-matched against a registered real specification at their
+**37** are byte-matched against a registered real specification at their
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **73** remain
-open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 22 + 0 + 0 + 0 + 73 + 12 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **58** remain
+open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 37 + 0 + 0 + 0 + 58 + 12 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -3570,12 +3570,12 @@ ledger, so a registration that adds a second witness removes the row here.
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | `schemas` | `registered-literals-openapitools-openapi-generator-98d94419` |
 | `union-of-two-enum-refs-alias` | `schemas` | `chrome-webstatus-backend` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
-| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
+| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
+| `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
 | `enum-digit-word-member` | `schemas` | `reverb.com` |
 | `is-beta-extension` | `oas31-extensions` | `squareup.com` |
 | `oneof-array-variant-composed-item` | `schemas` | `hse` |
-| `media-type-octet-stream` | `bodies-media` | `apache.org-qakka` |
 | `oneof-array-variant-empty-object-item` | `schemas` | `milvus-vector-operations` |
 | `camel-case-tag-group-and-prefix` | `document-paths` | `kompaz-web-frontend` |
 | `global-headers-extension` | `parameters` | `loonfs` |
@@ -4214,15 +4214,19 @@ there, VTEX's Marketplace Protocol, is corpus row 3479, so the row reads `golden
 and its hand-written fixture is retired
 ([`vtex-output-parity.md`](vtex-output-parity.md)).
 
-Four more joined with the worked-example repairs, `handwritten` from the start:
-`unread-date-time-example` here, and three `bodies-media` rows
+Four more joined with the worked-example repairs, `handwritten` from the start
+in the same way: `unread-date-time-example` here, and three `bodies-media` rows
 (`allof-parent-request-body`, `request-example-nested-null`,
-`request-example-deprecated-property`). The latter two now have registered real
-witnesses, corpus rows 2801 and 4301. The bodies and paths
-[continuation](openapi-surface/witness-search-fixture-only-bodies-paths-continuation/README.md)
-names the remaining bounded search population and its decisions; the
-[earlier example search](openapi-surface/witness-search-example-shapes/README.md)
-retains its original measurements.
+`request-example-deprecated-property`). Their
+[hand-written fixtures](openapi-surface/handwritten/AGENTS.md) are the
+measurement, each line reads `search-incomplete` because no declared source has
+been walked or queried for it, and their
+[renewed search](openapi-surface/witness-search-example-shapes/README.md) read
+941 documents a bounded code search returned and found none registrable. The
+table below names `unread-date-time-example`'s candidates; the three
+`bodies-media` keys' lines, and the candidates each search found, are under
+[`bodies-media.md`'s Witness search (exhaustive)](openapi-surface/bodies-media.md#witness-search-exhaustive)
+and in that record.
 
 **Five read `exhausted`, six read `search-incomplete` under the scope
 exception.** Each key's reconciled record is its

@@ -190,30 +190,26 @@ verdict = "exhausted"
 )
 # A combination whose site cell reads `co-occurrence`: no measured branch joins both
 # features, so a fixture covering it is measured at each handling function the
-# committed audit names, over a document declaring security at both levels. The
-# scheme is bearer: a header api key's `required` short-circuits on the document's
-# own `security` before `all_operations_authenticated` runs.
-COOCCURRING = "combo-document-operation-security"
+# committed audit names, over a document whose operation requires a basic scheme.
+COOCCURRING = "combo-basic-auth-operation-requirement"
 SECURITY_DOCUMENT = """openapi: 3.0.3
 info:
   title: sample
   version: 1.0.0
-security:
-  - bearer: []
 paths:
   /ping:
     get:
       operationId: ping
       security:
-        - bearer: []
+        - basic: []
       responses:
         "200":
           description: ok
 components:
   securitySchemes:
-    bearer:
+    basic:
       type: http
-      scheme: bearer
+      scheme: basic
 """
 
 
@@ -494,7 +490,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
                     COMBINATION,
                     COMBINATION_DOCUMENT.format(labels=LABELS["array-of-nullable-unknown-items"]),
                 ),
-                ("security-both-levels", COOCCURRING, SECURITY_DOCUMENT),
+                ("basic-operation-requirement", COOCCURRING, SECURITY_DOCUMENT),
             ):
                 directory = base / name
                 directory.mkdir(parents=True)
@@ -509,7 +505,7 @@ class HandwrittenReachRecipeTest(unittest.TestCase):
             self.assertEqual(HEADER, rows[0])
             measured = {(row[0], row[1], row[2]): (int(row[3]), int(row[4])) for row in rows[1:]}
             expected = {("nullable-map-only", COMBINATION, INTERACTION)} | {
-                ("security-both-levels", COOCCURRING, handler) for handler in handlers
+                ("basic-operation-requirement", COOCCURRING, handler) for handler in handlers
             }
             self.assertEqual(expected, set(measured), "a combination-only fixture was not measured at its sites")
             for site, (executed, total) in measured.items():
@@ -839,19 +835,19 @@ class Outcome(NamedTuple):
 
 
 BINARY = "src/ir.rs::is_binary_response"
-JSON_OPERAND = BINARY + r'[=^ {16}&& !resp\.content\.contains_key\("application/json"\)$]'
-SCHEMA_DISJUNCT = BINARY + r"[=^ {16}\x7c\x7c resp\.content\.values\(\)\.any]"
-FORMAT_OPERAND = BINARY + r'[=^ {28}&& schema\.format\.as_deref\(\) == Some\("binary"\)$]'
-TEXT_OPERAND = BINARY + r"[=is_text_response_media\(media_type\)$]"
+JSON_BEATS_DOWNLOAD = BINARY + r"[if declares_json && download_first \{]"
+JSON_BESIDE_BINARY = BINARY + r"[if declares_json && binary_schema \{]"
+FIRST_KIND_DECIDES = BINARY + r"[&& media_types\(\)\.any\(\x7cmedia_type\x7c is_text_response_media\(media_type\)\)]"
 PASSED_WHOLE = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c passed_whole$]"
 INLINE_MAP = r"src/ir.rs::resolve_request_body[=^ {8}\x7c\x7c is_map\(schema\)$]"
 TARGET_NULLABLE = r"src/ir.rs::Builder::collect_fields[=\.is_some_and\(\x7ctarget\x7c schema_accepts_none\(target, self\.schemas\)\);$]"
 NOT_REQUIRED = r"src/ir.rs::Builder::collect_fields[=!spec_required;$]"
 SCHEMA_EXAMPLE = r"src/ir.rs::parameter_example_value[=parameter\.schema\.as_ref\(\)\.and_then\(typed_schema_example\)]"
-URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}&& !hoister\.reaches_url_as_scalars\(&type_ref\),$]"
+URL_SCALARS = r"src/ir.rs::build_endpoint[=^ {20}hoister\.needs_convert\(&type_ref\) && !hoister\.reaches_url_as_scalars\(&type_ref\)$]"
 NAMED_STREAM = r"src/ir.rs::stream_condition_method_names[if op\.sdk_method_name\(\)\.is_some\(\) \{]"
 ID_STREAM = r"src/ir.rs::stream_condition_method_names[\} else if !id\.is_empty\(\) \{]"
 UNAUTHENTICATED = r"src/ir.rs::all_operations_authenticated[if !authed \{]"
+SECURITY_OPT_OUT = r"src/ir.rs::all_operations_authenticated[&& document\.iter\(\)\.all\(]"
 CLIENT, RAW = "client.py", "raw_client.py"
 STREAMS = "typing.Iterator[bytes]"
 # The constructor's bearer credential, optional; `async_token` is optional always.
@@ -940,15 +936,14 @@ OPTIONAL_ARM = r"src/ir.rs::build_endpoint[=other => optional_type_ref\(other\),
 # The echo guard's last operand, which the anonymous and OAuth2 echo rows audit as
 # their shared condition rather than declare as an interaction site.
 ECHO_ARM = r"src/emit.rs::append_request_call_args[=^ {28}&& !ep\.body_schema_titled$]"
-ECHO_GUARD = r"src/ir.rs::body_response_same_ref[^ {4}\{$]"
+ECHO_GUARD = r"src/ir.rs::body_response_same_ref[=\(false, true\) => false,]"
 BASIC_REQUIRED = r"src/emit.rs::auth_wrapper_parts[=^ {16}format!\(.*httpx\.BasicAuth\(self\._get_]"
 OBJECT_QUERY = r"src/ir.rs::requires_object_query[=!schema\.properties\.is_empty\(\)]"
+REFERENCED_OBJECT_QUERY = r"src/ir.rs::requires_object_query[if declares_object\(target\) \{]"
 HEADER_ENUM_ARM = r"src/emit.rs::append_request_call_args[let value = if header_param\.enum_value]"
 QUERY_EXAMPLE_DROPPED = r"src/ir.rs::build_endpoint[let example = if omit_synthesized_example]"
 QUERY_EXAMPLE_TAKEN = r"src/ir.rs::build_endpoint[=^ {16}query_parameter_example\(doc, p\)$]"
-ALIASED_TEMPORAL = (
-    r"src/ir.rs::build_endpoint[=TypeRef::Primitive\(prim @ \(Prim::Date \x7c Prim::Datetime\)\) => Some\(prim\)]"
-)
+ALIASED_TEMPORAL = r"src/ir.rs::build_endpoint[=TypeRef::Primitive\(Prim::Datetime\) => Some\(Prim::Datetime\),]"
 BODY_COLLISION = r"src/ir.rs::build_endpoint[if let Some\(prefix\) = &field\.collision_prefix]"
 QUERY_UNION_GLOBAL = r"src/ir.rs::parameter_union_is_global[=parameter\.required\.unwrap_or\(false\) == nullable]"
 ONE_OR_MANY = r"src/ir.rs::one_or_many_query_schema[=let nullable = non_null\.len\(\) < members\.len\(\)]"
@@ -1135,8 +1130,8 @@ OUTCOMES = (
             lacks=((RAW, '"content-type"'),),
         ),
     ),
-    # A download first beside JSON: `!json` reads false, so the binary-schema
-    # disjunct runs, and the method returns JSON where a download alone streams.
+    # A download first beside JSON: JSON beats it, so its own arm returns and
+    # the method returns JSON where a download alone streams.
     Outcome(
         "combo-success-json-beside-download",
         Run(
@@ -1145,18 +1140,16 @@ OUTCOMES = (
                     "            application/octet-stream: {}\n            application/json:\n              schema:\n                type: object\n"
                 )
             ),
-            ran=(JSON_OPERAND, SCHEMA_DISJUNCT),
+            ran=(JSON_BEATS_DOWNLOAD,),
             lacks=((CLIENT, STREAMS),),
         ),
         Run(
             operation_document(responses("            application/octet-stream: {}\n")),
-            ran=(JSON_OPERAND,),
-            skipped=(SCHEMA_DISJUNCT,),
+            skipped=(JSON_BEATS_DOWNLOAD,),
             holds=((CLIENT, STREAMS),),
         ),
     ),
-    # A binary schema beside JSON: `!json` reads false and the binary-schema
-    # disjunct decides, streaming where the same media without the schema does not.
+    # A binary schema beside JSON streams, where the same media without the schema does not.
     Outcome(
         "combo-success-json-beside-binary-schema",
         Run(
@@ -1165,7 +1158,7 @@ OUTCOMES = (
                     "            application/json:\n              schema:\n                type: object\n            application/octet-stream:\n              schema:\n                type: string\n                format: binary\n"
                 )
             ),
-            ran=(JSON_OPERAND, FORMAT_OPERAND),
+            ran=(JSON_BESIDE_BINARY,),
             holds=((CLIENT, STREAMS),),
         ),
         Run(
@@ -1174,13 +1167,13 @@ OUTCOMES = (
                     "            application/json:\n              schema:\n                type: object\n            application/octet-stream:\n              schema: {}\n"
                 )
             ),
-            ran=(JSON_OPERAND,),
-            skipped=(FORMAT_OPERAND,),
+            ran=(JSON_BEATS_DOWNLOAD,),
+            skipped=(JSON_BESIDE_BINARY,),
             lacks=((CLIENT, STREAMS),),
         ),
     ),
-    # Text first beside a download: the text operand of `download_first` reads it, so
-    # `!json` never runs and the method returns `str` where the download streams.
+    # Text first beside a download: the first of the two kinds decides, so the method
+    # returns `str` where the download streams.
     Outcome(
         "combo-success-text-beside-download",
         Run(
@@ -1189,14 +1182,12 @@ OUTCOMES = (
                     "            text/plain:\n              schema:\n                type: string\n            application/octet-stream: {}\n"
                 )
             ),
-            ran=(TEXT_OPERAND,),
-            skipped=(JSON_OPERAND,),
+            ran=(FIRST_KIND_DECIDES,),
             holds=((CLIENT, "-> str:"),),
         ),
         Run(
             operation_document(responses("            application/octet-stream: {}\n")),
-            ran=(JSON_OPERAND,),
-            skipped=(TEXT_OPERAND,),
+            skipped=(FIRST_KIND_DECIDES,),
             holds=((CLIENT, STREAMS),),
         ),
     ),
@@ -1331,12 +1322,12 @@ OUTCOMES = (
         "combo-document-security-security-empty",
         Run(
             operation_document(secured("      security: []\n"), BEARER, "security:\n  - bearerAuth: []\n"),
-            ran=(UNAUTHENTICATED,),
+            ran=(SECURITY_OPT_OUT,),
             holds=((CLIENT, OPTIONAL_TOKEN),),
         ),
         Run(
             operation_document(secured(""), BEARER, "security:\n  - bearerAuth: []\n"),
-            skipped=(UNAUTHENTICATED,),
+            skipped=(SECURITY_OPT_OUT,),
             lacks=((CLIENT, OPTIONAL_TOKEN),),
         ),
     ),
@@ -1592,7 +1583,7 @@ OUTCOMES = (
             operation_document(
                 tally_query('            $ref: "#/components/schemas/TallyFilter"\n'), "  schemas:\n" + TALLY_FILTER
             ),
-            ran=(OBJECT_QUERY,),
+            ran=(REFERENCED_OBJECT_QUERY,),
             holds=((CLIENT, "filter=TallyFilter(),"),),
             lacks=((CLIENT, 'ids=["ids"]'),),
         ),
@@ -1600,7 +1591,7 @@ OUTCOMES = (
             operation_document(
                 tally_query('            $ref: "#/components/schemas/TallyCode"\n'), "  schemas:\n" + TALLY_FILTER
             ),
-            skipped=(OBJECT_QUERY,),
+            skipped=(REFERENCED_OBJECT_QUERY,),
             holds=((CLIENT, 'ids=["ids"]'),),
         ),
     ),
@@ -1918,9 +1909,12 @@ class RegionUnionReport:
                     or ":" in file
                 ):
                     raise ValueError(f"{path}: region file must be a repository-relative Rust source")
-                parsed.append(
-                    ReachedRegion(file, number(start_line), number(start_column), number(end_line), number(end_column))
+                reached = ReachedRegion(
+                    file, number(start_line), number(start_column), number(end_line), number(end_column)
                 )
+                if (reached.start_line, reached.start_column) > (reached.end_line, reached.end_column):
+                    raise ValueError(f"{path}: a region must end at or after where it starts")
+                parsed.append(reached)
             if parsed != sorted(set(parsed)):
                 raise ValueError(f"{path}: regions must be sorted and unique")
             return tuple(parsed)
@@ -1972,6 +1966,9 @@ class RegionUnionReportTest(unittest.TestCase):
             raw["both_only"] = [["src/ir.rs", 1]]
             variants.append(raw)
             raw = json.loads(original)
+            raw["both_only"] = [["src/ir.rs", 9, 4, 9, 1]]
+            variants.append(raw)
+            raw = json.loads(original)
             raw["handlers"] = ["not-a-handler"]
             variants.append(raw)
             for broken in variants:
@@ -1981,6 +1978,318 @@ class RegionUnionReportTest(unittest.TestCase):
                         RegionUnionReport.read(path, pattern)
             path.write_text(original, encoding="utf-8")
             self.assertEqual(source.parent.name, RegionUnionReport.read(path, pattern).key)
+
+
+def echo_call(security: str = "", answer: str = "Waybill") -> str:
+    """One operation posting a `Waybill` and answering `answer`, under `security`."""
+    return (
+        "  /waybills:\n    post:\n      operationId: fileWaybill\n"
+        + security
+        + "      requestBody:\n        required: true\n        content:\n          application/json:\n"
+        + '            schema:\n              $ref: "#/components/schemas/Waybill"\n'
+        + '      responses:\n        "200":\n          description: ok\n          content:\n'
+        + f'            application/json:\n              schema:\n                $ref: "#/components/schemas/{answer}"\n'
+    )
+
+
+WAYBILL_SCHEMAS = (
+    "  schemas:\n    Waybill:\n      type: object\n      properties:\n        consignee:\n          type: string\n"
+    "    Receipt:\n      type: object\n      properties:\n        stamp:\n          type: string\n"
+)
+OAUTH_SCHEME = (
+    "  securitySchemes:\n    gate:\n      type: oauth2\n      flows:\n        clientCredentials:\n"
+    "          tokenUrl: https://example.invalid/token\n          scopes: {}\n"
+)
+KEY_SCHEME = "  securitySchemes:\n    gate:\n      type: apiKey\n      in: header\n      name: X-Gate\n"
+BEARER_SCHEME = "  securitySchemes:\n    gate:\n      type: http\n      scheme: bearer\n"
+OWN_GATE = "      security:\n        - gate: []\n"
+NO_GATE = "      security: []\n"
+ROOT_GATE = "security:\n  - gate: []\n"
+
+
+def gated_call(security: str = "") -> str:
+    return (
+        "  /gates:\n    get:\n      operationId: listGates\n"
+        + security
+        + '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def craft_path_schema(schema: str) -> str:
+    return (
+        "  /craft/{kind}:\n    get:\n      operationId: getCraft\n      parameters:\n        - name: kind\n"
+        f"          in: path\n          required: true\n          schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+def survey_query(schema: str, location: str = "query") -> str:
+    return (
+        "  /surveys:\n    get:\n      operationId: listSurveys\n      parameters:\n        - name: filter\n"
+        f"          in: {location}\n          required: true\n          schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+SURVEY_SCHEMAS = (
+    "  schemas:\n    Survey:\n      type: object\n      properties:\n        area:\n          type: string\n"
+    "    Label:\n      type: string\n"
+)
+
+
+def form_body(media: str, schema: str) -> str:
+    return (
+        "  /grants:\n    post:\n      operationId: claimGrant\n      requestBody:\n        required: true\n"
+        f"        content:\n          {media}:\n            schema:\n{schema}"
+        '      responses:\n        "204":\n          description: done\n'
+    )
+
+
+GRANT_UNION = (
+    "              {keyword}:\n"
+    "                - type: object\n                  properties:\n                    code:\n"
+    "                      type: string\n"
+    "                - type: object\n                  properties:\n                    token:\n"
+    "                      type: string\n"
+)
+GRANT_SCHEMAS = (
+    "  schemas:\n    Grant:\n      oneOf:\n"
+    "        - type: object\n          properties:\n            code:\n              type: string\n"
+    "        - type: object\n          properties:\n            token:\n              type: string\n"
+)
+BINARY_ANSWER = "              schema:\n                type: string\n                format: binary\n"
+PLAIN_TEXT = "              schema:\n                type: string\n"
+JSON_ANSWER = "              schema:\n                type: object\n                properties:\n                  id:\n                    type: string\n"
+
+
+def media(*alternatives: tuple[str, str]) -> str:
+    return "".join(
+        f"            {name}:{chr(10) + schema if schema else ' {}' + chr(10)}" for name, schema in alternatives
+    )
+
+
+def failing_call(content: str, status: str = "404") -> str:
+    return (
+        "  /depots:\n    get:\n      operationId: listDepots\n      responses:\n"
+        '        "204":\n          description: done\n'
+        f'        "{status}":\n          description: refused\n          content:\n            application/json:\n'
+        f"              schema:\n{content}"
+    )
+
+
+REFUSAL_OBJECT = "                type: object\n                properties:\n                  reason:\n                    type: string\n"
+REFUSAL_SCHEMAS = (
+    "  schemas:\n    Refusal:\n      type: object\n      properties:\n        reason:\n          type: string\n"
+)
+
+
+def streamed_call(method_name: bool, condition: bool) -> str:
+    named = "      x-fern-sdk-method-name: estimate\n" if method_name else ""
+    streaming = (
+        "      x-fern-streaming:\n        format: sse\n        stream-condition: $request.live\n"
+        '        response:\n          $ref: "#/components/schemas/Quote"\n'
+        '        response-stream:\n          $ref: "#/components/schemas/Quote"\n'
+        if condition
+        else ""
+    )
+    return (
+        "  /quotes:\n    post:\n      operationId: requestQuote\n"
+        + named
+        + streaming
+        + "      requestBody:\n        content:\n          application/json:\n            schema:\n"
+        + "              type: object\n              properties:\n                live:\n                  type: boolean\n"
+        + '      responses:\n        "200":\n          description: ok\n          content:\n'
+        + '            application/json:\n              schema:\n                $ref: "#/components/schemas/Quote"\n'
+    )
+
+
+QUOTE_SCHEMAS = (
+    "  schemas:\n    Quote:\n      type: object\n      properties:\n        cents:\n          type: integer\n"
+)
+CRAFT_SCHEMAS = "  schemas:\n" + EXAMPLED_CRAFT + "    Docked:\n      type: string\n      format: date\n"
+INLINE_RIG = "            type: string\n            enum: [glider, balloon]\n"
+
+
+def reference(target: str) -> str:
+    return f'            $ref: "#/components/schemas/{target}"\n'
+
+
+KIOSK_BODY = (
+    "              type: object\n              properties:\n                label:\n                  type: string\n"
+    "                serial:\n                  type: string\n{flag}"
+)
+KIOSK_SCHEMAS = (
+    "  schemas:\n    Kiosk:\n      type: object\n      properties:\n        label:\n          type: string\n"
+    "        serial:\n          type: string\n          readOnly: true\n"
+)
+
+
+class InteractionArm(NamedTuple):
+    both: str
+    controls: dict[str, str]
+
+
+# Each exclusive interaction arm: the document with both features, and the controls that
+# may each hold at most one of them. Where one feature entails the other, no valid
+# document has the entailing feature alone, so the controls hold the entailed one.
+INTERACTION_ARMS: dict[str, InteractionArm] = {
+    # The selector reads `readOnly` on the inline body's own property, so it entails an inline
+    # body; the writable body is the entailed feature alone, and the referenced body shows a
+    # `readOnly` the inline arm never reads.
+    "combo-inline-body-read-only-property": InteractionArm(
+        operation_document(
+            form_body("application/json", KIOSK_BODY.format(flag="                  readOnly: true\n")), ""
+        ),
+        {
+            "inline body alone": operation_document(form_body("application/json", KIOSK_BODY.format(flag="")), ""),
+            "referenced body with a readOnly property": operation_document(
+                form_body("application/json", '              $ref: "#/components/schemas/Kiosk"\n'), KIOSK_SCHEMAS
+            ),
+        },
+    ),
+    "combo-header-param-ref-string-enum": InteractionArm(
+        operation_document(craft_header("Rig"), CRAFT_SCHEMAS),
+        {
+            "header alone": operation_document(craft_header("Tag"), CRAFT_SCHEMAS),
+            "referenced enum alone": operation_document(craft_query("Rig"), CRAFT_SCHEMAS),
+            "inline header enum": operation_document(
+                craft_header("Rig").replace('            $ref: "#/components/schemas/Rig"\n', INLINE_RIG),
+                CRAFT_SCHEMAS,
+            ),
+        },
+    ),
+    "combo-path-param-ref-string-enum": InteractionArm(
+        operation_document(craft_path_schema(reference("Rig")), CRAFT_SCHEMAS),
+        {
+            "path alone": operation_document(craft_path_schema(reference("Tag")), CRAFT_SCHEMAS),
+            "referenced enum alone": operation_document(craft_query("Rig"), CRAFT_SCHEMAS),
+            "inline path enum": operation_document(craft_path_schema(INLINE_RIG), CRAFT_SCHEMAS),
+        },
+    ),
+    "combo-query-param-ref-date-time": InteractionArm(
+        operation_document(craft_query("Landed"), CRAFT_SCHEMAS),
+        {
+            "query alone": operation_document(craft_query("Tag"), CRAFT_SCHEMAS),
+            "referenced date-time alone": operation_document(craft_header("Landed"), CRAFT_SCHEMAS),
+            "referenced date": operation_document(craft_query("Docked"), CRAFT_SCHEMAS),
+        },
+    ),
+    "combo-query-param-ref-object": InteractionArm(
+        operation_document(survey_query(reference("Survey")), SURVEY_SCHEMAS),
+        {
+            "query alone": operation_document(survey_query(reference("Label")), SURVEY_SCHEMAS),
+            "referenced object alone": operation_document(survey_query(reference("Survey"), "header"), SURVEY_SCHEMAS),
+            "inline object": operation_document(
+                survey_query(
+                    "            type: object\n            properties:\n              area:\n                type: string\n"
+                ),
+                SURVEY_SCHEMAS,
+            ),
+        },
+    ),
+    "combo-form-urlencoded-union-body": InteractionArm(
+        operation_document(
+            form_body("application/x-www-form-urlencoded", GRANT_UNION.format(keyword="oneOf")), GRANT_SCHEMAS
+        ),
+        {
+            "form alone": operation_document(
+                form_body(
+                    "application/x-www-form-urlencoded",
+                    "              type: object\n              properties:\n                code:\n                  type: string\n",
+                ),
+                GRANT_SCHEMAS,
+            ),
+            "union alone": operation_document(
+                form_body("application/json", GRANT_UNION.format(keyword="oneOf")), GRANT_SCHEMAS
+            ),
+            "referenced union": operation_document(
+                form_body("application/x-www-form-urlencoded", '              $ref: "#/components/schemas/Grant"\n'),
+                GRANT_SCHEMAS,
+            ),
+            "anyOf": operation_document(
+                form_body("application/x-www-form-urlencoded", GRANT_UNION.format(keyword="anyOf")), GRANT_SCHEMAS
+            ),
+        },
+    ),
+    "combo-success-json-beside-download": InteractionArm(
+        operation_document(responses(media(("image/png", ""), ("application/json", JSON_ANSWER)))),
+        {
+            "download alone": operation_document(responses(media(("image/png", "")))),
+            "json alone": operation_document(responses(media(("application/json", JSON_ANSWER)))),
+        },
+    ),
+    "combo-success-text-beside-download": InteractionArm(
+        operation_document(responses(media(("text/plain", PLAIN_TEXT), ("image/png", "")))),
+        {
+            "download alone": operation_document(responses(media(("image/png", "")))),
+            "text alone": operation_document(responses(media(("text/plain", PLAIN_TEXT)))),
+        },
+    ),
+    "combo-success-json-beside-binary-schema": InteractionArm(
+        operation_document(responses(media(("application/json", JSON_ANSWER), ("application/zip", BINARY_ANSWER)))),
+        {
+            "binary schema alone": operation_document(responses(media(("application/zip", BINARY_ANSWER)))),
+            "json alone": operation_document(responses(media(("application/json", JSON_ANSWER)))),
+        },
+    ),
+    # `operation.context:error-object` entails `operation.responses`: the entailed
+    # feature alone is an operation answering no inline error object.
+    "combo-error-object": InteractionArm(
+        operation_document(failing_call(REFUSAL_OBJECT), REFUSAL_SCHEMAS),
+        {
+            "responses alone": operation_document(gated_call()),
+            "referenced error": operation_document(
+                failing_call('                $ref: "#/components/schemas/Refusal"\n'), REFUSAL_SCHEMAS
+            ),
+            "inline allOf naming no properties": operation_document(
+                failing_call('                allOf:\n                  - $ref: "#/components/schemas/Refusal"\n'),
+                REFUSAL_SCHEMAS,
+            ),
+        },
+    ),
+    "combo-document-security-security-empty": InteractionArm(
+        operation_document(gated_call(NO_GATE), BEARER_SCHEME, ROOT_GATE),
+        {
+            "document requirement alone": operation_document(gated_call(), BEARER_SCHEME, ROOT_GATE),
+            "empty list alone": operation_document(gated_call(NO_GATE), BEARER_SCHEME),
+        },
+    ),
+    "combo-document-operation-security": InteractionArm(
+        operation_document(gated_call(OWN_GATE), BEARER_SCHEME, ROOT_GATE),
+        {
+            "document requirement alone": operation_document(gated_call(), BEARER_SCHEME, ROOT_GATE),
+            "operation requirement alone": operation_document(gated_call(OWN_GATE), BEARER_SCHEME),
+        },
+    ),
+    "combo-echo-body-effective-oauth2": InteractionArm(
+        operation_document(echo_call(OWN_GATE), WAYBILL_SCHEMAS + OAUTH_SCHEME),
+        {
+            "echo alone": operation_document(echo_call(), WAYBILL_SCHEMAS),
+            "oauth2 alone": operation_document(echo_call(OWN_GATE, "Receipt"), WAYBILL_SCHEMAS + OAUTH_SCHEME),
+        },
+    ),
+    "combo-echo-body-effective-non-oauth-required": InteractionArm(
+        operation_document(echo_call(OWN_GATE), WAYBILL_SCHEMAS + KEY_SCHEME),
+        {
+            "echo alone": operation_document(echo_call(), WAYBILL_SCHEMAS),
+            "required key alone": operation_document(echo_call(OWN_GATE, "Receipt"), WAYBILL_SCHEMAS + KEY_SCHEME),
+        },
+    ),
+    "combo-echo-body-effective-anonymous": InteractionArm(
+        operation_document(echo_call(), WAYBILL_SCHEMAS),
+        {
+            "echo under a required key": operation_document(echo_call(OWN_GATE), WAYBILL_SCHEMAS + KEY_SCHEME),
+            "anonymous alone": operation_document(echo_call("", "Receipt"), WAYBILL_SCHEMAS),
+        },
+    ),
+    "combo-streaming-method-name": InteractionArm(
+        operation_document(streamed_call(True, True), QUOTE_SCHEMAS),
+        {
+            "method name alone": operation_document(streamed_call(True, False), QUOTE_SCHEMAS),
+            "stream condition alone": operation_document(streamed_call(False, True), QUOTE_SCHEMAS),
+        },
+    ),
+}
 
 
 class CooccurrenceOutcomeTest(unittest.TestCase):
@@ -2025,6 +2334,51 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
         regions = {tuple(r) for r in universe.get(site.file, []) if site.holds(tuple(r))}
         self.assertTrue(regions, f"{spec} spans no counter region")
         return bool(regions & {tuple(r) for r in hit.get(site.file, [])})
+
+    def test_each_interaction_arm_runs_only_with_both_features(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("handwritten_interaction_arms", "handwritten-fixtures.py")
+        table = reach.read_sites_table()
+        # Resolve every site before building, so a removed or pooled branch fails directly.
+        arms = {key: table[key].sites for key in INTERACTION_ARMS}
+        for sites in arms.values():
+            self.assertEqual(1, len(sites))
+            reach.resolve_site(sites[0])
+        census = _module("census_interaction_arms", "openapi-surface-census.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for key, arm in INTERACTION_ARMS.items():
+            selector = table[key].selectors[0]
+            conjunctions = {selector: census.compile_conjunction(selector)}
+            for label, document, expected in (
+                ("both", arm.both, True),
+                *((label, control, False) for label, control in arm.controls.items()),
+            ):
+                with self.subTest(key=key, document=label), tempfile.TemporaryDirectory() as temporary:
+                    scratch = Path(temporary)
+                    _package, universe, hit = self.generate(scratch, document, reach, crozier)
+                    counts = census.census_document(census.load_document(scratch / "openapi.yml"), conjunctions)
+                    self.assertEqual(expected, counts.get(selector, 0) > 0, "the census disagrees with this document")
+                    self.assertEqual(expected, self.ran(reach, arms[key][0], universe, hit))
+
+    def test_each_interaction_arm_runs_on_the_real_specification_its_audit_names(self) -> None:
+        reach = golden_reach()
+        handwritten = _module("handwritten_interaction_witnesses", "handwritten-fixtures.py")
+        census = _module("census_interaction_witnesses", "openapi-surface-census.py")
+        fixtures = REPO / "tests" / "fixtures"
+        sources = {
+            source.fixture: source.path
+            for source in census.acquisition_sources(fixtures, fixtures / "corpus-sources", False)
+        }
+        audit, failures = reach.read_cooccurrence()
+        self.assertEqual([], failures)
+        table = reach.read_sites_table()
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        for key in INTERACTION_ARMS:
+            self.assertEqual("interaction", audit[key].proof_class, key)
+            with self.subTest(key=key, witness=audit[key].witness), tempfile.TemporaryDirectory() as temporary:
+                document = sources[audit[key].witness].read_text(encoding="utf-8")
+                _package, universe, hit = self.generate(Path(temporary), document, reach, crozier)
+                self.assertTrue(self.ran(reach, table[key].sites[0], universe, hit))
 
     def test_referenced_query_string_enum_has_an_exclusive_region(self) -> None:
         reach = _module("golden_reach_query_enum", "golden-reach.py")
@@ -2247,47 +2601,6 @@ class CooccurrenceOutcomeTest(unittest.TestCase):
             self.assertTrue(self.ran(reach, "src/ir.rs::prefer_map_to_union", universe, hit))
             self.assertFalse(self.ran(reach, MAP_ANY_OF, universe, hit))
             self.assertFalse(self.ran(reach, MAP_ONE_OF, universe, hit))
-
-
-class IndependentCombinationTest(unittest.TestCase):
-    def test_each_independent_combination_is_the_union_of_its_feature_only_runs(self) -> None:
-        independence = _module("combination_independence", "combination-independence.py")
-        reach = golden_reach()
-        records, failures = independence.read_records(REPO)
-        self.assertEqual([], failures)
-        audit, failures = reach.read_cooccurrence()
-        self.assertEqual([], failures)
-        independent = {key: row for key, row in audit.items() if row.proof_class == "independent"}
-        self.assertEqual(set(independent), set(records), "independent audit rows and three-document proofs must agree")
-        if not records:
-            return
-        handwritten = _module("handwritten_independence", "handwritten-fixtures.py")
-        crozier = handwritten.instrumented_crozier(REPO, reach)
-        driver = CooccurrenceOutcomeTest()
-        for key, proof in records.items():
-            handlers = reach.handler_specs(independent[key].handlers)
-            self.assertEqual([], independence.source_failures(REPO, proof, handlers))
-            for condition in proof.conditions:
-                self.assertIn(f"`{condition.condition}`", independent[key].why_no_branch)
-            sites = [reach.resolve_site(handler) for handler in handlers]
-            for mode in proof.modes:
-                hits = {}
-                for label, document in proof.documents.items():
-                    with self.subTest(key=key, mode=mode, document=label), tempfile.TemporaryDirectory() as temporary:
-                        _package, _universe, hit = driver.generate(
-                            Path(temporary),
-                            (REPO / document.document).read_text(encoding="utf-8"),
-                            reach,
-                            crozier,
-                            mode.replace("_", "-"),
-                        )
-                        hits[label] = {
-                            (site.file, *region)
-                            for site in sites
-                            for region in hit.get(site.file, [])
-                            if site.holds(tuple(region))
-                        }
-                self.assertEqual(hits["first"] | hits["second"], hits["both"], f"{key} ({mode}) has an interaction")
 
 
 MAP_ONE_OF = r"src/ir.rs::prefer_map_to_union[if schema\.one_of\.is_some\(\)]"
@@ -2582,6 +2895,47 @@ class CooccurrenceOpenUnionTest(unittest.TestCase):
                 + "\n",
                 encoding="utf-8",
             )
+
+
+class IndependentCombinationTest(unittest.TestCase):
+    def test_each_independent_combination_is_the_union_of_its_feature_only_runs(self) -> None:
+        independence = _module("combination_independence", "combination-independence.py")
+        reach = golden_reach()
+        records, failures = independence.read_records(REPO)
+        self.assertEqual([], failures)
+        audit, failures = reach.read_cooccurrence()
+        self.assertEqual([], failures)
+        independent = {key: row for key, row in audit.items() if row.proof_class == "independent"}
+        self.assertEqual(set(independent), set(records), "independent audit rows and three-document proofs must agree")
+        if not records:
+            return
+        handwritten = _module("handwritten_independence", "handwritten-fixtures.py")
+        crozier = handwritten.instrumented_crozier(REPO, reach)
+        driver = CooccurrenceOutcomeTest()
+        for key, proof in records.items():
+            handlers = reach.handler_specs(independent[key].handlers)
+            self.assertEqual([], independence.source_failures(REPO, proof, handlers))
+            for condition in proof.conditions:
+                self.assertIn(f"`{condition.condition}`", independent[key].why_no_branch)
+            sites = [reach.resolve_site(handler) for handler in handlers]
+            for mode in proof.modes:
+                hits = {}
+                for label, document in proof.documents.items():
+                    with self.subTest(key=key, mode=mode, document=label), tempfile.TemporaryDirectory() as temporary:
+                        _package, _universe, hit = driver.generate(
+                            Path(temporary),
+                            (REPO / document.document).read_text(encoding="utf-8"),
+                            reach,
+                            crozier,
+                            mode.replace("_", "-"),
+                        )
+                        hits[label] = {
+                            ReachedRegion(site.file, *region)
+                            for site in sites
+                            for region in hit.get(site.file, [])
+                            if site.holds(tuple(region))
+                        }
+                self.assertEqual(hits["first"] | hits["second"], hits["both"], f"{key} ({mode}) has an interaction")
 
 
 if __name__ == "__main__":
