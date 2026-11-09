@@ -5,71 +5,71 @@ digest = "85a5dd8b8a18098eb04217a51c1c20b4ea5f869548452dd093ceb275817a2a13"
 [[covers]]
 key = "format-email"
 arm = 'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-email.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-47-format-email"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-hostname"
 arm = 'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-hostname.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-48-format-hostname"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-idn-hostname"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-idn-hostname.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-49-format-idn-hostname"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-ipv4"
 arm = 'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-ipv4.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-51-format-ipv4"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-iri"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-iri.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-52-format-iri"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-json-pointer"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-json-pointer.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-53-format-json-pointer"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-password"
 arm = 'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-password.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-54-format-password"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-regex"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-regex.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-55-format-regex"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-time"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-time.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-56-format-time"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-uri"
 arm = 'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-uri.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-57-format-uri"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-uri-reference"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-uri-reference.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-58-format-uri-reference"
 verdict = "exhausted"
 
 [[covers]]
 key = "format-uri-template"
 arm = 'src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/format-uri-template.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-59-format-uri-template"
 verdict = "exhausted"

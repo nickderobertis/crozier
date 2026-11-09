@@ -4,6 +4,5 @@ digest = "43b687057ab49073efe755f7dfbaf2c7e05acd8afedf11770c0c65a3b9c760a5"
 
 [[covers]]
 key = "oneof-array-variant-inline-const-item"
-search = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md#feature-verdicts"
-verdict = "search-incomplete"
-renewed = "docs/openapi-surface/witness-search-fixture-only-schemas/README.md"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-80-oneof-array-variant-inline-const-item"
+verdict = "exhausted"

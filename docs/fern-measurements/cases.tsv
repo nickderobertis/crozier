@@ -98,13 +98,13 @@ literals-mode/stream-error-status-raises-typed-error	docs/openapi-surface/handwr
 literals-mode/string-body-example-backslash-escaped	docs/openapi-surface/handwritten/string-body-example-backslash-escaped/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/string-body-example-backslash-escaped/fern-expected
 literals-mode/tram-route-query	docs/openapi-surface/handwritten/tram-route-query/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/tram-route-query/fern-expected
 literals-mode/transcript-format-part	docs/openapi-surface/handwritten/transcript-format-part/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/transcript-format-part/fern-expected
-literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped	docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected
+literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped	docs/fern-measurements/superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped/openapi.yml	literals	packaged	expected:docs/fern-measurements/superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected
 literals-mode/union-of-enum-ref-const-and-string-members	docs/openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/fern-expected
 literals-mode/variant-optional-const-discriminant-merged	docs/fern-measurements/literals-mode/variant-optional-const-discriminant-merged/openapi.yml	literals	packaged	expected:-
 literals-mode/water-pump-station	docs/openapi-surface/handwritten/water-pump-station/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/water-pump-station/fern-expected
 literals-mode/weather-radar-stream	docs/openapi-surface/handwritten/weather-radar-stream/openapi.yml	literals	packaged	expected:docs/openapi-surface/handwritten/weather-radar-stream/fern-expected
 models-refs-composed-narrowing/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	python-enums	packaged	-
-models-refs-literals/artefact-catalogue	docs/openapi-surface/handwritten/artefact-catalogue/openapi.yml	literals	packaged	-
+models-refs-literals/artefact-catalogue	docs/fern-measurements/superseded-fixtures/artefact-catalogue/openapi.yml	literals	packaged	-
 models-refs-literals/circuit-readings	docs/openapi-surface/handwritten/circuit-readings/openapi.yml	literals	packaged	-
 models-refs-literals/compass-member-notes	docs/openapi-surface/handwritten/compass-member-notes/openapi.yml	literals	packaged	-
 models-refs-literals/dossier-status	docs/fern-measurements/models-refs-composed-narrowing/dossier-status/openapi.yml	literals	packaged	-
@@ -115,10 +115,10 @@ models-refs-literals/harbour-window	docs/openapi-surface/handwritten/harbour-win
 models-refs-literals/library-records	docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml	literals	packaged	-
 models-refs-literals/material-register	docs/openapi-surface/handwritten/material-register/openapi.yml	literals	packaged	-
 models-refs-literals/measurement-phase	docs/openapi-surface/handwritten/measurement-phase/openapi.yml	literals	packaged	-
-models-refs-literals/nullable-observer-notes	docs/openapi-surface/handwritten/nullable-observer-notes/openapi.yml	literals	packaged	-
+models-refs-literals/nullable-observer-notes	docs/fern-measurements/superseded-fixtures/nullable-observer-notes/openapi.yml	literals	packaged	-
 models-refs-literals/parcel-response	docs/openapi-surface/handwritten/parcel-response/openapi.yml	literals	packaged	-
 models-refs-literals/required-marker-point	docs/openapi-surface/handwritten/required-marker-point/openapi.yml	literals	packaged	-
-models-refs-literals/reservoir-ledger	docs/openapi-surface/handwritten/reservoir-ledger/openapi.yml	literals	packaged	-
+models-refs-literals/reservoir-ledger	docs/fern-measurements/superseded-fixtures/reservoir-ledger/openapi.yml	literals	packaged	-
 models-refs-literals/sampling-branches	docs/openapi-surface/handwritten/sampling-branches/openapi.yml	literals	packaged	-
 models-refs-literals/union-sample	docs/openapi-surface/handwritten/union-sample/openapi.yml	literals	packaged	-
 models-refs-literals/verified-seal	docs/openapi-surface/handwritten/verified-seal/openapi.yml	literals	packaged	-
@@ -351,3 +351,7 @@ operation-independence/error-multiple-media-both	docs/fern-measurements/operatio
 operation-independence/header-array-enum-second	docs/fern-measurements/operation-independence/header-array-enum-second/openapi.yml	python-enums	packaged	-
 combination-diagnostics/harbor-parcel-requests	docs/fern-measurements/combination-diagnostics/harbor-parcel-requests/openapi.yml	python-enums	packaged	-
 combination-diagnostics/orchard-dispatch-schemas	docs/fern-measurements/combination-diagnostics/orchard-dispatch-schemas/openapi.yml	python-enums	packaged	-
+superseded-fixtures/artefact-catalogue	docs/fern-measurements/superseded-fixtures/artefact-catalogue/openapi.yml	python-enums	packaged	-
+superseded-fixtures/reservoir-ledger	docs/fern-measurements/superseded-fixtures/reservoir-ledger/openapi.yml	python-enums	packaged	-
+superseded-fixtures/nullable-observer-notes	docs/fern-measurements/superseded-fixtures/nullable-observer-notes/openapi.yml	python-enums	packaged	-
+superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped	docs/fern-measurements/superseded-fixtures/undiscriminated-ref-oneof-sibling-properties-dropped/openapi.yml	python-enums	packaged	-

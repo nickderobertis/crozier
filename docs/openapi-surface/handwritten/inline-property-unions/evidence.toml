@@ -4,23 +4,23 @@ digest = "159b0afd6b57102e3c4a75d6d98c00db092d5303103c2815869e91d394bf6db7"
 
 [[covers]]
 key = "annotated-ref-target-string-const"
-search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-14-annotated-ref-target-string-const"
 verdict = "exhausted"
 
 [[covers]]
 key = "annotated-ref-target-anyof"
 arm = 'src/ir.rs::InlineHoister::prop_type_ref[if target.one_of.is_some\(\)]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/annotated-ref-target-anyof.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-12-annotated-ref-target-anyof"
 verdict = "exhausted"
 
 [[covers]]
 key = "property-sole-anyof-closed-object-member"
 arm = 'src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/property-sole-anyof-closed-object-member.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-92-property-sole-anyof-closed-object-member"
 verdict = "exhausted"
 
 [[covers]]
 key = "property-sole-anyof-struct-member"
 arm = 'src/ir.rs::InlineHoister::prop_type_ref[if members.len\(\) == 1 && is_inline_struct]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/property-sole-anyof-struct-member.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-95-property-sole-anyof-struct-member"
 verdict = "exhausted"

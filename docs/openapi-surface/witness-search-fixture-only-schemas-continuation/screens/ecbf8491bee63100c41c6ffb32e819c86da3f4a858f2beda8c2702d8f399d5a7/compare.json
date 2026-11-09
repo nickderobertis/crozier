@@ -1,0 +1,41 @@
+{
+  "schema_version": 2,
+  "crozier_version": "0.0.159",
+  "searched_paths": [
+    "<scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml"
+  ],
+  "exit_code": 3,
+  "counts": {
+    "matched": 0,
+    "mismatched": 1,
+    "could_not_check": 0
+  },
+  "timing_totals": {
+    "generators_timed": 0,
+    "reference_seconds": 0.0,
+    "crozier_seconds": 0.0,
+    "speedup": null,
+    "saved_seconds": 0.0
+  },
+  "results": [
+    {
+      "status": "mismatched",
+      "config_file": "<scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/compare.yml",
+      "generator": "python",
+      "spec": "<scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/openapi.yaml",
+      "reference": {
+        "command": "cp -R <cache>/certified-trees/fern-5.163.1_python-5.41.3/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/python_enums/tree/. \"$CROZIER_REFERENCE_OUTPUT\"",
+        "exit_code": 0,
+        "diagnostic": null
+      },
+      "comparison": null,
+      "timing": {
+        "reference_seconds": 0.023216229,
+        "crozier_seconds": null,
+        "speedup": null,
+        "saved_seconds": null
+      },
+      "reason": "crozier could not generate: invalid OpenAPI document <scratch>/screen-runs/ecbf8491bee63100c41c6ffb32e819c86da3f4a858f2beda8c2702d8f399d5a7/openapi.yaml: unresolved-reference: paths//redirect/test/get/responses/307/headers/redirectHeader: #/components/parameters/redirectHeader"
+    }
+  ]
+}

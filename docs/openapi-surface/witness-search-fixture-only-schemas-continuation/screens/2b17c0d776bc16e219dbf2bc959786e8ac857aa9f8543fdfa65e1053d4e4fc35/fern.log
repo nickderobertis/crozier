@@ -1,0 +1,29 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <scratch>/fern-tmp/tmp.6FLZVvm78t/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Failed to parse openapi document DomainTools Iris API
+::error title=[api]%3A python-sdk::Failed to parse openapi document DomainTools Iris API
+[api]: python-sdk #/components/parameters/resultsSortBy is undefined 
+                  CliError: #/components/parameters/resultsSortBy is undefined
+                      at k4t.resolveParameterReference (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:143329)
+                      at qLr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:98931)
+                      at lde (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:114070)
+                      at pxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)
+                      at Hzc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)
+                      at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346
+                      at Array.forEach (<anonymous>)
+                      at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)
+                      at s3e (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)
+                      at e.getOpenAPIIr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+::error title=[api]%3A python-sdk::#/components/parameters/resultsSortBy is undefined %0ACliError: #/components/parameters/resultsSortBy is undefined%0A    at k4t.resolveParameterReference (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:143329)%0A    at qLr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:98931)%0A    at lde (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:114070)%0A    at pxo (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:132894)%0A    at Hzc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:134164)%0A    at /home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150346%0A    at Array.forEach (<anonymous>)%0A    at DQc (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:150300)%0A    at s3e (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:210:158340)%0A    at e.getOpenAPIIr (/home/whoop/.npm/_npx/f16e7b4b67752436/node_modules/fern-api/cli.cjs:906:18744)
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <scratch>/fern-tmp/tmp-2112112-SLNtltuMgM03
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <scratch>/fern-tmp/tmp.6FLZVvm78t/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+generate-fern-fixture: wrote 35 files to <repo>/tests/fixtures/schemas-continuation-screen/expected (python-sdk@5.41.3, packaged) — review, then wire them into the e2e manifest (see docs/matching.md)

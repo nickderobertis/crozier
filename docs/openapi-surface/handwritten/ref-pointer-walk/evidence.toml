@@ -5,65 +5,65 @@ digest = "2edae19e5566f0e59b0ba034ef813399331aa84d14d7c5b0b0decdd6ec97280d"
 [[covers]]
 key = "ref-pointer-composition-index"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-100-ref-pointer-composition-index"
 verdict = "exhausted"
 
 [[covers]]
 key = "ref-pointer-composition-index"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-102-ref-pointer-composition-index"
 verdict = "exhausted"
 
 [[covers]]
 key = "ref-pointer-composition-index"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-composition-index.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-101-ref-pointer-composition-index"
 verdict = "exhausted"
 
 [[covers]]
 key = "ref-pointer-nested-properties"
 arm = 'src/ir.rs::ref_to_class["properties" if index]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-105-ref-pointer-nested-properties"
 verdict = "exhausted"
 
 [[covers]]
 key = "ref-pointer-nested-properties"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-properties.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-106-ref-pointer-nested-properties"
 verdict = "exhausted"
 
 [[covers]]
 key = "ref-pointer-nested-items"
 arm = 'src/ir.rs::ref_to_class["items" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-items.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-103-ref-pointer-nested-items"
 verdict = "exhausted"
 
 [[covers]]
 key = "ref-pointer-nested-items"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-nested-items.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-104-ref-pointer-nested-items"
 verdict = "exhausted"
 
 [[covers]]
 key = "array-item-pointer-walk-allof"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-allof.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-30-array-item-pointer-walk-allof"
 verdict = "exhausted"
 
 [[covers]]
 key = "array-item-pointer-walk-anyof"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-anyof.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-31-array-item-pointer-walk-anyof"
 verdict = "exhausted"
 
 [[covers]]
 key = "array-item-pointer-walk-properties"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-properties.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-34-array-item-pointer-walk-properties"
 verdict = "exhausted"
 
 [[covers]]
 key = "array-item-pointer-walk-items"
 arm = 'src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/array-item-pointer-walk-items.md#witness-search-exhaustive"
+search = "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md#target-32-array-item-pointer-walk-items"
 verdict = "exhausted"

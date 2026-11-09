@@ -14568,7 +14568,7 @@ class CompletenessTierTests(unittest.TestCase):
             )
             self.assertTrue(check(), "a cover naming another key accepted")
             evidence.write_text(
-                original.replace("witness-search-fixture-only-schemas/README.md", "missing-search.md"),
+                original.replace("witness-search-fixture-only-schemas-continuation/README.md", "missing-search.md"),
                 encoding="utf-8",
                 newline="\n",
             )
@@ -14577,7 +14577,7 @@ class CompletenessTierTests(unittest.TestCase):
                 "No search table.\n", encoding="utf-8", newline="\n"
             )
             evidence.write_text(
-                original.replace("witness-search-fixture-only-schemas/README.md", "invalid-search.md"),
+                original.replace("witness-search-fixture-only-schemas-continuation/README.md", "invalid-search.md"),
                 encoding="utf-8",
                 newline="\n",
             )
@@ -19446,7 +19446,7 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
             paths = [
                 "docs/openapi-surface/handwritten-e2e.toml",
                 "docs/openapi-surface/schemas.md",
-                "docs/openapi-surface/witness-search-fixture-only-schemas/README.md",
+                "docs/openapi-surface/witness-search-fixture-only-schemas-continuation/README.md",
                 "docs/fern-measurements/models-refs-remote/library-records/evidence.md",
                 "docs/fern-measurements/models-refs-remote/library-records/fern-expected/.fern/metadata.json",
                 "docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml",

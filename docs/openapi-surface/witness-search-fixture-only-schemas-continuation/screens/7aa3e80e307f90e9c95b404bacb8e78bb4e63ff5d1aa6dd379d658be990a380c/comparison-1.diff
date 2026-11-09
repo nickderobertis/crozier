@@ -1,0 +1,329 @@
+# crozier compare: <scratch>/screen-runs/7aa3e80e307f90e9c95b404bacb8e78bb4e63ff5d1aa6dd379d658be990a380c/compare.yml python
+# normalized diff: `-` reference, `+` crozier
+
+--- reference/README.md
++++ crozier/README.md
+      ⋮ (48 unchanged line(s))
+          FeatureGeoJson(
+              type=FeatureGeoJsonType.FEATURE,
+              geometry=GeometryGeoJson_Point(
+-                 point=,
++                 coordinates=[
++                     1.1,
++                     1.1
++                 ],
+              ),
+              properties=None,
+          )
+      ⋮ (37 unchanged line(s))
+              FeatureGeoJson(
+                  type=FeatureGeoJsonType.FEATURE,
+                  geometry=GeometryGeoJson_Point(
+-                     point=,
++                     coordinates=[
++                         1.1,
++                         1.1
++                     ],
+                  ),
+                  properties=None,
+              )
+      ⋮ (111 unchanged line(s))
+
+Unexplained original crozier line(s): 52, 53, 54, 55, 99, 100, 101, 102
+
+--- reference/reference.md
++++ crozier/reference.md
+      ⋮ (751 unchanged line(s))
+          FeatureGeoJson(
+              type=FeatureGeoJsonType.FEATURE,
+              geometry=GeometryGeoJson_Point(
+-                 point=,
++                 coordinates=[
++                     1.1,
++                     1.1
++                 ],
+              ),
+              properties=None,
+          )
+      ⋮ (166 unchanged line(s))
+      feature_id="featureId",
+      type=FeatureGeoJsonType.FEATURE,
+      geometry=GeometryGeoJson_Point(
+-         point=,
++         coordinates=[
++             1.1,
++             1.1
++         ],
+      ),
+      properties=None,
+  )
+      ⋮ (1959 unchanged line(s))
+
+Unexplained original crozier line(s): 755, 756, 757, 758, 931, 932, 933, 934
+
+--- reference/src/fern/__init__.py
++++ crozier/src/fern/__init__.py
+      ⋮ (44 unchanged line(s))
+          NumberMatched,
+          NumberReturned,
+          PointGeoJson,
+-         PointGeoJsonType,
+          PolygonGeoJson,
+          PropertiesSchema,
+          PropertiesSchemaPropertiesValue,
+      ⋮ (15 unchanged line(s))
+          TwoDPoint,
+      )
+      from .errors import BadRequestError, ConflictError, UnauthorizedError
+-     from .resources import GetResourcesRequestF
+      from . import (
+          capabilities,
+          collection_tiles,
+      ⋮ (5 unchanged line(s))
+          tile_matrix_sets,
+      )
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
++     from .client import AsyncFernApi, FernApi
++     from .environment import FernApiEnvironment
+      from .capabilities import (
+          GetApiRequestF,
+          GetCollectionRequestF,
+      ⋮ (1 unchanged line(s))
+          GetConformanceRequestF,
+          GetLandingpageRequestF,
+      )
+-     from .client import AsyncFernApi, FernApi
+      from .collection_tiles import (
+          GetCollectionMapTilesetRequestF,
+          GetCollectionMapTilesetsResponse,
+      ⋮ (1 unchanged line(s))
+          GetCollectionTilesetsResponse,
+      )
+      from .dataset_tiles import GetTilesetRequestF, GetTilesetsResponse
+-     from .environment import FernApiEnvironment
+      from .manage_styles import UpdateStyleRequestValidate
++     from .resources import GetResourcesRequestF
+      from .styles import GetStyleRequestF, GetStylesRequestF, GetStylesResponse, PostStyleRequestValidate
+      from .tile_matrix_sets import GetTileMatrixSetRequestF, GetTileMatrixSetsRequestF
+      from .version import __version__
+      ⋮ (64 unchanged line(s))
+      "NumberMatched": ".types",
+      "NumberReturned": ".types",
+      "PointGeoJson": ".types",
+-     "PointGeoJsonType": ".types",
+      "PolygonGeoJson": ".types",
+      "PostStyleRequestValidate": ".styles",
+      "PropertiesSchema": ".types",
+      ⋮ (116 unchanged line(s))
+      "NumberMatched",
+      "NumberReturned",
+      "PointGeoJson",
+-     "PointGeoJsonType",
+      "PolygonGeoJson",
+      "PostStyleRequestValidate",
+      "PropertiesSchema",
+      ⋮ (29 unchanged line(s))
+
+Unexplained original crozier line(s): 83, 84, 100
+
+--- reference/src/fern/features/client.py
++++ crozier/src/fern/features/client.py
+      ⋮ (233 unchanged line(s))
+              features=[
+                  FeatureGeoJson(
+                      type=FeatureGeoJsonType.FEATURE,
+-                     geometry=GeometryGeoJson_Point(),
++                     geometry=GeometryGeoJson_Point(
++                         coordinates=[1.1, 1.1],
++                     ),
+                  )
+              ],
+          )
+      ⋮ (101 unchanged line(s))
+              collection_id="collectionId",
+              feature_id="featureId",
+              type=FeatureGeoJsonType.FEATURE,
+-             geometry=GeometryGeoJson_Point(),
++             geometry=GeometryGeoJson_Point(
++                 coordinates=[1.1, 1.1],
++             ),
+          )
+          """
+          _response = self._raw_client.put_item(
+      ⋮ (351 unchanged line(s))
+                  features=[
+                      FeatureGeoJson(
+                          type=FeatureGeoJsonType.FEATURE,
+-                         geometry=GeometryGeoJson_Point(),
++                         geometry=GeometryGeoJson_Point(
++                             coordinates=[1.1, 1.1],
++                         ),
+                      )
+                  ],
+              )
+      ⋮ (117 unchanged line(s))
+                  collection_id="collectionId",
+                  feature_id="featureId",
+                  type=FeatureGeoJsonType.FEATURE,
+-                 geometry=GeometryGeoJson_Point(),
++                 geometry=GeometryGeoJson_Point(
++                     coordinates=[1.1, 1.1],
++                 ),
+              )
+  
+  
+      ⋮ (152 unchanged line(s))
+
+Unexplained original crozier line(s): 237, 238, 239, 347, 348, 349, 707, 708, 709, 833, 834, 835
+
+--- reference/src/fern/types/__init__.py
++++ crozier/src/fern/types/__init__.py
+      ⋮ (47 unchanged line(s))
+      from .number_matched import NumberMatched
+      from .number_returned import NumberReturned
+      from .point_geo_json import PointGeoJson
+-     from .point_geo_json_type import PointGeoJsonType
+      from .polygon_geo_json import PolygonGeoJson
+      from .properties_schema import PropertiesSchema
+      from .properties_schema_properties_value import PropertiesSchemaPropertiesValue
+      ⋮ (56 unchanged line(s))
+      "NumberMatched": ".number_matched",
+      "NumberReturned": ".number_returned",
+      "PointGeoJson": ".point_geo_json",
+-     "PointGeoJsonType": ".point_geo_json_type",
+      "PolygonGeoJson": ".polygon_geo_json",
+      "PropertiesSchema": ".properties_schema",
+      "PropertiesSchemaPropertiesValue": ".properties_schema_properties_value",
+      ⋮ (80 unchanged line(s))
+      "NumberMatched",
+      "NumberReturned",
+      "PointGeoJson",
+-     "PointGeoJsonType",
+      "PolygonGeoJson",
+      "PropertiesSchema",
+      "PropertiesSchemaPropertiesValue",
+      ⋮ (17 unchanged line(s))
+
+--- reference/src/fern/types/geometry_geo_json.py
++++ crozier/src/fern/types/geometry_geo_json.py
+      ⋮ (6 unchanged line(s))
+  import pydantic
+  import typing_extensions
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+- from .point_geo_json import PointGeoJson
+  
+  
+  class GeometryGeoJson_Point(UniversalBaseModel):
+-     value: typing.Optional[PointGeoJson] = None
+      type: typing.Literal["Point"] = "Point"
++     coordinates: typing.List[float]
+  
+      if IS_PYDANTIC_V2:
+-         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(frozen=True)
++         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+      else:
+  
+          class Config:
+              frozen = True
+              smart_union = True
++             extra = pydantic.Extra.allow
+  
+  
+  class GeometryGeoJson_MultiPoint(UniversalBaseModel):
+      ⋮ (80 unchanged line(s))
+
+Unexplained original crozier line(s): 14, 17, 23
+
+--- reference/src/fern/types/geospatial_data.py
++++ crozier/src/fern/types/geospatial_data.py
+      ⋮ (34 unchanged line(s))
+      """
+  
+      data_type: typing_extensions.Annotated[
+-         GeospatialDataDataType, FieldMetadata(alias="dataType"), pydantic.Field(alias="dataType")
++         GeospatialDataDataType,
++         FieldMetadata(alias="dataType"),
++         pydantic.Field(alias="dataType", description="Type of data represented in the layer"),
+      ]
++     """
++     Type of data represented in the layer
++     """
++ 
+      geometry_dimension: typing_extensions.Annotated[
+          typing.Optional[int],
+          FieldMetadata(alias="geometryDimension"),
+      ⋮ (152 unchanged line(s))
+      properties_schema: typing_extensions.Annotated[
+          typing.Optional[GeospatialDataPropertiesSchema],
+          FieldMetadata(alias="propertiesSchema"),
+-         pydantic.Field(
+-             alias="propertiesSchema",
+-             description="Properties represented by the features in this layer. Can be the attributes of a feature dataset (datatype=geometries) or the rangeType of a coverage (datatype=coverage)",
+-         ),
++         pydantic.Field(alias="propertiesSchema"),
+      ] = None
+-     """
+-     Properties represented by the features in this layer. Can be the attributes of a feature dataset (datatype=geometries) or the rangeType of a coverage (datatype=coverage)
+-     """
+- 
+      links: typing.Optional[typing.List[Link]] = pydantic.Field(default=None)
+      """
+      Links related to this layer. Possible link 'rel' values are: 'geodata' for a URL pointing to the collection of geospatial data.
+      ⋮ (10 unchanged line(s))
+
+Unexplained original crozier line(s): 38, 39, 40, 42, 43, 44, 45, 204
+
+--- reference/src/fern/types/geospatial_data_properties_schema.py
++++ crozier/src/fern/types/geospatial_data_properties_schema.py
+      ⋮ (8 unchanged line(s))
+  
+  
+  class GeospatialDataPropertiesSchema(UniversalBaseModel):
+-     """
+-     Properties represented by the features in this layer. Can be the attributes of a feature dataset (datatype=geometries) or the rangeType of a coverage (datatype=coverage)
+-     """
+- 
+      type: GeospatialDataPropertiesSchemaType
+      required: typing.Optional[typing.List[str]] = pydantic.Field(default=None)
+      """
+      ⋮ (13 unchanged line(s))
+
+--- reference/src/fern/types/point_geo_json.py
++++ crozier/src/fern/types/point_geo_json.py
+      ⋮ (3 unchanged line(s))
+  
+  import pydantic
+  from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+- from .point_geo_json_type import PointGeoJsonType
+  
+  
+  class PointGeoJson(UniversalBaseModel):
+-     type: PointGeoJsonType
+      coordinates: typing.List[float]
+  
+      if IS_PYDANTIC_V2:
+      ⋮ (7 unchanged line(s))
+
+Only in reference: src/fern/types/point_geo_json_type.py
+
+--- reference/src/fern/types/tile_set.py
++++ crozier/src/fern/types/tile_set.py
+      ⋮ (31 unchanged line(s))
+      """
+  
+      data_type: typing_extensions.Annotated[
+-         TileSetDataType, FieldMetadata(alias="dataType"), pydantic.Field(alias="dataType")
++         TileSetDataType,
++         FieldMetadata(alias="dataType"),
++         pydantic.Field(alias="dataType", description="Type of data represented in the tileset"),
+      ]
++     """
++     Type of data represented in the tileset
++     """
++ 
+      crs: str = pydantic.Field()
+      """
+      Coordinate Reference System (CRS)
+      ⋮ (136 unchanged line(s))
+
+Unexplained original crozier line(s): 35, 36, 37, 39, 40, 41, 42
