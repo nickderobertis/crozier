@@ -871,6 +871,7 @@ fn request_example_context<'a>(
         }
         let mut method = None;
         let mut signature = false;
+        let mut converter_wire = None;
         for line in text.lines() {
             if let Some(name) = python_method_name(line) {
                 method = Some(name);
@@ -902,6 +903,24 @@ fn request_example_context<'a>(
             if line.trim() == "\"content-type\": \"application/json\"," {
                 json_headers.insert(key.clone());
             }
+            // A wire field written through the annotation converter opens the
+            // call on its own line and names the variable on the next:
+            // guardian's `"policyTopics": convert_and_respect_annotation_metadata(`.
+            if let Some(variable) = line
+                .trim()
+                .strip_prefix("object_=")
+                .and_then(|rest| rest.split(',').next())
+            {
+                if let Some(wire) = converter_wire.take() {
+                    if python_identifier(variable) {
+                        out.wire_fields
+                            .entry(key)
+                            .or_default()
+                            .insert(variable.to_string(), wire);
+                    }
+                }
+                continue;
+            }
             let Some((wire, value)) = line
                 .trim()
                 .strip_prefix('"')
@@ -909,6 +928,10 @@ fn request_example_context<'a>(
             else {
                 continue;
             };
+            if value.trim_end() == "convert_and_respect_annotation_metadata(" {
+                converter_wire = Some(wire.to_string());
+                continue;
+            }
             let value = value.trim_end_matches(',');
             let variable = value
                 .split_once("file=")
@@ -1416,13 +1439,20 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
                 || !pair.fern[start + 4..close]
                     .iter()
                     .all(|line| line.trim().is_empty())
-                || !fields
-                    .iter()
-                    .all(|field| parameters.contains_key(field) && wires.contains_key(field))
+                || !fields.iter().all(|field| {
+                    // A reserved-word model field (`uuid_`) is the method's `uuid`.
+                    let plain = field.strip_suffix('_').unwrap_or(field);
+                    let suffixed = format!("{field}_");
+                    let present =
+                        |keys: &dyn Fn(&str) -> bool| keys(field) || keys(plain) || keys(&suffixed);
+                    present(&|key| parameters.contains_key(key))
+                        && present(&|key| wires.contains_key(key))
+                })
             {
                 continue;
             }
             let mut seen = BTreeSet::new();
+            let mut path_shared = BTreeSet::new();
             let mut range: Option<std::ops::Range<usize>> = None;
             let mut valid = true;
             for &(first, last) in actual {
@@ -1431,10 +1461,24 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
                 else {
                     continue;
                 };
-                if !fields.contains(name) {
+                // A field whose model name a reserved word suffixed (`uuid_`) is
+                // documented under its plain spelling.
+                let suffixed = format!("{name}_");
+                let field = if fields.contains(name) {
+                    name
+                } else {
+                    suffixed.as_str()
+                };
+                if !fields.contains(field) {
                     continue;
                 }
-                let parameter = &parameters[name];
+                let parameter = parameters
+                    .get(field)
+                    .or_else(|| parameters.get(name))
+                    .or_else(|| parameters.get(suffixed.as_str()));
+                let Some(parameter) = parameter else {
+                    continue;
+                };
                 let description = parameter.description.join("\n");
                 let description = description.trim_end_matches('\n');
                 let suffix = crate::emit::reference_param_suffix(
@@ -1446,9 +1490,18 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
                 let documented = parameter
                     .annotation
                     .replace("typing.Sequence[", "typing.List[");
+                // A path parameter sharing a model field's name keeps its own
+                // block on both sides: guardian's `topic_id` path argument beside
+                // `Schema.topicId`.
+                if annotation != crate::emit::reference_param_annotation(&documented)
+                    && pair.fern.contains(&pair.crozier[first + 3])
+                {
+                    path_shared.insert(field.to_string());
+                    continue;
+                }
                 if annotation != crate::emit::reference_param_annotation(&documented)
                     || pair.crozier[first + 3..close].join("\n") != expected
-                    || !seen.insert(name.to_string())
+                    || !seen.insert(field.to_string())
                     || range.as_ref().is_some_and(|previous| {
                         pair.crozier[previous.end..first]
                             .iter()
@@ -1463,7 +1516,7 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
                     None => range = Some(first..last),
                 }
             }
-            if valid && &seen == fields {
+            if valid && seen.union(&path_shared).cloned().collect::<BTreeSet<_>>() == *fields {
                 if let Some(crozier) = range {
                     return Ok(Some(Region {
                         fern: start..end,
@@ -1823,7 +1876,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 44] = [
+pub const RULE_IDS: [&str; 45] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1851,6 +1904,7 @@ pub const RULE_IDS: [&str; 44] = [
     "non-string-client-header-example",
     "nullable-items-docs",
     "optional-lowered-required-query-array-example",
+    "optional-raw-body-example-argument",
     "pattern-narrowed-enum-example",
     "readme-client-class-casing",
     "repeated-credential-example-keyword",
@@ -1988,6 +2042,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "request-alias-reference-parameters" => Rule {
             region: Some(alias_reference_parameters),
+            ..none
+        },
+        "optional-raw-body-example-argument" => Rule {
+            region: Some(declared_values::optional_raw_body_example_argument),
             ..none
         },
         "minimal-worked-call-optional-parameter" => Rule {
@@ -6437,6 +6495,49 @@ mod tests {
             context,
         })
         .unwrap()
+    }
+
+    /// `source` is a method's raw client body beside a model; each case drops one
+    /// thing the correction needs and must leave the block unexplained.
+    #[test]
+    fn alias_reference_correction_reads_converted_reserved_and_path_shared_fields() {
+        let model = "class Rule(UniversalBaseModel):\n    uuid_: str\n    tags: str\n    topic_id: typing.Optional[str] = None\n";
+        let raw = |wire: &str| {
+            format!(
+                "    def put(self, topic_id: typing.Optional[str], *, uuid_: str, tags: str):\n        json={{\n                \"uuid\": uuid_,\n                \"{wire}\": convert_and_respect_annotation_metadata(\n                    object_=tags, annotation=str, direction=\"write\"\n                ),\n                \"topicId\": topic_id,\n        }},\n"
+            )
+        };
+        let block = |name: &str, ty: &str, doc: &str| {
+            format!("<dl>\n<dd>\n\n**{name}:** `{ty}`{doc}\n    \n</dd>\n</dl>\n\n")
+        };
+        let head = "<details><summary><code>client.<a href=\"src/fern/rules/client.py\">put</a>(...)</code></summary>\n";
+        let path = block("topic_id", "str", " — Topic.");
+        let fern = format!("{head}{path}{}", block("request", "Rule", " "));
+        let crozier = format!(
+            "{head}{path}{}{}",
+            block("uuid", "str", " "),
+            block("tags", "str", " ")
+        );
+        let holds = |raw_client: &str| {
+            let sources = [
+                ("src/fern/rules/raw_client.py", raw_client),
+                ("src/fern/types/rule.py", model),
+            ];
+            let context = Context::from_sources([], sources);
+            let (fern, crozier): (Vec<&str>, Vec<&str>) =
+                (fern.lines().collect(), crozier.lines().collect());
+            alias_reference_parameters(&Pair {
+                rel: "reference.md",
+                fern: &fern,
+                crozier: &crozier,
+                context: &context,
+            })
+            .unwrap()
+            .is_some()
+        };
+        assert!(holds(&raw("tags")));
+        // Without the wire entry the converter names, nothing is spread.
+        assert!(!holds(&raw("tags").replace("object_=tags", "object_=other")));
     }
 
     #[test]

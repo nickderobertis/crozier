@@ -36,7 +36,19 @@ const FERN_DATETIME_WRAPPED: &str = "\"2024-01-15 09:30:00+00:00\",";
 /// Whether `value` is the placeholder the certified pair writes for an argument
 /// whose wire name is `wire`: the wire name itself, or a numeric placeholder.
 fn placeholder_for(wire: &str, value: &str) -> bool {
-    value == format!("{wire:?}") || matches!(value, "1" | "1000000" | "1.1" | "True")
+    value == format!("{wire:?}")
+        || value == format!("{:?}", lower_first(wire))
+        || matches!(value, "1" | "1000000" | "1.1" | "True")
+}
+
+/// `wire` with its first letter lowered: the pair's fallback writes a header's
+/// camelCase name, `referer` for `Referer`.
+fn lower_first(wire: &str) -> String {
+    let mut characters = wire.chars();
+    match characters.next() {
+        Some(first) => first.to_lowercase().chain(characters).collect(),
+        None => String::new(),
+    }
 }
 
 /// A schema declaring no type, reference, format, composition, enum, `const`,
@@ -88,6 +100,8 @@ fn parameter_keyword(parameter: &Parameter, keyword: &str) -> bool {
 struct Declared<'a> {
     wire: &'a str,
     value: &'a Value,
+    /// The constraint-sized fallback the pair writes for this form part.
+    sample: Option<String>,
 }
 
 /// The declared values ruling 2 and its principle keep (see the module docs).
@@ -109,6 +123,7 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
                 out.push(Declared {
                     wire: &parameter.name,
                     value,
+                    sample: None,
                 });
             }
             let Some(value) = parameter.example.as_ref() else {
@@ -125,6 +140,7 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
                 out.push(Declared {
                     wire: &parameter.name,
                     value,
+                    sample: None,
                 });
             }
         }
@@ -132,7 +148,11 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
             continue;
         };
         for (media, content) in &body.content {
-            if !media.starts_with("multipart/form-data") {
+            // An urlencoded form answering no JSON is declined the same way:
+            // peach-payments' `checkout_generation_initiate_payment`.
+            if !media.starts_with("multipart/form-data")
+                && !(non_json && media == "application/x-www-form-urlencoded")
+            {
                 continue;
             }
             let Some(schema) = content.schema.as_ref() else {
@@ -159,7 +179,12 @@ fn multipart_examples<'a>(
     for (wire, property) in &schema.properties {
         let property = resolve(source, property);
         if let Some(value) = property.example.as_ref() {
-            out.push(Declared { wire, value });
+            out.push(Declared {
+                wire,
+                value,
+                sample: crate::ir::fallback_string_sample(property.min_length, property.max_length)
+                    .map(|sample| format!("{sample:?}")),
+            });
         }
         if !property.properties.is_empty() {
             multipart_examples(source, property, out, depth + 1);
@@ -549,12 +574,14 @@ fn kept_value(source: &OpenApi, name: &str, fern_value: &str, value: &str) -> bo
             && placeholder_for(wire, fern_value)
             && crate::ir::example_literal(declared).as_deref() == Some(value)
     };
-    kept_declared_values(source)
+    kept_declared_values(source).iter().any(|declared| {
+        kept(declared.wire, declared.value)
+            || declared.sample.as_deref() == Some(fern_value)
+                && argument_names(declared.wire, name)
+                && crate::ir::example_literal(declared.value).as_deref() == Some(value)
+    }) || union_property_examples(source)
         .iter()
-        .any(|declared| kept(declared.wire, declared.value))
-        || union_property_examples(source)
-            .iter()
-            .any(|(wire, declared)| kept(wire, declared))
+        .any(|(wire, declared)| kept(wire, declared))
 }
 
 /// Every property whose schema is a `oneOf` or `anyOf` and declares its own
@@ -932,6 +959,26 @@ fn timestamp_properties(source: &OpenApi) -> Vec<(String, String)> {
             }
         }
     });
+    // A property `$ref`ing a date-time component takes the component's own
+    // example the same way: Plaid's `sentOn` names `FDXTimestamp`.
+    visit_source_schemas(Some(source), &mut |schema| {
+        for (wire, property) in &schema.properties {
+            if property.reference.is_none() {
+                continue;
+            }
+            let target = resolve(source, property);
+            let Some(value) = target.example.as_ref().and_then(Value::as_str) else {
+                continue;
+            };
+            if target.format.as_deref() == Some("date-time")
+                && unquoted.contains(value)
+                && crate::emit::yaml_resolves_as_timestamp(value)
+                && !value.starts_with("2000-01-23T04:56:07")
+            {
+                out.push((wire.clone(), value.to_string()));
+            }
+        }
+    });
     out
 }
 
@@ -998,6 +1045,18 @@ fn minimal_call_omissions(source: &OpenApi) -> Vec<(&Parameter, String)> {
                 schema.properties.is_empty() && parameter.example.is_none(),
             ) {
                 resolve(source, member).example.as_ref()
+            } else if let Some(member_example) = schema
+                .any_of
+                .iter()
+                .flatten()
+                .find_map(|member| member.example.as_ref().filter(|value| value.is_string()))
+            {
+                // hookdeck's `id` is `anyOf: [string (example), array]`: the
+                // docstring passes the member's scalar, the Markdown a list.
+                if let Some(literal) = crate::ir::example_literal(member_example) {
+                    out.push((parameter, format!("[{literal}]")));
+                }
+                Some(member_example)
             } else if schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("array")
                 && schema
                     .items
@@ -1040,6 +1099,9 @@ pub(super) fn minimal_call_optional_parameter(
         return Ok(None);
     }
     let (fern, crozier) = (pair.fern, pair.crozier);
+    if let Some(region) = emptied_call_region(pair, &omissions) {
+        return Ok(Some(region));
+    }
     let mut equal = Vec::new();
     for op in crate::parity::align_lines(fern, crozier) {
         match op {
@@ -1091,6 +1153,97 @@ pub(super) fn minimal_call_optional_parameter(
     Ok(None)
 }
 
+/// `optional-raw-body-example-argument`: Fern's one-line `<prefix>()` for an
+/// operation whose optional raw `application/octet-stream` body the signature
+/// nevertheless requires, beside crozier's call passing `request=b"string"`.
+pub(super) fn optional_raw_body_example_argument(
+    pair: &Pair<'_>,
+) -> Result<Option<super::Region>, String> {
+    if !example_file(pair.rel) {
+        return Ok(None);
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return Ok(None);
+    };
+    let optional_raw = source_operations(source).any(|(operation, _)| {
+        operation.x_code_samples.is_some()
+            && operation.request_body.as_ref().is_some_and(|body| {
+                body.required != Some(true)
+                    && body
+                        .content
+                        .keys()
+                        .any(|media| media == "application/octet-stream")
+            })
+    });
+    if !optional_raw {
+        return Ok(None);
+    }
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    Ok(fern.iter().enumerate().find_map(|(at, line)| {
+        let head = line.strip_suffix("()")?;
+        if !line.contains("client.") || crozier.contains(line) {
+            return None;
+        }
+        let opener = format!("{head}(");
+        let start = crozier.iter().position(|candidate| *candidate == opener)?;
+        let indent = &line[..line.len() - line.trim_start().len()];
+        let argument = format!("{indent}    request=b\"string\",");
+        (crozier.get(start + 1).copied() == Some(argument.as_str())
+            && crozier.get(start + 2).copied() == Some(format!("{indent})").as_str()))
+        .then(|| super::Region {
+            fern: at..at + 1,
+            crozier: start..start + 3,
+        })
+    }))
+}
+
+/// The call Fern writes over lines, `<prefix>(` to `<indent>)`, every argument
+/// of which is an optional parameter ruling 4 leaves out, where crozier writes
+/// the same call empty: `<prefix>()`.
+fn emptied_call_region(
+    pair: &Pair<'_>,
+    omissions: &[(&Parameter, String)],
+) -> Option<super::Region> {
+    let (fern, crozier) = (pair.fern, pair.crozier);
+    crozier.iter().enumerate().find_map(|(at, line)| {
+        let opener = line.strip_suffix("()").map(|head| format!("{head}("))?;
+        if !line.contains("client.") || fern.contains(line) {
+            return None;
+        }
+        let indent = &line[..line.len() - line.trim_start().len()];
+        let start = fern.iter().position(|fern_line| *fern_line == opener)?;
+        let close = (start + 1..fern.len()).find(|&index| fern[index] == format!("{indent})"))?;
+        let mut index = start + 1;
+        while index < close {
+            let (name, value, next) = if let Some(opener) = fern[index].strip_suffix('[') {
+                let (name, _) = opener.trim_start().split_once('=')?;
+                let closing = format!("{}],", &opener[..opener.len() - opener.trim_start().len()]);
+                let end = (index + 1..close).find(|&at| fern[at] == closing)?;
+                let items: String = fern[index + 1..end]
+                    .iter()
+                    .map(|item| item.trim())
+                    .collect();
+                (name, format!("[{items}]"), end + 1)
+            } else {
+                let (_, name, value) = keyword_argument_line(fern[index])?;
+                (name, value.to_string(), index + 1)
+            };
+            let declared = omissions.iter().any(|(parameter, literal)| {
+                parameter_keyword(parameter, name)
+                    && argument_value(literal) == argument_value(&value)
+            });
+            if !declared {
+                return None;
+            }
+            index = next;
+        }
+        Some(super::Region {
+            fern: start..close + 1,
+            crozier: at..at + 1,
+        })
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1111,6 +1264,114 @@ mod tests {
             crozier,
             context,
         }
+    }
+
+    fn raw_upload_document(samples: bool, required: bool) -> Context {
+        let mut operation = serde_json::json!({
+            "requestBody": {"required": required, "content": {"application/octet-stream": {
+                "schema": {"type": "string", "format": "binary"}}}},
+            "responses": {"200": {"description": "ok"}}
+        });
+        if samples {
+            operation["x-codeSamples"] = serde_json::json!([{"lang": "python", "source": "pass"}]);
+        }
+        context(serde_json::json!({"openapi": "3.0.3", "paths": {"/upload": {"post": operation}}}))
+    }
+
+    #[test]
+    fn an_empty_raw_upload_call_is_explained_only_for_a_sampled_optional_body() {
+        let fern = ["client.files.upload()"];
+        let crozier = ["client.files.upload(", "    request=b\"string\",", ")"];
+        let holds = |context: &Context, crozier: &[&str]| {
+            optional_raw_body_example_argument(&Pair {
+                rel: "reference.md",
+                fern: &fern,
+                crozier,
+                context,
+            })
+            .unwrap()
+            .is_some()
+        };
+        assert!(holds(&raw_upload_document(true, false), &crozier));
+        assert!(!holds(&raw_upload_document(false, false), &crozier));
+        assert!(!holds(&raw_upload_document(true, true), &crozier));
+        // An adjacent unexplained value still fails.
+        let other = ["client.files.upload(", "    request=b\"other\",", ")"];
+        assert!(!holds(&raw_upload_document(true, false), &other));
+    }
+
+    fn any_of_query_document() -> Context {
+        context(
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/issues": {"get": {
+                "parameters": [{"name": "id", "in": "query", "schema": {"anyOf": [
+                    {"type": "string", "example": "iss_1"},
+                    {"type": "array", "items": {"type": "string"}}
+                ]}}],
+                "responses": {"200": {"description": "ok"}}
+            }}}}),
+        )
+    }
+
+    #[test]
+    fn an_any_of_query_example_is_left_out_of_a_minimal_call_in_either_spelling() {
+        let context = any_of_query_document();
+        let crozier = ["client.issues.list()"];
+        let region = |fern: &[&str]| {
+            minimal_call_optional_parameter(&Pair {
+                rel: "reference.md",
+                fern,
+                crozier: &crozier,
+                context: &context,
+            })
+            .unwrap()
+        };
+        let scalar = ["client.issues.list(", "    id=\"iss_1\",", ")"];
+        assert_eq!(region(&scalar).unwrap().fern, 0..3);
+        let list = [
+            "client.issues.list(",
+            "    id=[",
+            "        \"iss_1\"",
+            "    ],",
+            ")",
+        ];
+        assert_eq!(region(&list).unwrap().fern, 0..5);
+        // A value the document does not declare is not a ruled omission.
+        assert!(region(&["client.issues.list(", "    id=\"other\",", ")"]).is_none());
+    }
+
+    #[test]
+    fn a_declined_form_keeps_its_declared_values_only_beside_the_pairs_fallback() {
+        let document = |answer: &str| {
+            context(
+                serde_json::json!({"openapi": "3.0.3", "paths": {"/pay": {"post": {
+                    "requestBody": {"content": {"application/x-www-form-urlencoded": {"schema": {
+                        "type": "object", "properties": {"reference": {
+                            "type": "string", "minLength": 8, "maxLength": 16, "example": "Order4534"
+                        }}
+                    }}}},
+                    "responses": {"200": {"description": "ok", "content": {answer: {"schema": {"type": "string"}}}}}
+                }}}}),
+            )
+        };
+        let sampled = "reference=\"mandarin\",";
+        let declared = "reference=\"Order4534\",";
+        let html = document("text/html");
+        assert!(declared_example_over_placeholder(
+            &pair("reference.md", &[], &html),
+            sampled,
+            declared
+        ));
+        let json = document("application/json");
+        assert!(!declared_example_over_placeholder(
+            &pair("reference.md", &[], &json),
+            sampled,
+            declared
+        ));
+        assert!(!declared_example_over_placeholder(
+            &pair("reference.md", &[], &html),
+            "reference=\"other\",",
+            declared
+        ));
     }
 
     #[test]
@@ -1465,6 +1726,36 @@ mod tests {
             &pair,
             "    keeper_id=\"x\",",
             "    keeper_id=\"KPR-from-map\","
+        ));
+    }
+
+    #[test]
+    fn a_property_referencing_a_timestamp_component_keeps_the_components_example() {
+        let document = |unquoted: bool| {
+            let mut source: OpenApi =
+                serde_json::from_value(serde_json::json!({"openapi": "3.0.3",
+                "paths": {}, "components": {"schemas": {
+                    "Instant": {"type": "string", "format": "date-time",
+                        "example": "2031-04-02T08:15:00Z"},
+                    "Notice": {"type": "object", "properties": {
+                        "sentOn": {"$ref": "#/components/schemas/Instant"}}}}}}))
+                .expect("a document");
+            source.yaml_unquoted_timestamps =
+                unquoted.then(|| std::iter::once("2031-04-02T08:15:00Z".to_string()).collect());
+            with_source(source)
+        };
+        let fern = "    sent_on=datetime.datetime.fromisoformat(\"2024-01-15T09:30:00+00:00\"),";
+        let kept = "    sent_on=datetime.datetime.fromisoformat(\"2031-04-02T08:15:00+00:00\"),";
+        let rule = declared_timestamp_property_example;
+        let declared = document(true);
+        assert!(rule(&pair("reference.md", &[], &declared), fern, kept));
+        let quoted = document(false);
+        assert!(!rule(&pair("reference.md", &[], &quoted), fern, kept));
+        // Another instant than the component declares still fails.
+        assert!(!rule(
+            &pair("reference.md", &[], &declared),
+            fern,
+            "    sent_on=datetime.datetime.fromisoformat(\"2031-04-03T08:15:00+00:00\"),"
         ));
     }
 

@@ -1,0 +1,23 @@
+
+
+import typing
+
+PaymentInitiationPaymentStatus = typing.Union[
+    typing.Literal[
+        "PAYMENT_STATUS_INPUT_NEEDED",
+        "PAYMENT_STATUS_PROCESSING",
+        "PAYMENT_STATUS_INITIATED",
+        "PAYMENT_STATUS_COMPLETED",
+        "PAYMENT_STATUS_INSUFFICIENT_FUNDS",
+        "PAYMENT_STATUS_FAILED",
+        "PAYMENT_STATUS_BLOCKED",
+        "PAYMENT_STATUS_UNKNOWN",
+        "PAYMENT_STATUS_EXECUTED",
+        "PAYMENT_STATUS_SETTLED",
+        "PAYMENT_STATUS_AUTHORISING",
+        "PAYMENT_STATUS_CANCELLED",
+        "PAYMENT_STATUS_ESTABLISHED",
+        "PAYMENT_STATUS_REJECTED",
+    ],
+    typing.Any,
+]

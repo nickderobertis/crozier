@@ -56,3 +56,11 @@ sides drop it. The rule adds and removes no lines.
 `departures::declared_values::tests::a_declared_timestamp_property_is_admitted_only_with_its_declaration`
 shows that a different instant, a non-date-time property, a quoted value and
 the sentinel still fail.
+
+## A property referencing a timestamp component
+
+Plaid's 2020-09-14 document (corpus row 5619) gives `FDXNotification.sentOn` as
+`$ref: FDXTimestamp`, a `date-time` component whose own `example` is an unquoted
+YAML timestamp. The certified pair writes its `2024-01-15` placeholder; crozier
+keeps the component's declared instant, by the same principle of ruling 3
+(`referenced-timestamp-example`, recorded `ruling-applied:yaml-timestamp-parameter-example`).

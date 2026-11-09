@@ -103,6 +103,13 @@ const KINDS: &[Kind] = &[
         flags: &["--enum-type", "literals"],
         script_args: "--enum-type literals",
         fixtures: &[
+            "registered-literals-apis-guru-openapi-directory-608e22dc",
+            "registered-literals-apis-guru-openapi-directory-79291d99",
+            "registered-literals-atacan-assemblyai-b306bf44",
+            "registered-literals-mithileshchellappan-pushboy-4ff65943",
+            "registered-literals-pai-os-paios-413656b4",
+            "registered-literals-tryagi-assemblyai-215ec23d",
+            "registered-literals-workera-ai-langfuse-sdk-61c2ac58",
             // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
             "registered-literals-apis-guru-openapi-directory-d8d536ea",
             "registered-literals-azure-samples-digitization-4f917fb1",

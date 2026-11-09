@@ -8,6 +8,10 @@
 #[path = "../../../src/yaml.rs"]
 mod yaml;
 
+/// Journeys for the generator rules the residual-differences repair corrected.
+#[path = "e2e/residual_rule_repairs.rs"]
+mod residual_rule_repairs;
+
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
@@ -10448,6 +10452,13 @@ const OPENCODEUI: Corpus = Corpus {
 };
 
 const CORPORA: &[&Corpus] = &[
+    &LITERALS_APIS_GURU_608E22DC,
+    &LITERALS_APIS_GURU_79291D99,
+    &LITERALS_ATACAN_B306BF44,
+    &LITERALS_MITHILESHCHELLAP_4FF65943,
+    &LITERALS_PAI_OS_413656B4,
+    &LITERALS_TRYAGI_215EC23D,
+    &LITERALS_WORKERA_AI_61C2AC58,
     &LITERALS_APIS_GURU_D8D536EA,
     &LITERALS_AZURE_SAMPLES_4F917FB1,
     &LITERALS_CYODA_5CE9D613,
@@ -32535,3 +32546,129 @@ fn registered_literals_revertinc_revert_698ea54a_matches_fern_output() {
     overlay_goldens::assert_literals_match(&LITERALS_REVERTINC_698EA54A);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+/// Certified enum-mode witness, corpus row 5618.
+const LITERALS_APIS_GURU_608E22DC: Corpus = Corpus {
+    api: "registered-literals-apis-guru-openapi-directory-608e22dc",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_apis_guru_openapi_directory_608e22dc_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_APIS_GURU_608E22DC);
+    overlay_goldens::assert_literals_match(&LITERALS_APIS_GURU_608E22DC);
+}
+
+/// Certified enum-mode witness, corpus row 5619.
+const LITERALS_APIS_GURU_79291D99: Corpus = Corpus {
+    api: "registered-literals-apis-guru-openapi-directory-79291d99",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_apis_guru_openapi_directory_79291d99_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_APIS_GURU_79291D99);
+    overlay_goldens::assert_literals_match(&LITERALS_APIS_GURU_79291D99);
+}
+
+/// Certified enum-mode witness, corpus row 5620.
+const LITERALS_ATACAN_B306BF44: Corpus = Corpus {
+    api: "registered-literals-atacan-assemblyai-b306bf44",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_atacan_assemblyai_b306bf44_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_ATACAN_B306BF44);
+    overlay_goldens::assert_literals_match(&LITERALS_ATACAN_B306BF44);
+}
+
+/// Certified enum-mode witness, corpus row 5621.
+const LITERALS_MITHILESHCHELLAP_4FF65943: Corpus = Corpus {
+    api: "registered-literals-mithileshchellappan-pushboy-4ff65943",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_mithileshchellappan_pushboy_4ff65943_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_MITHILESHCHELLAP_4FF65943);
+    overlay_goldens::assert_literals_match(&LITERALS_MITHILESHCHELLAP_4FF65943);
+}
+
+/// Certified enum-mode witness, corpus row 5622.
+const LITERALS_PAI_OS_413656B4: Corpus = Corpus {
+    api: "registered-literals-pai-os-paios-413656b4",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_pai_os_paios_413656b4_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_PAI_OS_413656B4);
+    overlay_goldens::assert_literals_match(&LITERALS_PAI_OS_413656B4);
+}
+
+/// Certified enum-mode witness, corpus row 5623.
+const LITERALS_TRYAGI_215EC23D: Corpus = Corpus {
+    api: "registered-literals-tryagi-assemblyai-215ec23d",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_tryagi_assemblyai_215ec23d_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_TRYAGI_215EC23D);
+    overlay_goldens::assert_literals_match(&LITERALS_TRYAGI_215EC23D);
+}
+
+/// Certified enum-mode witness, corpus row 5624.
+const LITERALS_WORKERA_AI_61C2AC58: Corpus = Corpus {
+    api: "registered-literals-workera-ai-langfuse-sdk-61c2ac58",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn registered_literals_workera_ai_langfuse_sdk_61c2ac58_matches_fern_output() {
+    assert_committed_corpus_matches(&LITERALS_WORKERA_AI_61C2AC58);
+    overlay_goldens::assert_literals_match(&LITERALS_WORKERA_AI_61C2AC58);
+}

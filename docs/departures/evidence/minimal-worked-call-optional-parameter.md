@@ -69,3 +69,11 @@ registered-literals-crate-works-ro-crate-api-f2457da3: certified passes entity_t
 `src/departures/declared_values.rs` holds the rule to the declared value and these
 shapes: another value, another argument, an array with inline items, a required
 parameter, and an unexplained argument beside an excused one all still fail.
+
+## An optional `anyOf` query parameter
+
+Hookdeck's `GET /issues` declares optional `id`, `issue_trigger_id` and
+`merged_with` as `anyOf: [string with an example, array]`. The certified pair
+passes them, a scalar in the docstring and a one-item list in `reference.md`;
+ruling 4's principle leaves them out, so crozier writes the empty call
+(`anyof-array-parameter-example`, recorded `ruling-applied:minimal-worked-call`).

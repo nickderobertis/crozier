@@ -1797,6 +1797,9 @@ pub struct Endpoint {
     pub request_body: Option<RequestBody>,
     /// Whether OpenAPI marks the operation's request body as required.
     pub request_body_required: bool,
+    /// Whether the operation declares `x-codeSamples`, which gives an optional
+    /// raw byte body its worked call.
+    pub raw_body_has_code_samples: bool,
     /// Whether the operation also offers a `multipart/related` request encoding.
     pub request_body_has_multipart_related: bool,
     /// The component type named by the request schema for reference docs. Fern
@@ -2324,6 +2327,9 @@ pub struct BodyField {
     /// an `allOf` parent ([`BodyComposition::AllOfParent`]) is listed with its
     /// own fields first instead, in the order the fields are declared.
     pub markdown_order: usize,
+    /// Whether the worked value is an inline union's first member's own scalar
+    /// example, which Fern passes though the field's type is the union.
+    pub union_member_example: bool,
     /// The in-scope validation keywords of the schema the value documents,
     /// which a worked example's value must satisfy
     /// ([`crate::example_values`]); `None` when it declares none.
@@ -2631,6 +2637,13 @@ pub struct Field {
     /// first, yet its `put_flows_flow_id` example opens with `FlowCore`'s
     /// `id` and `source_id`.
     pub inherited_from_flattened_parent: bool,
+    /// Where a docstring's worked example places this field of a model that
+    /// flattens a parent: the composition's declaration order, parents first
+    /// (see [`flattened_example_orders`]). `None` for any other model's field.
+    pub flattened_example_order: Option<usize>,
+    /// Whether [`Field::example`] is an inline union's first member's own scalar
+    /// example (see [`first_union_member_example`]).
+    pub union_member_example: bool,
     /// A string property's declared `minLength`. Fern's IR fallback example
     /// (written where its importer builds none) samples a string this long
     /// instead of passing the property's name: nexmo-messages' `to`, typed by
@@ -5092,6 +5105,7 @@ fn build_endpoint(
         header_order,
         constant_headers,
         request_body,
+        raw_body_has_code_samples: op.x_code_samples.is_some(),
         request_body_required: op
             .request_body
             .as_ref()
@@ -5741,9 +5755,37 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
     // for each of Spendesk's four operations answering `$ref: ApiResponse`.
     let undeclared_response =
         success_response_schema(op).is_some_and(|schema| schema.unresolved_reference);
+    // A success object declaring both `additionalProperties: true` and its own
+    // `example` fails the same way: atacan's AssemblyAI `Transcript` does, so its
+    // `transcripts.submit` works only the required arguments, where the sibling
+    // revision closing `Transcript` with `additionalProperties: false` keeps the
+    // request example (corpus row 5609).
+    let union_request_body = op.request_body.as_ref().is_some_and(|body| {
+        selected_json_request_media(body)
+            .and_then(|(_, media)| media.schema.as_ref())
+            .and_then(|schema| match schema.reference.as_deref() {
+                Some(reference) => resolve_ref(doc, reference),
+                None => Some(schema),
+            })
+            .is_some_and(|schema| schema.one_of.is_some() || schema.any_of.is_some())
+    });
+    let open_example_response = !union_request_body
+        && success_response_schema(op).is_some_and(|schema| {
+            let schema = schema
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .unwrap_or(schema);
+            matches!(
+                schema.additional_properties,
+                Some(AdditionalProperties::Bool(true))
+            ) && is_object_type(schema)
+                && schema_example(schema).is_some()
+        });
     unsupported_request
         || unsupported_response
         || undeclared_response
+        || open_example_response
         || requires_object_query(doc, op)
         || request_example_fails(doc, op)
         || request_declares_unlisted_required(doc, op)
@@ -7063,6 +7105,16 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                     // A union of one and the same primitive is that primitive,
                     // and declares no body model (see `error_body_type`).
                     if one_primitive_union(members).is_some() {
+                        continue;
+                    }
+                    // A member naming a response's schema leaves the declaration
+                    // to the earlier ones (see
+                    // `normalize_component_response_schema_refs`).
+                    if members.iter().any(|member| {
+                        member.reference.as_deref().is_some_and(|reference| {
+                            reference.starts_with("#/components/responses/")
+                        })
+                    }) {
                         continue;
                     }
                     if let [only] = members.as_slice() {
@@ -8631,6 +8683,7 @@ fn hoist_inline_object(
             deprecated: own_deprecated(prop_schema),
             declaration_order: reference_order,
             markdown_order: reference_order,
+            union_member_example: false,
             admits_only_empty_object: admits_only_empty_object(prop_schema),
         });
     }
@@ -8932,6 +8985,9 @@ impl InlineHoister<'_> {
                 field.inherited_from_flattened_parent = true;
                 field
             }));
+            if let Some(schemas) = self.schemas {
+                flattened_example_orders(schemas, schema, &mut fields);
+            }
         }
         let xml = xml_encoding(schema, name);
         if xml.is_some() {
@@ -8983,7 +9039,11 @@ impl InlineHoister<'_> {
             .collect();
         let hoisted = self.out.len();
         let mut inherited = Vec::new();
-        let mut overridden = schema.all_of.iter().flatten().any(is_nullable_annotation);
+        let mut overridden = schema
+            .all_of
+            .iter()
+            .flatten()
+            .any(flattens_on_nullable_annotation);
         for (base_name, base) in &bases {
             let base_required: Vec<&str> = base.required.iter().map(String::as_str).collect();
             let mut base_fields = Vec::new();
@@ -9355,7 +9415,8 @@ impl InlineHoister<'_> {
                 docstring: declared_doc(
                     (!self
                         .schemas
-                        .is_some_and(|schemas| annotates_sole_member_union(prop_schema, schemas)))
+                        .is_some_and(|schemas| annotates_sole_member_union(prop_schema, schemas))
+                        && !(!optional && sole_string_enum_member(prop_schema)))
                     .then(|| {
                         rewrapped_alias_description(prop_schema, self.schemas)
                             .or_else(|| property_description(prop_schema, optional))
@@ -9380,6 +9441,8 @@ impl InlineHoister<'_> {
                 }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
                 inherited_from_flattened_parent: false,
+                flattened_example_order: None,
+                union_member_example: false,
                 min_length: string_lengths(prop_schema).0,
                 max_length: string_lengths(prop_schema).1,
             });
@@ -11021,6 +11084,7 @@ fn hoist_form_object(
                 deprecated: own_deprecated(prop_schema),
                 declaration_order: reference_order,
                 markdown_order: reference_order,
+                union_member_example: false,
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
             }
         })
@@ -11501,6 +11565,7 @@ fn append_request_fields(
         deprecated: f.deprecated,
         declaration_order: 0,
         markdown_order: 0,
+        union_member_example: f.union_member_example,
         admits_only_empty_object: f.admits_only_empty_object,
     }));
     for base in &obj.bases {
@@ -14054,6 +14119,8 @@ fn append_member_fields(
             }),
             admits_only_empty_object: admits_only_empty_object(prop_schema),
             inherited_from_flattened_parent: false,
+            flattened_example_order: None,
+            union_member_example: false,
             min_length: string_lengths(prop_schema).0,
             max_length: string_lengths(prop_schema).1,
         });
@@ -14206,6 +14273,8 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         xml: None,
         admits_only_empty_object: false,
         inherited_from_flattened_parent: false,
+        flattened_example_order: None,
+        union_member_example: false,
         min_length: None,
         max_length: None,
     }
@@ -14805,6 +14874,12 @@ impl Builder<'_> {
             return;
         }
 
+        let docstring = if schema.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
+            docstring
+                .map(|doc| keep_description_trailing_spaces(doc, schema.description.as_deref()))
+        } else {
+            docstring
+        };
         // A top-level array of inline objects: Fern hoists the element into its own
         // named `{Name}Item` model and aliases `Name = List[{Name}Item]` (bunq's
         // `Error` → `Error = typing.List[ErrorItem]`), rather than `List[Any]`.
@@ -15125,7 +15200,11 @@ impl Builder<'_> {
         // lowered here, so an ordinary `allOf` still hoists nothing twice.
         // A nullability-only member inlines every base (see
         // [`is_nullable_annotation`]).
-        let nullable_annotation = schema.all_of.iter().flatten().any(is_nullable_annotation);
+        let nullable_annotation = schema
+            .all_of
+            .iter()
+            .flatten()
+            .any(flattens_on_nullable_annotation);
         let mut parent_properties = std::collections::HashSet::new();
         let overlapping_parents = base_refs.iter().any(|(_, base)| {
             base.properties
@@ -15391,6 +15470,7 @@ impl Builder<'_> {
                     field.inherited_from_flattened_parent = true;
                 }
                 fields.extend(inherited);
+                flattened_example_orders(schemas, schema, &mut fields);
             }
         }
         // Lowering a base's fields to compare them can hoist an enum no field
@@ -15637,26 +15717,35 @@ impl Builder<'_> {
                 // `AlertFilterSuggestion` annotates `FilterSuggestion` with
                 // `readOnly` alone, and Fern documents `alert.id` with
                 // `FilterSuggestion`'s own description.
-                docstring: declared_doc(collapsed_doc.or_else(|| {
-                    annotation_lost_description(prop_schema, self.schemas, optional)
-                        .unwrap_or_else(|| {
-                            rewrapped_alias_description(prop_schema, Some(self.schemas))
-                                .or_else(|| property_description(prop_schema, optional))
+                docstring: declared_doc(
+                    (optional || !sole_string_enum_member(prop_schema))
+                        .then(|| {
+                            collapsed_doc.or_else(|| {
+                                annotation_lost_description(prop_schema, self.schemas, optional)
+                                    .unwrap_or_else(|| {
+                                        rewrapped_alias_description(prop_schema, Some(self.schemas))
+                                            .or_else(|| property_description(prop_schema, optional))
+                                    })
+                                    .or_else(|| {
+                                        described_all_of_ref(prop_schema)
+                                            .and_then(|(reference, _)| {
+                                                resolve_ref_from_schemas(self.schemas, reference)
+                                            })
+                                            .and_then(|target| target.description.as_deref())
+                                    })
+                                    .or_else(|| {
+                                        scalar_narrowed_enum_ref(prop_schema, self.schemas)
+                                            .and_then(|(_, member)| member.description.as_deref())
+                                    })
+                                    .or_else(|| {
+                                        merged_all_of_ref_description(prop_schema, self.schemas)
+                                    })
+                            })
                         })
-                        .or_else(|| {
-                            described_all_of_ref(prop_schema)
-                                .and_then(|(reference, _)| {
-                                    resolve_ref_from_schemas(self.schemas, reference)
-                                })
-                                .and_then(|target| target.description.as_deref())
-                        })
-                        .or_else(|| {
-                            scalar_narrowed_enum_ref(prop_schema, self.schemas)
-                                .and_then(|(_, member)| member.description.as_deref())
-                        })
-                        .or_else(|| merged_all_of_ref_description(prop_schema, self.schemas))
-                })),
-                example: resolved_schema_example_literal(prop_schema, Some(self.schemas))
+                        .flatten(),
+                ),
+                example: first_union_member_example(prop_schema)
+                    .or_else(|| resolved_schema_example_literal(prop_schema, Some(self.schemas)))
                     .or_else(|| {
                         prop_schema
                             .reference
@@ -15690,6 +15779,8 @@ impl Builder<'_> {
                     }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
                 inherited_from_flattened_parent: false,
+                flattened_example_order: None,
+                union_member_example: first_union_member_example(prop_schema).is_some(),
                 min_length: string_lengths(prop_schema).0,
                 max_length: string_lengths(prop_schema).1,
             });
@@ -16191,6 +16282,8 @@ impl Builder<'_> {
                         xml: None,
                         admits_only_empty_object: false,
                         inherited_from_flattened_parent: false,
+                        flattened_example_order: None,
+                        union_member_example: false,
                         min_length: None,
                         max_length: None,
                     }],
@@ -18832,6 +18925,15 @@ fn branch_union_properties(
     }
     let mut merged = Schema::default();
     for branch in branches {
+        // A `$ref` branch lends its component's properties the same way:
+        // pushboy's `LiveActivityEndJobRequest` composes `oneOf: [$ref
+        // LiveActivityActivityIdScope, $ref LiveActivityScopedLookup]` and Fern
+        // writes `activityId`, `userId`, `topicId`, then `activityType`.
+        let branch = branch
+            .reference
+            .as_deref()
+            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+            .unwrap_or(branch);
         for (prop, prop_schema) in &branch.properties {
             if !prop_schema.negative_only() {
                 merged.properties.insert(prop.clone(), prop_schema.clone());
@@ -19208,6 +19310,28 @@ fn source_declaration_names<'a>(
         if !out.contains(name) {
             out.push(name.clone());
         }
+    }
+}
+
+/// Record, on the fields of a model that flattens a parent, where a docstring's
+/// worked example places them: the composition's declaration order, parents
+/// first. pushboy's `LiveActivityStartJobRequest` restates `action` and `payload`
+/// beside `$ref LiveActivityJobTarget`, and its docstring passes them where the
+/// parent declares them.
+fn flattened_example_orders(
+    schemas: &IndexMap<String, Schema>,
+    schema: &Schema,
+    fields: &mut [Field],
+) {
+    let mut declared = Vec::new();
+    source_declaration_names(
+        schemas,
+        schema,
+        &mut std::collections::HashSet::new(),
+        &mut declared,
+    );
+    for field in fields {
+        field.flattened_example_order = declared.iter().position(|name| *name == field.wire_name);
     }
 }
 
@@ -20295,6 +20419,18 @@ fn annotated_target<'a>(
         .and_then(|(reference, _)| resolve_ref_from_schemas(schemas?, reference))
 }
 
+/// A property that is a `oneOf`/`anyOf` of one inline string `enum`. Where it is
+/// required, Fern hoists the enum and documents nothing (OpenAI's
+/// `CreateFineTuningJobRequestIntegrationsItem.type`, a required `oneOf:
+/// [{type: string, enum: [wandb]}]` beside its description); an optional one keeps
+/// its description (the `dormant-sensor-unions` fixture's `Reading.mode`).
+fn sole_string_enum_member(prop_schema: &Schema) -> bool {
+    matches!(
+        prop_schema.one_of.as_deref().or(prop_schema.any_of.as_deref()),
+        Some([only]) if only.reference.is_none() && string_enum_values(only).is_some()
+    )
+}
+
 /// Whether a property is `anyOf: [allOf: [$ref U, {description}], null]` where
 /// `U` is a one-member `oneOf`/`anyOf`. Fern types the field as that member and
 /// documents nothing, neither the annotation nor `U`'s own description, though
@@ -20378,6 +20514,23 @@ fn annotation_lost_description<'a>(
     let (reference, _) = described_all_of_ref(prop_schema)?;
     let target = resolve_ref_from_schemas(schemas, reference)?;
     sole_inline_all_of_element(target).map(|inner| inner.description.as_deref())
+}
+
+/// A body property's worked value when it is an inline union: its first
+/// member's own scalar example, ahead of an example beside the union. OpenAI's
+/// `CreateEmbeddingRequest.input` is `oneOf: [string (example "This is a test."),
+/// array, …]` beside its own `example`, and Fern passes the member's.
+fn first_union_member_example(prop_schema: &Schema) -> Option<String> {
+    let member = prop_schema
+        .one_of
+        .as_deref()
+        .or(prop_schema.any_of.as_deref())?
+        .first()?;
+    member
+        .example
+        .as_ref()
+        .filter(|example| example.is_string() || example.is_number() || example.is_boolean())
+        .and_then(example_literal)
 }
 
 /// `schema` with a property two inline object `allOf` members both declare
@@ -20648,6 +20801,14 @@ fn is_nullable_annotation(member: &Schema) -> bool {
         && member.one_of.is_none()
         && member.any_of.is_none()
         && is_explicitly_nullable(member)
+}
+
+/// A [nullability-only member](is_nullable_annotation) that flattens the
+/// `$ref` beside it. Only OpenAPI 3.1's `type: [object, null]` does: Plaid's 3.0
+/// `RecurringTransferNullable` writes `{nullable: true, type: object}` beside
+/// `$ref RecurringTransfer`, and Fern's model extends `RecurringTransfer`.
+fn flattens_on_nullable_annotation(member: &Schema) -> bool {
+    is_nullable_annotation(member) && member.nullable != Some(true)
 }
 
 /// Is this schema the explicit `type: null` alternative of a composition? Fern
@@ -20953,6 +21114,19 @@ fn inline_enum_doc(desc: Option<&str>) -> Option<String> {
         Some(text) if text.trim().is_empty() => Some(String::new()),
         other => clean_doc(other),
     }
+}
+
+/// The array-alias docstring `doc` with the trailing spaces its description
+/// ended on restored: Fern writes an array alias's module docstring verbatim,
+/// and Plaid's `AccountSubtypes` description ends in one space.
+fn keep_description_trailing_spaces(doc: String, description: Option<&str>) -> String {
+    let spaces = description
+        .map(|description| description.len() - description.trim_end_matches(' ').len())
+        .unwrap_or(0);
+    if spaces == 0 || !description.is_some_and(|d| d.trim_end_matches(' ') == doc) {
+        return doc;
+    }
+    format!("{doc}{}", " ".repeat(spaces))
 }
 
 /// Normalize a description into a docstring, dropping empty ones.
@@ -21306,6 +21480,8 @@ mod tests {
             admits_only_empty_object: false,
             xml: None,
             inherited_from_flattened_parent: false,
+            flattened_example_order: None,
+            union_member_example: false,
             min_length: None,
             max_length: None,
         }

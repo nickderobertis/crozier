@@ -1,0 +1,34 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .chat_completion_message_tool_call_function import ChatCompletionMessageToolCallFunction
+from .chat_completion_message_tool_call_type import ChatCompletionMessageToolCallType
+
+
+class ChatCompletionMessageToolCall(UniversalBaseModel):
+    id: str = pydantic.Field()
+    """
+    The ID of the tool call.
+    """
+
+    type: ChatCompletionMessageToolCallType = pydantic.Field()
+    """
+    The type of the tool. Currently, only `function` is supported.
+    """
+
+    function: ChatCompletionMessageToolCallFunction = pydantic.Field()
+    """
+    The function that the model called.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

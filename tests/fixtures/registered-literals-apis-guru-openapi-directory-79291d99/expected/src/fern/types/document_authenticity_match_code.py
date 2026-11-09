@@ -1,0 +1,50 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class DocumentAuthenticityMatchCode(enum.StrEnum):
+    """
+    High level summary of whether the document in the provided image matches the formatting rules and security checks for the associated jurisdiction.
+
+    For example, most identity documents have formatting rules like the following:
+
+
+    The image of the person's face must have a certain contrast in order to highlight skin tone
+
+
+    The subject in the document's image must remove eye glasses and pose in a certain way
+
+
+    The informational fields (name, date of birth, ID number, etc.) must be colored and aligned according to specific rules
+
+
+    Security features like watermarks and background patterns must be present
+
+    So a `match` status for this field indicates that the document in the provided image seems to conform to the various formatting and security rules associated with the detected document.
+    """
+
+    MATCH = "match"
+    PARTIAL_MATCH = "partial_match"
+    NO_MATCH = "no_match"
+    NO_DATA = "no_data"
+
+    def visit(
+        self,
+        match: typing.Callable[[], T_Result],
+        partial_match: typing.Callable[[], T_Result],
+        no_match: typing.Callable[[], T_Result],
+        no_data: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is DocumentAuthenticityMatchCode.MATCH:
+            return match()
+        if self is DocumentAuthenticityMatchCode.PARTIAL_MATCH:
+            return partial_match()
+        if self is DocumentAuthenticityMatchCode.NO_MATCH:
+            return no_match()
+        if self is DocumentAuthenticityMatchCode.NO_DATA:
+            return no_data()

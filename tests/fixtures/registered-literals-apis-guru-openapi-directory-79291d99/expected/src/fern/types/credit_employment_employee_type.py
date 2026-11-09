@@ -1,0 +1,13 @@
+
+
+import typing
+
+CreditEmploymentEmployeeType = typing.Optional[str]
+"""
+The type of employment for the individual.
+`"FULL_TIME"`: A full-time employee.
+`"PART_TIME"`: A part-time employee.
+`"CONTRACTOR"`: An employee typically hired externally through a contracting group.
+`"TEMPORARY"`: A temporary employee.
+`"OTHER"`: The employee type is not one of the above defined types.
+"""

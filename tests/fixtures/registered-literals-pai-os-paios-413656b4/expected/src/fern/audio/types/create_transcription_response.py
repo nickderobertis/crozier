@@ -1,0 +1,8 @@
+
+
+import typing
+
+from ...types.create_transcription_response_json import CreateTranscriptionResponseJson
+from ...types.create_transcription_response_verbose_json import CreateTranscriptionResponseVerboseJson
+
+CreateTranscriptionResponse = typing.Union[CreateTranscriptionResponseJson, CreateTranscriptionResponseVerboseJson]

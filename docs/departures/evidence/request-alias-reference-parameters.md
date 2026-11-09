@@ -75,3 +75,14 @@ still requiring matching signature types, JSON wire fields and descriptions.
 `remeasure_collapsed_body_keeps_the_shared_model_and_documents_accepted_fields`
 drives crozier over the measurement and compares the complete certified tree;
 changing the corrected parameter's type remains an unexplained mismatch.
+
+## Fields the method writes through the converter or renames
+
+Guardian's `PolicyConfig` and `Schema` (`hashgraph/guardian` at `e585ead1`) reach
+the same defect through three shapes the first form of the rule did not read: a
+wire field written `"policyTopics": convert_and_respect_annotation_metadata(`
+whose variable is on the next line's `object_=`; a reserved-word field (`uuid_`
+on the model, `hash_` on the method); and a path parameter sharing a model
+field's name (`topic_id`), which keeps its own block on both sides and is no part
+of the spread. Its field-less `Object` body is not covered and is
+`request-alias-empty-model-block`, still differing.

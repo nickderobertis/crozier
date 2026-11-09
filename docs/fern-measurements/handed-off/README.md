@@ -43,9 +43,9 @@ A registration residual names `expected-literals/`, rather than claiming a file
 already differs. Newly named residual causes describe missing behavior in their
 note; they are repair work, not undecided triage verdicts.
 
-The four disjoint outcomes are **96 registered**,
+The four disjoint outcomes are **103 registered**,
 **37 decided** (26 `refused-by-ruling`, 11 `byte-matches-not-admissible`),
-**12 listed residuals** (12 `differs`, 0 `registration-incomplete`), and
+**5 listed residuals** (5 `differs`, 0 `registration-incomplete`), and
 **1 could-not-check** (lolesports' evaluated valid-OpenAPI exception: its useful
 crozier SDK cannot byte-match the certified pair's empty scaffold). They sum to
 146. Each comparison record names the exact command and source digest; refusals
@@ -66,9 +66,11 @@ Tilecast aside, against the certified pair's fresh trees in both enum modes and
 named every `remaining-<sha8>-<file>` cause. Nineteen now byte-match in both
 modes: eighteen registered in corpus rows 5600-5617, and AppVeyor, whose licence
 grants nothing the corpus rule admits. The repaired causes are in
-[`remeasure.tsv`](remeasure.tsv). The other eleven are handed on, with each
-cause's rule and what was tried, in
-[`remeasure/README.md`](remeasure/README.md#residual-repair-handed-on).
+[`remeasure.tsv`](remeasure.tsv). The other eleven went to
+`residual-differences-repair-2`: seven now byte-match and are registered in
+corpus rows 5618-5624, and four still differ with every remaining file attributed
+to a deferred cause, each with its follow-up ticket draft, in
+[`remeasure/README.md`](remeasure/README.md#residual-repair-dispositions).
 
 The Tilecast both-mode recording replay previously passed in 1400.57 seconds
 (about 23 minutes 21 seconds), and its instrumented replay passed in 974.31
