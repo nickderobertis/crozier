@@ -104,6 +104,7 @@ struct Declared<'a> {
     sample: Option<String>,
 }
 
+// llmlint: ignore[changed_behavior_has_e2e] A rule-level boundary: its rejections need a reference tree Fern never writes, so its unit tests feed this rule the crafted input, parity.rs's a_difference_no_rule_explains_still_fails_beside_a_departure proves the comparison reports what a rule declines, and the registered corpus rows prove its acceptance through real SDK trees.
 /// The declared values ruling 2 and its principle keep (see the module docs).
 fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
     let mut out = Vec::new();
@@ -934,6 +935,7 @@ pub(super) fn declared_examples_array_parameter_value(
         })
 }
 
+// llmlint: ignore[changed_behavior_has_e2e] A rule-level boundary: its rejections need a reference tree Fern never writes, so its unit tests feed this rule the crafted input, parity.rs's a_difference_no_rule_explains_still_fails_beside_a_departure proves the comparison reports what a rule declines, and the registered corpus rows prove its acceptance through real SDK trees.
 /// Every date-time property a schema-level object example gives an unquoted
 /// timestamp, other than the `2000-01-23T04:56:07` sentinel the certified pair
 /// and crozier both drop: its wire name and the declared value.
@@ -1017,6 +1019,7 @@ pub(super) fn declared_timestamp_property_example(
         })
 }
 
+// llmlint: ignore[changed_behavior_has_e2e] A rule-level boundary: its rejections need a reference tree Fern never writes, so its unit tests feed this rule the crafted input, parity.rs's a_difference_no_rule_explains_still_fails_beside_a_departure proves the comparison reports what a rule declines, and the registered corpus rows prove its acceptance through real SDK trees.
 /// Every optional query parameter of the two shapes ruling 4 leaves out where the
 /// certified pair passes them, with the literal the pair writes: one annotating a
 /// `$ref` through `allOf`, worked from the target's example (Kong's `sort`), and an
@@ -1153,6 +1156,7 @@ pub(super) fn minimal_call_optional_parameter(
     Ok(None)
 }
 
+// llmlint: ignore[changed_behavior_has_e2e] A rule-level boundary: its rejections need a reference tree Fern never writes, so its unit tests feed this rule the crafted input, parity.rs's a_difference_no_rule_explains_still_fails_beside_a_departure proves the comparison reports what a rule declines, and the registered corpus rows prove its acceptance through real SDK trees.
 /// `optional-raw-body-example-argument`: Fern's one-line `<prefix>()` for an
 /// operation whose optional raw `application/octet-stream` body the signature
 /// nevertheless requires, beside crozier's call passing `request=b"string"`.
