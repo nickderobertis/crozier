@@ -72,9 +72,10 @@ control test and registered certified comparison.
 ## Former hand-written combinations
 
 The documents `## Newly admitted documents` in
-docs/fern-measurements/handed-off/README.md lists are exactly the 78 registered
-rows of docs/fern-measurements/handed-off/documents.tsv; the first seven of them
-were screened here before the other 71 registered.
+docs/fern-measurements/handed-off/README.md listed 78 registered rows of
+docs/fern-measurements/handed-off/documents.tsv when this table was measured; the
+first seven of them were screened here before the other 71 registered, and the 18
+registered later in corpus rows 5600-5617 are outside this table.
 [handed-off-registered-verdicts.tsv](handed-off-registered-verdicts.tsv) gives each
 document, digest, corpus row and verdict for each of
 combo-param-example-beside-ref-schema, combo-annotated-ref-property-example,
