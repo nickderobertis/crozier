@@ -310,7 +310,6 @@ pub struct Context {
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
     crozier_lifted: OnceLock<BTreeSet<String>>,
-    crozier_null_union_fields: OnceLock<BTreeSet<(String, String)>>,
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
@@ -355,9 +354,6 @@ impl Context {
             reference_classes: OnceLock::from(classes(reference.iter().copied())),
             crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
             crozier_lifted: OnceLock::from(lifted_parameters(crozier.iter().copied())),
-            crozier_null_union_fields: OnceLock::from(required_null_union_fields(
-                crozier.iter().copied(),
-            )),
             crozier_constant_headers: OnceLock::from(constant_headers(crozier.iter().copied())),
             reference_nullable_items: OnceLock::from(nullable_item_parameters(
                 reference
@@ -423,22 +419,6 @@ impl Context {
             };
             let sources: Vec<(String, String)> = python_sources(root);
             lifted_parameters(
-                sources
-                    .iter()
-                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
-            )
-        })
-    }
-
-    /// The `(class, field)` of every required model field crozier types as a
-    /// union whose first member is a union admitting `null`.
-    pub fn crozier_null_union_fields(&self) -> &BTreeSet<(String, String)> {
-        self.crozier_null_union_fields.get_or_init(|| {
-            let Some((_, root)) = self.roots.as_ref() else {
-                return BTreeSet::new();
-            };
-            let sources: Vec<(String, String)> = python_sources(root);
-            required_null_union_fields(
                 sources
                     .iter()
                     .map(|(rel, text)| (rel.as_str(), text.as_str())),
@@ -1748,119 +1728,6 @@ fn lifted_parameters<'a>(
         .collect()
 }
 
-/// The top-level members of every `Name = typing.Union[...]` alias in `text`.
-fn union_aliases(text: &str) -> Vec<(&str, Vec<String>)> {
-    let lines: Vec<&str> = text.lines().collect();
-    let mut aliases = Vec::new();
-    for (at, line) in lines.iter().enumerate() {
-        let Some((name, opened)) = line.split_once(" = typing.Union[") else {
-            continue;
-        };
-        if name.is_empty() || !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
-            continue;
-        }
-        let mut body = String::from(opened);
-        let mut next = at + 1;
-        while !body.trim_end().ends_with(']') {
-            let Some(more) = lines.get(next) else { break };
-            body.push_str(more.trim());
-            next += 1;
-        }
-        let body = body.trim_end().strip_suffix(']').unwrap_or(&body);
-        let mut members = Vec::new();
-        let (mut depth, mut start) = (0_usize, 0_usize);
-        for (index, c) in body.char_indices() {
-            match c {
-                '[' => depth += 1,
-                ']' => depth = depth.saturating_sub(1),
-                ',' if depth == 0 => {
-                    members.push(body[start..index].trim().to_string());
-                    start = index + 1;
-                }
-                _ => {}
-            }
-        }
-        members.push(body[start..].trim().to_string());
-        members.retain(|member| !member.is_empty());
-        aliases.push((name, members));
-    }
-    aliases
-}
-
-/// See [`Context::crozier_null_union_fields`].
-fn required_null_union_fields<'a>(
-    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
-) -> BTreeSet<(String, String)> {
-    let sources: Vec<(&str, &str)> = sources
-        .into_iter()
-        .filter(|(path, _)| path.ends_with(".py"))
-        .collect();
-    let aliases: BTreeMap<&str, Vec<String>> = sources
-        .iter()
-        .flat_map(|(_, text)| union_aliases(text))
-        .collect();
-    let admits_null = |name: &str| {
-        aliases
-            .get(name)
-            .is_some_and(|members| members.iter().any(|member| member == "typing.Any"))
-    };
-    let mut fields = BTreeSet::new();
-    for (_, text) in &sources {
-        let mut class = None;
-        for line in text.lines() {
-            if let Some(rest) = line.strip_prefix("class ") {
-                class = rest.split_once('(').map(|(name, _)| name);
-                continue;
-            }
-            let (Some(class), Some((field, annotation))) = (
-                class,
-                line.strip_prefix("    ")
-                    .filter(|rest| !rest.starts_with(' '))
-                    .and_then(|rest| rest.split_once(": ")),
-            ) else {
-                continue;
-            };
-            if aliases
-                .get(annotation.trim())
-                .and_then(|members| members.first())
-                .is_some_and(|first| admits_null(first))
-            {
-                fields.insert((class.to_string(), field.to_string()));
-            }
-        }
-    }
-    fields
-}
-
-/// `required-null-union-field-example`: the one `<field>="<field>",` argument of
-/// a docstring's model constructor that Fern leaves out, where the model requires
-/// that field and types it as a union whose first member admits `null`.
-fn required_null_union_field_line(pair: &Pair<'_>, at: usize) -> bool {
-    if !pair.rel.ends_with("/client.py") {
-        return false;
-    }
-    let line = pair.crozier[at];
-    let indent = line.len() - line.trim_start().len();
-    let Some((field, value)) = line.trim_start().split_once('=') else {
-        return false;
-    };
-    if value != format!("\"{field}\",") || indent < 4 {
-        return false;
-    }
-    let opener = pair.crozier[..at].iter().rev().find(|candidate| {
-        !candidate.trim().is_empty() && candidate.len() - candidate.trim_start().len() < indent
-    });
-    let Some(class) = opener
-        .map(|opener| opener.trim())
-        .and_then(|opener| opener.strip_suffix('('))
-    else {
-        return false;
-    };
-    pair.context
-        .crozier_null_union_fields()
-        .contains(&(class.to_string(), field.to_string()))
-}
-
 /// The `(wire name, value)` of every `"<wire>": "<value>",` line inside a
 /// `headers={` dict of the raw clients among `sources`.
 fn constant_headers<'a>(
@@ -2069,7 +1936,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 46] = [
+pub const RULE_IDS: [&str; 45] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2103,7 +1970,6 @@ pub const RULE_IDS: [&str; 46] = [
     "repeated-credential-example-keyword",
     "repeated-query-body-example-keyword",
     "request-alias-reference-parameters",
-    "required-null-union-field-example",
     "schema-rejected-array-length-example",
     "schema-rejected-name-example",
     "schema-rejected-number-example",
@@ -2233,10 +2099,6 @@ pub fn rule(id: &str) -> Option<Rule> {
             region: Some(binary_json_body_example),
             line: Some(binary_json_body_example_line),
             ..Rule::default()
-        },
-        "required-null-union-field-example" => Rule {
-            added_at: Some(required_null_union_field_line),
-            ..none
         },
         "request-alias-reference-parameters" => Rule {
             region: Some(alias_reference_parameters),
@@ -7220,60 +7082,6 @@ mod tests {
             ..pair
         };
         assert_eq!(closed_empty_object_example_region(&pair).unwrap(), None);
-    }
-
-    #[test]
-    fn a_required_null_union_field_line_is_excused_only_on_its_own_model() {
-        let zero = "ThingValueZero = typing.Union[\n    str, float, typing.Any\n]\n";
-        let value = "ThingValue = typing.Union[\n    ThingValueZero,\n    typing.List[str],\n]\n";
-        let plain =
-            "PlainValue = typing.Union[str, float]\nOuterPlain = typing.Union[PlainValue, str]\n";
-        let model = "class Thing(UniversalBaseModel):\n    key: str\n    value: ThingValue\n    other: OuterPlain\n";
-        let context = Context::from_sources(
-            [],
-            [
-                ("src/fern/types/zero.py", zero),
-                ("src/fern/types/value.py", value),
-                ("src/fern/types/plain.py", plain),
-                ("src/fern/types/thing.py", model),
-            ],
-        );
-        let holds = |rel: &str, lines: &[&str], at: usize| {
-            required_null_union_field_line(
-                &Pair {
-                    rel,
-                    fern: &[],
-                    crozier: lines,
-                    context: &context,
-                },
-                at,
-            )
-        };
-        let call = [
-            "                Thing(",
-            "                    key=\"key\",",
-            "                    value=\"value\",",
-            "                    other=\"other\",",
-            "                )",
-        ];
-        assert!(holds("src/fern/things/client.py", &call, 2));
-        // Another required field of the model, and one whose union admits no null.
-        assert!(!holds("src/fern/things/client.py", &call, 1));
-        assert!(!holds("src/fern/things/client.py", &call, 3));
-        // Outside a client docstring.
-        assert!(!holds("reference.md", &call, 2));
-        // A value other than the field's own name is a different difference.
-        let changed = [
-            "                Thing(",
-            "                    value=\"other\",",
-        ];
-        assert!(!holds("src/fern/things/client.py", &changed, 1));
-        // Another model with a same-named field.
-        let other = [
-            "                Other(",
-            "                    value=\"value\",",
-        ];
-        assert!(!holds("src/fern/things/client.py", &other, 1));
     }
 
     #[test]

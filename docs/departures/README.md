@@ -196,7 +196,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 32 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 31 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -500,15 +500,6 @@ when the two differ.
 - **crozier writes:** The reference lists the actual flattened arguments and their types and descriptions; generated code and usage examples remain matched.
 - **Why:** Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
 - **Evidence:** [`docs/departures/evidence/request-alias-reference-parameters.md`](../../docs/departures/evidence/request-alias-reference-parameters.md)
-
-### `required-null-union-field-example`
-
-- **Kind:** `fern-defect`
-- **Trigger:** A client docstring's model constructor for a model requiring a field typed as a union whose first member is itself a union admitting null.
-- **Fern writes:** The docstring constructs the model without that required field.
-- **crozier writes:** The docstring passes the field, field="field", a string the union admits.
-- **Why:** Running Fern's docstring raises a pydantic ValidationError naming the missing required field; crozier's constructor call validates.
-- **Evidence:** [`docs/departures/evidence/required-null-union-field-example.md`](../../docs/departures/evidence/required-null-union-field-example.md)
 
 ### `schema-rejected-array-length-example`
 
