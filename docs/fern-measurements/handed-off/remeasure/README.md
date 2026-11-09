@@ -74,7 +74,7 @@ land-now ruling leaves the named remaining differences for follow-on repairs.
 
 ## Residual repair: dispositions
 
-`residual-differences-repair-2` decided every cause the first repair handed on; each decided cause has a row in [`remeasure.tsv`](../remeasure.tsv) and a directory here. Eight documents now byte-match in both enum modes and are registered in corpus rows 5618-5624. Four still differ, every remaining file attributed in [`residuals.tsv`](../residuals.tsv) to one of these deferred causes:
+`residual-differences-repair-2` decided every cause the first repair handed on; each decided cause has a row in [`remeasure.tsv`](../remeasure.tsv) and a directory here. Eight documents now byte-match in both enum modes and are registered in corpus rows 5618-5625. Three still differ, every remaining file attributed in [`residuals.tsv`](../residuals.tsv) to one of these deferred causes:
 
 | Document | Cause | Rule that differs | Follow-up ticket draft | Why it exceeds this step |
 |---|---|---|---|---|
