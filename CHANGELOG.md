@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.161](https://github.com/nickderobertis/crozier/compare/v0.0.160...v0.0.161) - 2026-11-09
+
+### Other
+
+- *(parity)* seek real witnesses for the remaining fixture-only schema features ([#792](https://github.com/nickderobertis/crozier/pull/792))
+
 ## [0.0.160](https://github.com/nickderobertis/crozier/compare/v0.0.159...v0.0.160) - 2026-11-08
 
 ### Other
