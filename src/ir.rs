@@ -9413,10 +9413,10 @@ impl InlineHoister<'_> {
                     || (is_optional(prop_schema) && prop_schema.read_only == Some(true)),
                 spec_required,
                 docstring: declared_doc(
-                    (!self
+                    (!(self
                         .schemas
                         .is_some_and(|schemas| annotates_sole_member_union(prop_schema, schemas))
-                        && !(!optional && sole_string_enum_member(prop_schema)))
+                        || (!optional && sole_string_enum_member(prop_schema))))
                     .then(|| {
                         rewrapped_alias_description(prop_schema, self.schemas)
                             .or_else(|| property_description(prop_schema, optional))
@@ -21123,7 +21123,7 @@ fn keep_description_trailing_spaces(doc: String, description: Option<&str>) -> S
     let spaces = description
         .map(|description| description.len() - description.trim_end_matches(' ').len())
         .unwrap_or(0);
-    if spaces == 0 || !description.is_some_and(|d| d.trim_end_matches(' ') == doc) {
+    if spaces == 0 || description.is_none_or(|d| d.trim_end_matches(' ') != doc) {
         return doc;
     }
     format!("{doc}{}", " ".repeat(spaces))

@@ -150,8 +150,8 @@ fn kept_declared_values(source: &OpenApi) -> Vec<Declared<'_>> {
         for (media, content) in &body.content {
             // An urlencoded form answering no JSON is declined the same way:
             // peach-payments' `checkout_generation_initiate_payment`.
-            if !media.starts_with("multipart/form-data")
-                && !(non_json && media == "application/x-www-form-urlencoded")
+            if !(media.starts_with("multipart/form-data")
+                || (non_json && media == "application/x-www-form-urlencoded"))
             {
                 continue;
             }
