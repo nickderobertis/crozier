@@ -1,3 +1,4 @@
+// llmlint: ignore-file[expensive_tests_stay_behind_their_own_edge] Each of these journeys generates one small SDK and reads it, on the crozier-e2e edge every other binary-driving journey shares; splitting that edge is the drafted follow-up "Give crozier-e2e's generator-replay journeys an Nx edge narrower than e2eReads".
 //! `required-null-union-field-example` through real generated SDK trees: crozier's
 //! docstring keeps a required field led by a null-admitting union, and only that
 //! line of only that model is excused against a reference that omits it.
