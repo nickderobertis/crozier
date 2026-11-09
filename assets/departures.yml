@@ -657,6 +657,20 @@
   reason: Binding the advertised request argument to the actual generated signature raises an unexpected-keyword error. The correction documents the arguments the method accepts.
   evidence: docs/departures/evidence/request-alias-reference-parameters.md
 
+- id: required-null-union-field-example
+  kind: fern-defect
+  trigger: >-
+    A client docstring's model constructor for a model requiring a field typed
+    as a union whose first member is itself a union admitting null.
+  fern: >-
+    The docstring constructs the model without that required field.
+  crozier: >-
+    The docstring passes the field, field="field", a string the union admits.
+  reason: >-
+    Running Fern's docstring raises a pydantic ValidationError naming the
+    missing required field; crozier's constructor call validates.
+  evidence: docs/departures/evidence/required-null-union-field-example.md
+
 - id: schema-rejected-array-length-example
   kind: fern-defect
   trigger: >-

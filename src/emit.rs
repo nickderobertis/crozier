@@ -10257,6 +10257,57 @@ impl<'a> ExampleCtx<'a> {
         }
     }
 
+    /// Whether a list item is a union whose first member requires a field the
+    /// importer cannot sample, so Markdown shows the list empty: Vercel's
+    /// `patchtEdgeConfigItems` documents `items=[]`. The docstring keeps the
+    /// item (see the `required-null-union-field-example` departure).
+    fn union_item_has_no_sample(&self, t: &TypeRef) -> bool {
+        let Some(TypeRef::Named(first)) = self
+            .union_variants(t)
+            .and_then(|variants| variants.into_iter().next())
+        else {
+            return false;
+        };
+        let Some(TypeDecl::Object(object)) = self.find(&first) else {
+            return false;
+        };
+        object.fields.iter().any(|field| {
+            field.spec_required && !field.optional && self.first_member_admits_null(&field.type_ref)
+        })
+    }
+
+    /// Whether `t` is a union whose first member is itself a union admitting
+    /// `null`. crozier types that `null` member `typing.Any`; a union whose first
+    /// member admits no `null` is sampled normally, and so is a flat one.
+    fn first_member_admits_null(&self, t: &TypeRef) -> bool {
+        self.union_variants(t)
+            .and_then(|variants| variants.into_iter().next())
+            .and_then(|first| self.union_variants(&first))
+            .is_some_and(|variants| {
+                variants
+                    .iter()
+                    .any(|variant| matches!(variant, TypeRef::Primitive(Prim::Any)))
+            })
+    }
+
+    /// The alternatives of `t` where it is a union, through any named aliases.
+    fn union_variants(&self, t: &TypeRef) -> Option<Vec<TypeRef>> {
+        const ALIAS_CHAIN_LIMIT: usize = 16;
+        let mut current = t.clone();
+        for _ in 0..ALIAS_CHAIN_LIMIT {
+            let next = match &current {
+                TypeRef::Union(variants) => return Some(variants.clone()),
+                TypeRef::Named(name) => match self.find(name) {
+                    Some(TypeDecl::Alias(alias)) => alias.target.clone(),
+                    _ => return None,
+                },
+                _ => return None,
+            };
+            current = next;
+        }
+        None
+    }
+
     /// A union parameter's declared string example, as the plain string it is,
     /// where one of the union's members holds a string: a `oneOf` of a
     /// referenced string and a string `const` is worked from the referenced
@@ -10370,6 +10421,7 @@ impl<'a> ExampleCtx<'a> {
                 if self.resolves_to_building(inner)
                     || self.resolves_to_any(inner)
                     || self.example_has_no_value(inner)
+                    || (self.documentation && self.union_item_has_no_sample(inner))
                 {
                     if self.documentation {
                         Example::ReferenceList(vec![])
@@ -14535,6 +14587,85 @@ mod tests {
             client.contains("request=[[], []]") && !client.contains("\"My title\""),
             "{client}"
         );
+    }
+
+    /// `POST /entries` taking a list of a union whose first member requires
+    /// `amount`, typed `amount`.
+    fn union_item_document(amount: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/entries": {"post": {
+                "operationId": "postEntries",
+                "tags": ["ledger"],
+                "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                    "type": "object",
+                    "required": ["entries"],
+                    "properties": {"entries": {"type": "array", "items": {"oneOf": [
+                        {"type": "object", "required": ["label", "amount"], "properties": {
+                            "label": {"type": "string"},
+                            "amount": amount
+                        }},
+                        {"type": "object", "required": ["label"], "properties": {
+                            "label": {"type": "string"}
+                        }}
+                    ]}}}
+                }}}},
+                "responses": {"200": {"description": "OK", "content": {"application/json": {
+                    "schema": {"type": "object", "properties": {"status": {"type": "string"}}}
+                }}}}
+            }}}
+        })
+    }
+
+    #[test]
+    fn a_union_item_requiring_a_nested_nullable_union_is_an_empty_markdown_list() {
+        let scalars = serde_json::json!({"oneOf": [
+            {"type": "string"}, {"type": "number"}, {"type": "boolean"},
+            {"type": "null"}, {"type": "object"}
+        ]});
+        let files = files_for(union_item_document(serde_json::json!({"oneOf": [
+            scalars.clone(),
+            {"type": "array", "items": scalars}
+        ]})));
+        let file = |suffix: &str| {
+            files
+                .iter()
+                .find(|(path, _)| path.ends_with(suffix))
+                .map(|(_, contents)| contents)
+                .expect("the file is generated")
+        };
+        assert!(
+            file("reference.md").contains("entries=[],"),
+            "{}",
+            file("reference.md")
+        );
+        // The docstring keeps the item with the required field.
+        assert!(file("ledger/client.py").contains("amount=\"amount\","));
+    }
+
+    #[test]
+    fn a_union_item_without_a_nested_nullable_union_keeps_its_markdown_item() {
+        for amount in [
+            // A nested union admitting no null.
+            serde_json::json!({"oneOf": [
+                {"oneOf": [{"type": "string"}, {"type": "number"}]},
+                {"type": "array", "items": {"type": "string"}}
+            ]}),
+            // A flat union.
+            serde_json::json!({"oneOf": [{"type": "string"}, {"type": "number"}]}),
+        ] {
+            let files = files_for(union_item_document(amount));
+            let reference = files
+                .iter()
+                .find(|(path, _)| path.ends_with("reference.md"))
+                .map(|(_, contents)| contents)
+                .expect("reference.md is generated");
+            assert!(
+                reference.contains("amount=\"amount\",") && !reference.contains("entries=[],"),
+                "{reference}"
+            );
+        }
     }
 
     /// `GET /probe` carrying the header `probeParam` with `schema`, beside a
