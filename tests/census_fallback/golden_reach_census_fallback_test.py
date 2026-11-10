@@ -76,9 +76,12 @@ def sample_document(url: str, sha256: str) -> Path:
 # refused: a quote inside a flow plain scalar (dashy's `page's config`), and
 # explicit `? ` mapping keys (Adyen's long example names, and the pinned Stripe
 # description's three long component names, whose declarations the stdlib walk
-# now counts as the full loader always did). Both loaders must agree on these
-# rather than the stdlib loader refusing them.
-STDLIB_READS = {"flow-collection", "explicit-key"}
+# now counts as the full loader always did), and a plain multi-line scalar whose
+# continuation lines are separated by blank lines (ktor-init-tools' help
+# description, which the stdlib loader once refused as unexpected indentation
+# and now folds as YAML does). Both loaders must agree on these rather than the
+# stdlib loader refusing them.
+STDLIB_READS = {"flow-collection", "explicit-key", "indentation"}
 
 
 class FallbackAgreementTests(unittest.TestCase):
