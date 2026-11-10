@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .assistants_api_named_tool_choice import AssistantsApiNamedToolChoice
+from .assistants_api_tool_choice_option_zero import AssistantsApiToolChoiceOptionZero
+
+AssistantsApiToolChoiceOption = typing.Union[AssistantsApiToolChoiceOptionZero, AssistantsApiNamedToolChoice]

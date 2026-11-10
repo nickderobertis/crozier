@@ -1,0 +1,33 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class OpenAiUsage(UniversalBaseModel):
+    """
+    Usage interface of OpenAI for improved compatibility.
+    """
+
+    prompt_tokens: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="promptTokens"), pydantic.Field(alias="promptTokens")
+    ] = None
+    completion_tokens: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="completionTokens"), pydantic.Field(alias="completionTokens")
+    ] = None
+    total_tokens: typing_extensions.Annotated[
+        typing.Optional[int], FieldMetadata(alias="totalTokens"), pydantic.Field(alias="totalTokens")
+    ] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

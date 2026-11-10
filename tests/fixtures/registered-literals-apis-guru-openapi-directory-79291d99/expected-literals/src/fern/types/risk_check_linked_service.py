@@ -1,0 +1,43 @@
+
+
+import typing
+
+RiskCheckLinkedService = typing.Union[
+    typing.Literal[
+        "apple",
+        "ebay",
+        "facebook",
+        "flickr",
+        "foursquare",
+        "github",
+        "google",
+        "gravatar",
+        "instagram",
+        "lastfm",
+        "linkedin",
+        "microsoft",
+        "myspace",
+        "pinterest",
+        "skype",
+        "spotify",
+        "telegram",
+        "tumblr",
+        "twitter",
+        "viber",
+        "vimeo",
+        "weibo",
+        "whatsapp",
+        "yahoo",
+        "airbnb",
+        "amazon",
+        "booking",
+        "discord",
+        "kakao",
+        "ok",
+        "qzone",
+        "line",
+        "snapchat",
+        "zalo",
+    ],
+    typing.Any,
+]

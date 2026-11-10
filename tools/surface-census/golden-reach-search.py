@@ -2424,18 +2424,18 @@ def _ruamel_yaml() -> ModuleType:
 def yaml_stream(data: bytes) -> list[Any]:
     """Every document of a YAML stream as the pinned ruamel.yaml reads it.
 
-    A timestamp stays the text it is written as, which is how the census's own
-    loader reads one, so a census over this reading counts the same example
-    shapes the stdlib loader's would.
+    A timestamp stays the text it is written as, marked as the plain timestamp
+    it is, which is how the census's own loader reads one, so a census over this
+    reading counts the same example shapes the stdlib loader's would (a plain
+    timestamp example is itself a shape the census counts).
     """
     ruamel_yaml = _ruamel_yaml()
 
     class TextTimestamps(ruamel_yaml.constructor.SafeConstructor):
-        pass
+        def construct_yaml_timestamp(self, node: Any, values: Any = None) -> Any:
+            return CENSUS._YamlTimestamp(self.construct_scalar(node))
 
-    TextTimestamps.add_constructor(
-        "tag:yaml.org,2002:timestamp", ruamel_yaml.constructor.SafeConstructor.construct_yaml_str
-    )
+    TextTimestamps.add_constructor("tag:yaml.org,2002:timestamp", TextTimestamps.construct_yaml_timestamp)
     reader = ruamel_yaml.YAML(typ="safe", pure=True)
     reader.Constructor = TextTimestamps
     return list(reader.load_all(data))

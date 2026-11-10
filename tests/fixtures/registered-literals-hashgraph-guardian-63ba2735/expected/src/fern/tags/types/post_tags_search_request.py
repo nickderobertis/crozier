@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .post_tags_search_request_target import PostTagsSearchRequestTarget
+from .post_tags_search_request_targets import PostTagsSearchRequestTargets
+
+PostTagsSearchRequest = typing.Union[PostTagsSearchRequestTarget, PostTagsSearchRequestTargets]

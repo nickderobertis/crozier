@@ -722,6 +722,10 @@ pub struct Operation {
     /// [dual-header policy](self#fern-compatible-extensions).
     #[serde(rename = "x-crozier-sdk-group-name", default)]
     sdk_group_name_crozier: Option<SdkGroupName>,
+    /// `x-codeSamples`: whether the operation declares code samples. The
+    /// certified pair works an optional raw byte body only where it does.
+    #[serde(rename = "x-codeSamples", default)]
+    pub x_code_samples: Option<serde_json::Value>,
     /// `x-fern-sdk-group-name`: the Fern spelling of the group override. Superseded
     /// by `x-crozier-sdk-group-name` when both appear (see
     /// [`Operation::sdk_group_name`]).
@@ -3815,6 +3819,32 @@ fn normalize_component_response_schema_refs(doc: &mut OpenApi) {
             }
         });
     });
+    // An error body's union member naming a response's schema does not give it
+    // an identity: Nexmo's transfer-number `404` is `oneOf: [$ref
+    // #/components/responses/AccountIdNotFoundError/content/application~1json/schema,
+    // $ref ShortcodeNotFound]`, and Fern writes no `AccountIdNotFoundError` model
+    // and no discriminated `NotFoundErrorBody`. A success body's member does.
+    let mut union_members = std::collections::BTreeSet::new();
+    for item in doc.paths.values() {
+        for (_, operation) in item.operations() {
+            for (status, response) in &operation.responses {
+                if status.starts_with('2') {
+                    continue;
+                }
+                for media in response.content.values() {
+                    let Some(schema) = media.schema.as_ref() else {
+                        continue;
+                    };
+                    for member in schema.one_of.iter().chain(&schema.any_of).flatten() {
+                        if let Some(reference) = &member.reference {
+                            union_members.insert(reference.clone());
+                        }
+                    }
+                }
+            }
+        }
+    }
+    references.retain(|reference| !union_members.contains(reference));
     let mut replacements = IndexMap::new();
     for reference in references {
         let segments: Vec<_> = reference.split('/').collect();

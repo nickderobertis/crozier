@@ -1,0 +1,68 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .score_source import ScoreSource
+
+
+class BaseScore(UniversalBaseModel):
+    id: str
+    trace_id: typing_extensions.Annotated[str, FieldMetadata(alias="traceId"), pydantic.Field(alias="traceId")]
+    name: str
+    source: ScoreSource
+    observation_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="observationId"), pydantic.Field(alias="observationId")
+    ] = None
+    timestamp: dt.datetime
+    created_at: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
+    ]
+    updated_at: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
+    ]
+    author_user_id: typing_extensions.Annotated[
+        typing.Optional[str], FieldMetadata(alias="authorUserId"), pydantic.Field(alias="authorUserId")
+    ] = None
+    comment: typing.Optional[str] = None
+    config_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="configId"),
+        pydantic.Field(
+            alias="configId",
+            description="Reference a score config on a score. When set, config and score name must be equal and value must comply to optionally defined numerical range",
+        ),
+    ] = None
+    """
+    Reference a score config on a score. When set, config and score name must be equal and value must comply to optionally defined numerical range
+    """
+
+    queue_id: typing_extensions.Annotated[
+        typing.Optional[str],
+        FieldMetadata(alias="queueId"),
+        pydantic.Field(
+            alias="queueId",
+            description="Reference an annotation queue on a score. Populated if the score was initially created in an annotation queue.",
+        ),
+    ] = None
+    """
+    Reference an annotation queue on a score. Populated if the score was initially created in an annotation queue.
+    """
+
+    environment: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    The environment from which this score originated. Can be any lowercase alphanumeric string with hyphens and underscores that does not start with 'langfuse'.
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

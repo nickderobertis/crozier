@@ -1,0 +1,37 @@
+
+
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.serialization import FieldMetadata
+from .base_score import BaseScore
+
+
+class CategoricalScore(BaseScore):
+    value: typing.Optional[float] = pydantic.Field(default=None)
+    """
+    Only defined if a config is linked. Represents the numeric category mapping of the stringValue
+    """
+
+    string_value: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="stringValue"),
+        pydantic.Field(
+            alias="stringValue",
+            description="The string representation of the score value. If no config is linked, can be any string. Otherwise, must map to a config category",
+        ),
+    ]
+    """
+    The string representation of the score value. If no config is linked, can be any string. Otherwise, must map to a config category
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

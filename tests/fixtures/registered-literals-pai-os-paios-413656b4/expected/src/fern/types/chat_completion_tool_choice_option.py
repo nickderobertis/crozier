@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .chat_completion_named_tool_choice import ChatCompletionNamedToolChoice
+from .chat_completion_tool_choice_option_zero import ChatCompletionToolChoiceOptionZero
+
+ChatCompletionToolChoiceOption = typing.Union[ChatCompletionToolChoiceOptionZero, ChatCompletionNamedToolChoice]

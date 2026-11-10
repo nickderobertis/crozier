@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .open_ai_completion_usage_schema import OpenAiCompletionUsageSchema
+from .open_ai_response_usage_schema import OpenAiResponseUsageSchema
+
+UsageDetails = typing.Union[typing.Dict[str, int], OpenAiCompletionUsageSchema, OpenAiResponseUsageSchema]

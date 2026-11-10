@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .chat_completion_request_message_content_part import ChatCompletionRequestMessageContentPart
+
+ChatCompletionRequestUserMessageContent = typing.Union[str, typing.List[ChatCompletionRequestMessageContentPart]]

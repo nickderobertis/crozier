@@ -1,0 +1,70 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+
+
+class GetMediaResponse(UniversalBaseModel):
+    media_id: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="mediaId"),
+        pydantic.Field(alias="mediaId", description="The unique langfuse identifier of a media record"),
+    ]
+    """
+    The unique langfuse identifier of a media record
+    """
+
+    content_type: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="contentType"),
+        pydantic.Field(alias="contentType", description="The MIME type of the media record"),
+    ]
+    """
+    The MIME type of the media record
+    """
+
+    content_length: typing_extensions.Annotated[
+        int,
+        FieldMetadata(alias="contentLength"),
+        pydantic.Field(alias="contentLength", description="The size of the media record in bytes"),
+    ]
+    """
+    The size of the media record in bytes
+    """
+
+    uploaded_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="uploadedAt"),
+        pydantic.Field(alias="uploadedAt", description="The date and time when the media record was uploaded"),
+    ]
+    """
+    The date and time when the media record was uploaded
+    """
+
+    url: str = pydantic.Field()
+    """
+    The download URL of the media record
+    """
+
+    url_expiry: typing_extensions.Annotated[
+        str,
+        FieldMetadata(alias="urlExpiry"),
+        pydantic.Field(alias="urlExpiry", description="The expiry date and time of the media record download URL"),
+    ]
+    """
+    The expiry date and time of the media record download URL
+    """
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

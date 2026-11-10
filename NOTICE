@@ -1492,3 +1492,48 @@ Certified literals-overlay witnesses:
     AGPL (repository LICENSE.txt at the pinned revision); corpus row 5617 retains the publisher's immutable document
     (SHA-256 698ea54a2330a274315c4e27c78b8ec9bcb1dcffa36da80336b1fa10269e9526).
     Redistribution grant retained in licenses/publisher-revertinc-revert-0a4acb10f33c.txt.
+
+  APIs-guru/openapi-directory: APIs/nexmo.com/subaccounts/1.0.8/openapi.yaml
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/nexmo.com/subaccounts/1.0.8/openapi.yaml
+    CC0 (repository LICENSE at the pinned revision); corpus row 5618 retains the publisher's immutable document
+    (SHA-256 608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8).
+    Redistribution grant retained in licenses/publisher-apis-guru-openapi-directory-a2010f343487.txt.
+
+  APIs-guru/openapi-directory: APIs/plaid.com/2020-09-14_1.345.1/openapi.yaml
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/plaid.com/2020-09-14_1.345.1/openapi.yaml
+    CC0 (repository LICENSE at the pinned revision); corpus row 5619 retains the publisher's immutable document
+    (SHA-256 79291d99cc1de9909805841b30b2795b8c9327563d76b94d37a2df3733176bda).
+    Redistribution grant retained in licenses/publisher-apis-guru-openapi-directory-a2010f343487.txt.
+
+  atacan/AssemblyAI: openapi.yaml
+    https://raw.githubusercontent.com/atacan/AssemblyAI/ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718/openapi.yaml
+    MIT (repository LICENSE at the pinned revision); corpus row 5620 retains the publisher's immutable document
+    (SHA-256 b306bf4455446eb3bc38f0e687888206b017b5e89c6047a5592e2fbdd88160b7).
+    Redistribution grant retained in licenses/publisher-atacan-assemblyai-772991286b16.txt.
+
+  mithileshchellappan/pushboy: docs/openapi.yaml
+    https://raw.githubusercontent.com/mithileshchellappan/pushboy/688123d556fe2895a1578a233f993158317c40b0/docs/openapi.yaml
+    MIT / https://opensource.org/license/mit/; corpus row 5621 retains the publisher's immutable document
+    (SHA-256 4ff659431c74aa0959d933e61be266448bcfb6367fad745fd94b4313041ebcec).
+
+  pAI-OS/paios: apis/openai/openapi.yaml
+    https://raw.githubusercontent.com/pAI-OS/paios/b65d858f12c1da472176829af4b533a9e7c246e2/apis/openai/openapi.yaml
+    MIT / https://github.com/openai/openai-openapi/blob/master/LICENSE; corpus row 5622 retains the publisher's immutable document
+    (SHA-256 413656b4a262ac7a49ea37f30ef4d8e1a1f3785fb6d85a7aaca4c054e9299fb8).
+
+  tryAGI/AssemblyAI: src/libs/AssemblyAI/openapi.yaml
+    https://raw.githubusercontent.com/tryAGI/AssemblyAI/1028f8b61cda3f1dc8777d732093fd3e4558d9c9/src/libs/AssemblyAI/openapi.yaml
+    MIT (repository LICENSE at the pinned revision); corpus row 5623 retains the publisher's immutable document
+    (SHA-256 215ec23ddd849ffd78349383788255dfeb417532c81f6dc5c2cdd6b5c577ab02).
+    Redistribution grant retained in licenses/publisher-tryagi-assemblyai-b1f44a5df639.txt.
+
+  workera-ai/langfuse_sdk: openapi.yml
+    https://raw.githubusercontent.com/workera-ai/langfuse_sdk/0a7d8397eee3e0f4945a3960adfe4e58979b6f22/openapi.yml
+    MIT (repository LICENSE at the pinned revision); corpus row 5624 retains the publisher's immutable document
+    (SHA-256 61c2ac58b46017322cd051982e09c101b4402f5bc10d0a2cd4d8793025138060).
+    Redistribution grant retained in licenses/publisher-workera-ai-langfuse-sdk-99172c3487cc.txt.
+
+  hashgraph/guardian: docs/.gitbook/assets/swagger (2) (1) (1).yaml
+    https://raw.githubusercontent.com/hashgraph/guardian/e585ead1c74b04dfb70e714363dc6a78f2d077ed/docs/.gitbook/assets/swagger%20%282%29%20%281%29%20%281%29.yaml
+    Apache 2.0 / http://www.apache.org/licenses/LICENSE-2.0.html; corpus row 5625 retains the publisher's immutable document
+    (SHA-256 63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4).

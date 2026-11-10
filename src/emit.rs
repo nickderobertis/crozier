@@ -2700,7 +2700,17 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
     endpoint_has_worked_example(ep)
         && !root_binary_download_undocumented(ep)
         && path_object_documented(ep, types, tag_decls)
-        && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        && !raw_body_without_worked_example(ep)
+}
+
+/// Whether the endpoint's request is a raw byte body `required: true` makes
+/// mandatory or an optional one with no `x-codeSamples`, which gets no worked
+/// example. The certified pair works an optional one the operation samples:
+/// tryAGI's AssemblyAI `files.upload` declares `x-codeSamples` and its README
+/// anchors on that call; atacan's revision of the same operation does not.
+fn raw_body_without_worked_example(ep: &Endpoint) -> bool {
+    matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+        && (ep.request_body_required || !ep.raw_body_has_code_samples)
 }
 
 /// The endpoint Fern's README and `reference.md` anchor their worked example on:
@@ -3560,7 +3570,7 @@ fn reference_entry(
         example_gap: if !endpoint_has_worked_example(ep)
             || root_binary_download_undocumented(ep)
             || !path_object_documented(ep, &ir.types, &ir.tag_types)
-            || matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
+            || raw_body_without_worked_example(ep)
         {
             ""
         } else {
@@ -5079,6 +5089,8 @@ fn render_discriminated_union(
                 xml: None,
                 admits_only_empty_object: false,
                 inherited_from_flattened_parent: false,
+                flattened_example_order: None,
+                union_member_example: false,
                 min_length: None,
                 max_length: None,
             },
@@ -11008,7 +11020,18 @@ impl<'a> ExampleCtx<'a> {
         let mut out = Vec::new();
         for base in &obj.bases {
             if let Some(TypeDecl::Object(b)) = self.find(base) {
-                out.extend(self.object_fields(b));
+                // The Markdown writers list a base's own fields ahead of that
+                // base's bases: langfuse's `IngestionEventZero` extends
+                // `TraceEvent`, whose `body` sits beside `allOf: [$ref BaseEvent]`,
+                // and its reference passes `body` before `id` and `timestamp`.
+                if self.documentation && !b.bases.is_empty() {
+                    let own: Vec<String> = b.fields.iter().map(|f| f.wire_name.clone()).collect();
+                    let mut fields = self.object_fields(b);
+                    fields.sort_by_key(|field| !own.contains(&field.wire_name));
+                    out.extend(fields);
+                } else {
+                    out.extend(self.object_fields(b));
+                }
             }
         }
         // In a docstring a flattened parent's fields lead the model's own, as
@@ -11027,7 +11050,20 @@ impl<'a> ExampleCtx<'a> {
             .iter()
             .filter(leads)
             .chain(obj.fields.iter().filter(|f| !leads(f)));
-        for f in inherited_first.filter(|field| !field.read_only) {
+        let mut ordered: Vec<&Field> = inherited_first.collect();
+        if !self.documentation
+            && obj.bases.is_empty()
+            && obj.fields.iter().any(|f| f.inherited_from_flattened_parent)
+        {
+            // A field the order does not place stays after the ones it does.
+            ordered.sort_by_key(|field| {
+                (
+                    field.flattened_example_order.is_none(),
+                    field.flattened_example_order,
+                )
+            });
+        }
+        for f in ordered.into_iter().filter(|field| !field.read_only) {
             // An example spells a field Fern renames only on the model under its
             // plain name: VisKit's `ThreePieceIn.copy` is the model field `copy_`,
             // and Fern's example constructs `ThreePieceIn(copy="copy", …)`.
@@ -11406,9 +11442,7 @@ fn build_example_inner(
     environment: Option<&crate::ir::Environment>,
     reference: bool,
 ) -> Option<Vec<String>> {
-    if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
-        || !endpoint_has_worked_example(ep)
-    {
+    if raw_body_without_worked_example(ep) || !endpoint_has_worked_example(ep) {
         return None;
     }
 
@@ -11990,7 +12024,11 @@ fn build_example_inner(
                     });
                 } else if documentation {
                     example_fields.sort_by_key(|field| field.markdown_order);
-                } else {
+                } else if !fallback {
+                    // Without an importer example the docstring keeps the
+                    // signature's order: atacan's AssemblyAI `transcripts.submit`
+                    // passes the inline member's `audio_url` ahead of the base's
+                    // `speech_models`.
                     example_fields.sort_by_key(|field| field.declaration_order);
                 }
             }
@@ -12051,6 +12089,7 @@ fn build_example_inner(
                         if reference_fields.is_some()
                             || ep.body_schema_is_beta && !ep.body_schema_example_wrapped
                             || f.media_example
+                            || f.union_member_example
                             || example.starts_with('{') && ctx.resolves_to_any(&f.type_ref)
                             || ctx.example_is_scalar(&f.type_ref)
                             || ctx.example_is_composite(&f.type_ref)
@@ -12226,6 +12265,15 @@ fn build_example_inner(
             }
         }
         _ => {}
+    }
+    // The signature takes the bytes keyword whether or not the body is required,
+    // so the worked call passes it (the `optional-raw-body-example-argument`
+    // departure: the certified pair's empty call fails to bind).
+    if matches!(ep.request_body, Some(RequestBody::Bytes { .. })) {
+        args.push((
+            Some("request".to_string()),
+            Example::Atom("b\"string\"".to_string()),
+        ));
     }
     let rejected_values = ctx.repair_example_args(ep, &mut args);
 
@@ -15251,6 +15299,7 @@ mod tests {
             deprecated: false,
             declaration_order: 0,
             markdown_order: 0,
+            union_member_example: false,
             admits_only_empty_object: false,
         }]));
         let mut lines = Vec::new();
@@ -15623,6 +15672,7 @@ mod tests {
             header_order: Vec::new(),
             request_body: None,
             request_body_required: false,
+            raw_body_has_code_samples: false,
             request_body_has_multipart_related: false,
             reference_body_type: None,
             request_body_doc: None,
@@ -16089,6 +16139,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
             // An optional list → `Optional[Sequence[..]] = OMIT` in request context.
@@ -16114,6 +16165,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
             // An optional convert field keeps `Optional` in both its signature and
@@ -16140,6 +16192,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
         ]));
@@ -16220,6 +16273,7 @@ mod tests {
             deprecated: false,
             declaration_order: 0,
             markdown_order: 0,
+            union_member_example: false,
             admits_only_empty_object: false,
         }]));
         let reference = reference_entry(
@@ -16261,6 +16315,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
             BodyField {
@@ -16285,6 +16340,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
         ]));
@@ -16592,6 +16648,8 @@ mod tests {
             admits_only_empty_object: false,
             xml: None,
             inherited_from_flattened_parent: false,
+            flattened_example_order: None,
+            union_member_example: false,
             min_length: None,
             max_length: None,
         }
@@ -18077,6 +18135,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
             BodyField {
@@ -18101,6 +18160,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
         ]));
@@ -18164,6 +18224,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             }]));
             ep
@@ -18259,6 +18320,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
             BodyField {
@@ -18283,6 +18345,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             },
         ]));
@@ -18337,6 +18400,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             }],
         }));
@@ -18567,6 +18631,7 @@ mod tests {
                 deprecated: false,
                 declaration_order: 0,
                 markdown_order: 0,
+                union_member_example: false,
                 admits_only_empty_object: false,
             }],
             multipart: false,

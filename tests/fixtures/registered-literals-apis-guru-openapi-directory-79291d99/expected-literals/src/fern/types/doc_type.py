@@ -1,0 +1,21 @@
+
+
+import typing
+
+DocType = typing.Union[
+    typing.Literal[
+        "UNKNOWN",
+        "DOCUMENT_TYPE_PAYSTUB",
+        "DOCUMENT_TYPE_BANK_STATEMENT",
+        "DOCUMENT_TYPE_US_TAX_W2",
+        "DOCUMENT_TYPE_US_MILITARY_ERAS",
+        "DOCUMENT_TYPE_US_MILITARY_LES",
+        "DOCUMENT_TYPE_US_MILITARY_CLES",
+        "DOCUMENT_TYPE_GIG",
+        "DOCUMENT_TYPE_NONE",
+        "DOCUMENT_TYPE_US_TAX_1099_MISC",
+        "DOCUMENT_TYPE_US_TAX_1099_K",
+        "DOCUMENT_TYPE_PLAID_GENERATED_PAYSTUB_PDF",
+    ],
+    typing.Any,
+]

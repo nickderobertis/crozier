@@ -1,0 +1,39 @@
+
+
+import datetime as dt
+import typing
+
+import pydantic
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
+from .annotation_queue_object_type import AnnotationQueueObjectType
+from .annotation_queue_status import AnnotationQueueStatus
+
+
+class AnnotationQueueItem(UniversalBaseModel):
+    id: str
+    queue_id: typing_extensions.Annotated[str, FieldMetadata(alias="queueId"), pydantic.Field(alias="queueId")]
+    object_id: typing_extensions.Annotated[str, FieldMetadata(alias="objectId"), pydantic.Field(alias="objectId")]
+    object_type: typing_extensions.Annotated[
+        AnnotationQueueObjectType, FieldMetadata(alias="objectType"), pydantic.Field(alias="objectType")
+    ]
+    status: AnnotationQueueStatus
+    completed_at: typing_extensions.Annotated[
+        typing.Optional[dt.datetime], FieldMetadata(alias="completedAt"), pydantic.Field(alias="completedAt")
+    ] = None
+    created_at: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="createdAt"), pydantic.Field(alias="createdAt")
+    ]
+    updated_at: typing_extensions.Annotated[
+        dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
+    ]
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

@@ -75,3 +75,26 @@ still requiring matching signature types, JSON wire fields and descriptions.
 `remeasure_collapsed_body_keeps_the_shared_model_and_documents_accepted_fields`
 drives crozier over the measurement and compares the complete certified tree;
 changing the corrected parameter's type remains an unexplained mismatch.
+
+## Fields the method writes through the converter or renames
+
+Guardian's `PolicyConfig` and `Schema` (`hashgraph/guardian` at `e585ead1`) reach
+the same defect through three shapes the first form of the rule did not read: a
+wire field written `"policyTopics": convert_and_respect_annotation_metadata(`
+whose variable is on the next line's `object_=`; a reserved-word field (`uuid_`
+on the model, `hash_` on the method); and a path parameter sharing a model
+field's name (`topic_id`), which keeps its own block on both sides and is no part
+of the spread.
+
+## A field-less model the method never takes
+
+Guardian's `record_api_stop_running` and five sibling record operations post the
+field-less `Object` as `json={}`. The certified `reference.md` advertises
+`**request:** `Object``, but their signature is `(self, policy_id: str, *,
+request_options=None)`. Binding `request={}` to that signature on each certified
+tree raises the same `got an unexpected keyword argument 'request'`; without it
+the call binds. crozier writes no block, so the departure recognises only a
+model with no field of its own or from a base, a method sending the literal
+`json={}`, and a following parameter block written unchanged:
+`alias_reference_correction_drops_a_fieldless_models_request_block` keeps those
+controls failing when a model gains a field or the following block changes.

@@ -1,0 +1,9 @@
+
+
+import typing
+
+from .get_scores_response_data_one import GetScoresResponseDataOne
+from .get_scores_response_data_two import GetScoresResponseDataTwo
+from .get_scores_response_data_zero import GetScoresResponseDataZero
+
+GetScoresResponseData = typing.Union[GetScoresResponseDataZero, GetScoresResponseDataOne, GetScoresResponseDataTwo]

@@ -196,7 +196,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 30 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 31 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -446,6 +446,15 @@ when the two differ.
 - **crozier writes:** The call passing the declared example (channels=[1.0, 2.0] in a docstring, wrapped one item per line in reference.md). A parameter declaring no example is left out, as Fern leaves it.
 - **Why:** Both calls bind, since the argument is optional in both signatures; crozier's passes the value the specification declares for a parameter it marks required, and that value is valid for the array schema, where Fern's leaves the required input out of the example.
 - **Evidence:** [`docs/departures/evidence/optional-lowered-required-query-array-example.md`](../../docs/departures/evidence/optional-lowered-required-query-array-example.md)
+
+### `optional-raw-body-example-argument`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation whose optional application/octet-stream body the generated method takes as a required request argument, in its worked example.
+- **Fern writes:** Sync and async client docstrings, README and reference.md call the method with no arguments.
+- **crozier writes:** Those calls pass request=b"string"; the signature and everything else about the operation's worked example remain matched.
+- **Why:** Binding the certified call against the generated signature fails: request is a required keyword argument, so the example does not match the signature.
+- **Evidence:** [`docs/departures/evidence/optional-raw-body-example-argument.md`](../../docs/departures/evidence/optional-raw-body-example-argument.md)
 
 ### `pattern-narrowed-enum-example`
 

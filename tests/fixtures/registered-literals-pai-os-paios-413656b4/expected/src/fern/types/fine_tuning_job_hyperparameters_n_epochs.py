@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .fine_tuning_job_hyperparameters_n_epochs_zero import FineTuningJobHyperparametersNEpochsZero
+
+FineTuningJobHyperparametersNEpochs = typing.Union[FineTuningJobHyperparametersNEpochsZero, int]

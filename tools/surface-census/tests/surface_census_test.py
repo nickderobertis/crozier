@@ -9215,6 +9215,47 @@ class YamlSubsetTests(unittest.TestCase):
         self.assertEqual("one two\nthree", loaded["folded"])
         self.assertEqual("one\n\n", loaded["kept"])
 
+    def test_a_plain_scalar_folds_a_blank_line_to_a_newline(self) -> None:
+        self.assertEqual(
+            {"description": "one two\nthree", "next": 1},
+            self.load("""\
+                description:
+                  one
+                  two
+
+                  three
+                next: 1
+                """),
+        )
+
+    def test_a_plain_scalar_folds_each_blank_line_of_a_run_to_a_newline(self) -> None:
+        self.assertEqual(
+            {"description": "one\n\nthree", "next": 1},
+            self.load("""\
+                description:
+                  one
+
+
+                  three
+                next: 1
+                """),
+        )
+
+    def test_blank_lines_after_a_plain_scalar_add_no_newline_and_keep_its_type(self) -> None:
+        self.assertEqual(
+            {"description": "one two", "port": 8080, "next": 1},
+            self.load("""\
+                description:
+                  one
+                  two
+
+                port:
+                  8080
+
+                next: 1
+                """),
+        )
+
     def test_a_scalar_may_be_written_under_its_key_and_wrap(self) -> None:
         self.assertEqual(
             {"description": "one two", "next": 1},
@@ -10199,7 +10240,7 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
     def test_every_former_handwritten_combination_has_a_verdict_on_every_document(self) -> None:
         rows = self.tool.read_rows(REPO)
         documents = {document.document for document in self.tool.population(REPO)}
-        self.assertEqual(96, len(documents))
+        self.assertEqual(104, len(documents))
         for key in self.tool.FORMER_HANDWRITTEN:
             self.assertEqual(documents, {row.document for row in rows if row.key == key}, key)
 
@@ -10256,8 +10297,8 @@ class HandedOffCombinationVerdictsTests(unittest.TestCase):
             (
                 "totals",
                 text.replace(
-                    "| `combo-inline-body-read-only-property` | 93 |",
-                    "| `combo-inline-body-read-only-property` | 92 |",
+                    "| `combo-inline-body-read-only-property` | 101 |",
+                    "| `combo-inline-body-read-only-property` | 100 |",
                     1,
                 ),
             ),

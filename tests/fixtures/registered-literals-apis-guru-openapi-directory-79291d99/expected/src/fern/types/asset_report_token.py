@@ -1,0 +1,6 @@
+
+
+AssetReportToken = str
+"""
+A token that can be provided to endpoints such as `/asset_report/get` or `/asset_report/pdf/get` to fetch or update an Asset Report.
+"""

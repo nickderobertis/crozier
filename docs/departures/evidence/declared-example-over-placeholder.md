@@ -86,3 +86,12 @@ declares as its example. The `multipart-object-required-file-example` region
 tolerates exactly these lines beside the file it corrects. The crozier-e2e test
 `handed_off_example_values::declared_value_departures_hold_only_their_lines`
 shows an adjacent unexplained change still fails.
+
+## An urlencoded form answering no JSON
+
+peach-payments' `checkout_generation_initiate_payment` posts `Checkout` urlencoded
+and answers `text/html`, so the certified pair imports no example and writes its
+placeholders: the header's camelCase name (`referer`) and each form part's name or
+constraint-sized sample (`mandarin` for `minLength: 8`). The author declared
+`https://mydemostore.com` and `OrderNo453432`; crozier keeps those by ruling 2's
+principle (`non-json-body-property-example`, recorded `ruling-applied:falsy-property-example`).

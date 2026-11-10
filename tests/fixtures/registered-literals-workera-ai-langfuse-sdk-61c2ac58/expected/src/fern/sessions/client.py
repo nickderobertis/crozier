@@ -1,0 +1,244 @@
+
+
+import datetime as dt
+import typing
+
+from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.request_options import RequestOptions
+from ..types.paginated_sessions import PaginatedSessions
+from ..types.session_with_traces import SessionWithTraces
+from .raw_client import AsyncRawSessionsClient, RawSessionsClient
+
+
+class SessionsClient:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._raw_client = RawSessionsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> RawSessionsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        RawSessionsClient
+        """
+        return self._raw_client
+
+    def list(
+        self,
+        *,
+        page: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        from_timestamp: typing.Optional[dt.datetime] = None,
+        to_timestamp: typing.Optional[dt.datetime] = None,
+        environment: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> PaginatedSessions:
+        """
+        Get sessions
+
+        Parameters
+        ----------
+        page : typing.Optional[int]
+            Page number, starts at 1
+
+        limit : typing.Optional[int]
+            Limit of items per page. If you encounter api issues due to too large page sizes, try to reduce the limit.
+
+        from_timestamp : typing.Optional[dt.datetime]
+            Optional filter to only include sessions created on or after a certain datetime (ISO 8601)
+
+        to_timestamp : typing.Optional[dt.datetime]
+            Optional filter to only include sessions created before a certain datetime (ISO 8601)
+
+        environment : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Optional filter for sessions where the environment is one of the provided values.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PaginatedSessions
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            username="YOUR_USERNAME",
+            password="YOUR_PASSWORD",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.sessions.list()
+        """
+        _response = self._raw_client.list(
+            page=page,
+            limit=limit,
+            from_timestamp=from_timestamp,
+            to_timestamp=to_timestamp,
+            environment=environment,
+            request_options=request_options,
+        )
+        return _response.data
+
+    def get(self, session_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> SessionWithTraces:
+        """
+        Get a session. Please note that `traces` on this endpoint are not paginated, if you plan to fetch large sessions, consider `GET /api/public/traces?sessionId=<sessionId>`
+
+        Parameters
+        ----------
+        session_id : str
+            The unique id of a session
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SessionWithTraces
+
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            username="YOUR_USERNAME",
+            password="YOUR_PASSWORD",
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.sessions.get(
+            session_id="sessionId",
+        )
+        """
+        _response = self._raw_client.get(session_id, request_options=request_options)
+        return _response.data
+
+
+class AsyncSessionsClient:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._raw_client = AsyncRawSessionsClient(client_wrapper=client_wrapper)
+
+    @property
+    def with_raw_response(self) -> AsyncRawSessionsClient:
+        """
+        Retrieves a raw implementation of this client that returns raw responses.
+
+        Returns
+        -------
+        AsyncRawSessionsClient
+        """
+        return self._raw_client
+
+    async def list(
+        self,
+        *,
+        page: typing.Optional[int] = None,
+        limit: typing.Optional[int] = None,
+        from_timestamp: typing.Optional[dt.datetime] = None,
+        to_timestamp: typing.Optional[dt.datetime] = None,
+        environment: typing.Optional[typing.Union[str, typing.Sequence[str]]] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> PaginatedSessions:
+        """
+        Get sessions
+
+        Parameters
+        ----------
+        page : typing.Optional[int]
+            Page number, starts at 1
+
+        limit : typing.Optional[int]
+            Limit of items per page. If you encounter api issues due to too large page sizes, try to reduce the limit.
+
+        from_timestamp : typing.Optional[dt.datetime]
+            Optional filter to only include sessions created on or after a certain datetime (ISO 8601)
+
+        to_timestamp : typing.Optional[dt.datetime]
+            Optional filter to only include sessions created before a certain datetime (ISO 8601)
+
+        environment : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Optional filter for sessions where the environment is one of the provided values.
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        PaginatedSessions
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            username="YOUR_USERNAME",
+            password="YOUR_PASSWORD",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.sessions.list()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list(
+            page=page,
+            limit=limit,
+            from_timestamp=from_timestamp,
+            to_timestamp=to_timestamp,
+            environment=environment,
+            request_options=request_options,
+        )
+        return _response.data
+
+    async def get(
+        self, session_id: str, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> SessionWithTraces:
+        """
+        Get a session. Please note that `traces` on this endpoint are not paginated, if you plan to fetch large sessions, consider `GET /api/public/traces?sessionId=<sessionId>`
+
+        Parameters
+        ----------
+        session_id : str
+            The unique id of a session
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SessionWithTraces
+
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            username="YOUR_USERNAME",
+            password="YOUR_PASSWORD",
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.sessions.get(
+                session_id="sessionId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.get(session_id, request_options=request_options)
+        return _response.data

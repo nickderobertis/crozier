@@ -37,7 +37,7 @@ is not a source-level conjunction over the two declarations.
 | `combo-annotated-ref-property-example` | `src/ir.rs::described_all_of_ref` | `if members.len() < 2 {` |
 | `combo-annotated-ref-property-example` | `src/ir.rs::described_all_of_ref` | `} else if is_unknown(member) {` |
 | `combo-annotated-ref-property-example` | `src/ir.rs::Builder::annotated_ref_type` | `described_all_of_ref(schema)?` |
-| `combo-annotated-ref-property-example` | `src/ir.rs::Builder::collect_fields` | `example: resolved_schema_example_literal(prop_schema, Some(self.schemas))` |
+| `combo-annotated-ref-property-example` | `src/ir.rs::Builder::collect_fields` | `.or_else(|| resolved_schema_example_literal(prop_schema, Some(self.schemas)))` |
 | `combo-annotated-ref-property-example` | `src/ir.rs::resolved_schema_example_literal` | `typed_schema_example(schema)` |
 | `combo-annotated-ref-property-example` | `src/ir.rs::schema_example` | `schema.example.as_ref().or_else(|| schema.examples.first())` |
 

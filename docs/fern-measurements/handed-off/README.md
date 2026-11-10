@@ -43,9 +43,9 @@ A registration residual names `expected-literals/`, rather than claiming a file
 already differs. Newly named residual causes describe missing behavior in their
 note; they are repair work, not undecided triage verdicts.
 
-The four disjoint outcomes are **96 registered**,
+The four disjoint outcomes are **104 registered**,
 **37 decided** (26 `refused-by-ruling`, 11 `byte-matches-not-admissible`),
-**12 listed residuals** (12 `differs`, 0 `registration-incomplete`), and
+**4 listed residuals** (4 `differs`, 0 `registration-incomplete`), and
 **1 could-not-check** (lolesports' evaluated valid-OpenAPI exception: its useful
 crozier SDK cannot byte-match the certified pair's empty scaffold). They sum to
 146. Each comparison record names the exact command and source digest; refusals
@@ -66,9 +66,11 @@ Tilecast aside, against the certified pair's fresh trees in both enum modes and
 named every `remaining-<sha8>-<file>` cause. Nineteen now byte-match in both
 modes: eighteen registered in corpus rows 5600-5617, and AppVeyor, whose licence
 grants nothing the corpus rule admits. The repaired causes are in
-[`remeasure.tsv`](remeasure.tsv). The other eleven are handed on, with each
-cause's rule and what was tried, in
-[`remeasure/README.md`](remeasure/README.md#residual-repair-handed-on).
+[`remeasure.tsv`](remeasure.tsv). The other eleven went to
+`residual-differences-repair-2`: eight now byte-match and are registered in
+corpus rows 5618-5625, and three still differ with every remaining file attributed
+to a deferred cause, each with its follow-up ticket draft, in
+[`remeasure/README.md`](remeasure/README.md#residual-repair-dispositions).
 
 The Tilecast both-mode recording replay previously passed in 1400.57 seconds
 (about 23 minutes 21 seconds), and its instrumented replay passed in 974.31
@@ -152,8 +154,10 @@ sources.
 - `APIs-guru/openapi-directory:APIs/journy.io/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `9031af6a2a41d511b3ef2bf110a262d5c0099cb26a19fee8df49890362b11d32` | 5502 (registered-literals-apis-guru-openapi-directory-9031af6a)
 - `APIs-guru/openapi-directory:APIs/keyserv.solutions/1.4.5/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `7edd79beb9c490240ae09a653602cc5260ab66a422751d889ca7d63705b1552c` | 5503 (registered-literals-apis-guru-openapi-directory-7edd79be)
 - `APIs-guru/openapi-directory:APIs/nexmo.com/external-accounts/0.1.5/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `72fccf735b91ca2b89dab2f59f0cd393404ae898341ba01828d1d31cb6a8ff75` | 5504 (registered-literals-apis-guru-openapi-directory-72fccf73)
+- `APIs-guru/openapi-directory:APIs/nexmo.com/subaccounts/1.0.8/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `608e22dcd5e099d5d0991cfe641dd5bb13e70335f04fd8886beeaa3e744f6ad8` | 5618 (registered-literals-apis-guru-openapi-directory-608e22dc)
 - `APIs-guru/openapi-directory:APIs/openaq.local/2.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `468bf5eff16a3ec71979ee470a4e80f233c8f6ce67e93e118457fbe8e8efab91` | 5505 (registered-literals-apis-guru-openapi-directory-468bf5ef)
 - `APIs-guru/openapi-directory:APIs/osf.io/2.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `cdcf786527cbc25296204b370846686f3e76083f12c7a50e419b19aa53b03e5b` | 5506 (registered-literals-apis-guru-openapi-directory-cdcf7865)
+- `APIs-guru/openapi-directory:APIs/plaid.com/2020-09-14_1.345.1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `79291d99cc1de9909805841b30b2795b8c9327563d76b94d37a2df3733176bda` | 5619 (registered-literals-apis-guru-openapi-directory-79291d99)
 - `APIs-guru/openapi-directory:APIs/unicourt.com/1.0.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `d8d536ea8daca766a98ec0db6599041cfdcc449b71f689df9046b88b9796a79d` | 5600 (registered-literals-apis-guru-openapi-directory-d8d536ea)
 - `APIs-guru/openapi-directory:APIs/visualstudio.com/v1/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `a0bd29a9ae19cb1b39aeef5a51b1bfc3e13362235eb5d829795ba42552a42651` | 5507 (registered-literals-apis-guru-openapi-directory-a0bd29a9)
 - `APIs-guru/openapi-directory:APIs/vtex.local/Marketplace-Protocol/1.0/openapi.yaml@f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | `748ff9ba7fba914537047a5198e24da9d32e64608cede2a67f9561cd53cee743` | 3479 (vtex-marketplace-protocol)
@@ -181,6 +185,7 @@ sources.
 - `agentic-commerce-protocol/agentic-commerce-protocol:spec/2026-01-16/openapi/openapi.agentic_checkout.yaml@7fdd78df677a94dce04c770644b0fbbb1401272b` | `cea60d723dd9cd2ee9d66a79c3bc58196f77d91d2081600ea88c6a07c236feec` | 5607 (registered-literals-agentic-commerce-protocol-agentic-commerce-protocol-cea60d72)
 - `arawa/workspace:openapi.json@926f6093e68261c94f4dcd536b0c4451f2013ee8` | `0c8259f6f991dbd2985005b14731e7df52d59496a17249394fefcbaa2ef52689` | 5051 (remeasured-arawa-workspace-0c8259f6)
 - `arpicato/messie-messenger:docs/mautrix-openapi.yaml@5590235194cb3ad6cbef8174fdc23ecc34498059` | `aa02af8d8da6f67b1c26266e5aa6c1a348646b10142588e5abb928c231373a5a` | 5608 (registered-literals-arpicato-messie-messenger-aa02af8d)
+- `atacan/AssemblyAI:openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718` | `b306bf4455446eb3bc38f0e687888206b017b5e89c6047a5592e2fbdd88160b7` | 5620 (registered-literals-atacan-assemblyai-b306bf44)
 - `atacan/AssemblyAI:original_openapi.yaml@ed31d2fbb08b69633e7d1bcc31bc4cf8eacc8718` | `10ca68affcc55d46649da53ca342ee804c56af96b0a963d584562c8b21e20824` | 5609 (registered-literals-atacan-assemblyai-10ca68af)
 - `ballerina-platform/openapi-connectors:openapi/azure.openai.finetunes/openapi.yaml@7c3840c93e80c711a8b317f94339b3cb08c1521c` | `97a587f5a81f68ea2ef3bdf6f12599102c2a254348a6ee8cbf07fde9529943e7` | 5523 (registered-literals-ballerina-platform-openapi-connectors-97a587f5)
 - `blues/notehub-js:openapi.yaml@c56a6b0bdaf1b0250dd068a1f5fe5ba2f956b831` | `9c5b2b63a9910cd7a1e927c75523f8cebdba31397b0c4f0a327e112b7cba2cf0` | 5610 (registered-literals-blues-notehub-js-9c5b2b63)
@@ -202,6 +207,7 @@ sources.
 - `gleez/nats-http-gateway:openapi.json@cfc5b22883fe4deb88933f9e39d04128a53b6156` | `e8767ae79ab54774728dc226ffc0db0014c32c99b341e019cbbcf3d700def8a0` | 5536 (registered-literals-gleez-nats-http-gateway-e8767ae7)
 - `halo-dev/halo:api-docs/openapi/v3_0/apis_console.api_v1alpha1.json@ead7adfb0ca1da810a6a080cf8aeed476668db64` | `7e48a5530dfce8d110f78a1fabd4cb186e93d3008ef4ae95ca0d15dc2325b173` | 5537 (registered-literals-halo-dev-halo-7e48a553)
 - `halo-dev/halo:api-docs/openapi/v3_0/apis_uc.api_v1alpha1.json@ead7adfb0ca1da810a6a080cf8aeed476668db64` | `6e341cacc7734304136d06c6289318ae4505b142aac6eb56ba5f863739c5c568` | 5538 (registered-literals-halo-dev-halo-6e341cac)
+- `hashgraph/guardian:docs/.gitbook/assets/swagger (2) (1) (1).yaml@e585ead1c74b04dfb70e714363dc6a78f2d077ed` | `63ba2735ef533eef9a5bcb1fffc770f9e88a57f8ee058e9c5c4e2521bcf3abf4` | 5625 (registered-literals-hashgraph-guardian-63ba2735)
 - `hashicorp/terraform-plugin-codegen-openapi:internal/cmd/testdata/edgecase/openapi_spec.yml@55b2a49774f094d0d8aff834bce5eabe9e8a7345` | `1f6aea4c5e340b482e6441711f83780f2a6026a4755452530094d160747d2427` | 5053 (remeasured-hashicorp-terraform-plugin-codegen-openapi-1f6aea4c)
 - `hey-api/hey-api:specs/openapi/val-town.json@9d56b7e1aa05434a34d6e1dbb35b786d8f69dc4e` | `30fbd0e53946ee2af6180a3ef05bdda12dc2ce838c0e42eb7a2f0a624724cab8` | 5539 (registered-literals-hey-api-hey-api-30fbd0e5)
 - `i-am-bee/agentstack:docs/development/api-reference/openapi.json@79c786049d39684841d77fef9abfd8457a58b0bf` | `7d68b3f8bf7f0b7d0c0b27a59d5aa5e8a783c6ebd3158abaaee3983504f69068` | 5540 (registered-literals-i-am-bee-agentstack-7d68b3f8)
@@ -218,6 +224,7 @@ sources.
 - `marcelo-earth/generative-manim:api/public/openapi.yaml@f681cc78a6b1cad8443b6af4b3a1adbfed9d3e0e` | `8e1e6b290365eee6b020b146c329b1bd2c1cb4fd3dd6e52be2fee2e72e5a6a30` | 5549 (registered-literals-marcelo-earth-generative-manim-8e1e6b29)
 - `medizininformatik-initiative/dataportal-backend:docs/public/openapi.yaml@cafb8aa33d47717c311c1ff438df73a2acf17e94` | `4d419c8a1d83b54d8d71ea0640f9e07012b0e1572da98f7191b261bf8479692f` | 5550 (registered-literals-medizininformatik-initiative-dataportal-backend-4d419c8a)
 - `membrane/api-gateway:core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml@c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c` | `8340f5da585023194c7154cb6e72a111e5643bb9cd3364cb75e0eacb0b1fcb89` | 5054 (remeasured-membrane-api-gateway-8340f5da)
+- `mithileshchellappan/pushboy:docs/openapi.yaml@688123d556fe2895a1578a233f993158317c40b0` | `4ff659431c74aa0959d933e61be266448bcfb6367fad745fd94b4313041ebcec` | 5621 (registered-literals-mithileshchellappan-pushboy-4ff65943)
 - `msgbyte/tianji:website/static/openapi.json@20124bb953eae609b8b5c003cae48633af3e4207` | `1843a239e5d93eaa9c9906daffcb64748723b6bb155fa9bcb7f3bce53c5f6ce5` | 5551 (registered-literals-msgbyte-tianji-1843a239)
 - `neilthomas89440-crypto/inferna-next:docs/openapi.yaml@3c1bc6fde017130ac9335b2d4192d0400f956689` | `244423758c587aff156c4763e1491ab3ac6be494a9e3f447c8f244775b586ee1` | 5552 (registered-literals-neilthomas89440-crypto-inferna-next-24442375)
 - `neo773/macgamingdb:openapi.json@71201d5ed52ab0991854f0eac0d153c076ed2907` | `2af442cee107b3b4ed4b22df18abb18280ef43dd3e1bff5a69743ef680666a81` | 5553 (registered-literals-neo773-macgamingdb-2af442ce)
@@ -226,6 +233,7 @@ sources.
 - `openresponses/openresponses:public/openapi/2026-01-15/openapi.json@92c12d96d7b61d6d15e2214daa5e9c6000ab6e1c` | `ee8c96e11e193f052ae2b6aa159ff115123c44a63d9d2f99f50ff261b7b98d0f` | 5556 (registered-literals-openresponses-openresponses-ee8c96e1)
 - `openresponses/openresponses:public/openapi/2026-04-24/openapi.json@92c12d96d7b61d6d15e2214daa5e9c6000ab6e1c` | `d598753c3a86fd8a2434828fe39dcc8786a7a694bbe46080a0d24c9fa40e72df` | 5557 (registered-literals-openresponses-openresponses-d598753c)
 - `ourofoundation/wrappers:nixtla/timegpt/timegpt-openapi.json@79688dd65e7fb2fb670ad30b01b5db5208c1d928` | `9165e7b94aa026f4924cc6bd8bc627719680fc028af864e0c2649168ded7705b` | 4301 (nixtla-timegpt)
+- `pAI-OS/paios:apis/openai/openapi.yaml@b65d858f12c1da472176829af4b533a9e7c246e2` | `413656b4a262ac7a49ea37f30ef4d8e1a1f3785fb6d85a7aaca4c054e9299fb8` | 5622 (registered-literals-pai-os-paios-413656b4)
 - `radio-aktywne/jasmine:openapi/numbat.yaml@9e8b7f6b965bff0ad7765a2d6db8a623bfd6660f` | `bf07beed1848ad54419a10565cd7b1b792362db3c93e26da1ca2437641ccff19` | 5558 (registered-literals-radio-aktywne-jasmine-bf07beed)
 - `radio-aktywne/magnolia:openapi/gecko.yaml@51d280e261cee506a6290a0fc8c9f78475c18069` | `f02e99f9ace84d4e8abe420d952516223cb130b172f6aac443b8b4f23a2ef522` | 5559 (registered-literals-radio-aktywne-magnolia-f02e99f9)
 - `rd-alliance/metadata-catalog-v2:openapi.yaml@833c55f1ad8b6a19b77e8fc4f1d16133b8e5d624` | `c5da87bb95be6352daf5b5bda7b163916541e29123b94feb32e778f6367ad80a` | 5560 (registered-literals-rd-alliance-metadata-catalog-v2-c5da87bb)
@@ -239,9 +247,11 @@ sources.
 - `tranphita/skyvern:fern/openapi/skyvern_openapi.json@efe6ae1c2088ed6aa1c09268e786fef4136070be` | `0f3a701b83bed92d75c832b566b4549e53683d1e9dafbd57fe79a68b09f18ac5` | 5567 (registered-literals-tranphita-skyvern-0f3a701b)
 - `truefoundry/trueforge:docs/openapi.json@47fd7e81f39e66289d9c62ba80c4e7f7b0370d64` | `09fcb1c253845987c65878aa01f03c3cc10eee0d438e1ab22907d453f00c3744` | 5568 (registered-literals-truefoundry-trueforge-09fcb1c2)
 - `truefoundry/trueforge:docs/openapi.json@a718e719347c44798ef3d3021a17678b6220640b` | `e259dee6c57f311f2a39344f5714d57d03218229dad1c291d5c5aebeace58f32` | 5569 (registered-literals-truefoundry-trueforge-e259dee6)
+- `tryAGI/AssemblyAI:src/libs/AssemblyAI/openapi.yaml@1028f8b61cda3f1dc8777d732093fd3e4558d9c9` | `215ec23ddd849ffd78349383788255dfeb417532c81f6dc5c2cdd6b5c577ab02` | 5623 (registered-literals-tryagi-assemblyai-215ec23d)
 - `webr0m/teldrive-nodejs:openapi/teldrive.openapi.yaml@22d9b87d2955d3c9c2ce712b5a9d2aad1f94dd14` | `bb74a9e2c993403d2cdbfe25184ce341f23daf27c04a7f96904533a740c6c4f2` | 5570 (registered-literals-webr0m-teldrive-nodejs-bb74a9e2)
 - `whatwatt-ch/whatwatt-go-documentation:openapi/api-clean.yaml@50340b0865809c2e6f831385ccfdc900af58981b` | `29ffa2656e29034f5243327dc6152d997d2852348e5c3763eb26ab4f118885a2` | 5571 (registered-literals-whatwatt-ch-whatwatt-go-documentation-29ffa265)
 - `whatwatt-ch/whatwatt-go-documentation:openapi/api-complete-bundle.yaml@50340b0865809c2e6f831385ccfdc900af58981b` | `4cd56f724b38b1766080f870f357c01f5ec3c093dceac5abd6ec7210fa28463a` | 5572 (registered-literals-whatwatt-ch-whatwatt-go-documentation-4cd56f72)
+- `workera-ai/langfuse_sdk:openapi.yml@0a7d8397eee3e0f4945a3960adfe4e58979b6f22` | `61c2ac58b46017322cd051982e09c101b4402f5bc10d0a2cd4d8793025138060` | 5624 (registered-literals-workera-ai-langfuse-sdk-61c2ac58)
 - `zalando-incubator/agentic-identity-broker:api/enduser/openapi.yaml@d500f36378dd914f8a516604a08525f737e8ddff` | `c7fb9242356484e677698b557588686e1d461e2f920fbd53042cea345357ceb6` | 5573 (registered-literals-zalando-incubator-agentic-identity-broker-c7fb9242)
 
 ## Proof retired by the registrations

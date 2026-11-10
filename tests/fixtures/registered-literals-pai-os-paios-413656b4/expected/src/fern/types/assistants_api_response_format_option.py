@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .assistants_api_response_format import AssistantsApiResponseFormat
+from .assistants_api_response_format_option_zero import AssistantsApiResponseFormatOptionZero
+
+AssistantsApiResponseFormatOption = typing.Union[AssistantsApiResponseFormatOptionZero, AssistantsApiResponseFormat]

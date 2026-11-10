@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "registered-literals-pai-os-paios-413656b4",
+  "corpus_spec_ref": "b65d858f12c1da472176829af4b533a9e7c246e2",
+  "corpus_spec_url": "https://raw.githubusercontent.com/pAI-OS/paios/b65d858f12c1da472176829af4b533a9e7c246e2/apis/openai/openapi.yaml"
+}

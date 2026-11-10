@@ -552,6 +552,23 @@
     leaves the required input out of the example.
   evidence: docs/departures/evidence/optional-lowered-required-query-array-example.md
 
+- id: optional-raw-body-example-argument
+  kind: fern-defect
+  trigger: >-
+    An operation whose optional application/octet-stream body the generated
+    method takes as a required request argument, in its worked example.
+  fern: >-
+    Sync and async client docstrings, README and reference.md call the method
+    with no arguments.
+  crozier: >-
+    Those calls pass request=b"string"; the signature and everything else about
+    the operation's worked example remain matched.
+  reason: >-
+    Binding the certified call against the generated signature fails: request
+    is a required keyword argument, so the example does not match the
+    signature.
+  evidence: docs/departures/evidence/optional-raw-body-example-argument.md
+
 - id: pattern-narrowed-enum-example
   kind: fern-defect
   trigger: >-
