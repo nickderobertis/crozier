@@ -2639,10 +2639,10 @@ pub struct Field {
     pub inherited_from_flattened_parent: bool,
     /// Where a docstring's worked example places this field of a model that
     /// flattens a parent: the composition's declaration order, parents first
-    /// (see [`flattened_example_orders`]). `None` for any other model's field.
+    /// (see `flattened_example_orders`). `None` for any other model's field.
     pub flattened_example_order: Option<usize>,
     /// Whether [`Field::example`] is an inline union's first member's own scalar
-    /// example (see [`first_union_member_example`]).
+    /// example (see `first_union_member_example`).
     pub union_member_example: bool,
     /// A string property's declared `minLength`. Fern's IR fallback example
     /// (written where its importer builds none) samples a string this long
