@@ -1331,12 +1331,14 @@ OUTCOMES = (
             lacks=((CLIENT, OPTIONAL_TOKEN),),
         ),
     ),
-    # A nullability-only `allOf` member sets `flatten_all`, so the model copies its
-    # base's fields flat where the same composition without it extends the base.
+    # A nullability-only `allOf` member written OpenAPI 3.1's way sets `flatten_all`,
+    # so the model copies its base's fields flat where the same composition without it
+    # extends the base (3.0's `nullable: true` member does not: Plaid's
+    # `RecurringTransferNullable`).
     Outcome(
         "combo-allof-nullable-member",
         Run(
-            tally(KENNEL + "    Tally:\n" + TALLY_MEMBERS + "        - nullable: true\n"),
+            tally(KENNEL + "    Tally:\n" + TALLY_MEMBERS + '        - type: [object, "null"]\n'),
             ran=(FLATTEN_ALL,),
             holds=(("types/tally.py", "class Tally(UniversalBaseModel):"),),
         ),

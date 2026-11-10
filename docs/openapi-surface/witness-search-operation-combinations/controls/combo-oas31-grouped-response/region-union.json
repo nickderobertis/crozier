@@ -11,38 +11,38 @@
     "src/emit.rs::raw_docstring"
   ],
   "counts": {
-    "first": 700,
-    "second": 792,
-    "both": 793
+    "first": 702,
+    "second": 794,
+    "both": 795
   },
   "both_only": [],
   "singles_only": [
     [
       "src/emit.rs",
-      5901,
+      5913,
       5,
-      5901,
+      5913,
       6
     ],
     [
       "src/ir.rs",
-      4765,
+      4778,
       14,
-      4765,
+      4778,
       30
     ],
     [
       "src/ir.rs",
-      4765,
+      4778,
       31,
-      4765,
+      4778,
       42
     ],
     [
       "src/ir.rs",
-      11914,
+      11979,
       39,
-      11914,
+      11979,
       40
     ]
   ]
