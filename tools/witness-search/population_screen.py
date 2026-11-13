@@ -68,7 +68,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
-from typing import IO, Any, NamedTuple, NoReturn
+from typing import IO, Any, Generic, NamedTuple, NoReturn, TypeVar
 
 REPO = Path(__file__).resolve().parents[2]
 RECORD = REPO / "docs" / "openapi-surface" / "witness-search-combination-populations"
@@ -1000,30 +1000,98 @@ class ScreenRow(NamedTuple):
 COLUMNS = ScreenRow._fields
 
 
-def _reason(cell: str, prefix: str) -> str | None:
-    """The reason after `prefix`, or None when the cell carries no real one."""
-    if not cell.startswith(prefix):
-        return None
-    reason = cell[len(prefix) :]
-    return None if PLACEHOLDER.match(reason.strip()) or reason != reason.strip() else reason
+def _reason(text: str) -> str | None:
+    """A cell's reason, or None when it says nothing (empty, a placeholder or padded)."""
+    return None if PLACEHOLDER.match(text.strip()) or text != text.strip() else text
+
+
+class LicenceKind(StrEnum):
+    ADMISSIBLE = "admissible"
+    INADMISSIBLE = "inadmissible"
+    UNREAD = "unread"
+
+
+class TriggerKind(StrEnum):
+    EXACT = "exact"
+    PARTIAL = "partial"
+    ABSENT = "absent"
+    UNREAD = "unread"
+
+
+class StatusKind(StrEnum):
+    PENDING = PENDING
+    REJECTED_TRIGGER = "rejected-trigger"
+    REJECTED_LICENCE = "rejected-licence"
+    UNFETCHABLE = "unfetchable"
+
+
+# The kinds a cell names with a reason after `:`; every other kind is the cell alone.
+REASONED = frozenset(
+    {
+        LicenceKind.ADMISSIBLE,
+        LicenceKind.INADMISSIBLE,
+        LicenceKind.UNREAD,
+        TriggerKind.PARTIAL,
+        TriggerKind.UNREAD,
+        StatusKind.UNFETCHABLE,
+    }
+)
+
+
+KindT = TypeVar("KindT", bound=StrEnum)
+
+
+@dataclass(frozen=True)
+class Verdict(Generic[KindT]):
+    """One `licence`, `trigger` or `status` cell, parsed: its kind and the reason it gives."""
+
+    kind: KindT
+    reason: str = ""
+
+    def __str__(self) -> str:
+        return f"{self.kind}:{self.reason}" if self.kind in REASONED else str(self.kind)
+
+    @staticmethod
+    def parse(cell: str, kinds: type[KindT]) -> Verdict[KindT] | None:
+        """The verdict a cell names among `kinds`, or None when it names none of them (or no reason it owes)."""
+        head, colon, rest = cell.partition(":")
+        if head not in {kind.value for kind in kinds}:
+            return None
+        kind = kinds(head)
+        if kind in REASONED:
+            reason = _reason(rest) if colon else None
+            return None if reason is None else Verdict(kind, reason)
+        return None if colon else Verdict(kind)
+
+
+def status_verdict(licence: Verdict[LicenceKind], trigger: Verdict[TriggerKind]) -> Verdict[StatusKind]:
+    """The status the rule gives a licence and a trigger, or raise `ScreenError` for a pair no row may carry."""
+    match trigger.kind, licence.kind:
+        case TriggerKind.UNREAD, LicenceKind.UNREAD:
+            return Verdict(StatusKind.UNFETCHABLE, trigger.reason)
+        case TriggerKind.UNREAD, _:
+            raise ScreenError("a trigger left unread beside a licence that was read: unread bytes leave both unread")
+        case TriggerKind.PARTIAL | TriggerKind.ABSENT, _:
+            return Verdict(StatusKind.REJECTED_TRIGGER)
+        case TriggerKind.EXACT, LicenceKind.ADMISSIBLE:
+            return Verdict(StatusKind.PENDING)
+        case TriggerKind.EXACT, LicenceKind.INADMISSIBLE:
+            return Verdict(StatusKind.REJECTED_LICENCE)
+        case _:
+            raise ScreenError(
+                f"an exact trigger whose licence {str(licence)!r} was never decided: read its licence evidence"
+            )
 
 
 def status_of(licence: str, trigger_cell: str) -> str:
-    """The status the rule gives a row's licence and trigger, or raise `ScreenError` for a pair no row may carry."""
-    unread_licence, unread_trigger = _reason(licence, "unread:"), _reason(trigger_cell, "unread:")
-    if unread_trigger is not None:
-        if unread_licence is None:
-            raise ScreenError("a trigger left unread beside a licence that was read: unread bytes leave both unread")
-        return f"unfetchable:{unread_trigger}"
-    if trigger_cell == "absent" or trigger_cell.startswith("partial:"):
-        return "rejected-trigger"
-    if trigger_cell != "exact":
+    """The status cell the rule gives a row's licence and trigger cells, or raise `ScreenError` for a pair no row may carry."""
+    parsed_trigger = Verdict.parse(trigger_cell, TriggerKind)
+    if parsed_trigger is None:
         raise ScreenError(f"trigger {trigger_cell!r} is none of exact, partial:<condition>, absent, unread:<reason>")
-    if _reason(licence, "admissible:") is not None:
-        return PENDING
-    if _reason(licence, "inadmissible:") is not None:
-        return "rejected-licence"
-    raise ScreenError(f"an exact trigger whose licence {licence!r} was never decided: read its licence evidence")
+    parsed_licence = Verdict.parse(licence, LicenceKind)
+    if parsed_licence is None:
+        raise ScreenError(f"licence {licence!r} is none of admissible:<grant>, inadmissible:<reason>, unread:<reason>")
+    return str(status_verdict(parsed_licence, parsed_trigger))
 
 
 def source_failure(population: str, source: str) -> str | None:
@@ -1058,23 +1126,30 @@ def row_failures(row: ScreenRow) -> list[str]:
     ):
         if failure:
             wrong.append(failure)
-    unfetchable = row.status.startswith("unfetchable:")
+    licence = Verdict.parse(row.licence, LicenceKind)
+    trigger = Verdict.parse(row.trigger, TriggerKind)
+    status = Verdict.parse(row.status, StatusKind)
+    unfetchable = status is not None and status.kind is StatusKind.UNFETCHABLE
     if not (SHA.fullmatch(row.sha256) or (unfetchable and row.sha256 == "-")):
         wrong.append(f"sha256 {row.sha256!r} is no SHA-256 (`-` only on an unfetchable row that never had one)")
-    if not any(_reason(row.licence, prefix) is not None for prefix in ("admissible:", "inadmissible:", "unread:")):
+    if licence is None:
         wrong.append(f"licence {row.licence!r} is none of admissible:<grant>, inadmissible:<reason>, unread:<reason>")
-    partial = _reason(row.trigger, "partial:")
-    if row.trigger.startswith("partial:") and (partial is None or partial not in CONDITIONS.get(row.key, ())):
+    if trigger is None:
+        wrong.append(f"trigger {row.trigger!r} is none of exact, partial:<condition>, absent, unread:<reason>")
+    elif trigger.kind is TriggerKind.PARTIAL and trigger.reason not in CONDITIONS.get(row.key, ()):
         wrong.append(f"trigger {row.trigger!r} names no condition of {row.key}'s screen")
-    try:
-        expected = status_of(row.licence, row.trigger)
-    except ScreenError as error:
-        wrong.append(str(error))
-    else:
-        if row.status != expected:
-            wrong.append(f"status {row.status!r} disagrees with its licence and trigger, which give {expected!r}")
-        if unfetchable and _reason(row.licence, "unread:") != _reason(row.trigger, "unread:"):
-            wrong.append("an unfetchable row's licence and trigger name the same reason the bytes were not had")
+    if licence is not None and trigger is not None:
+        try:
+            expected = status_verdict(licence, trigger)
+        except ScreenError as error:
+            wrong.append(str(error))
+        else:
+            if row.status != str(expected):
+                wrong.append(
+                    f"status {row.status!r} disagrees with its licence and trigger, which give {str(expected)!r}"
+                )
+            if unfetchable and licence.reason != trigger.reason:
+                wrong.append("an unfetchable row's licence and trigger name the same reason the bytes were not had")
     return wrong
 
 
@@ -1283,6 +1358,13 @@ def registered_files(root: Path = REPO) -> dict[str, Path]:
             if line.startswith("#") or not line.strip():
                 continue
             name, relative, *_rest = line.rstrip("\n").split("\t")
+            if not witness_screen().repository_path(relative) or not (root / relative).resolve().is_relative_to(
+                root.resolve()
+            ):
+                raise ScreenError(
+                    f"{root / 'tests/fixtures/corpus-sources.tsv'}: {name}'s source {relative!r} is no path inside the "
+                    "repository; restore the manifest from git"
+                )
             files.setdefault(name, []).append(root / relative)
     chosen = {}
     for name, paths in files.items():
@@ -1640,8 +1722,8 @@ def blob_sha(data: bytes) -> str:
 
 
 def pinned_by(identity: Identity, data: bytes) -> bool:
-    blob = BLOB.fullmatch(identity.sha256)
-    return blob_sha(data) == blob.group(1) if blob else hashlib.sha256(data).hexdigest() == identity.sha256
+    blob = BLOB.fullmatch(identity.pin)
+    return blob_sha(data) == blob.group(1) if blob else hashlib.sha256(data).hexdigest() == identity.pin
 
 
 class Identity(NamedTuple):
@@ -1652,9 +1734,14 @@ class Identity(NamedTuple):
     repository: str
     commit: str
     path: str
-    sha256: str
+    # The bytes it names: a 64-hex SHA-256, or `blob:<sha1>` for a code-search hit known only by its git blob.
+    pin: str
     url: str
-    rank: str
+    rank: int
+
+    def content_digest(self) -> str | None:
+        """The SHA-256 the pin names, or None for a blob pin, whose content digest is learned on fetching."""
+        return self.pin if SHA.fullmatch(self.pin) else None
 
 
 IDENTITY_COLUMNS = Identity._fields
@@ -1664,12 +1751,10 @@ ACQUIRED = ("github", "sourcegraph", "handed-off")
 
 def cache_scan(responses: Path) -> dict[str, Path]:
     """Every exact document the shared response cache holds, by its SHA-256: raw bodies and base64 contents."""
+    guard = _load("rate_limit_guard", REPO / "tools" / "witness-search" / "rate_limit_guard.py")
     found: dict[str, Path] = {}
-    for body in sorted(responses.glob("*/*.body")):
-        parts = body.name.split(".")
-        if len(parts) != 3:
-            continue
-        found.setdefault(parts[1], body)
+    for _key, digest, body in guard.cached_bodies(responses):
+        found.setdefault(digest, body)
         try:
             with body.open("rb") as handle:
                 if handle.read(1) != b"{":
@@ -1733,10 +1818,10 @@ def acquire(
     started = time.monotonic()
     ledger = evidence / "acquisitions.jsonl"
     evidence.mkdir(parents=True, exist_ok=True)
-    for identity in sorted(identities, key=lambda i: (-int(i.rank), i.population, i.document, i.sha256)):
+    for identity in sorted(identities, key=lambda i: (-i.rank, i.population, i.document, i.pin)):
         how = ""
-        sha256 = identity.sha256
-        if SHA.fullmatch(sha256) and cached(sha256, store_root) is not None:
+        sha256 = identity.content_digest() or identity.pin
+        if identity.content_digest() and cached(sha256, store_root) is not None:
             how = "store"
         elif sha256 in scanned and (data := body_bytes(scanned[sha256], sha256)):
             store(data, store_root)
@@ -1789,10 +1874,12 @@ def read_identities(path: Path) -> list[Identity]:
                 raise ScreenError(f"{path}:{number}: not {len(IDENTITY_COLUMNS)} cells")
             if cells[0] not in ACQUIRED:
                 raise ScreenError(f"{path}:{number}: population {cells[0]!r} is none of {', '.join(ACQUIRED)}")
-            identity = Identity(Population(cells[0]), *cells[1:])
-            pinned = SHA.fullmatch(identity.sha256) or BLOB.fullmatch(identity.sha256)
-            if not COMMIT.fullmatch(identity.commit) or not pinned or not identity.rank.isdigit():
-                raise ScreenError(f"{path}:{number}: no full commit, SHA-256 or rank")
+            if not cells[7].isdigit():
+                raise ScreenError(f"{path}:{number}: rank {cells[7]!r} is no whole number")
+            identity = Identity(Population(cells[0]), *cells[1:7], rank=int(cells[7]))
+            pinned = SHA.fullmatch(identity.pin) or BLOB.fullmatch(identity.pin)
+            if not COMMIT.fullmatch(identity.commit) or not pinned:
+                raise ScreenError(f"{path}:{number}: no full commit, or no SHA-256 or blob pin")
             if identity.population not in ACQUIRED or not witness_screen().repository_name(identity.repository):
                 raise ScreenError(
                     f"{path}:{number}: {identity.population} {identity.repository!r} is no acquired population's "

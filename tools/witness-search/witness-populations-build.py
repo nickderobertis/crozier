@@ -195,17 +195,40 @@ def identities(tree: Tree) -> list[SCREEN.Identity]:
                     path,
                     latest["sha256"],
                     str(latest.get("url", "")),
-                    str(rank),
+                    rank,
                 )
             )
-    with tree.handed_off.open(encoding="utf-8", newline="") as handle:
-        for row in csv.DictReader(handle, delimiter="\t"):
-            if match := HANDED_OFF_ID.fullmatch(row["document"]):
-                repository, path, commit = match.groups()
-                out.append(
-                    SCREEN.Identity("handed-off", row["document"], repository, commit, path, row["sha256"], "", "1000")
-                )
+    for row, provenance in handed_off(tree):
+        if provenance is not None:
+            repository, path, commit = provenance
+            out.append(
+                SCREEN.Identity("handed-off", row["document"], repository, commit, path, row["sha256"], "", 1000)
+            )
     return out
+
+
+def handed_off(tree: Tree) -> list[tuple[dict[str, str], tuple[str, str, str] | None]]:
+    """Each handed-off document with its `(repository, path, commit)`, or None where it records no provenance.
+
+    A row naming a provenance must name a real one: an `owner/name` repository, a
+    path inside it and a full commit, beside the SHA-256 of the bytes handed off.
+    """
+    rows = []
+    with tree.handed_off.open(encoding="utf-8", newline="") as handle:
+        for number, row in enumerate(csv.DictReader(handle, delimiter="\t"), 2):
+            if not SCREEN.SHA.fullmatch(row.get("sha256") or ""):
+                fail(f"{tree.handed_off}:{number} names no SHA-256 of its bytes; restore it from git")
+            match = HANDED_OFF_ID.fullmatch(row.get("document") or "")
+            if match is None:
+                rows.append((row, None))
+                continue
+            repository, path, commit = match.groups()
+            if not SCREEN.witness_screen().repository_name(repository) or not SCREEN.witness_screen().repository_path(
+                path
+            ):
+                fail(f"{tree.handed_off}:{number}: {row['document']!r} is no repository, path and commit; restore it")
+            rows.append((row, (repository, path, commit)))
+    return rows
 
 
 class Acquisition(NamedTuple):
@@ -230,19 +253,20 @@ def acquisitions(path: Path) -> list[Acquisition]:
     out = []
     for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         row = json.loads(line) if line.strip() else None
-        digest = row.get("content_sha256", row.get("sha256")) if isinstance(row, dict) else None
+        # Earlier ledger lines name the pin `sha256`, as the plan's column was then called.
+        pin = row.get("pin", row.get("sha256")) if isinstance(row, dict) else None
+        digest = row.get("content_sha256", pin) if isinstance(row, dict) else None
         if (
             not isinstance(row, dict)
-            or not all(
-                isinstance(row.get(field), str) for field in ("population", "document", "commit", "sha256", "how")
-            )
+            or not all(isinstance(row.get(field), str) for field in ("population", "document", "commit", "how"))
+            or not isinstance(pin, str)
             or not isinstance(digest, str)
         ):
             fail(
-                f"{path}:{number} is no acquisition record (population, document, commit, sha256, how); "
+                f"{path}:{number} is no acquisition record (population, document, commit, pin, how); "
                 "restore it from git"
             )
-        out.append(Acquisition(row["population"], row["document"], row["commit"], row["sha256"], row["how"], digest))
+        out.append(Acquisition(row["population"], row["document"], row["commit"], pin, row["how"], digest))
     return out
 
 
@@ -345,40 +369,36 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     archived = {entry.sha256 for entry in entries if entry.population == "apis-guru"}
     held = tree_digests(tree)
     preflight = scan(args.preflight) if args.preflight.is_dir() else {}
-    with tree.handed_off.open(encoding="utf-8", newline="") as handle:
-        for row in csv.DictReader(handle, delimiter="\t"):
-            digest, document = row["sha256"], row["document"]
-            for found in (held.get(digest), preflight.get(digest)):
-                if found is not None and SCREEN.cached(digest, store_root) is None:
-                    SCREEN.store(found.read_bytes(), store_root)
-            forced = keys("handed-off", document)
-            match = HANDED_OFF_ID.fullmatch(document)
-            if match is None:
-                # No recorded provenance names an immutable source for these bytes.
-                if forced != "-":
-                    fail(
-                        f"handed-off {document!r} is listed for {forced} but records no source; restore its provenance"
-                    )
-                continue
-            repository, path, commit = match.groups()
-            have = SCREEN.cached(digest, store_root) is not None
-            entries.append(
-                SCREEN.Entry(
-                    "handed-off",
-                    document,
-                    f"{RAW}/{repository}/{commit}/{path}",
-                    digest,
-                    licence_evidence(repository, commit, digest, archived),
-                    forced,
-                    "-" if have else HANDED_OFF_UNFETCHED,
-                )
+    for row, provenance in handed_off(tree):
+        digest, document = row["sha256"], row["document"]
+        for found in (held.get(digest), preflight.get(digest)):
+            if found is not None and SCREEN.cached(digest, store_root) is None:
+                SCREEN.store(found.read_bytes(), store_root)
+        forced = keys("handed-off", document)
+        if provenance is None:
+            # No recorded provenance names an immutable source for these bytes.
+            if forced != "-":
+                fail(f"handed-off {document!r} is listed for {forced} but records no source; restore its provenance")
+            continue
+        repository, path, commit = provenance
+        have = SCREEN.cached(digest, store_root) is not None
+        entries.append(
+            SCREEN.Entry(
+                "handed-off",
+                document,
+                f"{RAW}/{repository}/{commit}/{path}",
+                digest,
+                licence_evidence(repository, commit, digest, archived),
+                forced,
+                "-" if have else HANDED_OFF_UNFETCHED,
             )
+        )
     missing = [str(path) for path in args.identities if not path.is_file()]
     if missing:
         fail(f"--identities {', '.join(missing)} is no file; pass the acquisition plans the manifest is built from")
     plan = [identity for path in args.identities for identity in SCREEN.read_identities(path)]
-    # A code-search hit is planned by its blob; the acquisition ledger records the content digest it was had at.
-    # Bytes are attributed to a planned identity only where the ledger read it at that commit and pin.
+    # A code-search hit is planned by its blob, and the acquisition ledger records the content digest it was
+    # had at. Bytes are attributed to a planned identity only where the ledger read it at that commit and pin.
     contents = {
         (row.population, row.document, row.commit, row.pin): row.content_sha256
         for row in acquisitions(args.acquisitions)
@@ -387,8 +407,8 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     seen: set[tuple[str, str]] = set()
     for identity in plan:
         digest = contents.get(
-            (identity.population, identity.document, identity.commit, identity.sha256),
-            identity.sha256 if SCREEN.SHA.fullmatch(identity.sha256) else "",
+            (identity.population, identity.document, identity.commit, identity.pin),
+            identity.content_digest() or "",
         )
         if (
             identity.population not in LEDGERS
@@ -493,7 +513,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
     for row in recorded_queries(args.evidence):
         # Ranked as the ledger plan is: the keys whose field names the query that found it spells.
         found_by = wanted.get(str(row.get("key")), set())
-        rank = str(sum(1 for need in wanted.values() if need and need <= found_by))
+        rank = sum(1 for need in wanted.values() if need and need <= found_by)
         for item in row.get("results", []) if row.get("source") == "github-code-search" else []:
             repository, path = str(item.get("repository")), str(item.get("path"))
             commit, blob = str(item.get("commit")), str(item.get("sha"))
@@ -523,7 +543,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
 
 def write_plan(path: Path, rows: list[SCREEN.Identity]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    text = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows)
+    text = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "".join("\t".join(map(str, row)) + "\n" for row in rows)
     if path.suffix == ".gz":
         path.write_bytes(gzip.compress(text.encode("utf-8"), mtime=0))
     else:

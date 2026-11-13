@@ -52,6 +52,20 @@ def load(name: str, path: Path):
 
 
 SCREEN = load("population_screen_under_test", SCRIPT)
+GUARD = load("rate_limit_guard", REPO / "tools" / "witness-search" / "rate_limit_guard.py")
+
+
+def cache_answer(root: Path, url: str, body: bytes) -> None:
+    """Store `body` as the shared response cache's answer to `url`, through the guard's own writer."""
+    saved = os.environ.get(GUARD.CACHE_DIR_ENV)
+    os.environ[GUARD.CACHE_DIR_ENV] = str(root)
+    try:
+        assert GUARD.cache_store("GET", url, {"User-Agent": "crozier-witness-search"}, 200, None, body) is not None
+    finally:
+        if saved is None:
+            os.environ.pop(GUARD.CACHE_DIR_ENV)
+        else:
+            os.environ[GUARD.CACHE_DIR_ENV] = saved
 
 
 def document(*, info: dict[str, Any] | None = None, paths: Any = None, schemas: Any = None, **extra: Any) -> dict:
@@ -453,6 +467,112 @@ CYCLIC = holder(
     {"u": {"$ref": "#/components/schemas/Union"}},
 )
 CASES.append(("tag-cyclic-allof", CYCLIC, {"combo-unrequired-tag-oneof-reference": "exact"}))
+
+
+MAP_ONEOF = {"oneOf": [{"type": "string"}, {"type": "integer"}], "additionalProperties": {"type": "string"}}
+UNRESOLVED = {"$ref": "#/components/schemas/Named/properties/absent"}
+
+
+def with_components(body: dict, **sections: Any) -> dict:
+    body.setdefault("components", {}).update(sections)
+    return body
+
+
+# Triggers placed where only one walk reaches them: a webhook, a referenced Path Item, a parameter an
+# operation overrides, a component root, a reference chain, a reference cycle.
+CASES += [
+    (
+        "webhook-operation",
+        document(webhooks={"ping": {"post": get(operationId="Hooks_", tags=["Hooks"])}}),
+        {"combo-tag-only-operation-id": "exact"},
+    ),
+    (
+        "referenced-path-item",
+        with_components(
+            document(paths={"/repos/{name}": {"$ref": "#/components/pathItems/Repo"}}),
+            pathItems={
+                "Repo": collision({"type": "object", "properties": {"name": {"type": "string"}}})["paths"][
+                    "/repos/{name}"
+                ]
+            },
+        ),
+        {"combo-body-property-named-as-path-param": "exact"},
+    ),
+    (
+        "operation-overrides-path-item-parameter",
+        document(
+            paths={
+                "/probe": {
+                    "parameters": [{"name": "X-Mode", "in": "header", "schema": {"type": "string", "default": "all"}}],
+                    "get": get(
+                        operationId="probe",
+                        parameters=[{"name": "X-Mode", "in": "header", "schema": {"type": "string"}}],
+                    ),
+                }
+            }
+        ),
+        {"combo-header-string-default": "partial:schema-declares-no-default"},
+    ),
+    (
+        "component-request-body",
+        with_components(
+            document(
+                paths={
+                    "/h": {
+                        "post": {
+                            "requestBody": {"$ref": "#/components/requestBodies/B"},
+                            "responses": {"204": {"description": "ok"}},
+                        }
+                    }
+                },
+                schemas=NAMED,
+            ),
+            requestBodies={"B": {"content": {"application/json": {"schema": UNRESOLVED}}}},
+        ),
+        {"combo-request-unresolved-nested-pointer": "exact"},
+    ),
+    (
+        "component-response",
+        with_components(
+            document(
+                paths={"/h": {"get": {"responses": {"200": {"$ref": "#/components/responses/R"}}}}}, schemas=NAMED
+            ),
+            responses={"R": {"description": "ok", "content": {"application/json": {"schema": UNRESOLVED}}}},
+        ),
+        {"combo-response-unresolved-nested-pointer": "exact"},
+    ),
+    (
+        "component-header-schema",
+        with_components(document(), headers={"H": {"schema": MAP_ONEOF}}),
+        {"combo-map-beside-oneof": "exact"},
+    ),
+    (
+        "component-parameter-schema",
+        with_components(document(), parameters={"P": {"name": "p", "in": "query", "schema": MAP_ONEOF}}),
+        {"combo-map-beside-oneof": "exact"},
+    ),
+    (
+        "component-response-header",
+        with_components(document(), responses={"R": {"description": "ok", "headers": {"H": {"schema": MAP_ONEOF}}}}),
+        {"combo-map-beside-oneof": "exact"},
+    ),
+    (
+        "reference-chain",
+        success(
+            {"$ref": "#/components/schemas/A1"},
+            schemas={**AB, "A1": {"$ref": "#/components/schemas/A2"}, "A2": {"anyOf": [A, NULL]}},
+        ),
+        {"combo-success-anyof-nullable": "exact"},
+    ),
+    (
+        "reference-cycle",
+        success(
+            {"$ref": "#/components/schemas/C1"},
+            schemas={"C1": {"$ref": "#/components/schemas/C2"}, "C2": {"$ref": "#/components/schemas/C1"}},
+        ),
+        {"combo-success-anyof-nullable": "absent"},
+    ),
+]
 
 
 def nullable_parent(*, nullable: bool = True, typed: bool = True, own: dict | None = None) -> dict:
@@ -1191,10 +1311,9 @@ class AcquisitionTests(ScreenHarness):
         self.server.files[f"/acme/served/{COMMIT}/openapi.yaml"] = served
         self.server.files[f"/acme/blob/{COMMIT}/openapi.yaml"] = blob
         self.server.files[f"/acme/wrong/{COMMIT}/openapi.yaml"] = wrong
-        responses = self.scratch / "xdg" / "crozier" / "github-responses" / "ab"
-        responses.mkdir(parents=True)
+        responses = self.scratch / "xdg" / "crozier" / "github-responses"
         shared = b"openapi: 3.0.3\n# shared\n"
-        (responses / f"{'ab' * 32}.{hashlib.sha256(shared).hexdigest()}.body").write_bytes(shared)
+        cache_answer(responses, f"https://raw.githubusercontent.com/acme/shared/{COMMIT}/openapi.yaml", shared)
 
         def row(name: str, data: bytes, rank: str, pin: str | None = None) -> tuple[str, ...]:
             return (
@@ -1228,7 +1347,7 @@ class AcquisitionTests(ScreenHarness):
             "--store",
             str(self.store),
             "--responses",
-            str(responses.parent),
+            str(responses),
         )
         self.assertEqual(0, done.returncode, done.stderr)
         self.assertEqual(
@@ -1261,7 +1380,7 @@ class AcquisitionTests(ScreenHarness):
             "--budget-seconds",
             "0",
             "--responses",
-            str(responses.parent),
+            str(responses),
         )
         self.assertEqual(("population-screen: acquire: budget-spent 1\n", []), (done.stdout, self.server.requests))
 
@@ -1269,12 +1388,13 @@ class AcquisitionTests(ScreenHarness):
 class AcquisitionRecoveryTests(ScreenHarness):
     def test_a_contents_answer_in_the_shared_cache_is_decoded_and_a_network_failure_is_ledgered(self) -> None:
         document = b"openapi: 3.0.3\n# encoded\n"
-        responses = self.scratch / "responses" / "cd"
-        responses.mkdir(parents=True)
+        responses = self.scratch / "responses"
         contents = json.dumps({"encoding": "base64", "content": base64.b64encode(document).decode()}).encode()
-        (responses / f"{'cd' * 32}.{hashlib.sha256(contents).hexdigest()}.body").write_bytes(contents)
+        cache_answer(
+            responses, f"https://api.github.com/repos/acme/encoded/contents/openapi.yaml?ref={COMMIT}", contents
+        )
         broken = json.dumps({"encoding": "base64", "content": "@@not base64@@"}).encode()
-        (responses / f"{'ce' * 32}.{hashlib.sha256(broken).hexdigest()}.body").write_bytes(broken)
+        cache_answer(responses, f"https://api.github.com/repos/acme/broken/contents/openapi.yaml?ref={COMMIT}", broken)
         with socket.socket() as probe:
             probe.bind(("127.0.0.1", 0))
             closed = probe.getsockname()[1]
@@ -1321,7 +1441,7 @@ class AcquisitionRecoveryTests(ScreenHarness):
             "--store",
             str(self.store),
             "--responses",
-            str(responses.parent),
+            str(responses),
         )
         self.assertEqual(0, done.returncode, done.stderr)
         self.assertEqual("population-screen: acquire: refused-http-0 1, shared-cache 1\n", done.stdout)
@@ -1334,6 +1454,33 @@ class AcquisitionRecoveryTests(ScreenHarness):
             [(row["document"], row["how"]) for row in ledger],
         )
 
+    def test_kept_bytes_that_no_longer_carry_their_digest_are_refused_and_fetched_again(self) -> None:
+        document = b"openapi: 3.0.3\n# kept\n"
+        digest = hashlib.sha256(document).hexdigest()
+        self.store.mkdir(parents=True)
+        (self.store / digest).write_bytes(b"openapi: 3.0.3\n# corrupted\n")
+        lost = self.run_cli("cached", digest, "--store", str(self.store))
+        self.assertEqual(1, lost.returncode)
+        self.assertIn("re-fetch them from the row's source", lost.stderr)
+        self.server.files[f"/acme/kept/{COMMIT}/openapi.yaml"] = document
+        plan = self.scratch / "plan.tsv"
+        identity = ("github", "acme/kept/openapi.yaml", "acme/kept", COMMIT, "openapi.yaml", digest, "", "1")
+        plan.write_text("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(identity) + "\n", encoding="utf-8")
+        done = self.run_cli(
+            "acquire",
+            "--identities",
+            str(plan),
+            "--evidence",
+            str(self.scratch / "evidence"),
+            "--store",
+            str(self.store),
+            "--responses",
+            str(self.scratch / "no-responses"),
+        )
+        self.assertEqual((0, "population-screen: acquire: raw 1\n"), (done.returncode, done.stdout), done.stderr)
+        self.assertEqual(document, (self.store / digest).read_bytes())
+        self.assertEqual(0, self.run_cli("cached", digest, "--store", str(self.store)).returncode)
+
     def test_a_plan_or_budget_the_lane_cannot_take_is_refused_before_any_request(self) -> None:
         plan = self.scratch / "plan.tsv"
         header = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n"
@@ -1341,7 +1488,7 @@ class AcquisitionRecoveryTests(ScreenHarness):
             (("gitlab", "a/b/c", "a/b", COMMIT, "c", "0" * 64, "", "1"), "is none of github, sourcegraph, handed-off"),
             (("github", "a/../c", "a/..", COMMIT, "c", "0" * 64, "", "1"), "is no acquired population's"),
             (("github", "a/b/c", "a/b", COMMIT, "../c", "0" * 64, "", "1"), "is no path inside a repository"),
-            (("github", "a/b/c", "a/b", "main", "c", "0" * 64, "", "1"), "no full commit, SHA-256 or rank"),
+            (("github", "a/b/c", "a/b", "main", "c", "0" * 64, "", "1"), "no full commit, or no SHA-256 or blob pin"),
         ):
             with self.subTest(message=message):
                 plan.write_text(header + "\t".join(row) + "\n", encoding="utf-8")
@@ -1572,11 +1719,11 @@ class BuildTests(BuildHarness):
             set(rows),
         )
         pointer = rows["acme/pointers/openapi.json"]
-        self.assertEqual(("2" * 40, hashlib.sha256(self.pointer).hexdigest()), (pointer.commit, pointer.sha256))
+        self.assertEqual(("2" * 40, hashlib.sha256(self.pointer).hexdigest()), (pointer.commit, pointer.pin))
         # A recorded pointer-shape declarer outranks a field-name match, and the handed-off documents lead.
-        self.assertGreaterEqual(int(pointer.rank), 110)
-        self.assertLess(int(rows["jentic/jentic-public-apis/apis/x/openapi.json"].rank), 100)
-        self.assertEqual("1000", rows[f"acme/handed:openapi.json@{'8' * 40}"].rank)
+        self.assertGreaterEqual(pointer.rank, 110)
+        self.assertLess(rows["jentic/jentic-public-apis/apis/x/openapi.json"].rank, 100)
+        self.assertEqual(1000, rows[f"acme/handed:openapi.json@{'8' * 40}"].rank)
 
     def test_the_manifest_names_every_population_with_its_evidence_and_refuses_bytes_the_record_does_not_hold(
         self,
@@ -1763,8 +1910,8 @@ class BuildTests(BuildHarness):
         )
         self.assertEqual(0, done.returncode, done.stderr)
         [hit] = SCREEN.read_identities(output)
-        self.assertEqual(("acme/new/spec/openapi.yaml", "blob:" + "b" * 40), (hit.document, hit.sha256))
-        self.assertGreaterEqual(int(hit.rank), 1)
+        self.assertEqual(("acme/new/spec/openapi.yaml", "blob:" + "b" * 40), (hit.document, hit.pin))
+        self.assertGreaterEqual(hit.rank, 1)
         self.assertEqual([], self.server.requests)
         with gzip.open(evidence / "queries.jsonl.gz", "wt", encoding="utf-8") as handle:
             handle.write((evidence / "queries.jsonl").read_text(encoding="utf-8"))
@@ -1804,38 +1951,41 @@ class _Services(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         self.server.requests.append(self.path)
-        if self.path == "/rate_limit":
-            bucket = {"limit": 10, "used": 1, "remaining": 9, "reset": int(time.time()) + 60}
-            self.reply(json.dumps({"resources": {"code_search": bucket, "core": bucket}}).encode(), "application/json")
-        elif self.path.startswith("/search/code") and self.server.malformed:
-            body = {"total_count": 1, "incomplete_results": False, "items": [{"path": "openapi.yaml"}]}
-            self.reply(json.dumps(body).encode(), "application/json", "code_search")
-        elif self.path.startswith("/.api/search/stream") and self.server.sourcegraph_status != 200:
-            self.send_response(self.server.sourcegraph_status)
-            self.send_header("Content-Length", "0")
-            self.end_headers()
-        elif self.path.startswith("/search/code"):
-            language = "yaml" if "YAML" in urllib.parse.unquote(self.path) else "json"
-            item = {
-                "repository": {"full_name": "acme/found"},
-                "path": f"spec/openapi.{language}",
-                "sha": "e" * 40,
-                "url": f"http://127.0.0.1/repos/acme/found/contents/x?ref={'f' * 40}",
-            }
-            body = {"total_count": 1, "incomplete_results": False, "items": [item]}
-            self.reply(json.dumps(body).encode(), "application/json", "code_search")
-        elif self.path.startswith("/.api/search/stream"):
-            matches = [{"repository": "github.com/acme/streamed", "path": "openapi.yaml", "commit": "a" * 40}]
-            self.reply(
-                b"event: matches\ndata: "
-                + json.dumps(matches).encode()
-                + b"\n\nevent: progress\ndata: "
-                + json.dumps({"done": True, "matchCount": 1}).encode()
-                + b"\n\n",
-                "text/event-stream",
-            )
-        else:
-            self.reply(b"{}", "application/json")
+        route = urllib.parse.urlsplit(self.path).path
+        match route:
+            case "/rate_limit":
+                bucket = {"limit": 10, "used": 1, "remaining": 9, "reset": int(time.time()) + 60}
+                body = {"resources": {"code_search": bucket, "core": bucket}}
+                self.reply(json.dumps(body).encode(), "application/json")
+            case "/search/code" if self.server.malformed:
+                body = {"total_count": 1, "incomplete_results": False, "items": [{"path": "openapi.yaml"}]}
+                self.reply(json.dumps(body).encode(), "application/json", "code_search")
+            case "/search/code":
+                language = "yaml" if "YAML" in urllib.parse.unquote(self.path) else "json"
+                item = {
+                    "repository": {"full_name": "acme/found"},
+                    "path": f"spec/openapi.{language}",
+                    "sha": "e" * 40,
+                    "url": f"http://127.0.0.1/repos/acme/found/contents/x?ref={'f' * 40}",
+                }
+                body = {"total_count": 1, "incomplete_results": False, "items": [item]}
+                self.reply(json.dumps(body).encode(), "application/json", "code_search")
+            case "/.api/search/stream" if self.server.sourcegraph_status != 200:
+                self.send_response(self.server.sourcegraph_status)
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+            case "/.api/search/stream":
+                matches = [{"repository": "github.com/acme/streamed", "path": "openapi.yaml", "commit": "a" * 40}]
+                self.reply(
+                    b"event: matches\ndata: "
+                    + json.dumps(matches).encode()
+                    + b"\n\nevent: progress\ndata: "
+                    + json.dumps({"done": True, "matchCount": 1}).encode()
+                    + b"\n\n",
+                    "text/event-stream",
+                )
+            case _:
+                self.reply(b"{}", "application/json")
 
 
 class LiveSearchTests(BuildHarness):

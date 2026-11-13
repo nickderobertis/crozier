@@ -1,4 +1,4 @@
-population	document	repository	commit	path	sha256	url	rank
+population	document	repository	commit	path	pin	url	rank
 github	1024XEngineer/Holonic-Asset/openapi/openapi.json	1024XEngineer/Holonic-Asset	5a4ebcd69aca071aa8e53bbba6ac8fef29b80d74	openapi/openapi.json	blob:cda5fcd3db91e398f1408b0bb3048f35aa5171e2	https://api.github.com/repositories/1291660478/contents/openapi/openapi.json?ref=5a4ebcd69aca071aa8e53bbba6ac8fef29b80d74	4
 github	AIsa-team/docs/openapi/parallel.ai.json	AIsa-team/docs	230bdfb338037972643391972cb3852a244280bf	openapi/parallel.ai.json	blob:d3806dd772861494e5dc291e0898ff4b98a3984c	https://api.github.com/repositories/1103557723/contents/openapi/parallel.ai.json?ref=230bdfb338037972643391972cb3852a244280bf	1
 github	AIsa-team/docs/openapi/zh/coingecko.json	AIsa-team/docs	230bdfb338037972643391972cb3852a244280bf	openapi/zh/coingecko.json	blob:825a5e724008d1ac3e162a09e1b1986cd97bf7fc	https://api.github.com/repositories/1103557723/contents/openapi/zh/coingecko.json?ref=230bdfb338037972643391972cb3852a244280bf	1

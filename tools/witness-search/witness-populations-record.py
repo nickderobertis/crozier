@@ -20,6 +20,8 @@ import fractions
 import gzip
 import importlib.util
 import json
+import math
+import re
 import sys
 import tempfile
 from collections import Counter, defaultdict
@@ -60,18 +62,27 @@ def instant(value: Any) -> bool:
         return False
 
 
+# How `population_screen.py acquire` records an identity's bytes being had, or refused.
+ACQUIRED_HOW = re.compile(r"raw|store|shared-cache|digest-differs|refused-http-\d+")
+# The outcomes the guarded search records for a query.
+QUERY_OUTCOME = re.compile(
+    r"answered|partitioned|refused|not-queryable|incomplete-stream|acquisition-failure|secondary-limiter"
+    r"|outstanding-[a-z-]+"
+)
 # What each evidence field must hold for the README to count it.
 FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "at": instant,
-    "duration_s": lambda value: isinstance(value, int | float) and not isinstance(value, bool) and value >= 0,
+    "duration_s": lambda value: (
+        isinstance(value, int | float) and not isinstance(value, bool) and math.isfinite(value) and value >= 0
+    ),
     "population": lambda value: value in SCREEN.POPULATIONS,
     "document": lambda value: isinstance(value, str) and bool(value),
-    "how": lambda value: isinstance(value, str) and bool(value),
+    "how": lambda value: isinstance(value, str) and bool(ACQUIRED_HOW.fullmatch(value)),
     "status": lambda value: isinstance(value, int | str) and not isinstance(value, bool),
     "url": lambda value: isinstance(value, str) and value.startswith(("https://", "http://")),
-    "host": lambda value: isinstance(value, str) and bool(value),
-    "source": lambda value: isinstance(value, str) and bool(value),
-    "outcome": lambda value: isinstance(value, str) and bool(value),
+    "host": lambda value: value in ("github", "sourcegraph"),
+    "source": lambda value: value in ("github-code-search", "sourcegraph"),
+    "outcome": lambda value: isinstance(value, str) and bool(QUERY_OUTCOME.fullmatch(value)),
     "sha256": lambda value: isinstance(value, str) and bool(SCREEN.SHA.fullmatch(value)),
 }
 
@@ -199,8 +210,8 @@ def render(record: Path, root: Path = REPO) -> str:
         population: Counter(how for how in done.values() if how not in ("raw", "store", "shared-cache"))
         for population, done in asked.items()
     }
-    hits = sum(1 for identity in plan if SCREEN.BLOB.fullmatch(identity.sha256))
-    hit_docs = {identity.document for identity in plan if SCREEN.BLOB.fullmatch(identity.sha256)}
+    hits = sum(1 for identity in plan if SCREEN.BLOB.fullmatch(identity.pin))
+    hit_docs = {identity.document for identity in plan if SCREEN.BLOB.fullmatch(identity.pin)}
 
     with (root / HANDED_OFF).open(encoding="utf-8", newline="") as handle:
         handed = list(csv.DictReader(handle, delimiter="\t"))
