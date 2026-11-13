@@ -14,7 +14,6 @@ input is missing or malformed, or `--check` found it stale; 2 on a usage error.
 from __future__ import annotations
 
 import argparse
-import csv
 import datetime
 import fractions
 import gzip
@@ -46,7 +45,6 @@ def _load(name: str, path: Path) -> ModuleType:
 
 SCREEN = _load("witness_populations_record_screen", Path(__file__).with_name("population_screen.py"))
 RECORD = SCREEN.RECORD
-HANDED_OFF = Path("docs") / "fern-measurements" / "handed-off" / "documents.tsv"
 SERVED_ONLY = Path("docs") / "openapi-surface" / "witness-search-apis.guru" / "unread-responses.jsonl"
 BUILD = _load("witness_populations_record_build", Path(__file__).with_name("witness-populations-build.py"))
 GITHUB = BUILD.github()
@@ -298,9 +296,8 @@ def render(record: Path, root: Path = REPO) -> str:
     hits = sum(1 for identity in plan if SCREEN.BLOB.fullmatch(identity.pin))
     hit_docs = {identity.document for identity in plan if SCREEN.BLOB.fullmatch(identity.pin)}
 
-    with (root / HANDED_OFF).open(encoding="utf-8", newline="") as handle:
-        handed = list(csv.DictReader(handle, delimiter="\t"))
-    no_provenance = [row for row in handed if "@" not in row["document"]]
+    handed = BUILD.handed_off(BUILD.Tree(root))
+    no_provenance = [row for row in handed if row.provenance is None]
     served = jsonl(root / SERVED_ONLY, ("sha256",))
     registered_digests = {entry.sha256 for entry in entries if entry.population == "registered"}
     served_registered = sum(1 for row in served if row["sha256"] in registered_digests)

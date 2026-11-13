@@ -1951,6 +1951,23 @@ class BuildTests(BuildHarness):
         malformed = self.build("identities", "--output", str(plan))
         self.assertEqual(1, malformed.returncode)
         self.assertIn("'acme/x:openapi.json@main' is no repository:path@commit", malformed.stderr)
+        handed.write_text(handed.read_text(encoding="utf-8").rsplit("\n", 2)[0] + "\n", encoding="utf-8")
+        for path, line, message in (
+            (handed, f"\t{'1' * 64}\t-\t-\tdiffers\t-\t-\n", "names no document and SHA-256 of its bytes"),
+            (census, "combo-nope\tregistered\tsample-api\t-\t1\tunscreened\t-\n", "key 'combo-nope' is none of"),
+            (
+                self.root / "docs/openapi-surface/witness-search-apis.guru/acquisition-manifest.tsv",
+                f"APIs-guru/openapi-directory\tAPIs/acme.local/1.0/openapi.json\t{BUILD.ARCHIVE_REVISION}\t{'2' * 64}\n",
+                "records APIs/acme.local/1.0/openapi.json a second time",
+            ),
+        ):
+            with self.subTest(message=message):
+                before = path.read_text(encoding="utf-8")
+                path.write_text(before + line, encoding="utf-8")
+                refused = self.build(*args)
+                self.assertEqual(1, refused.returncode)
+                self.assertIn(message, refused.stderr)
+                path.write_text(before, encoding="utf-8")
 
     def test_bytes_the_ledger_had_at_another_commit_or_pin_are_not_attributed_to_the_plan(self) -> None:
         fetched = json.dumps(CASES[3][1]).encode()

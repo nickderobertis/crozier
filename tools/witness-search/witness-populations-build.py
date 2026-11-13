@@ -127,6 +127,8 @@ def earlier_rows(tree: Tree) -> dict[tuple[str, str], set[str]]:
             population = EARLIER_POPULATION.get(row["source"])
             if population is None:
                 fail(f"{tree.earlier}: source {row['source']!r} is none of {', '.join(EARLIER_POPULATION)}")
+            if row["key"] not in SCREEN.KEYS:
+                fail(f"{tree.earlier}: key {row['key']!r} is none of the combination keys; restore it from git")
             document = archive_document(row["document"]) if population == "apis-guru" else row["document"]
             listed[(population, document)].add(row["key"])
     return listed
@@ -221,17 +223,31 @@ def identities(tree: Tree) -> list[SCREEN.Identity]:
                     rank,
                 )
             )
-    for row, provenance in handed_off(tree):
-        if provenance is not None:
-            repository, path, commit = provenance
-            out.append(
-                SCREEN.Identity("handed-off", row["document"], repository, commit, path, row["sha256"], "", 1000)
-            )
+    for row in handed_off(tree):
+        if row.provenance is not None:
+            repository, path, commit = row.provenance
+            out.append(SCREEN.Identity("handed-off", row.document, repository, commit, path, row.sha256, "", 1000))
     return out
 
 
-def handed_off(tree: Tree) -> list[tuple[dict[str, str], tuple[str, str, str] | None]]:
-    """Each handed-off document with its `(repository, path, commit)`, or None where it records no provenance.
+class Provenance(NamedTuple):
+    """Where a handed-off document was published: its repository, its path there and the commit."""
+
+    repository: str
+    path: str
+    commit: str
+
+
+class HandedOff(NamedTuple):
+    """One handed-off document: its identity, the SHA-256 of the bytes handed off, and its provenance if recorded."""
+
+    document: str
+    sha256: str
+    provenance: Provenance | None
+
+
+def handed_off(tree: Tree) -> list[HandedOff]:
+    """Each handed-off document, its provenance None where it records none.
 
     A row naming a provenance must name a real one: an `owner/name` repository, a
     path inside it and a full commit, beside the SHA-256 of the bytes handed off.
@@ -239,23 +255,23 @@ def handed_off(tree: Tree) -> list[tuple[dict[str, str], tuple[str, str, str] | 
     rows = []
     with tree.handed_off.open(encoding="utf-8", newline="") as handle:
         for number, row in enumerate(csv.DictReader(handle, delimiter="\t"), 2):
-            if not SCREEN.SHA.fullmatch(row.get("sha256") or ""):
-                fail(f"{tree.handed_off}:{number} names no SHA-256 of its bytes; restore it from git")
-            document = row.get("document") or ""
+            digest, document = row.get("sha256") or "", (row.get("document") or "").strip()
+            if not SCREEN.SHA.fullmatch(digest) or not document:
+                fail(f"{tree.handed_off}:{number} names no document and SHA-256 of its bytes; restore it from git")
             match = HANDED_OFF_ID.fullmatch(document)
             if match is None:
                 # A row that records no provenance names no repository or commit at all; one that tries to
                 # and does not parse is refused rather than taken for bytes-only.
                 if "@" in document or ":" in document:
                     fail(f"{tree.handed_off}:{number}: {document!r} is no repository:path@commit; restore it from git")
-                rows.append((row, None))
+                rows.append(HandedOff(document, digest, None))
                 continue
-            repository, path, commit = match.groups()
-            if not SCREEN.witness_screen().repository_name(repository) or not SCREEN.witness_screen().repository_path(
-                path
-            ):
-                fail(f"{tree.handed_off}:{number}: {row['document']!r} is no repository, path and commit; restore it")
-            rows.append((row, (repository, path, commit)))
+            provenance = Provenance(*match.groups())
+            if not SCREEN.witness_screen().repository_name(
+                provenance.repository
+            ) or not SCREEN.witness_screen().repository_path(provenance.path):
+                fail(f"{tree.handed_off}:{number}: {document!r} is no repository, path and commit; restore it")
+            rows.append(HandedOff(document, digest, provenance))
     return rows
 
 
@@ -336,12 +352,18 @@ def scan(root: Path) -> dict[str, Path]:
 
 def archive_digests(tree: Tree) -> dict[str, str]:
     """Each archive document's SHA-256, as the committed acquisition manifest records it at the pinned revision."""
+    recorded: dict[str, str] = {}
     with tree.archive_manifest.open(encoding="utf-8", newline="") as handle:
-        return {
-            row["document"]: row["sha256"]
-            for row in csv.DictReader(handle, delimiter="\t")
-            if row["walk"] == ARCHIVE_REPOSITORY and row["revision"] == ARCHIVE_REVISION
-        }
+        for number, row in enumerate(csv.DictReader(handle, delimiter="\t"), 2):
+            if row.get("walk") != ARCHIVE_REPOSITORY or row.get("revision") != ARCHIVE_REVISION:
+                continue
+            document, digest = row.get("document") or "", row.get("sha256") or ""
+            if not SCREEN.witness_screen().repository_path(document) or not SCREEN.SHA.fullmatch(digest):
+                fail(f"{tree.archive_manifest}:{number} names no archive path and SHA-256; restore it from git")
+            if document in recorded:
+                fail(f"{tree.archive_manifest}:{number} records {document} a second time; restore it from git")
+            recorded[document] = digest
+    return recorded
 
 
 def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
@@ -401,8 +423,8 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     archived = {entry.sha256 for entry in entries if entry.population == "apis-guru"}
     held = tree_digests(tree)
     preflight = scan(args.preflight) if args.preflight.is_dir() else {}
-    for row, provenance in handed_off(tree):
-        digest, document = row["sha256"], row["document"]
+    for row in handed_off(tree):
+        digest, document, provenance = row.sha256, row.document, row.provenance
         for found in (held.get(digest), preflight.get(digest)):
             if found is not None and SCREEN.cached(digest, store_root) is None:
                 SCREEN.store(found.read_bytes(), store_root)
