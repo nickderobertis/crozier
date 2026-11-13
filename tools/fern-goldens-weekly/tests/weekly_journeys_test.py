@@ -1123,9 +1123,10 @@ class WeeklyRunTests(unittest.TestCase):
 
     def assert_sections_bounded(self, count: int) -> tuple[str, dict[str, Any]]:
         """`decide` over `count` items of each section the body bounds: corpus
-        references whose files were not compared, unchecked items, reproduced
-        known failures, unfetchable references and refusal changes, each with a
-        long name or reason."""
+        references whose files were not compared, unchecked items, shards that
+        uploaded nothing (one item each), reproduced and changed known
+        failures, unfetchable references and refusal changes, each with a long
+        name or reason."""
         pad = "x" * 160
         gates = (
             "family\tscope\tverdict\tcommand\n"
@@ -1137,6 +1138,14 @@ class WeeklyRunTests(unittest.TestCase):
             *(self.item("corpus", f"drift-{pad}-{n}") for n in range(count)),
             *(self.item("handwritten", f"broken-{pad}-{n}", "failed", f"{reason} {n}") for n in range(count)),
             *(self.item("corpus", f"known-{pad}-{n}", "known-upstream-failure", "reproduced") for n in range(count)),
+            *(
+                self.item("corpus", f"changed-{pad}-{n}", "known-upstream-failure-changed", f"generates: {reason}")
+                for n in range(count)
+            ),
+            *(
+                self.item("probes", f"lost-{n}", "not-generated", f"shard {1000 + n} uploaded no result", 1000 + n)
+                for n in range(count)
+            ),
             *(self.item("corpus", f"gone-{pad}-{n}", "spec-unfetchable", f"404 {reason}") for n in range(count)),
             *(
                 self.item("refusals", f"moved-{pad}-{n}", "refusal-changed", f"generates: {reason}")
@@ -1147,8 +1156,11 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(0, decided.returncode, decided.stderr)
         recorded = json.loads((decision / "decision.json").read_text(encoding="utf-8"))
         drifted = [entry["item"] for entry in recorded["failing"]["corpus"] if entry.get("files_compared") is False]
-        self.assertEqual(sorted(f"drift-{pad}-{n}" for n in range(count)), sorted(set(drifted) - {"alpha", "beta"}))
-        self.assertEqual(count, len(recorded["unchecked"]))
+        self.assertEqual(
+            sorted(f"drift-{pad}-{n}" for n in range(count)), sorted(name for name in drifted if "drift-" in name)
+        )
+        self.assertEqual(2 * count, len(recorded["unchecked"]))
+        self.assertEqual(count, len(recorded["known_changed"]))
         self.assertEqual(count, len([e for e in recorded["known_reproduced"] if e["item"].startswith("known-")]))
         self.assertEqual(count, len(recorded["unfetchable"]))
         self.assertEqual(count, len(recorded["refusals_changed"]))
@@ -1165,6 +1177,7 @@ class WeeklyRunTests(unittest.TestCase):
             "reproduced known failure(s)": recorded["known_reproduced"],
             "unfetchable reference(s)": recorded["unfetchable"],
             "refusal change(s)": recorded["refusals_changed"],
+            "changed known failure(s)": recorded["known_changed"],
         }
         for what, entries in sections.items():
             with self.subTest(section=what):
@@ -1180,8 +1193,13 @@ class WeeklyRunTests(unittest.TestCase):
                 assert left is not None
                 self.assertGreater(int(left[1]), 0)
         self.assertIn("## References not compared", body)
+        self.assertIn(f"{count - 20} of {count} lost shard(s) left out of this body", body)
+        for shard in range(1000, 1020):
+            self.assertIn(f"- **shard {shard} uploaded no result** (its job failed or was cancelled", body)
+        self.assertNotIn("**shard 1020 uploaded no result**", body)
         drifted = len(sections["reference(s) not compared"])
-        self.assertIn(f"- not compared: {count + drifted} ({count} not checked, {drifted} corpus reference(s)", body)
+        unchecked = 2 * count
+        self.assertIn(f"- not compared: {unchecked + drifted} ({unchecked} not checked, {drifted} corpus", body)
 
     def test_an_ordinary_small_decision_lists_every_item_in_full(self) -> None:
         body, recorded = self.assert_sections_bounded(3)
@@ -1192,11 +1210,14 @@ class WeeklyRunTests(unittest.TestCase):
             *(entry["item"] for entry in recorded["known_reproduced"]),
             *(entry["item"] for entry in recorded["unfetchable"]),
             *(entry["item"] for entry in recorded["refusals_changed"]),
+            *(entry["item"] for entry in recorded["known_changed"]),
         ]
         for name in listed:
             self.assertIn(f"`{name}`", body)
         for entry in recorded["unchecked"]:
-            self.assertIn(f"- {entry['family']} `{entry['item']}`: failed: {entry['detail']}", body)
+            self.assertIn(f"- {entry['family']} `{entry['item']}`: {entry['status']}: {entry['detail']}", body)
+        for shard in range(1000, 1003):
+            self.assertIn(f"- **shard {shard} uploaded no result** (its job failed or was cancelled", body)
 
     def test_large_diff_publication_accounts_for_every_kind_before_reports(self) -> None:
         self.publish_seed()
