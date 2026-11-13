@@ -92,10 +92,13 @@ with open(sys.argv[1], encoding="utf-8") as stream:
             for found in re.findall(r"-([0-9a-f]{16})(?=[/.]|$)", path):
                 print(f"-{found}")
 PY
-  [ -s "$scratch/current-hashes" ] || die "the test build reported no artifacts, so there is no current build to keep"
-  entries | grep -F -f "$scratch/current-hashes" | while IFS= read -r entry; do
-    find "$entry" -exec touch -h {} +
-  done
+  [ -s "$scratch/current-hashes" ] ||
+    die "the test build reported no artifacts, so there is no current build to keep; check that \`cargo test --workspace --no-run --message-format=json\` lists them, then rerun"
+  entries | grep -F -f "$scratch/current-hashes" >"$scratch/current-entries" || true
+  while IFS= read -r entry; do
+    find "$entry" -exec touch -h {} + ||
+      die "could not mark $entry as the ordinary build's; check that the target directory is writable by this user, then rerun"
+  done <"$scratch/current-entries"
 }
 current
 
