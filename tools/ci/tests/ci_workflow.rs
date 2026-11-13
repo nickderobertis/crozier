@@ -916,3 +916,178 @@ fn the_root_gallery_is_published_from_a_push_to_main() {
         "it publishes a real capture"
     );
 }
+
+const REQUIRE_TOOLS: &str = "node tools/ci/require-tools.mjs ";
+
+/// The names (and `@` pins) a `require-tools.mjs` step proves.
+fn required_tools(step: &Value) -> Option<Vec<&str>> {
+    let run = text(step, "run")?;
+    let line = run.lines().find_map(|line| {
+        line.trim()
+            .split_once(REQUIRE_TOOLS)
+            .map(|(_, tools)| tools)
+    })?;
+    Some(line.split_whitespace().collect())
+}
+
+/// Every job that bootstraps proves each tool its install steps put on PATH runs, after
+/// the last of them and before `just bootstrap`, so an installer that reported success
+/// without its executable is named there and not by the gate (#814); and `just` is held
+/// to the version its install step pins.
+#[test]
+fn every_bootstrapping_job_proves_its_installed_tools_before_the_gate() {
+    let mut proved = Vec::new();
+    for (file, source) in [("ci.yml", CI_WORKFLOW), ("ci-caches.yml", CI_CACHES)] {
+        let workflow: Value =
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        for (name, job) in workflow["jobs"].as_object().expect("jobs") {
+            let steps = steps(job);
+            let Some(bootstrap) = steps
+                .iter()
+                .position(|step| text(step, "run") == Some("just bootstrap"))
+            else {
+                continue;
+            };
+            let installs: Vec<usize> = (0..bootstrap)
+                .filter(|&index| {
+                    text(&steps[index], "uses").is_some_and(|uses| {
+                        [
+                            "extractions/setup-just@",
+                            "actions/setup-node@",
+                            "oven-sh/setup-bun@",
+                            "actions-rust-lang/setup-rust-toolchain@",
+                            "taiki-e/install-action@",
+                            "astral-sh/setup-uv@",
+                        ]
+                        .iter()
+                        .any(|prefix| uses.starts_with(prefix))
+                    })
+                })
+                .collect();
+            let proof = (0..bootstrap)
+                .find(|&index| required_tools(&steps[index]).is_some())
+                .unwrap_or_else(|| panic!("{file}: `{name}` bootstraps without proving its tools"));
+            assert!(
+                installs.iter().all(|&install| install < proof),
+                "{file}: `{name}` proves its tools before every install step has run"
+            );
+            let tools = required_tools(&steps[proof]).expect("the proof names tools");
+            let names: Vec<&str> = tools
+                .iter()
+                .map(|tool| tool.split('@').next().unwrap())
+                .collect();
+            let mut expected = vec!["just", "node", "bun", "cargo", "uv"];
+            for &install in &installs {
+                if let Some(listed) = steps[install]
+                    .get("with")
+                    .and_then(|with| text(with, "tool"))
+                {
+                    expected.extend(listed.split(','));
+                }
+            }
+            for tool in expected {
+                assert!(
+                    names.contains(&tool),
+                    "{file}: `{name}` never proves `{tool}` runs"
+                );
+            }
+            let pin = installs
+                .iter()
+                .find_map(|&install| {
+                    text(&steps[install], "uses")
+                        .filter(|uses| uses.starts_with("extractions/setup-just@"))
+                        .and_then(|_| steps[install].get("with"))
+                        .and_then(|with| text(with, "just-version"))
+                })
+                .unwrap_or_else(|| panic!("{file}: `{name}` installs an unpinned just"));
+            assert!(
+                tools.contains(&format!("just@{pin}").as_str()),
+                "{file}: `{name}` pins just {pin} but proves another version"
+            );
+            proved.push(format!("{file}:{name}"));
+        }
+    }
+    assert_eq!(proved.len(), 7, "the bootstrapping jobs: {proved:?}");
+}
+
+/// The proof the lanes run, read from `test-linux`, over a PATH of stand-ins: one the
+/// installer left out is named, and the gate never starts, as is a wrong `just`.
+#[cfg(unix)]
+#[test]
+fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
+    use std::os::unix::fs::PermissionsExt;
+    use std::process::Command;
+
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let tools = steps(job(&workflow, "test-linux"))
+        .iter()
+        .find_map(required_tools)
+        .expect("test-linux proves its tools");
+    let node = std::env::var_os("PATH")
+        .and_then(|path| {
+            std::env::split_paths(&path)
+                .map(|dir| dir.join("node"))
+                .find(|candidate| candidate.is_file())
+        })
+        .expect("node is on PATH");
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let scratch = tempfile::tempdir().expect("a scratch directory");
+    let stand_in = |name: &str, answer: &str| {
+        let path = scratch.path().join(name);
+        std::fs::write(&path, format!("#!/bin/sh\necho \"{answer}\"\n")).expect("a stand-in");
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
+            .expect("executable");
+    };
+    for tool in &tools {
+        let (name, version) = tool.split_once('@').unwrap_or((tool, "1.0.0"));
+        match name {
+            "just" => {}
+            "cargo" => stand_in("cargo", "cargo-$1 1.0.0"),
+            _ => stand_in(name, &format!("{name} {version}")),
+        }
+    }
+    let prove = || {
+        Command::new(&node)
+            .arg("tools/ci/require-tools.mjs")
+            .args(&tools)
+            .current_dir(&root)
+            .env("PATH", scratch.path())
+            .output()
+            .expect("node runs the proof")
+    };
+    let missing = prove();
+    assert_eq!(
+        missing.status.code(),
+        Some(1),
+        "a missing tool fails the proof"
+    );
+    let stderr = String::from_utf8_lossy(&missing.stderr);
+    assert!(
+        stderr.contains("require-tools: `just` is not on PATH"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("re-run the job"), "{stderr}");
+
+    stand_in("just", "just 1.57.0");
+    let stale = prove();
+    assert_eq!(stale.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&stale.stderr);
+    assert!(
+        stderr.contains("is not the pinned 1.58.0: it answered 'just 1.57.0'"),
+        "{stderr}"
+    );
+
+    stand_in("just", "just 1.58.0");
+    let present = prove();
+    let stdout = String::from_utf8_lossy(&present.stdout);
+    assert_eq!(
+        present.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&present.stderr)
+    );
+    assert!(
+        stdout.starts_with("require-tools: just 1.58.0, node "),
+        "{stdout}"
+    );
+}

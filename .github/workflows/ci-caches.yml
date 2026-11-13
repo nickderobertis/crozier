@@ -40,6 +40,8 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -64,6 +66,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -102,6 +106,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -126,6 +132,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -159,6 +167,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -183,6 +193,8 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.

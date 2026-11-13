@@ -73,6 +73,8 @@ jobs:
         continue-on-error: true
         uses: nickderobertis/notignored@v0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -97,6 +99,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -115,7 +121,9 @@ jobs:
           go-version: "1.26"
           cache: false
       - name: Install workflow syntax checker
-        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          node tools/ci/require-tools.mjs actionlint@1.7.12
       - name: Format, lint, type-check and audit the affected projects
         run: just ci-lint
       # The LLM-judge tier (llmlint): non-deterministic and harness-backed, so never inside
@@ -131,6 +139,7 @@ jobs:
           npm install -g @anthropic-ai/claude-code
           just setup-llmlint
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          PATH="$HOME/.local/bin:$PATH" node tools/ci/require-tools.mjs claude llmlint
       # Prove the rule set still resolves with its origin unreachable. CROZIER_REQUIRE_LLMLINT
       # turns the "llmlint absent" skip into a failure, so this cannot silently no-op.
       - name: Plugin-resolution boundary tests
@@ -221,6 +230,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -245,6 +256,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -263,6 +278,7 @@ jobs:
           # conftest prefers a Prism on PATH over an `npx` fetch; the version is single-sourced
           # from the suite, so the pin can never drift between the workflow and it.
           npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
+          node tools/ci/require-tools.mjs maturin@1.14.1 prism
       # Prove the PUBLISHED crate builds, before anything can dirty the tree: `cargo publish
       # --dry-run` packages the crate (honoring Cargo.toml's `include`) and compiles from
       # that tarball, the only check that catches an include-list gap.
@@ -322,6 +338,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -346,6 +364,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -394,6 +416,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -418,6 +442,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
