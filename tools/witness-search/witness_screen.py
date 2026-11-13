@@ -14,9 +14,11 @@ from a run rather than from a caller's sentence:
   under `tools/witness-search/rate_limit_guard.py`'s pacing); it passes when the commit is a
   full 40-hex SHA, the fetch answers 200, and, where the caller's pin names one,
   the bytes carry that SHA-256.
-* **licence** — the fetched document's own ``info.license`` and the repository's
-  licence file at the same commit, read against the admissible set the rule's
-  canonical enumeration names. A grant the reading cannot recognise is refused,
+* **licence** — the fetched document's own ``info.license`` (read as JSON where
+  the bytes are JSON), and only where it declares none the repository's licence
+  file at the same commit, read against the admissible set the rule's canonical
+  enumeration names; no licence path is fetched that the document's own licence
+  makes unnecessary. A grant the reading cannot recognise is refused,
   never guessed; a caller may refuse a candidate the reading would pass (a
   third-party copy, say) with ``--licence-refusal``, which is recorded as that
   judgement beside the reading, and may never pass one the reading refuses.
@@ -424,17 +426,47 @@ MALFORMED = object()
 LICENCE_FIELDS = ("identifier", "name", "url")
 
 
+def looks_like_json(data: bytes) -> bool:
+    """Whether `data` opens as a JSON document does: an object or array, past any BOM and whitespace."""
+    return data.removeprefix(b"\xef\xbb\xbf").lstrip().startswith((b"{", b"["))
+
+
+def read_document(data: bytes, scratch: Path) -> Any:
+    """`data` parsed by the census's own reader, as JSON where it opens as JSON, else as YAML.
+
+    A JSON document is never relabelled YAML: the YAML reader is much slower on
+    one, and refuses what JSON admits (a repeated key). A YAML flow mapping opens
+    with `{` too, so one that is no JSON is then read as the YAML it is. Raises
+    the census's own refusal when neither reading parses it.
+    """
+    census = _load("openapi_surface_census_screen", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
+    digest = hashlib.sha256(data).hexdigest()
+    folder = scratch / "licence-read"
+    folder.mkdir(parents=True, exist_ok=True)
+    if looks_like_json(data):
+        path = folder / f"{digest}.json"
+        path.write_bytes(data)
+        try:
+            return census.load_document(path)
+        except Exception:  # not JSON after all: a YAML flow mapping, read below
+            pass
+    path = folder / f"{digest}.yaml"
+    path.write_bytes(data)
+    return census.load_document(path)
+
+
 def document_licence(data: bytes, scratch: Path) -> str | None | object:
     """The document's own `info.license` as one line, `""` when it declares none, None when
     unreadable, and `MALFORMED` when it declares one that is no License Object."""
-    path = scratch / "licence-read" / f"{hashlib.sha256(data).hexdigest()}.yaml"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(data)
-    census = _load("openapi_surface_census_screen", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
     try:
-        document = census.load_document(path)
+        document = read_document(data, scratch)
     except Exception:  # the census's own parse refusal, whatever its type
         return None
+    return licence_of(document)
+
+
+def licence_of(document: Any) -> str | object:
+    """A parsed document's own `info.license` as `document_licence` answers it."""
     info = document.get("info") if isinstance(document, dict) else None
     if not isinstance(info, dict) or "license" not in info:
         return ""
@@ -669,13 +701,17 @@ def measure(
     with tempfile.TemporaryDirectory(prefix="witness-screen-") as scratch_dir:
         scratch = Path(scratch_dir)
         if status == 200:
+            declared = document_licence(data, scratch)
+            # The document's own info.license decides wherever it says anything (an
+            # unreadable or malformed one refuses), so a licence file is read only
+            # for a document that declares none: no path it makes unnecessary is fetched.
             files = []
-            for name in LICENCE_FILES:
+            for name in LICENCE_FILES if declared == "" else ():
                 file_status, file_bytes = fetch(raw_url(raw_base, repository, commit, name), f"{repository}:{name}")
                 files.append((name, file_status, file_bytes))
                 if file_status == 200:
                     break
-            outcome, section, licence_log = licence_screen(document_licence(data, scratch), files, licence_refusal)
+            outcome, section, licence_log = licence_screen(declared, files, licence_refusal)
             log, digest = write_log(logs, base, key, "licence", redact(licence_log, scratch))
             record["licence"] = {"outcome": outcome, **section, "log": log, "log_sha256": digest}
         else:
