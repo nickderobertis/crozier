@@ -9,11 +9,6 @@
 - Python: `format`, `lint` and `typecheck` only. `test` keeps its own runner and
   these files stay out of the combined coverage floor, because its suites need a
   release build and the denied-socket environment.
-- `test` is `test-offline` and `test-cold-handoff`: `test-offline` runs the real
-  `test-corpus-match` and `test-corpus-match-strict` recipes, so the lane runs
-  `test-match` and `test-strict` once, inside it (`carried` in `tools/ci/lanes.json`).
-  The proof's census, refusal-class and fallback recipes are `corpus-offline-tools`, a
-  project of its own, so an edit to those tools reruns no golden comparison here.
 - In `live-e2e` the job's first golden-replay build (the `e2e` profile) is
   `cold-registry-build`: an empty `CARGO_HOME`, sockets denied, and the real test build. Cargo fingerprints a crate's
   absolute source path, so every later step shares that `CARGO_HOME`. A target here
