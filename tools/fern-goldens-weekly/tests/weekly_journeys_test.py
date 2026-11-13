@@ -2291,6 +2291,14 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertTrue(all(1.0 <= amount <= 62.8 for amount in released), text)
 
     def test_memory_under_the_floor_mid_comparison_stops_the_newest_which_reruns_alone(self) -> None:
+        self.assert_guarded_decision()
+
+    def test_a_platform_without_proc_finds_a_stopped_comparisons_processes_through_ps(self) -> None:
+        """macOS has no `/proc`: the processes a stopped comparison started are
+        found through `ps`, and end with it all the same."""
+        self.assert_guarded_decision(CROZIER_FERN_WEEKLY_PROC=str(self.scratch / "no-proc"))
+
+    def assert_guarded_decision(self, **env: str) -> None:
         """The reserve is read only as a comparison starts; one that grows
         after it has started can starve the runner (run 42566793545's second
         decision job died with the runner out of contact). While two run and
@@ -2347,7 +2355,7 @@ class WeeklyRunTests(unittest.TestCase):
                     *("--jobs", "2", "--reserve-gib", "1", "--floor-gib", "1", "--heartbeat-seconds", "1"),
                 ],
                 cwd=decider,
-                env=self.environment(decider, BLOCK_DIR=str(block), CROZIER_FERN_WEEKLY_CGROUP=str(cgroup)),
+                env=self.environment(decider, BLOCK_DIR=str(block), CROZIER_FERN_WEEKLY_CGROUP=str(cgroup), **env),
                 stdout=written,
                 stderr=subprocess.STDOUT,
                 start_new_session=True,

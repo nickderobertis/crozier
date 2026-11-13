@@ -2326,12 +2326,18 @@ class Guard:
                     progress(f"decide: running {labels}; memory available {memory}")
 
 
+# The directory listing processes (`/proc`); one without `self/stat`, as on
+# macOS, sends process discovery to `ps`.
+PROC_ENV = "CROZIER_FERN_WEEKLY_PROC"
+
+
 def parents() -> list[tuple[int, int]]:
     """Every process and its parent: from Linux's `/proc`, else from `ps`
     (macOS); none where neither answers."""
     pairs: list[tuple[int, int]] = []
-    if Path("/proc/self/stat").is_file():
-        for stat in Path("/proc").glob("[0-9]*/stat"):
+    proc = Path(os.environ.get(PROC_ENV) or "/proc")
+    if (proc / "self/stat").is_file():
+        for stat in proc.glob("[0-9]*/stat"):
             try:
                 # The command name may hold spaces and parentheses; the fields
                 # after its closing parenthesis are the state, then the parent.
