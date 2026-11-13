@@ -49,6 +49,7 @@ attempts=$(bounded FETCH_TOOL_ATTEMPTS "${FETCH_TOOL_ATTEMPTS:-4}" 1 10)
 delay=$(bounded FETCH_TOOL_DELAY "${FETCH_TOOL_DELAY:-2}" 0 60)
 
 attempt=0
+retried=""
 while :; do
   attempt=$((attempt + 1))
   status=0
@@ -58,6 +59,7 @@ while :; do
       echo "fetch-tool: downloaded $url but could not move it to $out; check that its directory is writable, then re-run" >&2
       exit 1
     fi
+    [ -z "$retried" ] || echo "fetch-tool: $url: downloaded on attempt $attempt after transient failures ($retried)" >&2
     exit 0
   fi
   if ! rm -f "$out.part"; then
@@ -73,8 +75,8 @@ while :; do
     break
   fi
   wait=$((delay * attempt))
-  echo "fetch-tool: $url: attempt $attempt/$attempts failed (curl exit $status: $error); retrying in ${wait}s" >&2
+  retried="${retried:+$retried; }attempt $attempt/$attempts: curl exit $status, then ${wait}s"
   sleep "$wait"
 done
-echo "fetch-tool: could not download $url after $attempt attempt(s): curl exit $status: $error — check the pinned version file and the network, then re-run" >&2
+echo "fetch-tool: could not download $url after $attempt attempt(s): curl exit $status: $error${retried:+ (earlier: $retried)} — check the pinned version file and the network, then re-run" >&2
 exit 1

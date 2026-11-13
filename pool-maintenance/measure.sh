@@ -77,7 +77,7 @@ current() {
     cat "$scratch/build.log" >&2
     die "the test build failed (above); fix it, then rerun"
   }
-  python3 -I -S - "$scratch/current.json" <<'PY' | LC_ALL=C sort -u >"$scratch/current-hashes"
+  if ! python3 -I -S - "$scratch/current.json" >"$scratch/current-hashes.unsorted" <<'PY'
 import json
 import re
 import sys
@@ -92,6 +92,11 @@ with open(sys.argv[1], encoding="utf-8") as stream:
             for found in re.findall(r"-([0-9a-f]{16})(?=[/.]|$)", path):
                 print(f"-{found}")
 PY
+  then
+    die "could not read the test build's artifact list ($scratch/current.json); rerun, and if it recurs check that cargo printed JSON messages"
+  fi
+  LC_ALL=C sort -u "$scratch/current-hashes.unsorted" >"$scratch/current-hashes" ||
+    die "could not write $scratch/current-hashes; check that the temporary directory is writable, then rerun"
   [ -s "$scratch/current-hashes" ] ||
     die "the test build reported no artifacts, so there is no current build to keep; check that \`cargo test --workspace --no-run --message-format=json\` lists them, then rerun"
   entries >"$scratch/all-entries" ||

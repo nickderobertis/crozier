@@ -130,8 +130,8 @@ def test_a_dropped_and_a_reset_transfer_are_retried_into_the_whole_archive(
     assert result.returncode == 0, result.stderr
     assert out.read_bytes() == ARCHIVE
     assert host.served == 3
-    assert "attempt 1/4 failed (curl exit 18" in result.stderr
-    assert "attempt 2/4 failed (curl exit 56" in result.stderr
+    assert result.stderr.count("\n") == 1, "one line for a recovered download"
+    assert "downloaded on attempt 3 after transient failures (attempt 1/4: curl exit 18, then 0s; attempt 2/4: curl exit 56, then 0s)" in result.stderr
     assert not (tmp_path / "freeze.tgz.part").exists()
 
 
@@ -143,7 +143,7 @@ def test_a_server_error_is_retried_and_its_recovery_kept(
     result = fetch(host.url, out)
     assert result.returncode == 0, result.stderr
     assert out.read_bytes() == ARCHIVE
-    assert "error: 503" in result.stderr
+    assert "downloaded on attempt 2 after transient failures (attempt 1/4: curl exit 22, then 0s)" in result.stderr
 
 
 def test_a_failure_that_outlasts_the_retries_names_the_url_and_curls_last_error(
@@ -184,7 +184,7 @@ def test_a_leading_zero_is_read_as_decimal(release: Callable[[list[Answer]], Rel
     host = release([Body.RESET, Body.WHOLE])
     result = fetch(host.url, tmp_path / "freeze.tgz", FETCH_TOOL_DELAY="00", FETCH_TOOL_ATTEMPTS="08")
     assert result.returncode == 0, result.stderr
-    assert "attempt 1/8 failed" in result.stderr
+    assert "attempt 1/8: curl exit 56" in result.stderr
 
 
 def test_an_archive_it_cannot_put_in_place_says_so_and_what_to_do(
@@ -209,7 +209,7 @@ def test_an_answer_that_asks_for_a_retry_is_retried(
     result = fetch(host.url, out)
     assert result.returncode == 0, result.stderr
     assert out.read_bytes() == ARCHIVE
-    assert f"error: {code}" in result.stderr
+    assert "downloaded on attempt 2 after transient failures (attempt 1/4: curl exit 22" in result.stderr
 
 
 def test_a_refused_connection_is_retried(tmp_path: Path) -> None:
@@ -218,7 +218,7 @@ def test_a_refused_connection_is_retried(tmp_path: Path) -> None:
         port = probe.getsockname()[1]
     result = fetch(f"http://127.0.0.1:{port}/freeze.tgz", tmp_path / "freeze.tgz", FETCH_TOOL_ATTEMPTS="2")
     assert result.returncode == 1
-    assert "attempt 1/2 failed (curl exit 7" in result.stderr
+    assert "(earlier: attempt 1/2: curl exit 7, then 0s)" in result.stderr
     assert "after 2 attempt(s): curl exit 7" in result.stderr
 
 
@@ -227,8 +227,7 @@ def test_each_retry_waits_longer_than_the_last(release: Callable[[list[Answer]],
     started = time.monotonic()
     result = fetch(host.url, tmp_path / "freeze.tgz", FETCH_TOOL_DELAY="1")
     assert result.returncode == 0, result.stderr
-    assert "attempt 1/4 failed (curl exit 56" in result.stderr and "retrying in 1s" in result.stderr
-    assert "attempt 2/4 failed (curl exit 56" in result.stderr and "retrying in 2s" in result.stderr
+    assert "(attempt 1/4: curl exit 56, then 1s; attempt 2/4: curl exit 56, then 2s)" in result.stderr
     assert time.monotonic() - started >= 3, "the waits were 1 s and then 2 s"
 
 

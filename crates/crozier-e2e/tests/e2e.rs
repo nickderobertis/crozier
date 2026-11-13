@@ -1497,10 +1497,14 @@ fn pinned_crozier_bin(profile: &Path, built: &Path, run: &str) -> PathBuf {
             std::fs::copy(built, &partial).unwrap_or_else(|error| {
                 panic!("cannot copy {} for this run: {error}", built.display())
             });
-            // Another test of this run may have pinned first; either copy is this run's.
-            if std::fs::rename(&partial, &pinned).is_err() {
-                let _ = std::fs::remove_file(&partial);
-                assert!(pinned.is_file(), "could not pin {}", pinned.display());
+            // A hard link is created or refused whole and never replaces a pin another test of
+            // this run published first, so every test of the run drives that first copy.
+            let published = std::fs::hard_link(&partial, &pinned);
+            let _ = std::fs::remove_file(&partial);
+            match published {
+                Ok(()) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {}
+                Err(error) => panic!("could not pin {}: {error}", pinned.display()),
             }
             pinned
         })
@@ -17230,6 +17234,23 @@ fn a_runs_pin_survives_concurrent_first_tests_a_late_binary_and_stale_runs() {
     std::fs::copy(&source, &landing).expect("the rebuild's output");
     std::fs::rename(&landing, &built).expect("the rebuild lands");
     passed(late);
+
+    // A pin a test of the run already published is never replaced by a later build.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        std::fs::write(&built, "#!/bin/sh\nexit 9\n").expect("a different build");
+        std::fs::set_permissions(&built, std::fs::Permissions::from_mode(0o755))
+            .expect("executable");
+        passed(start("concurrent"));
+        let pin = runs.join("concurrent").join(built.file_name().unwrap());
+        assert_eq!(
+            std::fs::read(&pin).expect("the run's pin"),
+            std::fs::read(&source).expect("the first build"),
+            "a later build replaced the run's pin"
+        );
+        std::fs::copy(&source, &built).expect("restore the build");
+    }
 
     // A run over a day old leaves nothing behind once a new run starts.
     #[cfg(unix)]
