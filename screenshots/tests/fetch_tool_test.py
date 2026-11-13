@@ -131,7 +131,10 @@ def test_a_dropped_and_a_reset_transfer_are_retried_into_the_whole_archive(
     assert out.read_bytes() == ARCHIVE
     assert host.served == 3
     assert result.stderr.count("\n") == 1, "one line for a recovered download"
-    assert "downloaded on attempt 3 after transient failures (attempt 1/4: curl exit 18, then 0s; attempt 2/4: curl exit 56, then 0s)" in result.stderr
+    assert (
+        "downloaded on attempt 3 after transient failures (attempt 1/4: curl exit 18, then 0s; attempt 2/4: curl exit 56, then 0s)"
+        in result.stderr
+    )
     assert not (tmp_path / "freeze.tgz.part").exists()
 
 
