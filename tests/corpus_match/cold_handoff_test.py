@@ -113,7 +113,7 @@ class ColdRegistryHandoff(unittest.TestCase):
         return names
 
     def crozier_build(self) -> set[str]:
-        return self.compiled(*project_command("src", "build"), "--message-format=json")
+        return self.compiled(*project_command("crates/crozier-e2e", "build-replay"), "--message-format=json")
 
     def suite_build(self) -> set[str]:
         return self.compiled(
@@ -133,7 +133,7 @@ class ColdRegistryHandoff(unittest.TestCase):
             handle.write(f"\n#[test]\nfn cold_handoff_probe_{value}() {{}}\n")
 
     def binary_digest(self) -> str:
-        return hashlib.sha256((self.root / "target/debug/crozier").read_bytes()).hexdigest()
+        return hashlib.sha256((self.root / "target/e2e/crozier").read_bytes()).hexdigest()
 
     def test_later_steps_reuse_the_denied_build_and_a_changed_source_is_rebuilt_or_rejected(self) -> None:
         self.run_in_scratch(sys.executable, str(self.script), "--cold-registry-build")

@@ -19,8 +19,9 @@ from typing import ClassVar
 
 REPO = Path(__file__).resolve().parents[2]
 HANDOFF_ENV = "CROZIER_COLD_REGISTRY_HANDOFF"
-CARGO_TEST = ("cargo", "test", "--locked", "--no-run", "-p", "crozier-e2e", "--test", "e2e")
-CARGO_BIN = ("cargo", "build", "--locked", "--quiet", "-p", "crozier", "--bin", "crozier")
+# The golden replays' profile (Cargo.toml `[profile.e2e]`): the build every corpus recipe uses.
+CARGO_TEST = ("cargo", "test", "--locked", "--profile", "e2e", "--no-run", "-p", "crozier-e2e", "--test", "e2e")
+CARGO_BIN = ("cargo", "build", "--locked", "--quiet", "--profile", "e2e", "-p", "crozier", "--bin", "crozier")
 
 
 def deny_network() -> None:

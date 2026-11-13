@@ -36,7 +36,7 @@ case "${1:-}" in
     # Every corpus run reads `CROZIER_FERN_STRICT`, because none passes
     # `--no-config`; this proves crozier sees it from here before relying on it.
     export CROZIER_FERN_STRICT=true
-    cargo run --locked --quiet -- config python | grep -E '^  fern-strict +true +\(env\)$' >/dev/null || {
+    cargo run --locked --quiet --profile e2e -- config python | grep -E '^  fern-strict +true +\(env\)$' >/dev/null || {
       echo "corpus-match --strict: crozier config did not report fern-strict true from CROZIER_FERN_STRICT; check that no crozier.yml or CROZIER_CONFIG overrides it here" >&2
       exit 1
     }
@@ -51,7 +51,8 @@ esac
 # which one, after cargo's own error.
 trap 'status=$?; echo "corpus-match: \`$BASH_COMMAND\` exited $status — fix the build or corpus failure above (a first build fetches crates, so it needs network once), then re-run" >&2' ERR
 
-cargo build --locked --quiet -p crozier --bin crozier
+# The golden replays' profile (Cargo.toml `[profile.e2e]`), the one `crozier-e2e:test` runs.
+cargo build --locked --quiet --profile e2e -p crozier --bin crozier
 
 # At most this many goldens run at once. Each spawns crozier and then `ruff
 # format`, so a test spends much of its time waiting on a subprocess; twice a
@@ -492,7 +493,7 @@ inventory=(
 
 filter="test(=${inventory[0]})"
 for test in "${inventory[@]:1}"; do filter+=" | test(=$test)"; done
-nextest=(--locked -p crozier-e2e --test e2e -E "$filter")
+nextest=(--locked --cargo-profile e2e -p crozier-e2e --test e2e -E "$filter")
 
 listed=$(printf '%s\n' "${inventory[@]}" | sort)
 # Nx and CI force colour on; a coloured name would never equal its listed one.
