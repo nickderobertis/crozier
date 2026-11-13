@@ -69,6 +69,35 @@ LEDGER_ROW = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{l
 # free disk and memory every progress line of `decide` states.
 HANG = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
 RESOURCE = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
+# The pull request body's bound, as weekly.py declares it.
+DECLARED_LIMIT = re.search(
+    r"(?m)^BODY_LIMIT = (\d+)$", (REPO / "tools/fern-goldens/weekly.py").read_text(encoding="utf-8")
+)
+assert DECLARED_LIMIT is not None, "tools/fern-goldens/weekly.py no longer declares BODY_LIMIT"
+BODY_LIMIT = int(DECLARED_LIMIT[1])
+# Every reference family, for a stand-in gate that decides them all at once.
+ALL_FAMILIES = "corpus,overlays,handwritten,measurements,probes,authored-probes,departure-evidence,refusals"
+# Stand-ins for crozier-e2e's suite and the corpus reporter, so a decision over
+# thousands of items costs one process, or one per corpus item: `bulk.sh`
+# fails every `bulk-<family>-<n>` item its arguments count; `drift.sh` reports
+# its corpus's departure ledger row as stale, which the real reporter states
+# before it compares that corpus's files.
+BULK_GATE = """\
+#!/bin/sh
+count=$1
+shift
+for family in "$@"; do
+  for n in $(seq 0 $((count - 1))); do echo "bulk-$family-$n: differs"; done
+done
+exit 3
+"""
+DRIFT_GATE = """\
+#!/bin/sh
+printf '  Comparison processing failed: tests/fixtures/departures-ledger.tsv: `%s` is stale: committed\\n\\n' "$1"
+echo "0 differing file(s) across the reported corpora."
+echo "0 comparison generation failure(s) across the reported corpora."
+echo "1 comparison processing failure(s) across the reported corpora."
+"""
 
 
 class RuffDiagnostic(TypedDict):
@@ -980,28 +1009,171 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(again.plan)
         self.assertIn("is the certified pair already", again.ran("resolve").stdout)
 
-    def test_an_oversized_mandatory_overview_refuses_before_publication(self) -> None:
+    def synthetic_decision(
+        self, gates: str, items: list[dict[str, Any]], **env: str
+    ) -> tuple[Journey, Path, subprocess.CompletedProcess[str]]:
+        """The workflow through its assembly, the assembled bundle then
+        carrying `items` as its shards would have reported them, and the real
+        `apply` and `decide` over it under `gates` (with the stand-in gate
+        scripts at `gates/` in the tree)."""
+        (self.seed / "gates").mkdir()
+        write_executable(self.seed / "gates/bulk.sh", BULK_GATE)
+        write_executable(self.seed / "gates/drift.sh", DRIFT_GATE)
+        (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(gates, encoding="utf-8")
         self.publish_seed()
-        self.stand_in(
-            {"rules": {"probe": self.refusal_rule, "Harbour Lanterns": {"generate": [2, "generation failed"]}}}
-        )
         state = self.run_workflow(stop_after="assemble")
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
         bundle = state.artifacts / "bundle"
         manifest = bundle / "bundle.json"
         record = json.loads(manifest.read_text(encoding="utf-8"))
-        failed = next(entry for entry in record["items"] if entry["status"] == "failed")
-        failed["detail"] = "failure " * 10000
+        record["items"] += items
         manifest.write_text(json.dumps(record), encoding="utf-8")
         decider = self.clone()
-        applied = self.phase(decider, "apply", "--bundle", str(bundle))
+        applied = self.phase(decider, "apply", "--bundle", str(bundle), **env)
         self.assertEqual(0, applied.returncode, applied.stderr)
-        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision"))
-        self.assertEqual(1, decided.returncode, decided.stdout)
-        self.assertIn("mandatory pull request overview exceeds the body limit", decided.stderr)
-        self.assertTrue((state.artifacts / "decision/decision.json").is_file(), "the full result is retained")
-        self.assertFalse((state.artifacts / "decision/body.md").exists())
-        self.assertIsNone(state.publish)
-        self.assert_untouched()
+        decision = state.artifacts / "decision"
+        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), **env)
+        state.decide = decided
+        if (decision / "decision.json").is_file():
+            state.decision = json.loads((decision / "decision.json").read_text(encoding="utf-8"))
+        return state, decision, decided
+
+    @staticmethod
+    def item(family: str, name: str, status: str = "ok", detail: str = "", shard: int = 0) -> dict[str, Any]:
+        """One item as a shard reports it (gh's and the tool's JSON, so `Any`)."""
+        return {
+            "family": family,
+            "item": name,
+            "status": status,
+            "detail": detail,
+            "seconds": 0.0,
+            "changed": [],
+            "log": f"logs/{family}/{name}.log" if status == "failed" else "",
+            "shard": shard,
+        }
+
+    def test_thousands_of_failing_and_unchecked_items_publish_a_bounded_body_and_keep_every_one(self) -> None:
+        """A week Fern changes every SDK: 3,200 failing items across four
+        families and 1,000 unchecked, which run 42566793545's body could not
+        hold, so no pull request opened. `decide` writes a body within the
+        limit stating every family's total and the not-compared count, publish
+        opens the pull request with it, and the decision keeps every item."""
+        families = ("corpus", "handwritten", "measurements", "probes")
+        count = 800
+        gates = (
+            "family\tscope\tverdict\tcommand\n"
+            f"{ALL_FAMILIES}\tfamily\texit:0/3\tsh {{root}}/gates/bulk.sh {count} {' '.join(families)}\n"
+        )
+        failing = {family: [f"bulk-{family}-{n}" for n in range(count)] for family in families}
+        lost = [self.item("corpus", f"lost-{n}", "not-generated", "shard 9 uploaded no result", 9) for n in range(900)]
+        broken = [self.item("measurements", f"broken-{n}", "failed", f"missing document {n}") for n in range(100)]
+        items = [self.item(family, name) for family, names in failing.items() for name in names] + lost + broken
+        run = {"GITHUB_RUN_ID": "77", "GITHUB_REPOSITORY": "owner/crozier"}
+        state, decision, decided = self.synthetic_decision(gates, items, **run)
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual("diff", state.outcome())
+        # The decision keeps every failing and unchecked item, none trimmed.
+        self.assertEqual(failing, state.failing())
+        self.assertEqual(
+            sorted(entry["item"] for entry in lost + broken), sorted(entry["item"] for entry in state.unchecked())
+        )
+        body = (decision / "body.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(body), BODY_LIMIT)
+        published = self.publish(state.artifacts / "bundle", decision, **run)
+        self.assertEqual(0, published.returncode, published.stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertEqual(body, pull["body"])
+        self.assertIsNone(pull["autoMergeRequest"])
+        self.assertIn("Failing items: 3200.", body)
+        for family in families:
+            self.assertIn(f"- {family}: {count}\n", body)
+            self.assertIn(f"- {family} ({count}): `bulk-{family}-0`", body)
+        self.assertIn("- not compared: 1000 (1000 not checked, 0 corpus reference(s)", body)
+        self.assertIn("1000 item(s) were not checked", body)
+        self.assertIn("- **shard 9 uploaded no result** (its job failed or was cancelled before uploading): ", body)
+        self.assertIn("900 reference(s) not compared (corpus 900)", body)
+        self.assertIn(f"{3200 - 4 * 12} of 3200 failing item(s) left out of this body", body)
+        self.assertRegex(body, r"\d+ of 1000 item\(s\) not checked left out of this body")
+        self.assertIn("the run's `fern-goldens-decision` artifact (`decision.json`) lists every one", body)
+        self.assertIn("[the workflow run](https://github.com/owner/crozier/actions/runs/77#artifacts)", body)
+        self.assertIn("## Inventory", body)
+
+    def assert_sections_bounded(self, count: int) -> tuple[str, dict[str, Any]]:
+        """`decide` over `count` items of each section the body bounds: corpus
+        references whose files were not compared, unchecked items, reproduced
+        known failures, unfetchable references and refusal changes, each with a
+        long name or reason."""
+        pad = "x" * 160
+        gates = (
+            "family\tscope\tverdict\tcommand\n"
+            "corpus\titem\tfixtures-report\tsh {root}/gates/drift.sh {item}\n"
+            f"{ALL_FAMILIES}\tfamily\texit:0/3\tsh -c 'exit 0'\n"
+        )
+        reason = "y" * 400
+        items = [
+            *(self.item("corpus", f"drift-{pad}-{n}") for n in range(count)),
+            *(self.item("handwritten", f"broken-{pad}-{n}", "failed", f"{reason} {n}") for n in range(count)),
+            *(self.item("corpus", f"known-{pad}-{n}", "known-upstream-failure", "reproduced") for n in range(count)),
+            *(self.item("corpus", f"gone-{pad}-{n}", "spec-unfetchable", f"404 {reason}") for n in range(count)),
+            *(
+                self.item("refusals", f"moved-{pad}-{n}", "refusal-changed", f"generates: {reason}")
+                for n in range(count)
+            ),
+        ]
+        _state, decision, decided = self.synthetic_decision(gates, items)
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        recorded = json.loads((decision / "decision.json").read_text(encoding="utf-8"))
+        drifted = [entry["item"] for entry in recorded["failing"]["corpus"] if entry.get("files_compared") is False]
+        self.assertEqual(sorted(f"drift-{pad}-{n}" for n in range(count)), sorted(set(drifted) - {"alpha", "beta"}))
+        self.assertEqual(count, len(recorded["unchecked"]))
+        self.assertEqual(count, len([e for e in recorded["known_reproduced"] if e["item"].startswith("known-")]))
+        self.assertEqual(count, len(recorded["unfetchable"]))
+        self.assertEqual(count, len(recorded["refusals_changed"]))
+        body = (decision / "body.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(body), BODY_LIMIT)
+        return body, recorded
+
+    def test_sections_each_past_the_body_limit_are_bounded_and_say_how_many_they_left_out(self) -> None:
+        count = 400
+        body, recorded = self.assert_sections_bounded(count)
+        sections = {
+            "reference(s) not compared": [e for e in recorded["failing"]["corpus"] if e.get("files_compared") is False],
+            "item(s) not checked": recorded["unchecked"],
+            "reproduced known failure(s)": recorded["known_reproduced"],
+            "unfetchable reference(s)": recorded["unfetchable"],
+            "refusal change(s)": recorded["refusals_changed"],
+        }
+        for what, entries in sections.items():
+            with self.subTest(section=what):
+                # Listed whole, this section alone would overrun the body.
+                self.assertGreater(
+                    sum(len(entry["item"]) + len(entry.get("detail", "")) for entry in entries), BODY_LIMIT
+                )
+                total = len(entries) + (what == "reproduced known failure(s)") * (
+                    len(recorded["known_reproduced"]) - count
+                )
+                left = re.search(rf"(\d+) of {total} {re.escape(what)} left out of this body", body)
+                self.assertIsNotNone(left, body)
+                assert left is not None
+                self.assertGreater(int(left[1]), 0)
+        self.assertIn("## References not compared", body)
+        drifted = len(sections["reference(s) not compared"])
+        self.assertIn(f"- not compared: {count + drifted} ({count} not checked, {drifted} corpus reference(s)", body)
+
+    def test_an_ordinary_small_decision_lists_every_item_in_full(self) -> None:
+        body, recorded = self.assert_sections_bounded(3)
+        self.assertNotIn("left out of this body", body)
+        listed = [
+            *(entry["item"] for entries in recorded["failing"].values() for entry in entries),
+            *(entry["item"] for entry in recorded["unchecked"]),
+            *(entry["item"] for entry in recorded["known_reproduced"]),
+            *(entry["item"] for entry in recorded["unfetchable"]),
+            *(entry["item"] for entry in recorded["refusals_changed"]),
+        ]
+        for name in listed:
+            self.assertIn(f"`{name}`", body)
+        for entry in recorded["unchecked"]:
+            self.assertIn(f"- {entry['family']} `{entry['item']}`: failed: {entry['detail']}", body)
 
     def test_large_diff_publication_accounts_for_every_kind_before_reports(self) -> None:
         self.publish_seed()
@@ -1857,6 +2029,20 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("### corpus (1)", pull["body"])
         self.assertIn("- `alpha`", pull["body"].split("## Failing items", 1)[1])
         self.assertIn(f"{len(lost)} item(s) were not checked", pull["body"])
+        # The body names the lost shard, how many references it left
+        # uncompared and why, so a reader needs no artifact to see it.
+        counts: dict[str, int] = {}
+        for family, _item in lost:
+            counts[family] = counts.get(family, 0) + 1
+        self.assertIn(
+            f"- **shard {state.lost} uploaded no result** (its job failed or was cancelled before uploading): "
+            f"{len(lost)} reference(s) not compared ({', '.join(f'{f} {n}' for f, n in counts.items())})",
+            pull["body"],
+        )
+        self.assertIn(
+            f"(shard {state.lost} uploaded no result, so {len(lost)} reference(s) were never generated)", pull["body"]
+        )
+        self.assertIn(f"- not compared: {len(lost)} ({len(lost)} not checked, ", pull["body"])
         tree = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
         alpha = next(p for p in tree if p.startswith("tests/fixtures/alpha/expected/") and p.endswith("lantern.py"))
         self.assertIn("lit_x:", self.remote_file("fern-goldens/update", alpha))

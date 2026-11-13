@@ -464,9 +464,8 @@ than opening another, and pushes the branch only with a lease on what it read.
 
 - **Diff** — crozier's comparison fails for at least one item, a reference
   could not be regenerated, or an item was not checked (below). The pull request carries every regenerated
-  reference, the new pair in `metadata.json` and the measured seconds; its body
-  lists the failing items per family, each with the comparison's own report. It
-  is not auto-merged: crozier's checks on it show what crozier must change, and
+  reference, the new pair in `metadata.json` and the measured seconds. It is
+  not auto-merged: crozier's checks on it show what crozier must change, and
   the retarget is a person's.
 - **No diff** — every comparison passes. The pull request adopts the pair:
   `metadata.json` at the new pair, every regenerated reference, crozier's
@@ -474,6 +473,33 @@ than opening another, and pushes the branch only with a lease on what it read.
   check stays green), the measured seconds and one `fern-pair-checks.tsv` row
   (`fern_cli_version`, `fern_python_sdk_version`, `checked_on`, `outcome`). It
   is auto-merged once crozier's required checks pass.
+
+**The body is bounded; the decision artifact is whole.** A week Fern changes
+every SDK fails hundreds of items: run 42566793545 failed 725 and left 329
+unchecked, and its body, which listed every one, overran GitHub's limit
+(`BODY_LIMIT`, 60,000 characters) so no pull request opened. So the body states
+every kind of result with its count and lists a bounded sample of each, and
+`decide` never refuses to write it:
+
+- **Comparison totals** — the failing items per family, the changed known
+  failures and refusal probes, the references not regenerated, and the
+  **not compared** count: every item not checked plus every corpus reference
+  whose files the comparison never reached (ledger drift).
+- **Failures by family** — each family's total and its first 12 names.
+- **Items not checked** — each shard that uploaded no result, with how many
+  references it left uncompared per family and why; then the items grouped by
+  reason, each group's count and its first 12 names.
+- **References not compared**, **Known upstream Fern failures reproduced**,
+  **Known upstream Fern failures that changed**, **Refusal classes whose Fern
+  outcome changed** and **Not regenerated** — listed whole up to 20 entries
+  (`SECTION_LINES`), else the first 20 and a line saying how many it left out.
+
+A section that left anything out says `<n> of <total> … left out of this body`
+and points at the run's `fern-goldens-decision` artifact, whose `decision.json`
+keeps every item with its reason, log and report. The comparison reports, the
+departures ledger rows and the changed known failures' content then spend only
+the room left, and anything still past the limit is trimmed at a line, never
+refused.
 
 A reference whose pinned upstream specification can no longer be fetched (a
 404, as subsloth's source now returns) is never skipped silently and never stops
@@ -495,8 +521,12 @@ which `fern-references.py check` catches on the pull request that breaks it)
 or any other error of that item — and every item of a planned shard that
 uploaded no result are carried through the assembly and named, by family,
 item, one-line reason and log path (inside `fern-goldens-bundle`), in the
-assembly, decision and conclusion summaries and in the pull request's **Items
-not checked** section. Every other item is still decided. A complete run still
+assembly, decision and conclusion summaries and in the decision artifact. The
+pull request's **Items not checked** section lists them whole when there are
+at most 20, else groups them by reason (above); either way it names each shard
+that uploaded no result and how many references that left uncompared, so a
+shard lost to infrastructure is read off the pull request itself. Every other
+item is still decided. A complete run still
 publishes: it pushes `fern-goldens/update` and opens or updates the one
 `fern-goldens` pull request with auto-merge off, never records a
 `fern-pair-checks.tsv` row, and then concludes **red** (the `conclude` job).

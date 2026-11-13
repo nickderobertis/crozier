@@ -162,6 +162,19 @@ VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*")
 REPORT_LIMIT = 6000
 BODY_LIMIT = 60000
+# The pull request body states every kind of result and its count, but lists a
+# bounded sample of each: run 42566793545 (Fern changed every SDK) failed 725
+# items and left 329 unchecked, and listing them one per line overran
+# BODY_LIMIT, so no pull request opened. Every list is whole in the
+# `fern-goldens-decision` artifact. A section of at most SECTION_LINES entries
+# is listed whole; a longer one lists that many and says how many it left out.
+SECTION_LINES = 20
+# The names a grouped line (a reason's items, a family's failures) shows.
+SAMPLE_NAMES = 12
+# A reason or detail past this is clipped to one line of it.
+DETAIL_LIMIT = 300
+ARTIFACT = "the run's `fern-goldens-decision` artifact (`decision.json`)"
+TRIMMED = f"… (trimmed to the pull request body limit; {ARTIFACT} holds everything)"
 
 
 class WeeklyError(RuntimeError):
@@ -2521,16 +2534,98 @@ def fenced(text: str) -> str:
     return f"{fence}text\n{text}\n{fence}"
 
 
-# llmlint: ignore[changed_behavior_has_e2e] The weekly journeys publish this body from a real decision and assert its sections, failing items, crozier's report and the run link; fence escaping and the truncation limits need reports far larger, or with backtick runs, that crozier's comparison of a small synthetic tree never prints, so tools/fern-goldens/tests/weekly_test.py drives them through this same function.
+def clipped(text: str, limit: int = DETAIL_LIMIT) -> str:
+    """`text` on one line, clipped to `limit` characters."""
+    line = " ".join(text.split())
+    return line if len(line) <= limit else line[: limit - 1] + "…"
+
+
+def sample(names: Sequence[str]) -> str:
+    """Up to SAMPLE_NAMES of `names`, and how many more there are."""
+    left = len(names) - SAMPLE_NAMES
+    return ", ".join(names[:SAMPLE_NAMES]) + (f" and {left} more" if left > 0 else "")
+
+
+def left_out(omitted: int, total: int, what: str) -> list[str]:
+    """The line a bounded section ends with when it left entries out."""
+    if omitted <= 0:
+        return []
+    return ["", f"{omitted} of {total} {what} left out of this body; {ARTIFACT} lists every one."]
+
+
+def bounded(entries: Sequence[str], what: str) -> list[str]:
+    """A section's lines: all of them, whole, up to SECTION_LINES; else that
+    many, each clipped, and how many it left out."""
+    if len(entries) <= SECTION_LINES:
+        return [f"- {entry}" for entry in entries]
+    shown = [clipped(entry, 2 * DETAIL_LIMIT) for entry in entries[:SECTION_LINES]]
+    return [f"- {entry}" for entry in shown] + left_out(len(entries) - len(shown), len(entries), what)
+
+
+def grouped(entries: Sequence[tuple[str, str, str]], what: str) -> list[str]:
+    """`(reason, name, line)` entries: each line when they fit a section, else
+    one line per reason (most entries first) with its count and a sample of its
+    names, at most SECTION_LINES reasons, and how many entries went unnamed."""
+    if len(entries) <= SECTION_LINES:
+        return [f"- {line}" for _reason, _name, line in entries]
+    reasons: dict[str, list[str]] = {}
+    for reason, name, _line in entries:
+        reasons.setdefault(reason, []).append(name)
+    ordered = sorted(reasons.items(), key=lambda pair: -len(pair[1]))
+    lines = [f"- {len(names)} {what}: {clipped(reason)}: {sample(names)}" for reason, names in ordered[:SECTION_LINES]]
+    more = ordered[SECTION_LINES:]
+    if more:
+        lines.append(f"- {sum(len(names) for _r, names in more)} {what} for {len(more)} other reason(s)")
+    named = sum(min(len(names), SAMPLE_NAMES) for _r, names in ordered[:SECTION_LINES])
+    return lines + left_out(len(entries) - named, len(entries), what)
+
+
+def family_counts(entries: Iterable[ItemResult]) -> str:
+    counts: dict[str, int] = {}
+    for entry in entries:
+        counts[entry.family] = counts.get(entry.family, 0) + 1
+    return ", ".join(f"{family} {count}" for family, count in counts.items())
+
+
+def lost_shards(bundle: Bundle) -> dict[int, list[ItemResult]]:
+    """Each shard that uploaded no result, with the items the assembly carried
+    as not generated for it."""
+    lost: dict[int, list[ItemResult]] = {}
+    for entry in bundle.items:
+        if entry.status == Status.NOT_GENERATED and entry.shard is not None:
+            lost.setdefault(entry.shard, []).append(entry)
+    return dict(sorted(lost.items()))
+
+
+def trimmed(text: str, limit: int) -> str:
+    """`text` within `limit`: whole when it fits, else cut at a line and ended
+    with where the rest is, so composing a body never refuses."""
+    if len(text) <= limit:
+        return text
+    kept = text[: limit - len(TRIMMED) - 2]
+    return kept[: kept.rfind("\n") + 1] + "\n" + TRIMMED + "\n"
+
+
+# llmlint: ignore[changed_behavior_has_e2e] The weekly journeys drive this body through `decide` and `publish` over thousands of failing and unchecked items, a lost shard and sections each past BODY_LIMIT, and assert its counts, samples, omissions and the artifact pointer; fence escaping and per-report truncation need reports far larger, or with backtick runs, that crozier's comparison of a small synthetic tree never prints, so tools/fern-goldens/tests/weekly_test.py drives them through this same function.
 def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
+    """The pull request body: every kind of result with its count and a bounded
+    sample, then the optional reports in whatever room is left; never longer
+    than BODY_LIMIT, with every list whole in the decision artifact."""
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID") and os.environ.get("GITHUB_REPOSITORY"):
         server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
         run_url = f"{server}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+    full_list = f"Full lists and reports: {ARTIFACT}."
+    if run_url:
+        full_list += f" Download it from [the workflow run]({run_url}#artifacts)."
     optional_reports: list[list[str]] = []
     families: dict[str, int] = {}
     for entry in bundle.items:
         families[entry.family] = families.get(entry.family, 0) + 1
+    lost = lost_shards(bundle)
+    not_compared = [
+        (family, entry) for family, entries in decision.failing.items() for entry in entries if not entry.files_compared
+    ]
     lines = [
         "## What",
         "",
@@ -2561,9 +2656,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             else ""
         )
         ledger = f", and the departures ledger {ledger_headline(decision.ledger)}" if decision.ledger else ""
+        shards = (
+            f" ({', '.join(f'shard {index}' for index in lost)} uploaded no result, so "
+            f"{sum(len(entries) for entries in lost.values())} reference(s) were never generated)"
+            if lost
+            else ""
+        )
         unchecked = (
-            f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran), "
-            "so the run that opened this concluded failure"
+            f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran)"
+            f"{shards}, so the run that opened this concluded failure"
             if decision.unchecked
             else ""
         )
@@ -2583,7 +2684,21 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             "the next run checks the item again.",
             "",
         ]
-        lines += [f"- {entry.line()}" for entry in decision.unchecked]
+        lines += [
+            f"- **shard {index} uploaded no result** (its job failed or was cancelled before uploading): "
+            f"{len(entries)} reference(s) not compared ({family_counts(entries)})"
+            for index, entries in list(lost.items())[:SECTION_LINES]
+        ]
+        lines += left_out(len(lost) - SECTION_LINES, len(lost), "lost shard(s)")
+        if lost:
+            lines += [""]
+        lines += grouped(
+            [
+                (f"{entry.status.value}: {entry.detail}", f"{entry.family} `{entry.item}`", entry.line())
+                for entry in decision.unchecked
+            ],
+            "item(s) not checked",
+        )
         lines += [""]
     if decision.known_reproduced:
         lines += ["## Known upstream Fern failures reproduced", ""]
@@ -2592,7 +2707,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             "comparison; crozier's suite holds the registration.",
             "",
         ]
-        lines += [f"- {entry.line()}" for entry in decision.known_reproduced]
+        lines += bounded([entry.line() for entry in decision.known_reproduced], "reproduced known failure(s)")
         lines += [""]
     if decision.ledger:
         lines += ["## Departures ledger", "", *ledger_lines(decision.ledger), ""]
@@ -2607,11 +2722,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             )
     if decision.known_changed:
         lines += ["## Known upstream Fern failures that changed", ""]
+        lines += bounded(
+            [f"corpus `{change.item}`: {change.detail}" for change in decision.known_changed],
+            "changed known failure(s)",
+        )
+        lines += [""]
         for change in decision.known_changed:
             report = change.report
             if len(report) > REPORT_LIMIT:
                 report = report[:REPORT_LIMIT] + "\n… (truncated; the bundle carries the whole file)"
-            lines += [f"- corpus `{change.item}`: {change.detail}", ""]
             optional_reports.append(
                 [
                     f"<details><summary>{change.item}: what this carries</summary>",
@@ -2630,14 +2749,21 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             "Fern refuses given more time or memory.",
             "",
         ]
-        lines += [f"- refusals `{change.item}`: {change.detail}" for change in decision.refusals_changed]
+        lines += bounded(
+            [f"refusals `{change.item}`: {change.detail}" for change in decision.refusals_changed],
+            "refusal change(s)",
+        )
         lines += [""]
     if decision.unfetchable:
         lines += ["## Not regenerated: upstream specification unavailable", ""]
-        lines += [f"- corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable]
+        lines += bounded(
+            [f"corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable],
+            "unfetchable reference(s)",
+        )
         lines += [""]
     if decision.outcome == Outcome.DIFF:
-        # Reserve the complete overview before spending space on comparison reports.
+        # The overview first, bounded whatever the input's size; comparison
+        # reports then spend only the room it leaves.
         total = sum(len(entries) for entries in decision.failing.values())
         lines += ["## Comparison totals", "", f"Failing items: {total}.", ""]
         lines += [f"- {family}: {len(entries)}" for family, entries in decision.failing.items()]
@@ -2645,20 +2771,41 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             f"- changed known failures: {len(decision.known_changed)}",
             f"- changed refusal probes: {len(decision.refusals_changed)}",
             f"- not regenerated: {len(decision.unfetchable)}",
-            f"- not compared (including broken inputs): {len(decision.unchecked)}",
+            f"- not compared: {len(decision.unchecked) + len(not_compared)} "
+            f"({len(decision.unchecked)} not checked, {len(not_compared)} corpus reference(s) whose files were not "
+            "compared)",
             f"- ledger refusals or changes: {int(decision.ledger is not None)}",
             "",
-            "## Non-corpus failures and references not compared",
-            "",
         ]
-        for family, entries in decision.failing.items():
+        if decision.failing:
+            lines += ["## Failures by family", ""]
             lines += [
-                f"- {family} {entry.summary()}" for entry in entries if family != "corpus" or not entry.files_compared
+                f"- {family} ({len(entries)}): {sample([f'`{entry.item}`' for entry in entries])}"
+                for family, entries in decision.failing.items()
             ]
-        full_list = "Full list and reports: the run's `fern-goldens-decision` artifact (`decision.json`)."
-        if run_url:
-            full_list += f" Download it from [the workflow run]({run_url}#artifacts)."
-        lines += ["", full_list, ""]
+            named = sum(min(len(entries), SAMPLE_NAMES) for entries in decision.failing.values())
+            lines += left_out(total - named, total, "failing item(s)")
+            lines += [""]
+        if not_compared:
+            lines += ["## References not compared", ""]
+            lines += [
+                "The corpus reporter states a corpus's departure ledger drift before it compares that corpus's "
+                "files, so these references' files were never compared.",
+                "",
+            ]
+            lines += grouped(
+                [
+                    (
+                        "its departure ledger rows drifted (stale or unrecorded), so its files were not compared",
+                        f"{family} `{entry.item}`",
+                        f"{family} {entry.summary()}",
+                    )
+                    for family, entry in not_compared
+                ],
+                "reference(s) not compared",
+            )
+            lines += [""]
+        lines += [full_list, ""]
         reports: list[str] = []
         omitted_reports = 0
         for block in optional_reports:
@@ -2698,15 +2845,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             if decision.text_diffs_omitted():
                 lines += [TEXT_DIFFS_OMITTED, ""]
         lines += reports
-    lines += ["## Inventory", "", "| family | items |", "|---|---:|"]
-    lines += [f"| {family} | {count} |" for family, count in families.items()]
+    tail = ["## Inventory", "", "| family | items |", "|---|---:|"]
+    tail += [f"| {family} | {count} |" for family, count in families.items()]
     if run_url:
-        lines += ["", f"Run: {run_url}"]
-    lines += ["", "🤖 Generated by the Fern goldens workflow."]
-    text = "\n".join(lines) + "\n"
-    if len(text) > BODY_LIMIT:
-        raise WeeklyError("mandatory pull request overview exceeds the body limit; see the decision artifact")
-    return text
+        tail += ["", f"Run: {run_url}"]
+    tail += ["", "🤖 Generated by the Fern goldens workflow."]
+    ending = "\n".join(tail) + "\n"
+    # The inventory and the run link always close the body; whatever runs past
+    # the limit before them is trimmed, never refused.
+    return trimmed("\n".join(lines) + "\n", BODY_LIMIT - len(ending)) + ending
 
 
 def decide(args: argparse.Namespace) -> int:
