@@ -2299,7 +2299,19 @@ class WeeklyRunTests(unittest.TestCase):
         found through `ps`, and end with it all the same."""
         self.assert_guarded_decision(CROZIER_FERN_WEEKLY_PROC=str(self.scratch / "no-proc"))
 
-    def assert_guarded_decision(self, **env: str) -> None:
+    def test_with_no_process_listing_a_stop_ends_the_comparison_and_says_what_it_could_not(self) -> None:
+        """No `/proc` and a `ps` that fails: the guard still stops the newest
+        comparisons and reruns them alone, and says that what each started
+        was not ended, which then runs on until it finishes by itself."""
+        failing = self.scratch / "failing-ps"
+        write_executable(failing / "ps", "#!/bin/sh\nexit 1\n")
+        self.assert_guarded_decision(
+            listed=False,
+            CROZIER_FERN_WEEKLY_PROC=str(self.scratch / "no-proc"),
+            PATH=f"{failing}{os.pathsep}{self.bin}{os.pathsep}{os.environ['PATH']}",
+        )
+
+    def assert_guarded_decision(self, *, listed: bool = True, **env: str) -> None:
         """The reserve is read only as a comparison starts; one that grows
         after it has started can starve the runner (run 42566793545's second
         decision job died with the runner out of contact). While three run and
@@ -2399,10 +2411,14 @@ class WeeklyRunTests(unittest.TestCase):
             )
             available(0.5)
             wait_for(lambda: log.read_text(encoding="utf-8").count(" stopped: ") == 2, "the two newer ones stopped")
-            # Their children and grandchildren ended with them; alpha's still run.
+            # Their children and grandchildren ended with them where a listing
+            # named them; with none, they run on until released. alpha's still run.
             for item in ("beta", "lantern"):
-                wait_for(lambda item=item: not any(map(alive, pids(item))), f"every process {item}'s started ended")
                 self.assertEqual(2, len(pids(item)))
+                if listed:
+                    wait_for(lambda item=item: not any(map(alive, pids(item))), f"every process {item}'s ended")
+                else:
+                    self.assertTrue(all(map(alive, pids(item))), f"no listing named what {item}'s started")
             self.assertTrue(all(map(alive, pids("alpha"))), "the oldest comparison's processes are untouched")
             time.sleep(2)
             held = log.read_text(encoding="utf-8")
@@ -2415,10 +2431,11 @@ class WeeklyRunTests(unittest.TestCase):
         lines = log.read_text(encoding="utf-8").splitlines()
         stopped = [line.split("fern-goldens-weekly: ", 1)[1] for line in lines if " stopped: " in line]
         floor = "stopped: memory available 0.5 GiB is under the 1.0 GiB floor with"
+        unlisted = "" if listed else " (no process listing answered, so only it, not what it started, was ended)"
         self.assertEqual(
             [
-                f"comparison 3/8 (handwritten `lantern`) {floor} 3 comparison(s) running; it runs again alone",
-                f"comparison 2/8 (corpus `beta`) {floor} 2 comparison(s) running; it runs again alone",
+                f"comparison 3/8 (handwritten `lantern`) {floor} 3 comparison(s) running; it runs again alone{unlisted}",
+                f"comparison 2/8 (corpus `beta`) {floor} 2 comparison(s) running; it runs again alone{unlisted}",
             ],
             stopped,
         )
