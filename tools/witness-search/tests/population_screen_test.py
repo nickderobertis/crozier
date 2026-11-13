@@ -1969,6 +1969,43 @@ class BuildTests(BuildHarness):
                 self.assertIn(message, refused.stderr)
                 path.write_text(before, encoding="utf-8")
 
+    def test_handed_off_bytes_are_recovered_from_the_tree_or_the_preflight_cache_into_an_empty_store(self) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        # One handed-off document's bytes are committed as a corpus source, the other's are in a preflight run.
+        handed = self.root / "docs/fern-measurements/handed-off/documents.tsv"
+        lost = json.dumps(CASES[4][1]).encode()
+        handed.write_text(
+            handed.read_text(encoding="utf-8").replace("a" * 64, hashlib.sha256(lost).hexdigest()), encoding="utf-8"
+        )
+        committed = self.root / "tests/fixtures/corpus-sources/sample-api/handed.json"
+        committed.write_bytes(self.handed_bytes)
+        preflight = self.scratch / "preflight" / "run-1"
+        preflight.mkdir(parents=True)
+        (preflight / "source.json").write_bytes(lost)
+        output = self.scratch / "population.tsv"
+        done = self.build(
+            "manifest",
+            "--identities",
+            str(plan),
+            "--archive",
+            str(self.archive),
+            "--store",
+            str(self.store),
+            "--preflight",
+            str(preflight.parent),
+            "--output",
+            str(output),
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        handed_off = {e.document: e for e in SCREEN.read_manifest(output) if e.population == "handed-off"}
+        self.assertEqual(
+            {f"acme/handed:openapi.json@{'8' * 40}": "-", f"acme/lost:openapi.json@{'9' * 40}": "-"},
+            {document: entry.unfetchable for document, entry in handed_off.items()},
+        )
+        for data in (self.handed_bytes, lost):
+            self.assertEqual(data, SCREEN.cached(hashlib.sha256(data).hexdigest(), self.store))
+
     def test_bytes_the_ledger_had_at_another_commit_or_pin_are_not_attributed_to_the_plan(self) -> None:
         fetched = json.dumps(CASES[3][1]).encode()
         SCREEN.store(fetched, self.store)
