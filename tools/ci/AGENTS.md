@@ -15,3 +15,7 @@
 - `lanes.json` is the frozen pre-refactor inventory plus what was added since; a row may
   move (`now`), never vanish silently. `lane-inventory.mjs` reconciles it, as
   `lane-inventory:lint`, which a tier manifest edit selects.
+- A target another one runs in full through its recipe is `carried` in `lanes.json`, not a row:
+  `lane-inventory.mjs` holds the carrier's source to that recipe, so it cannot drop it silently.
+- `require-tools.mjs` names a tool an install step left off PATH; a job that bootstraps runs it
+  before `just bootstrap` (held by `ci_workflow.rs`).

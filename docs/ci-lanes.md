@@ -45,6 +45,32 @@ budget reading at each release, not a job timeout, while the lanes above need mo
 budgets` excludes the `release-tail` and `onepipeline` labels, so the gate never reads GitHub.
 `tools/ci-journeys/tests/release-tail.test.mjs` runs that step over recorded answers.
 
+## Golden replays
+
+The golden byte comparisons (`crozier-e2e:test`, the corpus recipes) and the suites that share
+their build (`sdk-env`, `runtime`) run on the `e2e` cargo profile: crozier at opt-level 2 with
+debug assertions and overflow checks on, so a replay panics wherever a dev build would. Most of
+a large golden's time is crozier's own generation and comparison, which run about four times
+faster there. Coverage and the instrumented measurements stay on `dev`. Each nextest run drives
+a copy of the binary its first test pins, so a concurrent rebuild cannot reach it.
+
+On Linux, `corpus-match:test-offline` runs the byte-match and its strict form through their
+real recipes with sockets denied, so the live step runs each once (`carried` in
+`tools/ci/lanes.json`). The offline proof's census, refusal-class and fallback recipes are
+`corpus-offline-tools:test`, a project of its own: an installer, workflow, CI, judged-lint,
+refusal or visual-docs edit selects no golden comparison, which
+`tools/ci-journeys/tests/selection.test.mjs` checks over the real graph.
+
+## Setup that can fail without a code change
+
+- Each bootstrapping job runs `tools/ci/require-tools.mjs` after its install steps, so an
+  installer that reported success without its executable is named before the gate starts.
+- The judged lint retries a batch the judge left unanswered on the same tree. If it is still
+  unanswered, the lane's last step cancels the run: the required `lint` context is then
+  neither `success` nor `failure`. Re-run the workflow once the judge answers.
+- The visual-docs capture fetches its pinned tools through `screenshots/fetch-tool.sh`, which
+  retries a transient transfer failure.
+
 ## What selects a suite
 
 A target's `inputs` are its cache key and its affected trigger. Three limits on that are easy

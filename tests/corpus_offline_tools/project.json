@@ -47,7 +47,8 @@
           ],
           "target": "cold-registry-build"
         }
-      ]
+      ],
+      "parallelism": false
     },
     "lint-boundaries": {
       "executor": "nx:run-commands",

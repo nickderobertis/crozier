@@ -6,3 +6,5 @@
   `corpus-match`, because Nx selects whole projects: as a target there, an edit to those
   tools would also rerun `corpus-match:test-offline`'s golden byte-match, which is never cached.
 - Linux only (the denial is seccomp), in the live step after `corpus-match:cold-registry-build`.
+- It moves the ignored corpus caches aside while it runs, as `test-offline` does, so it runs
+  alone (`parallelism: false`).
