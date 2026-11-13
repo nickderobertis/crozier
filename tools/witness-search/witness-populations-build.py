@@ -195,7 +195,15 @@ def github_repository(repository: str) -> str | None:
     return name if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", name) else None
 
 
-def identities(tree: Tree) -> list[SCREEN.Identity]:
+class LedgerDocument(NamedTuple):
+    """One document the candidate ledgers record, at the commit they read it at last, with the keys it could witness."""
+
+    identity: SCREEN.Identity
+    # The combination keys whose selector's field names are all among those of the ledger keys that found it.
+    keys: frozenset[SCREEN.Key]
+
+
+def ledger_documents(tree: Tree) -> list[LedgerDocument]:
     wanted = {key: ingredients(selector) for key, selector in tree.selectors().by_key.items()}
     out = []
     for population in LEDGERS:
@@ -210,24 +218,21 @@ def identities(tree: Tree) -> list[SCREEN.Identity]:
             # One identity per document: the commit the ledgers read it at last.
             latest = max(records, key=lambda record: (record.at, record.commit))
             fields = set().union(*(ingredients(record.selector) for record in records if record.selector))
-            matched = sum(1 for need in wanted.values() if need and need <= fields)
+            matched = frozenset(key for key, need in wanted.items() if need and need <= fields)
             pointer = any(
                 record.disposition == "declares" and POINTER_LEDGER_KEYS.search(record.key) for record in records
             )
             declares = any(record.disposition == "declares" for record in records)
-            rank = matched + (100 if pointer else 0) + (10 if declares else 0)
-            out.append(
-                SCREEN.Identity(
-                    population,
-                    f"{repository}/{path}",
-                    repository,
-                    latest.commit,
-                    path,
-                    latest.sha256,
-                    latest.url,
-                    rank,
-                )
+            rank = len(matched) + (100 if pointer else 0) + (10 if declares else 0)
+            identity = SCREEN.Identity(
+                population, f"{repository}/{path}", repository, latest.commit, path, latest.sha256, latest.url, rank
             )
+            out.append(LedgerDocument(identity, matched))
+    return out
+
+
+def identities(tree: Tree) -> list[SCREEN.Identity]:
+    out = [document.identity for document in ledger_documents(tree)]
     for row in handed_off(tree):
         if row.provenance is not None:
             repository, path, commit = row.provenance
@@ -490,6 +495,7 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
                 "-",
             )
         )
+    entries += unavailable(tree, args, plan, seen)
     if listed:
         fail(f"the earlier named census lists candidates no population names: {sorted(listed)[:5]}")
     # A handed-off document without its bytes owes rows only for keys an earlier census lists it for.
@@ -529,6 +535,67 @@ def query_outcomes() -> frozenset[str]:
     """Every outcome a recorded query may carry: the guarded acquirer's own, and `NOT_QUERYABLE`."""
     client = github()
     return frozenset({*client.ANSWER_OUTCOMES, *client.NON_ANSWER_OUTCOMES, NOT_QUERYABLE})
+
+
+def unavailable(
+    tree: Tree, args: argparse.Namespace, plan: list[SCREEN.Identity], held: set[tuple[str, str]]
+) -> list[SCREEN.Entry]:
+    """An `unfetchable` entry for each known candidate whose bytes were not had, under the keys it is known for.
+
+    A ledger document the raw lane refused carries the keys its recorded hits match by field name (as the
+    plan ranks it) and the SHA-256 the ledger recorded; a code-search hit never fetched carries the key whose
+    query found it, and `-`, since only its git blob is known. A ledger document never asked within the
+    fetch budget, or one whose hits tie it to no key, is no candidate of any key yet: the README counts it
+    among the missing populations.
+    """
+    attempts: dict[tuple[str, str], list[Acquisition]] = defaultdict(list)
+    for row in acquisitions(args.acquisitions):
+        attempts[(row.population, row.document)].append(row)
+    ledger = {(d.identity.population, d.identity.document): d.keys for d in ledger_documents(tree)}
+    found_by: dict[tuple[str, str], set[str]] = defaultdict(set)
+    if args.search_evidence.is_dir():
+        for query in recorded_queries(args.search_evidence):
+            for hit in query.hits if query.source == "github-code-search" else ():
+                found_by[("github", f"{hit.repository}/{hit.path}")].add(query.key)
+    archived: set[str] = set()
+    entries = []
+    for identity in plan:
+        named = (identity.population, identity.document)
+        if identity.population not in LEDGERS or named in held:
+            continue
+        tried = [row for row in attempts.get(named, []) if (row.commit, row.pin) == (identity.commit, identity.pin)]
+        digest = identity.content_digest() or "-"
+        if tried and not any(row.held for row in tried):
+            statuses = sorted({row.how.removeprefix("refused-http-") for row in tried})
+            answered = " and ".join("no answer" if status == "0" else f"HTTP {status}" for status in statuses)
+            reason = (
+                f"fetched {len(tried)} time(s) at the recorded commit through the guarded raw lane, which gave "
+                f"{answered}"
+            )
+            keys = ledger.get(named, frozenset()) | found_by.get(named, set())
+        elif not tried and SCREEN.BLOB.fullmatch(identity.pin):
+            reason = (
+                "found by the bounded code search and never fetched: the six-hour raw-lane budget was spent on "
+                "higher-ranked identities first"
+            )
+            keys = found_by.get(named, set())
+        else:
+            continue
+        if not keys:
+            # Its recorded hits tie it to no combination key: no candidate of any, like a document never asked.
+            continue
+        entries.append(
+            SCREEN.Entry(
+                identity.population,
+                identity.document,
+                f"{RAW}/{identity.repository}/{identity.commit}/{identity.path}",
+                digest,
+                licence_evidence(identity.repository, identity.commit, digest, archived),
+                ";".join(sorted(keys)),
+                reason,
+            )
+        )
+    return entries
 
 
 def recorded_queries(evidence: Path) -> list[RecordedQuery]:
@@ -678,6 +745,9 @@ def main(argv: list[str] | None = None) -> int:
     )
     build.add_argument("--acquisitions", type=Path, default=SCREEN.RECORD / "acquisition" / "acquisitions.jsonl")
     build.add_argument("--archive", type=Path, required=True, help="the extracted openapi-directory tree")
+    build.add_argument(
+        "--search-evidence", type=Path, default=SCREEN.RECORD / "search", help="the live search's record"
+    )
     build.add_argument("--preflight", type=Path, default=SCREEN.cache_root().parent / "remaining-witness-preflight")
     build.add_argument("--store", type=Path)
     live = sub.add_parser("search")

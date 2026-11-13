@@ -10,8 +10,8 @@ A `certified-screen-pending` row is an exact trigger over admissible bytes, not 
 |---|---|---:|---:|
 | `registered` | every registered corpus row's committed source document (`tests/fixtures/corpus-sources.tsv`) | 405 | 0 |
 | `apis-guru` | every `openapi.*` document of the pinned APIs.guru archive, `APIs-guru/openapi-directory` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`; this is where the earlier census's archive declarations come from | 1970 | 0 |
-| `github` | every recorded GitHub code-search identity whose exact bytes this host now holds, recovered from the shared response cache or re-fetched at its commit, and this search's code-search hits fetched the same way | 12513 | 0 |
-| `sourcegraph` | every recorded Sourcegraph identity on github.com whose exact bytes this host now holds, recovered or re-fetched the same way | 3205 | 0 |
+| `github` | every recorded GitHub code-search identity whose exact bytes this host now holds, recovered from the shared response cache or re-fetched at its commit, and this search's code-search hits fetched the same way | 12513 | 857 |
+| `sourcegraph` | every recorded Sourcegraph identity on github.com whose exact bytes this host now holds, recovered or re-fetched the same way | 3205 | 6 |
 | `archive` | the APIs.guru served-index versions that have no document at the archive pin (`witness-search-apis.guru/unread-responses.jsonl`) | 0 | 0 |
 | `handed-off` | every handed-off document `docs/fern-measurements/handed-off/documents.tsv` names by repository, path and commit | 144 | 0 |
 
@@ -22,28 +22,28 @@ A candidate is a document whose bytes the key's census selector declares, or one
 
 | key | verdict | certified-screen-pending | `registered` | `apis-guru` | `github` | `sourcegraph` | `archive` | `handed-off` | rejected-trigger | rejected-licence | unfetchable |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `combo-allof-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 3 | 8 | 4 | 0 | 0 | 0 | 15 | 0 |
-| `combo-anyof-beside-properties` | `search-incomplete` | 0 | 14 | 23 | 1012 | 427 | 0 | 5 | 1477 | 4 | 0 |
-| `combo-array-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 15 | 19 | 0 | 0 | 35 | 0 | 0 |
-| `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 28 | 3 | 0 | 1 | 0 | 37 | 0 |
+| `combo-allof-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 3 | 210 | 6 | 0 | 0 | 0 | 15 | 204 |
+| `combo-anyof-beside-properties` | `search-incomplete` | 0 | 14 | 23 | 1268 | 433 | 0 | 5 | 1477 | 4 | 262 |
+| `combo-array-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 158 | 24 | 0 | 0 | 35 | 0 | 148 |
+| `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 171 | 8 | 0 | 1 | 0 | 37 | 148 |
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1493 | 45 | 399 | 1161 | 499 | 0 | 19 | 0 | 630 | 0 |
-| `combo-header-array-accepted-placements` | `search-incomplete` | 366 | 1 | 2 | 330 | 142 | 0 | 0 | 86 | 23 | 0 |
-| `combo-header-string-default` | `search-incomplete` | 18 | 14 | 54 | 620 | 253 | 0 | 9 | 869 | 63 | 0 |
-| `combo-map-beside-oneof` | `search-incomplete` | 10 | 9 | 3 | 556 | 146 | 0 | 8 | 704 | 8 | 0 |
-| `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 3 | 3 | 0 | 0 | 0 | 8 | 0 |
-| `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 6 | 8 | 0 | 1 | 19 | 0 | 0 |
-| `combo-property-anyof-composed-sibling` | `search-incomplete` | 48 | 4 | 1 | 41 | 17 | 0 | 0 | 0 | 15 | 0 |
-| `combo-property-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 13 | 17 | 0 | 0 | 31 | 0 | 0 |
-| `combo-property-unresolved-nested-pointer` | `search-incomplete` | 2 | 0 | 7 | 29 | 5 | 0 | 1 | 0 | 40 | 0 |
-| `combo-query-param-inline-object` | `search-incomplete` | 40 | 3 | 20 | 163 | 74 | 0 | 3 | 212 | 11 | 0 |
-| `combo-request-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 0 | 3 | 3 | 0 | 0 | 0 | 5 | 0 |
-| `combo-required-query-array-enum-items` | `search-incomplete` | 53 | 8 | 25 | 297 | 189 | 0 | 5 | 437 | 34 | 0 |
-| `combo-response-unresolved-nested-pointer` | `search-incomplete` | 4 | 0 | 0 | 8 | 5 | 0 | 0 | 0 | 9 | 0 |
+| `combo-header-array-accepted-placements` | `search-incomplete` | 366 | 1 | 2 | 474 | 148 | 0 | 0 | 86 | 23 | 150 |
+| `combo-header-string-default` | `search-incomplete` | 18 | 14 | 54 | 716 | 253 | 0 | 9 | 869 | 63 | 96 |
+| `combo-map-beside-oneof` | `search-incomplete` | 10 | 9 | 3 | 763 | 150 | 0 | 8 | 704 | 8 | 211 |
+| `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 236 | 8 | 0 | 0 | 0 | 8 | 238 |
+| `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 155 | 8 | 0 | 1 | 19 | 0 | 149 |
+| `combo-property-anyof-composed-sibling` | `search-incomplete` | 48 | 4 | 1 | 195 | 21 | 0 | 0 | 0 | 15 | 158 |
+| `combo-property-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 156 | 22 | 0 | 0 | 31 | 0 | 148 |
+| `combo-property-unresolved-nested-pointer` | `search-incomplete` | 2 | 0 | 7 | 172 | 10 | 0 | 1 | 0 | 40 | 148 |
+| `combo-query-param-inline-object` | `search-incomplete` | 40 | 3 | 20 | 307 | 80 | 0 | 3 | 212 | 11 | 150 |
+| `combo-request-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 0 | 146 | 8 | 0 | 0 | 0 | 5 | 148 |
+| `combo-required-query-array-enum-items` | `search-incomplete` | 53 | 8 | 25 | 387 | 189 | 0 | 5 | 437 | 34 | 90 |
+| `combo-response-unresolved-nested-pointer` | `search-incomplete` | 4 | 0 | 0 | 151 | 10 | 0 | 0 | 0 | 9 | 148 |
 | `combo-success-anyof-nullable` | `search-incomplete` | 99 | 6 | 0 | 103 | 34 | 0 | 3 | 0 | 47 | 0 |
 | `combo-success-oneof-nullable` | `search-incomplete` | 34 | 2 | 1 | 62 | 10 | 0 | 1 | 0 | 42 | 0 |
 | `combo-tag-only-operation-id` | `search-incomplete` | 20 | 1 | 1 | 11 | 7 | 0 | 0 | 0 | 0 | 0 |
-| `combo-unrequired-tag-anyof-reference` | `search-incomplete` | 115 | 29 | 51 | 1316 | 463 | 0 | 12 | 1654 | 102 | 0 |
-| `combo-unrequired-tag-oneof-reference` | `search-incomplete` | 237 | 60 | 74 | 3566 | 1021 | 0 | 35 | 4267 | 252 | 0 |
+| `combo-unrequired-tag-anyof-reference` | `search-incomplete` | 115 | 29 | 51 | 1336 | 463 | 0 | 12 | 1654 | 102 | 20 |
+| `combo-unrequired-tag-oneof-reference` | `search-incomplete` | 237 | 60 | 74 | 3667 | 1021 | 0 | 35 | 4267 | 252 | 101 |
 
 
 Every key stays `search-incomplete`: no certified screen runs here, and each has a population below that could not be had whole. The population columns count candidate rows; the last three count rows by status.
@@ -132,8 +132,8 @@ Every key stays `search-incomplete`: no certified screen runs here, and each has
 
 | population | what could not be had, what was tried, and why it failed |
 |---|---|
-| `github` | 46625 of the 59282 planned GitHub documents were never fetched: the earlier acquisition's bytes were not retained on this host, and the manager-ruled bound of about six hours of paced raw fetching was spent on higher-ranked identities first. 145 fetched ones were refused (refused-http-0 13, refused-http-404 132). 713 of the planned documents are this search's own code-search hits, of which 0 were fetched. |
-| `sourcegraph` | 7396 of the 10607 planned Sourcegraph documents were never fetched, on the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked identities); 6 fetched ones were refused. The anonymous Sourcegraph search answered 29602 matches, which name no content digest to pin a fetch to, so none was planned. |
+| `github` | 46625 of the 59282 planned GitHub documents were never fetched: the earlier acquisition's bytes were not retained on this host, and the manager-ruled bound of about six hours of paced raw fetching was spent on higher-ranked identities first. 145 fetched ones were refused (refused-http-0 13, refused-http-404 132). 713 of the planned documents are this search's own code-search hits, of which 0 were fetched. Each refused document its recorded hits tie to a key, and each unfetched hit, is a candidate the table keeps, as 2654 `unfetchable:<reason>` rows naming what was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger document never asked, or tied to no key, is no candidate of any key yet, and is counted here only. |
+| `sourcegraph` | 7396 of the 10607 planned Sourcegraph documents were never fetched, on the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked identities); 6 fetched ones were refused, and are 63 `unfetchable:<reason>` rows of the table on the same terms. The anonymous Sourcegraph search answered 29602 matches, which name no content digest to pin a fetch to, so none was planned. |
 | `archive` | 98 served-index versions were acquired by an earlier run from mutable `api.apis.guru` URLs; 20 are byte-identical to registered corpus sources and are screened under `registered`, and the other 78 were not retained on this host. No immutable source names their bytes, so they were not re-fetched. |
 | `handed-off` | 2 of the 146 handed-off documents record bytes only, with no repository, path or commit; their bytes were not retained on this host (not in the tree, the preflight cache or the response cache), so nothing names a source to fetch them from. |
 

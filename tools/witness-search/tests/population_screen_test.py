@@ -2028,6 +2028,90 @@ class BuildTests(BuildHarness):
         for data in (self.handed_bytes, lost):
             self.assertEqual(data, SCREEN.cached(hashlib.sha256(data).hexdigest(), self.store))
 
+    def test_a_refused_download_and_an_unfetched_hit_stay_candidates_of_the_validated_table(self) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        # The raw lane serves nothing: every planned download is refused with a 404.
+        evidence = self.scratch / "acquisition"
+        acquired = self.run_cli(
+            "acquire",
+            "--identities",
+            str(plan),
+            "--evidence",
+            str(evidence),
+            "--store",
+            str(self.store),
+            "--responses",
+            str(self.scratch / "no-responses"),
+        )
+        self.assertEqual(0, acquired.returncode, acquired.stderr)
+        self.assertIn("refused-http-404", acquired.stdout)
+        # A code-search hit the search recorded for one key, never fetched.
+        search = self.scratch / "search"
+        self.write(
+            search / "queries.jsonl",
+            [
+                {
+                    "source": "github-code-search",
+                    "key": "combo-property-defs-pointer",
+                    "query": "q",
+                    "outcome": "answered",
+                    "results": [
+                        {"repository": "acme/new", "path": "spec/openapi.yaml", "commit": "a" * 40, "sha": "b" * 40}
+                    ],
+                }
+            ],
+        )
+        hits = self.scratch / "hits.tsv"
+        replayed = self.build(
+            "search", "--replay", "--evidence", str(search), "--identities", str(plan), "--output", str(hits)
+        )
+        self.assertEqual(0, replayed.returncode, replayed.stderr)
+        manifest = self.scratch / "population.tsv"
+        built = self.build(
+            "manifest",
+            "--identities",
+            str(plan),
+            "--identities",
+            str(hits),
+            "--archive",
+            str(self.archive),
+            "--store",
+            str(self.store),
+            "--preflight",
+            str(self.scratch / "none"),
+            "--acquisitions",
+            str(evidence / "acquisitions.jsonl"),
+            "--search-evidence",
+            str(search),
+            "--output",
+            str(manifest),
+        )
+        self.assertEqual(0, built.returncode, built.stderr)
+        # The acquired populations' part of the manifest: the screen reads a registered row's bytes in this repository.
+        acquired_part = [entry for entry in SCREEN.read_manifest(manifest) if entry.population in SCREEN.ACQUIRED]
+        SCREEN.write_manifest(manifest, acquired_part)
+        table = self.scratch / "screen.tsv"
+        screened = self.run_cli(
+            "screen", "--manifest", str(manifest), "--output", str(table), "--store", str(self.store)
+        )
+        self.assertEqual(0, screened.returncode, screened.stderr)
+        rows = {(row.population, row.document): row for row in SCREEN.read_screen(table)}
+        refused = [row for (population, document), row in rows.items() if document == "acme/pointers/openapi.json"]
+        self.assertTrue(refused, "the refused download left the table")
+        for row in refused:
+            self.assertEqual(hashlib.sha256(self.pointer).hexdigest(), row.sha256)
+            self.assertTrue(row.status.startswith("unfetchable:fetched 1 time(s) at the recorded commit"), row.status)
+            self.assertIn("HTTP 404", row.status)
+            self.assertEqual((row.status.replace("unfetchable:", "unread:", 1),) * 2, (row.licence, row.trigger))
+        keyed = {row.key for row in SCREEN.read_screen(table) if row.document == "acme/pointers/openapi.json"}
+        self.assertEqual(set(BUILD.ledger_documents(BUILD.Tree(self.root))[0].keys), keyed)
+        # A refused document whose recorded hits tie it to no key is a candidate of none.
+        self.assertNotIn(("sourcegraph", "jentic/jentic-public-apis/apis/x/openapi.json"), rows)
+        hit = rows[("github", "acme/new/spec/openapi.yaml")]
+        self.assertEqual(("combo-property-defs-pointer", "-"), (hit.key, hit.sha256))
+        self.assertIn("never fetched", hit.status)
+
     def test_bytes_the_ledger_had_at_another_commit_or_pin_are_not_attributed_to_the_plan(self) -> None:
         fetched = json.dumps(CASES[3][1]).encode()
         SCREEN.store(fetched, self.store)

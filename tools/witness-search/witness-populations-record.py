@@ -274,6 +274,7 @@ def render(record: Path, root: Path = REPO) -> str:
         by_key[row.key][row.population] += 1
         status[row.key][row.status.split(":", 1)[0]] += 1
     pending = SCREEN.pending_counts(rows)
+    unfetchable_rows = Counter(row.population for row in rows if row.status.startswith("unfetchable:"))
     screened = Counter(entry.population for entry in entries if entry.unfetchable == "-")
     unfetchable_entries = Counter(entry.population for entry in entries if entry.unfetchable != "-")
 
@@ -467,12 +468,17 @@ def render(record: Path, root: Path = REPO) -> str:
         "fetched ones were refused ("
         + (", ".join(f"{how} {n}" for how, n in sorted(refused.get("github", Counter()).items())) or "none")
         + f"). {len(hit_docs)} of the planned documents are this search's own code-search hits, of which "
-        f"{len(hit_docs & held.get('github', set()))} were fetched."
+        f"{len(hit_docs & held.get('github', set()))} were fetched. Each refused document its recorded hits tie to "
+        f"a key, and each unfetched hit, is a candidate the table keeps, as {unfetchable_rows['github']} `unfetchable:<reason>` rows naming what "
+        "was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) "
+        "with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger "
+        "document never asked, or tied to no key, is no candidate of any key yet, and is counted here only."
     )
     sg_why = (
         f"{sg_unfetched} of the {len(planned['sourcegraph'])} planned Sourcegraph documents were never fetched, on "
         "the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked "
-        f"identities); {sum(refused.get('sourcegraph', Counter()).values())} fetched ones were refused. The "
+        f"identities); {sum(refused.get('sourcegraph', Counter()).values())} fetched ones were refused, and are "
+        f"{unfetchable_rows['sourcegraph']} `unfetchable:<reason>` rows of the table on the same terms. The "
         "anonymous Sourcegraph search answered "
         + (f"{sourcegraph_queries[0].result_count} matches" if sourcegraph_queries else "nothing")
         + ", which name no content digest to pin a fetch to, so none was planned."
