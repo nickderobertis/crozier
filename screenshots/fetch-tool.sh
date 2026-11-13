@@ -29,8 +29,10 @@ bounded() {
       exit 2
       ;;
   esac
-  value=$((10#$value))
-  if [ "$value" -lt "$min" ] || [ "$value" -gt "$max" ]; then
+  # Leading zeros off as text, so a long or zero-padded value never reaches arithmetic.
+  value=${value#"${value%%[!0]*}"}
+  value=${value:-0}
+  if [ "${#value}" -gt 3 ] || [ "$value" -lt "$min" ] || [ "$value" -gt "$max" ]; then
     echo "fetch-tool: $name must be a whole number from $min to $max, not '$2'" >&2
     exit 2
   fi

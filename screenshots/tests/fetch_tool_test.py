@@ -6,10 +6,12 @@ connection, an HTTP error, or the archive itself. The release host is the one th
 from __future__ import annotations
 
 import os
+import shutil
 import socket
 import struct
 import subprocess
 import threading
+import time
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from enum import Enum
@@ -25,9 +27,10 @@ ARCHIVE = b"pinned tool archive\n" * 64
 pytestmark = pytest.mark.skipif(os.name == "nt", reason="the capture runs on the Linux lint lane")
 
 
-class Cut(Enum):
-    """A transfer the release host breaks off."""
+class Body(Enum):
+    """What the release host sends for the archive."""
 
+    WHOLE = "whole"  # the archive itself
     PARTIAL = "partial"  # headers and a part of the body, then the connection closes: curl exit 18
     RESET = "reset"  # the connection reset before any answer: curl exit 56
 
@@ -39,8 +42,7 @@ class Status:
     code: int
 
 
-ARCHIVE_ANSWER = "archive"
-Answer = Cut | Status | str  # str: ARCHIVE_ANSWER, the whole archive
+Answer = Body | Status
 
 
 class Release:
@@ -56,21 +58,21 @@ class Release:
                 answer = release.answers[min(release.served, len(release.answers) - 1)]
                 release.served += 1
                 match answer:
-                    case Cut.PARTIAL:
+                    case Body.PARTIAL:
                         self.send_response(200)
                         self.send_header("Content-Length", str(len(ARCHIVE)))
                         self.end_headers()
                         self.wfile.write(ARCHIVE[:40])
                         self.wfile.flush()
                         self.close_connection = True
-                    case Cut.RESET:
+                    case Body.RESET:
                         # SO_LINGER 0: close with a RST, the dropped connection curl reports as exit 56.
                         self.connection.setsockopt(socket.SOL_SOCKET, socket.SO_LINGER, struct.pack("ii", 1, 0))
                         self.connection.close()
                         self.close_connection = True
                     case Status(code=code):
                         self.send_error(code)
-                    case _:
+                    case Body.WHOLE:
                         self.send_response(200)
                         self.send_header("Content-Length", str(len(ARCHIVE)))
                         self.end_headers()
@@ -112,7 +114,7 @@ def fetch(url: str, out: Path, **env: str) -> subprocess.CompletedProcess[str]:
 def test_one_unretried_attempt_is_what_a_dropped_transfer_used_to_fail(
     release: Callable[[list[Answer]], Release], tmp_path: Path
 ) -> None:
-    host = release([Cut.PARTIAL, ARCHIVE_ANSWER])
+    host = release([Body.PARTIAL, Body.WHOLE])
     plain = subprocess.run(
         ["curl", "-fsSL", "-o", str(tmp_path / "plain.tgz"), host.url], capture_output=True, text=True, check=False
     )
@@ -122,7 +124,7 @@ def test_one_unretried_attempt_is_what_a_dropped_transfer_used_to_fail(
 def test_a_dropped_and_a_reset_transfer_are_retried_into_the_whole_archive(
     release: Callable[[list[Answer]], Release], tmp_path: Path
 ) -> None:
-    host = release([Cut.PARTIAL, Cut.RESET, ARCHIVE_ANSWER])
+    host = release([Body.PARTIAL, Body.RESET, Body.WHOLE])
     out = tmp_path / "freeze.tgz"
     result = fetch(host.url, out)
     assert result.returncode == 0, result.stderr
@@ -136,7 +138,7 @@ def test_a_dropped_and_a_reset_transfer_are_retried_into_the_whole_archive(
 def test_a_server_error_is_retried_and_its_recovery_kept(
     release: Callable[[list[Answer]], Release], tmp_path: Path
 ) -> None:
-    host = release([Status(503), ARCHIVE_ANSWER])
+    host = release([Status(503), Body.WHOLE])
     out = tmp_path / "ruff.tgz"
     result = fetch(host.url, out)
     assert result.returncode == 0, result.stderr
@@ -147,7 +149,7 @@ def test_a_server_error_is_retried_and_its_recovery_kept(
 def test_a_failure_that_outlasts_the_retries_names_the_url_and_curls_last_error(
     release: Callable[[list[Answer]], Release], tmp_path: Path
 ) -> None:
-    host = release([Cut.RESET])
+    host = release([Body.RESET])
     out = tmp_path / "freeze.tgz"
     result = fetch(host.url, out, FETCH_TOOL_ATTEMPTS="3")
     assert result.returncode == 1
@@ -175,7 +177,7 @@ def test_it_refuses_a_call_it_does_not_take(tmp_path: Path) -> None:
 
 
 def test_a_leading_zero_is_read_as_decimal(release: Callable[[list[Answer]], Release], tmp_path: Path) -> None:
-    host = release([Cut.RESET, ARCHIVE_ANSWER])
+    host = release([Body.RESET, Body.WHOLE])
     result = fetch(host.url, tmp_path / "freeze.tgz", FETCH_TOOL_DELAY="00", FETCH_TOOL_ATTEMPTS="08")
     assert result.returncode == 0, result.stderr
     assert "attempt 1/8 failed" in result.stderr
@@ -184,7 +186,7 @@ def test_a_leading_zero_is_read_as_decimal(release: Callable[[list[Answer]], Rel
 def test_an_archive_it_cannot_put_in_place_says_so_and_what_to_do(
     release: Callable[[list[Answer]], Release], tmp_path: Path
 ) -> None:
-    host = release([ARCHIVE_ANSWER])
+    host = release([Body.WHOLE])
     blocked = tmp_path / "freeze.tgz"
     blocked.mkdir()
     (blocked / "keep").write_text("a directory where the archive belongs\n", encoding="utf-8")
@@ -192,3 +194,66 @@ def test_an_archive_it_cannot_put_in_place_says_so_and_what_to_do(
     assert result.returncode == 2
     assert f"fetch-tool: {blocked} is a directory, so the archive from {host.url} cannot be written" in result.stderr
     assert host.served == 0, "nothing is downloaded that could not be kept"
+
+
+@pytest.mark.parametrize("code", [408, 429, 500, 502])
+def test_an_answer_that_asks_for_a_retry_is_retried(
+    release: Callable[[list[Answer]], Release], tmp_path: Path, code: int
+) -> None:
+    host = release([Status(code), Body.WHOLE])
+    out = tmp_path / "freeze.tgz"
+    result = fetch(host.url, out)
+    assert result.returncode == 0, result.stderr
+    assert out.read_bytes() == ARCHIVE
+    assert f"error: {code}" in result.stderr
+
+
+def test_a_refused_connection_is_retried(tmp_path: Path) -> None:
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    result = fetch(f"http://127.0.0.1:{port}/freeze.tgz", tmp_path / "freeze.tgz", FETCH_TOOL_ATTEMPTS="2")
+    assert result.returncode == 1
+    assert "attempt 1/2 failed (curl exit 7" in result.stderr
+    assert "after 2 attempt(s): curl exit 7" in result.stderr
+
+
+def test_each_retry_waits_longer_than_the_last(release: Callable[[list[Answer]], Release], tmp_path: Path) -> None:
+    host = release([Body.RESET, Body.RESET, Body.WHOLE])
+    started = time.monotonic()
+    result = fetch(host.url, tmp_path / "freeze.tgz", FETCH_TOOL_DELAY="1")
+    assert result.returncode == 0, result.stderr
+    assert "attempt 1/4 failed (curl exit 56" in result.stderr and "retrying in 1s" in result.stderr
+    assert "attempt 2/4 failed (curl exit 56" in result.stderr and "retrying in 2s" in result.stderr
+    assert time.monotonic() - started >= 3, "the waits were 1 s and then 2 s"
+
+
+def failing(tmp_path: Path, name: str) -> dict[str, str]:
+    """A PATH whose `name` fails as a full or read-only filesystem fails it; every other tool is the real one."""
+    bin_dir = tmp_path / f"failing-{name}"
+    bin_dir.mkdir()
+    stand_in = bin_dir / name
+    stand_in.write_text(f"#!/bin/sh\necho '{name}: Read-only file system' >&2\nexit 1\n", encoding="utf-8")
+    stand_in.chmod(0o755)
+    assert shutil.which("curl")
+    return {"PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}"}
+
+
+def test_an_archive_it_cannot_move_into_place_says_so_and_what_to_do(
+    release: Callable[[list[Answer]], Release], tmp_path: Path
+) -> None:
+    host = release([Body.WHOLE])
+    out = tmp_path / "freeze.tgz"
+    result = fetch(host.url, out, **failing(tmp_path, "mv"))
+    assert result.returncode == 1
+    assert f"fetch-tool: downloaded {host.url} but could not move it to {out}" in result.stderr
+    assert not out.exists()
+
+
+def test_a_partial_download_it_cannot_remove_says_so_and_keeps_the_transfer_error(
+    release: Callable[[list[Answer]], Release], tmp_path: Path
+) -> None:
+    host = release([Body.PARTIAL])
+    result = fetch(host.url, tmp_path / "freeze.tgz", **failing(tmp_path, "rm"))
+    assert result.returncode == 1
+    assert f"could not remove the partial download {tmp_path / 'freeze.tgz.part'} (curl exit 18" in result.stderr

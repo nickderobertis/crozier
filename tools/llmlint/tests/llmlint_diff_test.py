@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 from pathlib import Path
 
@@ -187,6 +188,18 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertEqual(2, run.returncode)
         self.assertEqual(3, len(self.calls()), "the plain invocation is retried twice")
         self.assertIn("verification unavailable: 1 of 1 batch(es) got no verdict after 2 retries", run.stderr)
+
+    def test_each_retry_waits_longer_than_the_last(self) -> None:
+        self.commit({"a.md": "a"})
+        env = {**self.env, "LLMLINT_DIFF_RETRY_DELAY": "0.3", "STUB_EXIT_ALL": "2,2,0"}
+        started = time.monotonic()
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env, capture_output=True, text=True
+        )
+        self.assertEqual(0, run.returncode, run.stdout + run.stderr)
+        self.assertIn("retry 1/2 on the same tree in 0.3s", run.stdout)
+        self.assertIn("retry 2/2 on the same tree in 0.6s", run.stdout)
+        self.assertGreaterEqual(time.monotonic() - started, 0.9, "the waits were 0.3 s and then 0.6 s")
 
     def test_a_rule_failure_is_never_retried(self) -> None:
         self.commit({"a.md": "a"})
