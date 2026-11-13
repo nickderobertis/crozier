@@ -148,11 +148,9 @@ ASSEMBLY_MINUTES = 2.0
 COMPARISON_RESERVE_GIB = 6.0
 # The GiB below which, while more than one comparison runs, the decision stops
 # the one it started last and runs it again alone (`decide --floor-gib`): the
-# reserve is read only as a comparison starts, and one that grows after it has
-# started (bunq.com's reached 5.7 GiB) can take the runner's last memory with
-# three others beside it. Run 42566793545's second decision job died at 54
-# minutes with "The hosted runner lost communication with the server" and left
-# no log of where; this floor keeps the runner agent room to report.
+# reserve is read only as a comparison starts, so this bounds what comparisons
+# that grow after starting may take, leaving the runner agent room to report
+# (docs/fern-goldens.md).
 COMPARISON_FLOOR_GIB = 1.5
 # How often the decision writes what is running and the memory left, so a
 # runner that dies mid-comparison leaves its last reading in the step log.
@@ -175,11 +173,10 @@ NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*")
 REPORT_LIMIT = 6000
 BODY_LIMIT = 60000
 # The pull request body states every kind of result and its count, but lists a
-# bounded sample of each: run 42566793545 (Fern changed every SDK) failed 725
-# items and left 329 unchecked, and listing them one per line overran
-# BODY_LIMIT, so no pull request opened. Every list is whole in the
-# `fern-goldens-decision` artifact. A section of at most SECTION_LINES entries
-# is listed whole; a longer one lists that many and says how many it left out.
+# bounded sample of each, so no input's size can stop it publishing; every
+# list is whole in the `fern-goldens-decision` artifact (docs/fern-goldens.md).
+# A section of at most SECTION_LINES entries is listed whole; a longer one
+# lists that many and says how many it left out.
 SECTION_LINES = 20
 # The names a grouped line (a reason's items, a family's failures) shows.
 SAMPLE_NAMES = 12
@@ -2329,18 +2326,35 @@ class Guard:
                     progress(f"decide: running {labels}; memory available {memory}")
 
 
+def parents() -> list[tuple[int, int]]:
+    """Every process and its parent: from Linux's `/proc`, else from `ps`
+    (macOS); none where neither answers."""
+    pairs: list[tuple[int, int]] = []
+    if Path("/proc/self/stat").is_file():
+        for stat in Path("/proc").glob("[0-9]*/stat"):
+            try:
+                # The command name may hold spaces and parentheses; the fields
+                # after its closing parenthesis are the state, then the parent.
+                fields = stat.read_text(encoding="utf-8", errors="replace").rpartition(")")[2].split()
+                pairs.append((int(stat.parent.name), int(fields[1])))
+            except (OSError, ValueError, IndexError):
+                continue
+        return pairs
+    with contextlib.suppress(OSError):
+        listed = subprocess.run(["ps", "-A", "-o", "pid=", "-o", "ppid="], capture_output=True, text=True, check=False)
+        pairs = [
+            (int(cells[0]), int(cells[1]))
+            for cells in (line.split() for line in listed.stdout.splitlines())
+            if len(cells) == 2 and cells[0].isdigit() and cells[1].isdigit()
+        ]
+    return pairs
+
+
 def descendants(pid: int) -> list[int]:
-    """Every process `pid` started, and theirs, as Linux's `/proc` lists them
-    (none where there is no `/proc`)."""
+    """Every process `pid` started, and theirs."""
     children: dict[int, list[int]] = {}
-    for stat in Path("/proc").glob("[0-9]*/stat"):
-        try:
-            # The command name may hold spaces and parentheses; the fields
-            # after its closing parenthesis are the state, then the parent.
-            fields = stat.read_text(encoding="utf-8", errors="replace").rpartition(")")[2].split()
-            children.setdefault(int(fields[1]), []).append(int(stat.parent.name))
-        except (OSError, ValueError, IndexError):
-            continue
+    for child, parent in parents():
+        children.setdefault(parent, []).append(child)
     queue: list[int] = [pid]
     seen: list[int] = []
     while queue:

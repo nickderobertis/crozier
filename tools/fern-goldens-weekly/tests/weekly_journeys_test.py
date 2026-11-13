@@ -2303,10 +2303,18 @@ class WeeklyRunTests(unittest.TestCase):
         block = self.scratch / "block"
         block.mkdir()
         (self.seed / "gates").mkdir()
+        # alpha's and beta's comparisons each hold a child and a grandchild
+        # until `go`, each writing its pid, so stopping one is seen to end all.
         write_executable(
             self.seed / "gates/block.sh",
             '#!/bin/sh\necho "$1" >> "$BLOCK_DIR/started"\n'
-            'case "$1" in alpha|beta) while [ ! -f "$BLOCK_DIR/go" ]; do sleep 0.1; done ;; esac\nexit 0\n',
+            'case "$1" in alpha|beta) sh "$(dirname "$0")/hold.sh" "$1" child ;; esac\nexit 0\n',
+        )
+        write_executable(
+            self.seed / "gates/hold.sh",
+            '#!/bin/sh\necho $$ >> "$BLOCK_DIR/$1.pids"\n'
+            'if [ "$2" = child ]; then sh "$(dirname "$0")/hold.sh" "$1" grandchild; exit $?; fi\n'
+            'while [ ! -f "$BLOCK_DIR/go" ]; do sleep 0.1; done\n',
         )
         header, *rows = GATES.splitlines()
         blocking = [row.split("\t", 1)[0] + "\titem\texit:0/3\tsh {root}/gates/block.sh {item}" for row in rows]
@@ -2359,10 +2367,32 @@ class WeeklyRunTests(unittest.TestCase):
                     time.sleep(0.1)
                 self.assertTrue(condition(), f"{what}:\n{log.read_text(encoding='utf-8')}")
 
+            def pids(item: str) -> list[int]:
+                path = block / f"{item}.pids"
+                return [int(pid) for pid in path.read_text(encoding="utf-8").split()] if path.exists() else []
+
+            def alive(pid: int) -> bool:
+                try:
+                    os.kill(pid, 0)
+                except ProcessLookupError:
+                    return False
+                # A process killed but not yet reaped by its parent is a zombie.
+                state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True)
+                return not state.stdout.strip().startswith("Z")
+
             both = ["alpha", "beta"]
-            wait_for(lambda: started.exists() and started.read_text(encoding="utf-8").split() == both, "both run")
+            wait_for(
+                lambda: started.exists()
+                and sorted(started.read_text(encoding="utf-8").split()) == both
+                and all(len(pids(item)) == 2 for item in both),
+                "both run, each with its child and grandchild",
+            )
             available(0.5)
             wait_for(lambda: " stopped: " in log.read_text(encoding="utf-8"), "the newer one stopped")
+            # beta's child and grandchild ended with it; alpha's still run.
+            wait_for(lambda: not any(map(alive, pids("beta"))), "every process beta's comparison started ended")
+            self.assertEqual(2, len(pids("beta")))
+            self.assertTrue(all(map(alive, pids("alpha"))), "the older comparison's processes are untouched")
             time.sleep(2)
             held = log.read_text(encoding="utf-8")
             self.assertNotIn("comparison 3/8", held, "nothing more starts while memory is short")
