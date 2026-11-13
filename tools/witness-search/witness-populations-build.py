@@ -4,18 +4,24 @@
 * `identities` writes the acquisition plan `population_screen.py acquire` reads:
   every GitHub code-search and Sourcegraph identity the committed candidate
   ledgers record (repository, full commit, path, SHA-256), less those they record
-  as no OpenAPI 3 document, and the handed-off documents whose bytes are not in
-  the tree, each ranked by how many of the combination keys its recorded hits
-  could witness — the keys whose selector's field names are all among the field
-  names of the ledger keys that found it, with a document the ledgers record as
-  declaring a nested-pointer shape first.
+  as no OpenAPI 3 document, and the handed-off documents
+  `docs/fern-measurements/handed-off/documents.tsv` names by repository, path and
+  commit, each ranked by how many of the combination keys its recorded hits could
+  witness: the keys whose selector's field names are all among the field names of
+  the ledger keys that found it, with a document the ledgers record as declaring a
+  nested-pointer shape first.
+* `search` runs the bounded live search (page 1 of each key's YAML and JSON
+  code-search queries, and one Sourcegraph query) through the guarded lanes and
+  plans its new hits by their git blob; `--replay` derives them from the recorded
+  answers and asks nothing.
 * `manifest` writes the population manifest `population_screen.py screen` reads:
   every registered corpus row, every OpenAPI document of the pinned APIs.guru
-  archive, every handed-off document, and every GitHub or Sourcegraph identity
-  whose exact bytes the store holds, each with its licence evidence, the keys the
-  earlier named census already lists it for, and — where its bytes could not be
-  had — why. Archive documents are copied into the store, by digest, as they are
-  read.
+  archive (each held to the digest the committed acquisition manifest records),
+  every handed-off document, and every planned identity whose exact bytes the
+  store holds, each with its licence evidence, the keys the earlier named census
+  already lists it for, and, where its bytes could not be had, why.
+
+Every path is read under `--root` (the repository by default).
 
 Exit status: 0 when it wrote the file; 1 when an input it reads is missing or not
 what the repository records; 2 on a usage error.
@@ -33,14 +39,12 @@ import os
 import re
 import sys
 from collections import defaultdict
+from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
-SURFACE = REPO / "docs" / "openapi-surface"
-EARLIER = SURFACE / "witness-search-ledger-remainders" / "census.tsv"
-HANDED_OFF = REPO / "docs" / "fern-measurements" / "handed-off" / "documents.tsv"
 LEDGERS = {"github": "witness-search-github-code-search", "sourcegraph": "witness-search-sourcegraph"}
 ARCHIVE_REVISION = "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49"
 ARCHIVE_REPOSITORY = "APIs-guru/openapi-directory"
@@ -53,9 +57,12 @@ POINTER_LEDGER_KEYS = re.compile(r"pointer|unnamed-segment|undeclared-component-
 AGGREGATIONS = frozenset({"apis-guru/openapi-directory", "jentic/jentic-public-apis"})
 HANDED_OFF_ID = re.compile(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+):(.+)@([0-9a-f]{40})")
 EARLIER_POPULATION = {"registered": "registered", "apis-guru": "apis-guru", "handed-off": "handed-off"}
+HANDED_OFF_UNFETCHED = (
+    "not in the tree, the preflight cache or the response cache, and the raw lane did not return these bytes"
+)
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"witness-populations-build: {message}")
 
 
@@ -65,7 +72,6 @@ def _load(name: str, path: Path) -> ModuleType:
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
         fail(f"cannot load {path}; restore it from git")
-        raise AssertionError
     module = importlib.util.module_from_spec(spec)
     sys.modules[name] = module
     spec.loader.exec_module(module)
@@ -75,21 +81,38 @@ def _load(name: str, path: Path) -> ModuleType:
 SCREEN = _load("witness_populations_population_screen", Path(__file__).with_name("population_screen.py"))
 
 
+def github() -> ModuleType:
+    return _load("witness_populations_github", Path(__file__).with_name("witness-search-github.py"))
+
+
+@dataclass(frozen=True)
+class Tree:
+    """The repository files the search reads, under one root."""
+
+    root: Path
+
+    @property
+    def surface(self) -> Path:
+        return self.root / "docs" / "openapi-surface"
+
+    @property
+    def earlier(self) -> Path:
+        return self.surface / "witness-search-ledger-remainders" / "census.tsv"
+
+    @property
+    def handed_off(self) -> Path:
+        return self.root / "docs" / "fern-measurements" / "handed-off" / "documents.tsv"
+
+    @property
+    def archive_manifest(self) -> Path:
+        return self.surface / "witness-search-apis.guru" / "acquisition-manifest.tsv"
+
+    def selectors(self) -> Any:
+        return SCREEN.Selectors.read(self.surface / "witness-search-keys.tsv")
+
+
 def ingredients(selector: str) -> set[str]:
-    github = _load("witness_populations_github", Path(__file__).with_name("witness-search-github.py"))
-    return set(github.ingredients(selector))
-
-
-def earlier_rows() -> dict[tuple[str, str], set[str]]:
-    """`(population, document) -> keys` the earlier named census lists, documents as the new table names them."""
-    listed: dict[tuple[str, str], set[str]] = defaultdict(set)
-    with EARLIER.open(encoding="utf-8", newline="") as handle:
-        for row in csv.DictReader(handle, delimiter="\t"):
-            population = EARLIER_POPULATION[row["source"]]
-            listed[
-                (population, archive_document(row["document"]) if population == "apis-guru" else row["document"])
-            ].add(row["key"])
-    return listed
+    return set(github().ingredients(selector))
 
 
 def archive_document(path: str) -> str:
@@ -97,7 +120,20 @@ def archive_document(path: str) -> str:
     return path.removeprefix("APIs/").rsplit("/", 1)[0]
 
 
-def ledger_identities(population: str) -> list[dict[str, Any]]:
+def earlier_rows(tree: Tree) -> dict[tuple[str, str], set[str]]:
+    """`(population, document) -> keys` the earlier named census lists, documents as the new table names them."""
+    listed: dict[tuple[str, str], set[str]] = defaultdict(set)
+    with tree.earlier.open(encoding="utf-8", newline="") as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            population = EARLIER_POPULATION.get(row["source"])
+            if population is None:
+                fail(f"{tree.earlier}: source {row['source']!r} is none of {', '.join(EARLIER_POPULATION)}")
+            document = archive_document(row["document"]) if population == "apis-guru" else row["document"]
+            listed[(population, document)].add(row["key"])
+    return listed
+
+
+def ledger_identities(tree: Tree, population: str) -> list[dict[str, Any]]:
     """The ledgers' public identities: a full commit and SHA-256, from no repository the exclusion rule names.
 
     An opaque (screened non-public) identity and an excluded repository's document
@@ -105,13 +141,14 @@ def ledger_identities(population: str) -> list[dict[str, Any]]:
     """
     index = _load("witness_populations_index", Path(__file__).with_name("witness-search-github-index.py"))
     rows = []
-    for path in sorted((SURFACE / LEDGERS[population]).glob("candidates*.jsonl")):
+    for path in sorted((tree.surface / LEDGERS[population]).glob("candidates*.jsonl")):
         for line in path.read_text(encoding="utf-8").splitlines():
             record = json.loads(line)
             if not (
-                re.fullmatch(r"[0-9a-f]{40}", str(record.get("commit", "")))
+                isinstance(record, dict)
+                and re.fullmatch(r"[0-9a-f]{40}", str(record.get("commit", "")))
                 and re.fullmatch(r"[0-9a-f]{64}", str(record.get("sha256", "")))
-                and record.get("path")
+                and isinstance(record.get("path"), str)
                 and not index.opaque_identity(record["path"])
                 and not index.excluded_repository(str(record.get("repository", "")))
             ):
@@ -126,57 +163,60 @@ def github_repository(repository: str) -> str | None:
     return name if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", name) else None
 
 
-def identities(_args: argparse.Namespace) -> list[list[str]]:
-    selectors = SCREEN.Selectors.read()
-    wanted = {key: ingredients(selector) for key, selector in selectors.by_key.items()}
-    out: list[list[str]] = []
+def identities(tree: Tree) -> list[Any]:
+    wanted = {key: ingredients(selector) for key, selector in tree.selectors().by_key.items()}
+    out = []
     for population in LEDGERS:
         grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
-        for record in ledger_identities(population):
-            repository = github_repository(record["repository"])
-            if repository is None:
-                continue
-            grouped[(repository, record["path"])].append(record)
+        for record in ledger_identities(tree, population):
+            repository = github_repository(str(record.get("repository", "")))
+            if repository is not None and SCREEN.witness_screen().repository_path(record["path"]):
+                grouped[(repository, record["path"])].append(record)
         for (repository, path), records in sorted(grouped.items()):
             if all(record.get("disposition") == "excluded-non-openapi-3" for record in records):
                 continue
             # One identity per document: the commit the ledgers read it at last.
-            latest = max(records, key=lambda record: (record.get("at", ""), record["commit"]))
+            latest = max(records, key=lambda record: (str(record.get("at", "")), record["commit"]))
             fields = set().union(
-                *(ingredients(record.get("selector", "")) for record in records if record.get("selector"))
+                *(ingredients(str(record["selector"])) for record in records if record.get("selector"))
             )
             matched = sum(1 for need in wanted.values() if need and need <= fields)
             pointer = any(
-                record.get("disposition") == "declares" and POINTER_LEDGER_KEYS.search(record.get("key", ""))
+                record.get("disposition") == "declares" and POINTER_LEDGER_KEYS.search(str(record.get("key", "")))
                 for record in records
             )
             declares = any(record.get("disposition") == "declares" for record in records)
             rank = matched + (100 if pointer else 0) + (10 if declares else 0)
             out.append(
-                [
+                SCREEN.Identity(
                     population,
                     f"{repository}/{path}",
                     repository,
                     latest["commit"],
                     path,
                     latest["sha256"],
-                    latest.get("url", ""),
+                    str(latest.get("url", "")),
                     str(rank),
-                ]
+                )
             )
-    with HANDED_OFF.open(encoding="utf-8", newline="") as handle:
+    with tree.handed_off.open(encoding="utf-8", newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
-            match = HANDED_OFF_ID.fullmatch(row["document"])
-            if match:
+            if match := HANDED_OFF_ID.fullmatch(row["document"]):
                 repository, path, commit = match.groups()
-                out.append(["handed-off", row["document"], repository, commit, path, row["sha256"], "", "1000"])
+                out.append(
+                    SCREEN.Identity("handed-off", row["document"], repository, commit, path, row["sha256"], "", "1000")
+                )
     return out
 
 
 def jsonl_rows(path: Path) -> list[dict[str, Any]]:
     if not path.is_file():
         return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    for number, row in enumerate(rows, 1):
+        if not isinstance(row, dict) or not {"population", "document", "sha256", "how"} <= set(row):
+            fail(f"{path}:{number} is no acquisition record (population, document, sha256, how); restore it from git")
+    return rows
 
 
 def licence_evidence(repository: str, commit: str, digest: str, archived: set[str]) -> str:
@@ -190,9 +230,9 @@ def licence_evidence(repository: str, commit: str, digest: str, archived: set[st
     return f"repository:{repository}@{commit}"
 
 
-def tree_digests() -> dict[str, Path]:
+def tree_digests(tree: Tree) -> dict[str, Path]:
     found = {}
-    for path in sorted((REPO / "tests" / "fixtures" / "corpus-sources").rglob("*")):
+    for path in sorted((tree.root / "tests" / "fixtures" / "corpus-sources").rglob("*")):
         if path.is_file():
             found.setdefault(hashlib.sha256(path.read_bytes()).hexdigest(), path)
     return found
@@ -211,57 +251,74 @@ def scan(root: Path) -> dict[str, Path]:
     return found
 
 
-def manifest(args: argparse.Namespace) -> list[list[str]]:
+def archive_digests(tree: Tree) -> dict[str, str]:
+    """Each archive document's SHA-256, as the committed acquisition manifest records it at the pinned revision."""
+    with tree.archive_manifest.open(encoding="utf-8", newline="") as handle:
+        return {
+            row["document"]: row["sha256"]
+            for row in csv.DictReader(handle, delimiter="\t")
+            if row["walk"] == ARCHIVE_REPOSITORY and row["revision"] == ARCHIVE_REVISION
+        }
+
+
+def manifest(tree: Tree, args: argparse.Namespace) -> list[Any]:
     store_root = args.store or SCREEN.cache_root()
-    listed = earlier_rows()
-    entries: list[list[str]] = []
+    listed = earlier_rows(tree)
+    entries = []
 
     def keys(population: str, document: str) -> str:
         return ";".join(sorted(listed.pop((population, document), set()))) or "-"
 
-    corpus = SCREEN.corpus_rows()
-    grants = {name: row.grant for name, row in corpus.items()}
-    for name, path in sorted(SCREEN.registered_files().items()):
-        if name not in grants or not path.is_file():
+    corpus = SCREEN.corpus_rows(tree.root)
+    for name, path in sorted(SCREEN.registered_files(tree.root).items()):
+        if name not in corpus or not path.is_file():
             continue
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
         kind = "corpus-aggregation" if SCREEN.aggregator(corpus[name].source) else "corpus"
         entries.append(
-            ["registered", name, "-", digest, f"{kind}:{grants[name] or '-'}", keys("registered", name), "-"]
+            SCREEN.Entry(
+                "registered", name, "-", digest, f"{kind}:{corpus[name].grant or '-'}", keys("registered", name), "-"
+            )
         )
     archive = args.archive / "APIs"
     if not archive.is_dir():
         fail(f"{archive} is no directory; pass --archive the extracted openapi-directory tree at {ARCHIVE_REVISION}")
+    recorded = archive_digests(tree)
     for path in sorted(archive.rglob("openapi.*")):
         if path.suffix not in (".yaml", ".yml", ".json"):
             continue
         data = path.read_bytes()
-        SCREEN.store(data, store_root)
         relative = path.relative_to(args.archive).as_posix()
+        digest = hashlib.sha256(data).hexdigest()
+        if recorded.get(relative) != digest:
+            fail(
+                f"{path} carries sha256 {digest}, and {tree.archive_manifest} records "
+                f"{recorded.get(relative, 'no such document')} at {ARCHIVE_REVISION}; extract the pinned archive again"
+            )
+        SCREEN.store(data, store_root)
         document = archive_document(relative)
-        source = f"{RAW}/{ARCHIVE_REPOSITORY}/{ARCHIVE_REVISION}/{relative}"
         entries.append(
-            [
+            SCREEN.Entry(
                 "apis-guru",
                 document,
-                source,
-                hashlib.sha256(data).hexdigest(),
+                f"{RAW}/{ARCHIVE_REPOSITORY}/{ARCHIVE_REVISION}/{relative}",
+                digest,
                 "no-publisher-grant",
                 keys("apis-guru", document),
                 "-",
-            ]
+            )
         )
-    archived = {entry[3] for entry in entries if entry[0] == "apis-guru"}
-    tree = tree_digests()
+    archived = {entry.sha256 for entry in entries if entry.population == "apis-guru"}
+    held = tree_digests(tree)
     preflight = scan(args.preflight) if args.preflight.is_dir() else {}
-    with HANDED_OFF.open(encoding="utf-8", newline="") as handle:
+    with tree.handed_off.open(encoding="utf-8", newline="") as handle:
         for row in csv.DictReader(handle, delimiter="\t"):
             digest, document = row["sha256"], row["document"]
-            match = HANDED_OFF_ID.fullmatch(document)
-            for found in (tree.get(digest), preflight.get(digest)):
+            for found in (held.get(digest), preflight.get(digest)):
                 if found is not None and SCREEN.cached(digest, store_root) is None:
                     SCREEN.store(found.read_bytes(), store_root)
             forced = keys("handed-off", document)
+            match = HANDED_OFF_ID.fullmatch(document)
             if match is None:
                 # No recorded provenance names an immutable source for these bytes.
                 if forced != "-":
@@ -270,27 +327,24 @@ def manifest(args: argparse.Namespace) -> list[list[str]]:
                     )
                 continue
             repository, path, commit = match.groups()
-            source = f"{RAW}/{repository}/{commit}/{path}"
             have = SCREEN.cached(digest, store_root) is not None
             entries.append(
-                [
+                SCREEN.Entry(
                     "handed-off",
                     document,
-                    source,
+                    f"{RAW}/{repository}/{commit}/{path}",
                     digest,
                     licence_evidence(repository, commit, digest, archived),
                     forced,
-                    "-"
-                    if have
-                    else "not in the tree, the preflight cache or the response cache, and the raw lane did not return these bytes",
-                ]
+                    "-" if have else HANDED_OFF_UNFETCHED,
+                )
             )
     plan = [identity for path in args.identities if path.is_file() for identity in SCREEN.read_identities(path)]
     # A code-search hit is planned by its blob; the acquisition ledger records the content digest it was had at.
     contents = {
         (row["population"], row["document"]): row.get("content_sha256", row["sha256"])
         for row in jsonl_rows(args.acquisitions)
-        if row.get("how") in ("raw", "store", "shared-cache")
+        if row["how"] in ("raw", "store", "shared-cache")
     }
     seen: set[tuple[str, str]] = set()
     for identity in plan:
@@ -303,22 +357,21 @@ def manifest(args: argparse.Namespace) -> list[list[str]]:
         ):
             continue
         seen.add((identity.population, identity.document))
-        source = f"{RAW}/{identity.repository}/{identity.commit}/{identity.path}"
         entries.append(
-            [
+            SCREEN.Entry(
                 identity.population,
                 identity.document,
-                source,
+                f"{RAW}/{identity.repository}/{identity.commit}/{identity.path}",
                 digest,
                 licence_evidence(identity.repository, identity.commit, digest, archived),
                 "-",
                 "-",
-            ]
+            )
         )
     if listed:
         fail(f"the earlier named census lists candidates no population names: {sorted(listed)[:5]}")
     # A handed-off document without its bytes owes rows only for keys an earlier census lists it for.
-    return [entry for entry in entries if entry[6] == "-" or entry[5] != "-"]
+    return [entry for entry in entries if entry.unfetchable == "-" or entry.keys != "-"]
 
 
 def recorded_queries(evidence: Path) -> list[dict[str, Any]]:
@@ -326,86 +379,98 @@ def recorded_queries(evidence: Path) -> list[dict[str, Any]]:
     packed = evidence / "queries.jsonl.gz"
     if not (evidence / "queries.jsonl").is_file() and packed.is_file():
         with gzip.open(packed, "rt", encoding="utf-8") as handle:
-            return [json.loads(line) for line in handle if line.strip()]
-    github = _load("witness_populations_github", Path(__file__).with_name("witness-search-github.py"))
-    return github.jsonl(evidence / "queries.jsonl")
+            rows = [json.loads(line) for line in handle if line.strip()]
+        if not all(isinstance(row, dict) and isinstance(row.get("source"), str) for row in rows):
+            fail(f"{packed} holds a line that is no recorded query; restore it from git")
+        return rows
+    return github().jsonl(evidence / "queries.jsonl")
 
 
-def search(args: argparse.Namespace) -> list[list[str]]:
-    """The bounded live search: page 1 of each key's YAML and JSON code-search queries, and one Sourcegraph query.
-
-    Every request goes through the acquirer's guarded lanes (`rate_limit_guard.py`
-    pacing and floor, the shared response cache), which log it under `--evidence`.
-    A hit is planned by its git blob; one already planned by content is left out.
-    """
-    github = _load("witness_populations_github", Path(__file__).with_name("witness-search-github.py"))
-    selectors = SCREEN.Selectors.read()
-    acquirer = github.Acquirer(args.evidence, cache=SCREEN.cache_root() / "acquirer", first_page_only=True)
+def search(tree: Tree, args: argparse.Namespace) -> list[Any]:
+    """The bounded live search's new identities; see the module docstring."""
+    selectors = tree.selectors()
     known = {(row.repository, row.path) for row in SCREEN.read_identities(args.identities)}
-    hits: dict[tuple[str, str], list[str]] = {}
-    for key, selector in selectors.by_key.items() if not args.replay else ():
-        try:
-            plan = github.query_plan(selector)["github-code-search"]
-        except ValueError as error:
-            # An operation-level selector names no schema field a code search can spell.
-            acquirer.write(
-                "queries.jsonl",
-                {
-                    "source": "github-code-search",
-                    "key": key,
-                    "query": selector,
-                    "outcome": "not-queryable",
-                    "diagnostic": str(error),
-                },
-            )
-            continue
-        # The plan's last two queries are its `path:openapi` YAML and JSON spellings.
-        for query in plan[-2:]:
+    if not args.replay:
+        client = github()
+        acquirer = client.Acquirer(args.evidence, cache=SCREEN.cache_root() / "acquirer", first_page_only=True)
+        for key, selector in selectors.by_key.items():
             try:
-                acquirer.github_search(key, query)
-            except github.SearchStopped as error:
-                print(f"witness-populations-build: search stopped: {error}", file=sys.stderr)
-                break
+                plan = client.query_plan(selector)["github-code-search"]
+            except ValueError as error:
+                # An operation-level selector names no schema field a code search can spell.
+                if not any(row.get("key") == key for row in recorded_queries(args.evidence)):
+                    acquirer.write(
+                        "queries.jsonl",
+                        {
+                            "source": "github-code-search",
+                            "key": key,
+                            "query": selector,
+                            "outcome": "not-queryable",
+                            "diagnostic": str(error),
+                        },
+                    )
+                continue
+            # The plan's last two queries are its `path:openapi` YAML and JSON spellings.
+            for query in plan[-2:]:
+                try:
+                    # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; the guard admits one code-search request at a time to its paced bucket, which an async client would not speed up.
+                    acquirer.github_search(key, query)
+                except client.SearchStopped as error:
+                    print(f"witness-populations-build: search stopped: {error}", file=sys.stderr)
+                    break
+        # One anonymous Sourcegraph request in all: a recorded answer or refusal is not asked again.
+        if not any(row.get("source") == "sourcegraph" for row in recorded_queries(args.evidence)):
+            query = client.query_plan(selectors.by_key[args.sourcegraph_key])["sourcegraph"][0]
+            try:
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; this is the search's one Sourcegraph request, through the guard's paced lane.
+                acquirer.sourcegraph_search(args.sourcegraph_key, query)
+            except client.SearchStopped as error:
+                print(f"witness-populations-build: sourcegraph: {error}", file=sys.stderr)
     wanted = {key: ingredients(selector) for key, selector in selectors.by_key.items()}
+    hits: dict[tuple[str, str], Any] = {}
     for row in recorded_queries(args.evidence):
         # Ranked as the ledger plan is: the keys whose field names the query that found it spells.
         found_by = wanted.get(str(row.get("key")), set())
         rank = str(sum(1 for need in wanted.values() if need and need <= found_by))
         for item in row.get("results", []) if row.get("source") == "github-code-search" else []:
-            identity = (item.get("repository"), item.get("path"))
-            commit, blob = item.get("commit"), item.get("sha")
+            repository, path = str(item.get("repository")), str(item.get("path"))
+            commit, blob = str(item.get("commit")), str(item.get("sha"))
             if (
-                identity in known
-                or not re.fullmatch(r"[0-9a-f]{40}", str(commit))
-                or not re.fullmatch(r"[0-9a-f]{40}", str(blob))
+                (repository, path) in known
+                or not re.fullmatch(r"[0-9a-f]{40}", commit)
+                or not re.fullmatch(r"[0-9a-f]{40}", blob)
+                or not SCREEN.witness_screen().repository_name(repository)
+                or not SCREEN.witness_screen().repository_path(path)
             ):
                 continue
             hits.setdefault(
-                identity,
-                [
+                (repository, path),
+                SCREEN.Identity(
                     "github",
-                    f"{identity[0]}/{identity[1]}",
-                    identity[0],
+                    f"{repository}/{path}",
+                    repository,
                     commit,
-                    identity[1],
+                    path,
                     f"blob:{blob}",
-                    item.get("url", ""),
+                    str(item.get("url", "")),
                     rank,
-                ],
+                ),
             )
-    # One anonymous Sourcegraph request in all: a recorded answer or refusal is not asked again.
-    if args.replay or any(row.get("source") == "sourcegraph" for row in recorded_queries(args.evidence)):
-        return sorted(hits.values())
-    sourcegraph = github.query_plan(selectors.by_key[args.sourcegraph_key])["sourcegraph"][0]
-    try:
-        acquirer.sourcegraph_search(args.sourcegraph_key, sourcegraph)
-    except github.SearchStopped as error:
-        print(f"witness-populations-build: sourcegraph: {error}", file=sys.stderr)
     return sorted(hits.values())
+
+
+def write_plan(path: Path, rows: list[Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    text = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows)
+    if path.suffix == ".gz":
+        path.write_bytes(gzip.compress(text.encode("utf-8"), mtime=0))
+    else:
+        path.write_text(text, encoding="utf-8", newline="\n")
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+    parser.add_argument("--root", type=Path, default=REPO, help="the repository whose records are read")
     sub = parser.add_subparsers(dest="command", required=True)
     plan = sub.add_parser("identities")
     plan.add_argument("--output", type=Path, required=True)
@@ -424,35 +489,27 @@ def main(argv: list[str] | None = None) -> int:
         "--identities", type=Path, required=True, help="the ledger plan, whose identities are not repeated"
     )
     live.add_argument("--output", type=Path, required=True)
-    live.add_argument("--sourcegraph-key", default="combo-property-defs-pointer")
+    live.add_argument("--sourcegraph-key", default="combo-property-defs-pointer", choices=SCREEN.KEYS)
     live.add_argument(
         "--replay", action="store_true", help="derive identities from the recorded answers, asking nothing"
     )
     args = parser.parse_args(argv)
-    if args.command == "search":
-        if not args.replay and (args.evidence / "queries.jsonl.gz").is_file():
-            parser.error("the search's answers are committed packed; gunzip queries.jsonl.gz to resume it live")
-        rows = search(args)
-        with args.output.open("w", encoding="utf-8", newline="") as handle:
-            handle.write("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n")
-            handle.writelines("\t".join(row) + "\n" for row in rows)
-        print(f"witness-populations-build: {len(rows)} new code-search identities")
-        return 0
-    if args.command == "identities":
-        rows = identities(args)
-        args.output.parent.mkdir(parents=True, exist_ok=True)
-        with (
-            gzip.open(args.output, "wt", encoding="utf-8", newline="")
-            if args.output.suffix == ".gz"
-            else args.output.open("w", encoding="utf-8", newline="")
-        ) as handle:
-            handle.write("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n")
-            handle.writelines("\t".join(row) + "\n" for row in rows)
-        print(f"witness-populations-build: {len(rows)} identities")
-        return 0
-    rows = manifest(args)
-    SCREEN.write_manifest(args.output, [SCREEN.Entry(*row) for row in rows])
-    print(f"witness-populations-build: {len(rows)} manifest entries")
+    tree = Tree(args.root)
+    match args.command:
+        case "search":
+            if not args.replay and (args.evidence / "queries.jsonl.gz").is_file():
+                parser.error("the search's answers are committed packed; gunzip queries.jsonl.gz to resume it live")
+            rows = search(tree, args)
+            write_plan(args.output, rows)
+            print(f"witness-populations-build: {len(rows)} new code-search identities")
+        case "identities":
+            rows = identities(tree)
+            write_plan(args.output, rows)
+            print(f"witness-populations-build: {len(rows)} identities")
+        case _:
+            rows = manifest(tree, args)
+            SCREEN.write_manifest(args.output, rows)
+            print(f"witness-populations-build: {len(rows)} manifest entries")
     return 0
 
 

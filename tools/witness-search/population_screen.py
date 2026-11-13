@@ -54,8 +54,8 @@ import functools
 import gzip
 import hashlib
 import importlib.util
-import io
 import json
+import math
 import os
 import re
 import sys
@@ -74,7 +74,6 @@ RECORD = REPO / "docs" / "openapi-surface" / "witness-search-combination-populat
 TABLE = RECORD / "screen.tsv"
 POPULATION = RECORD / "population.tsv"
 
-COLUMNS = ("key", "population", "document", "source", "sha256", "licence", "trigger", "status")
 POPULATIONS = ("registered", "apis-guru", "github", "sourcegraph", "archive", "handed-off")
 PENDING = "certified-screen-pending"
 STATUSES = (PENDING, "rejected-trigger", "rejected-licence", "unfetchable:<reason>")
@@ -117,10 +116,6 @@ def witness_screen() -> ModuleType:
     return _load("population_screen_witness_screen", REPO / "tools" / "witness-search" / "witness_screen.py")
 
 
-# ---------------------------------------------------------------------------
-# The document walk the trigger screens share.
-# ---------------------------------------------------------------------------
-
 HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
 # Every keyword under which a Schema Object holds further Schema Objects, by shape.
 SCHEMA_MAPS = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
@@ -161,12 +156,13 @@ def resolve(document: Any, reference: str) -> Any:
         return _ABSENT
     node = document
     for segment in segments:
-        if isinstance(node, dict) and segment in node:
-            node = node[segment]
-        elif isinstance(node, list) and segment.isdigit() and int(segment) < len(node):
-            node = node[int(segment)]
-        else:
-            return _ABSENT
+        match node:
+            case dict() if segment in node:
+                node = node[segment]
+            case list() if segment.isdigit() and int(segment) < len(node):
+                node = node[int(segment)]
+            case _:
+                return _ABSENT
     return node
 
 
@@ -187,12 +183,13 @@ def deref(document: Any, value: Any, depth: int = 0) -> Any:
 
 def primary_type(schema: Any) -> str | None:
     """A schema's declared type, the first non-null one of a type list."""
-    value = schema.get("type") if isinstance(schema, dict) else None
-    if isinstance(value, str):
-        return value
-    if isinstance(value, list):
-        return next((item for item in value if isinstance(item, str) and item != "null"), None)
-    return None
+    match schema.get("type") if isinstance(schema, dict) else None:
+        case str() as value:
+            return value
+        case list() as values:
+            return next((item for item in values if isinstance(item, str) and item != "null"), None)
+        case _:
+            return None
 
 
 def declares_type(schema: Any, name: str) -> bool:
@@ -213,12 +210,14 @@ def children(schema: dict[Any, Any]) -> Iterator[tuple[str, str, Any]]:
             for index, child in enumerate(value):
                 yield keyword, str(index), child
     for keyword in SCHEMA_ONES:
-        value = schema.get(keyword)
-        if isinstance(value, list):  # draft-04 tuple items
-            for index, child in enumerate(value):
-                yield keyword, str(index), child
-        elif value is not None:
-            yield keyword, "", value
+        match schema.get(keyword):
+            case list() as tuple_items:  # draft-04 tuple items
+                for index, child in enumerate(tuple_items):
+                    yield keyword, str(index), child
+            case None:
+                pass
+            case child:
+                yield keyword, "", child
 
 
 class Operation(NamedTuple):
@@ -323,10 +322,6 @@ def placed(document: Any, keyword: str) -> Iterator[tuple[dict[Any, Any], Any]]:
                 yield schema, child
 
 
-# ---------------------------------------------------------------------------
-# The trigger screens: one ordered list of conditions per key.
-# ---------------------------------------------------------------------------
-
 Check = Callable[[], bool]
 
 
@@ -427,14 +422,20 @@ def property_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]
             yield ref_of(child), []
 
 
+def primary_array(schema: Any) -> bool:
+    return primary_type(schema) == "array"
+
+
+def declares_array(schema: Any) -> bool:
+    return declares_type(schema, "array")
+
+
 def array_item_refs(document: Any, primary: bool) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    """Each `items` reference, with its owner's array type: its primary type, or any type it lists."""
+    owner_is_array = primary_array if primary else declares_array
     for parent, child in placed(document, "items"):
         if isinstance(ref_of(child), str):
-            if primary:
-                check: Check = lambda p=parent: primary_type(p) == "array"  # noqa: E731
-            else:
-                check = lambda p=parent: declares_type(p, "array")  # noqa: E731
-            yield ref_of(child), [("items-owner-not-type-array", check)]
+            yield ref_of(child), [("items-owner-not-type-array", functools.partial(owner_is_array, parent))]
 
 
 def map_value_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
@@ -655,24 +656,36 @@ def header_array_sites(document: Any) -> Iterator[Site]:
         )
 
 
-# Headers the client manages itself, which `global_headers` never promotes.
-CLIENT_MANAGED_HEADERS = frozenset({"accept", "authorization", "content-length", "content-type", "user-agent"})
+# The header parameters `src/ir.rs::global_headers` never promotes, compared in any
+# case: `is_transport_managed_parameter`'s names and `is_promotion_reserved_header`'s.
+# `tools/witness-search/tests/population_screen_test.py` holds this set to those
+# functions' own lists.
+TRANSPORT_MANAGED_HEADERS = frozenset(
+    {"user-agent", "content-type", "origin", "cookie", "content-length", "content-disposition", "x-forwarded-for"}
+)
+PROMOTION_RESERVED_HEADERS = frozenset({"authorization"})
 
 
 def api_key_headers(document: Any) -> set[str]:
+    """The header names a declared `apiKey` scheme owns, spelled exactly (`is_auth_managed_header`)."""
     components = document.get("components") if isinstance(document, dict) else None
     schemes = components.get("securitySchemes") if isinstance(components, dict) else None
     names = set()
     for scheme in schemes.values() if isinstance(schemes, dict) else []:
         scheme = deref(document, scheme)
         if isinstance(scheme, dict) and scheme.get("type") == "apiKey" and scheme.get("in") == "header":
-            names.add(str(scheme.get("name", "")).lower())
+            names.add(str(scheme.get("name", "")))
     return names
+
+
+def client_managed(name: Any, keys: set[str]) -> bool:
+    """Whether the client owns a header `global_headers` would otherwise promote."""
+    return str(name).lower() in TRANSPORT_MANAGED_HEADERS | PROMOTION_RESERVED_HEADERS or str(name) in keys
 
 
 def header_default_sites(document: Any) -> Iterator[Site]:
     every = list(operations(document))
-    managed = CLIENT_MANAGED_HEADERS | api_key_headers(document)
+    keys = api_key_headers(document)
     for _operation, parameter in located(document, "header"):
         schema = deref(document, parameter.get("schema"))
         name = parameter.get("name")
@@ -690,7 +703,7 @@ def header_default_sites(document: Any) -> Iterator[Site]:
                     "required-header-not-type-string",
                     lambda p=parameter, s=schema: p.get("required") is not True or primary_type(s) == "string",
                 ),
-                ("header-is-client-managed", lambda n=name: str(n).lower() not in managed),
+                ("header-is-client-managed", lambda n=name: not client_managed(n, keys)),
                 ("header-not-on-every-operation", on_every),
             )
         )
@@ -843,7 +856,8 @@ _TAG = (
     "members-share-no-one-valued-tag-property",
     "every-member-requires-its-tag",
 )
-# Every condition a key's `partial:` verdict may name: the reader admits no other.
+# Every condition a key's `partial:` verdict may name, in the order its sites judge
+# them: the reader admits no other, and the suite holds each site to this order.
 CONDITIONS: dict[str, tuple[str, ...]] = {
     "combo-allof-unresolved-nested-pointer": _POINTER,
     "combo-array-unresolved-nested-pointer": ("items-owner-not-type-array", *_POINTER),
@@ -870,7 +884,7 @@ CONDITIONS: dict[str, tuple[str, ...]] = {
         "no-anyof-member-is-a-oneof",
     ),
     "combo-unrequired-tag-anyof-reference": _TAG,
-    "combo-unrequired-tag-oneof-reference": (*_TAG, "union-declares-a-discriminator"),
+    "combo-unrequired-tag-oneof-reference": (*_TAG[:2], "union-declares-a-discriminator", *_TAG[2:]),
     "combo-header-array-accepted-placements": (
         "schema-not-type-array",
         "items-are-a-reference",
@@ -950,12 +964,9 @@ class Selectors:
         return {key: counts.get(selector, 0) for key, selector in self.by_key.items()}
 
 
-# ---------------------------------------------------------------------------
-# The table: its rows, its grammar and the status rule.
-# ---------------------------------------------------------------------------
-
-
 class ScreenRow(NamedTuple):
+    """One row of the table: a candidate document, screened for one key."""
+
     key: str
     population: str
     document: str
@@ -964,6 +975,10 @@ class ScreenRow(NamedTuple):
     licence: str
     trigger: str
     status: str
+
+
+# The table's columns, in order: the row model's own fields.
+COLUMNS = ScreenRow._fields
 
 
 def _reason(cell: str, prefix: str) -> str | None:
@@ -992,23 +1007,22 @@ def status_of(licence: str, trigger_cell: str) -> str:
     raise ScreenError(f"an exact trigger whose licence {licence!r} was never decided: read its licence evidence")
 
 
-def source_failure(row: ScreenRow) -> str | None:
-    if row.population == "registered":
-        return None if row.source == "-" else "a registered document's source is `-` (its bytes are in the tree)"
-    parts = urllib.parse.urlsplit(row.source)
+def source_failure(population: str, source: str) -> str | None:
+    if population == "registered":
+        return None if source == "-" else "a registered document's source is `-` (its bytes are in the tree)"
+    parts = urllib.parse.urlsplit(source)
     if parts.scheme != "https" or not parts.netloc or not any(COMMIT.fullmatch(seg) for seg in parts.path.split("/")):
-        return f"source {row.source!r} is no https URL pinned at a full commit SHA"
+        return f"source {source!r} is no https URL pinned at a full commit SHA"
     return None
 
 
-def document_failure(row: ScreenRow) -> str | None:
-    document = row.document
+def document_failure(population: str, document: str) -> str | None:
     if PLACEHOLDER.match(document) or "\t" in document or document != document.strip():
         return "document is empty, a placeholder or padded"
-    if row.population == "registered" and not CORPUS_NAME.fullmatch(document):
+    if population == "registered" and not CORPUS_NAME.fullmatch(document):
         return f"registered document {document!r} is no corpus row name"
-    if row.population in ("github", "sourcegraph") and len([p for p in document.split("/") if p]) < 3:
-        return f"{row.population} document {document!r} is no `owner/repo/path`"
+    if population in ("github", "sourcegraph") and len([p for p in document.split("/") if p]) < 3:
+        return f"{population} document {document!r} is no `owner/repo/path`"
     return None
 
 
@@ -1019,7 +1033,10 @@ def row_failures(row: ScreenRow) -> list[str]:
         wrong.append(f"key {row.key!r} is none of the {len(KEYS)} combination keys")
     if row.population not in POPULATIONS:
         wrong.append(f"population {row.population!r} is none of {', '.join(POPULATIONS)}")
-    for failure in (document_failure(row), source_failure(row) if row.population in POPULATIONS else None):
+    for failure in (
+        document_failure(row.population, row.document),
+        source_failure(row.population, row.source) if row.population in POPULATIONS else None,
+    ):
         if failure:
             wrong.append(failure)
     unfetchable = row.status.startswith("unfetchable:")
@@ -1081,11 +1098,6 @@ def render(rows: Iterable[ScreenRow]) -> str:
     return "\t".join(COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in ordered)
 
 
-# ---------------------------------------------------------------------------
-# The host cache and the document store.
-# ---------------------------------------------------------------------------
-
-
 def cache_root() -> Path:
     """`${XDG_CACHE_HOME:-$HOME/.cache}/crozier/witness-populations`: exact bytes named by their SHA-256."""
     base = os.environ.get("XDG_CACHE_HOME") or ""
@@ -1117,13 +1129,6 @@ def cached(sha256: str, root: Path | None = None) -> bytes | None:
     return data if hashlib.sha256(data).hexdigest() == sha256 else None
 
 
-# ---------------------------------------------------------------------------
-# The manifest: every candidate of every population, with where its bytes and licence evidence are.
-# ---------------------------------------------------------------------------
-
-MANIFEST_COLUMNS = ("population", "document", "source", "sha256", "evidence", "keys", "unfetchable")
-
-
 class Entry(NamedTuple):
     """One manifest row: a candidate document, its licence evidence and the keys it owes a row for."""
 
@@ -1144,7 +1149,11 @@ class Entry(NamedTuple):
         return [] if self.keys == "-" else self.keys.split(";")
 
 
+MANIFEST_COLUMNS = Entry._fields
+
+
 def read_manifest(path: Path) -> list[Entry]:
+    seen: dict[tuple[str, str], int] = {}
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
         header = next(reader, None)
@@ -1155,13 +1164,48 @@ def read_manifest(path: Path) -> list[Entry]:
             if len(cells) != len(MANIFEST_COLUMNS) or any(not cell for cell in cells):
                 raise ScreenError(f"{path}:{number}: {len(cells)} cells, every one filled, not {len(MANIFEST_COLUMNS)}")
             entry = Entry(*cells)
-            if entry.population not in POPULATIONS:
-                raise ScreenError(f"{path}:{number}: population {entry.population!r} is none of {POPULATIONS}")
-            unknown = [key for key in entry.forced() if key not in KEYS]
-            if unknown:
-                raise ScreenError(f"{path}:{number}: keys {unknown} are no combination keys")
+            wrong = entry_failures(entry)
+            if (entry.population, entry.document) in seen:
+                wrong.append(f"duplicates line {seen[(entry.population, entry.document)]}'s candidate")
+            if wrong:
+                raise ScreenError(f"{path}:{number}: " + "; ".join(wrong))
+            seen[(entry.population, entry.document)] = number
             entries.append(entry)
     return entries
+
+
+EVIDENCE = re.compile(
+    r"(?:corpus|corpus-aggregation):[^\t]+|(?:repository|aggregation):[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}"
+    r"|no-publisher-grant|-"
+)
+
+
+def entry_failures(entry: Entry) -> list[str]:
+    """Why one manifest row is not a candidate the screen can read; empty when it is."""
+    if entry.population not in POPULATIONS:
+        return [f"population {entry.population!r} is none of {', '.join(POPULATIONS)}"]
+    wrong = [
+        failure
+        for failure in (
+            document_failure(entry.population, entry.document),
+            source_failure(entry.population, entry.source),
+        )
+        if failure
+    ]
+    unfetchable = entry.unfetchable != "-"
+    if not (SHA.fullmatch(entry.sha256) or (unfetchable and entry.sha256 == "-")):
+        wrong.append(f"sha256 {entry.sha256!r} is no SHA-256 (`-` only beside an unfetchable reason)")
+    if not EVIDENCE.fullmatch(entry.evidence):
+        wrong.append(
+            f"evidence {entry.evidence!r} is none of corpus:, corpus-aggregation:, repository:, aggregation:, "
+            "no-publisher-grant or -"
+        )
+    unknown = [key for key in entry.forced() if key not in KEYS]
+    if unknown:
+        wrong.append(f"keys {unknown} are no combination keys")
+    if unfetchable and PLACEHOLDER.match(entry.unfetchable.strip()):
+        wrong.append("an unfetchable reason that says nothing")
+    return wrong
 
 
 def write_manifest(path: Path, entries: Iterable[Entry]) -> None:
@@ -1234,10 +1278,6 @@ def registered_bytes(document: str, root: Path = REPO) -> bytes | None:
     path = registered_files(root).get(document)
     return path.read_bytes() if path is not None and path.is_file() else None
 
-
-# ---------------------------------------------------------------------------
-# The licence verdict.
-# ---------------------------------------------------------------------------
 
 LicenceFetch = Callable[[str, str, str], tuple[int, bytes] | None]
 LICENCE_FETCH_ATTEMPTS = 4
@@ -1317,11 +1357,6 @@ def licence_verdict(
                 return f"admissible:{family} ({name} at {commit})"
             return f"inadmissible:no info.license, and {name} at {commit} names no grant the corpus rule admits"
     return "inadmissible:grants nothing: no info.license and no licence file at the pinned commit"
-
-
-# ---------------------------------------------------------------------------
-# The screen.
-# ---------------------------------------------------------------------------
 
 
 def parse(data: bytes, scratch: Path) -> Any:
@@ -1434,6 +1469,7 @@ def raw_licence_fetcher(evidence: Path | None, live: bool) -> LicenceFetch:
         # rather than costing the whole screen; one that persists is refused, naming it.
         for attempt in range(LICENCE_FETCH_ATTEMPTS):
             try:
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; a licence file is read only for an exact candidate, one paced raw-lane request at a time, which an async client would not speed up.
                 return acquirer.raw_github_get(url, "witness-populations", f"{repository}:{name}")
             except OSError as error:
                 if attempt + 1 == LICENCE_FETCH_ATTEMPTS:
@@ -1515,11 +1551,6 @@ def run_screen(
     return rows
 
 
-# ---------------------------------------------------------------------------
-# Acquisition: exact bytes from the shared response cache, else the guarded raw lane.
-# ---------------------------------------------------------------------------
-
-IDENTITY_COLUMNS = ("population", "document", "repository", "commit", "path", "sha256", "url", "rank")
 # A code-search hit is pinned by its git blob, not yet by its content's SHA-256.
 BLOB = re.compile(r"blob:([0-9a-f]{40})")
 
@@ -1535,6 +1566,8 @@ def pinned_by(identity: Identity, data: bytes) -> bool:
 
 
 class Identity(NamedTuple):
+    """One document the acquisition plan would bring into the store, at its exact commit."""
+
     population: str
     document: str
     repository: str
@@ -1543,6 +1576,11 @@ class Identity(NamedTuple):
     sha256: str
     url: str
     rank: str
+
+
+IDENTITY_COLUMNS = Identity._fields
+# The populations whose documents the plan fetches at their exact commit.
+ACQUIRED = ("github", "sourcegraph", "handed-off")
 
 
 def cache_scan(responses: Path) -> dict[str, Path]:
@@ -1593,7 +1631,7 @@ def acquire(
     responses: Path,
     store_root: Path | None = None,
     raw_base: str | None = None,
-    out: io.TextIOBase | Any = sys.stdout,
+    out: IO[str] = sys.stdout,
 ) -> Counter[str]:
     """Bring each identity's exact bytes into the store, cheapest first, until `budget_s` of live fetching is spent."""
     github = _load("population_screen_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
@@ -1623,6 +1661,7 @@ def acquire(
         else:
             url = f"{raw_base.rstrip('/')}/{identity.repository}/{identity.commit}/{urllib.parse.quote(identity.path)}"
             try:
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; the raw lane is paced one request at a time, so an async client would not fetch the plan any faster.
                 status, data = acquirer.raw_github_get(
                     url, "witness-populations", f"{identity.repository}:{identity.path}"
                 )
@@ -1666,8 +1705,41 @@ def read_identities(path: Path) -> list[Identity]:
             pinned = SHA.fullmatch(identity.sha256) or BLOB.fullmatch(identity.sha256)
             if not COMMIT.fullmatch(identity.commit) or not pinned or not identity.rank.isdigit():
                 raise ScreenError(f"{path}:{number}: no full commit, SHA-256 or rank")
+            if identity.population not in ACQUIRED or not witness_screen().repository_name(identity.repository):
+                raise ScreenError(
+                    f"{path}:{number}: {identity.population} {identity.repository!r} is no acquired population's "
+                    f"`owner/name` repository ({', '.join(ACQUIRED)})"
+                )
+            if not witness_screen().repository_path(identity.path):
+                raise ScreenError(f"{path}:{number}: {identity.path!r} is no path inside a repository")
             rows.append(identity)
     return rows
+
+
+def positive_int(text: str) -> int:
+    try:
+        value = int(text)
+    except ValueError:
+        value = 0
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"{text!r} is no positive whole number")
+    return value
+
+
+def budget_seconds(text: str) -> float:
+    try:
+        value = float(text)
+    except ValueError:
+        value = math.nan
+    if not math.isfinite(value) or value < 0:
+        raise argparse.ArgumentTypeError(f"{text!r} is no finite, non-negative number of seconds")
+    return value
+
+
+def sha256_arg(text: str) -> str:
+    if not SHA.fullmatch(text):
+        raise argparse.ArgumentTypeError(f"{text!r} is no 64-hex SHA-256")
+    return text
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1684,11 +1756,11 @@ def main(argv: list[str] | None = None) -> int:
     )
     screen.add_argument("--fetch-licence", action="store_true", help="fetch an exact candidate's uncached licence file")
     screen.add_argument("--no-discover", action="store_true", help="screen only the keys the manifest names")
-    screen.add_argument("--workers", type=int, default=1)
+    screen.add_argument("--workers", type=positive_int, default=1)
     grab = sub.add_parser("acquire", help="bring identities' exact bytes into the store")
     grab.add_argument("--identities", type=Path, required=True)
     grab.add_argument("--evidence", type=Path, required=True)
-    grab.add_argument("--budget-seconds", type=float, default=3300.0)
+    grab.add_argument("--budget-seconds", type=budget_seconds, default=3300.0)
     grab.add_argument("--store", type=Path)
     grab.add_argument(
         "--responses",
@@ -1696,44 +1768,44 @@ def main(argv: list[str] | None = None) -> int:
         default=Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "crozier" / "github-responses",
     )
     find = sub.add_parser("cached", help="print where a candidate's exact bytes are kept")
-    find.add_argument("sha256")
+    find.add_argument("sha256", type=sha256_arg)
     find.add_argument("--store", type=Path)
     args = parser.parse_args(argv)
     try:
-        if args.command == "check":
-            rows = read_screen(args.table)
-            counts = Counter(row.status.split(":", 1)[0] for row in rows)
-            print(f"population-screen: {len(rows)} rows; " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())))
-            return 0
-        if args.command == "screen":
-            entries = read_manifest(args.manifest)
-            rows = run_screen(
-                entries,
-                store_root=args.store,
-                fetch_file=raw_licence_fetcher(args.evidence, args.fetch_licence),
-                discover=not args.no_discover,
-                workers=max(1, args.workers),
-            )
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(render(rows), encoding="utf-8", newline="\n")
-            read_screen(args.output)
-            print(f"population-screen: wrote {len(rows)} rows, {sum(pending_counts(rows).values())} pending")
-            return 0
-        if args.command == "acquire":
-            acquire(
-                read_identities(args.identities),
-                evidence=args.evidence,
-                budget_s=args.budget_seconds,
-                responses=args.responses,
-                store_root=args.store,
-            )
-            return 0
-        if not SHA.fullmatch(args.sha256):
-            parser.error("cached takes a 64-hex SHA-256")
-        root = args.store or cache_root()
-        if cached(args.sha256, root) is None:
-            fail(f"no bytes carrying sha256 {args.sha256} are kept in {root}; re-fetch them from the row's source")
-        print(root / args.sha256)
+        match args.command:
+            case "check":
+                rows = read_screen(args.table)
+                counts = Counter(row.status.split(":", 1)[0] for row in rows)
+                print(
+                    f"population-screen: {len(rows)} rows; " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items()))
+                )
+            case "screen":
+                rows = run_screen(
+                    read_manifest(args.manifest),
+                    store_root=args.store,
+                    fetch_file=raw_licence_fetcher(args.evidence, args.fetch_licence),
+                    discover=not args.no_discover,
+                    workers=args.workers,
+                )
+                args.output.parent.mkdir(parents=True, exist_ok=True)
+                args.output.write_text(render(rows), encoding="utf-8", newline="\n")
+                read_screen(args.output)
+                print(f"population-screen: wrote {len(rows)} rows, {sum(pending_counts(rows).values())} pending")
+            case "acquire":
+                acquire(
+                    read_identities(args.identities),
+                    evidence=args.evidence,
+                    budget_s=args.budget_seconds,
+                    responses=args.responses,
+                    store_root=args.store,
+                )
+            case _:
+                root = args.store or cache_root()
+                if cached(args.sha256, root) is None:
+                    fail(
+                        f"no bytes carrying sha256 {args.sha256} are kept in {root}; re-fetch them from the row's source"
+                    )
+                print(root / args.sha256)
         return 0
     except ScreenError as error:
         fail(str(error))

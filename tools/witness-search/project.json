@@ -129,6 +129,7 @@
       "cache": true,
       "inputs": [
         "default",
+        "{workspaceRoot}/src/ir.rs",
         "{workspaceRoot}/docs/openapi-surface/**/*",
         "{workspaceRoot}/docs/openapi-surface-coverage.md",
         "{workspaceRoot}/docs/corpus-licensing.md",

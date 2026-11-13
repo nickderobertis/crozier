@@ -13,11 +13,15 @@ and its registered rows, whose bytes are in the tree, are screened again.
 
 from __future__ import annotations
 
+import base64
 import csv
+import gzip
 import hashlib
 import importlib.util
 import json
 import os
+import re
+import shutil
 import socket
 import subprocess
 import sys
@@ -78,6 +82,7 @@ NAMED = {
         "definitions": {"inner": {"type": "string"}},
     }
 }
+BUILD_OPAQUE = "screened-nonpublic-input:v2:" + "d" * 32 + ":1"
 POINTER_KEYS = (
     "combo-allof-unresolved-nested-pointer",
     "combo-array-unresolved-nested-pointer",
@@ -502,7 +507,7 @@ CASES += [
     ),
     (
         "header-client-managed",
-        header({"type": "string", "default": "application/json"}, name="Accept"),
+        header({"type": "string", "default": "crozier"}, name="User-Agent"),
         {KEY_HD: "partial:header-is-client-managed"},
     ),
     (
@@ -664,6 +669,8 @@ CASES += [
 class _RawServer(ThreadingHTTPServer):
     files: dict[str, bytes]
     requests: list[str]
+    # Reset the first connection unanswered, as a transient network failure would.
+    drop_first: bool = False
 
 
 class _Raw(BaseHTTPRequestHandler):
@@ -676,7 +683,7 @@ class _Raw(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         self.server.requests.append(self.path)
-        if getattr(self.server, "drop_first", False) and len(self.server.requests) == 1:
+        if self.server.drop_first and len(self.server.requests) == 1:
             # A connection the far end resets before answering: a transient network failure.
             self.close_connection = True
             return
@@ -950,7 +957,7 @@ class LicenceScreenTests(ScreenHarness):
 class LicenceFetchTests(ScreenHarness):
     def test_a_transient_failure_is_retried_and_a_persistent_one_is_refused_naming_it(self) -> None:
         self.server.files[f"/acme/flaky/{COMMIT}/LICENSE"] = b"MIT License\n"
-        self.server.drop_first = True  # type: ignore[attr-defined]
+        self.server.drop_first = True
         saved = (
             SCREEN.LICENCE_FETCH_BACKOFF_S,
             os.environ.get("CROZIER_RAW_GITHUB_URL"),
@@ -1153,7 +1160,6 @@ class AcquisitionTests(ScreenHarness):
             json.loads(line) for line in (evidence / "raw-github-calls.jsonl").read_text(encoding="utf-8").splitlines()
         ]
         self.assertEqual(["served", "blob", "wrong", "missing"], [call["url"].split("/")[4] for call in calls])
-        # A spent budget fetches nothing more and says how many it left.
         self.server.requests.clear()
         later = self.identities([row("later", b"later", "1")])
         done = self.run_cli(
@@ -1170,6 +1176,461 @@ class AcquisitionTests(ScreenHarness):
             str(responses.parent),
         )
         self.assertEqual(("population-screen: acquire: budget-spent 1\n", []), (done.stdout, self.server.requests))
+
+
+class AcquisitionRecoveryTests(ScreenHarness):
+    def test_a_contents_answer_in_the_shared_cache_is_decoded_and_a_network_failure_is_ledgered(self) -> None:
+        document = b"openapi: 3.0.3\n# encoded\n"
+        responses = self.scratch / "responses" / "cd"
+        responses.mkdir(parents=True)
+        contents = json.dumps({"encoding": "base64", "content": base64.b64encode(document).decode()}).encode()
+        (responses / f"{'cd' * 32}.{hashlib.sha256(contents).hexdigest()}.body").write_bytes(contents)
+        broken = json.dumps({"encoding": "base64", "content": "@@not base64@@"}).encode()
+        (responses / f"{'ce' * 32}.{hashlib.sha256(broken).hexdigest()}.body").write_bytes(broken)
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", 0))
+            closed = probe.getsockname()[1]
+        plan = self.scratch / "plan.tsv"
+        plan.write_text(
+            "\t".join(SCREEN.IDENTITY_COLUMNS)
+            + "\n"
+            + "\t".join(
+                (
+                    "github",
+                    "acme/encoded/openapi.yaml",
+                    "acme/encoded",
+                    COMMIT,
+                    "openapi.yaml",
+                    hashlib.sha256(document).hexdigest(),
+                    "",
+                    "2",
+                )
+            )
+            + "\n"
+            + "\t".join(
+                (
+                    "github",
+                    "acme/offline/openapi.yaml",
+                    "acme/offline",
+                    COMMIT,
+                    "openapi.yaml",
+                    hashlib.sha256(b"never served").hexdigest(),
+                    "",
+                    "1",
+                )
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        evidence = self.scratch / "evidence"
+        self.env["CROZIER_RAW_GITHUB_URL"] = f"http://127.0.0.1:{closed}"
+        done = self.run_cli(
+            "acquire",
+            "--identities",
+            str(plan),
+            "--evidence",
+            str(evidence),
+            "--store",
+            str(self.store),
+            "--responses",
+            str(responses.parent),
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual("population-screen: acquire: refused-http-0 1, shared-cache 1\n", done.stdout)
+        self.assertEqual(document, SCREEN.cached(hashlib.sha256(document).hexdigest(), self.store))
+        ledger = [
+            json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        self.assertEqual(
+            [("acme/encoded/openapi.yaml", "shared-cache"), ("acme/offline/openapi.yaml", "refused-http-0")],
+            [(row["document"], row["how"]) for row in ledger],
+        )
+
+    def test_a_plan_or_budget_the_lane_cannot_take_is_refused_before_any_request(self) -> None:
+        plan = self.scratch / "plan.tsv"
+        header = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n"
+        for row, message in (
+            (("gitlab", "a/b/c", "a/b", COMMIT, "c", "0" * 64, "", "1"), "is no acquired population's"),
+            (("github", "a/../c", "a/..", COMMIT, "c", "0" * 64, "", "1"), "is no acquired population's"),
+            (("github", "a/b/c", "a/b", COMMIT, "../c", "0" * 64, "", "1"), "is no path inside a repository"),
+            (("github", "a/b/c", "a/b", "main", "c", "0" * 64, "", "1"), "no full commit, SHA-256 or rank"),
+        ):
+            with self.subTest(message=message):
+                plan.write_text(header + "\t".join(row) + "\n", encoding="utf-8")
+                done = self.run_cli("acquire", "--identities", str(plan), "--evidence", str(self.scratch / "e"))
+                self.assertEqual(1, done.returncode)
+                self.assertIn(message, done.stderr)
+                self.assertEqual([], self.server.requests)
+        for budget in ("-1", "nan", "inf", "soon"):
+            with self.subTest(budget=budget):
+                done = self.run_cli(
+                    "acquire",
+                    "--identities",
+                    str(plan),
+                    "--evidence",
+                    str(self.scratch / "e"),
+                    "--budget-seconds",
+                    budget,
+                )
+                self.assertEqual(2, done.returncode)
+                self.assertIn("is no finite, non-negative number of seconds", done.stderr)
+        done = self.run_cli("screen", "--manifest", str(plan), "--workers", "0")
+        self.assertEqual((2, True), (done.returncode, "is no positive whole number" in done.stderr))
+
+
+class ContractDriftTests(unittest.TestCase):
+    def test_each_site_judges_its_conditions_in_the_order_the_reader_declares(self) -> None:
+        judged: dict[str, int] = dict.fromkeys(SCREEN.KEYS, 0)
+        for name, body, _expected in CASES:
+            for key, find in SCREEN.SITES.items():
+                for site in find(body):
+                    with self.subTest(case=name, key=key):
+                        self.assertEqual(
+                            SCREEN.CONDITIONS[key], tuple(condition for condition, _check in site.conditions)
+                        )
+                    judged[key] += 1
+        self.assertEqual([], [key for key, count in judged.items() if not count])
+
+    def test_the_header_policy_is_the_one_src_ir_rs_states(self) -> None:
+        source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
+
+        def literals(function: str) -> set[str]:
+            body = source.split(f"fn {function}(", 1)[1].split("\n}\n", 1)[0]
+            return set(re.findall(r'"([A-Za-z-]+)"', body))
+
+        managed = literals("is_transport_managed_header") | literals("is_transport_managed_parameter")
+        self.assertEqual(managed, set(SCREEN.TRANSPORT_MANAGED_HEADERS))
+        self.assertEqual(literals("is_promotion_reserved_header"), set(SCREEN.PROMOTION_RESERVED_HEADERS))
+
+
+class FlowMappingTests(ScreenHarness):
+    def test_a_yaml_flow_mapping_opening_like_json_is_read_as_the_yaml_it_is(self) -> None:
+        body = (
+            b"{openapi: 3.0.3, info: {title: t, version: '1', license: {name: MIT}}, paths: {/search: {get: "
+            b"{operationId: Search_, tags: [Search], responses: {'200': {description: ok}}}}}}\n"
+        )
+        done, output = self.screen([self.entry("flow", body, [KEY_T])], "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        [row] = SCREEN.read_screen(output)
+        self.assertEqual(("exact", "admissible:MIT (info.license 'MIT')"), (row.trigger, row.licence))
+
+
+BUILD = load("witness_populations_build_under_test", REPO / "tools/witness-search/witness-populations-build.py")
+RECORD_SCRIPT = REPO / "tools/witness-search/witness-populations-record.py"
+BUILD_SCRIPT = REPO / "tools/witness-search/witness-populations-build.py"
+
+
+class BuildTests(ScreenHarness):
+    """The builder over an authored repository tree: its ledgers, corpus, archive and handed-off record."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.root = self.scratch / "repo"
+        surface = self.root / "docs" / "openapi-surface"
+        surface.mkdir(parents=True)
+        shutil.copy(REPO / "docs/openapi-surface/witness-search-keys.tsv", surface / "witness-search-keys.tsv")
+        self.pointer = json.dumps(CASES[0][1]).encode()
+        self.write(
+            surface / "witness-search-github-code-search" / "candidates.jsonl",
+            [
+                {
+                    "repository": "acme/pointers",
+                    "path": "openapi.json",
+                    "commit": "1" * 40,
+                    "sha256": "e" * 64,
+                    "key": "ref-pointer-unnamed-segment",
+                    "selector": "schema.$ref:unnamed-segment",
+                    "disposition": "declares",
+                    "at": "2026-09-01T00:00:00+00:00",
+                },
+                {
+                    "repository": "acme/pointers",
+                    "path": "openapi.json",
+                    "commit": "2" * 40,
+                    "sha256": hashlib.sha256(self.pointer).hexdigest(),
+                    "key": "oneof-anyof-variant",
+                    "selector": "schema.oneOf>schema.anyOf",
+                    "disposition": "does-not-declare",
+                    "at": "2026-09-02T00:00:00+00:00",
+                },
+                {
+                    "repository": "acme/swagger",
+                    "path": "swagger.json",
+                    "commit": "3" * 40,
+                    "sha256": "f" * 64,
+                    "key": "oneof-anyof-variant",
+                    "selector": "schema.oneOf>schema.anyOf",
+                    "disposition": "excluded-non-openapi-3",
+                },
+                {
+                    "repository": "fern-api/fern",
+                    "path": "openapi.json",
+                    "commit": "4" * 40,
+                    "sha256": "d" * 64,
+                    "key": "oneof-anyof-variant",
+                    "selector": "schema.oneOf>schema.anyOf",
+                    "disposition": "declares",
+                },
+                {
+                    "repository": "acme/hidden",
+                    "path": BUILD_OPAQUE,
+                    "commit": "5" * 40,
+                    "sha256": "c" * 64,
+                    "key": "oneof-anyof-variant",
+                    "selector": "schema.oneOf>schema.anyOf",
+                    "disposition": "declares",
+                },
+            ],
+        )
+        self.write(
+            surface / "witness-search-sourcegraph" / "candidates.jsonl",
+            [
+                {
+                    "repository": "github.com/jentic/jentic-public-apis",
+                    "path": "apis/x/openapi.json",
+                    "commit": "6" * 40,
+                    "sha256": hashlib.sha256(self.pointer + b" ").hexdigest(),
+                    "key": "oneof-anyof-variant",
+                    "selector": "schema.oneOf>schema.anyOf",
+                    "disposition": "does-not-declare",
+                },
+                {
+                    "repository": "gitlab.com/acme/elsewhere",
+                    "path": "openapi.json",
+                    "commit": "7" * 40,
+                    "sha256": "b" * 64,
+                    "key": "oneof-anyof-variant",
+                    "selector": "schema.oneOf>schema.anyOf",
+                    "disposition": "declares",
+                },
+            ],
+        )
+        handed = self.root / "docs/fern-measurements/handed-off/documents.tsv"
+        handed.parent.mkdir(parents=True)
+        self.handed_bytes = json.dumps(CASES[2][1]).encode()
+        handed.write_text(
+            "document\tsha256\tsource\troot_causes\tstatus\tcorpus_row\tnote\n"
+            f"acme/handed:openapi.json@{'8' * 40}\t{hashlib.sha256(self.handed_bytes).hexdigest()}\t-\t-\tdiffers\t-\t-\n"
+            f"acme/lost:openapi.json@{'9' * 40}\t{'a' * 64}\t-\t-\tdiffers\t-\t-\n"
+            f"(bytes only, no recorded provenance) —\t{'0' * 64}\t-\t-\trefused-by-ruling\t-\t-\n",
+            encoding="utf-8",
+        )
+        fixtures = self.root / "tests" / "fixtures"
+        (fixtures / "corpus-sources" / "sample-api").mkdir(parents=True)
+        self.registered = json.dumps(CASES[1][1]).encode()
+        (fixtures / "corpus-sources" / "sample-api" / "openapi.json").write_bytes(self.registered)
+        (fixtures / "corpus-sources.tsv").write_text(
+            "# header\nsample-api\ttests/fixtures/corpus-sources/sample-api/openapi.json\t"
+            "https://raw.githubusercontent.com/acme/sample/" + "a" * 40 + "/openapi.json\t-\n",
+            encoding="utf-8",
+        )
+        (fixtures / "CORPUS.md").write_text(
+            "| # | name | method | source | pinned ref | license | decision | shapes |\n|---:|---|---|---|---|---|---|---|\n"
+            "| 7 | `sample-api` | github-raw | https://raw.githubusercontent.com/acme/sample/"
+            + "a" * 40
+            + "/openapi.json | `aaaa` | MIT (repository LICENSE at the pinned revision) | committed | sample |\n",
+            encoding="utf-8",
+        )
+        self.archive = self.scratch / "archive"
+        archived = self.archive / "APIs" / "acme.local" / "1.0" / "openapi.json"
+        archived.parent.mkdir(parents=True)
+        archived.write_bytes(self.registered)
+        manifest = surface / "witness-search-apis.guru" / "acquisition-manifest.tsv"
+        manifest.parent.mkdir(parents=True)
+        manifest.write_text(
+            "walk\tdocument\trevision\tsha256\nAPIs-guru/openapi-directory\tAPIs/acme.local/1.0/openapi.json\t"
+            f"{BUILD.ARCHIVE_REVISION}\t{hashlib.sha256(self.registered).hexdigest()}\n",
+            encoding="utf-8",
+        )
+        census = surface / "witness-search-ledger-remainders" / "census.tsv"
+        census.parent.mkdir(parents=True)
+        census.write_text(
+            "key\tsource\tdocument\tsha256\tdeclarations\tstatus\tneeds\n"
+            f"combo-tag-only-operation-id\tregistered\tsample-api\t-\t1\tunscreened\t-\n"
+            f"combo-map-beside-oneof\tapis-guru\tAPIs/acme.local/1.0/openapi.yaml\t-\t1\tunscreened\t-\n"
+            f"combo-header-string-default\thanded-off\tacme/lost:openapi.json@{'9' * 40}\t-\t1\tunscreened\t-\n",
+            encoding="utf-8",
+        )
+
+    def write(self, path: Path, rows: list[dict[str, Any]]) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+
+    def build(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(BUILD_SCRIPT), "--root", str(self.root), *args],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=REPO,
+            timeout=600,
+        )
+
+    def test_the_plan_is_each_public_openapi_identity_once_at_its_latest_commit_ranked(self) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        done = self.build("identities", "--output", str(plan))
+        self.assertEqual((0, "witness-populations-build: 4 identities\n"), (done.returncode, done.stdout), done.stderr)
+        rows = {row.document: row for row in SCREEN.read_identities(plan)}
+        self.assertEqual(
+            {
+                "acme/pointers/openapi.json",
+                "jentic/jentic-public-apis/apis/x/openapi.json",
+                f"acme/handed:openapi.json@{'8' * 40}",
+                f"acme/lost:openapi.json@{'9' * 40}",
+            },
+            set(rows),
+        )
+        pointer = rows["acme/pointers/openapi.json"]
+        self.assertEqual(("2" * 40, hashlib.sha256(self.pointer).hexdigest()), (pointer.commit, pointer.sha256))
+        # A recorded pointer-shape declarer outranks a field-name match, and the handed-off documents lead.
+        self.assertGreaterEqual(int(pointer.rank), 110)
+        self.assertLess(int(rows["jentic/jentic-public-apis/apis/x/openapi.json"].rank), 100)
+        self.assertEqual("1000", rows[f"acme/handed:openapi.json@{'8' * 40}"].rank)
+
+    def test_the_manifest_names_every_population_with_its_evidence_and_refuses_bytes_the_record_does_not_hold(
+        self,
+    ) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        SCREEN.store(self.pointer, self.store)
+        SCREEN.store(self.handed_bytes, self.store)
+        output = self.scratch / "population.tsv"
+        args = (
+            "manifest",
+            "--identities",
+            str(plan),
+            "--archive",
+            str(self.archive),
+            "--store",
+            str(self.store),
+            "--preflight",
+            str(self.scratch / "none"),
+            "--acquisitions",
+            str(self.scratch / "none.jsonl"),
+            "--output",
+            str(output),
+        )
+        done = self.build(*args)
+        self.assertEqual(0, done.returncode, done.stderr)
+        got = {(e.population, e.document): (e.evidence, e.keys, e.unfetchable) for e in SCREEN.read_manifest(output)}
+        self.assertEqual(
+            {
+                ("registered", "sample-api"): (
+                    "corpus:MIT (repository LICENSE at the pinned revision)",
+                    "combo-tag-only-operation-id",
+                    "-",
+                ),
+                ("apis-guru", "acme.local/1.0"): ("no-publisher-grant", "combo-map-beside-oneof", "-"),
+                ("handed-off", f"acme/handed:openapi.json@{'8' * 40}"): (
+                    f"repository:acme/handed@{'8' * 40}",
+                    "-",
+                    "-",
+                ),
+                ("handed-off", f"acme/lost:openapi.json@{'9' * 40}"): (
+                    f"repository:acme/lost@{'9' * 40}",
+                    "combo-header-string-default",
+                    BUILD.HANDED_OFF_UNFETCHED,
+                ),
+                ("github", "acme/pointers/openapi.json"): (f"repository:acme/pointers@{'2' * 40}", "-", "-"),
+            },
+            got,
+        )
+        # The archive copy is held to the digest the committed acquisition manifest records.
+        (self.archive / "APIs" / "acme.local" / "1.0" / "openapi.json").write_bytes(b"{}")
+        refused = self.build(*args)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("extract the pinned archive again", refused.stderr)
+
+    def test_replay_plans_each_new_code_search_hit_by_its_blob_and_asks_nothing(self) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        evidence = self.scratch / "search"
+        self.write(
+            evidence / "queries.jsonl",
+            [
+                {
+                    "source": "github-code-search",
+                    "key": "combo-property-defs-pointer",
+                    "query": "q",
+                    "outcome": "answered",
+                    "results": [
+                        {"repository": "acme/new", "path": "spec/openapi.yaml", "commit": "a" * 40, "sha": "b" * 40},
+                        {"repository": "acme/pointers", "path": "openapi.json", "commit": "2" * 40, "sha": "c" * 40},
+                        {"repository": "acme/mutable", "path": "openapi.yaml", "commit": "main", "sha": "d" * 40},
+                    ],
+                },
+                {
+                    "source": "sourcegraph",
+                    "key": "combo-property-defs-pointer",
+                    "query": "q",
+                    "outcome": "answered",
+                    "results": [],
+                },
+            ],
+        )
+        output = self.scratch / "hits.tsv"
+        done = self.build(
+            "search", "--replay", "--evidence", str(evidence), "--identities", str(plan), "--output", str(output)
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
+        [hit] = SCREEN.read_identities(output)
+        self.assertEqual(("acme/new/spec/openapi.yaml", "blob:" + "b" * 40), (hit.document, hit.sha256))
+        self.assertGreaterEqual(int(hit.rank), 1)
+        self.assertEqual([], self.server.requests)
+        with gzip.open(evidence / "queries.jsonl.gz", "wt", encoding="utf-8") as handle:
+            handle.write((evidence / "queries.jsonl").read_text(encoding="utf-8"))
+        (evidence / "queries.jsonl").unlink()
+        again = self.build(
+            "search", "--replay", "--evidence", str(evidence), "--identities", str(plan), "--output", str(output)
+        )
+        self.assertEqual(0, again.returncode, again.stderr)
+        self.assertEqual([hit], SCREEN.read_identities(output))
+        live = self.build("search", "--evidence", str(evidence), "--identities", str(plan), "--output", str(output))
+        self.assertEqual(2, live.returncode)
+        self.assertIn("gunzip queries.jsonl.gz to resume it live", live.stderr)
+
+
+class RecordTests(unittest.TestCase):
+    """The record's README, written from and checked against a copy of the committed evidence."""
+
+    def setUp(self) -> None:
+        scratch = tempfile.TemporaryDirectory(prefix="witness-populations-record-")
+        self.addCleanup(scratch.cleanup)
+        self.record = Path(scratch.name) / "record"
+        shutil.copytree(SCREEN.RECORD, self.record)
+
+    def record_cli(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(RECORD_SCRIPT), "--record", str(self.record), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=REPO,
+            timeout=900,
+        )
+
+    def test_the_readme_is_written_from_its_evidence_and_a_stale_or_unreadable_record_is_refused(self) -> None:
+        written = self.record_cli()
+        self.assertEqual(0, written.returncode, written.stderr)
+        readme = (self.record / "README.md").read_text(encoding="utf-8")
+        rows = SCREEN.read_screen(self.record / "screen.tsv")
+        for key, count in SCREEN.pending_counts(rows).items():
+            self.assertIn(f"| `{key}` | `search-incomplete` | {count} |", readme)
+        self.assertEqual(0, self.record_cli("--check").returncode)
+        (self.record / "README.md").write_text(readme.replace("search-incomplete", "exhausted", 1), encoding="utf-8")
+        stale = self.record_cli("--check")
+        self.assertEqual(1, stale.returncode)
+        self.assertIn("is not what its evidence gives", stale.stderr)
+        calls = self.record / "acquisition" / "raw-github-calls.jsonl"
+        calls.write_text(calls.read_text(encoding="utf-8") + '{"at": "x"}\n', encoding="utf-8")
+        malformed = self.record_cli("--check")
+        self.assertEqual(1, malformed.returncode)
+        self.assertRegex(malformed.stderr, r"raw-github-calls\.jsonl:\d+ is no record carrying at, status, url")
+        (self.record / "acquisition" / "acquisitions.jsonl").unlink()
+        missing = self.record_cli()
+        self.assertEqual(1, missing.returncode)
+        self.assertIn("acquisitions.jsonl is missing", missing.stderr)
 
 
 class JourneyTests(ScreenHarness):
@@ -1198,7 +1659,6 @@ class JourneyTests(ScreenHarness):
         lost = self.run_cli("cached", hashlib.sha256(rejected).hexdigest(), "--store", str(self.store))
         self.assertEqual(1, lost.returncode)
         self.assertIn("re-fetch them from the row's source", lost.stderr)
-        # The host cache defaults to ${XDG_CACHE_HOME}/crozier/witness-populations.
         SCREEN.store(exact, Path(self.env["XDG_CACHE_HOME"]) / "crozier" / "witness-populations")
         default = self.run_cli("cached", pending[0].sha256)
         self.assertEqual(0, default.returncode, default.stderr)
@@ -1212,17 +1672,27 @@ class CommittedTableTests(unittest.TestCase):
         cls.rows = SCREEN.read_screen(SCREEN.TABLE)
 
     def test_the_committed_table_reads_whole_through_the_reader(self) -> None:
-        # `read_screen` refused nothing in setUpClass; every key has candidates screened.
         self.assertEqual(set(SCREEN.KEYS), {row.key for row in self.rows})
         self.assertEqual(len(self.rows), len({(row.key, row.population, row.document) for row in self.rows}))
 
     def test_every_candidate_the_earlier_named_census_lists_has_a_row(self) -> None:
         build = load("witness_populations_build_under_test", REPO / "tools/witness-search/witness-populations-build.py")
         have = {(row.key, row.population, row.document) for row in self.rows}
-        for (population, document), keys in build.earlier_rows().items():
+        for (population, document), keys in build.earlier_rows(build.Tree(REPO)).items():
             for key in keys:
                 with self.subTest(key=key, population=population, document=document):
                     self.assertIn((key, population, document), have)
+
+    def test_the_committed_readme_is_what_its_evidence_gives(self) -> None:
+        done = subprocess.run(
+            [sys.executable, str(RECORD_SCRIPT), "--check"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            cwd=REPO,
+            timeout=900,
+        )
+        self.assertEqual(0, done.returncode, done.stderr)
 
     def test_every_row_names_a_manifest_candidate_with_its_digest(self) -> None:
         entries = {(e.population, e.document): e for e in SCREEN.read_manifest(SCREEN.POPULATION)}

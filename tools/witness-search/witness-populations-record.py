@@ -43,23 +43,44 @@ def _load(name: str, path: Path) -> ModuleType:
 
 SCREEN = _load("witness_populations_record_screen", Path(__file__).with_name("population_screen.py"))
 RECORD = SCREEN.RECORD
-HANDED_OFF = REPO / "docs" / "fern-measurements" / "handed-off" / "documents.tsv"
-SERVED_ONLY = REPO / "docs" / "openapi-surface" / "witness-search-apis.guru" / "unread-responses.jsonl"
+HANDED_OFF = Path("docs") / "fern-measurements" / "handed-off" / "documents.tsv"
+SERVED_ONLY = Path("docs") / "openapi-surface" / "witness-search-apis.guru" / "unread-responses.jsonl"
 ARCHIVE = "`APIs-guru/openapi-directory` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`"
 LEDGER_POPULATION = {"github": "github", "sourcegraph": "sourcegraph"}
 
 
-def jsonl(path: Path) -> list[dict[str, Any]]:
-    if not path.is_file():
-        return []
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+def records(path: Path, fields: tuple[str, ...], lines: list[str]) -> list[dict[str, Any]]:
+    """Each line of an evidence log as the object it records, refusing one that lacks `fields`."""
+    out = []
+    for number, line in enumerate((line for line in lines if line.strip()), 1):
+        try:
+            row = json.loads(line)
+        except ValueError as error:
+            raise ValueError(f"{path}:{number} is no JSON ({error})") from error
+        if not isinstance(row, dict) or any(field not in row for field in fields):
+            raise ValueError(f"{path}:{number} is no record carrying {', '.join(fields)}")
+        out.append(row)
+    return out
 
 
-def packed(path: Path) -> list[dict[str, Any]]:
+def jsonl(path: Path, fields: tuple[str, ...], *, required: bool = True) -> list[dict[str, Any]]:
+    """An evidence log's records; a missing log is refused unless it is one written only when something happened."""
     if not path.is_file():
+        if required:
+            raise ValueError(f"{path} is missing")
         return []
-    with gzip.open(path, "rt", encoding="utf-8") as handle:
-        return [json.loads(line) for line in handle if line.strip()]
+    return records(path, fields, path.read_text(encoding="utf-8").splitlines())
+
+
+def queries_log(search: Path) -> list[dict[str, Any]]:
+    """The search's recorded answers: live as `queries.jsonl`, or committed packed as `queries.jsonl.gz`."""
+    live, packed = search / "queries.jsonl", search / "queries.jsonl.gz"
+    if live.is_file():
+        return jsonl(live, ("source", "outcome"))
+    if not packed.is_file():
+        raise ValueError(f"{live} (or {packed.name}) is missing")
+    with gzip.open(packed, "rt", encoding="utf-8") as handle:
+        return records(packed, ("source", "outcome"), handle.read().splitlines())
 
 
 def table(header: list[str], rows: list[list[Any]], right: int = 0) -> str:
@@ -70,21 +91,21 @@ def table(header: list[str], rows: list[list[Any]], right: int = 0) -> str:
     return "\n".join(lines) + "\n"
 
 
-def plan_rows(record: Path) -> list[Any]:
-    rows = list(SCREEN.read_identities(record / "identities.tsv.gz"))
-    hits = record / "search-identities.tsv"
-    return rows + (list(SCREEN.read_identities(hits)) if hits.is_file() else [])
+def plan_rows(record: Path) -> list[SCREEN.Identity]:
+    return SCREEN.read_identities(record / "identities.tsv.gz") + SCREEN.read_identities(
+        record / "search-identities.tsv"
+    )
 
 
-def aggregation_only(entries: list[Any]) -> list[list[str]]:
+def aggregation_only(entries: list[SCREEN.Entry], root: Path = REPO) -> list[list[str]]:
     """Every registered row whose only recorded grant is an aggregation's: number, name, spec, aggregator."""
-    corpus = SCREEN.corpus_rows()
+    corpus = SCREEN.corpus_rows(root)
     found = []
     with tempfile.TemporaryDirectory(prefix="witness-populations-record-") as scratch:
         for entry in entries:
             if entry.population != "registered":
                 continue
-            data = SCREEN.registered_bytes(entry.document)
+            data = SCREEN.registered_bytes(entry.document, root)
             if data is None:
                 continue
             try:
@@ -103,17 +124,18 @@ def stamp(value: str) -> str:
     return datetime.datetime.fromisoformat(value).strftime("%Y-%m-%d %H:%M UTC")
 
 
-def render(record: Path) -> str:
+def render(record: Path, root: Path = REPO) -> str:
     rows = SCREEN.read_screen(record / "screen.tsv")
     entries = SCREEN.read_manifest(record / "population.tsv")
     plan = plan_rows(record)
-    attempts = jsonl(record / "acquisition" / "acquisitions.jsonl")
-    raw_calls = jsonl(record / "acquisition" / "raw-github-calls.jsonl")
-    raw_waits = jsonl(record / "acquisition" / "raw-github-waits.jsonl")
-    queries = jsonl(record / "search" / "queries.jsonl") or packed(record / "search" / "queries.jsonl.gz")
-    calls = jsonl(record / "search" / "rate-limit-calls.jsonl")
-    pacing = jsonl(record / "search" / "index-pacing-waits.jsonl")
-    floor_waits = jsonl(record / "search" / "rate-limit-waits.jsonl")
+    attempts = jsonl(record / "acquisition" / "acquisitions.jsonl", ("population", "document", "how"))
+    raw_calls = jsonl(record / "acquisition" / "raw-github-calls.jsonl", ("at", "status", "url"))
+    raw_waits = jsonl(record / "acquisition" / "raw-github-waits.jsonl", ("at", "duration_s"))
+    queries = queries_log(record / "search")
+    calls = jsonl(record / "search" / "rate-limit-calls.jsonl", ("at", "host", "status"))
+    pacing = jsonl(record / "search" / "index-pacing-waits.jsonl", ("at", "duration_s"))
+    # The guard writes its floor-pause log only when it pauses for the floor.
+    floor_waits = jsonl(record / "search" / "rate-limit-waits.jsonl", ("at", "duration_s"), required=False)
 
     by_key: dict[str, Counter[str]] = defaultdict(Counter)
     status: dict[str, Counter[str]] = defaultdict(Counter)
@@ -142,10 +164,10 @@ def render(record: Path) -> str:
     hits = sum(1 for identity in plan if SCREEN.BLOB.fullmatch(identity.sha256))
     hit_docs = {identity.document for identity in plan if SCREEN.BLOB.fullmatch(identity.sha256)}
 
-    with HANDED_OFF.open(encoding="utf-8", newline="") as handle:
+    with (root / HANDED_OFF).open(encoding="utf-8", newline="") as handle:
         handed = list(csv.DictReader(handle, delimiter="\t"))
     no_provenance = [row for row in handed if "@" not in row["document"]]
-    served = jsonl(SERVED_ONLY)
+    served = jsonl(root / SERVED_ONLY, ("sha256",))
     registered_digests = {entry.sha256 for entry in entries if entry.population == "registered"}
     served_registered = sum(1 for row in served if row.get("sha256") in registered_digests)
 
@@ -293,7 +315,7 @@ def render(record: Path) -> str:
             [[f"`{key}`", ", ".join(f"`{c}`" for c in SCREEN.CONDITIONS[key])] for key in sorted(SCREEN.KEYS)],
         )
     )
-    aggregated = aggregation_only(entries)
+    aggregated = aggregation_only(entries, root)
     w("\n## Registered rows on an aggregation's grant alone\n")
     w(
         f"{len(aggregated)} registered corpus rows declare no `info.license` and record only an aggregation's grant "
@@ -452,9 +474,13 @@ def render(record: Path) -> str:
         "  --budget-seconds <seconds>\n"
         "# The manifest, the screen and this README.\n"
         "uv run --locked --all-packages python tools/witness-search/witness-populations-build.py manifest \\\n"
-        "  --identities <plan> --archive <extracted openapi-directory tree>\n"
+        "  --identities docs/openapi-surface/witness-search-combination-populations/identities.tsv.gz \\\n"
+        "  --identities docs/openapi-surface/witness-search-combination-populations/search-identities.tsv \\\n"
+        "  --archive <extracted openapi-directory tree>\n"
         "uv run --locked --all-packages python tools/witness-search/population_screen.py screen --workers 8 --fetch-licence\n"
         "uv run --locked --all-packages python tools/witness-search/witness-populations-record.py\n"
+        "# The suite holds this README to its evidence (`--check` exits 1 when it is stale).\n"
+        "uv run --locked --all-packages python tools/witness-search/witness-populations-record.py --check\n"
         "```\n"
     )
     return "\n".join(out)
@@ -463,10 +489,11 @@ def render(record: Path) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--record", type=Path, default=RECORD)
+    parser.add_argument("--root", type=Path, default=REPO, help="the repository whose records are read")
     parser.add_argument("--check", action="store_true", help="exit 1 when the committed README is stale")
     args = parser.parse_args(argv)
     try:
-        text = render(args.record)
+        text = render(args.record, args.root)
     except (OSError, ValueError, KeyError) as error:
         print(f"witness-populations-record: {error}; restore the record's inputs from git", file=sys.stderr)
         return 1
