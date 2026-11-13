@@ -170,6 +170,9 @@ def test_it_refuses_a_call_it_does_not_take(tmp_path: Path) -> None:
     result = subprocess.run(["bash", str(SCRIPT), "only-a-url"], capture_output=True, text=True, check=False)
     assert result.returncode == 2
     assert "usage: screenshots/fetch-tool.sh URL OUT" in result.stderr
+    result = fetch("--config=/etc/passwd", tmp_path / "x")
+    assert result.returncode == 2
+    assert "'--config=/etc/passwd' is not an http(s) URL" in result.stderr
     for name, value in (("FETCH_TOOL_ATTEMPTS", "many"), ("FETCH_TOOL_ATTEMPTS", "0"), ("FETCH_TOOL_DELAY", "61")):
         result = fetch("http://127.0.0.1:9/x", tmp_path / "x", **{name: value})
         assert result.returncode == 2, (name, value)

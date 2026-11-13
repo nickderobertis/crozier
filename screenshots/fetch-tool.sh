@@ -16,6 +16,13 @@ if [ "$#" -ne 2 ]; then
 fi
 url=$1
 out=$2
+case $url in
+  https://* | http://*) ;;
+  *)
+    echo "fetch-tool: '$url' is not an http(s) URL; pass the pinned release's https:// address" >&2
+    exit 2
+    ;;
+esac
 if [ -d "$out" ]; then
   echo "fetch-tool: $out is a directory, so the archive from $url cannot be written there; remove it or name a file, then re-run" >&2
   exit 2
@@ -45,7 +52,7 @@ attempt=0
 while :; do
   attempt=$((attempt + 1))
   status=0
-  error=$(curl -fsSL --connect-timeout 30 -o "$out.part" "$url" 2>&1) || status=$?
+  error=$(curl -fsSL --connect-timeout 30 -o "$out.part" --url "$url" 2>&1) || status=$?
   if [ "$status" -eq 0 ]; then
     if ! mv -f "$out.part" "$out"; then
       echo "fetch-tool: downloaded $url but could not move it to $out; check that its directory is writable, then re-run" >&2
