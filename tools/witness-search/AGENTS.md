@@ -13,5 +13,4 @@
   search`.
 - `population_screen.py` is the only reader of
   `docs/openapi-surface/witness-search-combination-populations/screen.tsv`; read
-  it through `read_screen`, never by splitting lines. Regenerate the record's
-  README with `witness-populations-record.py` after the table moves.
+  it through `read_screen`, never by splitting lines.

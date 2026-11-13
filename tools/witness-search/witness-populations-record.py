@@ -21,7 +21,6 @@ import gzip
 import importlib.util
 import json
 import math
-import re
 import sys
 import tempfile
 from collections import Counter, defaultdict
@@ -62,11 +61,6 @@ def instant(value: Any) -> bool:
         return False
 
 
-# The outcomes the guarded search records for a query.
-QUERY_OUTCOME = re.compile(
-    r"answered|partitioned|refused|not-queryable|incomplete-stream|acquisition-failure|secondary-limiter"
-    r"|outstanding-[a-z-]+"
-)
 # What each evidence field must hold for the README to count it.
 FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "at": instant,
@@ -79,8 +73,8 @@ FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "status": lambda value: isinstance(value, int | str) and not isinstance(value, bool),
     "url": lambda value: isinstance(value, str) and value.startswith(("https://", "http://")),
     "host": lambda value: value in ("github", "sourcegraph"),
-    "source": lambda value: value in ("github-code-search", "sourcegraph"),
-    "outcome": lambda value: isinstance(value, str) and bool(QUERY_OUTCOME.fullmatch(value)),
+    "source": lambda value: value in BUILD.QUERY_SOURCES,
+    "outcome": lambda value: isinstance(value, str) and bool(BUILD.QUERY_OUTCOME.fullmatch(value)),
     "sha256": lambda value: isinstance(value, str) and bool(SCREEN.SHA.fullmatch(value)),
 }
 

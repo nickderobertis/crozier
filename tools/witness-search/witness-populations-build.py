@@ -481,6 +481,14 @@ class RecordedQuery(NamedTuple):
     hits: tuple[CodeHit, ...]
 
 
+# Who answers the search's queries, and the outcomes the guarded acquirer records for one.
+QUERY_SOURCES = ("github-code-search", "sourcegraph")
+QUERY_OUTCOME = re.compile(
+    r"answered|partitioned|refused|not-queryable|incomplete-stream|acquisition-failure|secondary-limiter"
+    r"|outstanding-[a-z-]+"
+)
+
+
 def recorded_queries(evidence: Path) -> list[RecordedQuery]:
     """The search's recorded answers: its live `queries.jsonl`, or the `queries.jsonl.gz` it is committed as."""
     packed = evidence / "queries.jsonl.gz"
@@ -493,7 +501,9 @@ def recorded_queries(evidence: Path) -> list[RecordedQuery]:
         results = row.get("results", []) if isinstance(row, dict) else None
         if (
             not isinstance(row, dict)
-            or not isinstance(row.get("source"), str)
+            or row.get("source") not in QUERY_SOURCES
+            or row.get("key") not in SCREEN.KEYS
+            or not QUERY_OUTCOME.fullmatch(str(row.get("outcome", "")))
             or not isinstance(results, list)
             or not all(isinstance(item, dict) for item in results)
         ):

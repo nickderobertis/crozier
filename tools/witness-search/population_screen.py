@@ -129,9 +129,6 @@ def witness_screen() -> ModuleType:
     return _load("population_screen_witness_screen", REPO / "tools" / "witness-search" / "witness_screen.py")
 
 
-HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
-
-
 @functools.cache
 def schema_children() -> tuple[tuple[str, str], ...]:
     """Each keyword under which a Schema Object holds further Schema Objects, with its container shape.
@@ -245,7 +242,8 @@ def operations(document: Any) -> Iterator[Operation]:
             item = deref(document, item)
             if not isinstance(item, dict):
                 continue
-            for method in HTTP_METHODS:
+            # The operation methods the census walks, so both walks read the same operations.
+            for method in census()._HTTP_METHODS:
                 node = item.get(method)
                 if isinstance(node, dict):
                     yield Operation(str(url), method, node, item)
@@ -1921,6 +1919,16 @@ def read_identities(path: Path) -> list[Identity]:
                 )
             if not witness_screen().repository_path(identity.path):
                 raise ScreenError(f"{path}:{number}: {identity.path!r} is no path inside a repository")
+            named = (
+                f"{identity.repository}:{identity.path}@{identity.commit}"
+                if identity.population == Population.HANDED_OFF
+                else f"{identity.repository}/{identity.path}"
+            )
+            if identity.document != named:
+                raise ScreenError(
+                    f"{path}:{number}: document {identity.document!r} is not the {named!r} its repository, path and "
+                    "commit name"
+                )
             rows.append(identity)
     return rows
 
