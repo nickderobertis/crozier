@@ -971,6 +971,8 @@ class Selectors:
                     raise ScreenError(f"{path}:{number} is no key with its selector; regenerate it with its own script")
                 if key in rows:
                     raise ScreenError(f"{path}:{number} names {key} a second time; regenerate it with its own script")
+                if key in KEYS and (error := census().selector_error(selector)) is not None:
+                    raise ScreenError(f"{path}:{number}: {key}'s selector is none the census reads ({error})")
                 rows[key] = selector
         missing = [key for key in KEYS if key not in rows]
         if missing:
@@ -1101,9 +1103,20 @@ def status_of(licence: str, trigger_cell: str) -> str:
 def source_failure(population: str, source: str) -> str | None:
     if population == "registered":
         return None if source == "-" else "a registered document's source is `-` (its bytes are in the tree)"
+    # raw.githubusercontent.com/<owner>/<repo>/<commit>/<path>: the revision segment is a full commit SHA.
     parts = urllib.parse.urlsplit(source)
-    if parts.scheme != "https" or not parts.netloc or not any(COMMIT.fullmatch(seg) for seg in parts.path.split("/")):
-        return f"source {source!r} is no https URL pinned at a full commit SHA"
+    segments = parts.path.split("/")[1:]
+    if (
+        parts.scheme != "https"
+        or parts.netloc != "raw.githubusercontent.com"
+        or parts.query
+        or parts.fragment
+        or len(segments) < 4
+        or not COMMIT.fullmatch(segments[2])
+        or not witness_screen().repository_name("/".join(segments[:2]))
+        or not witness_screen().repository_path(urllib.parse.unquote("/".join(segments[3:])))
+    ):
+        return f"source {source!r} is no raw.githubusercontent.com URL pinned at a full commit SHA"
     return None
 
 

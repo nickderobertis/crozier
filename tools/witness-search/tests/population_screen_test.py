@@ -1251,7 +1251,15 @@ class ReaderTests(ScreenHarness):
             ((changed(document="TODO"),), "document is empty, a placeholder or padded"),
             (
                 (changed(source="https://raw.githubusercontent.com/acme/shop/main/openapi.json"),),
-                "no https URL pinned at a full commit",
+                "no raw.githubusercontent.com URL pinned at a full commit",
+            ),
+            (
+                (changed(source=f"https://raw.githubusercontent.com/acme/shop/main/{COMMIT}/openapi.json"),),
+                "no raw.githubusercontent.com URL pinned at a full commit",
+            ),
+            (
+                (changed(source=f"https://example.com/acme/shop/{COMMIT}/openapi.json"),),
+                "no raw.githubusercontent.com URL pinned at a full commit",
             ),
             ((changed(population="registered", document="shop"),), "a registered document's source is `-`"),
             ((changed(sha256="-"),), "is no SHA-256"),
@@ -1514,6 +1522,19 @@ class AcquisitionRecoveryTests(ScreenHarness):
 
 
 class ContractDriftTests(unittest.TestCase):
+    def test_a_selector_file_the_census_cannot_read_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="population-screen-") as scratch:
+            path = Path(scratch) / "witness-search-keys.tsv"
+            text = (REPO / "docs/openapi-surface/witness-search-keys.tsv").read_text(encoding="utf-8")
+            path.write_text(
+                text.replace("operation.operationId:tag-only&", "operation.operationId:no-such-predicate&", 1),
+                encoding="utf-8",
+            )
+            with self.assertRaisesRegex(
+                SCREEN.ScreenError, "combo-tag-only-operation-id's selector is none the census reads"
+            ):
+                SCREEN.Selectors.read(path)
+
     def test_each_site_judges_its_conditions_in_the_order_the_reader_declares(self) -> None:
         judged: dict[str, int] = dict.fromkeys(SCREEN.KEYS, 0)
         for name, body, _expected in CASES:
