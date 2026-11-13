@@ -305,7 +305,7 @@ test("a change to a tier manifest alone selects the inventory check, which fails
     ["a platform dropped", editManifest(SDK, (p) => { p.tags.push("platform:linux"); }), /sdk-env:test: no longer runs on macos/],
     ["a lane removed", editManifest("tests/live_e2e/project.json", (p) => { p.tags = p.tags.filter((tag) => !tag.startsWith("lane:")); }), /live-e2e: tier:promoted with no lane: tag/],
     ["a lane only Linux has", editManifest(SDK, (p) => { p.tags = p.tags.map((tag) => (tag === "lane:sdk-env" ? "lane:packaging" : tag)); }), /sdk-env:test: test-windows has no step `--projects=tag:lane:packaging`/],
-    ["a target no lane reaches any more", editManifest("tests/corpus_match/project.json", (p) => { p.targets.test.dependsOn = p.targets.test.dependsOn.filter((name) => name !== "test-strict"); }), /corpus-match:test-strict: no lane reaches it/],
+    ["a target no lane reaches any more", editManifest("tests/corpus_match/project.json", (p) => { p.targets.test.dependsOn = p.targets.test.dependsOn.filter((name) => name !== "test-offline"); }), /corpus-match:test-offline: no lane reaches it/],
     ["a tier deleted outright", (root) => rmSync(join(root, "tests/live_e2e/project.json")), /live-e2e:test: project live-e2e is gone/],
   ];
   for (const [what, edit, message] of cases) {
