@@ -10,6 +10,10 @@
   witness: the keys whose selector's field names are all among the field names of
   the ledger keys that found it, with a document the ledgers record as declaring a
   nested-pointer shape first.
+* `census` writes the acquisition plan of every GitHub and Sourcegraph document
+  the earlier named censuses list for a combination key (the ledger-remainders
+  census and the earlier combination searches' censuses), at the commit and
+  SHA-256 the census read it at.
 * `search` runs the bounded live search (page 1 of each key's YAML and JSON
   code-search queries, and one Sourcegraph query) through the guarded lanes and
   plans its new hits by their git blob; `--replay` derives them from the recorded
@@ -18,8 +22,11 @@
   every registered corpus row, every OpenAPI document of the pinned APIs.guru
   archive (each held to the digest the committed acquisition manifest records),
   every handed-off document, and every planned identity whose exact bytes the
-  store holds, each with its licence evidence, the keys the earlier named census
-  already lists it for, and, where its bytes could not be had, why.
+  store holds, each with its licence evidence, the keys the earlier named
+  censuses already list it for, and, where its bytes could not be had, why. Every
+  candidate those censuses list is an entry: one they name by SHA-256 alone
+  takes the bytes held under that digest, or is a `sha256:<hex>` entry; only a
+  hand-written fixture, which is no real-API candidate, owes none.
 
 Every path is read under `--root` (the repository by default).
 
@@ -31,6 +38,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import functools
 import gzip
 import hashlib
 import importlib.util
@@ -110,8 +118,14 @@ class Tree:
         return SCREEN.Selectors.read(self.surface / "witness-search-keys.tsv")
 
 
+@functools.cache
+def selector_fields(selector: str) -> frozenset[str]:
+    """A selector's field names, read once per selector: the ledgers repeat a few selectors many times."""
+    return frozenset(github().ingredients(selector))
+
+
 def ingredients(selector: str) -> set[str]:
-    return set(github().ingredients(selector))
+    return set(selector_fields(selector))
 
 
 def archive_document(path: str) -> str:
@@ -139,6 +153,154 @@ def earlier_rows(tree: Tree) -> dict[tuple[str, str], set[str]]:
     return listed
 
 
+# The earlier combination searches' named censuses, beside the ledger-remainders one: each lists candidates of
+# the combination keys by (key, source, document, sha256), the operation-combinations one packed and naming its
+# source only through the document's own form.
+COMBINATION_CENSUSES = (
+    "witness-search-interaction-operation-combinations/census.tsv",
+    "witness-search-interaction-schema-combinations/census.tsv",
+    "witness-search-operation-combinations-bodies-responses/census.tsv",
+    "witness-search-operation-combinations-parameters/census.tsv",
+    "witness-search-schema-combinations-models-unions-refs/census.tsv",
+    "witness-search-operation-combinations/census.tsv.gz",
+)
+CENSUS_SOURCE = {"github-code-search": "github", "sourcegraph": "sourcegraph", "apis.guru": "apis-guru"}
+# `owner/repo:path@commit`, Sourcegraph's `github.com/` before it, and the packed census's
+# ` [sha256:...]` or ` (+N identities, same bytes)` after it.
+NAMED = re.compile(
+    r"(github\.com/)?([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+):(.+?)@([0-9a-f]{40})"
+    r"(?: \[sha256:[0-9a-f]{64}\]| \(\+\d+ identities, same bytes\))?"
+)
+# The extracted archive's top directory, which one earlier census names its documents under.
+ARCHIVE_TREE = f"APIs-guru-openapi-directory-{ARCHIVE_REVISION[:7]}/"
+# A census candidate's rank in the acquisition plan: below the handed-off documents, above every ledger identity.
+CENSUS_RANK = 900
+DIGEST_ONLY_SEARCHED = (
+    "the census recorded only this sha256: no repository, path or commit is kept in it, in this record's "
+    "acquisition plans (identities.tsv.gz, census-identities.tsv) or in its population manifest"
+)
+NON_PUBLIC = "the census names it by a screened non-public identity, whose repository, path and commit stay withheld"
+EXCLUDED = "the census names it in a repository the witness search's exclusion rule keeps unfetched"
+
+
+@dataclass
+class NamedCensus:
+    """Every candidate the earlier named censuses list for a combination key, as this table names it.
+
+    `listed` holds those named by population and document; `identities` the commit and digest the census
+    read a GitHub or Sourcegraph one at; `digests` those named by SHA-256 alone, each with why; `authored`
+    the hand-written fixtures, which are no real-API candidates of any population here; and `nonpublic` the
+    screened non-public inputs that kept no digest, which nothing names.
+    """
+
+    listed: dict[tuple[str, str], set[str]]
+    identities: dict[tuple[str, str], SCREEN.Identity]
+    digests: dict[str, tuple[set[str], str]]
+    authored: dict[str, set[str]]
+    nonpublic: dict[str, set[str]]
+
+    def add(self, population: str, document: str, key: str) -> None:
+        self.listed[(population, document)].add(key)
+
+
+def named_census(tree: Tree) -> NamedCensus:
+    census = NamedCensus(defaultdict(set), {}, {}, defaultdict(set), defaultdict(set))
+    for (population, document), keys in earlier_rows(tree).items():
+        census.listed[(population, document)] |= keys
+    corpus = {name for name, path in SCREEN.registered_files(tree.root).items() if path.is_file()}
+    index = _load("witness_populations_index", Path(__file__).with_name("witness-search-github-index.py"))
+    recorded = {
+        (github_repository(record.repository) or record.repository, record.path, record.commit): record.sha256
+        for population in LEDGERS
+        for record in ledger_identities(tree, population)
+    }
+    for relative in COMBINATION_CENSUSES:
+        path = tree.surface / relative
+        for number, row in enumerate(census_rows(path), 2):
+            key, source, document, digest = row["key"], row.get("source", ""), row["document"], row["sha256"]
+            if key not in SCREEN.KEYS:
+                continue
+            where = f"{path}:{number}"
+            if index.opaque_identity(document.split(" ", 1)[0]) and digest == "-":
+                # A screened non-public input with no digest has nothing a row could name it by.
+                census.nonpublic[document].add(key)
+                continue
+            if not (SCREEN.SHA.fullmatch(digest) or (digest == "-" and NAMED.fullmatch(document))):
+                fail(f"{where} names no SHA-256 for {document!r}; restore it from git")
+            if document.startswith("(withheld)"):
+                census.digests.setdefault(digest, (set(), DIGEST_ONLY_SEARCHED))[0].add(key)
+                continue
+            if index.opaque_identity(document.split(" ", 1)[0]):
+                census.digests.setdefault(digest, (set(), NON_PUBLIC))[0].add(key)
+                continue
+            fixture = document.removeprefix("tests/fixtures/")
+            if source == "registered" or document.startswith(("corpus-sources/", "tests/fixtures/", "registered")):
+                # `corpus-sources/<row>/...` or `registered:<row>` names a corpus row; anything else is a fixture.
+                name = fixture.split("/")[1] if fixture.startswith("corpus-sources/") else ""
+                name = document.removeprefix("registered:") if document.startswith("registered:") else name
+                if name in corpus:
+                    census.add("registered", name, key)
+                else:
+                    census.authored[f"{fixture} ({digest})"].add(key)
+                continue
+            if source == "apis.guru" or document.startswith(("APIs/", ARCHIVE_TREE)):
+                census.add("apis-guru", archive_listing(document), key)
+                continue
+            named = NAMED.fullmatch(document)
+            if named is None or source not in ("", *CENSUS_SOURCE):
+                fail(f"{where}: {source or 'its'} document {document!r} is no form this builder reads")
+            sourcegraph, repository, file, commit = named.groups()
+            if repository == ARCHIVE_REPOSITORY:
+                census.add("apis-guru", archive_listing(document), key)
+                continue
+            if index.excluded_repository(repository):
+                census.digests.setdefault(digest, (set(), EXCLUDED))[0].add(key)
+                continue
+            if not SCREEN.witness_screen().repository_name(repository) or not SCREEN.witness_screen().repository_path(
+                file
+            ):
+                fail(f"{where}: {document!r} names no GitHub repository and path; restore it from git")
+            population = "sourcegraph" if sourcegraph or source == "sourcegraph" else "github"
+            name = f"{repository}/{file}"
+            census.add(population, name, key)
+            if digest == "-":
+                # A census row that kept no digest takes the one a ledger read at that commit, else the commit's.
+                digest = recorded.get((repository, file, commit), f"commit:{commit}")
+            census.identities.setdefault(
+                (population, name),
+                SCREEN.Identity(population, name, repository, commit, file, digest, "", CENSUS_RANK),
+            )
+    return census
+
+
+def archive_listing(document: str) -> str:
+    """An earlier census's name for an archive document, as this table names it.
+
+    The censuses name one by its archive path, under the extracted tree's top directory (alone or after
+    `APIs/`), or as the directory's own `repository:path@revision`, first of the identities sharing its bytes.
+    """
+    first = document.split("; ", 1)[0]
+    named = NAMED.fullmatch(first)
+    if named is not None and named.group(2) == ARCHIVE_REPOSITORY:
+        first = named.group(3)
+    return archive_document(first.removeprefix("APIs/" + ARCHIVE_TREE).removeprefix(ARCHIVE_TREE))
+
+
+def census_rows(path: Path) -> list[dict[str, str]]:
+    """A census table's rows, each with its key, document and sha256; a missing or malformed table refused."""
+    if not path.is_file():
+        fail(f"{path} is no file; restore the earlier combination search records from git")
+    with SCREEN.open_text(path) as handle:
+        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if not {"key", "document", "sha256"} <= set(reader.fieldnames or ()):
+            fail(f"{path} names no key, document and sha256 columns; restore it from git")
+        rows = list(reader)
+    for number, row in enumerate(rows, 2):
+        if not all(isinstance(row.get(cell), str) and row[cell] for cell in ("key", "document", "sha256")):
+            fail(f"{path}:{number} leaves its key, document or sha256 empty; restore it from git")
+    return rows
+
+
 class LedgerRecord(NamedTuple):
     """One candidate-ledger line the plan reads: a public identity and the ledger key that found it."""
 
@@ -153,7 +315,8 @@ class LedgerRecord(NamedTuple):
     url: str
 
 
-def ledger_identities(tree: Tree, population: str) -> list[LedgerRecord]:
+@functools.cache
+def ledger_identities(tree: Tree, population: str) -> tuple[LedgerRecord, ...]:
     """The ledgers' public identities: a full commit and SHA-256, from no repository the exclusion rule names.
 
     An opaque (screened non-public) identity and an excluded repository's document
@@ -186,7 +349,8 @@ def ledger_identities(tree: Tree, population: str) -> list[LedgerRecord]:
                     str(record.get("url", "")),
                 )
             )
-    return rows
+    # Read once per tree and population: the plan, the census and the record each walk the ledgers.
+    return tuple(rows)
 
 
 def github_repository(repository: str) -> str | None:
@@ -207,17 +371,18 @@ def ledger_documents(tree: Tree) -> list[LedgerDocument]:
     wanted = {key: ingredients(selector) for key, selector in tree.selectors().by_key.items()}
     out = []
     for population in LEDGERS:
-        grouped: dict[tuple[str, str], list[LedgerRecord]] = defaultdict(list)
+        grouped: dict[tuple[str | None, str], list[LedgerRecord]] = defaultdict(list)
         for record in ledger_identities(tree, population):
-            repository = github_repository(record.repository)
-            if repository is not None and SCREEN.witness_screen().repository_path(record.path):
-                grouped[(repository, record.path)].append(record)
-        for (repository, path), records in sorted(grouped.items()):
+            grouped[(github_repository(record.repository), record.path)].append(record)
+        for (repository, path), records in sorted(grouped.items(), key=lambda item: (item[0][0] or "", item[0][1])):
+            # Checked once per document, not once per ledger line naming it.
+            if repository is None or not SCREEN.witness_screen().repository_path(path):
+                continue
             if all(record.disposition == "excluded-non-openapi-3" for record in records):
                 continue
             # One identity per document: the commit the ledgers read it at last.
             latest = max(records, key=lambda record: (record.at, record.commit))
-            fields = set().union(*(ingredients(record.selector) for record in records if record.selector))
+            fields = frozenset().union(*(selector_fields(record.selector) for record in records if record.selector))
             matched = frozenset(key for key, need in wanted.items() if need and need <= fields)
             pointer = any(
                 record.disposition == "declares" and POINTER_LEDGER_KEYS.search(record.key) for record in records
@@ -315,9 +480,9 @@ def acquisitions(path: Path) -> list[Acquisition]:
             or not all(isinstance(row.get(field), str) for field in ("population", "document", "commit", "how"))
             or not re.fullmatch(r"[0-9a-f]{40}", row["commit"])
             or not isinstance(pin, str)
-            or not (SCREEN.SHA.fullmatch(pin) or SCREEN.BLOB.fullmatch(pin))
+            or not any(pattern.fullmatch(pin) for pattern in (SCREEN.SHA, SCREEN.BLOB, SCREEN.COMMIT_PIN))
             or not isinstance(digest, str)
-            or not (SCREEN.SHA.fullmatch(digest) or SCREEN.BLOB.fullmatch(digest))
+            or not any(pattern.fullmatch(digest) for pattern in (SCREEN.SHA, SCREEN.BLOB, SCREEN.COMMIT_PIN))
             or not SCREEN.acquisition_outcome(row["how"])
         ):
             fail(
@@ -378,7 +543,8 @@ def archive_digests(tree: Tree) -> dict[str, str]:
 
 def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     store_root = args.store or SCREEN.cache_root()
-    listed = earlier_rows(tree)
+    census = named_census(tree)
+    listed = census.listed
     entries = []
 
     def keys(population: str, document: str) -> str:
@@ -491,15 +657,41 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
                 f"{RAW}/{identity.repository}/{identity.commit}/{identity.path}",
                 digest,
                 licence_evidence(identity.repository, identity.commit, digest, archived),
-                "-",
+                keys(identity.population, identity.document),
                 "-",
             )
         )
-    entries += unavailable(tree, args, plan, seen)
+    entries = by_digest(entries, census, plan)
+    entries += unavailable(tree, args, plan, seen, listed)
     if listed:
         fail(f"the earlier named census lists candidates no population names: {sorted(listed)[:5]}")
     # A handed-off document without its bytes owes rows only for keys an earlier census lists it for.
     return [entry for entry in entries if entry.unfetchable == "-" or entry.keys != "-"]
+
+
+def by_digest(entries: list[SCREEN.Entry], census: NamedCensus, plan: list[SCREEN.Identity]) -> list[SCREEN.Entry]:
+    """`entries`, with each candidate a census names by SHA-256 alone owed a row under its keys.
+
+    Bytes held under that digest take its keys; a planned identity pinned to it is listed for them, so the
+    unavailable candidates name it; and a digest neither names is an unfetchable `sha256:<hex>` entry.
+    """
+    held: dict[str, list[int]] = defaultdict(list)
+    for number, entry in enumerate(entries):
+        if entry.unfetchable == "-":
+            held[entry.sha256].append(number)
+    pinned = {identity.content_digest(): identity for identity in plan if identity.population in LEDGERS}
+    out = list(entries)
+    for digest, (keys, why) in sorted(census.digests.items()):
+        if held.get(digest):
+            for number in held[digest]:
+                entry = out[number]
+                out[number] = entry._replace(keys=";".join(sorted({*entry.forced(), *keys})))
+        elif digest in pinned:
+            census.listed[(pinned[digest].population, pinned[digest].document)] |= keys
+        else:
+            named = f"sha256:{digest}"
+            out.append(SCREEN.Entry("github", named, named, digest, "-", ";".join(sorted(keys)), why))
+    return out
 
 
 class CodeHit(NamedTuple):
@@ -538,15 +730,20 @@ def query_outcomes() -> frozenset[str]:
 
 
 def unavailable(
-    tree: Tree, args: argparse.Namespace, plan: list[SCREEN.Identity], held: set[tuple[str, str]]
+    tree: Tree,
+    args: argparse.Namespace,
+    plan: list[SCREEN.Identity],
+    held: set[tuple[str, str]],
+    listed: dict[tuple[str, str], set[str]],
 ) -> list[SCREEN.Entry]:
     """An `unfetchable` entry for each known candidate whose bytes were not had, under the keys it is known for.
 
-    A ledger document the raw lane refused carries the keys its recorded hits match by field name (as the
-    plan ranks it) and the SHA-256 the ledger recorded; a code-search hit never fetched carries the key whose
-    query found it, and `-`, since only its git blob is known. A ledger document never asked within the
-    fetch budget, or one whose hits tie it to no key, is no candidate of any key yet: the README counts it
-    among the missing populations.
+    A document the raw lane refused carries the keys its recorded hits match by field name (as the plan
+    ranks it), and those an earlier census lists it for, with the SHA-256 recorded for it; a code-search hit
+    never fetched carries the key whose query found it, and `-`, since only its git blob is known; a
+    document an earlier census lists and the bound never fetched carries that census's keys. A ledger
+    document never asked within the fetch budget and listed by no census is tied to keys only by the plan's
+    field-name ranking: the README counts it among the missing populations, and it owes no row.
     """
     attempts: dict[tuple[str, str], list[Acquisition]] = defaultdict(list)
     for row in acquisitions(args.acquisitions):
@@ -557,33 +754,57 @@ def unavailable(
         for query in recorded_queries(args.search_evidence):
             for hit in query.hits if query.source == "github-code-search" else ():
                 found_by[("github", f"{hit.repository}/{hit.path}")].add(query.key)
-    archived: set[str] = set()
-    entries = []
+    options: dict[tuple[str, str], list[SCREEN.Identity]] = defaultdict(list)
     for identity in plan:
         named = (identity.population, identity.document)
-        if identity.population not in LEDGERS or named in held:
-            continue
-        tried = [row for row in attempts.get(named, []) if (row.commit, row.pin) == (identity.commit, identity.pin)]
-        digest = identity.content_digest() or "-"
-        if tried and not any(row.held for row in tried):
-            statuses = sorted({row.how.removeprefix("refused-http-") for row in tried})
+        if identity.population in LEDGERS and named not in held:
+            options[named].append(identity)
+    archived: set[str] = set()
+    entries = []
+    for named, identities in options.items():
+        owed = listed.pop(named, set())
+        tried = [
+            (identity, rows)
+            for identity in identities
+            if (
+                rows := [
+                    row for row in attempts.get(named, []) if (row.commit, row.pin) == (identity.commit, identity.pin)
+                ]
+            )
+        ]
+        if any(row.held for _, rows in tried for row in rows):
+            if not owed:
+                continue
+            identity = next(identity for identity, rows in tried if any(row.held for row in rows))
+            reason = "had once through the guarded raw lane, and its bytes are no longer in this host's store"
+            keys = owed
+        elif tried:
+            identity, rows = tried[0]
+            statuses = sorted({row.how.removeprefix("refused-http-") for row in rows})
             answered = " and ".join("no answer" if status == "0" else f"HTTP {status}" for status in statuses)
             reason = (
-                f"fetched {len(tried)} time(s) at the recorded commit through the guarded raw lane, which gave "
+                f"fetched {len(rows)} time(s) at the recorded commit through the guarded raw lane, which gave "
                 f"{answered}"
             )
-            keys = ledger.get(named, frozenset()) | found_by.get(named, set())
-        elif not tried and SCREEN.BLOB.fullmatch(identity.pin):
+            keys = ledger.get(named, frozenset()) | found_by.get(named, set()) | owed
+        elif SCREEN.BLOB.fullmatch((identity := identities[0]).pin):
             reason = (
                 "found by the bounded code search and never fetched: the six-hour raw-lane budget was spent on "
                 "higher-ranked identities first"
             )
-            keys = found_by.get(named, set())
+            keys = found_by.get(named, set()) | owed
+        elif owed:
+            reason = (
+                "listed by an earlier named census and never fetched: the guarded raw lane's budget was spent "
+                "before it was reached"
+            )
+            keys = owed
         else:
             continue
         if not keys:
             # Its recorded hits tie it to no combination key: no candidate of any, like a document never asked.
             continue
+        digest = identity.content_digest() or "-"
         entries.append(
             SCREEN.Entry(
                 identity.population,
@@ -738,6 +959,8 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     plan = sub.add_parser("identities")
     plan.add_argument("--output", type=Path, required=True)
+    listed = sub.add_parser("census")
+    listed.add_argument("--output", type=Path, required=True)
     build = sub.add_parser("manifest")
     build.add_argument("--output", type=Path, default=SCREEN.POPULATION)
     build.add_argument(
@@ -781,6 +1004,10 @@ def main(argv: list[str] | None = None) -> int:
                 rows = identities(tree)
                 write_plan(args.output, rows)
                 print(f"witness-populations-build: {len(rows)} identities")
+            case "census":
+                rows = sorted(named_census(tree).identities.values())
+                write_plan(args.output, rows)
+                print(f"witness-populations-build: {len(rows)} census identities")
             case _:
                 entries = manifest(tree, args)
                 SCREEN.write_manifest(args.output, entries)

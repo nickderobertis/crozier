@@ -222,9 +222,25 @@ def queries_of(rows: list[dict[str, Any]]) -> list[Query]:
 
 
 def plan_rows(record: Path) -> list[SCREEN.Identity]:
-    return SCREEN.read_identities(record / "identities.tsv.gz") + SCREEN.read_identities(
-        record / "search-identities.tsv"
+    """The acquisition plans: the ledgers', the live search's, and the earlier named censuses' once planned."""
+    census = record / "census-identities.tsv"
+    return (
+        SCREEN.read_identities(record / "identities.tsv.gz")
+        + SCREEN.read_identities(record / "search-identities.tsv")
+        + (SCREEN.read_identities(census) if census.is_file() else [])
     )
+
+
+def never_asked(root: Path, asked: dict[str, dict[str, str]], listed: set[tuple[str, str]]) -> dict[str, Counter[str]]:
+    """Per key and population, the ledger documents never asked that only the plan's field-name ranking ties to it."""
+    out: dict[str, Counter[str]] = defaultdict(Counter)
+    for document in BUILD.ledger_documents(BUILD.Tree(root)):
+        named = (document.identity.population, document.identity.document)
+        if document.identity.document in asked.get(named[0], {}) or named in listed:
+            continue
+        for key in document.keys:
+            out[key][named[0]] += 1
+    return out
 
 
 def aggregation_only(entries: list[SCREEN.Entry], root: Path = REPO) -> list[list[str]]:
@@ -314,6 +330,12 @@ def render(record: Path, root: Path = REPO) -> str:
     lowest = min(remaining, key=lambda pair: pair[0] / pair[1]) if remaining else None
     floor = float(GUARD.FLOOR)
     earlier = sum(len(keys) for keys in BUILD.earlier_rows(BUILD.Tree(root)).values())
+    census = BUILD.named_census(BUILD.Tree(root))
+    census_pairs = sum(len(keys) for keys in census.listed.values()) + sum(
+        len(keys) for keys, _why in census.digests.values()
+    )
+    digest_only = Counter(row.key for row in rows if row.document.startswith("sha256:"))
+    heuristic = never_asked(root, asked, set(census.listed))
     raw_status = Counter(call.status for call in raw_calls)
     raw_window = (stamp(raw_calls[0].at), stamp(raw_calls[-1].at)) if raw_calls else ("-", "-")
 
@@ -386,8 +408,30 @@ def render(record: Path, root: Path = REPO) -> str:
     w(
         "\nA candidate is a document whose bytes the key's census selector declares, or one the earlier "
         "[named census](../witness-search-ledger-remainders/census.tsv) already listed for the key; every one of "
-        f"that census's {earlier} rows has a row here. The archive's documents are named `<provider>[/<service>]/<version>`, "
+        f"that census's {earlier} rows has a row here, as has every candidate the earlier combination searches' "
+        "named censuses list (below). The archive's documents are named `<provider>[/<service>]/<version>`, "
         "the archive path less `APIs/` and the file name, since one service carries several versions.\n"
+    )
+    w("## Earlier named censuses\n")
+    w(
+        "Each earlier combination search's census lists candidates of these keys: "
+        + ", ".join(f"[`{relative.split('/')[0]}`](../{relative})" for relative in BUILD.COMBINATION_CENSUSES)
+        + f", beside the ledger-remainders one. Read as this table names them, they list {census_pairs} "
+        "(key, candidate) pairs, and every one has a row. A GitHub or Sourcegraph document one names was planned "
+        "at the commit and SHA-256 the census read it at ([census-identities.tsv](census-identities.tsv); a census "
+        "row that kept no digest takes the one a candidate ledger read at that commit, else is pinned by the "
+        "commit alone) and fetched through the guarded raw lane; where it was refused or never reached, its row "
+        "is `unfetchable:<reason>` naming what was tried. A candidate named by SHA-256 alone takes the rows of "
+        "the bytes held under that digest, or the row of the planned identity pinned to it; "
+        f"{sum(digest_only.values())} rows name one that neither reaches, as `sha256:<hex>` in both `document` "
+        "and `source` (under `github`: the earlier search read them from the retained raw-GitHub response cache), "
+        "each `unfetchable:` with why no source is known. Two kinds of listing owe no row and are counted here "
+        "only: "
+        f"{sum(len(keys) for keys in census.authored.values())} (key, fixture) pairs over "
+        f"{len(census.authored)} hand-written fixtures under `tests/fixtures/`, which are crozier's authored "
+        "documents and no real-API candidate of any population here, and "
+        f"{sum(len(keys) for keys in census.nonpublic.values())} pairs over {len(census.nonpublic)} screened "
+        "non-public inputs that kept no digest, which no row could name.\n"
     )
     w("## Verdicts\n")
     header = [
@@ -469,10 +513,13 @@ def render(record: Path, root: Path = REPO) -> str:
         + (", ".join(f"{how} {n}" for how, n in sorted(refused.get("github", Counter()).items())) or "none")
         + f"). {len(hit_docs)} of the planned documents are this search's own code-search hits, of which "
         f"{len(hit_docs & held.get('github', set()))} were fetched. Each refused document its recorded hits tie to "
-        f"a key, and each unfetched hit, is a candidate the table keeps, as {unfetchable_rows['github']} `unfetchable:<reason>` rows naming what "
-        "was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) "
+        f"a key, and each unfetched hit, is a candidate the table keeps; with the earlier named censuses' refused, "
+        f"unreached and digest-only candidates (above) they are {unfetchable_rows['github']} `unfetchable:<reason>` rows "
+        "naming what was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) "
         "with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger "
-        "document never asked, or tied to no key, is no candidate of any key yet, and is counted here only."
+        "document never asked that no earlier census lists is tied to a key only by the plan's field-name "
+        "ranking: by the manager's ruling those heuristic associations, never asked within the six-hour bound, "
+        "are counted (per key, in the table below) rather than listed, and owe no row."
     )
     sg_why = (
         f"{sg_unfetched} of the {len(planned['sourcegraph'])} planned Sourcegraph documents were never fetched, on "
@@ -505,15 +552,28 @@ def render(record: Path, root: Path = REPO) -> str:
         "pending candidates stands only beside these rows.\n"
     )
     short = {
-        "github": f"bytes not retained on this host; {gh_unfetched} planned documents not re-fetched within the bound",
-        "sourcegraph": f"bytes not retained on this host; {sg_unfetched} planned documents not re-fetched within the bound",
         "archive": f"{len(served) - served_registered} served-index versions not retained on this host, behind mutable URLs",
         "handed-off": f"{len(no_provenance)} bytes-only documents not retained on this host, with no source recorded",
     }
+
+    def ledger_why(key: str, population: str) -> str:
+        return (
+            f"bytes not retained on this host; {heuristic[key][population]} ledger documents tied to the key by "
+            "field name alone never asked within the bound (counted, not listed)"
+        )
+
     w(
         table(
             ["key", "population", "why not screened whole"],
-            [[f"`{key}`", population, why] for key in sorted(SCREEN.KEYS) for population, why in short.items()],
+            [
+                [f"`{key}`", population, why]
+                for key in sorted(SCREEN.KEYS)
+                for population, why in (
+                    ("github", ledger_why(key, "github")),
+                    ("sourcegraph", ledger_why(key, "sourcegraph")),
+                    *short.items(),
+                )
+            ],
         )
     )
     w("\n## Requests\n")
@@ -612,6 +672,9 @@ def render(record: Path, root: Path = REPO) -> str:
         "  --evidence docs/openapi-surface/witness-search-combination-populations/search \\\n"
         "  --identities docs/openapi-surface/witness-search-combination-populations/identities.tsv.gz \\\n"
         "  --output docs/openapi-surface/witness-search-combination-populations/search-identities.tsv\n"
+        "# Every GitHub and Sourcegraph document the earlier named censuses list, at the commit they read it at.\n"
+        "uv run --locked --all-packages python tools/witness-search/witness-populations-build.py census \\\n"
+        "  --output docs/openapi-surface/witness-search-combination-populations/census-identities.tsv\n"
         "# Exact bytes into the host store: the store, the shared cache, then the paced raw lane, by rank.\n"
         "uv run --locked --all-packages python tools/witness-search/population_screen.py acquire \\\n"
         "  --identities <plan> --evidence docs/openapi-surface/witness-search-combination-populations/acquisition \\\n"
@@ -620,6 +683,7 @@ def render(record: Path, root: Path = REPO) -> str:
         "uv run --locked --all-packages python tools/witness-search/witness-populations-build.py manifest \\\n"
         "  --identities docs/openapi-surface/witness-search-combination-populations/identities.tsv.gz \\\n"
         "  --identities docs/openapi-surface/witness-search-combination-populations/search-identities.tsv \\\n"
+        "  --identities docs/openapi-surface/witness-search-combination-populations/census-identities.tsv \\\n"
         "  --archive <extracted openapi-directory tree>\n"
         "uv run --locked --all-packages python tools/witness-search/population_screen.py screen --workers 8 --fetch-licence\n"
         "uv run --locked --all-packages python tools/witness-search/witness-populations-record.py\n"

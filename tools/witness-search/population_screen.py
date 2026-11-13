@@ -100,6 +100,9 @@ PENDING = "certified-screen-pending"
 SHA = re.compile(r"[0-9a-f]{64}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
 CORPUS_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+# A candidate an earlier census recorded by its SHA-256 alone, with no repository, path or commit kept anywhere:
+# its `document` and `source` are both `sha256:<hex>`, admitted only on an `unfetchable` row of the same `sha256`.
+DIGEST_ONLY = re.compile(r"sha256:([0-9a-f]{64})")
 # A cell's free text: one line, no tab, never empty or a placeholder.
 PLACEHOLDER = re.compile(r"^(?:|-|TODO|TBD|\?|n/?a|none|null|placeholder)$", re.I)
 
@@ -1007,7 +1010,11 @@ class ScreenRow(NamedTuple):
 
     key: Key
     population: Population
+    # Its corpus name, `owner/repo/path`, `<provider>[/<service>]/<version>`, the handed-off id, or
+    # `sha256:<hex>` for a candidate an earlier census recorded by digest alone.
     document: DocumentId
+    # The commit-pinned raw.githubusercontent.com URL of its bytes; `-` for a registered document; or, for a
+    # digest-only candidate, the same `sha256:<hex>` as its document (an unfetchable row only).
     source: str
     sha256: Sha256
     licence: str
@@ -1119,6 +1126,8 @@ def status_of(licence: str, trigger_cell: str) -> str:
 def source_failure(population: str, source: str) -> str | None:
     if population == "registered":
         return None if source == "-" else "a registered document's source is `-` (its bytes are in the tree)"
+    if DIGEST_ONLY.fullmatch(source):
+        return None
     # raw.githubusercontent.com/<owner>/<repo>/<commit>/<path>: the revision segment is a full commit SHA.
     parts = urllib.parse.urlsplit(source)
     segments = parts.path.split("/")[1:]
@@ -1138,6 +1147,8 @@ def source_failure(population: str, source: str) -> str | None:
 
 def identity_failure(population: str, document: str, source: str) -> str | None:
     """Why the document a row names is not the file its source pins, or None (a malformed source is reported apart)."""
+    if DIGEST_ONLY.fullmatch(source) or DIGEST_ONLY.fullmatch(document):
+        return None if document == source else f"document {document!r} and source {source!r} name different digests"
     segments = urllib.parse.urlsplit(source).path.split("/")[1:]
     if population in (Population.REGISTERED, Population.ARCHIVE) or len(segments) < 4:
         return None
@@ -1157,6 +1168,8 @@ def document_failure(population: str, document: str) -> str | None:
         return "document is empty, a placeholder or padded"
     if population == "registered" and not CORPUS_NAME.fullmatch(document):
         return f"registered document {document!r} is no corpus row name"
+    if DIGEST_ONLY.fullmatch(document) and population != "registered":
+        return None
     if population in ("github", "sourcegraph") and len([p for p in document.split("/") if p]) < 3:
         return f"{population} document {document!r} is no `owner/repo/path`"
     return None
@@ -1200,6 +1213,20 @@ def row_failures(row: ScreenRow) -> list[str]:
                 )
             if unfetchable and licence.reason != trigger.reason:
                 wrong.append("an unfetchable row's licence and trigger name the same reason the bytes were not had")
+    wrong += digest_only_failures(row.source, row.sha256, unfetchable)
+    return wrong
+
+
+def digest_only_failures(source: str, sha256: str, unfetchable: bool) -> list[str]:
+    """Why a `sha256:<hex>` identity is not one an earlier census recorded by digest alone; empty when it is."""
+    named = DIGEST_ONLY.fullmatch(source)
+    if named is None:
+        return []
+    wrong = []
+    if named.group(1) != sha256:
+        wrong.append(f"source {source!r} names another digest than sha256 {sha256!r}")
+    if not unfetchable:
+        wrong.append(f"source {source!r} names no bytes to read, so only an unfetchable row may carry it")
     return wrong
 
 
@@ -1394,6 +1421,7 @@ def entry_failures(entry: Entry) -> list[str]:
             wrong.append(
                 f"evidence {entry.evidence!r} names another repository or commit than its source {entry.source!r}"
             )
+    wrong += digest_only_failures(entry.source, entry.sha256, unfetchable)
     unknown = [key for key in entry.forced() if key not in KEYS]
     if unknown:
         wrong.append(f"keys {unknown} are no combination keys")
@@ -1788,6 +1816,9 @@ def run_screen(
 
 # A code-search hit is pinned by its git blob, not yet by its content's SHA-256.
 BLOB = re.compile(r"blob:([0-9a-f]{40})")
+# A document an earlier census named at a commit with no digest recorded anywhere is pinned by that commit
+# alone: the raw URL at a full commit SHA serves fixed bytes, whose SHA-256 is learned on fetching.
+COMMIT_PIN = re.compile(r"commit:([0-9a-f]{40})")
 
 
 def blob_sha(data: bytes) -> str:
@@ -1796,6 +1827,8 @@ def blob_sha(data: bytes) -> str:
 
 
 def pinned_by(identity: Identity, data: bytes) -> bool:
+    if (commit := COMMIT_PIN.fullmatch(identity.pin)) is not None:
+        return commit.group(1) == identity.commit
     blob = BLOB.fullmatch(identity.pin)
     return blob_sha(data) == blob.group(1) if blob else hashlib.sha256(data).hexdigest() == identity.pin
 
@@ -1808,7 +1841,8 @@ class Identity(NamedTuple):
     repository: Repository
     commit: Commit
     path: str
-    # The bytes it names: a 64-hex SHA-256, or `blob:<sha1>` for a code-search hit known only by its git blob.
+    # The bytes it names: a 64-hex SHA-256, `blob:<sha1>` for a code-search hit known only by its git blob, or
+    # `commit:<its commit>` for a census document no record names a digest for.
     pin: Pin
     url: str
     rank: int
@@ -1973,9 +2007,13 @@ def read_identities(path: Path) -> list[Identity]:
             if not cells[7].isdigit():
                 raise ScreenError(f"{path}:{number}: rank {cells[7]!r} is no whole number")
             identity = Identity(Population(cells[0]), *cells[1:7], rank=int(cells[7]))
-            pinned = SHA.fullmatch(identity.pin) or BLOB.fullmatch(identity.pin)
+            pinned = (
+                SHA.fullmatch(identity.pin)
+                or BLOB.fullmatch(identity.pin)
+                or identity.pin == f"commit:{identity.commit}"
+            )
             if not COMMIT.fullmatch(identity.commit) or not pinned:
-                raise ScreenError(f"{path}:{number}: no full commit, or no SHA-256 or blob pin")
+                raise ScreenError(f"{path}:{number}: no full commit, or no SHA-256, blob or own-commit pin")
             if identity.population not in ACQUIRED or not witness_screen().repository_name(identity.repository):
                 raise ScreenError(
                     f"{path}:{number}: {identity.population} {identity.repository!r} is no acquired population's "

@@ -10,40 +10,44 @@ A `certified-screen-pending` row is an exact trigger over admissible bytes, not 
 |---|---|---:|---:|
 | `registered` | every registered corpus row's committed source document (`tests/fixtures/corpus-sources.tsv`) | 405 | 0 |
 | `apis-guru` | every `openapi.*` document of the pinned APIs.guru archive, `APIs-guru/openapi-directory` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`; this is where the earlier census's archive declarations come from | 1970 | 0 |
-| `github` | every recorded GitHub code-search identity whose exact bytes this host now holds, recovered from the shared response cache or re-fetched at its commit, and this search's code-search hits fetched the same way | 12513 | 857 |
-| `sourcegraph` | every recorded Sourcegraph identity on github.com whose exact bytes this host now holds, recovered or re-fetched the same way | 3205 | 6 |
+| `github` | every recorded GitHub code-search identity whose exact bytes this host now holds, recovered from the shared response cache or re-fetched at its commit, and this search's code-search hits fetched the same way | 15108 | 930 |
+| `sourcegraph` | every recorded Sourcegraph identity on github.com whose exact bytes this host now holds, recovered or re-fetched the same way | 3922 | 17 |
 | `archive` | the APIs.guru served-index versions that have no document at the archive pin (`witness-search-apis.guru/unread-responses.jsonl`) | 0 | 0 |
 | `handed-off` | every handed-off document `docs/fern-measurements/handed-off/documents.tsv` names by repository, path and commit | 144 | 0 |
 
 
-A candidate is a document whose bytes the key's census selector declares, or one the earlier [named census](../witness-search-ledger-remainders/census.tsv) already listed for the key; every one of that census's 749 rows has a row here. The archive's documents are named `<provider>[/<service>]/<version>`, the archive path less `APIs/` and the file name, since one service carries several versions.
+A candidate is a document whose bytes the key's census selector declares, or one the earlier [named census](../witness-search-ledger-remainders/census.tsv) already listed for the key; every one of that census's 749 rows has a row here, as has every candidate the earlier combination searches' named censuses list (below). The archive's documents are named `<provider>[/<service>]/<version>`, the archive path less `APIs/` and the file name, since one service carries several versions.
+
+## Earlier named censuses
+
+Each earlier combination search's census lists candidates of these keys: [`witness-search-interaction-operation-combinations`](../witness-search-interaction-operation-combinations/census.tsv), [`witness-search-interaction-schema-combinations`](../witness-search-interaction-schema-combinations/census.tsv), [`witness-search-operation-combinations-bodies-responses`](../witness-search-operation-combinations-bodies-responses/census.tsv), [`witness-search-operation-combinations-parameters`](../witness-search-operation-combinations-parameters/census.tsv), [`witness-search-schema-combinations-models-unions-refs`](../witness-search-schema-combinations-models-unions-refs/census.tsv), [`witness-search-operation-combinations`](../witness-search-operation-combinations/census.tsv.gz), beside the ledger-remainders one. Read as this table names them, they list 13613 (key, candidate) pairs, and every one has a row. A GitHub or Sourcegraph document one names was planned at the commit and SHA-256 the census read it at ([census-identities.tsv](census-identities.tsv); a census row that kept no digest takes the one a candidate ledger read at that commit, else is pinned by the commit alone) and fetched through the guarded raw lane; where it was refused or never reached, its row is `unfetchable:<reason>` naming what was tried. A candidate named by SHA-256 alone takes the rows of the bytes held under that digest, or the row of the planned identity pinned to it; 172 rows name one that neither reaches, as `sha256:<hex>` in both `document` and `source` (under `github`: the earlier search read them from the retained raw-GitHub response cache), each `unfetchable:` with why no source is known. Two kinds of listing owe no row and are counted here only: 2 (key, fixture) pairs over 2 hand-written fixtures under `tests/fixtures/`, which are crozier's authored documents and no real-API candidate of any population here, and 4 pairs over 1 screened non-public inputs that kept no digest, which no row could name.
 
 ## Verdicts
 
 | key | verdict | certified-screen-pending | `registered` | `apis-guru` | `github` | `sourcegraph` | `archive` | `handed-off` | rejected-trigger | rejected-licence | unfetchable |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `combo-allof-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 3 | 210 | 6 | 0 | 0 | 0 | 15 | 204 |
-| `combo-anyof-beside-properties` | `search-incomplete` | 0 | 14 | 23 | 1268 | 433 | 0 | 5 | 1477 | 4 | 262 |
-| `combo-array-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 158 | 24 | 0 | 0 | 35 | 0 | 148 |
-| `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 171 | 8 | 0 | 1 | 0 | 37 | 148 |
-| `combo-body-property-named-as-path-param` | `search-incomplete` | 1493 | 45 | 399 | 1161 | 499 | 0 | 19 | 0 | 630 | 0 |
-| `combo-header-array-accepted-placements` | `search-incomplete` | 366 | 1 | 2 | 474 | 148 | 0 | 0 | 86 | 23 | 150 |
-| `combo-header-string-default` | `search-incomplete` | 18 | 14 | 54 | 716 | 253 | 0 | 9 | 869 | 63 | 96 |
-| `combo-map-beside-oneof` | `search-incomplete` | 10 | 9 | 3 | 763 | 150 | 0 | 8 | 704 | 8 | 211 |
-| `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 236 | 8 | 0 | 0 | 0 | 8 | 238 |
-| `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 155 | 8 | 0 | 1 | 19 | 0 | 149 |
-| `combo-property-anyof-composed-sibling` | `search-incomplete` | 48 | 4 | 1 | 195 | 21 | 0 | 0 | 0 | 15 | 158 |
-| `combo-property-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 156 | 22 | 0 | 0 | 31 | 0 | 148 |
-| `combo-property-unresolved-nested-pointer` | `search-incomplete` | 2 | 0 | 7 | 172 | 10 | 0 | 1 | 0 | 40 | 148 |
-| `combo-query-param-inline-object` | `search-incomplete` | 40 | 3 | 20 | 307 | 80 | 0 | 3 | 212 | 11 | 150 |
-| `combo-request-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 0 | 146 | 8 | 0 | 0 | 0 | 5 | 148 |
-| `combo-required-query-array-enum-items` | `search-incomplete` | 53 | 8 | 25 | 387 | 189 | 0 | 5 | 437 | 34 | 90 |
-| `combo-response-unresolved-nested-pointer` | `search-incomplete` | 4 | 0 | 0 | 151 | 10 | 0 | 0 | 0 | 9 | 148 |
-| `combo-success-anyof-nullable` | `search-incomplete` | 99 | 6 | 0 | 103 | 34 | 0 | 3 | 0 | 47 | 0 |
-| `combo-success-oneof-nullable` | `search-incomplete` | 34 | 2 | 1 | 62 | 10 | 0 | 1 | 0 | 42 | 0 |
+| `combo-allof-unresolved-nested-pointer` | `search-incomplete` | 3 | 0 | 3 | 216 | 8 | 0 | 0 | 0 | 19 | 205 |
+| `combo-anyof-beside-properties` | `search-incomplete` | 0 | 14 | 23 | 1845 | 597 | 0 | 5 | 2213 | 4 | 267 |
+| `combo-array-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 173 | 29 | 0 | 0 | 54 | 0 | 149 |
+| `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 176 | 9 | 0 | 1 | 0 | 42 | 149 |
+| `combo-body-property-named-as-path-param` | `search-incomplete` | 2354 | 45 | 410 | 4207 | 830 | 0 | 19 | 2080 | 968 | 109 |
+| `combo-header-array-accepted-placements` | `search-incomplete` | 457 | 1 | 2 | 553 | 182 | 0 | 0 | 92 | 35 | 154 |
+| `combo-header-string-default` | `search-incomplete` | 22 | 14 | 54 | 883 | 294 | 0 | 9 | 1071 | 65 | 96 |
+| `combo-map-beside-oneof` | `search-incomplete` | 12 | 9 | 3 | 997 | 179 | 0 | 8 | 957 | 15 | 212 |
+| `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 239 | 9 | 0 | 0 | 0 | 12 | 238 |
+| `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 155 | 8 | 0 | 1 | 21 | 0 | 147 |
+| `combo-property-anyof-composed-sibling` | `search-incomplete` | 160 | 4 | 1 | 310 | 21 | 0 | 0 | 0 | 18 | 158 |
+| `combo-property-defs-pointer` | `search-incomplete` | 0 | 1 | 0 | 172 | 28 | 0 | 0 | 52 | 0 | 149 |
+| `combo-property-unresolved-nested-pointer` | `search-incomplete` | 2 | 0 | 7 | 177 | 11 | 0 | 1 | 0 | 45 | 149 |
+| `combo-query-param-inline-object` | `search-incomplete` | 61 | 3 | 33 | 3179 | 105 | 0 | 3 | 3013 | 17 | 232 |
+| `combo-request-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 0 | 150 | 9 | 0 | 0 | 0 | 9 | 149 |
+| `combo-required-query-array-enum-items` | `search-incomplete` | 71 | 8 | 25 | 458 | 202 | 0 | 5 | 499 | 38 | 90 |
+| `combo-response-unresolved-nested-pointer` | `search-incomplete` | 4 | 0 | 0 | 153 | 11 | 0 | 0 | 0 | 11 | 149 |
+| `combo-success-anyof-nullable` | `search-incomplete` | 178 | 6 | 13 | 2966 | 53 | 0 | 3 | 2719 | 57 | 87 |
+| `combo-success-oneof-nullable` | `search-incomplete` | 56 | 2 | 13 | 2917 | 19 | 0 | 1 | 2757 | 52 | 87 |
 | `combo-tag-only-operation-id` | `search-incomplete` | 20 | 1 | 1 | 11 | 7 | 0 | 0 | 0 | 0 | 0 |
-| `combo-unrequired-tag-anyof-reference` | `search-incomplete` | 115 | 29 | 51 | 1336 | 463 | 0 | 12 | 1654 | 102 | 20 |
-| `combo-unrequired-tag-oneof-reference` | `search-incomplete` | 237 | 60 | 74 | 3667 | 1021 | 0 | 35 | 4267 | 252 | 101 |
+| `combo-unrequired-tag-anyof-reference` | `search-incomplete` | 135 | 29 | 51 | 1633 | 509 | 0 | 12 | 1973 | 106 | 20 |
+| `combo-unrequired-tag-oneof-reference` | `search-incomplete` | 345 | 60 | 74 | 4210 | 1105 | 0 | 35 | 4763 | 276 | 100 |
 
 
 Every key stays `search-incomplete`: no certified screen runs here, and each has a population below that could not be had whole. The population columns count candidate rows; the last three count rows by status.
@@ -132,8 +136,8 @@ Every key stays `search-incomplete`: no certified screen runs here, and each has
 
 | population | what could not be had, what was tried, and why it failed |
 |---|---|
-| `github` | 46625 of the 59282 planned GitHub documents were never fetched: the earlier acquisition's bytes were not retained on this host, and the manager-ruled bound of about six hours of paced raw fetching was spent on higher-ranked identities first. 145 fetched ones were refused (refused-http-0 13, refused-http-404 132). 713 of the planned documents are this search's own code-search hits, of which 0 were fetched. Each refused document its recorded hits tie to a key, and each unfetched hit, is a candidate the table keeps, as 2654 `unfetchable:<reason>` rows naming what was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger document never asked, or tied to no key, is no candidate of any key yet, and is counted here only. |
-| `sourcegraph` | 7396 of the 10607 planned Sourcegraph documents were never fetched, on the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked identities); 6 fetched ones were refused, and are 63 `unfetchable:<reason>` rows of the table on the same terms. The anonymous Sourcegraph search answered 29602 matches, which name no content digest to pin a fetch to, so none was planned. |
+| `github` | 46148 of the 61321 planned GitHub documents were never fetched: the earlier acquisition's bytes were not retained on this host, and the manager-ruled bound of about six hours of paced raw fetching was spent on higher-ranked identities first. 179 fetched ones were refused (refused-http-0 13, refused-http-404 166). 713 of the planned documents are this search's own code-search hits, of which 3 were fetched. Each refused document its recorded hits tie to a key, and each unfetched hit, is a candidate the table keeps; with the earlier named censuses' refused, unreached and digest-only candidates (above) they are 3018 `unfetchable:<reason>` rows naming what was tried: a refused document under the keys its recorded hits match by field name (as the plan ranks it) with the SHA-256 the ledger recorded, a hit under the key whose query found it with `-`. A ledger document never asked that no earlier census lists is tied to a key only by the plan's field-name ranking: by the manager's ruling those heuristic associations, never asked within the six-hour bound, are counted (per key, in the table below) rather than listed, and owe no row. |
+| `sourcegraph` | 7223 of the 10823 planned Sourcegraph documents were never fetched, on the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked identities); 17 fetched ones were refused, and are 78 `unfetchable:<reason>` rows of the table on the same terms. The anonymous Sourcegraph search answered 29602 matches, which name no content digest to pin a fetch to, so none was planned. |
 | `archive` | 98 served-index versions were acquired by an earlier run from mutable `api.apis.guru` URLs; 20 are byte-identical to registered corpus sources and are screened under `registered`, and the other 78 were not retained on this host. No immutable source names their bytes, so they were not re-fetched. |
 | `handed-off` | 2 of the 146 handed-off documents record bytes only, with no repository, path or commit; their bytes were not retained on this host (not in the tree, the preflight cache or the response cache), so nothing names a source to fetch them from. |
 
@@ -142,92 +146,92 @@ No population above is screened whole, so each one is missing for every key; a k
 
 | key | population | why not screened whole |
 |---|---|---|
-| `combo-allof-unresolved-nested-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-allof-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-allof-unresolved-nested-pointer` | github | bytes not retained on this host; 9513 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-allof-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 2089 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-allof-unresolved-nested-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-allof-unresolved-nested-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-anyof-beside-properties` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-anyof-beside-properties` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-anyof-beside-properties` | github | bytes not retained on this host; 13384 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-anyof-beside-properties` | sourcegraph | bytes not retained on this host; 2875 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-anyof-beside-properties` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-anyof-beside-properties` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-array-defs-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-array-defs-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-array-defs-pointer` | github | bytes not retained on this host; 25181 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-array-defs-pointer` | sourcegraph | bytes not retained on this host; 3593 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-array-defs-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-array-defs-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-array-unresolved-nested-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-array-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-array-unresolved-nested-pointer` | github | bytes not retained on this host; 25181 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-array-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 3593 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-array-unresolved-nested-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-array-unresolved-nested-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-body-property-named-as-path-param` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-body-property-named-as-path-param` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-body-property-named-as-path-param` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-body-property-named-as-path-param` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-body-property-named-as-path-param` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-body-property-named-as-path-param` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-header-array-accepted-placements` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-header-array-accepted-placements` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-header-array-accepted-placements` | github | bytes not retained on this host; 40090 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-header-array-accepted-placements` | sourcegraph | bytes not retained on this host; 5034 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-header-array-accepted-placements` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-header-array-accepted-placements` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-header-string-default` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-header-string-default` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-header-string-default` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-header-string-default` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-header-string-default` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-header-string-default` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-map-beside-oneof` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-map-beside-oneof` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-map-beside-oneof` | github | bytes not retained on this host; 7402 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-map-beside-oneof` | sourcegraph | bytes not retained on this host; 1863 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-map-beside-oneof` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-map-beside-oneof` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-map-unresolved-nested-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-map-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-map-unresolved-nested-pointer` | github | bytes not retained on this host; 5463 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-map-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 1798 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-map-unresolved-nested-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-map-unresolved-nested-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-nullable-allof-parent-own-property` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-nullable-allof-parent-own-property` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-nullable-allof-parent-own-property` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-nullable-allof-parent-own-property` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-nullable-allof-parent-own-property` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-nullable-allof-parent-own-property` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-property-anyof-composed-sibling` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-property-anyof-composed-sibling` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-property-anyof-composed-sibling` | github | bytes not retained on this host; 1065 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-property-anyof-composed-sibling` | sourcegraph | bytes not retained on this host; 658 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-property-anyof-composed-sibling` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-property-anyof-composed-sibling` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-property-defs-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-property-defs-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-property-defs-pointer` | github | bytes not retained on this host; 26233 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-property-defs-pointer` | sourcegraph | bytes not retained on this host; 3751 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-property-defs-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-property-defs-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-property-unresolved-nested-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-property-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-property-unresolved-nested-pointer` | github | bytes not retained on this host; 26233 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-property-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 3751 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-property-unresolved-nested-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-property-unresolved-nested-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-query-param-inline-object` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-query-param-inline-object` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-query-param-inline-object` | github | bytes not retained on this host; 39972 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-query-param-inline-object` | sourcegraph | bytes not retained on this host; 5027 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-query-param-inline-object` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-query-param-inline-object` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-request-unresolved-nested-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-request-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-request-unresolved-nested-pointer` | github | bytes not retained on this host; 27512 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-request-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 3775 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-request-unresolved-nested-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-request-unresolved-nested-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-required-query-array-enum-items` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-required-query-array-enum-items` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-required-query-array-enum-items` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-required-query-array-enum-items` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-required-query-array-enum-items` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-required-query-array-enum-items` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-response-unresolved-nested-pointer` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-response-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-response-unresolved-nested-pointer` | github | bytes not retained on this host; 27512 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-response-unresolved-nested-pointer` | sourcegraph | bytes not retained on this host; 3775 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-response-unresolved-nested-pointer` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-response-unresolved-nested-pointer` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-success-anyof-nullable` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-success-anyof-nullable` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-success-anyof-nullable` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-success-anyof-nullable` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-success-anyof-nullable` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-success-anyof-nullable` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-success-oneof-nullable` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-success-oneof-nullable` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-success-oneof-nullable` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-success-oneof-nullable` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-success-oneof-nullable` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-success-oneof-nullable` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-tag-only-operation-id` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-tag-only-operation-id` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-tag-only-operation-id` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-tag-only-operation-id` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-tag-only-operation-id` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-tag-only-operation-id` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-unrequired-tag-anyof-reference` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-unrequired-tag-anyof-reference` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-unrequired-tag-anyof-reference` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-unrequired-tag-anyof-reference` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-unrequired-tag-anyof-reference` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-unrequired-tag-anyof-reference` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
-| `combo-unrequired-tag-oneof-reference` | github | bytes not retained on this host; 46625 planned documents not re-fetched within the bound |
-| `combo-unrequired-tag-oneof-reference` | sourcegraph | bytes not retained on this host; 7396 planned documents not re-fetched within the bound |
+| `combo-unrequired-tag-oneof-reference` | github | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
+| `combo-unrequired-tag-oneof-reference` | sourcegraph | bytes not retained on this host; 0 ledger documents tied to the key by field name alone never asked within the bound (counted, not listed) |
 | `combo-unrequired-tag-oneof-reference` | archive | 78 served-index versions not retained on this host, behind mutable URLs |
 | `combo-unrequired-tag-oneof-reference` | handed-off | 2 bytes-only documents not retained on this host, with no source recorded |
 
@@ -311,7 +315,7 @@ Each pause the guard took on the code-search bucket, with the allowance it last 
 **Sourcegraph** — 2 anonymous search requests through the guard's paced lane, HTTP 200, HTTP 200. The first was the one attempt the manager allowed; the second was an unintended repeat by a re-run of the search command before it learned to skip a recorded answer, and asked the same query.
 
 
-**Raw lane** — 8374 exact-commit downloads from raw.githubusercontent.com between 2026-11-13 05:45 UTC and 2026-11-13 11:44 UTC, through the acquirer's paced raw lane (2 s spacing; the host publishes no allowance, so no remaining figure exists to log), each logged with its status and digest in [acquisition/raw-github-calls.jsonl](acquisition/raw-github-calls.jsonl): HTTP 200 8231, HTTP 404 143. It paused 8372 times for its spacing. Every answer was written to the shared response cache. Each planned identity it reached is in [acquisition/acquisitions.jsonl](acquisition/acquisitions.jsonl) with how its bytes were had: raw 8231, refused-http-0 76, refused-http-404 299, shared-cache 2040, store 26000.
+**Raw lane** — 9987 exact-commit downloads from raw.githubusercontent.com between 2026-11-13 05:45 UTC and 2026-11-13 20:24 UTC, through the acquirer's paced raw lane (2 s spacing; the host publishes no allowance, so no remaining figure exists to log), each logged with its status and digest in [acquisition/raw-github-calls.jsonl](acquisition/raw-github-calls.jsonl): HTTP 200 9798, HTTP 404 189. It paused 9911 times for its spacing. Every answer was written to the shared response cache. Each planned identity it reached is in [acquisition/acquisitions.jsonl](acquisition/acquisitions.jsonl) with how its bytes were had: raw 9873, refused-http-0 76, refused-http-404 349, shared-cache 2585, store 27627.
 
 
 ## Reproduce
@@ -324,6 +328,9 @@ GITHUB_TOKEN=... uv run --locked --all-packages python tools/witness-search/witn
   --evidence docs/openapi-surface/witness-search-combination-populations/search \
   --identities docs/openapi-surface/witness-search-combination-populations/identities.tsv.gz \
   --output docs/openapi-surface/witness-search-combination-populations/search-identities.tsv
+# Every GitHub and Sourcegraph document the earlier named censuses list, at the commit they read it at.
+uv run --locked --all-packages python tools/witness-search/witness-populations-build.py census \
+  --output docs/openapi-surface/witness-search-combination-populations/census-identities.tsv
 # Exact bytes into the host store: the store, the shared cache, then the paced raw lane, by rank.
 uv run --locked --all-packages python tools/witness-search/population_screen.py acquire \
   --identities <plan> --evidence docs/openapi-surface/witness-search-combination-populations/acquisition \
@@ -332,6 +339,7 @@ uv run --locked --all-packages python tools/witness-search/population_screen.py 
 uv run --locked --all-packages python tools/witness-search/witness-populations-build.py manifest \
   --identities docs/openapi-surface/witness-search-combination-populations/identities.tsv.gz \
   --identities docs/openapi-surface/witness-search-combination-populations/search-identities.tsv \
+  --identities docs/openapi-surface/witness-search-combination-populations/census-identities.tsv \
   --archive <extracted openapi-directory tree>
 uv run --locked --all-packages python tools/witness-search/population_screen.py screen --workers 8 --fetch-licence
 uv run --locked --all-packages python tools/witness-search/witness-populations-record.py

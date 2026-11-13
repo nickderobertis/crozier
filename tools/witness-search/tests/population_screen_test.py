@@ -30,6 +30,7 @@ import threading
 import time
 import unittest
 import urllib.parse
+from collections.abc import Sequence
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, ClassVar
@@ -1351,6 +1352,28 @@ class ReaderTests(ScreenHarness):
                 done = self.run_cli("check", str(path))
                 self.assertEqual(1, done.returncode)
                 self.assertIn(f"{path}:", done.stderr)
+        lost = (
+            KEY_B,
+            "github",
+            f"sha256:{'a' * 64}",
+            f"sha256:{'a' * 64}",
+            "a" * 64,
+            "unread:only its digest was recorded",
+            "unread:only its digest was recorded",
+            "unfetchable:only its digest was recorded",
+        )
+        self.assertEqual([lost], [tuple(row) for row in SCREEN.read_screen(self.table(lost))])
+        for row, message in (
+            ((*lost[:4], "b" * 64, *lost[5:]), "names another digest than sha256"),
+            ((*lost[:3], f"sha256:{'b' * 64}", *lost[4:]), "name different digests"),
+            ((lost[0], "registered", *lost[2:]), "is no corpus row name"),
+            (
+                (*lost[:5], "admissible:MIT (info.license 'MIT')", "exact", "certified-screen-pending"),
+                "only an unfetchable row may carry it",
+            ),
+        ):
+            with self.subTest(message=message), self.assertRaisesRegex(SCREEN.ScreenError, message):
+                SCREEN.read_screen(self.table(row))
         for header in (
             (*SCREEN.COLUMNS[:-1],),
             ("key", "population", "document", "sha256", "source", "licence", "trigger", "status"),
@@ -1557,7 +1580,12 @@ class AcquisitionRecoveryTests(ScreenHarness):
             (("gitlab", "a/b/c", "a/b", COMMIT, "c", "0" * 64, "", "1"), "is none of github, sourcegraph, handed-off"),
             (("github", "a/../c", "a/..", COMMIT, "c", "0" * 64, "", "1"), "is no acquired population's"),
             (("github", "a/b/c", "a/b", COMMIT, "../c", "0" * 64, "", "1"), "is no path inside a repository"),
-            (("github", "a/b/c", "a/b", "main", "c", "0" * 64, "", "1"), "no full commit, or no SHA-256 or blob pin"),
+            (("github", "a/b/c", "a/b", "main", "c", "0" * 64, "", "1"), "no full commit, or no SHA-256, blob or"),
+            # A commit pin names the identity's own commit, never another.
+            (
+                ("github", "a/b/c", "a/b", COMMIT, "c", f"commit:{'b' * 40}", "", "1"),
+                "no full commit, or no SHA-256, blob or own-commit pin",
+            ),
         ):
             with self.subTest(message=message):
                 plan.write_text(header + "\t".join(row) + "\n", encoding="utf-8")
@@ -1782,6 +1810,24 @@ class BuildHarness(ScreenHarness):
             f"combo-header-string-default\thanded-off\tacme/lost:openapi.json@{'9' * 40}\t-\t1\tunscreened\t-\n",
             encoding="utf-8",
         )
+        for relative in BUILD.COMBINATION_CENSUSES:
+            self.combination_census(relative, [])
+
+    def combination_census(self, relative: str, rows: Sequence[tuple[str, ...]]) -> None:
+        """One earlier combination search's census, in its own columns (the packed one in its own)."""
+        path = self.root / "docs" / "openapi-surface" / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if path.suffix == ".gz":
+            header = ("key", "arm", "kind", "document", "sha256", "sites", "licence", "outcome")
+            body = [
+                (key, "-", "combination", document, digest, "-", "-", "outstanding") for key, document, digest in rows
+            ]
+            text = "\t".join(header) + "\n" + "".join("\t".join(row) + "\n" for row in body)
+            path.write_bytes(gzip.compress(text.encode("utf-8")))
+        else:
+            header = ("key", "source", "document", "sites", "sha256", "screening")
+            text = "\t".join(header) + "\n" + "".join("\t".join((*row[:3], "1", row[3], "-")) + "\n" for row in rows)
+            path.write_text(text, encoding="utf-8")
 
     def write(self, path: Path, rows: list[dict[str, Any]]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -1926,6 +1972,173 @@ class BuildTests(BuildHarness):
         absent = self.build(*[str(self.scratch / "no-plan.tsv") if arg == str(hits) else arg for arg in args])
         self.assertEqual(1, absent.returncode)
         self.assertIn("is no file; pass the acquisition plans the manifest is built from", absent.stderr)
+
+    def test_every_candidate_an_earlier_named_census_lists_is_acquired_and_owes_a_row(self) -> None:
+        listed = json.dumps(CASES[3][1]).encode()
+        undigested = json.dumps(CASES[0][1]).encode()
+        handed = hashlib.sha256(self.handed_bytes).hexdigest()
+        self.combination_census(
+            "witness-search-operation-combinations-parameters/census.tsv",
+            [
+                (
+                    KEY_HD,
+                    "github-code-search",
+                    f"acme/listed:openapi.json@{'a' * 40}",
+                    hashlib.sha256(listed).hexdigest(),
+                ),
+                (KEY_M, "sourcegraph", f"github.com/acme/far:spec/openapi.yaml@{'b' * 40}", "1" * 64),
+                (
+                    KEY_O,
+                    "registered",
+                    "corpus-sources/sample-api/openapi.json",
+                    hashlib.sha256(self.registered).hexdigest(),
+                ),
+                (KEY_O, "registered", "crozier-property-name/openapi.yml", "2" * 64),
+                (KEY_HD, "apis.guru", "APIs/acme.local/1.0/openapi.json", hashlib.sha256(self.registered).hexdigest()),
+            ],
+        )
+        # The earlier censuses name an archive document under the extracted tree's top directory, or as the
+        # directory's own identity first of those sharing its bytes.
+        archived = hashlib.sha256(self.registered).hexdigest()
+        self.combination_census(
+            "witness-search-interaction-operation-combinations/census.tsv",
+            [
+                (KEY_Q, "apis.guru", f"{BUILD.ARCHIVE_TREE}APIs/acme.local/1.0/openapi.json", archived),
+                (KEY_N, "apis.guru", f"APIs/{BUILD.ARCHIVE_TREE}APIs/acme.local/1.0/openapi.json", archived),
+                (
+                    KEY_C,
+                    "apis.guru",
+                    f"{BUILD.ARCHIVE_REPOSITORY}:APIs/acme.local/1.0/openapi.json@{BUILD.ARCHIVE_REVISION}; "
+                    f"acme/copy:APIs/acme.local/1.0/openapi.json@{'d' * 40}",
+                    archived,
+                ),
+            ],
+        )
+        self.combination_census(
+            "witness-search-operation-combinations/census.tsv.gz",
+            [
+                (KEY_SA, "(withheld)", handed),
+                (KEY_SO, f"(withheld) [sha256:{'3' * 64}]", "3" * 64),
+                (KEY_T, f"acme/undigested:openapi.json@{'c' * 40} (+1 identities, same bytes)", "-"),
+                (KEY_T, f"screened-nonpublic-input:v2:{'4' * 32}:1", "-"),
+            ],
+        )
+        census_plan = self.scratch / "census.tsv"
+        done = self.build("census", "--output", str(census_plan))
+        self.assertEqual(
+            (0, "witness-populations-build: 3 census identities\n"), (done.returncode, done.stdout), done.stderr
+        )
+        self.assertEqual(
+            {
+                ("github", "acme/listed/openapi.json", hashlib.sha256(listed).hexdigest()),
+                ("sourcegraph", "acme/far/spec/openapi.yaml", "1" * 64),
+                ("github", "acme/undigested/openapi.json", f"commit:{'c' * 40}"),
+            },
+            {(i.population, i.document, i.pin) for i in SCREEN.read_identities(census_plan)},
+        )
+        # Through the real acquirer's raw lane: two documents served, the Sourcegraph one gone.
+        self.server.files[f"/acme/listed/{'a' * 40}/openapi.json"] = listed
+        self.server.files[f"/acme/undigested/{'c' * 40}/openapi.json"] = undigested
+        evidence = self.scratch / "evidence"
+        acquired = self.run_cli(
+            "acquire",
+            "--identities",
+            str(census_plan),
+            "--evidence",
+            str(evidence),
+            "--store",
+            str(self.store),
+            "--responses",
+            str(self.scratch / "no-responses"),
+        )
+        self.assertEqual(0, acquired.returncode, acquired.stderr)
+        self.assertEqual("population-screen: acquire: raw 2, refused-http-404 1\n", acquired.stdout)
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        SCREEN.store(self.handed_bytes, self.store)
+        manifest = self.scratch / "population.tsv"
+        built = self.build(
+            "manifest",
+            "--identities",
+            str(plan),
+            "--identities",
+            str(census_plan),
+            "--archive",
+            str(self.archive),
+            "--store",
+            str(self.store),
+            "--preflight",
+            str(self.scratch / "none"),
+            "--acquisitions",
+            str(evidence / "acquisitions.jsonl"),
+            "--search-evidence",
+            str(self.scratch / "no-search"),
+            "--output",
+            str(manifest),
+        )
+        self.assertEqual(0, built.returncode, built.stderr)
+        # Screened in this process, so a registered row reads its bytes from the authored tree.
+        table = self.scratch / "screen.tsv"
+        screened = SCREEN.run_screen(
+            SCREEN.read_manifest(manifest),
+            root=self.root,
+            store_root=self.store,
+            fetch_file=lambda *_args: None,
+            discover=False,
+        )
+        table.write_text(SCREEN.render(screened), encoding="utf-8")
+        rows = {(row.key, row.population, row.document): row for row in SCREEN.read_screen(table)}
+        far = rows[(KEY_M, "sourcegraph", "acme/far/spec/openapi.yaml")]
+        self.assertEqual(
+            (
+                "1" * 64,
+                "unfetchable:fetched 1 time(s) at the recorded commit through the guarded raw lane, which gave HTTP 404",
+            ),
+            (far.sha256, far.status),
+        )
+        digest_only = rows[(KEY_SO, "github", f"sha256:{'3' * 64}")]
+        self.assertEqual((f"sha256:{'3' * 64}", "3" * 64), (digest_only.source, digest_only.sha256))
+        self.assertEqual(f"unfetchable:{BUILD.DIGEST_ONLY_SEARCHED}", digest_only.status)
+        # The fetched ones are screened from their bytes, the commit-pinned one at the digest it was had at.
+        for key, document, data in (
+            (KEY_HD, "acme/listed/openapi.json", listed),
+            (KEY_T, "acme/undigested/openapi.json", undigested),
+        ):
+            with self.subTest(document=document):
+                row = rows[(key, "github", document)]
+                self.assertEqual(hashlib.sha256(data).hexdigest(), row.sha256)
+                self.assertFalse(row.status.startswith("unfetchable"), row)
+        # A digest-only candidate takes the bytes held under its digest, whichever population holds them.
+        self.assertEqual(handed, rows[(KEY_SA, "handed-off", f"acme/handed:openapi.json@{'8' * 40}")].sha256)
+        self.assertIn((KEY_O, "registered", "sample-api"), rows)
+        self.assertIn((KEY_HD, "apis-guru", "acme.local/1.0"), rows)
+        for key in (KEY_Q, KEY_N, KEY_C):
+            self.assertIn((key, "apis-guru", "acme.local/1.0"), rows)
+        # Every candidate the censuses name owes its row; a hand-written fixture and a digestless
+        # non-public input name nothing a row could carry.
+        census = BUILD.named_census(BUILD.Tree(self.root))
+        for (population, document), keys in census.listed.items():
+            for key in keys:
+                with self.subTest(key=key, population=population, document=document):
+                    self.assertIn((key, population, document), rows)
+        self.assertEqual({"crozier-property-name/openapi.yml (" + "2" * 64 + ")": {KEY_O}}, dict(census.authored))
+        self.assertEqual([f"screened-nonpublic-input:v2:{'4' * 32}:1"], list(census.nonpublic))
+        self.assertFalse([row for row in rows if "crozier-property-name" in row[2] or "nonpublic" in row[2]])
+
+    def test_an_earlier_combination_census_in_a_form_the_builder_does_not_read_is_refused(self) -> None:
+        for rows, message in (
+            ([(KEY_T, "github-code-search", "acme/x/openapi.json", "1" * 64)], "is no form this builder reads"),
+            ([(KEY_T, "github-code-search", f"acme/x:openapi.json@{'a' * 40}", "nope")], "names no SHA-256"),
+        ):
+            with self.subTest(message=message):
+                self.combination_census("witness-search-interaction-schema-combinations/census.tsv", rows)
+                refused = self.build("census", "--output", str(self.scratch / "census.tsv"))
+                self.assertEqual(1, refused.returncode)
+                self.assertIn(message, refused.stderr)
+        (self.root / "docs/openapi-surface" / BUILD.COMBINATION_CENSUSES[0]).unlink()
+        missing = self.build("census", "--output", str(self.scratch / "census.tsv"))
+        self.assertEqual(1, missing.returncode)
+        self.assertIn("restore the earlier combination search records from git", missing.stderr)
 
     def test_an_incomplete_archive_an_unmatched_earlier_candidate_or_malformed_provenance_is_refused(self) -> None:
         plan = self.scratch / "plan.tsv.gz"
@@ -2475,13 +2688,30 @@ class CommittedTableTests(unittest.TestCase):
         self.assertEqual(set(SCREEN.KEYS), {row.key for row in self.rows})
         self.assertEqual(len(self.rows), len({(row.key, row.population, row.document) for row in self.rows}))
 
-    def test_every_candidate_the_earlier_named_census_lists_has_a_row(self) -> None:
+    def test_every_candidate_the_earlier_named_censuses_list_has_a_row(self) -> None:
         build = load("witness_populations_build_under_test", REPO / "tools/witness-search/witness-populations-build.py")
         have = {(row.key, row.population, row.document) for row in self.rows}
-        for (population, document), keys in build.earlier_rows(build.Tree(REPO)).items():
+        census = build.named_census(build.Tree(REPO))
+        self.assertGreaterEqual(sum(len(keys) for keys in build.earlier_rows(build.Tree(REPO)).values()), 749)
+        for (population, document), keys in census.listed.items():
             for key in keys:
                 with self.subTest(key=key, population=population, document=document):
                     self.assertIn((key, population, document), have)
+        # A candidate named by digest alone owes a row of the bytes held under it, of the identity planned at
+        # it, or of its own `sha256:<hex>`.
+        by_digest: dict[str, set[tuple[str, str, str]]] = {}
+        for row in self.rows:
+            by_digest.setdefault(row.sha256, set()).add((row.key, row.population, row.document))
+        planned: dict[str, set[tuple[str, str]]] = {}
+        for name in ("identities.tsv.gz", "search-identities.tsv", "census-identities.tsv"):
+            for identity in SCREEN.read_identities(SCREEN.RECORD / name):
+                planned.setdefault(identity.pin, set()).add((identity.population, identity.document))
+        for digest, (keys, _why) in census.digests.items():
+            for key in keys:
+                with self.subTest(key=key, digest=digest):
+                    named = {(p, d) for k, p, d in by_digest.get(digest, set()) if k == key}
+                    named |= {(p, d) for p, d in planned.get(digest, set()) if (key, p, d) in have}
+                    self.assertTrue(named, f"no row of {key} carries the census's {digest}")
 
     def test_the_committed_readme_is_what_its_evidence_gives(self) -> None:
         done = subprocess.run(
