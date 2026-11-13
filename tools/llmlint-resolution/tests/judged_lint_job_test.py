@@ -241,15 +241,24 @@ class Job:
         deadline = time.monotonic() + 600
         while time.monotonic() < deadline:
             if (self.state / "cancelled").exists():
-                os.killpg(process.pid, signal.SIGTERM)
+                end_step(process, hard=False)
                 process.wait()
                 return None
             status = process.poll()
             if status is not None:
                 return status
             time.sleep(0.2)
-        os.killpg(process.pid, signal.SIGKILL)
+        end_step(process, hard=True)
         raise AssertionError("a judged-lint step outlived 600 s")
+
+
+def end_step(process: subprocess.Popen[bytes], *, hard: bool) -> None:
+    """Stop a step's whole process group, as the runner stops a cancelled job's step."""
+    if sys.platform == "win32":
+        # Never reached: the job runs on ubuntu-latest and these cases skip on Windows.
+        process.kill()
+    else:
+        os.killpg(process.pid, signal.SIGKILL if hard else signal.SIGTERM)
 
 
 class TheJudgedStepsAreTheWorkflowsOwn(unittest.TestCase):

@@ -333,6 +333,13 @@ jobs:
       - name: Enable Git long paths
         if: runner.os == 'Windows'
         run: git config --global core.longpaths true
+      # The hosted runner is ephemeral and discarded with this job, so leaving this job's own
+      # checkout (cargo's target is inside it) and its temp directories out of real-time
+      # scanning loosens nothing that outlives it. The e2e suites write and run thousands of
+      # fresh files there, each scanned on first touch. One measured attempt (manager ruling a3).
+      - name: Leave this job's own directories out of Defender scanning
+        shell: pwsh
+        run: Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:TEMP
       # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
         with:
