@@ -316,7 +316,7 @@ jobs:
         if: failure() && steps.host-budgets.outcome == 'failure'
         shell: bash
         run: |
-          for list in before-alt alt before-pass after-pass removed; do
+          for list in pruner-version mtimes-before-a dry-before-a.json dry-before-d.json before-alt alt before-pass after-pass removed; do
             echo "== $list"
             cat "$RUNNER_TEMP/pool-maintenance-evidence/$list" 2>/dev/null || echo "(not written)"
           done

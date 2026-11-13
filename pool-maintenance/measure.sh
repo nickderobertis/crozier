@@ -27,6 +27,7 @@ finish() {
   if [ -n "${POOL_MAINTENANCE_EVIDENCE:-}" ]; then
     mkdir -p "$POOL_MAINTENANCE_EVIDENCE"
     cp "$scratch"/before-alt "$scratch"/alt "$scratch"/before-pass "$scratch"/after-pass "$scratch"/removed \
+      "$scratch"/dry-before-a.json "$scratch"/dry-before-d.json "$scratch"/mtimes-before-a "$scratch"/pruner-version \
       "$POOL_MAINTENANCE_EVIDENCE"/ 2>/dev/null || true
   fi
   rm -rf "$scratch"
@@ -66,6 +67,20 @@ build() {
   }
 }
 
+# Diagnostic evidence (only with POOL_MAINTENANCE_EVIDENCE): what the pruner would remove, and why.
+dry_run() {
+  [ -n "${POOL_MAINTENANCE_EVIDENCE:-}" ] || return 0
+  # shellcheck disable=SC2046 # the targets are a word list, as `just pool-maintenance` passes them
+  cargo-prune-superseded --keep-within 2d --dry-run --json $(just --evaluate pool_maintenance_targets) >"$scratch/$1" 2>&1 || true
+}
+if [ -n "${POOL_MAINTENANCE_EVIDENCE:-}" ]; then
+  cargo-prune-superseded --version >"$scratch/pruner-version" 2>&1 || true
+  find target/debug/deps target/debug/.fingerprint -maxdepth 1 \
+    \( -name '*tempfile-*' -o -name '*serde_saphyr-*' -o -name '*serde-saphyr-*' -o -name '*assert_cmd-*' \) \
+    -printf '%TY-%Tm-%Td %TH:%TM %p\n' 2>/dev/null | sort >"$scratch/mtimes-before-a" || true
+fi
+dry_run dry-before-a.json
+
 # (a) The backlog, cleared untimed; its own report kept as evidence.
 ONEBUDGETSPEC_RESULT="$scratch/backlog.json" just pool-maintenance >&2
 
@@ -84,6 +99,7 @@ done <"$scratch/alt"
 build
 
 # (d) The timed pass.
+dry_run dry-before-d.json
 entries >"$scratch/before-pass"
 just pool-maintenance >&2
 entries >"$scratch/after-pass"
