@@ -94,7 +94,15 @@ with open(sys.argv[1], encoding="utf-8") as stream:
 PY
   [ -s "$scratch/current-hashes" ] ||
     die "the test build reported no artifacts, so there is no current build to keep; check that \`cargo test --workspace --no-run --message-format=json\` lists them, then rerun"
-  entries | grep -F -f "$scratch/current-hashes" >"$scratch/current-entries" || true
+  entries >"$scratch/all-entries" ||
+    die "could not list the target directories' build entries; check that they are readable, then rerun"
+  local found=0
+  grep -F -f "$scratch/current-hashes" "$scratch/all-entries" >"$scratch/current-entries" || found=$?
+  case $found in
+    0) ;;
+    1) die "none of the ordinary build's artifacts is among the target's entries; check pool_maintenance_targets in the justfile names this target directory, then rerun" ;;
+    *) die "could not match the ordinary build's artifacts against the target's entries (grep exited $found); rerun, and if it recurs check $scratch is writable" ;;
+  esac
   while IFS= read -r entry; do
     find "$entry" -exec touch -h {} + ||
       die "could not mark $entry as the ordinary build's; check that the target directory is writable by this user, then rerun"
