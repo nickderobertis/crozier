@@ -2562,17 +2562,28 @@ def bounded(entries: Sequence[str], what: str) -> list[str]:
     return [f"- {entry}" for entry in shown] + left_out(len(entries) - len(shown), len(entries), what)
 
 
-def grouped(entries: Sequence[tuple[str, str, str]], what: str) -> list[str]:
-    """`(reason, name, line)` entries: each line when they fit a section, else
-    one line per reason (most entries first) with its count and a sample of its
-    names, at most SECTION_LINES reasons, and how many entries went unnamed."""
+@dataclass(frozen=True)
+class Listed:
+    """One entry of a section the body may group: why it is there, the name a
+    group's sample shows, and its own line when the section is listed whole."""
+
+    reason: str
+    name: str
+    line: str
+
+
+def grouped(entries: Sequence[Listed], what: str) -> list[str]:
+    """Each entry's line when they fit a section, else one line per reason
+    (most entries first) with its count and a sample of its names, at most
+    SECTION_LINES reasons, and how many entries went unnamed."""
     if len(entries) <= SECTION_LINES:
-        return [f"- {line}" for _reason, _name, line in entries]
+        return [f"- {entry.line}" for entry in entries]
+    # Reasons that read alike once clipped are one group.
     reasons: dict[str, list[str]] = {}
-    for reason, name, _line in entries:
-        reasons.setdefault(reason, []).append(name)
+    for entry in entries:
+        reasons.setdefault(clipped(entry.reason), []).append(entry.name)
     ordered = sorted(reasons.items(), key=lambda pair: -len(pair[1]))
-    lines = [f"- {len(names)} {what}: {clipped(reason)}: {sample(names)}" for reason, names in ordered[:SECTION_LINES]]
+    lines = [f"- {len(names)} {what}: {reason}: {sample(names)}" for reason, names in ordered[:SECTION_LINES]]
     more = ordered[SECTION_LINES:]
     if more:
         lines.append(f"- {sum(len(names) for _r, names in more)} {what} for {len(more)} other reason(s)")
@@ -2694,7 +2705,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             lines += [""]
         lines += grouped(
             [
-                (f"{entry.status.value}: {entry.detail}", f"{entry.family} `{entry.item}`", entry.line())
+                Listed(f"{entry.status.value}: {entry.detail}", f"{entry.family} `{entry.item}`", entry.line())
                 for entry in decision.unchecked
             ],
             "item(s) not checked",
@@ -2795,7 +2806,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             ]
             lines += grouped(
                 [
-                    (
+                    Listed(
                         "its departure ledger rows drifted (stale or unrecorded), so its files were not compared",
                         f"{family} `{entry.item}`",
                         f"{family} {entry.summary()}",

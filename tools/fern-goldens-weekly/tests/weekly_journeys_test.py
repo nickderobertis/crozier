@@ -69,7 +69,6 @@ LEDGER_ROW = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{l
 # free disk and memory every progress line of `decide` states.
 HANG = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
 RESOURCE = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
-# The pull request body's bound, as weekly.py declares it.
 DECLARED_LIMIT = re.search(
     r"(?m)^BODY_LIMIT = (\d+)$", (REPO / "tools/fern-goldens/weekly.py").read_text(encoding="utf-8")
 )
@@ -1010,7 +1009,7 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("is the certified pair already", again.ran("resolve").stdout)
 
     def synthetic_decision(
-        self, gates: str, items: list[dict[str, Any]], **env: str
+        self, gates: str, items: list[dict[str, Any]], *, files: Mapping[str, str] | None = None, **env: str
     ) -> tuple[Journey, Path, subprocess.CompletedProcess[str]]:
         """The workflow through its assembly, the assembled bundle then
         carrying `items` as its shards would have reported them, and the real
@@ -1019,6 +1018,8 @@ class WeeklyRunTests(unittest.TestCase):
         (self.seed / "gates").mkdir()
         write_executable(self.seed / "gates/bulk.sh", BULK_GATE)
         write_executable(self.seed / "gates/drift.sh", DRIFT_GATE)
+        for path, text in (files or {}).items():
+            (self.seed / path).write_text(text, encoding="utf-8")
         (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(gates, encoding="utf-8")
         self.publish_seed()
         state = self.run_workflow(stop_after="assemble")
@@ -1069,10 +1070,11 @@ class WeeklyRunTests(unittest.TestCase):
         broken = [self.item("measurements", f"broken-{n}", "failed", f"missing document {n}") for n in range(100)]
         items = [self.item(family, name) for family, names in failing.items() for name in names] + lost + broken
         run = {"GITHUB_RUN_ID": "77", "GITHUB_REPOSITORY": "owner/crozier"}
-        state, decision, decided = self.synthetic_decision(gates, items, **run)
+        state, decision, decided = self.synthetic_decision(
+            gates, items, GITHUB_RUN_ID=run["GITHUB_RUN_ID"], GITHUB_REPOSITORY=run["GITHUB_REPOSITORY"]
+        )
         self.assertEqual(0, decided.returncode, decided.stderr)
         self.assertEqual("diff", state.outcome())
-        # The decision keeps every failing and unchecked item, none trimmed.
         self.assertEqual(failing, state.failing())
         self.assertEqual(
             sorted(entry["item"] for entry in lost + broken), sorted(entry["item"] for entry in state.unchecked())
@@ -1097,6 +1099,27 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("the run's `fern-goldens-decision` artifact (`decision.json`) lists every one", body)
         self.assertIn("[the workflow run](https://github.com/owner/crozier/actions/runs/77#artifacts)", body)
         self.assertIn("## Inventory", body)
+
+    def test_a_bounded_overview_still_past_the_limit_is_trimmed_and_decide_still_writes_it(self) -> None:
+        """Names so long that even the bounded samples overrun BODY_LIMIT:
+        `decide` still exits 0, its body is cut at a line, says where the rest
+        is and closes with the inventory, and the decision keeps every item."""
+        families = ALL_FAMILIES.split(",")
+        names = {family: [f"long-{family}-{n}-" + "n" * 700 for n in range(12)] for family in families}
+        report = "".join(f"{name}: differs\n" for listed in names.values() for name in listed)
+        gates = f"family\tscope\tverdict\tcommand\n{ALL_FAMILIES}\tfamily\texit:0/3\tsh {{root}}/gates/names.sh\n"
+        items = [self.item(family, name) for family, listed in names.items() for name in listed]
+        script = 'cat "$(dirname "$0")/names.txt"\nexit 3\n'
+        state, decision, decided = self.synthetic_decision(
+            gates, items, files={"gates/names.txt": report, "gates/names.sh": script}
+        )
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual(names, state.failing())
+        body = (decision / "body.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(body), BODY_LIMIT)
+        trimmed = "… (trimmed to the pull request body limit; the run's `fern-goldens-decision` artifact"
+        self.assertIn(trimmed, body)
+        self.assertIn("## Inventory", body.split(trimmed, 1)[1])
 
     def assert_sections_bounded(self, count: int) -> tuple[str, dict[str, Any]]:
         """`decide` over `count` items of each section the body bounds: corpus
@@ -2061,7 +2084,6 @@ class WeeklyRunTests(unittest.TestCase):
         # An empty golden directory lists the fixture in the corpus family.
         (fixtures / "seldon-wrapper/expected").mkdir(parents=True)
         (fixtures / "seldon-wrapper/expected/.gitkeep").write_text("", encoding="utf-8")
-        # Its committed source document, recorded as the real tree records it.
         sources = (REPO / "tests/fixtures/corpus-sources.tsv").read_text(encoding="utf-8").splitlines()
         recorded = [line for line in sources if line.startswith(("#", "seldon-wrapper\t"))]
         (fixtures / "corpus-sources.tsv").write_text("\n".join(recorded) + "\n", encoding="utf-8")
