@@ -30,7 +30,7 @@ pytestmark = pytest.mark.skipif(os.name == "nt", reason="the capture runs on the
 class Body(Enum):
     """What the release host sends for the archive."""
 
-    WHOLE = "whole"  # the archive itself
+    WHOLE = "whole"
     PARTIAL = "partial"  # headers and a part of the body, then the connection closes: curl exit 18
     RESET = "reset"  # the connection reset before any answer: curl exit 56
 

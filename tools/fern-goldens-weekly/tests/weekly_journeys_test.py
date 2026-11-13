@@ -1581,7 +1581,7 @@ class WeeklyRunTests(unittest.TestCase):
             "about whether Fern refuses given more time or memory"
         )
 
-    def test_a_refusal_whose_phrase_fern_prints_before_a_stage_overruns_is_unsettled(self) -> None:
+    def test_a_refusal_probe_whose_generation_overruns_reports_the_stages_that_overran(self) -> None:
         # Which stages overran is read from the check stage's own event, never from how fast this
         # runner starts a process: a check slower than the bound is the case below, not a failure here.
         rule = {"check": [1, "Default value '-createdAt' is not a valid enum value"], "hang": "generate"}
