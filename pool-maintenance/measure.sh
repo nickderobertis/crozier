@@ -27,7 +27,6 @@ finish() {
   if [ -n "${POOL_MAINTENANCE_EVIDENCE:-}" ]; then
     mkdir -p "$POOL_MAINTENANCE_EVIDENCE"
     cp "$scratch"/before-alt "$scratch"/alt "$scratch"/before-pass "$scratch"/after-pass "$scratch"/removed \
-      "$scratch"/dry-before-a.json "$scratch"/dry-before-d.json "$scratch"/mtimes-before-a "$scratch"/pruner-version \
       "$POOL_MAINTENANCE_EVIDENCE"/ 2>/dev/null || true
   fi
   rm -rf "$scratch"
@@ -67,19 +66,38 @@ build() {
   }
 }
 
-# Diagnostic evidence (only with POOL_MAINTENANCE_EVIDENCE): what the pruner would remove, and why.
-dry_run() {
-  [ -n "${POOL_MAINTENANCE_EVIDENCE:-}" ] || return 0
-  # shellcheck disable=SC2046 # the targets are a word list, as `just pool-maintenance` passes them
-  cargo-prune-superseded --keep-within 2d --dry-run --json $(just --evaluate pool_maintenance_targets) >"$scratch/$1" 2>&1 || true
+# The ordinary build, made the newest build of every unit it uses. A job's restored cache can
+# hold an older copy of one of them beside a newer build of the same unit that only a
+# per-package build uses; (a) would then remove the ordinary build's copy as superseded, (b)
+# recreate it, (c) make it newest again, and (d) remove the per-package build as well, which is
+# no part of what is timed. Touching what the ordinary build reports gives (a) and (d) one
+# steady state: whatever it leaves superseded is backlog, cleared by (a).
+current() {
+  cargo test --workspace --no-run --locked --message-format=json >"$scratch/current.json" 2>"$scratch/build.log" || {
+    cat "$scratch/build.log" >&2
+    die "the test build failed (above); fix it, then rerun"
+  }
+  python3 -I -S - "$scratch/current.json" <<'PY' | LC_ALL=C sort -u >"$scratch/current-hashes"
+import json
+import re
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    for line in stream:
+        if not line.startswith("{"):
+            continue
+        message = json.loads(line)
+        paths = [*(message.get("filenames") or []), message.get("executable") or "", message.get("out_dir") or ""]
+        for path in paths:
+            for found in re.findall(r"-([0-9a-f]{16})(?=[/.]|$)", path):
+                print(f"-{found}")
+PY
+  [ -s "$scratch/current-hashes" ] || die "the test build reported no artifacts, so there is no current build to keep"
+  entries | grep -F -f "$scratch/current-hashes" | while IFS= read -r entry; do
+    find "$entry" -exec touch -h {} +
+  done
 }
-if [ -n "${POOL_MAINTENANCE_EVIDENCE:-}" ]; then
-  cargo-prune-superseded --version >"$scratch/pruner-version" 2>&1 || true
-  find target/debug/deps target/debug/.fingerprint -maxdepth 1 \
-    \( -name '*tempfile-*' -o -name '*serde_saphyr-*' -o -name '*serde-saphyr-*' -o -name '*assert_cmd-*' \) \
-    -printf '%TY-%Tm-%Td %TH:%TM %p\n' 2>/dev/null | sort >"$scratch/mtimes-before-a" || true
-fi
-dry_run dry-before-a.json
+current
 
 # (a) The backlog, cleared untimed; its own report kept as evidence.
 ONEBUDGETSPEC_RESULT="$scratch/backlog.json" just pool-maintenance >&2
@@ -99,7 +117,6 @@ done <"$scratch/alt"
 build
 
 # (d) The timed pass.
-dry_run dry-before-d.json
 entries >"$scratch/before-pass"
 just pool-maintenance >&2
 entries >"$scratch/after-pass"
