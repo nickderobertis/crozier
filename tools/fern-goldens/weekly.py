@@ -77,7 +77,7 @@ from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import TypeVar
+from typing import NamedTuple, TypeVar
 
 ROOT_ENV = "CROZIER_FERN_WEEKLY_ROOT"
 METADATA = Path("assets/scaffolding/metadata.json")
@@ -2268,6 +2268,14 @@ def read_report(code: int, output: str) -> tuple[Verdict, tuple[str, ...]]:
     return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS, ()
 
 
+@dataclass(frozen=True)
+class Running:
+    """A comparison the guard holds: its progress label and its process."""
+
+    label: str
+    process: subprocess.Popen[str]
+
+
 class Guard:
     """What the decision's comparisons hold of the runner, watched while they
     run: every `heartbeat` seconds a line naming each running comparison and
@@ -2281,7 +2289,7 @@ class Guard:
         self.heartbeat = heartbeat
         self.poll = poll
         self.lock = threading.Lock()
-        self.running: dict[int, tuple[str, subprocess.Popen[str]]] = {}
+        self.running: dict[int, Running] = {}
         self.stopped: set[int] = set()
         self.done = threading.Event()
         self.thread = threading.Thread(target=self.watch, daemon=True)
@@ -2297,7 +2305,7 @@ class Guard:
     @contextlib.contextmanager
     def holding(self, number: int, label: str, process: subprocess.Popen[str]) -> Generator[None]:
         with self.lock:
-            self.running[number] = (label, process)
+            self.running[number] = Running(label, process)
         try:
             yield
         finally:
@@ -2311,17 +2319,22 @@ class Guard:
             with self.lock:
                 if available is not None and available < self.floor and len(self.running) > 1:
                     number = max(self.running)
-                    label, process = self.running.pop(number)
+                    held = self.running.pop(number)
                     self.stopped.add(number)
-                    stop(process)
+                    listed = stop(held.process)
                     progress(
-                        f"{label} stopped: memory available {available / 2**30:.1f} GiB is under the "
+                        f"{held.label} stopped: memory available {available / 2**30:.1f} GiB is under the "
                         f"{self.floor / 2**30:.1f} GiB floor with {len(self.running) + 1} comparison(s) running; "
                         "it runs again alone"
+                        + (
+                            ""
+                            if listed
+                            else " (no process listing answered, so only it, not what it started, was ended)"
+                        )
                     )
                 if self.running and time.monotonic() - beat >= self.heartbeat:
                     beat = time.monotonic()
-                    labels = ", ".join(label for label, _process in self.running.values())
+                    labels = ", ".join(held.label for held in self.running.values())
                     memory = "unknown" if available is None else f"{available / 2**30:.1f} GiB"
                     progress(f"decide: running {labels}; memory available {memory}")
 
@@ -2331,36 +2344,50 @@ class Guard:
 PROC_ENV = "CROZIER_FERN_WEEKLY_PROC"
 
 
-def parents() -> list[tuple[int, int]]:
-    """Every process and its parent: from Linux's `/proc`, else from `ps`
-    (macOS); none where neither answers."""
-    pairs: list[tuple[int, int]] = []
+class Parented(NamedTuple):
+    """A process and the process that started it."""
+
+    pid: int
+    parent: int
+
+
+def parents() -> list[Parented] | None:
+    """Every process and its parent: from Linux's `/proc` (a record that
+    vanished or does not parse is a process that ended mid-read, skipped),
+    else from `ps` (macOS); None when neither answers."""
     proc = Path(os.environ.get(PROC_ENV) or "/proc")
     if (proc / "self/stat").is_file():
+        found: list[Parented] = []
         for stat in proc.glob("[0-9]*/stat"):
             try:
                 # The command name may hold spaces and parentheses; the fields
                 # after its closing parenthesis are the state, then the parent.
                 fields = stat.read_text(encoding="utf-8", errors="replace").rpartition(")")[2].split()
-                pairs.append((int(stat.parent.name), int(fields[1])))
+                found.append(Parented(int(stat.parent.name), int(fields[1])))
             except (OSError, ValueError, IndexError):
                 continue
-        return pairs
-    with contextlib.suppress(OSError):
+        return found
+    try:
         listed = subprocess.run(["ps", "-A", "-o", "pid=", "-o", "ppid="], capture_output=True, text=True, check=False)
-        pairs = [
-            (int(cells[0]), int(cells[1]))
-            for cells in (line.split() for line in listed.stdout.splitlines())
-            if len(cells) == 2 and cells[0].isdigit() and cells[1].isdigit()
-        ]
-    return pairs
+    except OSError:
+        return None
+    if listed.returncode != 0:
+        return None
+    return [
+        Parented(int(cells[0]), int(cells[1]))
+        for cells in (line.split() for line in listed.stdout.splitlines())
+        if len(cells) == 2 and cells[0].isdigit() and cells[1].isdigit()
+    ]
 
 
-def descendants(pid: int) -> list[int]:
-    """Every process `pid` started, and theirs."""
+def descendants(pid: int) -> list[int] | None:
+    """Every process `pid` started, and theirs; None when no listing answers."""
+    listed = parents()
+    if listed is None:
+        return None
     children: dict[int, list[int]] = {}
-    for child, parent in parents():
-        children.setdefault(parent, []).append(child)
+    for entry in listed:
+        children.setdefault(entry.parent, []).append(entry.pid)
     queue: list[int] = [pid]
     seen: list[int] = []
     while queue:
@@ -2370,13 +2397,16 @@ def descendants(pid: int) -> list[int]:
     return seen
 
 
-def stop(process: subprocess.Popen[str]) -> None:
+def stop(process: subprocess.Popen[str]) -> bool:
     """End a comparison and everything it started (`just`, Nx, cargo, crozier),
     which stay in the decision's own process group so the step's own ending
-    still reaches them."""
-    for pid in [process.pid, *descendants(process.pid)]:
+    still reaches them; False when no listing named what it started, so only
+    the comparison itself was ended."""
+    started = descendants(process.pid)
+    for pid in [process.pid, *(started or [])]:
         with contextlib.suppress(ProcessLookupError, PermissionError):
             os.kill(pid, signal.SIGKILL)
+    return started is not None
 
 
 def run_held(
@@ -3037,10 +3067,12 @@ def decide(args: argparse.Namespace) -> int:
         raise WeeklyError(f"--jobs {args.jobs}: name how many comparisons run at once, or 0 for one per CPU")
     if not args.reserve_gib >= 0:
         raise WeeklyError(f"--reserve-gib {args.reserve_gib}: name the GiB to keep available, 0 or more")
-    if not args.floor_gib >= 0:
-        raise WeeklyError(f"--floor-gib {args.floor_gib}: name the GiB below which comparisons are stopped, 0 or more")
-    if not args.heartbeat_seconds > 0:
-        raise WeeklyError(f"--heartbeat-seconds {args.heartbeat_seconds}: name a positive interval")
+    if not (math.isfinite(args.floor_gib) and args.floor_gib >= 0):
+        raise WeeklyError(
+            f"--floor-gib {args.floor_gib}: name the GiB below which comparisons are stopped, a finite 0 or more"
+        )
+    if not (math.isfinite(args.heartbeat_seconds) and args.heartbeat_seconds > 0):
+        raise WeeklyError(f"--heartbeat-seconds {args.heartbeat_seconds}: name a finite positive interval")
     decision = decide_bundle(
         base,
         bundle,

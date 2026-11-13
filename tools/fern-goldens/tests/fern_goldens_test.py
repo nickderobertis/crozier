@@ -83,6 +83,23 @@ class CommittedGoldenStateTests(unittest.TestCase):
         for pin in payload["corpus_remote_ref_pins"]:
             self.assertEqual(sorted(pin), ["pinned_url", "sha256", "url"])
 
+    @unittest.skipUnless(shutil.which("bash"), "corpus-lib.sh is a bash library")
+    def test_the_tool_reads_exactly_the_rows_the_fetch_reads(self) -> None:
+        """`fern-goldens` and `tools/corpus/corpus-lib.sh` each select CORPUS.md's
+        rows; a row one reads and the other skips is one the weekly run fetches
+        and then refuses (seldon-wrapper, row 5371, in run 42566793545)."""
+        listed = subprocess.run(
+            ["bash", "-c", "source tools/corpus/corpus-lib.sh && corpus_rows tests/fixtures/CORPUS.md"],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=True,
+        )
+        fetched = [line.split("\t", 1)[0] for line in listed.stdout.splitlines()]
+        self.assertEqual(sorted(fetched), sorted(row.name for row in self.rows))
+        self.assertIn("seldon-wrapper", fetched)
+
     def test_multi_file_golden_state_names_every_pinned_member(self) -> None:
         for name in ("folio-mod-authtoken", "raybot"):
             row = next(r for r in self.rows if r.name == name)

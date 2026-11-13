@@ -7,6 +7,7 @@ to end are `tools/fern-goldens-weekly/tests/weekly_journeys_test.py`'s.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import math
 import os
@@ -16,7 +17,7 @@ import tempfile
 import textwrap
 import unittest
 import unittest.mock
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from pathlib import Path
 from typing import Any
 
@@ -1124,6 +1125,44 @@ class RefusalChangeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch, self.assertRaises(weekly.WeeklyError) as raised:
             weekly.refusal_change(Path(scratch), "heap-exhausted")
         self.assertIn("cannot read", str(raised.exception))
+
+
+class ProcessDiscoveryTests(unittest.TestCase):
+    """How the decision's guard finds what a comparison it stops started."""
+
+    @contextlib.contextmanager
+    def discovering(self, proc: Path, path: Path) -> Generator[None]:
+        with unittest.mock.patch.dict(os.environ, {weekly.PROC_ENV: str(proc), "PATH": str(path)}):
+            yield
+
+    def test_a_proc_record_that_vanished_or_does_not_parse_is_skipped(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            proc = Path(scratch)
+            records = {"self": "1 (python) S 0", "12": "12 (a (b) c) S 7 12", "13": "garbage", "14": "14 (x) S lots"}
+            for name, text in records.items():
+                (proc / name).mkdir()
+                (proc / name / "stat").write_text(text, encoding="utf-8")
+            (proc / "15").mkdir()  # its stat gone mid-read
+            with self.discovering(proc, proc):
+                self.assertEqual([weekly.Parented(12, 7)], weekly.parents())
+                self.assertEqual([], weekly.descendants(12))
+                self.assertEqual([12], weekly.descendants(7))
+
+    @unittest.skipIf(sys.platform == "win32", "the stand-in ps is a POSIX script")
+    def test_no_listing_answering_is_none_and_a_stop_ends_only_the_comparison_saying_so(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            bin_ = Path(scratch) / "bin"
+            bin_.mkdir()
+            with self.discovering(Path(scratch) / "no-proc", bin_):
+                self.assertIsNone(weekly.parents(), "no /proc and no ps")
+            (bin_ / "ps").write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+            (bin_ / "ps").chmod(0o755)
+            process = subprocess.Popen(["/bin/sleep", "30"], text=True)
+            self.addCleanup(lambda: process.poll() is None and process.kill())
+            with self.discovering(Path(scratch) / "no-proc", bin_):
+                self.assertIsNone(weekly.descendants(process.pid), "a ps that fails")
+                self.assertFalse(weekly.stop(process))
+            self.assertEqual(-9, process.wait(timeout=10), "the comparison itself still ends")
 
 
 class TitleTests(unittest.TestCase):

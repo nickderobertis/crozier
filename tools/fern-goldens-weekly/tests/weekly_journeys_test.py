@@ -75,8 +75,9 @@ DECLARED_LIMIT = re.search(
 )
 assert DECLARED_LIMIT is not None, "tools/fern-goldens/weekly.py no longer declares BODY_LIMIT"
 BODY_LIMIT = int(DECLARED_LIMIT[1])
-# Every reference family, for a stand-in gate that decides them all at once.
-ALL_FAMILIES = "corpus,overlays,handwritten,measurements,probes,authored-probes,departure-evidence,refusals"
+# Every reference family `fern-references.py` registers, for a stand-in gate
+# that decides them all at once.
+ALL_FAMILIES = ",".join(runpy.run_path(str(REPO / "tools/fern-goldens/fern-references.py"))["FAMILY"])
 # Stand-ins for crozier-e2e's suite and the corpus reporter, so a decision over
 # thousands of items costs one process, or one per corpus item: `bulk.sh`
 # fails every `bulk-<family>-<n>` item its arguments count; `drift.sh` reports
@@ -2301,22 +2302,23 @@ class WeeklyRunTests(unittest.TestCase):
     def assert_guarded_decision(self, **env: str) -> None:
         """The reserve is read only as a comparison starts; one that grows
         after it has started can starve the runner (run 42566793545's second
-        decision job died with the runner out of contact). While two run and
-        the memory left falls under the floor, decide stops the newer one, says
-        so, starts nothing more until there is room, runs the stopped one again
-        alone once the rest are done, and records its rerun's verdict; a
-        heartbeat names what is running and the memory left meanwhile."""
+        decision job died with the runner out of contact). While three run and
+        the memory left stays under the floor, decide stops the newest, then
+        the next newest, each with everything it started, until one is left;
+        says so; starts nothing more until there is room; runs each stopped one
+        again alone once the rest are done; and records each rerun's verdict
+        once. A heartbeat names what is running and the memory left meanwhile."""
         if sys.platform == "win32":
             raise unittest.SkipTest("the stand-in comparisons are POSIX shell scripts")
         block = self.scratch / "block"
         block.mkdir()
         (self.seed / "gates").mkdir()
-        # alpha's and beta's comparisons each hold a child and a grandchild
-        # until `go`, each writing its pid, so stopping one is seen to end all.
+        # alpha's, beta's and lantern's comparisons each hold a child and a
+        # grandchild until `go`, each writing its pid, so a stop is seen to end all.
         write_executable(
             self.seed / "gates/block.sh",
             '#!/bin/sh\necho "$1" >> "$BLOCK_DIR/started"\n'
-            'case "$1" in alpha|beta) sh "$(dirname "$0")/hold.sh" "$1" child ;; esac\nexit 0\n',
+            'case "$1" in alpha|beta|lantern) sh "$(dirname "$0")/hold.sh" "$1" child ;; esac\nexit 0\n',
         )
         write_executable(
             self.seed / "gates/hold.sh",
@@ -2352,7 +2354,7 @@ class WeeklyRunTests(unittest.TestCase):
                     sys.executable,
                     str(decider / "tools/fern-goldens/weekly.py"),
                     *("decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision")),
-                    *("--jobs", "2", "--reserve-gib", "1", "--floor-gib", "1", "--heartbeat-seconds", "1"),
+                    *("--jobs", "3", "--reserve-gib", "1", "--floor-gib", "1", "--heartbeat-seconds", "1"),
                 ],
                 cwd=decider,
                 env=self.environment(decider, BLOCK_DIR=str(block), CROZIER_FERN_WEEKLY_CGROUP=str(cgroup), **env),
@@ -2388,44 +2390,52 @@ class WeeklyRunTests(unittest.TestCase):
                 state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True)
                 return not state.stdout.strip().startswith("Z")
 
-            both = ["alpha", "beta"]
+            three = ["alpha", "beta", "lantern"]
             wait_for(
                 lambda: started.exists()
-                and sorted(started.read_text(encoding="utf-8").split()) == both
-                and all(len(pids(item)) == 2 for item in both),
-                "both run, each with its child and grandchild",
+                and sorted(started.read_text(encoding="utf-8").split()) == three
+                and all(len(pids(item)) == 2 for item in three),
+                "all three run, each with its child and grandchild",
             )
             available(0.5)
-            wait_for(lambda: " stopped: " in log.read_text(encoding="utf-8"), "the newer one stopped")
-            # beta's child and grandchild ended with it; alpha's still run.
-            wait_for(lambda: not any(map(alive, pids("beta"))), "every process beta's comparison started ended")
-            self.assertEqual(2, len(pids("beta")))
-            self.assertTrue(all(map(alive, pids("alpha"))), "the older comparison's processes are untouched")
+            wait_for(lambda: log.read_text(encoding="utf-8").count(" stopped: ") == 2, "the two newer ones stopped")
+            # Their children and grandchildren ended with them; alpha's still run.
+            for item in ("beta", "lantern"):
+                wait_for(lambda item=item: not any(map(alive, pids(item))), f"every process {item}'s started ended")
+                self.assertEqual(2, len(pids(item)))
+            self.assertTrue(all(map(alive, pids("alpha"))), "the oldest comparison's processes are untouched")
             time.sleep(2)
             held = log.read_text(encoding="utf-8")
-            self.assertNotIn("comparison 3/8", held, "nothing more starts while memory is short")
+            self.assertEqual(2, held.count(" stopped: "), "one left running is never stopped")
+            self.assertNotIn("comparison 4/8", held, "nothing more starts while memory is short")
             self.assertRegex(held, r"decide: running comparison 1/8 \(corpus `alpha`\); memory available 0\.5 GiB")
             available(32.0)
             (block / "go").write_text("", encoding="utf-8")
             self.assertEqual(0, decide.wait(timeout=120), log.read_text(encoding="utf-8"))
         lines = log.read_text(encoding="utf-8").splitlines()
-        (stopped,) = [line for line in lines if " stopped: " in line]
-        self.assertIn(
-            "comparison 2/8 (corpus `beta`) stopped: memory available 0.5 GiB is under the 1.0 GiB floor with 2 "
-            "comparison(s) running; it runs again alone",
+        stopped = [line.split("fern-goldens-weekly: ", 1)[1] for line in lines if " stopped: " in line]
+        floor = "stopped: memory available 0.5 GiB is under the 1.0 GiB floor with"
+        self.assertEqual(
+            [
+                f"comparison 3/8 (handwritten `lantern`) {floor} 3 comparison(s) running; it runs again alone",
+                f"comparison 2/8 (corpus `beta`) {floor} 2 comparison(s) running; it runs again alone",
+            ],
             stopped,
         )
-        again = next(
-            i for i, line in enumerate(lines) if "comparison 2/8 (corpus `beta`) (again, alone) started" in line
-        )
         ended = [i for i, line in enumerate(lines) if re.search(r"comparison [0-9]/8 .*\) ended: ", line)]
-        self.assertEqual(8, len(ended), "each comparison ends once: the stopped one only on its rerun")
-        self.assertEqual(again + 1, ended[-1], "the stopped one reruns alone, after every other has ended")
-        self.assertIn("(again, alone) ended: pass", lines[ended[-1]])
-        self.assertEqual(2, started.read_text(encoding="utf-8").split().count("beta"))
+        self.assertEqual(8, len(ended), "each comparison ends once: a stopped one only on its rerun")
+        reruns = [
+            next(i for i, line in enumerate(lines) if f"comparison {label} (again, alone) started" in line)
+            for label in ("2/8 (corpus `beta`)", "3/8 (handwritten `lantern`)")
+        ]
+        self.assertEqual([again + 1 for again in reruns], ended[-2:], "each reruns alone, after every other ended")
+        self.assertTrue(all("(again, alone) ended: pass" in lines[i] for i in ended[-2:]))
+        for item in ("beta", "lantern"):
+            self.assertEqual(2, started.read_text(encoding="utf-8").split().count(item))
         recorded = json.loads((state.artifacts / "decision/decision.json").read_text(encoding="utf-8"))
-        beta = [run for run in recorded["gates"] if run["item"] == "beta"]
-        self.assertEqual(["pass"], [run["verdict"] for run in beta], "the rerun's verdict, recorded once")
+        for item in ("beta", "lantern"):
+            runs = [run["verdict"] for run in recorded["gates"] if run["item"] == item]
+            self.assertEqual(["pass"], runs, f"{item}'s rerun verdict, recorded once")
         self.assertEqual({"pass"}, {run["verdict"] for run in recorded["gates"]})
 
     def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
@@ -2449,6 +2459,18 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assertEqual(1, refused.returncode)
         self.assertIn("--reserve-gib -1.0: name the GiB to keep available, 0 or more", refused.stderr)
+        for option, value, message in (
+            ("--floor-gib", "-1", "--floor-gib -1.0: name the GiB below which comparisons are stopped, a finite"),
+            ("--floor-gib", "inf", "--floor-gib inf: name the GiB below which comparisons are stopped, a finite"),
+            ("--heartbeat-seconds", "0", "--heartbeat-seconds 0.0: name a finite positive interval"),
+            ("--heartbeat-seconds", "inf", "--heartbeat-seconds inf: name a finite positive interval"),
+        ):
+            with self.subTest(option=option, value=value):
+                refused = self.phase(
+                    decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), option, value
+                )
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(message, refused.stderr)
         hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(HANG)}`; {resource}"
         # One at a time, the runner dies with the hanging comparison the log's
         # last line; several at once, it dies once every other one has ended.

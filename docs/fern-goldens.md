@@ -436,7 +436,7 @@ phases.
    still available — over the 5.7 GiB the largest single comparison, corpus
    `bunq.com`, grew to over run 41564405289's tree. That reserve is read only
    as a comparison starts, and one can grow after it has started, so while
-   more than one runs and less than `--floor-gib` (default 1.5) is available,
+   more than one runs and less than `--floor-gib` (default `COMPARISON_FLOOR_GIB`) is available,
    `decide` stops the one it started last, with everything it started, logs
    `… stopped: memory available …`, and runs it again alone once the others
    are done; its rerun's verdict is the one recorded. Stopping the newest until
@@ -444,7 +444,7 @@ phases.
    42566793545's second decision job died 54 minutes into this step with *The
    hosted runner lost communication with the server* and no log of where, so
    `decide` also writes `decide: running <comparisons>; memory available …`
-   every `--heartbeat-seconds` (default 60). The per-family gates run
+   every `--heartbeat-seconds` (default `HEARTBEAT_SECONDS`). The per-family gates run
    alone after them, since each runs a whole suite across every core. One at a
    time, in a container held to the job's runner (4 CPUs, 16 GB), the first 143
    corpus items took about 19 seconds each — about 100 minutes for the
@@ -487,7 +487,8 @@ than opening another, and pushes the branch only with a lease on what it read.
 **The body is bounded; the decision artifact is whole.** A week Fern changes
 every SDK fails hundreds of items: run 42566793545 failed 725 and left 329
 unchecked, and its body, which listed every one, overran GitHub's limit
-(`BODY_LIMIT`, 60,000 characters) so no pull request opened. So the body states
+(`BODY_LIMIT`; this section names `tools/fern-goldens/weekly.py`'s constants) so no
+pull request opened. So the body states
 every kind of result with its count and lists a bounded sample of each, and
 `decide` never refuses to write it:
 
@@ -495,14 +496,14 @@ every kind of result with its count and lists a bounded sample of each, and
   failures and refusal probes, the references not regenerated, and the
   **not compared** count: every item not checked plus every corpus reference
   whose files the comparison never reached (ledger drift).
-- **Failures by family** — each family's total and its first 12 names.
+- **Failures by family** — each family's total and its first `SAMPLE_NAMES` names.
 - **Items not checked** — each shard that uploaded no result, with how many
   references it left uncompared per family and why; then the items grouped by
-  reason, each group's count and its first 12 names.
+  reason, each group's count and its first `SAMPLE_NAMES` names.
 - **References not compared**, **Known upstream Fern failures reproduced**,
   **Known upstream Fern failures that changed**, **Refusal classes whose Fern
-  outcome changed** and **Not regenerated** — listed whole up to 20 entries
-  (`SECTION_LINES`), else the first 20 and a line saying how many it left out.
+  outcome changed** and **Not regenerated** — listed whole up to `SECTION_LINES` entries,
+  else that many and a line saying how many it left out.
 
 A section that left anything out says `<n> of <total> … left out of this body`
 and points at the run's `fern-goldens-decision` artifact, whose `decision.json`
@@ -533,7 +534,7 @@ uploaded no result are carried through the assembly and named, by family,
 item, one-line reason and log path (inside `fern-goldens-bundle`), in the
 assembly, decision and conclusion summaries and in the decision artifact. The
 pull request's **Items not checked** section lists them whole when there are
-at most 20, else groups them by reason (above); either way it names each shard
+at most `SECTION_LINES`, else groups them by reason (above); either way it names each shard
 that uploaded no result and how many references that left uncompared, so a
 shard lost to infrastructure is read off the pull request itself. Every other
 item is still decided. A complete run still
