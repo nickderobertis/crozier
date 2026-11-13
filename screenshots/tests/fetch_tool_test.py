@@ -174,6 +174,7 @@ def test_it_refuses_a_call_it_does_not_take(tmp_path: Path) -> None:
         result = fetch("http://127.0.0.1:9/x", tmp_path / "x", **{name: value})
         assert result.returncode == 2, (name, value)
         assert f"{name} must be a whole number from" in result.stderr
+        assert "set it within that range, or unset it for the default" in result.stderr
 
 
 def test_a_leading_zero_is_read_as_decimal(release: Callable[[list[Answer]], Release], tmp_path: Path) -> None:

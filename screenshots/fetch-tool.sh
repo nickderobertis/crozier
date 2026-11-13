@@ -25,7 +25,7 @@ bounded() {
   local name=$1 value=$2 min=$3 max=$4
   case $value in
     "" | *[!0-9]*)
-      echo "fetch-tool: $name must be a whole number from $min to $max, not '$value'" >&2
+      echo "fetch-tool: $name must be a whole number from $min to $max, not '$value'; set it within that range, or unset it for the default" >&2
       exit 2
       ;;
   esac
@@ -33,7 +33,7 @@ bounded() {
   value=${value#"${value%%[!0]*}"}
   value=${value:-0}
   if [ "${#value}" -gt 3 ] || [ "$value" -lt "$min" ] || [ "$value" -gt "$max" ]; then
-    echo "fetch-tool: $name must be a whole number from $min to $max, not '$2'" >&2
+    echo "fetch-tool: $name must be a whole number from $min to $max, not '$2'; set it within that range, or unset it for the default" >&2
     exit 2
   fi
   echo "$value"

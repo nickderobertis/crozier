@@ -1094,6 +1094,23 @@ fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
         "{stderr}"
     );
 
+    // A call it does not take is a usage error (2), never a tool the proof found missing (1).
+    for arguments in [&[][..], &["ju st"][..], &["just@"][..]] {
+        let usage = Command::new(&node)
+            .arg("tools/ci/require-tools.mjs")
+            .args(arguments)
+            .current_dir(&root)
+            .env("PATH", scratch.path())
+            .output()
+            .expect("node runs the proof");
+        assert_eq!(usage.status.code(), Some(2), "{arguments:?}");
+        let stderr = String::from_utf8_lossy(&usage.stderr);
+        assert!(
+            stderr.contains("usage: node tools/ci/require-tools.mjs NAME[@VERSION]..."),
+            "{stderr}"
+        );
+    }
+
     stand_in("just", "just 1.58.0");
     let present = prove();
     let stdout = String::from_utf8_lossy(&present.stdout);
