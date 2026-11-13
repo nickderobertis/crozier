@@ -1,0 +1,1681 @@
+#!/usr/bin/env python3
+"""The combination population screen: one counted, crozier-only verdict per candidate.
+
+This module is the one authoritative statement of
+`docs/openapi-surface/witness-search-combination-populations/screen.tsv`, the table
+the four combination proof nodes generate from. It declares the table's columns
+and admitted values ([`COLUMNS`], [`POPULATIONS`], [`STATUSES`], [`CONDITIONS`]),
+reads it ([`read_screen`], which refuses a malformed or duplicate row and a row
+whose `status` disagrees with its `licence` and `trigger`), and writes it: the
+`screen` command computes each candidate's licence and trigger from the exact bytes
+its `sha256` names, with crozier's own census and no Fern. Every consumer reads the
+table through [`read_screen`].
+
+The status rule ([`status_of`]):
+
+* `licence` and `trigger` both `unread:<reason>` (the bytes could not be had) is
+  `unfetchable:<reason>`;
+* a `trigger` that is `partial:<condition>` or `absent` is `rejected-trigger`;
+* an `exact` trigger is `certified-screen-pending` under an `admissible:` licence
+  and `rejected-licence` under an `inadmissible:` one.
+
+Anything else (a read trigger beside bytes the licence could not read, an exact
+trigger whose licence was never read) is no row at all: the screen refuses to
+write it and the reader refuses to read it.
+
+The licence is read as `tools/witness-search/witness_screen.py` reads it: the
+document's own `info.license` decides wherever it says anything, and only a
+document that declares none falls back to its recorded grant — the corpus row's
+for a registered document, the repository licence file at the pinned commit for
+a GitHub, Sourcegraph or handed-off one, and none for an APIs.guru archive copy,
+whose aggregation is no publisher grant. A licence file is read from the shared
+response cache, and fetched (through the guarded raw lane, `--fetch-licence`)
+only for a candidate whose trigger is exact, so a bounded screen fetches no
+licence path the verdict does not need.
+
+The exact bytes of every `certified-screen-pending` row are kept in the host cache
+[`cache_root`] under their SHA-256; `cached <sha256>` prints that file's path.
+
+Exit status: 0 when the command did what it says (`check` read a whole table,
+`screen` wrote one, `acquire` finished or spent its budget, `cached` found the
+bytes); 1 when it refused (a malformed table, manifest or document store, an exact
+candidate whose licence evidence is not cached and `--fetch-licence` is off,
+missing cached bytes); 2 on a usage error.
+"""
+
+from __future__ import annotations
+
+import argparse
+import base64
+import binascii
+import concurrent.futures
+import csv
+import functools
+import gzip
+import hashlib
+import importlib.util
+import io
+import json
+import os
+import re
+import sys
+import tempfile
+import time
+import urllib.parse
+from collections import Counter
+from collections.abc import Callable, Iterable, Iterator
+from dataclasses import dataclass
+from pathlib import Path
+from types import ModuleType
+from typing import IO, Any, NamedTuple, NoReturn
+
+REPO = Path(__file__).resolve().parents[2]
+RECORD = REPO / "docs" / "openapi-surface" / "witness-search-combination-populations"
+TABLE = RECORD / "screen.tsv"
+POPULATION = RECORD / "population.tsv"
+
+COLUMNS = ("key", "population", "document", "source", "sha256", "licence", "trigger", "status")
+POPULATIONS = ("registered", "apis-guru", "github", "sourcegraph", "archive", "handed-off")
+PENDING = "certified-screen-pending"
+STATUSES = (PENDING, "rejected-trigger", "rejected-licence", "unfetchable:<reason>")
+SHA = re.compile(r"[0-9a-f]{64}")
+COMMIT = re.compile(r"[0-9a-f]{40}")
+CORPUS_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+# A cell's free text: one line, no tab, never empty or a placeholder.
+PLACEHOLDER = re.compile(r"^(?:|-|TODO|TBD|\?|n/?a|none|null|placeholder)$", re.I)
+
+
+class ScreenError(ValueError):
+    """A screen table, manifest or document store that is not what this module writes."""
+
+
+class LicenceNotCached(ScreenError):
+    """An exact candidate's licence file is not in the shared response cache, and may not be fetched."""
+
+
+def fail(message: str) -> NoReturn:
+    raise SystemExit(f"population-screen: {message}")
+
+
+def _load(name: str, path: Path) -> ModuleType:
+    if name in sys.modules:
+        return sys.modules[name]
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        fail(f"cannot load {path}; restore it from git")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def census() -> ModuleType:
+    return _load("population_screen_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
+
+
+def witness_screen() -> ModuleType:
+    return _load("population_screen_witness_screen", REPO / "tools" / "witness-search" / "witness_screen.py")
+
+
+# ---------------------------------------------------------------------------
+# The document walk the trigger screens share.
+# ---------------------------------------------------------------------------
+
+HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+# Every keyword under which a Schema Object holds further Schema Objects, by shape.
+SCHEMA_MAPS = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
+SCHEMA_LISTS = ("allOf", "anyOf", "oneOf", "prefixItems")
+SCHEMA_ONES = (
+    "items",
+    "additionalProperties",
+    "not",
+    "if",
+    "then",
+    "else",
+    "contains",
+    "propertyNames",
+    "unevaluatedItems",
+    "unevaluatedProperties",
+    "additionalItems",
+)
+
+
+def unescape(segment: str) -> str:
+    return urllib.parse.unquote(segment).replace("~1", "/").replace("~0", "~")
+
+
+def pointer_segments(reference: str) -> list[str] | None:
+    """A local `#/...` reference's unescaped segments, or None for any other reference."""
+    if not reference.startswith("#/"):
+        return None
+    return [unescape(part) for part in reference[2:].split("/")]
+
+
+_ABSENT = object()
+
+
+def resolve(document: Any, reference: str) -> Any:
+    """What a local JSON pointer names in `document`, or `_ABSENT` when it names nothing."""
+    segments = pointer_segments(reference)
+    if segments is None:
+        return _ABSENT
+    node = document
+    for segment in segments:
+        if isinstance(node, dict) and segment in node:
+            node = node[segment]
+        elif isinstance(node, list) and segment.isdigit() and int(segment) < len(node):
+            node = node[int(segment)]
+        else:
+            return _ABSENT
+    return node
+
+
+def deref(document: Any, value: Any, depth: int = 0) -> Any:
+    """`value` with its local references followed (a cycle or a dangling one is None)."""
+    seen: set[str] = set()
+    while isinstance(value, dict) and isinstance(value.get("$ref"), str):
+        reference = value["$ref"]
+        if reference in seen or len(seen) > 32:
+            return None
+        seen.add(reference)
+        target = resolve(document, reference)
+        if target is _ABSENT:
+            return None
+        value = target
+    return value
+
+
+def primary_type(schema: Any) -> str | None:
+    """A schema's declared type, the first non-null one of a type list."""
+    value = schema.get("type") if isinstance(schema, dict) else None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, list):
+        return next((item for item in value if isinstance(item, str) and item != "null"), None)
+    return None
+
+
+def declares_type(schema: Any, name: str) -> bool:
+    value = schema.get("type") if isinstance(schema, dict) else None
+    return value == name or (isinstance(value, list) and name in value)
+
+
+def children(schema: dict[Any, Any]) -> Iterator[tuple[str, str, Any]]:
+    """`(keyword, member, child)` for each Schema Object directly below `schema`."""
+    for keyword in SCHEMA_MAPS:
+        value = schema.get(keyword)
+        if isinstance(value, dict):
+            for member, child in value.items():
+                yield keyword, str(member), child
+    for keyword in SCHEMA_LISTS:
+        value = schema.get(keyword)
+        if isinstance(value, list):
+            for index, child in enumerate(value):
+                yield keyword, str(index), child
+    for keyword in SCHEMA_ONES:
+        value = schema.get(keyword)
+        if isinstance(value, list):  # draft-04 tuple items
+            for index, child in enumerate(value):
+                yield keyword, str(index), child
+        elif value is not None:
+            yield keyword, "", value
+
+
+class Operation(NamedTuple):
+    url: str
+    method: str
+    node: dict[Any, Any]
+    path_item: dict[Any, Any]
+
+
+def operations(document: Any) -> Iterator[Operation]:
+    """Every operation under `paths` (and 3.1 `webhooks`), in document order."""
+    for section in ("paths", "webhooks"):
+        items = document.get(section) if isinstance(document, dict) else None
+        if not isinstance(items, dict):
+            continue
+        for url, item in items.items():
+            item = deref(document, item)
+            if not isinstance(item, dict):
+                continue
+            for method in HTTP_METHODS:
+                node = item.get(method)
+                if isinstance(node, dict):
+                    yield Operation(str(url), method, node, item)
+
+
+def parameters(document: Any, operation: Operation) -> list[dict[Any, Any]]:
+    """An operation's parameters with its Path Item's, references followed, the operation's winning."""
+    found: dict[tuple[Any, Any], dict[Any, Any]] = {}
+    for source in (operation.path_item.get("parameters"), operation.node.get("parameters")):
+        for parameter in source if isinstance(source, list) else []:
+            parameter = deref(document, parameter)
+            if isinstance(parameter, dict):
+                found[(parameter.get("name"), parameter.get("in"))] = parameter
+    return list(found.values())
+
+
+def media_schemas(document: Any, holder: Any) -> Iterator[Any]:
+    """The schema of each media type a Request Body or Response (followed through its reference) writes."""
+    holder = deref(document, holder)
+    content = holder.get("content") if isinstance(holder, dict) else None
+    for media in content.values() if isinstance(content, dict) else []:
+        if isinstance(media, dict) and "schema" in media:
+            yield media["schema"]
+
+
+def schema_roots(document: Any) -> Iterator[Any]:
+    """Every Schema Object a document writes outside another schema, in document order."""
+    components = document.get("components") if isinstance(document, dict) else None
+    components = components if isinstance(components, dict) else {}
+    schemas = components.get("schemas")
+    yield from (schemas.values() if isinstance(schemas, dict) else [])
+    for section in ("parameters", "headers"):
+        entries = components.get(section)
+        for entry in entries.values() if isinstance(entries, dict) else []:
+            if isinstance(entry, dict):
+                if "schema" in entry:
+                    yield entry["schema"]
+                yield from media_schemas(document, entry)
+    for section in ("requestBodies", "responses"):
+        entries = components.get(section)
+        for entry in entries.values() if isinstance(entries, dict) else []:
+            yield from media_schemas(document, entry)
+            headers = entry.get("headers") if isinstance(entry, dict) else None
+            for header in headers.values() if isinstance(headers, dict) else []:
+                if isinstance(header, dict) and "schema" in header:
+                    yield header["schema"]
+    for operation in operations(document):
+        for parameter in parameters(document, operation):
+            if "schema" in parameter:
+                yield parameter["schema"]
+            yield from media_schemas(document, parameter)
+        yield from media_schemas(document, operation.node.get("requestBody"))
+        responses = operation.node.get("responses")
+        for response in responses.values() if isinstance(responses, dict) else []:
+            yield from media_schemas(document, response)
+            response = deref(document, response)
+            headers = response.get("headers") if isinstance(response, dict) else None
+            for header in headers.values() if isinstance(headers, dict) else []:
+                header = deref(document, header)
+                if isinstance(header, dict) and "schema" in header:
+                    yield header["schema"]
+
+
+def all_schemas(document: Any) -> Iterator[dict[Any, Any]]:
+    """Every Schema Object the document writes, each once, parents before children."""
+    seen: set[int] = set()
+    stack = list(reversed(list(schema_roots(document))))
+    while stack:
+        schema = stack.pop()
+        if not isinstance(schema, dict) or id(schema) in seen:
+            continue
+        seen.add(id(schema))
+        yield schema
+        stack.extend(reversed([child for _keyword, _member, child in children(schema)]))
+
+
+def placed(document: Any, keyword: str) -> Iterator[tuple[dict[Any, Any], Any]]:
+    """`(parent, child)` for each schema written under `keyword` of another (each property, each member, …)."""
+    for schema in all_schemas(document):
+        for found, _member, child in children(schema):
+            if found == keyword:
+                yield schema, child
+
+
+# ---------------------------------------------------------------------------
+# The trigger screens: one ordered list of conditions per key.
+# ---------------------------------------------------------------------------
+
+Check = Callable[[], bool]
+
+
+@dataclass(frozen=True)
+class Site:
+    """One place a key's anchor holds, with its conditions in the order they are judged."""
+
+    conditions: tuple[tuple[str, Check], ...]
+
+    def progress(self) -> tuple[int, str]:
+        """How many conditions hold before the first that does not, and that one's name ("" when all hold)."""
+        for index, (name, holds) in enumerate(self.conditions):
+            if not holds():
+                return index, name
+        return len(self.conditions), ""
+
+
+def verdict(sites: Iterable[Site]) -> str:
+    """`exact` where a site meets every condition, else `partial:<first unmet>` at the furthest site, else `absent`."""
+    best: tuple[int, str] | None = None
+    for site in sites:
+        reached, unmet = site.progress()
+        if not unmet:
+            return "exact"
+        if best is None or reached > best[0]:
+            best = (reached, unmet)
+    return "absent" if best is None else f"partial:{best[1]}"
+
+
+COMPONENT_SCHEMAS = "#/components/schemas/"
+
+
+def nested_component_pointer(reference: Any) -> bool:
+    """A local `#/components/schemas/<head>/<tail…>` pointer: a head and at least one more segment."""
+    return (
+        isinstance(reference, str)
+        and reference.startswith(COMPONENT_SCHEMAS)
+        and "/" in reference[len(COMPONENT_SCHEMAS) :]
+    )
+
+
+def walks_to(document: Any, reference: str) -> bool:
+    """Whether crozier's component-pointer walk reaches a schema at `reference`.
+
+    The walk follows schema keywords only (`properties`, `$defs`, `items`,
+    `additionalProperties` and composition members), as the census's
+    `local_schema_pointer_target` mirrors it: a tail through any other key, such as
+    `definitions`, is unresolved for crozier even where a plain JSON pointer
+    resolves it.
+    """
+    components = document.get("components") if isinstance(document, dict) else None
+    schemas = components.get("schemas") if isinstance(components, dict) else None
+    return census().local_schema_pointer_target(reference, schemas if isinstance(schemas, dict) else {}) is not None
+
+
+def unresolved_pointer_sites(document: Any, refs: Iterable[tuple[Any, list[tuple[str, Check]]]]) -> Iterator[Site]:
+    """One site per `$ref` at a placement: the placement's own conditions, then the unresolved nested pointer."""
+    for reference, placement in refs:
+        yield Site(
+            (
+                *placement,
+                ("pointer-not-a-nested-component-pointer", lambda r=reference: nested_component_pointer(r)),
+                ("nested-pointer-resolves", lambda r=reference: not walks_to(document, r)),
+            )
+        )
+
+
+def through_defs(reference: Any) -> bool:
+    segments = pointer_segments(reference) if isinstance(reference, str) else None
+    return bool(segments and reference.startswith(COMPONENT_SCHEMAS) and len(segments) > 4 and "$defs" in segments[3:])
+
+
+def properties_before_defs(reference: str) -> bool:
+    segments = pointer_segments(reference) or []
+    tail = segments[3:]
+    return "$defs" in tail and "properties" in tail[: tail.index("$defs")]
+
+
+def defs_pointer_sites(document: Any, refs: Iterable[tuple[Any, list[tuple[str, Check]]]]) -> Iterator[Site]:
+    for reference, placement in refs:
+        yield Site(
+            (
+                *placement,
+                ("pointer-not-through-a-defs-member", lambda r=reference: through_defs(r)),
+                ("defs-pointer-does-not-resolve", lambda r=reference: walks_to(document, r)),
+                ("defs-pointer-not-through-a-properties-segment", lambda r=reference: properties_before_defs(r)),
+            )
+        )
+
+
+def ref_of(schema: Any) -> Any:
+    return schema.get("$ref") if isinstance(schema, dict) else None
+
+
+def property_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    for _parent, child in placed(document, "properties"):
+        if isinstance(ref_of(child), str):
+            yield ref_of(child), []
+
+
+def array_item_refs(document: Any, primary: bool) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    for parent, child in placed(document, "items"):
+        if isinstance(ref_of(child), str):
+            if primary:
+                check: Check = lambda p=parent: primary_type(p) == "array"  # noqa: E731
+            else:
+                check = lambda p=parent: declares_type(p, "array")  # noqa: E731
+            yield ref_of(child), [("items-owner-not-type-array", check)]
+
+
+def map_value_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    for parent, child in placed(document, "additionalProperties"):
+        if isinstance(ref_of(child), str):
+            yield ref_of(child), [("map-owner-not-type-object", lambda p=parent: declares_type(p, "object"))]
+
+
+def allof_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    for _parent, child in placed(document, "allOf"):
+        if isinstance(ref_of(child), str):
+            yield ref_of(child), []
+
+
+def request_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    for operation in operations(document):
+        for schema in media_schemas(document, operation.node.get("requestBody")):
+            if isinstance(ref_of(schema), str):
+                yield ref_of(schema), []
+
+
+def response_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    seen: set[int] = set()
+    holders: list[Any] = []
+    for operation in operations(document):
+        responses = operation.node.get("responses")
+        holders += list(responses.values()) if isinstance(responses, dict) else []
+    components = document.get("components") if isinstance(document, dict) else None
+    named = components.get("responses") if isinstance(components, dict) else None
+    holders += list(named.values()) if isinstance(named, dict) else []
+    for holder in holders:
+        for schema in media_schemas(document, holder):
+            if isinstance(ref_of(schema), str) and id(schema) not in seen:
+                seen.add(id(schema))
+                yield ref_of(schema), []
+
+
+def null_member(document: Any, member: Any) -> bool:
+    member = deref(document, member)
+    if not isinstance(member, dict):
+        return False
+    kind = member.get("type")
+    return kind == "null" or kind == ["null"] or member.get("enum") == [None]
+
+
+def non_null_members(document: Any, members: Any) -> list[Any]:
+    return [member for member in members if not null_member(document, member)] if isinstance(members, list) else []
+
+
+def string_enum(schema: Any) -> list[str]:
+    values = schema.get("enum") if isinstance(schema, dict) else None
+    if isinstance(values, list) and values and all(isinstance(value, str) for value in values):
+        return values
+    return []
+
+
+def single_tag(document: Any, schema: Any) -> str | None:
+    """A property's one-valued string tag (`enum: [x]` or `const: x`), read through its reference."""
+    schema = deref(document, schema)
+    if not isinstance(schema, dict):
+        return None
+    if isinstance(schema.get("const"), str):
+        return schema["const"]
+    values = string_enum(schema)
+    return values[0] if len(values) == 1 else None
+
+
+def object_properties(document: Any, schema: Any, depth: int = 0) -> dict[Any, Any]:
+    """A schema's own properties with its `allOf` members' merged in, references followed."""
+    schema = deref(document, schema)
+    if not isinstance(schema, dict) or depth > 16:
+        return {}
+    merged: dict[Any, Any] = {}
+    for member in schema.get("allOf") if isinstance(schema.get("allOf"), list) else []:
+        merged.update(object_properties(document, member, depth + 1))
+    own = schema.get("properties")
+    merged.update(own if isinstance(own, dict) else {})
+    return merged
+
+
+def tagged_members(document: Any, members: list[Any]) -> set[str]:
+    """The property names every member tags with a one-valued string enum or const."""
+    shared: set[str] | None = None
+    for member in members:
+        props = object_properties(document, member)
+        names = {str(name) for name, value in props.items() if single_tag(document, value) is not None}
+        shared = names if shared is None else shared & names
+    return shared or set()
+
+
+def required_names(document: Any, schema: Any) -> set[str]:
+    schema = deref(document, schema)
+    names: set[str] = set()
+    if not isinstance(schema, dict):
+        return names
+    for member in schema.get("allOf") if isinstance(schema.get("allOf"), list) else []:
+        names |= required_names(document, member)
+    required = schema.get("required")
+    return names | ({str(name) for name in required} if isinstance(required, list) else set())
+
+
+def unrequired_tag_sites(document: Any, keyword: str) -> Iterator[Site]:
+    for schema in all_schemas(document):
+        members = schema.get(keyword)
+        if not isinstance(members, list):
+            continue
+        referenced = [member for member in members if isinstance(ref_of(member), str)]
+        enum_tag = [
+            member
+            for member in referenced
+            if any(string_enum(deref(document, value)) for value in object_properties(document, member).values())
+        ]
+        conditions: list[tuple[str, Check]] = [
+            ("no-member-is-a-reference", lambda r=referenced: bool(r)),
+            ("no-referenced-member-declares-a-string-enum-property", lambda e=enum_tag: bool(e)),
+        ]
+        if keyword == "oneOf":
+            # Fern applies an explicit discriminator to `oneOf` alone; an inferred tag is read only without one.
+            conditions.append(("union-declares-a-discriminator", lambda s=schema: "discriminator" not in s))
+        conditions += [
+            ("members-share-no-one-valued-tag-property", lambda m=members: bool(tagged_members(document, m))),
+            (
+                "every-member-requires-its-tag",
+                lambda m=members: any(
+                    tag not in required_names(document, member) for member in m for tag in tagged_members(document, m)
+                ),
+            ),
+        ]
+        yield Site(tuple(conditions))
+
+
+def anyof_beside_properties_sites(document: Any) -> Iterator[Site]:
+    for schema in all_schemas(document):
+        members = schema.get("anyOf")
+        if not isinstance(members, list):
+            continue
+        props = schema.get("properties")
+
+        def shared(m: list[Any] = members, p: Any = props) -> bool:
+            tags = tagged_members(document, m)
+            return isinstance(p, dict) and any(name not in tags for name in p)
+
+        yield Site(
+            (
+                ("no-properties-beside-anyof", lambda p=props: isinstance(p, dict) and bool(p)),
+                ("a-member-is-a-reference", lambda m=members: all(not isinstance(ref_of(x), str) for x in m)),
+                ("members-share-no-one-valued-tag-property", lambda m=members: bool(tagged_members(document, m))),
+                ("no-property-beside-the-tag", shared),
+            )
+        )
+
+
+def nullable_allof_sites(document: Any) -> Iterator[Site]:
+    for schema in all_schemas(document):
+        members = schema.get("allOf")
+        if not isinstance(members, list):
+            continue
+        parents = [
+            deref(document, member)
+            for member in members
+            if isinstance(ref_of(member), str)
+            and isinstance(deref(document, member), dict)
+            and deref(document, member).get("nullable") is True
+        ]
+        own: set[str] = set()
+        if isinstance(schema.get("properties"), dict):
+            own |= {str(name) for name in schema["properties"]}
+        for member in members:
+            if isinstance(member, dict) and "$ref" not in member and isinstance(member.get("properties"), dict):
+                own |= {str(name) for name in member["properties"]}
+        inherited = {str(name) for parent in parents for name in object_properties(document, parent)}
+        yield Site(
+            (
+                ("not-type-object", lambda s=schema: primary_type(s) == "object"),
+                ("no-allof-reference-to-a-nullable-parent", lambda p=parents: bool(p)),
+                ("no-own-property-declared", lambda o=own: bool(o)),
+                ("no-own-property-shares-a-nullable-parent-property-name", lambda o=own, i=inherited: bool(o & i)),
+            )
+        )
+
+
+def property_anyof_composed_sites(document: Any) -> Iterator[Site]:
+    for _parent, child in placed(document, "properties"):
+        members = child.get("anyOf") if isinstance(child, dict) else None
+        if not isinstance(members, list):
+            continue
+        yield Site(
+            (
+                (
+                    "anyof-has-fewer-than-two-non-null-members",
+                    lambda m=members: len(non_null_members(document, m)) >= 2,
+                ),
+                (
+                    "no-anyof-member-is-a-oneof",
+                    lambda m=members: any(isinstance(x, dict) and isinstance(x.get("oneOf"), list) for x in m),
+                ),
+            )
+        )
+
+
+def located(document: Any, location: str) -> Iterator[tuple[Operation, dict[Any, Any]]]:
+    for operation in operations(document):
+        for parameter in parameters(document, operation):
+            if parameter.get("in") == location:
+                yield operation, parameter
+
+
+def header_array_sites(document: Any) -> Iterator[Site]:
+    for _operation, parameter in located(document, "header"):
+        schema = deref(document, parameter.get("schema"))
+        items = schema.get("items") if isinstance(schema, dict) else None
+        yield Site(
+            (
+                ("schema-not-type-array", lambda s=schema: declares_type(s, "array")),
+                ("items-are-a-reference", lambda i=items: isinstance(i, dict) and "$ref" not in i),
+                ("items-not-type-string", lambda i=items: primary_type(i) == "string"),
+            )
+        )
+
+
+# Headers the client manages itself, which `global_headers` never promotes.
+CLIENT_MANAGED_HEADERS = frozenset({"accept", "authorization", "content-length", "content-type", "user-agent"})
+
+
+def api_key_headers(document: Any) -> set[str]:
+    components = document.get("components") if isinstance(document, dict) else None
+    schemes = components.get("securitySchemes") if isinstance(components, dict) else None
+    names = set()
+    for scheme in schemes.values() if isinstance(schemes, dict) else []:
+        scheme = deref(document, scheme)
+        if isinstance(scheme, dict) and scheme.get("type") == "apiKey" and scheme.get("in") == "header":
+            names.add(str(scheme.get("name", "")).lower())
+    return names
+
+
+def header_default_sites(document: Any) -> Iterator[Site]:
+    every = list(operations(document))
+    managed = CLIENT_MANAGED_HEADERS | api_key_headers(document)
+    for _operation, parameter in located(document, "header"):
+        schema = deref(document, parameter.get("schema"))
+        name = parameter.get("name")
+
+        def on_every(n: Any = name) -> bool:
+            return all(
+                any(p.get("in") == "header" and p.get("name") == n for p in parameters(document, o)) for o in every
+            )
+
+        yield Site(
+            (
+                ("schema-declares-no-default", lambda s=schema: isinstance(s, dict) and "default" in s),
+                ("default-not-a-string", lambda s=schema: isinstance(s.get("default"), str)),
+                (
+                    "required-header-not-type-string",
+                    lambda p=parameter, s=schema: p.get("required") is not True or primary_type(s) == "string",
+                ),
+                ("header-is-client-managed", lambda n=name: str(n).lower() not in managed),
+                ("header-not-on-every-operation", on_every),
+            )
+        )
+
+
+def required_query_array_enum_sites(document: Any) -> Iterator[Site]:
+    for _operation, parameter in located(document, "query"):
+        schema = deref(document, parameter.get("schema"))
+        items = schema.get("items") if isinstance(schema, dict) else None
+        yield Site(
+            (
+                ("parameter-not-required", lambda p=parameter: p.get("required") is True),
+                ("schema-not-primary-type-array", lambda s=schema: primary_type(s) == "array"),
+                ("items-not-a-reference", lambda i=items: isinstance(ref_of(i), str)),
+                ("items-target-declares-no-string-enum", lambda i=items: bool(string_enum(deref(document, i)))),
+            )
+        )
+
+
+def tag_only_sites(document: Any) -> Iterator[Site]:
+    for operation in operations(document):
+        identifier, tags = operation.node.get("operationId"), operation.node.get("tags")
+        if not isinstance(identifier, str) or not isinstance(tags, list) or not tags:
+            continue
+        yield Site(
+            (
+                (
+                    "operation-id-not-its-first-tag-and-underscores",
+                    lambda i=identifier, t=tags[0]: (
+                        isinstance(t, str) and i.endswith("_") and i.rstrip("_").lower() == t.lower()
+                    ),
+                ),
+            )
+        )
+
+
+def body_path_collision_sites(document: Any) -> Iterator[Site]:
+    for operation in operations(document):
+        if "requestBody" not in operation.node:
+            continue
+        path_names = {str(p.get("name")) for p in parameters(document, operation) if p.get("in") == "path"}
+        body = [
+            object_properties(document, schema) for schema in media_schemas(document, operation.node["requestBody"])
+        ]
+        yield Site(
+            (
+                ("no-path-parameter", lambda n=path_names: bool(n)),
+                ("body-writes-no-object-properties", lambda b=body: any(b)),
+                (
+                    "no-body-property-named-as-a-path-parameter",
+                    lambda b=body, n=path_names: any(str(name) in n for props in b for name in props),
+                ),
+            )
+        )
+
+
+def map_beside_oneof_sites(document: Any) -> Iterator[Site]:
+    for schema in all_schemas(document):
+        if not isinstance(schema.get("oneOf"), list):
+            continue
+        yield Site(
+            (
+                ("no-additional-properties-beside-oneof", lambda s=schema: "additionalProperties" in s),
+                (
+                    "additional-properties-neither-a-schema-nor-true",
+                    lambda s=schema: isinstance(s["additionalProperties"], dict) or s["additionalProperties"] is True,
+                ),
+                ("properties-declared-beside-the-map", lambda s=schema: not s.get("properties")),
+            )
+        )
+
+
+def success_union_sites(document: Any, keyword: str) -> Iterator[Site]:
+    walker = census().Census(document, {})
+    for operation in operations(document):
+        _written, success = walker.success_entry(operation.node)
+        content = success.get("content") if isinstance(success, dict) else None
+        for media in content.values() if isinstance(content, dict) else []:
+            schema = deref(document, media.get("schema") if isinstance(media, dict) else None)
+            if not isinstance(schema, dict) or not isinstance(schema.get(keyword), list):
+                continue
+            yield Site(
+                (
+                    (
+                        f"{keyword.lower()}-success-schema-not-nullable",
+                        lambda s=schema: (
+                            s.get("nullable") is True
+                            or declares_type(s, "null")
+                            or any(null_member(document, member) for member in s[keyword])
+                        ),
+                    ),
+                )
+            )
+
+
+def query_inline_object_sites(document: Any) -> Iterator[Site]:
+    for _operation, parameter in located(document, "query"):
+        schema = parameter.get("schema")
+        if not isinstance(schema, dict):
+            continue
+        yield Site(
+            (
+                ("schema-is-a-reference", lambda s=schema: "$ref" not in s),
+                ("schema-not-primary-type-object", lambda s=schema: primary_type(s) == "object"),
+                ("schema-declares-no-properties", lambda s=schema: bool(s.get("properties"))),
+                ("parameter-not-required", lambda p=parameter: p.get("required") is True),
+            )
+        )
+
+
+SiteFinder = Callable[[Any], Iterable[Site]]
+
+# Each key's sites, read as its census selector and its earlier search's `needs`
+# (or, for the five arm keys, its audit row) state the trigger.
+SITES: dict[str, SiteFinder] = {
+    "combo-allof-unresolved-nested-pointer": lambda d: unresolved_pointer_sites(d, allof_refs(d)),
+    "combo-array-unresolved-nested-pointer": lambda d: unresolved_pointer_sites(d, array_item_refs(d, False)),
+    "combo-map-unresolved-nested-pointer": lambda d: unresolved_pointer_sites(d, map_value_refs(d)),
+    "combo-property-unresolved-nested-pointer": lambda d: unresolved_pointer_sites(d, property_refs(d)),
+    "combo-request-unresolved-nested-pointer": lambda d: unresolved_pointer_sites(d, request_refs(d)),
+    "combo-response-unresolved-nested-pointer": lambda d: unresolved_pointer_sites(d, response_refs(d)),
+    "combo-array-defs-pointer": lambda d: defs_pointer_sites(d, array_item_refs(d, True)),
+    "combo-property-defs-pointer": lambda d: defs_pointer_sites(d, property_refs(d)),
+    "combo-anyof-beside-properties": anyof_beside_properties_sites,
+    "combo-nullable-allof-parent-own-property": nullable_allof_sites,
+    "combo-property-anyof-composed-sibling": property_anyof_composed_sites,
+    "combo-unrequired-tag-anyof-reference": lambda d: unrequired_tag_sites(d, "anyOf"),
+    "combo-unrequired-tag-oneof-reference": lambda d: unrequired_tag_sites(d, "oneOf"),
+    "combo-header-array-accepted-placements": header_array_sites,
+    "combo-header-string-default": header_default_sites,
+    "combo-required-query-array-enum-items": required_query_array_enum_sites,
+    "combo-tag-only-operation-id": tag_only_sites,
+    "combo-body-property-named-as-path-param": body_path_collision_sites,
+    "combo-map-beside-oneof": map_beside_oneof_sites,
+    "combo-success-anyof-nullable": lambda d: success_union_sites(d, "anyOf"),
+    "combo-success-oneof-nullable": lambda d: success_union_sites(d, "oneOf"),
+    "combo-query-param-inline-object": query_inline_object_sites,
+}
+KEYS = tuple(SITES)
+
+_POINTER = ("pointer-not-a-nested-component-pointer", "nested-pointer-resolves")
+_DEFS = (
+    "pointer-not-through-a-defs-member",
+    "defs-pointer-does-not-resolve",
+    "defs-pointer-not-through-a-properties-segment",
+)
+_TAG = (
+    "no-member-is-a-reference",
+    "no-referenced-member-declares-a-string-enum-property",
+    "members-share-no-one-valued-tag-property",
+    "every-member-requires-its-tag",
+)
+# Every condition a key's `partial:` verdict may name: the reader admits no other.
+CONDITIONS: dict[str, tuple[str, ...]] = {
+    "combo-allof-unresolved-nested-pointer": _POINTER,
+    "combo-array-unresolved-nested-pointer": ("items-owner-not-type-array", *_POINTER),
+    "combo-map-unresolved-nested-pointer": ("map-owner-not-type-object", *_POINTER),
+    "combo-property-unresolved-nested-pointer": _POINTER,
+    "combo-request-unresolved-nested-pointer": _POINTER,
+    "combo-response-unresolved-nested-pointer": _POINTER,
+    "combo-array-defs-pointer": ("items-owner-not-type-array", *_DEFS),
+    "combo-property-defs-pointer": _DEFS,
+    "combo-anyof-beside-properties": (
+        "no-properties-beside-anyof",
+        "a-member-is-a-reference",
+        "members-share-no-one-valued-tag-property",
+        "no-property-beside-the-tag",
+    ),
+    "combo-nullable-allof-parent-own-property": (
+        "not-type-object",
+        "no-allof-reference-to-a-nullable-parent",
+        "no-own-property-declared",
+        "no-own-property-shares-a-nullable-parent-property-name",
+    ),
+    "combo-property-anyof-composed-sibling": (
+        "anyof-has-fewer-than-two-non-null-members",
+        "no-anyof-member-is-a-oneof",
+    ),
+    "combo-unrequired-tag-anyof-reference": _TAG,
+    "combo-unrequired-tag-oneof-reference": (*_TAG, "union-declares-a-discriminator"),
+    "combo-header-array-accepted-placements": (
+        "schema-not-type-array",
+        "items-are-a-reference",
+        "items-not-type-string",
+    ),
+    "combo-header-string-default": (
+        "schema-declares-no-default",
+        "default-not-a-string",
+        "required-header-not-type-string",
+        "header-is-client-managed",
+        "header-not-on-every-operation",
+    ),
+    "combo-required-query-array-enum-items": (
+        "parameter-not-required",
+        "schema-not-primary-type-array",
+        "items-not-a-reference",
+        "items-target-declares-no-string-enum",
+    ),
+    "combo-tag-only-operation-id": ("operation-id-not-its-first-tag-and-underscores",),
+    "combo-body-property-named-as-path-param": (
+        "no-path-parameter",
+        "body-writes-no-object-properties",
+        "no-body-property-named-as-a-path-parameter",
+    ),
+    "combo-map-beside-oneof": (
+        "no-additional-properties-beside-oneof",
+        "additional-properties-neither-a-schema-nor-true",
+        "properties-declared-beside-the-map",
+    ),
+    "combo-success-anyof-nullable": ("anyof-success-schema-not-nullable",),
+    "combo-success-oneof-nullable": ("oneof-success-schema-not-nullable",),
+    "combo-query-param-inline-object": (
+        "schema-is-a-reference",
+        "schema-not-primary-type-object",
+        "schema-declares-no-properties",
+        "parameter-not-required",
+    ),
+}
+
+
+def trigger(key: str, document: Any) -> str:
+    """The key's trigger verdict over one parsed document: `exact`, `partial:<condition>` or `absent`."""
+    if key not in SITES:
+        raise ScreenError(f"{key!r} is no combination key this screen knows; pass one of {', '.join(KEYS)}")
+    return verdict(SITES[key](document))
+
+
+@functools.cache
+def _compiled(selectors: tuple[str, ...]) -> dict[str, Any]:
+    module = census()
+    return {selector: module.compile_conjunction(selector) for selector in selectors if selector in module.CONJUNCTIONS}
+
+
+@dataclass(frozen=True)
+class Selectors:
+    """Each key's census selector, as `docs/openapi-surface/witness-search-keys.tsv` derives it."""
+
+    by_key: dict[str, str]
+
+    @classmethod
+    def read(cls, path: Path = REPO / "docs" / "openapi-surface" / "witness-search-keys.tsv") -> Selectors:
+        with path.open(encoding="utf-8", newline="") as handle:
+            rows = {row["key"]: row["selector"] for row in csv.DictReader(handle, delimiter="\t")}
+        missing = [key for key in KEYS if key not in rows]
+        if missing:
+            raise ScreenError(f"{path} names no selector for {missing}; regenerate it with its own script")
+        return cls({key: rows[key] for key in KEYS})
+
+    def declarations(self, document: Any) -> dict[str, int]:
+        """Each key's census declaration count over one parsed document (0 off OpenAPI 3)."""
+        module = census()
+        version = document.get("openapi") if isinstance(document, dict) else None
+        if not isinstance(version, str) or not version.startswith("3."):
+            return dict.fromkeys(KEYS, 0)
+        compiled = _compiled(tuple(sorted(set(self.by_key.values()))))
+        counts = module.census_document(document, conjunctions=compiled)
+        return {key: counts.get(selector, 0) for key, selector in self.by_key.items()}
+
+
+# ---------------------------------------------------------------------------
+# The table: its rows, its grammar and the status rule.
+# ---------------------------------------------------------------------------
+
+
+class ScreenRow(NamedTuple):
+    key: str
+    population: str
+    document: str
+    source: str
+    sha256: str
+    licence: str
+    trigger: str
+    status: str
+
+
+def _reason(cell: str, prefix: str) -> str | None:
+    """The reason after `prefix`, or None when the cell carries no real one."""
+    if not cell.startswith(prefix):
+        return None
+    reason = cell[len(prefix) :]
+    return None if PLACEHOLDER.match(reason.strip()) or reason != reason.strip() else reason
+
+
+def status_of(licence: str, trigger_cell: str) -> str:
+    """The status the rule gives a row's licence and trigger, or raise `ScreenError` for a pair no row may carry."""
+    unread_licence, unread_trigger = _reason(licence, "unread:"), _reason(trigger_cell, "unread:")
+    if unread_trigger is not None:
+        if unread_licence is None:
+            raise ScreenError("a trigger left unread beside a licence that was read: unread bytes leave both unread")
+        return f"unfetchable:{unread_trigger}"
+    if trigger_cell == "absent" or trigger_cell.startswith("partial:"):
+        return "rejected-trigger"
+    if trigger_cell != "exact":
+        raise ScreenError(f"trigger {trigger_cell!r} is none of exact, partial:<condition>, absent, unread:<reason>")
+    if _reason(licence, "admissible:") is not None:
+        return PENDING
+    if _reason(licence, "inadmissible:") is not None:
+        return "rejected-licence"
+    raise ScreenError(f"an exact trigger whose licence {licence!r} was never decided: read its licence evidence")
+
+
+def source_failure(row: ScreenRow) -> str | None:
+    if row.population == "registered":
+        return None if row.source == "-" else "a registered document's source is `-` (its bytes are in the tree)"
+    parts = urllib.parse.urlsplit(row.source)
+    if parts.scheme != "https" or not parts.netloc or not any(COMMIT.fullmatch(seg) for seg in parts.path.split("/")):
+        return f"source {row.source!r} is no https URL pinned at a full commit SHA"
+    return None
+
+
+def document_failure(row: ScreenRow) -> str | None:
+    document = row.document
+    if PLACEHOLDER.match(document) or "\t" in document or document != document.strip():
+        return "document is empty, a placeholder or padded"
+    if row.population == "registered" and not CORPUS_NAME.fullmatch(document):
+        return f"registered document {document!r} is no corpus row name"
+    if row.population in ("github", "sourcegraph") and len([p for p in document.split("/") if p]) < 3:
+        return f"{row.population} document {document!r} is no `owner/repo/path`"
+    return None
+
+
+def row_failures(row: ScreenRow) -> list[str]:
+    """Why one row is not one this module writes; empty when it is whole."""
+    wrong = []
+    if row.key not in KEYS:
+        wrong.append(f"key {row.key!r} is none of the {len(KEYS)} combination keys")
+    if row.population not in POPULATIONS:
+        wrong.append(f"population {row.population!r} is none of {', '.join(POPULATIONS)}")
+    for failure in (document_failure(row), source_failure(row) if row.population in POPULATIONS else None):
+        if failure:
+            wrong.append(failure)
+    unfetchable = row.status.startswith("unfetchable:")
+    if not (SHA.fullmatch(row.sha256) or (unfetchable and row.sha256 == "-")):
+        wrong.append(f"sha256 {row.sha256!r} is no SHA-256 (`-` only on an unfetchable row that never had one)")
+    if not any(_reason(row.licence, prefix) is not None for prefix in ("admissible:", "inadmissible:", "unread:")):
+        wrong.append(f"licence {row.licence!r} is none of admissible:<grant>, inadmissible:<reason>, unread:<reason>")
+    partial = _reason(row.trigger, "partial:")
+    if row.trigger.startswith("partial:") and (partial is None or partial not in CONDITIONS.get(row.key, ())):
+        wrong.append(f"trigger {row.trigger!r} names no condition of {row.key}'s screen")
+    try:
+        expected = status_of(row.licence, row.trigger)
+    except ScreenError as error:
+        wrong.append(str(error))
+    else:
+        if row.status != expected:
+            wrong.append(f"status {row.status!r} disagrees with its licence and trigger, which give {expected!r}")
+        if unfetchable and _reason(row.licence, "unread:") != _reason(row.trigger, "unread:"):
+            wrong.append("an unfetchable row's licence and trigger name the same reason the bytes were not had")
+    return wrong
+
+
+def read_screen(path: Path = TABLE) -> list[ScreenRow]:
+    """Every row of a screen table, refusing a malformed table, a malformed or duplicate row."""
+    try:
+        text = path.read_bytes().decode("utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise ScreenError(f"{path}: cannot be read as UTF-8 ({error}); regenerate it with `screen`") from error
+    lines = text.split("\n")
+    if lines and lines[-1] == "":
+        lines.pop()
+    if not lines or tuple(lines[0].split("\t")) != COLUMNS:
+        raise ScreenError(f"{path}: its header is not {'/'.join(COLUMNS)}; regenerate it with `screen`")
+    rows: list[ScreenRow] = []
+    seen: dict[tuple[str, str, str], int] = {}
+    for number, line in enumerate(lines[1:], 2):
+        cells = line.split("\t")
+        if len(cells) != len(COLUMNS) or "\r" in line:
+            raise ScreenError(f"{path}:{number}: {len(cells)} cells, not the {len(COLUMNS)} columns")
+        row = ScreenRow(*cells)
+        wrong = row_failures(row)
+        if wrong:
+            raise ScreenError(f"{path}:{number}: " + "; ".join(wrong))
+        identity = (row.key, row.population, row.document)
+        if identity in seen:
+            raise ScreenError(f"{path}:{number}: duplicates line {seen[identity]}'s ({', '.join(identity)})")
+        seen[identity] = number
+        rows.append(row)
+    return rows
+
+
+def pending_counts(rows: Iterable[ScreenRow]) -> Counter[str]:
+    """Each key's `certified-screen-pending` candidates: the named census a still-open row cites."""
+    return Counter(row.key for row in rows if row.status == PENDING)
+
+
+def render(rows: Iterable[ScreenRow]) -> str:
+    ordered = sorted(rows, key=lambda row: (row.key, POPULATIONS.index(row.population), row.document))
+    return "\t".join(COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in ordered)
+
+
+# ---------------------------------------------------------------------------
+# The host cache and the document store.
+# ---------------------------------------------------------------------------
+
+
+def cache_root() -> Path:
+    """`${XDG_CACHE_HOME:-$HOME/.cache}/crozier/witness-populations`: exact bytes named by their SHA-256."""
+    base = os.environ.get("XDG_CACHE_HOME") or ""
+    root = Path(base) if os.path.isabs(base) else Path.home() / ".cache"
+    return root / "crozier" / "witness-populations"
+
+
+def store(data: bytes, root: Path | None = None) -> Path:
+    """Keep `data` under its own digest, atomically; the path it is kept at."""
+    root = root or cache_root()
+    digest = hashlib.sha256(data).hexdigest()
+    path = root / digest
+    if path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest() == digest:
+        return path
+    root.mkdir(parents=True, exist_ok=True)
+    partial = root / f".{digest}.{os.getpid()}.part"
+    partial.write_bytes(data)
+    partial.replace(path)
+    return path
+
+
+def cached(sha256: str, root: Path | None = None) -> bytes | None:
+    """The kept bytes `sha256` names, or None when they are missing or no longer carry that digest."""
+    path = (root or cache_root()) / sha256
+    try:
+        data = path.read_bytes()
+    except OSError:
+        return None
+    return data if hashlib.sha256(data).hexdigest() == sha256 else None
+
+
+# ---------------------------------------------------------------------------
+# The manifest: every candidate of every population, with where its bytes and licence evidence are.
+# ---------------------------------------------------------------------------
+
+MANIFEST_COLUMNS = ("population", "document", "source", "sha256", "evidence", "keys", "unfetchable")
+
+
+class Entry(NamedTuple):
+    """One manifest row: a candidate document, its licence evidence and the keys it owes a row for."""
+
+    population: str
+    document: str
+    source: str
+    sha256: str
+    # `corpus:<recorded grant>`, `repository:<owner>/<repo>@<commit>`, `no-publisher-grant` or `-`.
+    evidence: str
+    # The keys an earlier named census already lists it for, `;`-joined, or `-`.
+    keys: str
+    # Why its bytes could not be had, or `-`.
+    unfetchable: str
+
+    def forced(self) -> list[str]:
+        return [] if self.keys == "-" else self.keys.split(";")
+
+
+def read_manifest(path: Path) -> list[Entry]:
+    with path.open(encoding="utf-8", newline="") as handle:
+        reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        header = next(reader, None)
+        if tuple(header or ()) != MANIFEST_COLUMNS:
+            raise ScreenError(f"{path}: its header is not {'/'.join(MANIFEST_COLUMNS)}")
+        entries = []
+        for number, cells in enumerate(reader, 2):
+            if len(cells) != len(MANIFEST_COLUMNS) or any(not cell for cell in cells):
+                raise ScreenError(f"{path}:{number}: {len(cells)} cells, every one filled, not {len(MANIFEST_COLUMNS)}")
+            entry = Entry(*cells)
+            if entry.population not in POPULATIONS:
+                raise ScreenError(f"{path}:{number}: population {entry.population!r} is none of {POPULATIONS}")
+            unknown = [key for key in entry.forced() if key not in KEYS]
+            if unknown:
+                raise ScreenError(f"{path}:{number}: keys {unknown} are no combination keys")
+            entries.append(entry)
+    return entries
+
+
+def write_manifest(path: Path, entries: Iterable[Entry]) -> None:
+    ordered = sorted(set(entries), key=lambda e: (POPULATIONS.index(e.population), e.document, e.sha256))
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\t".join(MANIFEST_COLUMNS) + "\n" + "".join("\t".join(entry) + "\n" for entry in ordered),
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
+def registered_files(root: Path = REPO) -> dict[str, Path]:
+    """Each registered corpus row's committed source document, as `corpus-sources.tsv` records it."""
+    files: dict[str, list[Path]] = {}
+    with (root / "tests" / "fixtures" / "corpus-sources.tsv").open(encoding="utf-8") as handle:
+        for line in handle:
+            if line.startswith("#") or not line.strip():
+                continue
+            name, relative, *_rest = line.rstrip("\n").split("\t")
+            files.setdefault(name, []).append(root / relative)
+    chosen = {}
+    for name, paths in files.items():
+        # The row's own document: the one directly in its directory, named as the corpus publishes it.
+        top = [path for path in paths if path.parent.name == name and path.stem == "openapi"]
+        chosen[name] = (top or paths)[0]
+    return chosen
+
+
+def corpus_grants(root: Path = REPO) -> dict[str, str]:
+    """Each committed corpus row's recorded licence (the `license` cell of `CORPUS.md`)."""
+    grants = {}
+    for line in (root / "tests" / "fixtures" / "CORPUS.md").read_text(encoding="utf-8").splitlines():
+        cells = [cell.strip() for cell in line.split("|")]
+        if len(cells) >= 9 and cells[1].isdigit() and cells[7] in ("committed", "link-ok"):
+            grants[cells[2].strip("` ")] = cells[6]
+    return grants
+
+
+def registered_bytes(document: str, root: Path = REPO) -> bytes | None:
+    path = registered_files(root).get(document)
+    return path.read_bytes() if path is not None and path.is_file() else None
+
+
+# ---------------------------------------------------------------------------
+# The licence verdict.
+# ---------------------------------------------------------------------------
+
+LicenceFetch = Callable[[str, str, str], tuple[int, bytes] | None]
+
+
+def cell_text(text: str) -> str:
+    return " ".join(str(text).split()).replace("\t", " ")[:200]
+
+
+def licence_verdict(
+    document: Any,
+    entry: Entry,
+    exact: bool,
+    fetch_file: LicenceFetch,
+) -> str:
+    """One candidate's licence cell, read as `witness_screen.py` reads a licence.
+
+    `fetch_file(repository, commit, name)` answers a licence file's `(status, bytes)`,
+    or None when it is not cached and may not be fetched; it is asked only for a
+    document that declares no `info.license`, and only where the trigger is exact.
+    """
+    screen = witness_screen()
+    declared = screen.licence_of(document)
+    families = screen.admissible_families()
+    if declared is screen.MALFORMED:
+        return "inadmissible:info.license is there but is no License Object"
+    if declared:
+        family = screen.recognise(declared)
+        if family in families:
+            return f"admissible:{family} (info.license '{cell_text(declared)}')"
+        return f"inadmissible:info.license '{cell_text(declared)}' names no grant the corpus rule admits"
+    evidence = entry.evidence
+    if evidence.startswith("corpus:"):
+        recorded = evidence[len("corpus:") :]
+        family = screen.recognise(recorded)
+        if family in families:
+            return f"admissible:{family} (the corpus row's recorded grant: {cell_text(recorded)})"
+        return f"inadmissible:no info.license, and the corpus row's recorded grant {cell_text(recorded)!r} is none admitted"
+    if evidence == "no-publisher-grant":
+        return "inadmissible:grants nothing: no info.license, and an APIs.guru archive copy carries no publisher grant"
+    match = re.fullmatch(r"repository:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", evidence)
+    if match is None:
+        return "inadmissible:grants nothing: no info.license and no recorded repository to read a licence file at"
+    if not exact:
+        return "unread:no info.license, and its repository licence file is read only for an exact trigger"
+    repository, commit = match.groups()
+    for name in screen.LICENCE_FILES:
+        answer = fetch_file(repository, commit, name)
+        if answer is None:
+            raise LicenceNotCached(
+                f"{entry.population} {entry.document}: {name} at {repository}@{commit} is not cached; "
+                "re-run `screen` with --fetch-licence to read it through the guarded raw lane"
+            )
+        status, data = answer
+        if status == 200:
+            lines = [line for line in data.decode("utf-8", "replace").splitlines() if line.strip()]
+            family = screen.recognise("\n".join(lines[: screen.LICENCE_HEAD_LINES]))
+            if family in families:
+                return f"admissible:{family} ({name} at {commit})"
+            return f"inadmissible:no info.license, and {name} at {commit} names no grant the corpus rule admits"
+    return "inadmissible:grants nothing: no info.license and no licence file at the pinned commit"
+
+
+# ---------------------------------------------------------------------------
+# The screen.
+# ---------------------------------------------------------------------------
+
+
+def parse(data: bytes, scratch: Path) -> Any:
+    return witness_screen().read_document(data, scratch)
+
+
+def entry_bytes(entry: Entry, root: Path, store_root: Path) -> bytes | None:
+    if entry.population == "registered":
+        return registered_bytes(entry.document, root)
+    return cached(entry.sha256, store_root) if SHA.fullmatch(entry.sha256) else None
+
+
+def screen_entry(
+    entry: Entry,
+    selectors: Selectors,
+    *,
+    root: Path,
+    store_root: Path,
+    scratch: Path,
+    fetch_file: LicenceFetch,
+    discover: bool,
+) -> list[ScreenRow]:
+    """Every row one candidate owes: each key an earlier census lists it for, and each its bytes declare."""
+    keys = list(dict.fromkeys(entry.forced()))
+    if entry.unfetchable != "-":
+        reason = cell_text(entry.unfetchable)
+        return [
+            ScreenRow(
+                key,
+                entry.population,
+                entry.document,
+                entry.source,
+                entry.sha256,
+                f"unread:{reason}",
+                f"unread:{reason}",
+                f"unfetchable:{reason}",
+            )
+            for key in keys
+        ]
+    data = entry_bytes(entry, root, store_root)
+    if data is None or hashlib.sha256(data).hexdigest() != entry.sha256:
+        raise ScreenError(
+            f"{entry.population} {entry.document}: no bytes carrying sha256 {entry.sha256} are in the store; "
+            "acquire them first (`acquire`), or record the entry as unfetchable"
+        )
+    try:
+        document = parse(data, scratch)
+    except Exception as error:  # the census reader's own refusal, whatever its type
+        reason = cell_text(f"the exact bytes do not parse ({type(error).__name__})")
+        return [
+            ScreenRow(
+                key,
+                entry.population,
+                entry.document,
+                entry.source,
+                entry.sha256,
+                f"unread:{reason}",
+                f"unread:{reason}",
+                f"unfetchable:{reason}",
+            )
+            for key in keys
+        ]
+    if discover:
+        declared = selectors.declarations(document)
+        keys += [key for key in KEYS if declared[key] > 0 and key not in keys]
+    rows = []
+    for key in keys:
+        verdict_cell = trigger(key, document)
+        licence = licence_verdict(document, entry, verdict_cell == "exact", fetch_file)
+        row = ScreenRow(
+            key,
+            entry.population,
+            entry.document,
+            entry.source,
+            entry.sha256,
+            licence,
+            verdict_cell,
+            status_of(licence, verdict_cell),
+        )
+        wrong = row_failures(row)
+        if wrong:
+            raise ScreenError(f"{entry.population} {entry.document} {key}: " + "; ".join(wrong))
+        if row.status == PENDING:
+            store(data, store_root)
+        rows.append(row)
+    return rows
+
+
+def raw_licence_fetcher(evidence: Path | None, live: bool) -> LicenceFetch:
+    """A licence-file reader: the shared response cache first, the guarded raw lane only when `live`."""
+    github = _load("population_screen_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
+    raw_base = github.checked_service_url(
+        os.environ.get("CROZIER_RAW_GITHUB_URL", github.RAW_GITHUB_URL),
+        "CROZIER_RAW_GITHUB_URL",
+        "raw.githubusercontent.com",
+    )
+    acquirer = None
+
+    def fetch(repository: str, commit: str, name: str) -> tuple[int, bytes] | None:
+        nonlocal acquirer
+        url = f"{raw_base.rstrip('/')}/{repository}/{commit}/{urllib.parse.quote(name)}"
+        hit = github.cache_lookup("GET", url, {"User-Agent": "crozier-witness-search"})
+        if hit is not None:
+            return hit.status, hit.body()
+        if not live or evidence is None:
+            return None
+        if acquirer is None:
+            acquirer = github.Acquirer(evidence, cache=cache_root() / "acquirer", raw_github_url=raw_base)
+        return acquirer.raw_github_get(url, "witness-populations", f"{repository}:{name}")
+
+    return fetch
+
+
+Job = tuple[Entry, Path, Path, bool]
+
+
+def _screen_job(job: Job) -> tuple[list[ScreenRow], Entry | None]:
+    """One entry's rows, read with cache-only licence evidence; the entry back when its licence needs a fetch."""
+    entry, root, store_root, discover = job
+    selectors = Selectors.read(root / "docs" / "openapi-surface" / "witness-search-keys.tsv")
+    with tempfile.TemporaryDirectory(prefix="population-screen-") as scratch:
+        try:
+            rows = screen_entry(
+                entry,
+                selectors,
+                root=root,
+                store_root=store_root,
+                scratch=Path(scratch),
+                fetch_file=raw_licence_fetcher(None, live=False),
+                discover=discover,
+            )
+        except LicenceNotCached:
+            return [], entry
+    return rows, None
+
+
+def run_screen(
+    entries: list[Entry],
+    *,
+    root: Path = REPO,
+    store_root: Path | None = None,
+    fetch_file: LicenceFetch,
+    discover: bool = True,
+    workers: int = 1,
+) -> list[ScreenRow]:
+    """Every row the manifest's candidates owe.
+
+    Candidates are read in `workers` processes with cache-only licence evidence;
+    one whose exact trigger needs a licence file the cache lacks is screened again
+    here with `fetch_file`, which may fetch it.
+    """
+    store_root = store_root or cache_root()
+    jobs = [(entry, root, store_root, discover) for entry in entries]
+    if workers > 1:
+        with concurrent.futures.ProcessPoolExecutor(workers) as pool:
+            results = list(pool.map(_screen_job, jobs, chunksize=4))
+    else:
+        results = [_screen_job(job) for job in jobs]
+    rows: list[ScreenRow] = [row for found, _later in results for row in found]
+    later = [entry for _found, entry in results if entry is not None]
+    selectors = Selectors.read(root / "docs" / "openapi-surface" / "witness-search-keys.tsv")
+    with tempfile.TemporaryDirectory(prefix="population-screen-") as scratch:
+        for entry in later:
+            rows += screen_entry(
+                entry,
+                selectors,
+                root=root,
+                store_root=store_root,
+                scratch=Path(scratch),
+                fetch_file=fetch_file,
+                discover=discover,
+            )
+    seen: set[tuple[str, str, str]] = set()
+    for row in rows:
+        identity = (row.key, row.population, row.document)
+        if identity in seen:
+            raise ScreenError(f"two manifest entries screen {identity}: name each candidate once")
+        seen.add(identity)
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Acquisition: exact bytes from the shared response cache, else the guarded raw lane.
+# ---------------------------------------------------------------------------
+
+IDENTITY_COLUMNS = ("population", "document", "repository", "commit", "path", "sha256", "url", "rank")
+# A code-search hit is pinned by its git blob, not yet by its content's SHA-256.
+BLOB = re.compile(r"blob:([0-9a-f]{40})")
+
+
+def blob_sha(data: bytes) -> str:
+    """The git blob SHA-1 of `data`, which a code-search hit names."""
+    return hashlib.sha1(b"blob %d\0" % len(data) + data).hexdigest()  # git's own identifier, not a security digest
+
+
+def pinned_by(identity: Identity, data: bytes) -> bool:
+    blob = BLOB.fullmatch(identity.sha256)
+    return blob_sha(data) == blob.group(1) if blob else hashlib.sha256(data).hexdigest() == identity.sha256
+
+
+class Identity(NamedTuple):
+    population: str
+    document: str
+    repository: str
+    commit: str
+    path: str
+    sha256: str
+    url: str
+    rank: str
+
+
+def cache_scan(responses: Path) -> dict[str, Path]:
+    """Every exact document the shared response cache holds, by its SHA-256: raw bodies and base64 contents."""
+    found: dict[str, Path] = {}
+    for body in sorted(responses.glob("*/*.body")):
+        parts = body.name.split(".")
+        if len(parts) != 3:
+            continue
+        found.setdefault(parts[1], body)
+        try:
+            with body.open("rb") as handle:
+                if handle.read(1) != b"{":
+                    continue
+            payload = json.loads(body.read_bytes())
+        except (OSError, ValueError):
+            continue
+        if (
+            isinstance(payload, dict)
+            and payload.get("encoding") == "base64"
+            and isinstance(payload.get("content"), str)
+        ):
+            try:
+                data = base64.b64decode("".join(payload["content"].split()), validate=True)
+            except binascii.Error:
+                continue
+            found.setdefault(hashlib.sha256(data).hexdigest(), body)
+    return found
+
+
+def body_bytes(path: Path, sha256: str) -> bytes | None:
+    data = path.read_bytes()
+    if hashlib.sha256(data).hexdigest() == sha256:
+        return data
+    try:
+        payload = json.loads(data)
+        decoded = base64.b64decode("".join(payload["content"].split()), validate=True)
+    except (ValueError, KeyError, TypeError, binascii.Error):
+        return None
+    return decoded if hashlib.sha256(decoded).hexdigest() == sha256 else None
+
+
+def acquire(
+    identities: list[Identity],
+    *,
+    evidence: Path,
+    budget_s: float,
+    responses: Path,
+    store_root: Path | None = None,
+    raw_base: str | None = None,
+    out: io.TextIOBase | Any = sys.stdout,
+) -> Counter[str]:
+    """Bring each identity's exact bytes into the store, cheapest first, until `budget_s` of live fetching is spent."""
+    github = _load("population_screen_github", REPO / "tools" / "witness-search" / "witness-search-github.py")
+    store_root = store_root or cache_root()
+    raw_base = raw_base or github.checked_service_url(
+        os.environ.get("CROZIER_RAW_GITHUB_URL", github.RAW_GITHUB_URL),
+        "CROZIER_RAW_GITHUB_URL",
+        "raw.githubusercontent.com",
+    )
+    acquirer = github.Acquirer(evidence, cache=store_root / "acquirer", raw_github_url=raw_base)
+    scanned = cache_scan(responses) if responses.is_dir() else {}
+    tally: Counter[str] = Counter()
+    started = time.monotonic()
+    ledger = evidence / "acquisitions.jsonl"
+    evidence.mkdir(parents=True, exist_ok=True)
+    for identity in sorted(identities, key=lambda i: (-int(i.rank), i.population, i.document, i.sha256)):
+        how = ""
+        sha256 = identity.sha256
+        if SHA.fullmatch(sha256) and cached(sha256, store_root) is not None:
+            how = "store"
+        elif sha256 in scanned and (data := body_bytes(scanned[sha256], sha256)):
+            store(data, store_root)
+            how = "shared-cache"
+        elif time.monotonic() - started >= budget_s:
+            tally["budget-spent"] += 1
+            continue
+        else:
+            url = f"{raw_base.rstrip('/')}/{identity.repository}/{identity.commit}/{urllib.parse.quote(identity.path)}"
+            try:
+                status, data = acquirer.raw_github_get(
+                    url, "witness-populations", f"{identity.repository}:{identity.path}"
+                )
+            except OSError as error:
+                status, data = 0, str(error).encode()
+            if status == 200 and pinned_by(identity, data):
+                sha256 = store(data, store_root).name
+                how = "raw"
+            else:
+                how = f"refused-http-{status}" if status != 200 else "digest-differs"
+        tally[how] += 1
+        with ledger.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(
+                json.dumps({**identity._asdict(), "how": how, "content_sha256": sha256}, sort_keys=True) + "\n"
+            )
+    print(
+        "population-screen: acquire: " + ", ".join(f"{name} {count}" for name, count in sorted(tally.items())),
+        file=out,
+    )
+    return tally
+
+
+def open_text(path: Path) -> IO[str]:
+    """`path` opened for reading as UTF-8 text, through gzip when it is a `.gz`."""
+    if path.suffix == ".gz":
+        return gzip.open(path, "rt", encoding="utf-8", newline="")
+    return path.open(encoding="utf-8", newline="")
+
+
+def read_identities(path: Path) -> list[Identity]:
+    """An acquisition plan, plain or gzip-compressed (`.gz`)."""
+    with open_text(path) as handle:
+        reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+        if tuple(next(reader, ())) != IDENTITY_COLUMNS:
+            raise ScreenError(f"{path}: its header is not {'/'.join(IDENTITY_COLUMNS)}")
+        rows = []
+        for number, cells in enumerate(reader, 2):
+            if len(cells) != len(IDENTITY_COLUMNS):
+                raise ScreenError(f"{path}:{number}: not {len(IDENTITY_COLUMNS)} cells")
+            identity = Identity(*cells)
+            pinned = SHA.fullmatch(identity.sha256) or BLOB.fullmatch(identity.sha256)
+            if not COMMIT.fullmatch(identity.commit) or not pinned or not identity.rank.isdigit():
+                raise ScreenError(f"{path}:{number}: no full commit, SHA-256 or rank")
+            rows.append(identity)
+    return rows
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
+    sub = parser.add_subparsers(dest="command", required=True)
+    check = sub.add_parser("check", help="read a screen table through the reader and print its counts")
+    check.add_argument("table", type=Path, nargs="?", default=TABLE)
+    screen = sub.add_parser("screen", help="screen every manifest candidate and write the table")
+    screen.add_argument("--manifest", type=Path, default=POPULATION)
+    screen.add_argument("--output", type=Path, default=TABLE)
+    screen.add_argument("--store", type=Path, help="the document store; defaults to the host cache")
+    screen.add_argument(
+        "--evidence", type=Path, default=RECORD / "licences", help="where a live licence read logs its calls"
+    )
+    screen.add_argument("--fetch-licence", action="store_true", help="fetch an exact candidate's uncached licence file")
+    screen.add_argument("--no-discover", action="store_true", help="screen only the keys the manifest names")
+    screen.add_argument("--workers", type=int, default=1)
+    grab = sub.add_parser("acquire", help="bring identities' exact bytes into the store")
+    grab.add_argument("--identities", type=Path, required=True)
+    grab.add_argument("--evidence", type=Path, required=True)
+    grab.add_argument("--budget-seconds", type=float, default=3300.0)
+    grab.add_argument("--store", type=Path)
+    grab.add_argument(
+        "--responses",
+        type=Path,
+        default=Path(os.environ.get("XDG_CACHE_HOME") or Path.home() / ".cache") / "crozier" / "github-responses",
+    )
+    find = sub.add_parser("cached", help="print where a candidate's exact bytes are kept")
+    find.add_argument("sha256")
+    find.add_argument("--store", type=Path)
+    args = parser.parse_args(argv)
+    try:
+        if args.command == "check":
+            rows = read_screen(args.table)
+            counts = Counter(row.status.split(":", 1)[0] for row in rows)
+            print(f"population-screen: {len(rows)} rows; " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())))
+            return 0
+        if args.command == "screen":
+            entries = read_manifest(args.manifest)
+            rows = run_screen(
+                entries,
+                store_root=args.store,
+                fetch_file=raw_licence_fetcher(args.evidence, args.fetch_licence),
+                discover=not args.no_discover,
+                workers=max(1, args.workers),
+            )
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(render(rows), encoding="utf-8", newline="\n")
+            read_screen(args.output)
+            print(f"population-screen: wrote {len(rows)} rows, {sum(pending_counts(rows).values())} pending")
+            return 0
+        if args.command == "acquire":
+            acquire(
+                read_identities(args.identities),
+                evidence=args.evidence,
+                budget_s=args.budget_seconds,
+                responses=args.responses,
+                store_root=args.store,
+            )
+            return 0
+        if not SHA.fullmatch(args.sha256):
+            parser.error("cached takes a 64-hex SHA-256")
+        root = args.store or cache_root()
+        if cached(args.sha256, root) is None:
+            fail(f"no bytes carrying sha256 {args.sha256} are kept in {root}; re-fetch them from the row's source")
+        print(root / args.sha256)
+        return 0
+    except ScreenError as error:
+        fail(str(error))
+
+
+if __name__ == "__main__":
+    sys.exit(main())
