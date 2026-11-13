@@ -306,7 +306,20 @@ jobs:
       - name: Install cargo-prune-superseded
         run: just install-pruner
       - name: Measure the affected host budgets
+        id: host-budgets
+        env:
+          POOL_MAINTENANCE_EVIDENCE: ${{ runner.temp }}/pool-maintenance-evidence
         run: just ci-budgets-host
+      # Only when the measurement fails: the entry lists it compared, for diagnosing what its
+      # timed pass removed.
+      - name: Show the pool-maintenance measurement's entry lists
+        if: failure() && steps.host-budgets.outcome == 'failure'
+        shell: bash
+        run: |
+          for list in before-alt alt before-pass after-pass removed; do
+            echo "== $list"
+            cat "$RUNNER_TEMP/pool-maintenance-evidence/$list" 2>/dev/null || echo "(not written)"
+          done
       # Last in the lane: an empty registry at one path for the whole step, so its first dev
       # build comes from it with sockets denied (`corpus-match:cold-registry-build`), and
       # cargo reuses that build only under this same CARGO_HOME. Live Prism, the corpus
