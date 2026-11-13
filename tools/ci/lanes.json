@@ -96,7 +96,8 @@
     "corpus-match:test-match": {
       "platforms": [
         "linux"
-      ]
+      ],
+      "now": "corpus-match:test-offline"
     },
     "corpus-match:test-offline": {
       "platforms": [
@@ -106,7 +107,8 @@
     "corpus-match:test-strict": {
       "platforms": [
         "linux"
-      ]
+      ],
+      "now": "corpus-match:test-offline"
     },
     "corpus-match-selection:test": {
       "platforms": [
@@ -481,6 +483,9 @@
       "linux",
       "macos",
       "windows"
+    ],
+    "corpus-offline-tools:test": [
+      "linux"
     ]
   },
   "nonCheckWorkflows": {
@@ -488,5 +493,17 @@
     ".github/workflows/visual-docs-gallery.yml": "Publishes the gh-pages root gallery. The pull request's visual docs proof is a step of the lint lane.",
     ".github/workflows/golden-reach-base.yml": "Publishes the measurement `just census-repin` steps from.",
     ".github/workflows/release-plz.yml": "CD: opens the release pull request and cuts the release."
+  },
+  "carried": {
+    "corpus-match:test-match": {
+      "by": "corpus-match:test-offline",
+      "recipe": "test-corpus-match",
+      "source": "tests/corpus_match/corpus_offline_test.py"
+    },
+    "corpus-match:test-strict": {
+      "by": "corpus-match:test-offline",
+      "recipe": "test-corpus-match-strict",
+      "source": "tests/corpus_match/corpus_offline_test.py"
+    }
   }
 }

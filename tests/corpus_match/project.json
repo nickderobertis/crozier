@@ -85,7 +85,10 @@
           "python3 tests/corpus_match/corpus_offline_recovery_test.py",
           "python3 tests/corpus_match/match_usage_test.py"
         ],
-        "parallel": false
+        "parallel": false,
+        "env": {
+          "CORPUS_OFFLINE_RECIPES": "goldens"
+        }
       },
       "cache": false,
       "inputs": [
@@ -95,28 +98,31 @@
         "generator",
         "default",
         "{workspaceRoot}/justfile",
-        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tools/ci/suite-cases/**/*",
         "{workspaceRoot}/tests/census_fallback/**/*",
         "{workspaceRoot}/tools/corpus/corpus_sources.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
-        "{workspaceRoot}/tools/surface-census/**/*",
-        "{workspaceRoot}/tools/fern-refusals/**/*",
-        "witnessIndexReads",
-        "{workspaceRoot}/tools/witness-search/witness-search-redo.py"
+        "censusScripts",
+        "witnessIndexReads"
       ],
       "parallelism": false,
       "dependsOn": [
         "cold-registry-build"
-      ]
+      ],
+      "metadata": {
+        "description": "The corpus byte-match recipes with sockets denied and no cache (CORPUS_OFFLINE_RECIPES=goldens); the census, refusal-class and fallback recipes are corpus-offline-tools:test, so a change to those tools reruns no golden comparison."
+      }
     },
     "test": {
       "executor": "nx:noop",
+      "metadata": {
+        "description": "test-offline runs the real `just test-corpus-match` and `just test-corpus-match-strict`, so test-match and test-strict run inside it with sockets denied rather than a second time beside it (tools/ci/lanes.json records them there). Run either alone with its recipe."
+      },
       "dependsOn": [
-        "test-match",
-        "test-strict",
         "test-offline",
         "test-cold-handoff"
       ]

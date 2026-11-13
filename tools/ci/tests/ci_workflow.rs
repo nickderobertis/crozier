@@ -1091,3 +1091,70 @@ fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
         "{stdout}"
     );
 }
+
+/// What each lane may spend, as main had it before the delivery work (#822): a lane is made
+/// to fit by doing less repeated work, never by being allowed longer.
+const LANE_LIMITS: [(&str, u64); 4] = [
+    ("lint", 30),
+    ("test-linux", 240),
+    ("test-windows", 150),
+    ("test-macos", 150),
+];
+
+/// No lane's limit rises, and every entrypoint, comparison and command the inventory
+/// (tools/ci/lanes.json) records still runs on a required lane on each platform it owes:
+/// the real inventory check, over this tree's graph and workflow, accepts it, and a
+/// comparison another target carries is still run by that carrier's own source.
+#[test]
+fn no_lane_limit_rises_and_no_inventoried_verdict_is_dropped() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    for (name, limit) in LANE_LIMITS {
+        let minutes = job(&workflow, name)
+            .get("timeout-minutes")
+            .and_then(Value::as_u64)
+            .unwrap_or_else(|| panic!("{name} states its timeout-minutes"));
+        assert!(
+            minutes <= limit,
+            "{name}'s limit rose to {minutes} minutes from {limit}"
+        );
+    }
+    assert_eq!(
+        required_checks(),
+        LANE_LIMITS.map(|(name, _)| name.to_string()),
+        "the required contexts are the four lanes"
+    );
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let inventory = std::process::Command::new("node")
+        .arg("tools/ci/lane-inventory.mjs")
+        .current_dir(&root)
+        .output()
+        .expect("node runs the inventory check");
+    assert!(
+        inventory.status.success(),
+        "the inventory check refuses this tree:\n{}",
+        String::from_utf8_lossy(&inventory.stderr)
+    );
+    let lanes: Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join("tools/ci/lanes.json")).expect("lanes.json"),
+    )
+    .expect("lanes.json is JSON");
+    let carried = lanes["carried"]
+        .as_object()
+        .expect("lanes.json lists carried targets");
+    for target in ["corpus-match:test-match", "corpus-match:test-strict"] {
+        let row = &carried[target];
+        assert_eq!(
+            text(row, "by"),
+            Some("corpus-match:test-offline"),
+            "{target}"
+        );
+        let source = std::fs::read_to_string(root.join(text(row, "source").expect("a source")))
+            .expect("the carrier's source");
+        let recipe = text(row, "recipe").expect("a recipe");
+        assert!(
+            source.contains(&format!("((\"{recipe}\",)"))
+                || source.contains(&format!("(\"{recipe}\",)")),
+            "{target}: the carrier no longer runs `just {recipe}`"
+        );
+    }
+}

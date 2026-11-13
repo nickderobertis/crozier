@@ -34,7 +34,7 @@ const RECORD = `node -e "const f=require('fs');f.appendFileSync(process.env.RAN_
 function realGraph(t) {
   const root = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(), "crozier-graph-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  for (const path of ["justfile", "nx.json", "package.json", "tools/ci/lane-inventory.mjs", "tools/ci/lanes.json", "tools/ci/project-files-digest.mjs", "tools/ci/gate.mjs", "tools/ci/result-cache.mjs", "tools/ci/gate-timing.mjs", "tools/ci/gate-timing/core.mjs", "tools/ci/ci-tier.mjs"]) {
+  for (const path of ["justfile", "nx.json", "package.json", "tools/ci/lane-inventory.mjs", "tools/ci/lanes.json", "tools/ci/project-files-digest.mjs", "tools/ci/gate.mjs", "tools/ci/result-cache.mjs", "tools/ci/gate-timing.mjs", "tools/ci/gate-timing/core.mjs", "tools/ci/ci-tier.mjs", "tests/corpus_match/corpus_offline_test.py"]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     cpSync(join(REPO, path), join(root, path));
   }
@@ -94,7 +94,7 @@ const every = (ran, names) => names.filter((name) => !ran.has(name));
 const JOURNEYS = ["crozier:test", "crozier-e2e:test", "nested-discriminator-golden:test", "surface-census:test-census", "golden-reach:test-reach", "golden-reach:test-reach-portable"];
 const PROMOTED = {
   "tag:lane:sdk-env": ["sdk-env:test", "runtime:test", "nested-discriminator-runtime:test"],
-  "tag:lane:live": ["live-e2e:test", "corpus-match:test-match", "corpus-match:test-strict", "corpus-match:test-offline", "corpus-match-selection:test"],
+  "tag:lane:live": ["live-e2e:test", "corpus-match:test-offline", "corpus-offline-tools:test", "corpus-match-selection:test"],
 };
 
 test("a generator, template, lockfile or toolchain edit executes every dependent full journey", (t) => {
@@ -123,7 +123,38 @@ test("a shared-harness or corpus edit executes every journey built on it", (t) =
     assert.deepEqual(every(ran, owners), [], `${edit}:\n${output}`);
   }
   const corpus = lane(graph, ["tests/fixtures/CORPUS.md"], "lane-test", ["--projects=tag:lane:live", "--platform=linux"]);
-  assert.deepEqual(every(corpus.ran, ["corpus-match:test-match", "corpus-match:test-strict", "corpus-match:test-offline"]), [], corpus.output);
+  assert.deepEqual(every(corpus.ran, ["corpus-match:test-offline"]), [], corpus.output);
+  // test-offline runs the byte-match and its strict form through their recipes, so the lane
+  // never runs them a second time beside it (tools/ci/lanes.json `carried`).
+  for (const name of ["corpus-match:test-match", "corpus-match:test-strict"]) assert.ok(!corpus.ran.has(name), `${name} ran twice:\n${corpus.output}`);
+});
+
+// Every target that byte-compares crozier's output with a committed golden.
+const GOLDEN_COMPARISONS = ["crozier-e2e:test", "nested-discriminator-golden:test", "corpus-match:test-offline", "corpus-match:test-match", "corpus-match:test-strict"];
+const LINUX_LANE = ["lane-test", ["--platform=linux", "--include-promoted"]];
+
+test("delivery tooling reruns no golden byte comparison, and every generator input still does (#817)", (t) => {
+  const graph = realGraph(t);
+  for (const edit of [
+    "scripts/install.sh",
+    ".github/workflows/ci-caches.yml",
+    "tools/ci/require-tools.mjs",
+    "tools/llmlint/llmlint-diff.py",
+    "tools/llmlint-resolution/tests/judged_lint_job_test.py",
+    "tools/fern-refusals/fern-refusals.py",
+    "tools/fern-refusals-strict/AGENTS.md",
+    "screenshots/capture-visual-docs.sh",
+  ]) {
+    const { ran, status, output } = lane(graph, [edit], ...LINUX_LANE);
+    assert.equal(status, 0, output);
+    const compared = GOLDEN_COMPARISONS.filter((name) => ran.has(name));
+    assert.deepEqual(compared, [], `${edit} reran golden comparisons whose inputs it is not:\n${[...ran].join(" ")}`);
+  }
+  for (const edit of ["src/lib.rs", "assets/departures.yml", "tests/fixtures/discord.com/expected/README.md", "tests/fixtures/corpus-sources/swagger-petstore/openapi.yaml"]) {
+    const { ran, status, output } = lane(graph, [edit], ...LINUX_LANE);
+    assert.equal(status, 0, output);
+    assert.deepEqual(every(ran, ["crozier-e2e:test", "corpus-match:test-offline"]), [], `${edit} left a golden comparison unrun:\n${output}`);
+  }
 });
 
 test("a census-only edit runs the census, not the reach or golden suites; a reach-only edit the reverse", (t) => {

@@ -115,6 +115,28 @@ for (const [platform, targets] of Object.entries(started)) {
 }
 
 const accounted = new Set();
+// A target another one runs in full through its recipe, so a lane runs it once, inside that
+// carrier: still a target, accounted as the carrier's, which must itself be a lane's, and
+// held to the recipe that names it and the carrier's own source that runs that recipe.
+const carried = inventory.carried === undefined ? [] : isMapping(inventory.carried) ? Object.entries(inventory.carried) : undefined;
+if (!carried || !carried.every(([entry, row]) => isEntrypoint(entry) && isEntrypoint(row?.by) && typeof row?.recipe === "string" && typeof row?.source === "string")) {
+  refuse("tools/ci/lanes.json's carried needs project:target keys, each with a by (project:target), a recipe and a source file");
+}
+for (const [entry, row] of carried) {
+  accounted.add(entry);
+  const [name, target] = entry.split(":");
+  if (!graph.get(name)?.targets?.[target]) problems.push(`${entry}: carried by ${row.by}, but the target is gone`);
+  if (!new RegExp(`^${row.recipe}:[^\n]*\n(?:[ \t]+[^\n]*\n)*?[ \t]+@?just nx run ${entry}$`, "m").test(justfile)) {
+    problems.push(`${entry}: carried by ${row.by} through \`just ${row.recipe}\`, which no longer runs it`);
+  }
+  let source = "";
+  try {
+    source = readFileSync(join(ROOT, row.source), "utf8");
+  } catch {
+    problems.push(`${entry}: carried by ${row.by}, whose source ${row.source} is gone`);
+  }
+  if (source && !source.includes(`("${row.recipe}",)`)) problems.push(`${entry}: ${row.source} no longer runs \`just ${row.recipe}\``);
+}
 for (const [entry, row] of [...rows, ...added.map(([name, platforms]) => [name, { platforms }])]) {
   const now = row.now ?? entry;
   accounted.add(now);
@@ -137,6 +159,9 @@ for (const [entry, row] of [...rows, ...added.map(([name, platforms]) => [name, 
     else if (!reachedOn[platform].has(now)) problems.push(`${now}: no lane reaches it on ${platform}: no recipe starts it and no target it serves depends on it`);
     else if (target !== "budgets-host" && !lanes[platform].includes(step)) problems.push(`${now}: test-${platform} has no step \`${step}\`, which its row owes`);
   }
+}
+for (const [entry, row] of carried) {
+  if (!rows.some(([other, otherRow]) => (otherRow.now ?? other) === row.by)) problems.push(`${entry}: carried by ${row.by}, which no lane row names`);
 }
 for (const [name, project] of graph) {
   const tags = project.tags ?? [];
