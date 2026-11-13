@@ -130,22 +130,21 @@ def witness_screen() -> ModuleType:
 
 
 HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
-# Every keyword under which a Schema Object holds further Schema Objects, by shape.
-SCHEMA_MAPS = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
-SCHEMA_LISTS = ("allOf", "anyOf", "oneOf", "prefixItems")
-SCHEMA_ONES = (
-    "items",
-    "additionalProperties",
-    "not",
-    "if",
-    "then",
-    "else",
-    "contains",
-    "propertyNames",
-    "unevaluatedItems",
-    "unevaluatedProperties",
-    "additionalItems",
-)
+
+
+@functools.cache
+def schema_children() -> tuple[tuple[str, str], ...]:
+    """Each keyword under which a Schema Object holds further Schema Objects, with its container shape.
+
+    Read off the census's own object model (`OBJECTS["schema"]`), so the trigger
+    walk and the census's declaration walk descend through the same keywords.
+    """
+    module = census()
+    return tuple(
+        (keyword, child.container)
+        for keyword, child in module.OBJECTS["schema"].fields.items()
+        if child is not None and child.kind == "schema"
+    )
 
 
 def unescape(segment: str) -> str:
@@ -212,24 +211,16 @@ def declares_type(schema: Any, name: str) -> bool:
 
 def children(schema: dict[Any, Any]) -> Iterator[tuple[str, str, Any]]:
     """`(keyword, member, child)` for each Schema Object directly below `schema`."""
-    for keyword in SCHEMA_MAPS:
-        value = schema.get(keyword)
-        if isinstance(value, dict):
-            for member, child in value.items():
-                yield keyword, str(member), child
-    for keyword in SCHEMA_LISTS:
-        value = schema.get(keyword)
-        if isinstance(value, list):
-            for index, child in enumerate(value):
-                yield keyword, str(index), child
-    for keyword in SCHEMA_ONES:
-        match schema.get(keyword):
-            case list() as tuple_items:  # draft-04 tuple items
-                for index, child in enumerate(tuple_items):
+    module = census()
+    for keyword, container in schema_children():
+        match container, schema.get(keyword):
+            case module.MAP, dict() as members:
+                for member, child in members.items():
+                    yield keyword, str(member), child
+            case module.LIST | module.ONE, list() as members:  # a draft-04 tuple `items` too
+                for index, child in enumerate(members):
                     yield keyword, str(index), child
-            case None:
-                pass
-            case child:
+            case module.ONE, dict() | bool() as child:
                 yield keyword, "", child
 
 
@@ -544,13 +535,14 @@ def tagged_members(document: Any, members: list[Any]) -> set[str]:
     return shared or set()
 
 
-def required_names(document: Any, schema: Any) -> set[str]:
+def required_names(document: Any, schema: Any, depth: int = 0) -> set[str]:
+    """A schema's required names with its `allOf` members' merged in; an `allOf` cycle stops at `depth` 16."""
     schema = deref(document, schema)
     names: set[str] = set()
-    if not isinstance(schema, dict):
+    if not isinstance(schema, dict) or depth > 16:
         return names
     for member in schema.get("allOf") if isinstance(schema.get("allOf"), list) else []:
-        names |= required_names(document, member)
+        names |= required_names(document, member, depth + 1)
     required = schema.get("required")
     return names | ({str(name) for name in required} if isinstance(required, list) else set())
 
@@ -1695,8 +1687,15 @@ def body_bytes(path: Path, sha256: str) -> bytes | None:
         return data
     try:
         payload = json.loads(data)
+    except ValueError:
+        return None
+    if not (
+        isinstance(payload, dict) and payload.get("encoding") == "base64" and isinstance(payload.get("content"), str)
+    ):
+        return None
+    try:
         decoded = base64.b64decode("".join(payload["content"].split()), validate=True)
-    except (ValueError, KeyError, TypeError, binascii.Error):
+    except binascii.Error:
         return None
     return decoded if hashlib.sha256(decoded).hexdigest() == sha256 else None
 

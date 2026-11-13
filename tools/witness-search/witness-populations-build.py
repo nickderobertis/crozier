@@ -207,10 +207,12 @@ def identities(tree: Tree) -> list[SCREEN.Identity]:
 
 
 class Acquisition(NamedTuple):
-    """One line of the acquisition ledger: a planned document, how its bytes were had, and their digest."""
+    """One line of the acquisition ledger: a planned identity, how its bytes were had, and their digest."""
 
     population: str
     document: str
+    commit: str
+    pin: str
     how: str
     content_sha256: str
 
@@ -229,11 +231,16 @@ def acquisitions(path: Path) -> list[Acquisition]:
         digest = row.get("content_sha256", row.get("sha256")) if isinstance(row, dict) else None
         if (
             not isinstance(row, dict)
-            or not all(isinstance(row.get(field), str) for field in ("population", "document", "how"))
+            or not all(
+                isinstance(row.get(field), str) for field in ("population", "document", "commit", "sha256", "how")
+            )
             or not isinstance(digest, str)
         ):
-            fail(f"{path}:{number} is no acquisition record (population, document, how, sha256); restore it from git")
-        out.append(Acquisition(row["population"], row["document"], row["how"], digest))
+            fail(
+                f"{path}:{number} is no acquisition record (population, document, commit, sha256, how); "
+                "restore it from git"
+            )
+        out.append(Acquisition(row["population"], row["document"], row["commit"], row["sha256"], row["how"], digest))
     return out
 
 
@@ -357,14 +364,23 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
                     "-" if have else HANDED_OFF_UNFETCHED,
                 )
             )
-    plan = [identity for path in args.identities if path.is_file() for identity in SCREEN.read_identities(path)]
+    missing = [str(path) for path in args.identities if not path.is_file()]
+    if missing:
+        fail(f"--identities {', '.join(missing)} is no file; pass the acquisition plans the manifest is built from")
+    plan = [identity for path in args.identities for identity in SCREEN.read_identities(path)]
     # A code-search hit is planned by its blob; the acquisition ledger records the content digest it was had at.
+    # Bytes are attributed to a planned identity only where the ledger read it at that commit and pin.
     contents = {
-        (row.population, row.document): row.content_sha256 for row in acquisitions(args.acquisitions) if row.held
+        (row.population, row.document, row.commit, row.pin): row.content_sha256
+        for row in acquisitions(args.acquisitions)
+        if row.held
     }
     seen: set[tuple[str, str]] = set()
     for identity in plan:
-        digest = contents.get((identity.population, identity.document), identity.sha256)
+        digest = contents.get(
+            (identity.population, identity.document, identity.commit, identity.sha256),
+            identity.sha256 if SCREEN.SHA.fullmatch(identity.sha256) else "",
+        )
         if (
             identity.population not in LEDGERS
             or (identity.population, identity.document) in seen
@@ -453,8 +469,10 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
                 except client.SearchStopped as error:
                     print(f"witness-populations-build: search stopped: {error}", file=sys.stderr)
                     break
-        # One anonymous Sourcegraph request in all: a recorded answer or refusal is not asked again.
-        if not any(row.get("source") == "sourcegraph" for row in recorded_queries(args.evidence)):
+        # One anonymous Sourcegraph request in all, for `--sourcegraph-key` when the search covers it:
+        # a recorded answer or refusal is not asked again.
+        covered = not args.key or args.sourcegraph_key in args.key
+        if covered and not any(row.get("source") == "sourcegraph" for row in recorded_queries(args.evidence)):
             query = client.query_plan(selectors.by_key[args.sourcegraph_key])["sourcegraph"][0]
             try:
                 # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; this is the search's one Sourcegraph request, through the guard's paced lane.
@@ -525,7 +543,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     live.add_argument("--output", type=Path, required=True)
     live.add_argument("--sourcegraph-key", default="combo-property-defs-pointer", choices=SCREEN.KEYS)
-    live.add_argument("--key", action="append", default=[], choices=SCREEN.KEYS, help="search only these keys")
+    live.add_argument(
+        "--key",
+        action="append",
+        default=[],
+        choices=SCREEN.KEYS,
+        help="search only these keys (the Sourcegraph query only when --sourcegraph-key is one of them)",
+    )
     live.add_argument(
         "--replay", action="store_true", help="derive identities from the recorded answers, asking nothing"
     )

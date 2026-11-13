@@ -435,6 +435,26 @@ CASES: list[tuple[str, dict, dict[str, str]]] = [
 ]
 
 
+# Two variants each inheriting the other through `allOf`: the requiredness walk stops at its depth bound.
+CYCLIC = holder(
+    {
+        "A": {
+            "type": "object",
+            "allOf": [{"$ref": "#/components/schemas/B"}],
+            "properties": {"kind": {"type": "string", "enum": ["a"]}},
+        },
+        "B": {
+            "type": "object",
+            "allOf": [{"$ref": "#/components/schemas/A"}],
+            "properties": {"kind": {"type": "string", "enum": ["b"]}},
+        },
+        "Union": {"oneOf": [{"$ref": "#/components/schemas/A"}, {"$ref": "#/components/schemas/B"}]},
+    },
+    {"u": {"$ref": "#/components/schemas/Union"}},
+)
+CASES.append(("tag-cyclic-allof", CYCLIC, {"combo-unrequired-tag-oneof-reference": "exact"}))
+
+
 def nullable_parent(*, nullable: bool = True, typed: bool = True, own: dict | None = None) -> dict:
     members: list[dict[str, Any]] = [{"$ref": "#/components/schemas/FileMini"}]
     conflict: dict[str, Any] = {"allOf": members}
@@ -1544,6 +1564,7 @@ class BuildTests(BuildHarness):
                     "population": "github",
                     "document": "acme/blobbed/openapi.json",
                     "how": "raw",
+                    "commit": "b" * 40,
                     "sha256": blob,
                     "content_sha256": hashlib.sha256(blobbed).hexdigest(),
                 }
@@ -1606,6 +1627,56 @@ class BuildTests(BuildHarness):
         refused = self.build(*args)
         self.assertEqual(1, refused.returncode)
         self.assertIn("extract the pinned archive again", refused.stderr)
+        (self.archive / "APIs" / "acme.local" / "1.0" / "openapi.json").write_bytes(self.registered)
+        absent = self.build(*[str(self.scratch / "no-plan.tsv") if arg == str(hits) else arg for arg in args])
+        self.assertEqual(1, absent.returncode)
+        self.assertIn("is no file; pass the acquisition plans the manifest is built from", absent.stderr)
+
+    def test_bytes_the_ledger_had_at_another_commit_or_pin_are_not_attributed_to_the_plan(self) -> None:
+        fetched = json.dumps(CASES[3][1]).encode()
+        SCREEN.store(fetched, self.store)
+        blob = f"blob:{SCREEN.blob_sha(fetched)}"
+        hits = self.scratch / "hits.tsv"
+        hit = ("github", "acme/moved/openapi.json", "acme/moved", "b" * 40, "openapi.json", blob, "", "3")
+        hits.write_text("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n", encoding="utf-8")
+        ledger = self.scratch / "acquisitions.jsonl"
+        output = self.scratch / "population.tsv"
+        args = (
+            "manifest",
+            "--identities",
+            str(hits),
+            "--archive",
+            str(self.archive),
+            "--store",
+            str(self.store),
+            "--preflight",
+            str(self.scratch / "none"),
+            "--acquisitions",
+            str(ledger),
+            "--output",
+            str(output),
+        )
+        digest = hashlib.sha256(fetched).hexdigest()
+        for commit, pin in (("c" * 40, blob), ("b" * 40, "blob:" + "0" * 40), ("b" * 40, blob)):
+            with self.subTest(commit=commit, pin=pin):
+                self.write(
+                    ledger,
+                    [
+                        {
+                            "population": "github",
+                            "document": "acme/moved/openapi.json",
+                            "commit": commit,
+                            "sha256": pin,
+                            "how": "raw",
+                            "content_sha256": digest,
+                        }
+                    ],
+                )
+                done = self.build(*args)
+                self.assertEqual(0, done.returncode, done.stderr)
+                attributed = (commit, pin) == ("b" * 40, blob)
+                documents = {e.document for e in SCREEN.read_manifest(output)}
+                self.assertEqual(attributed, "acme/moved/openapi.json" in documents)
 
     def test_replay_plans_each_new_code_search_hit_by_its_blob_and_asks_nothing(self) -> None:
         plan = self.scratch / "plan.tsv.gz"
