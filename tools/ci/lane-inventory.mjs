@@ -143,6 +143,7 @@ for (const [entry, row] of carried) {
   // another script or group would carry nothing, however present the recipe's name.
   const [byName, byTarget] = row.by.split(":");
   const options = graph.get(byName)?.targets?.[byTarget]?.options ?? {};
+  if (options.commands !== undefined && !Array.isArray(options.commands)) refuse(`${row.by}: options.commands is not a list of commands`);
   const commands = [options.command, ...(options.commands ?? [])].filter((command) => typeof command === "string");
   if (!commands.some((command) => command.split(/\s+/).includes(row.source))) problems.push(`${entry}: its carrier ${row.by} no longer runs ${row.source}`);
   if (options.env?.[row.selector.env] !== row.selector.group) problems.push(`${entry}: its carrier ${row.by} no longer selects ${row.selector.env}=${row.selector.group}`);
