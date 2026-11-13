@@ -1162,6 +1162,30 @@ class LicenceScreenTests(ScreenHarness):
         self.assertFalse(output.exists())
 
 
+class ManifestTests(ScreenHarness):
+    def test_a_malformed_or_duplicated_manifest_is_refused_before_any_screen(self) -> None:
+        good = self.entry("good", json.dumps(CASES[0][1]).encode(), [KEY_T])
+        for rows, header, message in (
+            ([good], ("population", "document"), "its header is not"),
+            ([[*good[:3], "x", *good[4:]]], None, "sha256 'x' is no SHA-256"),
+            ([[*good[:4], "repository:../x@" + COMMIT, *good[5:]]], None, "evidence 'repository:../x@"),
+            ([[*good[:5], "combo-nope", good[6]]], None, "keys ['combo-nope'] are no combination keys"),
+            ([good, good], None, "duplicates line 2's candidate"),
+        ):
+            with self.subTest(message=message):
+                path = self.manifest(rows)
+                if header is not None:
+                    lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+                    path.write_text("\t".join(header) + "\n" + "".join(lines[1:]), encoding="utf-8")
+                output = self.scratch / "screen.tsv"
+                done = self.run_cli(
+                    "screen", "--manifest", str(path), "--output", str(output), "--store", str(self.store)
+                )
+                self.assertEqual(1, done.returncode)
+                self.assertIn(message, done.stderr)
+                self.assertFalse(output.exists())
+
+
 class LicenceFetchTests(ScreenHarness):
     def test_a_transient_failure_is_retried_and_a_persistent_one_is_refused_naming_it(self) -> None:
         self.server.files[f"/acme/flaky/{COMMIT}/LICENSE"] = b"MIT License\n"
@@ -1851,6 +1875,46 @@ class BuildTests(BuildHarness):
         absent = self.build(*[str(self.scratch / "no-plan.tsv") if arg == str(hits) else arg for arg in args])
         self.assertEqual(1, absent.returncode)
         self.assertIn("is no file; pass the acquisition plans the manifest is built from", absent.stderr)
+
+    def test_an_incomplete_archive_an_unmatched_earlier_candidate_or_malformed_provenance_is_refused(self) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        args = (
+            "manifest",
+            "--identities",
+            str(plan),
+            "--archive",
+            str(self.archive),
+            "--store",
+            str(self.store),
+            "--preflight",
+            str(self.scratch / "none"),
+            "--output",
+            str(self.scratch / "population.tsv"),
+        )
+        archived = self.archive / "APIs" / "acme.local" / "1.0" / "openapi.json"
+        archived.unlink()
+        incomplete = self.build(*args)
+        self.assertEqual(1, incomplete.returncode)
+        self.assertIn("lacks 1 of the 1 OpenAPI documents", incomplete.stderr)
+        archived.write_bytes(self.registered)
+        census = self.root / "docs/openapi-surface/witness-search-ledger-remainders/census.tsv"
+        census.write_text(
+            census.read_text(encoding="utf-8")
+            + "combo-tag-only-operation-id\tregistered\tno-such-row\t-\t1\tunscreened\t-\n",
+            encoding="utf-8",
+        )
+        unmatched = self.build(*args)
+        self.assertEqual(1, unmatched.returncode)
+        self.assertIn("the earlier named census lists candidates no population names", unmatched.stderr)
+        handed = self.root / "docs/fern-measurements/handed-off/documents.tsv"
+        handed.write_text(
+            handed.read_text(encoding="utf-8") + f"acme/x:openapi.json@main\t{'1' * 64}\t-\t-\tdiffers\t-\t-\n",
+            encoding="utf-8",
+        )
+        malformed = self.build("identities", "--output", str(plan))
+        self.assertEqual(1, malformed.returncode)
+        self.assertIn("'acme/x:openapi.json@main' is no repository:path@commit", malformed.stderr)
 
     def test_bytes_the_ledger_had_at_another_commit_or_pin_are_not_attributed_to_the_plan(self) -> None:
         fetched = json.dumps(CASES[3][1]).encode()

@@ -241,8 +241,13 @@ def handed_off(tree: Tree) -> list[tuple[dict[str, str], tuple[str, str, str] | 
         for number, row in enumerate(csv.DictReader(handle, delimiter="\t"), 2):
             if not SCREEN.SHA.fullmatch(row.get("sha256") or ""):
                 fail(f"{tree.handed_off}:{number} names no SHA-256 of its bytes; restore it from git")
-            match = HANDED_OFF_ID.fullmatch(row.get("document") or "")
+            document = row.get("document") or ""
+            match = HANDED_OFF_ID.fullmatch(document)
             if match is None:
+                # A row that records no provenance names no repository or commit at all; one that tries to
+                # and does not parse is refused rather than taken for bytes-only.
+                if "@" in document or ":" in document:
+                    fail(f"{tree.handed_off}:{number}: {document!r} is no repository:path@commit; restore it from git")
                 rows.append((row, None))
                 continue
             repository, path, commit = match.groups()

@@ -244,7 +244,8 @@ def aggregation_only(entries: list[SCREEN.Entry], root: Path = REPO) -> list[lis
 
 
 def stamp(value: str) -> str:
-    return datetime.datetime.fromisoformat(value).strftime("%Y-%m-%d %H:%M UTC")
+    """An evidence instant as the README states it: in UTC, to the minute."""
+    return datetime.datetime.fromisoformat(value).astimezone(datetime.UTC).strftime("%Y-%m-%d %H:%M UTC")
 
 
 def render(record: Path, root: Path = REPO) -> str:

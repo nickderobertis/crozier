@@ -89,7 +89,6 @@ class Population(StrEnum):
 
 POPULATIONS = tuple(Population)
 PENDING = "certified-screen-pending"
-STATUSES = (PENDING, "rejected-trigger", "rejected-licence", "unfetchable:<reason>")
 SHA = re.compile(r"[0-9a-f]{64}")
 COMMIT = re.compile(r"[0-9a-f]{40}")
 CORPUS_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
@@ -1032,6 +1031,7 @@ class StatusKind(StrEnum):
 
 
 # The kinds a cell names with a reason after `:`; every other kind is the cell alone.
+# (`STATUSES`, the status column's admitted spellings, is derived from these below.)
 REASONED = frozenset(
     {
         LicenceKind.ADMISSIBLE,
@@ -1068,6 +1068,9 @@ class Verdict(Generic[KindT]):
             reason = _reason(rest) if colon else None
             return None if reason is None else Verdict(kind, reason)
         return None if colon else Verdict(kind)
+
+
+STATUSES = tuple(f"{kind}:<reason>" if kind in REASONED else str(kind) for kind in StatusKind)
 
 
 def status_verdict(licence: Verdict[LicenceKind], trigger: Verdict[TriggerKind]) -> Verdict[StatusKind]:
