@@ -3432,6 +3432,7 @@ class RecipeWiringTests(unittest.TestCase):
         self.assertNotIn("tier:promoted", project["tags"])
         this = Path(__file__).resolve().relative_to(REPO).as_posix()
         # The file's slowest classes run as test-census-verdicts, beside test-census, which leaves them out.
+        # llmlint: ignore[test_tiers_split_by_project_not_by_marker] The two halves are one tier with identical inputs, split only so Nx runs them at once (manager ruling a1 permits sharding the census); a project of its own would select exactly when this one does, so it would skip nothing independently.
         halves = ("HandedOffCombinationVerdictsTests", "RankedBacklogTests", "CombinationSearchRecordTests")
         self.assertEqual(
             "uv run --locked --all-packages pytest --cov --cov-report= "

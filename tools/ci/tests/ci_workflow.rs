@@ -1141,20 +1141,25 @@ fn no_lane_limit_rises_and_no_inventoried_verdict_is_dropped() {
         "the required contexts are the four lanes"
     );
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
-    let inventory = std::process::Command::new("node")
-        .arg("tools/ci/lane-inventory.mjs")
-        .current_dir(&root)
-        .output()
-        .expect("node runs the inventory check");
-    assert!(
-        inventory.status.success(),
-        "the inventory check refuses this tree:\n{}",
-        String::from_utf8_lossy(&inventory.stderr)
-    );
     let lanes: Value = serde_json::from_str(
         &std::fs::read_to_string(root.join("tools/ci/lanes.json")).expect("lanes.json"),
     )
     .expect("lanes.json is JSON");
+    // Every row's target still exists, wherever its row says it now runs. Which lane reaches
+    // it on which platform is the real inventory check's (`lane-inventory:lint`), driven over
+    // the real graph by tools/ci-journeys/tests/selection.test.mjs.
+    let targets = project_targets(&root);
+    let rows = lanes["entrypoints"].as_object().expect("entrypoints");
+    for (entry, row) in rows {
+        let now = text(row, "now").unwrap_or(entry);
+        assert!(targets.contains(now), "{entry}: its target {now} is gone");
+    }
+    for entry in lanes["added"].as_object().expect("added").keys() {
+        assert!(
+            targets.contains(entry.as_str()),
+            "{entry}: the target is gone"
+        );
+    }
     let carried = lanes["carried"]
         .as_object()
         .expect("lanes.json lists carried targets");
@@ -1218,4 +1223,59 @@ fn the_tool_proof_runs_a_windows_cmd_shim_and_names_a_missing_one() {
     let missing = prove(&["claude", "llmlint"]);
     assert_eq!(missing.status.code(), Some(1));
     assert!(String::from_utf8_lossy(&missing.stderr).contains("`llmlint` is not on PATH"));
+}
+
+/// Every `project:target` the tree's `project.json` files declare, skipping the trees no
+/// project lives in (the corpus, the docs, build output and installed packages).
+fn project_targets(root: &std::path::Path) -> std::collections::BTreeSet<String> {
+    fn walk(dir: &std::path::Path, depth: usize, found: &mut std::collections::BTreeSet<String>) {
+        let manifest = dir.join("project.json");
+        if let Ok(text) = std::fs::read_to_string(&manifest) {
+            // Whole-line `//` comments, as Nx and lane-inventory.mjs read them.
+            let text: String = text
+                .lines()
+                .filter(|line| !line.trim_start().starts_with("//"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            let project: Value = serde_json::from_str(&text)
+                .unwrap_or_else(|error| panic!("{}: {error}", manifest.display()));
+            let name = text_or_panic(&project, "name", &manifest);
+            for target in project["targets"]
+                .as_object()
+                .into_iter()
+                .flatten()
+                .map(|(t, _)| t)
+            {
+                found.insert(format!("{name}:{target}"));
+            }
+        }
+        if depth == 0 {
+            return;
+        }
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let name = entry.file_name();
+            let skip = [
+                "node_modules",
+                "target",
+                "fixtures",
+                "docs",
+                ".git",
+                ".nx",
+                ".venv",
+                ".local",
+            ];
+            if entry.path().is_dir() && !skip.iter().any(|s| name == *s) {
+                walk(&entry.path(), depth - 1, found);
+            }
+        }
+    }
+    fn text_or_panic<'a>(value: &'a Value, key: &str, path: &std::path::Path) -> &'a str {
+        text(value, key).unwrap_or_else(|| panic!("{} has no {key}", path.display()))
+    }
+    let mut found = std::collections::BTreeSet::new();
+    walk(root, 3, &mut found);
+    found
 }
