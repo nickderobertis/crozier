@@ -486,12 +486,20 @@ class RecordedQuery(NamedTuple):
     hits: tuple[CodeHit, ...]
 
 
-# Who answers the search's queries, and the outcomes the guarded acquirer records for one.
+# Who answers the search's queries; and the outcome this builder records for a key no code search can spell.
 QUERY_SOURCES = ("github-code-search", "sourcegraph")
-QUERY_OUTCOME = re.compile(
-    r"answered|partitioned|refused|not-queryable|incomplete-stream|acquisition-failure|secondary-limiter"
-    r"|outstanding-[a-z-]+"
-)
+NOT_QUERYABLE = "not-queryable"
+# A recorded hit's fields, each a string: a code-search hit also names its git blob (`sha`), a Sourcegraph one none.
+HIT_FIELDS = {
+    "github-code-search": ("repository", "path", "commit", "sha"),
+    "sourcegraph": ("repository", "path", "commit"),
+}
+
+
+def query_outcomes() -> frozenset[str]:
+    """Every outcome a recorded query may carry: the guarded acquirer's own, and `NOT_QUERYABLE`."""
+    client = github()
+    return frozenset({*client.ANSWER_OUTCOMES, *client.NON_ANSWER_OUTCOMES, NOT_QUERYABLE})
 
 
 def recorded_queries(evidence: Path) -> list[RecordedQuery]:
@@ -502,30 +510,31 @@ def recorded_queries(evidence: Path) -> list[RecordedQuery]:
             rows = [json.loads(line) for line in handle if line.strip()]
     else:
         rows = github().jsonl(evidence / "queries.jsonl")
+    outcomes = query_outcomes()
     for number, row in enumerate(rows, 1):
         results = row.get("results", []) if isinstance(row, dict) else None
         if (
             not isinstance(row, dict)
             or row.get("source") not in QUERY_SOURCES
             or row.get("key") not in SCREEN.KEYS
-            or not QUERY_OUTCOME.fullmatch(str(row.get("outcome", "")))
+            or row.get("outcome") not in outcomes
             or not isinstance(results, list)
-            or not all(isinstance(item, dict) for item in results)
+            or not all(
+                isinstance(item, dict)
+                and all(isinstance(item.get(field), str) for field in HIT_FIELDS[row["source"]])
+                and isinstance(item.get("url", ""), str)
+                and isinstance(item.get("sha", ""), str)
+                for item in results
+            )
         ):
             fail(f"{evidence}: query record {number} is no recorded query with a list of results; restore it from git")
     return [
         RecordedQuery(
             row["source"],
-            str(row.get("key", "")),
-            str(row.get("outcome", "")),
+            row["key"],
+            row["outcome"],
             tuple(
-                CodeHit(
-                    str(item.get("repository")),
-                    str(item.get("path")),
-                    str(item.get("commit")),
-                    str(item.get("sha")),
-                    str(item.get("url", "")),
-                )
+                CodeHit(item["repository"], item["path"], item["commit"], item.get("sha", ""), item.get("url", ""))
                 for item in row.get("results", [])
             ),
         )
@@ -563,7 +572,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
                             "source": "github-code-search",
                             "key": key,
                             "query": selector,
-                            "outcome": "not-queryable",
+                            "outcome": NOT_QUERYABLE,
                             "diagnostic": str(error),
                         },
                     )

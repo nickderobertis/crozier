@@ -74,9 +74,15 @@ FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "url": lambda value: isinstance(value, str) and value.startswith(("https://", "http://")),
     "host": lambda value: value in ("github", "sourcegraph"),
     "source": lambda value: value in BUILD.QUERY_SOURCES,
-    "outcome": lambda value: isinstance(value, str) and bool(BUILD.QUERY_OUTCOME.fullmatch(value)),
+    "outcome": lambda value: value in BUILD.query_outcomes(),
+    "started_at": instant,
+    "cause": lambda value: isinstance(value, str) and bool(value),
+    "bucket": lambda value: isinstance(value, str) and bool(value),
     "sha256": lambda value: isinstance(value, str) and bool(SCREEN.SHA.fullmatch(value)),
 }
+
+
+OPTIONAL_FIELDS = ("started_at", "cause", "bucket")
 
 
 def allowance_failure(row: dict[str, Any]) -> bool:
@@ -98,6 +104,8 @@ def records(path: Path, fields: tuple[str, ...], lines: list[str]) -> list[dict[
         if (
             not isinstance(row, dict)
             or any(field not in row or not FIELD_CHECKS[field](row[field]) for field in fields)
+            # A field a record may leave out must still hold, where it is there.
+            or any(field in row and not FIELD_CHECKS[field](row[field]) for field in OPTIONAL_FIELDS)
             or allowance_failure(row)
         ):
             raise ValueError(f"{path}:{number} is no record carrying {', '.join(fields)}")
@@ -183,7 +191,7 @@ def raw_calls_of(rows: list[dict[str, Any]]) -> list[RawCall]:
 
 def waits_of(rows: list[dict[str, Any]]) -> list[Wait]:
     return [
-        Wait(row["at"], str(row.get("started_at") or row["at"]), str(row.get("cause", "-")), float(row["duration_s"]))
+        Wait(row["at"], row.get("started_at", row["at"]), row.get("cause", "-"), float(row["duration_s"]))
         for row in rows
     ]
 
@@ -194,7 +202,7 @@ def guard_calls_of(rows: list[dict[str, Any]]) -> list[GuardCall]:
             row["at"],
             row["host"],
             str(row["status"]),
-            str(row.get("bucket", "-")),
+            row.get("bucket", "-"),
             row.get("remaining"),
             row.get("limit"),
         )
