@@ -87,9 +87,17 @@ class CommittedGoldenStateTests(unittest.TestCase):
     def test_the_tool_reads_exactly_the_rows_the_fetch_reads(self) -> None:
         """`fern-goldens` and `tools/corpus/corpus-lib.sh` each select CORPUS.md's
         rows; a row one reads and the other skips is one the weekly run fetches
-        and then refuses (seldon-wrapper, row 5371, in run 42566793545)."""
+        and then refuses (seldon-wrapper, row 5371, in run 42566793545).
+
+        `bash` goes by the path PATH names: Windows' CreateProcess searches
+        System32 before PATH, so a bare `bash` runs WSL's launcher, which exits 1
+        with no distribution installed, ahead of Git Bash."""
         listed = subprocess.run(
-            ["bash", "-c", "source tools/corpus/corpus-lib.sh && corpus_rows tests/fixtures/CORPUS.md"],
+            [
+                str(shutil.which("bash")),
+                "-c",
+                "source tools/corpus/corpus-lib.sh && corpus_rows tests/fixtures/CORPUS.md",
+            ],
             cwd=REPO,
             capture_output=True,
             text=True,

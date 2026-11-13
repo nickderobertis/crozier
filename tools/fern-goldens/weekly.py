@@ -2397,6 +2397,11 @@ def descendants(pid: int) -> list[int] | None:
     return seen
 
 
+# The signal that ends a process without letting it decline. Windows has no
+# SIGKILL; there `os.kill` with SIGTERM is TerminateProcess, which is as final.
+KILL = signal.SIGTERM if sys.platform == "win32" else signal.SIGKILL
+
+
 def stop(process: subprocess.Popen[str]) -> bool:
     """End a comparison and everything it started (`just`, Nx, cargo, crozier),
     which stay in the decision's own process group so the step's own ending
@@ -2405,7 +2410,7 @@ def stop(process: subprocess.Popen[str]) -> bool:
     started = descendants(process.pid)
     for pid in [process.pid, *(started or [])]:
         with contextlib.suppress(ProcessLookupError, PermissionError):
-            os.kill(pid, signal.SIGKILL)
+            os.kill(pid, KILL)
     return started is not None
 
 

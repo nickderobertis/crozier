@@ -418,14 +418,16 @@ body = next((body for fragment, body in served.items() if fragment in url), None
 if body is None:
     print(f"curl stand-in: nothing served at {url}", file=sys.stderr)
     sys.exit(6)
+# Every body is written as exactly its UTF-8 bytes, as curl writes what it
+# received: no newline translation on Windows.
 if "--output" in args:
-    pathlib.Path(args[args.index("--output") + 1]).write_text(body, encoding="utf-8")
+    pathlib.Path(args[args.index("--output") + 1]).write_text(body, encoding="utf-8", newline="")
     pathlib.Path(args[args.index("--dump-header") + 1]).write_text("HTTP/1.1 200 OK\n", encoding="utf-8")
     sys.stdout.write("200")
 elif "-o" in args:
-    pathlib.Path(args[args.index("-o") + 1]).write_text(body, encoding="utf-8")
+    pathlib.Path(args[args.index("-o") + 1]).write_text(body, encoding="utf-8", newline="")
 else:
-    sys.stdout.write(body)
+    sys.stdout.buffer.write(body.encode("utf-8"))
 """
 
 
@@ -2115,11 +2117,12 @@ class WeeklyRunTests(unittest.TestCase):
         shutil.copy2(source, fixtures / "corpus-sources/seldon-wrapper/openapi.yaml")
         self.publish_seed()
         # The row's pinned URL, served by the stood-in curl with exactly the
-        # bytes its recorded digest pins (the curl stand-in writes them as UTF-8).
-        served = source.read_text(encoding="utf-8")
+        # bytes its recorded digest pins: read as bytes, so no newline is
+        # translated, and written back by the stand-in as those same bytes.
+        served = source.read_bytes()
         pinned = next(line.split("\t")[3] for line in recorded if line.startswith("seldon-wrapper\t"))
-        self.assertEqual(pinned, hashlib.sha256(served.encode("utf-8")).hexdigest())
-        self.served = {"APIs/seldon.local/wrapper/0.1/openapi.yaml": served}
+        self.assertEqual(pinned, hashlib.sha256(served).hexdigest())
+        self.served = {"APIs/seldon.local/wrapper/0.1/openapi.yaml": served.decode("utf-8")}
         self.fern_tree("Seldon External API", source)
         state = self.run_workflow("corpus:seldon-wrapper", stop_after="shards")
         (shard,) = state.shards
