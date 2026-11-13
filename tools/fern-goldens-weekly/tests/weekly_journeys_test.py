@@ -1863,6 +1863,44 @@ class WeeklyRunTests(unittest.TestCase):
         timings = self.remote_file("fern-goldens/update", TIMINGS)
         self.assertIn("handwritten\tlantern\t4000.0", timings, "an item nothing generated keeps its timing")
 
+    def test_a_corpus_row_under_a_later_tables_own_heading_regenerates_in_its_shard(self) -> None:
+        """seldon-wrapper is CORPUS.md row 5371, in a table headed `| # | API |
+        … |` rather than the manifest's own header. Run 42566793545's shard
+        failed it as `fixture 'seldon-wrapper' is not a numbered CORPUS.md row`
+        although the fetch and the corpus listing both read that row; over the
+        real CORPUS.md, the shard regenerates it."""
+        source = REPO / "tests/fixtures/corpus-sources/seldon-wrapper/openapi.yaml"
+        fixtures = self.seed / "tests/fixtures"
+        shutil.copy2(REPO / "tests/fixtures/CORPUS.md", fixtures / "CORPUS.md")
+        # An empty golden directory lists the fixture in the corpus family.
+        (fixtures / "seldon-wrapper/expected").mkdir(parents=True)
+        (fixtures / "seldon-wrapper/expected/.gitkeep").write_text("", encoding="utf-8")
+        # Its committed source document, recorded as the real tree records it.
+        sources = (REPO / "tests/fixtures/corpus-sources.tsv").read_text(encoding="utf-8").splitlines()
+        recorded = [line for line in sources if line.startswith(("#", "seldon-wrapper\t"))]
+        (fixtures / "corpus-sources.tsv").write_text("\n".join(recorded) + "\n", encoding="utf-8")
+        (fixtures / "corpus-sources/seldon-wrapper").mkdir(parents=True)
+        shutil.copy2(source, fixtures / "corpus-sources/seldon-wrapper/openapi.yaml")
+        self.publish_seed()
+        # The row's pinned URL, served by the stood-in curl with those bytes.
+        self.served = {"APIs/seldon.local/wrapper/0.1/openapi.yaml": source.read_text(encoding="utf-8")}
+        self.fern_tree("Seldon External API", source)
+        state = self.run_workflow("corpus:seldon-wrapper", stop_after="shards")
+        (shard,) = state.shards
+        self.assertEqual(0, shard.returncode, shard.stderr)
+        (result,) = state.artifacts.glob("fern-goldens-shard-*/result.json")
+        record = json.loads(result.read_text(encoding="utf-8"))
+        (item,) = record["items"]
+        log = (result.parent / item["log"]).read_text(encoding="utf-8")
+        self.assertNotIn("not a numbered CORPUS.md row", log)
+        self.assertEqual(("corpus", "seldon-wrapper", "ok"), (item["family"], item["item"], item["status"]), log)
+        written = [path for path in record["written"] if path.startswith("tests/fixtures/seldon-wrapper/expected/")]
+        self.assertIn(
+            "tests/fixtures/seldon-wrapper/expected/src/seldon_external_api/core/client_wrapper.py", written, log
+        )
+        for path in written:
+            self.assertTrue((result.parent / "files" / path).is_file(), path)
+
     def test_an_incomplete_shard_is_red_before_anything_is_published(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="shards")

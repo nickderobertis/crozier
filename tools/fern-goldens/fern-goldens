@@ -206,9 +206,13 @@ def load_manifest(root: Path) -> list[CorpusRow]:
     fixtures: set[str] = set()
     # CORPUS.md carries per-batch STATUS tables after the canonical numbered
     # manifest, and those are numbered too (`| 130 | `komga` | … |`, four cells).
-    # Only the canonical table — the one under the documented eight-column header
-    # — is the manifest, so a status row is skipped rather than read as a
-    # malformed manifest row, which is what `tools/corpus/corpus-lib.sh` already does.
+    # A row under the documented eight-column header is a manifest row, and
+    # validated as one. Beyond it, a row is one exactly when
+    # `tools/corpus/corpus-lib.sh` reads it so — a leading number and a decision
+    # cell of link-ok or committed — whatever its table's header says: later
+    # tables register rows under their own headings (`| # | API | … |`), and
+    # skipping them refused seldon-wrapper (row 5371) as no numbered row while
+    # the fetch read it. A status row is skipped, never read as malformed.
     in_manifest = False
     for line_number, line in enumerate(lines, start=1):
         cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
@@ -218,9 +222,9 @@ def load_manifest(root: Path) -> list[CorpusRow]:
         if not line.strip().startswith("|"):
             in_manifest = False
             continue
-        if not in_manifest:
-            continue
         if not cells or not cells[0].isdigit():
+            continue
+        if not in_manifest and (len(cells) < 7 or cells[6] not in {"link-ok", "committed"}):
             continue
         if len(cells) != 8:
             raise GoldensError(f"CORPUS.md line {line_number}: numbered row has {len(cells)} cells; expected 8")
