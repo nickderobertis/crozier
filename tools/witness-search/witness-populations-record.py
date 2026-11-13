@@ -22,6 +22,7 @@ import json
 import sys
 import tempfile
 from collections import Counter, defaultdict
+from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
 from typing import Any
@@ -45,19 +46,54 @@ SCREEN = _load("witness_populations_record_screen", Path(__file__).with_name("po
 RECORD = SCREEN.RECORD
 HANDED_OFF = Path("docs") / "fern-measurements" / "handed-off" / "documents.tsv"
 SERVED_ONLY = Path("docs") / "openapi-surface" / "witness-search-apis.guru" / "unread-responses.jsonl"
-ARCHIVE = "`APIs-guru/openapi-directory` at `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49`"
-LEDGER_POPULATION = {"github": "github", "sourcegraph": "sourcegraph"}
+BUILD = _load("witness_populations_record_build", Path(__file__).with_name("witness-populations-build.py"))
+ARCHIVE = f"`{BUILD.ARCHIVE_REPOSITORY}` at `{BUILD.ARCHIVE_REVISION}`"
+
+
+def instant(value: Any) -> bool:
+    try:
+        return isinstance(value, str) and datetime.datetime.fromisoformat(value).tzinfo is not None
+    except ValueError:
+        return False
+
+
+# What each evidence field must hold for the README to count it.
+FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
+    "at": instant,
+    "duration_s": lambda value: isinstance(value, int | float) and not isinstance(value, bool) and value >= 0,
+    "population": lambda value: value in SCREEN.POPULATIONS,
+    "document": lambda value: isinstance(value, str) and bool(value),
+    "how": lambda value: isinstance(value, str) and bool(value),
+    "status": lambda value: isinstance(value, int | str) and not isinstance(value, bool),
+    "url": lambda value: isinstance(value, str) and value.startswith(("https://", "http://")),
+    "host": lambda value: isinstance(value, str) and bool(value),
+    "source": lambda value: isinstance(value, str) and bool(value),
+    "outcome": lambda value: isinstance(value, str) and bool(value),
+    "sha256": lambda value: isinstance(value, str) and bool(SCREEN.SHA.fullmatch(value)),
+}
+
+
+def allowance_failure(row: dict[str, Any]) -> bool:
+    """A guard call reporting an allowance must report a whole remaining and a positive limit."""
+    if "remaining" not in row and "limit" not in row:
+        return False
+    remaining, limit = row.get("remaining"), row.get("limit")
+    return not (type(remaining) is int and type(limit) is int and 0 <= remaining <= limit and limit > 0)
 
 
 def records(path: Path, fields: tuple[str, ...], lines: list[str]) -> list[dict[str, Any]]:
-    """Each line of an evidence log as the object it records, refusing one that lacks `fields`."""
+    """Each line of an evidence log as the object it records, refusing one whose `fields` do not hold."""
     out = []
     for number, line in enumerate((line for line in lines if line.strip()), 1):
         try:
             row = json.loads(line)
         except ValueError as error:
             raise ValueError(f"{path}:{number} is no JSON ({error})") from error
-        if not isinstance(row, dict) or any(field not in row for field in fields):
+        if (
+            not isinstance(row, dict)
+            or any(field not in row or not FIELD_CHECKS[field](row[field]) for field in fields)
+            or allowance_failure(row)
+        ):
             raise ValueError(f"{path}:{number} is no record carrying {', '.join(fields)}")
         out.append(row)
     return out
@@ -146,7 +182,6 @@ def render(record: Path, root: Path = REPO) -> str:
     screened = Counter(entry.population for entry in entries if entry.unfetchable == "-")
     unfetchable_entries = Counter(entry.population for entry in entries if entry.unfetchable != "-")
 
-    # Acquisition, per planned population: what was planned, what is held, what was refused, what was never asked.
     planned: dict[str, set[str]] = defaultdict(set)
     for identity in plan:
         planned[identity.population].add(identity.document)

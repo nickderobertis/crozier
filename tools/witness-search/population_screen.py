@@ -65,6 +65,7 @@ import urllib.parse
 from collections import Counter
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
+from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
 from typing import IO, Any, NamedTuple, NoReturn
@@ -74,7 +75,19 @@ RECORD = REPO / "docs" / "openapi-surface" / "witness-search-combination-populat
 TABLE = RECORD / "screen.tsv"
 POPULATION = RECORD / "population.tsv"
 
-POPULATIONS = ("registered", "apis-guru", "github", "sourcegraph", "archive", "handed-off")
+
+class Population(StrEnum):
+    """Where a candidate was read from: the table's `population` column."""
+
+    REGISTERED = "registered"
+    APIS_GURU = "apis-guru"
+    GITHUB = "github"
+    SOURCEGRAPH = "sourcegraph"
+    ARCHIVE = "archive"
+    HANDED_OFF = "handed-off"
+
+
+POPULATIONS = tuple(Population)
 PENDING = "certified-screen-pending"
 STATUSES = (PENDING, "rejected-trigger", "rejected-licence", "unfetchable:<reason>")
 SHA = re.compile(r"[0-9a-f]{64}")
@@ -245,12 +258,17 @@ def operations(document: Any) -> Iterator[Operation]:
 
 def parameters(document: Any, operation: Operation) -> list[dict[Any, Any]]:
     """An operation's parameters with its Path Item's, references followed, the operation's winning."""
-    found: dict[tuple[Any, Any], dict[Any, Any]] = {}
+    found: dict[tuple[str, str], dict[Any, Any]] = {}
     for source in (operation.path_item.get("parameters"), operation.node.get("parameters")):
         for parameter in source if isinstance(source, list) else []:
             parameter = deref(document, parameter)
-            if isinstance(parameter, dict):
-                found[(parameter.get("name"), parameter.get("in"))] = parameter
+            # A parameter is named by its `name` and `in`; one missing either names nothing to place.
+            if (
+                isinstance(parameter, dict)
+                and isinstance(parameter.get("name"), str)
+                and isinstance(parameter.get("in"), str)
+            ):
+                found[(parameter["name"], parameter["in"])] = parameter
     return list(found.values())
 
 
@@ -946,8 +964,18 @@ class Selectors:
 
     @classmethod
     def read(cls, path: Path = REPO / "docs" / "openapi-surface" / "witness-search-keys.tsv") -> Selectors:
+        rows: dict[str, str] = {}
         with path.open(encoding="utf-8", newline="") as handle:
-            rows = {row["key"]: row["selector"] for row in csv.DictReader(handle, delimiter="\t")}
+            reader = csv.DictReader(handle, delimiter="\t")
+            if not {"key", "selector"} <= set(reader.fieldnames or ()):
+                raise ScreenError(f"{path} names no key and selector columns; regenerate it with its own script")
+            for number, row in enumerate(reader, 2):
+                key, selector = row.get("key"), row.get("selector")
+                if not isinstance(key, str) or not key or not isinstance(selector, str) or not selector:
+                    raise ScreenError(f"{path}:{number} is no key with its selector; regenerate it with its own script")
+                if key in rows:
+                    raise ScreenError(f"{path}:{number} names {key} a second time; regenerate it with its own script")
+                rows[key] = selector
         missing = [key for key in KEYS if key not in rows]
         if missing:
             raise ScreenError(f"{path} names no selector for {missing}; regenerate it with its own script")
@@ -968,7 +996,7 @@ class ScreenRow(NamedTuple):
     """One row of the table: a candidate document, screened for one key."""
 
     key: str
-    population: str
+    population: Population
     document: str
     source: str
     sha256: str
@@ -977,7 +1005,6 @@ class ScreenRow(NamedTuple):
     status: str
 
 
-# The table's columns, in order: the row model's own fields.
 COLUMNS = ScreenRow._fields
 
 
@@ -1076,7 +1103,9 @@ def read_screen(path: Path = TABLE) -> list[ScreenRow]:
         cells = line.split("\t")
         if len(cells) != len(COLUMNS) or "\r" in line:
             raise ScreenError(f"{path}:{number}: {len(cells)} cells, not the {len(COLUMNS)} columns")
-        row = ScreenRow(*cells)
+        if cells[1] not in POPULATIONS:
+            raise ScreenError(f"{path}:{number}: population {cells[1]!r} is none of {', '.join(POPULATIONS)}")
+        row = ScreenRow(cells[0], Population(cells[1]), *cells[2:])
         wrong = row_failures(row)
         if wrong:
             raise ScreenError(f"{path}:{number}: " + "; ".join(wrong))
@@ -1129,10 +1158,48 @@ def cached(sha256: str, root: Path | None = None) -> bytes | None:
     return data if hashlib.sha256(data).hexdigest() == sha256 else None
 
 
+class EvidenceKind(StrEnum):
+    """Where a candidate's licence is read when its document declares no `info.license`."""
+
+    CORPUS = "corpus"  # the corpus row's recorded grant
+    CORPUS_AGGREGATION = "corpus-aggregation"  # the same, for a row copied from an aggregation
+    REPOSITORY = "repository"  # the repository licence file at the pinned commit
+    AGGREGATION = "aggregation"  # an aggregation's copy: no publisher grant
+    NO_PUBLISHER_GRANT = "no-publisher-grant"  # an APIs.guru archive copy
+    NONE = "-"
+
+
+@dataclass(frozen=True)
+class Evidence:
+    """A manifest row's `evidence` cell, parsed."""
+
+    kind: EvidenceKind
+    grant: str = ""
+    repository: str = ""
+    commit: str = ""
+
+    @classmethod
+    def parse(cls, text: str) -> Evidence:
+        kind, colon, rest = text.partition(":")
+        match kind:
+            case "corpus" | "corpus-aggregation" if rest:
+                return cls(EvidenceKind(kind), grant=rest)
+            case "repository" | "aggregation":
+                found = re.fullmatch(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", rest)
+                if found:
+                    return cls(EvidenceKind(kind), repository=found.group(1), commit=found.group(2))
+            case "no-publisher-grant" | "-" if not colon:
+                return cls(EvidenceKind(kind))
+        raise ScreenError(
+            f"evidence {text!r} is none of corpus:<grant>, corpus-aggregation:<grant>, "
+            "repository:<owner>/<repo>@<commit>, aggregation:<owner>/<repo>@<commit>, no-publisher-grant or -"
+        )
+
+
 class Entry(NamedTuple):
     """One manifest row: a candidate document, its licence evidence and the keys it owes a row for."""
 
-    population: str
+    population: Population
     document: str
     source: str
     sha256: str
@@ -1147,6 +1214,9 @@ class Entry(NamedTuple):
 
     def forced(self) -> list[str]:
         return [] if self.keys == "-" else self.keys.split(";")
+
+    def licence_evidence(self) -> Evidence:
+        return Evidence.parse(self.evidence)
 
 
 MANIFEST_COLUMNS = Entry._fields
@@ -1163,7 +1233,9 @@ def read_manifest(path: Path) -> list[Entry]:
         for number, cells in enumerate(reader, 2):
             if len(cells) != len(MANIFEST_COLUMNS) or any(not cell for cell in cells):
                 raise ScreenError(f"{path}:{number}: {len(cells)} cells, every one filled, not {len(MANIFEST_COLUMNS)}")
-            entry = Entry(*cells)
+            if cells[0] not in POPULATIONS:
+                raise ScreenError(f"{path}:{number}: population {cells[0]!r} is none of {', '.join(POPULATIONS)}")
+            entry = Entry(Population(cells[0]), *cells[1:])
             wrong = entry_failures(entry)
             if (entry.population, entry.document) in seen:
                 wrong.append(f"duplicates line {seen[(entry.population, entry.document)]}'s candidate")
@@ -1172,12 +1244,6 @@ def read_manifest(path: Path) -> list[Entry]:
             seen[(entry.population, entry.document)] = number
             entries.append(entry)
     return entries
-
-
-EVIDENCE = re.compile(
-    r"(?:corpus|corpus-aggregation):[^\t]+|(?:repository|aggregation):[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+@[0-9a-f]{40}"
-    r"|no-publisher-grant|-"
-)
 
 
 def entry_failures(entry: Entry) -> list[str]:
@@ -1195,11 +1261,10 @@ def entry_failures(entry: Entry) -> list[str]:
     unfetchable = entry.unfetchable != "-"
     if not (SHA.fullmatch(entry.sha256) or (unfetchable and entry.sha256 == "-")):
         wrong.append(f"sha256 {entry.sha256!r} is no SHA-256 (`-` only beside an unfetchable reason)")
-    if not EVIDENCE.fullmatch(entry.evidence):
-        wrong.append(
-            f"evidence {entry.evidence!r} is none of corpus:, corpus-aggregation:, repository:, aggregation:, "
-            "no-publisher-grant or -"
-        )
+    try:
+        entry.licence_evidence()
+    except ScreenError as error:
+        wrong.append(str(error))
     unknown = [key for key in entry.forced() if key not in KEYS]
     if unknown:
         wrong.append(f"keys {unknown} are no combination keys")
@@ -1258,12 +1323,20 @@ def corpus_grants(root: Path = REPO) -> dict[str, str]:
     return {name: row.grant for name, row in corpus_rows(root).items()}
 
 
-# The aggregations whose copies a corpus row may be sourced from, as its source URL names them.
+# The repositories that redistribute other publishers' descriptions: their own
+# licence is an aggregation's grant, never a publisher's.
+AGGREGATIONS = ("APIs-guru/openapi-directory", "jentic/jentic-public-apis")
+# A corpus row's source URL naming one of them, or the APIs.guru service that serves the first.
 AGGREGATION_SOURCE = re.compile(
-    r"^https://(?:raw\.githubusercontent\.com/(?P<repository>APIs-guru/openapi-directory|jentic/jentic-public-apis)/"
-    r"|api\.apis\.guru/)",
+    r"^https://(?:raw\.githubusercontent\.com/(?P<repository>"
+    + "|".join(re.escape(name) for name in AGGREGATIONS)
+    + r")/|api\.apis\.guru/)",
     re.I,
 )
+
+
+def is_aggregation(repository: str) -> bool:
+    return repository.lower() in {name.lower() for name in AGGREGATIONS}
 
 
 def aggregator(source: str) -> str | None:
@@ -1312,36 +1385,41 @@ def licence_verdict(
         if family in families:
             return f"admissible:{family} (info.license '{cell_text(declared)}')"
         return f"inadmissible:info.license '{cell_text(declared)}' names no grant the corpus rule admits"
-    evidence = entry.evidence
-    if evidence.startswith(("corpus:", "corpus-aggregation:")):
-        recorded = evidence.split(":", 1)[1]
-        family = screen.recognise(recorded)
-        # A row copied from an aggregation stands on the aggregation's grant unless it records a publisher's.
-        copied = evidence.startswith("corpus-aggregation:") and not re.search(r"\bpublisher", recorded, re.I)
-        if copied or AGGREGATION_GRANT.search(recorded):
-            # An aggregation's grant without a publisher grant does not pass the licence
-            # screen: the ruling corpus rows 223 and 224 were withdrawn on.
-            return (
-                "inadmissible:grants nothing: no info.license, and the corpus row records only an "
-                "aggregation's grant, which is no publisher grant"
+    evidence = entry.licence_evidence()
+    match evidence.kind:
+        case EvidenceKind.CORPUS | EvidenceKind.CORPUS_AGGREGATION:
+            family = screen.recognise(evidence.grant)
+            # A row copied from an aggregation stands on the aggregation's grant unless it records a publisher's.
+            copied = evidence.kind is EvidenceKind.CORPUS_AGGREGATION and not re.search(
+                r"\bpublisher", evidence.grant, re.I
             )
-        if family in families:
-            return f"admissible:{family} (the corpus row's recorded grant: {cell_text(recorded)})"
-        return f"inadmissible:no info.license, and the corpus row's recorded grant {cell_text(recorded)!r} is none admitted"
-    if evidence == "no-publisher-grant":
-        return "inadmissible:grants nothing: no info.license, and an APIs.guru archive copy carries no publisher grant"
-    aggregated = re.fullmatch(r"aggregation:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", evidence)
-    if aggregated is not None:
-        return (
-            f"inadmissible:grants nothing: no info.license, and {aggregated.group(1)} redistributes it as an "
-            "aggregation, whose grant is no publisher grant"
-        )
-    match = re.fullmatch(r"repository:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", evidence)
-    if match is None:
-        return "inadmissible:grants nothing: no info.license and no recorded repository to read a licence file at"
+            if copied or AGGREGATION_GRANT.search(evidence.grant):
+                # An aggregation's grant without a publisher grant does not pass the licence
+                # screen: the ruling corpus rows 223 and 224 were withdrawn on.
+                return (
+                    "inadmissible:grants nothing: no info.license, and the corpus row records only an "
+                    "aggregation's grant, which is no publisher grant"
+                )
+            if family in families:
+                return f"admissible:{family} (the corpus row's recorded grant: {cell_text(evidence.grant)})"
+            return (
+                f"inadmissible:no info.license, and the corpus row's recorded grant {cell_text(evidence.grant)!r} "
+                "is none admitted"
+            )
+        case EvidenceKind.NO_PUBLISHER_GRANT:
+            return (
+                "inadmissible:grants nothing: no info.license, and an APIs.guru archive copy carries no publisher grant"
+            )
+        case EvidenceKind.AGGREGATION:
+            return (
+                f"inadmissible:grants nothing: no info.license, and {evidence.repository} redistributes it as an "
+                "aggregation, whose grant is no publisher grant"
+            )
+        case EvidenceKind.NONE:
+            return "inadmissible:grants nothing: no info.license and no recorded repository to read a licence file at"
     if not exact:
         return "unread:no info.license, and its repository licence file is read only for an exact trigger"
-    repository, commit = match.groups()
+    repository, commit = evidence.repository, evidence.commit
     for name in screen.LICENCE_FILES:
         answer = fetch_file(repository, commit, name)
         if answer is None:
@@ -1568,7 +1646,7 @@ def pinned_by(identity: Identity, data: bytes) -> bool:
 class Identity(NamedTuple):
     """One document the acquisition plan would bring into the store, at its exact commit."""
 
-    population: str
+    population: Population
     document: str
     repository: str
     commit: str
@@ -1701,7 +1779,9 @@ def read_identities(path: Path) -> list[Identity]:
         for number, cells in enumerate(reader, 2):
             if len(cells) != len(IDENTITY_COLUMNS):
                 raise ScreenError(f"{path}:{number}: not {len(IDENTITY_COLUMNS)} cells")
-            identity = Identity(*cells)
+            if cells[0] not in ACQUIRED:
+                raise ScreenError(f"{path}:{number}: population {cells[0]!r} is none of {', '.join(ACQUIRED)}")
+            identity = Identity(Population(cells[0]), *cells[1:])
             pinned = SHA.fullmatch(identity.sha256) or BLOB.fullmatch(identity.sha256)
             if not COMMIT.fullmatch(identity.commit) or not pinned or not identity.rank.isdigit():
                 raise ScreenError(f"{path}:{number}: no full commit, SHA-256 or rank")

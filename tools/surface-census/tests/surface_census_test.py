@@ -13844,7 +13844,11 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [
             path.relative_to(REPO)
             for record in (REPO / surface).glob("witness-search-*/README.md")
-            for census in (record.with_name("census.tsv"), record.with_name("census.tsv.gz"), record.with_name("screen.tsv"))
+            for census in (
+                record.with_name("census.tsv"),
+                record.with_name("census.tsv.gz"),
+                record.with_name("screen.tsv"),
+            )
             if census.is_file()
             for path in (record, census)
             if path.parent.name != "witness-search-unproven-features"

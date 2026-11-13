@@ -27,7 +27,9 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any, ClassVar
@@ -143,12 +145,22 @@ def tagged(names: list[str], *, required: bool, enum_values: int = 1, discrimina
     )
 
 
-def header(schema: dict, *, name: str = "X-Mode", required: bool = False, second_operation: bool = False) -> dict:
+def header(
+    schema: dict,
+    *,
+    name: str = "X-Mode",
+    required: bool = False,
+    second_operation: bool = False,
+    api_key: str | None = None,
+) -> dict:
     parameter = {"name": name, "in": "header", "schema": schema, **({"required": True} if required else {})}
     paths = {"/probe": {"get": get(operationId="probe", parameters=[parameter])}}
     if second_operation:
         paths["/other"] = {"get": get(operationId="other")}
-    return document(paths=paths)
+    body = document(paths=paths)
+    if api_key is not None:
+        body["components"] = {"securitySchemes": {"key": {"type": "apiKey", "in": "header", "name": api_key}}}
+    return body
 
 
 def query(schema: dict, *, required: bool = True, schemas: dict | None = None) -> dict:
@@ -511,6 +523,22 @@ CASES += [
         {KEY_HD: "partial:header-is-client-managed"},
     ),
     (
+        "header-reserved-authorization",
+        header({"type": "string", "default": "Bearer x"}, name="authorization"),
+        {KEY_HD: "partial:header-is-client-managed"},
+    ),
+    (
+        "header-owned-by-api-key",
+        header({"type": "string", "default": "k"}, name="X-Key", api_key="X-Key"),
+        {KEY_HD: "partial:header-is-client-managed"},
+    ),
+    # A key scheme owns its header as spelled: another case is an ordinary header.
+    (
+        "header-beside-api-key",
+        header({"type": "string", "default": "k"}, name="x-key", api_key="X-Key"),
+        {KEY_HD: "exact"},
+    ),
+    (
         "header-on-one-operation",
         header({"type": "string", "default": "all"}, second_operation=True),
         {KEY_HD: "partial:header-not-on-every-operation"},
@@ -864,6 +892,9 @@ class LicenceScreenTests(ScreenHarness):
                 evidence="corpus:CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`)",
             ),
             self.entry("aggregated", self.EXACT, [KEY_T], evidence=f"aggregation:jentic/jentic-public-apis@{COMMIT}"),
+            self.entry(
+                "malformed", self.EXACT.replace(b'"version": "1"}', b'"version": "1", "license": "MIT"}'), [KEY_T]
+            ),
             # A row sourced from an aggregation stands on its grant unless the corpus recorded a publisher's.
             self.entry(
                 "registered-copy",
@@ -915,6 +946,7 @@ class LicenceScreenTests(ScreenHarness):
                     "pinned `LICENSE`))",
                     "certified-screen-pending",
                 ),
+                "malformed": ("inadmissible:info.license is there but is no License Object", "rejected-licence"),
                 "aggregated": (
                     "inadmissible:grants nothing: no info.license, and jentic/jentic-public-apis redistributes it as "
                     "an aggregation, whose grant is no publisher grant",
@@ -1250,7 +1282,7 @@ class AcquisitionRecoveryTests(ScreenHarness):
         plan = self.scratch / "plan.tsv"
         header = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n"
         for row, message in (
-            (("gitlab", "a/b/c", "a/b", COMMIT, "c", "0" * 64, "", "1"), "is no acquired population's"),
+            (("gitlab", "a/b/c", "a/b", COMMIT, "c", "0" * 64, "", "1"), "is none of github, sourcegraph, handed-off"),
             (("github", "a/../c", "a/..", COMMIT, "c", "0" * 64, "", "1"), "is no acquired population's"),
             (("github", "a/b/c", "a/b", COMMIT, "../c", "0" * 64, "", "1"), "is no path inside a repository"),
             (("github", "a/b/c", "a/b", "main", "c", "0" * 64, "", "1"), "no full commit, SHA-256 or rank"),
@@ -1320,7 +1352,7 @@ RECORD_SCRIPT = REPO / "tools/witness-search/witness-populations-record.py"
 BUILD_SCRIPT = REPO / "tools/witness-search/witness-populations-build.py"
 
 
-class BuildTests(ScreenHarness):
+class BuildHarness(ScreenHarness):
     """The builder over an authored repository tree: its ledgers, corpus, archive and handed-off record."""
 
     def setUp(self) -> None:
@@ -1467,6 +1499,8 @@ class BuildTests(ScreenHarness):
             timeout=600,
         )
 
+
+class BuildTests(BuildHarness):
     def test_the_plan_is_each_public_openapi_identity_once_at_its_latest_commit_ranked(self) -> None:
         plan = self.scratch / "plan.tsv.gz"
         done = self.build("identities", "--output", str(plan))
@@ -1495,11 +1529,33 @@ class BuildTests(ScreenHarness):
         self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
         SCREEN.store(self.pointer, self.store)
         SCREEN.store(self.handed_bytes, self.store)
+        # A code-search hit is planned by its blob, and the acquisition ledger names the content it was had at.
+        blobbed = json.dumps(CASES[3][1]).encode()
+        SCREEN.store(blobbed, self.store)
+        hits = self.scratch / "hits.tsv"
+        blob = f"blob:{SCREEN.blob_sha(blobbed)}"
+        hit = ("github", "acme/blobbed/openapi.json", "acme/blobbed", "b" * 40, "openapi.json", blob, "", "3")
+        hits.write_text("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n", encoding="utf-8")
+        ledger = self.scratch / "acquisitions.jsonl"
+        self.write(
+            ledger,
+            [
+                {
+                    "population": "github",
+                    "document": "acme/blobbed/openapi.json",
+                    "how": "raw",
+                    "sha256": blob,
+                    "content_sha256": hashlib.sha256(blobbed).hexdigest(),
+                }
+            ],
+        )
         output = self.scratch / "population.tsv"
         args = (
             "manifest",
             "--identities",
             str(plan),
+            "--identities",
+            str(hits),
             "--archive",
             str(self.archive),
             "--store",
@@ -1507,7 +1563,7 @@ class BuildTests(ScreenHarness):
             "--preflight",
             str(self.scratch / "none"),
             "--acquisitions",
-            str(self.scratch / "none.jsonl"),
+            str(ledger),
             "--output",
             str(output),
         )
@@ -1533,8 +1589,17 @@ class BuildTests(ScreenHarness):
                     BUILD.HANDED_OFF_UNFETCHED,
                 ),
                 ("github", "acme/pointers/openapi.json"): (f"repository:acme/pointers@{'2' * 40}", "-", "-"),
+                ("github", "acme/blobbed/openapi.json"): (f"repository:acme/blobbed@{'b' * 40}", "-", "-"),
             },
             got,
+        )
+        [blob_entry] = [e for e in SCREEN.read_manifest(output) if e.document == "acme/blobbed/openapi.json"]
+        self.assertEqual(
+            (
+                hashlib.sha256(blobbed).hexdigest(),
+                f"https://raw.githubusercontent.com/acme/blobbed/{'b' * 40}/openapi.json",
+            ),
+            (blob_entry.sha256, blob_entry.source),
         )
         # The archive copy is held to the digest the committed acquisition manifest records.
         (self.archive / "APIs" / "acme.local" / "1.0" / "openapi.json").write_bytes(b"{}")
@@ -1589,6 +1654,106 @@ class BuildTests(ScreenHarness):
         live = self.build("search", "--evidence", str(evidence), "--identities", str(plan), "--output", str(output))
         self.assertEqual(2, live.returncode)
         self.assertIn("gunzip queries.jsonl.gz to resume it live", live.stderr)
+
+
+class _ServiceServer(ThreadingHTTPServer):
+    requests: list[str]
+
+
+class _Services(BaseHTTPRequestHandler):
+    """GitHub's REST API (`/rate_limit`, `/search/code`) and Sourcegraph's stream search, on loopback."""
+
+    server: _ServiceServer
+
+    def log_message(self, format: str, *args: Any) -> None:
+        pass
+
+    def reply(self, body: bytes, kind: str, resource: str = "core") -> None:
+        self.send_response(200)
+        self.send_header("Content-Type", kind)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("X-Ratelimit-Resource", resource)
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:
+        self.server.requests.append(self.path)
+        if self.path == "/rate_limit":
+            bucket = {"limit": 10, "used": 1, "remaining": 9, "reset": int(time.time()) + 60}
+            self.reply(json.dumps({"resources": {"code_search": bucket, "core": bucket}}).encode(), "application/json")
+        elif self.path.startswith("/search/code"):
+            language = "yaml" if "YAML" in urllib.parse.unquote(self.path) else "json"
+            item = {
+                "repository": {"full_name": "acme/found"},
+                "path": f"spec/openapi.{language}",
+                "sha": "e" * 40,
+                "url": f"http://127.0.0.1/repos/acme/found/contents/x?ref={'f' * 40}",
+            }
+            body = {"total_count": 1, "incomplete_results": False, "items": [item]}
+            self.reply(json.dumps(body).encode(), "application/json", "code_search")
+        elif self.path.startswith("/.api/search/stream"):
+            matches = [{"repository": "github.com/acme/streamed", "path": "openapi.yaml", "commit": "a" * 40}]
+            self.reply(
+                b"event: matches\ndata: "
+                + json.dumps(matches).encode()
+                + b"\n\nevent: progress\ndata: "
+                + json.dumps({"done": True, "matchCount": 1}).encode()
+                + b"\n\n",
+                "text/event-stream",
+            )
+        else:
+            self.reply(b"{}", "application/json")
+
+
+class LiveSearchTests(BuildHarness):
+    def test_the_bounded_search_asks_each_key_once_records_what_it_cannot_ask_and_one_sourcegraph_query(self) -> None:
+        services = _ServiceServer(("127.0.0.1", 0), _Services)
+        services.requests = []
+        threading.Thread(target=services.serve_forever, daemon=True).start()
+        self.addCleanup(services.server_close)
+        self.addCleanup(services.shutdown)
+        base = f"http://127.0.0.1:{services.server_port}"
+        self.env.update(CROZIER_GITHUB_API_URL=base, CROZIER_SOURCEGRAPH_URL=base, GITHUB_TOKEN="offline-test-token")
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        evidence, output = self.scratch / "search", self.scratch / "hits.tsv"
+        args = (
+            "search",
+            "--evidence",
+            str(evidence),
+            "--identities",
+            str(plan),
+            "--output",
+            str(output),
+            "--key",
+            "combo-property-defs-pointer",
+            "--key",
+            "combo-tag-only-operation-id",
+        )
+        done = self.build(*args)
+        self.assertEqual(0, done.returncode, done.stderr)
+        searched = [path for path in services.requests if path.startswith("/search/code")]
+        streamed = [path for path in services.requests if path.startswith("/.api/search/stream")]
+        self.assertEqual((2, 1), (len(searched), len(streamed)))
+        lines = (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()
+        recorded = sorted((row["source"], row["key"], row["outcome"]) for row in map(json.loads, lines))
+        self.assertEqual(
+            [("github-code-search", "combo-property-defs-pointer", "answered")] * 2
+            + [
+                ("github-code-search", "combo-tag-only-operation-id", "not-queryable"),
+                ("sourcegraph", "combo-property-defs-pointer", "answered"),
+            ],
+            recorded,
+        )
+        self.assertEqual(
+            {"acme/found/spec/openapi.yaml", "acme/found/spec/openapi.json"},
+            {hit.document for hit in SCREEN.read_identities(output)},
+        )
+        services.requests.clear()
+        again = self.build(*args)
+        self.assertEqual(0, again.returncode, again.stderr)
+        self.assertEqual([], [path for path in services.requests if not path.startswith("/rate_limit")])
+        self.assertEqual(len(lines), len((evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()))
 
 
 class RecordTests(unittest.TestCase):
@@ -1651,12 +1816,10 @@ class JourneyTests(ScreenHarness):
         pending = [row for row in rows_read if row.status == "certified-screen-pending"]
         self.assertEqual(set(POINTER_KEYS), {row.key for row in pending})
         self.assertEqual({hashlib.sha256(exact).hexdigest()}, {row.sha256 for row in pending})
-        # Only the exact candidate's bytes are kept in the host cache, retrieved by their digest.
-        (self.store / hashlib.sha256(rejected).hexdigest()).unlink()
         kept = self.run_cli("cached", pending[0].sha256, "--store", str(self.store))
         self.assertEqual(0, kept.returncode, kept.stderr)
         self.assertEqual(exact, Path(kept.stdout.strip()).read_bytes())
-        lost = self.run_cli("cached", hashlib.sha256(rejected).hexdigest(), "--store", str(self.store))
+        lost = self.run_cli("cached", hashlib.sha256(b"never kept").hexdigest(), "--store", str(self.store))
         self.assertEqual(1, lost.returncode)
         self.assertIn("re-fetch them from the row's source", lost.stderr)
         SCREEN.store(exact, Path(self.env["XDG_CACHE_HOME"]) / "crozier" / "witness-populations")

@@ -42,7 +42,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Any, NoReturn
+from typing import Any, NamedTuple, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 LEDGERS = {"github": "witness-search-github-code-search", "sourcegraph": "witness-search-sourcegraph"}
@@ -52,9 +52,6 @@ RAW = "https://raw.githubusercontent.com"
 # Ledger keys whose selectors read a nested or `$defs` pointer: a document they
 # record as declaring is the likeliest witness of the eight pointer keys.
 POINTER_LEDGER_KEYS = re.compile(r"pointer|unnamed-segment|undeclared-component-head")
-# Repositories that redistribute other publishers' descriptions: their own licence
-# is an aggregation's grant, never a publisher's.
-AGGREGATIONS = frozenset({"apis-guru/openapi-directory", "jentic/jentic-public-apis"})
 HANDED_OFF_ID = re.compile(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+):(.+)@([0-9a-f]{40})")
 EARLIER_POPULATION = {"registered": "registered", "apis-guru": "apis-guru", "handed-off": "handed-off"}
 HANDED_OFF_UNFETCHED = (
@@ -107,7 +104,7 @@ class Tree:
     def archive_manifest(self) -> Path:
         return self.surface / "witness-search-apis.guru" / "acquisition-manifest.tsv"
 
-    def selectors(self) -> Any:
+    def selectors(self) -> SCREEN.Selectors:
         return SCREEN.Selectors.read(self.surface / "witness-search-keys.tsv")
 
 
@@ -163,7 +160,7 @@ def github_repository(repository: str) -> str | None:
     return name if re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", name) else None
 
 
-def identities(tree: Tree) -> list[Any]:
+def identities(tree: Tree) -> list[SCREEN.Identity]:
     wanted = {key: ingredients(selector) for key, selector in tree.selectors().by_key.items()}
     out = []
     for population in LEDGERS:
@@ -209,14 +206,35 @@ def identities(tree: Tree) -> list[Any]:
     return out
 
 
-def jsonl_rows(path: Path) -> list[dict[str, Any]]:
+class Acquisition(NamedTuple):
+    """One line of the acquisition ledger: a planned document, how its bytes were had, and their digest."""
+
+    population: str
+    document: str
+    how: str
+    content_sha256: str
+
+    @property
+    def held(self) -> bool:
+        return self.how in ("raw", "store", "shared-cache")
+
+
+def acquisitions(path: Path) -> list[Acquisition]:
+    """The acquisition ledger's records; a missing ledger is an acquisition never run."""
     if not path.is_file():
         return []
-    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
-    for number, row in enumerate(rows, 1):
-        if not isinstance(row, dict) or not {"population", "document", "sha256", "how"} <= set(row):
-            fail(f"{path}:{number} is no acquisition record (population, document, sha256, how); restore it from git")
-    return rows
+    out = []
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        row = json.loads(line) if line.strip() else None
+        digest = row.get("content_sha256", row.get("sha256")) if isinstance(row, dict) else None
+        if (
+            not isinstance(row, dict)
+            or not all(isinstance(row.get(field), str) for field in ("population", "document", "how"))
+            or not isinstance(digest, str)
+        ):
+            fail(f"{path}:{number} is no acquisition record (population, document, how, sha256); restore it from git")
+        out.append(Acquisition(row["population"], row["document"], row["how"], digest))
+    return out
 
 
 def licence_evidence(repository: str, commit: str, digest: str, archived: set[str]) -> str:
@@ -225,7 +243,7 @@ def licence_evidence(repository: str, commit: str, digest: str, archived: set[st
     An aggregation's repository, or any copy byte-identical to an APIs.guru archive
     document, carries an aggregation's grant, which is no publisher grant.
     """
-    if repository.lower() in AGGREGATIONS or digest in archived:
+    if SCREEN.is_aggregation(repository) or digest in archived:
         return f"aggregation:{repository}@{commit}"
     return f"repository:{repository}@{commit}"
 
@@ -261,7 +279,7 @@ def archive_digests(tree: Tree) -> dict[str, str]:
         }
 
 
-def manifest(tree: Tree, args: argparse.Namespace) -> list[Any]:
+def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     store_root = args.store or SCREEN.cache_root()
     listed = earlier_rows(tree)
     entries = []
@@ -342,9 +360,7 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[Any]:
     plan = [identity for path in args.identities if path.is_file() for identity in SCREEN.read_identities(path)]
     # A code-search hit is planned by its blob; the acquisition ledger records the content digest it was had at.
     contents = {
-        (row["population"], row["document"]): row.get("content_sha256", row["sha256"])
-        for row in jsonl_rows(args.acquisitions)
-        if row["how"] in ("raw", "store", "shared-cache")
+        (row.population, row.document): row.content_sha256 for row in acquisitions(args.acquisitions) if row.held
     }
     seen: set[tuple[str, str]] = set()
     for identity in plan:
@@ -380,20 +396,39 @@ def recorded_queries(evidence: Path) -> list[dict[str, Any]]:
     if not (evidence / "queries.jsonl").is_file() and packed.is_file():
         with gzip.open(packed, "rt", encoding="utf-8") as handle:
             rows = [json.loads(line) for line in handle if line.strip()]
-        if not all(isinstance(row, dict) and isinstance(row.get("source"), str) for row in rows):
-            fail(f"{packed} holds a line that is no recorded query; restore it from git")
-        return rows
-    return github().jsonl(evidence / "queries.jsonl")
+    else:
+        rows = github().jsonl(evidence / "queries.jsonl")
+    for number, row in enumerate(rows, 1):
+        results = row.get("results", []) if isinstance(row, dict) else None
+        if (
+            not isinstance(row, dict)
+            or not isinstance(row.get("source"), str)
+            or not isinstance(results, list)
+            or not all(isinstance(item, dict) for item in results)
+        ):
+            fail(f"{evidence}: query record {number} is no recorded query with a list of results; restore it from git")
+    return rows
 
 
-def search(tree: Tree, args: argparse.Namespace) -> list[Any]:
+def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
     """The bounded live search's new identities; see the module docstring."""
     selectors = tree.selectors()
     known = {(row.repository, row.path) for row in SCREEN.read_identities(args.identities)}
     if not args.replay:
         client = github()
-        acquirer = client.Acquirer(args.evidence, cache=SCREEN.cache_root() / "acquirer", first_page_only=True)
+        acquirer = client.Acquirer(
+            args.evidence,
+            cache=SCREEN.cache_root() / "acquirer",
+            first_page_only=True,
+            sourcegraph_url=client.checked_service_url(
+                os.environ.get("CROZIER_SOURCEGRAPH_URL", client.SOURCEGRAPH_URL),
+                "CROZIER_SOURCEGRAPH_URL",
+                "sourcegraph.com",
+            ),
+        )
         for key, selector in selectors.by_key.items():
+            if args.key and key not in args.key:
+                continue
             try:
                 plan = client.query_plan(selector)["github-code-search"]
             except ValueError as error:
@@ -410,8 +445,8 @@ def search(tree: Tree, args: argparse.Namespace) -> list[Any]:
                         },
                     )
                 continue
-            # The plan's last two queries are its `path:openapi` YAML and JSON spellings.
-            for query in plan[-2:]:
+            # The plan's `path:openapi` queries: its YAML and its JSON spelling.
+            for query in [query for query in plan if "path:openapi" in query.split()]:
                 try:
                     # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; the guard admits one code-search request at a time to its paced bucket, which an async client would not speed up.
                     acquirer.github_search(key, query)
@@ -427,7 +462,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[Any]:
             except client.SearchStopped as error:
                 print(f"witness-populations-build: sourcegraph: {error}", file=sys.stderr)
     wanted = {key: ingredients(selector) for key, selector in selectors.by_key.items()}
-    hits: dict[tuple[str, str], Any] = {}
+    hits: dict[tuple[str, str], SCREEN.Identity] = {}
     for row in recorded_queries(args.evidence):
         # Ranked as the ledger plan is: the keys whose field names the query that found it spells.
         found_by = wanted.get(str(row.get("key")), set())
@@ -459,7 +494,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[Any]:
     return sorted(hits.values())
 
 
-def write_plan(path: Path, rows: list[Any]) -> None:
+def write_plan(path: Path, rows: list[SCREEN.Identity]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     text = "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows)
     if path.suffix == ".gz":
@@ -490,6 +525,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     live.add_argument("--output", type=Path, required=True)
     live.add_argument("--sourcegraph-key", default="combo-property-defs-pointer", choices=SCREEN.KEYS)
+    live.add_argument("--key", action="append", default=[], choices=SCREEN.KEYS, help="search only these keys")
     live.add_argument(
         "--replay", action="store_true", help="derive identities from the recorded answers, asking nothing"
     )
