@@ -18,6 +18,7 @@ the candidate's, as they are once the decision job builds crozier from the tree.
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import json
 import os
 import re
@@ -2113,8 +2114,12 @@ class WeeklyRunTests(unittest.TestCase):
         (fixtures / "corpus-sources/seldon-wrapper").mkdir(parents=True)
         shutil.copy2(source, fixtures / "corpus-sources/seldon-wrapper/openapi.yaml")
         self.publish_seed()
-        # The row's pinned URL, served by the stood-in curl with those bytes.
-        self.served = {"APIs/seldon.local/wrapper/0.1/openapi.yaml": source.read_text(encoding="utf-8")}
+        # The row's pinned URL, served by the stood-in curl with exactly the
+        # bytes its recorded digest pins (the curl stand-in writes them as UTF-8).
+        served = source.read_text(encoding="utf-8")
+        pinned = next(line.split("\t")[3] for line in recorded if line.startswith("seldon-wrapper\t"))
+        self.assertEqual(pinned, hashlib.sha256(served.encode("utf-8")).hexdigest())
+        self.served = {"APIs/seldon.local/wrapper/0.1/openapi.yaml": served}
         self.fern_tree("Seldon External API", source)
         state = self.run_workflow("corpus:seldon-wrapper", stop_after="shards")
         (shard,) = state.shards
