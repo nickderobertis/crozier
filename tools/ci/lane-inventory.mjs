@@ -119,15 +119,18 @@ const accounted = new Set();
 // carrier: still a target, accounted as the carrier's, which must itself be a lane's, and
 // held to the recipe that names it and the carrier's own source that runs that recipe.
 const carried = inventory.carried === undefined ? [] : isMapping(inventory.carried) ? Object.entries(inventory.carried) : undefined;
-const isSelector = (value) => isMapping(value) && typeof value.env === "string" && typeof value.group === "string";
-if (!carried || !carried.every(([entry, row]) => isEntrypoint(entry) && isEntrypoint(row?.by) && typeof row?.recipe === "string" && typeof row?.source === "string" && isSelector(row?.selector))) {
-  refuse("tools/ci/lanes.json's carried needs project:target keys, each with a by (project:target), a recipe, a source file and a selector {env, group}");
+// Recipe, group and variable names are plain words; anything else is refused before it reaches a pattern.
+const isName = (value) => typeof value === "string" && /^[A-Za-z0-9_-]+$/.test(value);
+const literal = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const isSelector = (value) => isMapping(value) && isName(value.env) && isName(value.group);
+if (!carried || !carried.every(([entry, row]) => isEntrypoint(entry) && isEntrypoint(row?.by) && isName(row?.recipe) && typeof row?.source === "string" && isSelector(row?.selector))) {
+  refuse("tools/ci/lanes.json's carried needs project:target keys, each with a by (project:target), a recipe name, a source file and a selector {env, group} of plain names");
 }
 for (const [entry, row] of carried) {
   accounted.add(entry);
   const [name, target] = entry.split(":");
   if (!graph.get(name)?.targets?.[target]) problems.push(`${entry}: carried by ${row.by}, but the target is gone`);
-  if (!new RegExp(`^${row.recipe}:[^\n]*\n(?:[ \t]+[^\n]*\n)*?[ \t]+@?just nx run ${entry}$`, "m").test(justfile)) {
+  if (!new RegExp(`^${literal(row.recipe)}:[^\n]*\n(?:[ \t]+[^\n]*\n)*?[ \t]+@?just nx run ${literal(entry)}$`, "m").test(justfile)) {
     problems.push(`${entry}: carried by ${row.by} through \`just ${row.recipe}\`, which no longer runs it`);
   }
   let source = "";
@@ -143,7 +146,7 @@ for (const [entry, row] of carried) {
   const commands = [options.command, ...(options.commands ?? [])].filter((command) => typeof command === "string");
   if (!commands.some((command) => command.split(/\s+/).includes(row.source))) problems.push(`${entry}: its carrier ${row.by} no longer runs ${row.source}`);
   if (options.env?.[row.selector.env] !== row.selector.group) problems.push(`${entry}: its carrier ${row.by} no longer selects ${row.selector.env}=${row.selector.group}`);
-  const group = new RegExp(`^\\s*"${row.selector.group}": \\(.*\\("${row.recipe}",\\)`, "m");
+  const group = new RegExp(`^\\s*"${literal(row.selector.group)}": \\(.*\\("${literal(row.recipe)}",\\)`, "m");
   if (source && !group.test(source)) problems.push(`${entry}: ${row.source}'s ${row.selector.group} group no longer runs \`just ${row.recipe}\``);
 }
 for (const [entry, row] of [...rows, ...added.map(([name, platforms]) => [name, { platforms }])]) {
