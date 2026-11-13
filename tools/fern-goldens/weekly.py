@@ -66,6 +66,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -145,6 +146,17 @@ ASSEMBLY_MINUTES = 2.0
 # comparison grew to over run 41564405289's tree, bunq.com's 5.7 GiB, with
 # headroom (docs/fern-goldens.md).
 COMPARISON_RESERVE_GIB = 6.0
+# The GiB below which, while more than one comparison runs, the decision stops
+# the one it started last and runs it again alone (`decide --floor-gib`): the
+# reserve is read only as a comparison starts, and one that grows after it has
+# started (bunq.com's reached 5.7 GiB) can take the runner's last memory with
+# three others beside it. Run 42566793545's second decision job died at 54
+# minutes with "The hosted runner lost communication with the server" and left
+# no log of where; this floor keeps the runner agent room to report.
+COMPARISON_FLOOR_GIB = 1.5
+# How often the decision writes what is running and the memory left, so a
+# runner that dies mid-comparison leaves its last reading in the step log.
+HEARTBEAT_SECONDS = 60.0
 # Estimated, not measured: a crozier build and its golden gates over the tree.
 DECISION_MINUTES = 30.0
 PUBLISH_MINUTES = 1.0
@@ -2259,14 +2271,128 @@ def read_report(code: int, output: str) -> tuple[Verdict, tuple[str, ...]]:
     return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS, ()
 
 
-def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
+class Guard:
+    """What the decision's comparisons hold of the runner, watched while they
+    run: every `heartbeat` seconds a line naming each running comparison and
+    the memory left, and, while more than one runs and less than `floor` bytes
+    are available, the one started last stopped (with all it started) and
+    named in `stopped`, to run again alone. Stopping the youngest until one is
+    left never needs more memory than running each alone does."""
+
+    def __init__(self, floor: float, heartbeat: float, poll: float = 1.0) -> None:
+        self.floor = floor
+        self.heartbeat = heartbeat
+        self.poll = poll
+        self.lock = threading.Lock()
+        self.running: dict[int, tuple[str, subprocess.Popen[str]]] = {}
+        self.stopped: set[int] = set()
+        self.done = threading.Event()
+        self.thread = threading.Thread(target=self.watch, daemon=True)
+
+    def __enter__(self) -> Guard:
+        self.thread.start()
+        return self
+
+    def __exit__(self, *_exc: object) -> None:
+        self.done.set()
+        self.thread.join()
+
+    @contextlib.contextmanager
+    def holding(self, number: int, label: str, process: subprocess.Popen[str]) -> Generator[None]:
+        with self.lock:
+            self.running[number] = (label, process)
+        try:
+            yield
+        finally:
+            with self.lock:
+                self.running.pop(number, None)
+
+    def watch(self) -> None:
+        beat = time.monotonic()
+        while not self.done.wait(self.poll):
+            available = memory_available()
+            with self.lock:
+                if available is not None and available < self.floor and len(self.running) > 1:
+                    number = max(self.running)
+                    label, process = self.running.pop(number)
+                    self.stopped.add(number)
+                    stop(process)
+                    progress(
+                        f"{label} stopped: memory available {available / 2**30:.1f} GiB is under the "
+                        f"{self.floor / 2**30:.1f} GiB floor with {len(self.running) + 1} comparison(s) running; "
+                        "it runs again alone"
+                    )
+                if self.running and time.monotonic() - beat >= self.heartbeat:
+                    beat = time.monotonic()
+                    labels = ", ".join(label for label, _process in self.running.values())
+                    memory = "unknown" if available is None else f"{available / 2**30:.1f} GiB"
+                    progress(f"decide: running {labels}; memory available {memory}")
+
+
+def descendants(pid: int) -> list[int]:
+    """Every process `pid` started, and theirs, as Linux's `/proc` lists them
+    (none where there is no `/proc`)."""
+    children: dict[int, list[int]] = {}
+    for stat in Path("/proc").glob("[0-9]*/stat"):
+        try:
+            # The command name may hold spaces and parentheses; the fields
+            # after its closing parenthesis are the state, then the parent.
+            fields = stat.read_text(encoding="utf-8", errors="replace").rpartition(")")[2].split()
+            children.setdefault(int(fields[1]), []).append(int(stat.parent.name))
+        except (OSError, ValueError, IndexError):
+            continue
+    queue: list[int] = [pid]
+    seen: list[int] = []
+    while queue:
+        for child in children.get(queue.pop(), []):
+            seen.append(child)
+            queue.append(child)
+    return seen
+
+
+def stop(process: subprocess.Popen[str]) -> None:
+    """End a comparison and everything it started (`just`, Nx, cargo, crozier),
+    which stay in the decision's own process group so the step's own ending
+    still reaches them."""
+    for pid in [process.pid, *descendants(process.pid)]:
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.kill(pid, signal.SIGKILL)
+
+
+def run_held(
+    words: list[str], base: Path, guard: Guard | None, number: int, label: str
+) -> subprocess.CompletedProcess[str]:
+    """`words` run as `run` runs them, held by the guard while it runs."""
+    if guard is None:
+        return run(words, base)
+    try:
+        process = subprocess.Popen(
+            words,
+            cwd=base,
+            env={**os.environ, "PYTHONUTF8": "1"},
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except OSError as error:
+        raise WeeklyError(f"could not run {words[0]!r}: {error}; install it, then re-run") from error
+    with guard.holding(number, label, process):
+        stdout, stderr = process.communicate()
+    return subprocess.CompletedProcess(words, process.returncode, stdout, stderr)
+
+
+def run_gate(
+    base: Path, gate: Gate, item: str | None, guard: Guard | None = None, number: int = 0, label: str = ""
+) -> GateResult:
     with tempfile.TemporaryDirectory(prefix="fern-goldens-gate-") as scratch:
         words = [
             word.replace("{root}", str(base)).replace("{scratch}", scratch).replace("{item}", item or "")
             for word in shlex.split(gate.command)
         ]
         try:
-            result = run(words, base)
+            result = run_held(words, base, guard, number, label)
         except WeeklyError as error:
             return GateResult(Verdict.CANNOT_RUN, str(error))
     output = (result.stdout or "") + (result.stderr or "")
@@ -2430,6 +2556,8 @@ def decide_bundle(
     families: Iterable[str],
     jobs: int = 1,
     reserve: float = COMPARISON_RESERVE_GIB * 2**30,
+    floor: float = COMPARISON_FLOOR_GIB * 2**30,
+    heartbeat: float = HEARTBEAT_SECONDS,
 ) -> Decision:
     decision = Decision(bundle.pair, bundle.complete, digest, ledger=ledger_change(base))
     items: dict[str, list[ItemResult]] = {}
@@ -2480,22 +2608,33 @@ def decide_bundle(
     progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
     admission = Admission(reserve)
 
-    def timed(number: int, run: Comparison) -> GateResult:
-        label = run.label(number, len(runs))
-        with admission.slot(number, lambda: progress(f"{label} started: `{run.gate.command}`; {resources(base)}")):
-            started = time.monotonic()
-            result = run_gate(base, run.gate, run.item)
+    def compared(number: int, run: Comparison, guard: Guard, label: str) -> GateResult:
+        started = time.monotonic()
+        result = run_gate(base, run.gate, run.item, guard, number, label)
+        if number not in guard.stopped:
             elapsed = time.monotonic() - started
             progress(f"{label} ended: {result.verdict.value} in {elapsed:.1f}s; {resources(base)}")
         return result
 
+    def timed(number: int, run: Comparison, guard: Guard) -> GateResult:
+        label = run.label(number, len(runs))
+        with admission.slot(number, lambda: progress(f"{label} started: `{run.gate.command}`; {resources(base)}")):
+            return compared(number, run, guard, label)
+
     # Each item's comparison is one process on one core (the corpus reporter
     # formats file by file), so they share the machine; a family's runs a whole
-    # suite across every core, so those run one at a time after them. Results
+    # suite across every core, so those run one at a time after them. A
+    # comparison the guard stopped runs again alone between the two. Results
     # are recorded in the planned order, whatever order they finish in.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-        results = list(pool.map(timed, range(1, per_item + 1), runs[:per_item]))
-    results += [timed(number, run) for number, run in enumerate(runs[per_item:], per_item + 1)]
+    with Guard(floor, heartbeat) as guard:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+            results = list(pool.map(timed, range(1, per_item + 1), runs[:per_item], itertools.repeat(guard)))
+        for number in sorted(guard.stopped):
+            label = runs[number - 1].label(number, len(runs)) + " (again, alone)"
+            progress(f"{label} started: `{runs[number - 1].gate.command}`; {resources(base)}")
+            guard.stopped.discard(number)
+            results[number - 1] = compared(number, runs[number - 1], guard, label)
+        results += [timed(number, run, guard) for number, run in enumerate(runs[per_item:], per_item + 1)]
     for run, result in zip(runs, results, strict=True):
         record_gate(decision, reports, run.gate, ",".join(run.families), run.item, result)
         if result.verdict != Verdict.REJECT:
@@ -2878,6 +3017,10 @@ def decide(args: argparse.Namespace) -> int:
         raise WeeklyError(f"--jobs {args.jobs}: name how many comparisons run at once, or 0 for one per CPU")
     if not args.reserve_gib >= 0:
         raise WeeklyError(f"--reserve-gib {args.reserve_gib}: name the GiB to keep available, 0 or more")
+    if not args.floor_gib >= 0:
+        raise WeeklyError(f"--floor-gib {args.floor_gib}: name the GiB below which comparisons are stopped, 0 or more")
+    if not args.heartbeat_seconds > 0:
+        raise WeeklyError(f"--heartbeat-seconds {args.heartbeat_seconds}: name a positive interval")
     decision = decide_bundle(
         base,
         bundle,
@@ -2886,6 +3029,8 @@ def decide(args: argparse.Namespace) -> int:
         load_references(base).FAMILY,
         args.jobs or cpus(),
         args.reserve_gib * 2**30,
+        args.floor_gib * 2**30,
+        args.heartbeat_seconds,
     )
     for path in decision.ledger.carried() if decision.ledger else ():
         carried = output / LEDGER_CARRIED / path
@@ -3174,6 +3319,18 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         default=COMPARISON_RESERVE_GIB,
         help="start another comparison beside a running one only while this much memory is available",
+    )
+    phase.add_argument(
+        "--floor-gib",
+        type=float,
+        default=COMPARISON_FLOOR_GIB,
+        help="while more than one comparison runs with less than this available, stop the newest and rerun it alone",
+    )
+    phase.add_argument(
+        "--heartbeat-seconds",
+        type=float,
+        default=HEARTBEAT_SECONDS,
+        help="how often to log the running comparisons and the memory left",
     )
     phase = commands.add_parser("resources", help="the runner's free disk and available memory, before a step")
     phase.add_argument("--before", required=True, help="the step about to run")

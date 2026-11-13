@@ -17,6 +17,7 @@ the candidate's, as they are once the decision job builds crozier from the tree.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import re
@@ -2288,6 +2289,106 @@ class WeeklyRunTests(unittest.TestCase):
         ]
         self.assertEqual(5, len(released), text)
         self.assertTrue(all(1.0 <= amount <= 62.8 for amount in released), text)
+
+    def test_memory_under_the_floor_mid_comparison_stops_the_newest_which_reruns_alone(self) -> None:
+        """The reserve is read only as a comparison starts; one that grows
+        after it has started can starve the runner (run 42566793545's second
+        decision job died with the runner out of contact). While two run and
+        the memory left falls under the floor, decide stops the newer one, says
+        so, starts nothing more until there is room, runs the stopped one again
+        alone once the rest are done, and records its rerun's verdict; a
+        heartbeat names what is running and the memory left meanwhile."""
+        if sys.platform == "win32":
+            raise unittest.SkipTest("the stand-in comparisons are POSIX shell scripts")
+        block = self.scratch / "block"
+        block.mkdir()
+        (self.seed / "gates").mkdir()
+        write_executable(
+            self.seed / "gates/block.sh",
+            '#!/bin/sh\necho "$1" >> "$BLOCK_DIR/started"\n'
+            'case "$1" in alpha|beta) while [ ! -f "$BLOCK_DIR/go" ]; do sleep 0.1; done ;; esac\nexit 0\n',
+        )
+        header, *rows = GATES.splitlines()
+        blocking = [row.split("\t", 1)[0] + "\titem\texit:0/3\tsh {root}/gates/block.sh {item}" for row in rows]
+        (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(
+            "\n".join([header, *blocking]) + "\n", encoding="utf-8"
+        )
+        self.publish_seed()
+        state = self.run_workflow(stop_after="assemble")
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        decider = self.clone()
+        bundle = state.artifacts / "bundle"
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        cgroup = self.scratch / "cgroup/job"
+        cgroup.mkdir(parents=True)
+
+        def available(gib: float) -> None:
+            (cgroup / "memory.max").write_text(f"{64 * 2**30}\n", encoding="utf-8")
+            (cgroup / "memory.current").write_text(f"{int((64 - gib) * 2**30)}\n", encoding="utf-8")
+            (cgroup / "memory.stat").write_text("inactive_file 0\n", encoding="utf-8")
+
+        available(32.0)
+        log = self.scratch / "guarded-decide.log"
+        started = block / "started"
+        with log.open("w", encoding="utf-8") as written:
+            decide = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(decider / "tools/fern-goldens/weekly.py"),
+                    *("decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision")),
+                    *("--jobs", "2", "--reserve-gib", "1", "--floor-gib", "1", "--heartbeat-seconds", "1"),
+                ],
+                cwd=decider,
+                env=self.environment(decider, BLOCK_DIR=str(block), CROZIER_FERN_WEEKLY_CGROUP=str(cgroup)),
+                stdout=written,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+
+            def end_group() -> None:
+                # A failing case leaves its blocked comparisons running.
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(decide.pid, signal.SIGKILL)
+
+            self.addCleanup(end_group)
+
+            def wait_for(condition: Callable[[], bool], what: str) -> None:
+                for _ in range(300):
+                    if condition() or decide.poll() is not None:
+                        break
+                    time.sleep(0.1)
+                self.assertTrue(condition(), f"{what}:\n{log.read_text(encoding='utf-8')}")
+
+            both = ["alpha", "beta"]
+            wait_for(lambda: started.exists() and started.read_text(encoding="utf-8").split() == both, "both run")
+            available(0.5)
+            wait_for(lambda: " stopped: " in log.read_text(encoding="utf-8"), "the newer one stopped")
+            time.sleep(2)
+            held = log.read_text(encoding="utf-8")
+            self.assertNotIn("comparison 3/8", held, "nothing more starts while memory is short")
+            self.assertRegex(held, r"decide: running comparison 1/8 \(corpus `alpha`\); memory available 0\.5 GiB")
+            available(32.0)
+            (block / "go").write_text("", encoding="utf-8")
+            self.assertEqual(0, decide.wait(timeout=120), log.read_text(encoding="utf-8"))
+        lines = log.read_text(encoding="utf-8").splitlines()
+        (stopped,) = [line for line in lines if " stopped: " in line]
+        self.assertIn(
+            "comparison 2/8 (corpus `beta`) stopped: memory available 0.5 GiB is under the 1.0 GiB floor with 2 "
+            "comparison(s) running; it runs again alone",
+            stopped,
+        )
+        again = next(
+            i for i, line in enumerate(lines) if "comparison 2/8 (corpus `beta`) (again, alone) started" in line
+        )
+        ended = [i for i, line in enumerate(lines) if re.search(r"comparison [0-9]/8 .*\) ended: ", line)]
+        self.assertEqual(8, len(ended), "each comparison ends once: the stopped one only on its rerun")
+        self.assertEqual(again + 1, ended[-1], "the stopped one reruns alone, after every other has ended")
+        self.assertIn("(again, alone) ended: pass", lines[ended[-1]])
+        self.assertEqual(2, started.read_text(encoding="utf-8").split().count("beta"))
+        recorded = json.loads((state.artifacts / "decision/decision.json").read_text(encoding="utf-8"))
+        beta = [run for run in recorded["gates"] if run["item"] == "beta"]
+        self.assertEqual(["pass"], [run["verdict"] for run in beta], "the rerun's verdict, recorded once")
+        self.assertEqual({"pass"}, {run["verdict"] for run in recorded["gates"]})
 
     def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
         """A runner that dies mid-step leaves only what the step already wrote:

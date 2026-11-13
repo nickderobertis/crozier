@@ -434,7 +434,17 @@ phases.
    per CPU it may use), starting each in the planned order and starting another
    beside a running one only while `--reserve-gib` (default 6) of memory is
    still available — over the 5.7 GiB the largest single comparison, corpus
-   `bunq.com`, grew to over run 41564405289's tree. The per-family gates run
+   `bunq.com`, grew to over run 41564405289's tree. That reserve is read only
+   as a comparison starts, and one can grow after it has started, so while
+   more than one runs and less than `--floor-gib` (default 1.5) is available,
+   `decide` stops the one it started last, with everything it started, logs
+   `… stopped: memory available …`, and runs it again alone once the others
+   are done; its rerun's verdict is the one recorded. Stopping the newest until
+   one is left never needs more memory than running each alone. Run
+   42566793545's second decision job died 54 minutes into this step with *The
+   hosted runner lost communication with the server* and no log of where, so
+   `decide` also writes `decide: running <comparisons>; memory available …`
+   every `--heartbeat-seconds` (default 60). The per-family gates run
    alone after them, since each runs a whole suite across every core. One at a
    time, in a container held to the job's runner (4 CPUs, 16 GB), the first 143
    corpus items took about 19 seconds each — about 100 minutes for the
