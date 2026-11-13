@@ -34,6 +34,8 @@ import tempfile
 import textwrap
 import time
 import unittest
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -113,16 +115,49 @@ CONDITION = re.compile(r"^\s*(github\.event_name|steps\.([\w-]+)\.outputs\.([\w-
 EXPRESSION = re.compile(r"\$\{\{\s*([^}]+?)\s*\}\}")
 
 
-def lint_steps() -> list[dict[str, Any]]:
+class Conclusion(Enum):
+    """A GitHub Actions job's conclusion, as the required check reports it."""
+
+    SUCCESS = "success"
+    FAILURE = "failure"
+    CANCELLED = "cancelled"
+
+
+@dataclass(frozen=True)
+class Step:
+    """The parts of a workflow step this runner reads."""
+
+    name: str
+    run: str = ""
+    uses: str = ""
+    id: str = ""
+    condition: str | None = None
+    env: dict[str, str] = field(default_factory=dict)
+    continue_on_error: bool = False
+
+    @classmethod
+    def parse(cls, raw: dict[str, Any]) -> Step:
+        return cls(
+            name=str(raw.get("name", raw.get("uses", ""))),
+            run=str(raw.get("run", "")),
+            uses=str(raw.get("uses", "")),
+            id=str(raw.get("id", "")),
+            condition=None if "if" not in raw else str(raw["if"]),
+            env={str(key): str(value) for key, value in (raw.get("env") or {}).items()},
+            continue_on_error=bool(raw.get("continue-on-error", False)),
+        )
+
+
+def lint_steps() -> list[Step]:
     workflow = yaml.safe_load(WORKFLOW.read_text(encoding="utf-8"))
-    return workflow["jobs"]["lint"]["steps"]
+    return [Step.parse(raw) for raw in workflow["jobs"]["lint"]["steps"]]
 
 
-def judged_steps() -> list[dict[str, Any]]:
+def judged_steps() -> list[Step]:
     """The `judge` step and every later step whose condition reads its outputs."""
     steps = lint_steps()
-    start = next(index for index, step in enumerate(steps) if step.get("id") == "judge")
-    return [steps[start], *(step for step in steps[start + 1 :] if "steps.judge." in str(step.get("if", "")))]
+    start = next(index for index, step in enumerate(steps) if step.id == "judge")
+    return [steps[start], *(step for step in steps[start + 1 :] if "steps.judge." in (step.condition or ""))]
 
 
 class Job:
@@ -134,11 +169,11 @@ class Job:
         self.state = state
         self.outputs: dict[str, dict[str, str]] = {}
         self.log = ""
-        self.conclusion = "success"
+        self.conclusion = Conclusion.SUCCESS
 
     def condition(self, expression: str) -> bool:
         """A step's `if:`: the conjunction of equalities the judged steps use, after the implicit success()."""
-        if self.conclusion != "success":
+        if self.conclusion is not Conclusion.SUCCESS:
             return False
         for term in expression.split("&&"):
             match = CONDITION.match(term)
@@ -165,19 +200,19 @@ class Job:
 
         return EXPRESSION.sub(substitute, value)
 
-    def run(self, steps: list[dict[str, Any]]) -> None:
+    def run(self, steps: list[Step]) -> None:
         for number, step in enumerate(steps):
-            if "if" in step and not self.condition(str(step["if"])):
+            if step.condition is not None and not self.condition(step.condition):
                 continue
-            if "if" not in step and self.conclusion != "success":
+            if step.condition is None and self.conclusion is not Conclusion.SUCCESS:
                 continue
             output = self.state / f"output-{number}"
             output.touch()
             script = self.state / f"step-{number}.sh"
-            script.write_text(self.expand(step["run"]), encoding="utf-8")
+            script.write_text(self.expand(step.run), encoding="utf-8")
             env = {
                 **self.env,
-                **{key: self.expand(str(value)) for key, value in step.get("env", {}).items()},
+                **{key: self.expand(value) for key, value in step.env.items()},
                 "GITHUB_OUTPUT": str(output),
             }
             log = self.state / f"log-{number}"
@@ -192,14 +227,14 @@ class Job:
                 )
                 status = self.wait(process)
             self.log += log.read_text(encoding="utf-8")
-            if "id" in step:
+            if step.id:
                 lines = output.read_text(encoding="utf-8").splitlines()
-                self.outputs[step["id"]] = dict(line.split("=", 1) for line in lines if "=" in line)
+                self.outputs[step.id] = dict(line.split("=", 1) for line in lines if "=" in line)
             if status is None:
-                self.conclusion = "cancelled"
+                self.conclusion = Conclusion.CANCELLED
                 return
-            if status != 0 and not step.get("continue-on-error"):
-                self.conclusion = "failure"
+            if status != 0 and not step.continue_on_error:
+                self.conclusion = Conclusion.FAILURE
 
     def wait(self, process: subprocess.Popen[bytes]) -> int | None:
         """The step's exit status, or None once the run is cancelled, which stops the step as the runner does."""
@@ -220,10 +255,10 @@ class Job:
 class TheJudgedStepsAreTheWorkflowsOwn(unittest.TestCase):
     def test_the_judge_step_and_the_step_that_withholds_its_verdict_are_read_from_ci_yml(self) -> None:
         steps = judged_steps()
-        self.assertEqual("Judge the changed files", steps[0]["name"])
-        self.assertIn("just lint-llm-diff origin/main", steps[0]["run"])
+        self.assertEqual("Judge the changed files", steps[0].name)
+        self.assertIn("just lint-llm-diff origin/main", steps[0].run)
         self.assertTrue(
-            any("gh run cancel" in step.get("run", "") for step in steps[1:]),
+            any("gh run cancel" in step.run for step in steps[1:]),
             "no step after the judge withholds the lane's verdict",
         )
         self.assertEqual(steps[-1], lint_steps()[-1], "the verdict is withheld only after every other step ran")
@@ -307,14 +342,14 @@ class TheRequiredLintJobsConclusion(unittest.TestCase):
 
     def test_batches_unavailable_and_then_answered_conclude_success(self) -> None:
         job = self.job(FAKE_UNAVAILABLE="2")
-        self.assertEqual("success", job.conclusion, job.log)
+        self.assertIs(Conclusion.SUCCESS, job.conclusion, job.log)
         self.assertIn("no verdict from the judge; retry 1/2 on the same tree", job.log)
         self.assertNotIn("verification unavailable", job.log)
         self.assertEqual([], self.gh_calls(), "an answered judge withholds nothing")
 
     def test_batches_unanswered_after_the_retries_conclude_neither_success_nor_failure(self) -> None:
         job = self.job(FAKE_UNAVAILABLE="1000")
-        self.assertEqual("cancelled", job.conclusion, job.log)
+        self.assertIs(Conclusion.CANCELLED, job.conclusion, job.log)
         self.assertIn("retry 2/2", job.log)
         self.assertIn("verification unavailable", job.log)
         self.assertIn("Verification unavailable: the judged lint got no verdict", job.log)
@@ -323,7 +358,7 @@ class TheRequiredLintJobsConclusion(unittest.TestCase):
 
     def test_a_rule_violation_concludes_failure_and_names_the_rule(self) -> None:
         job = self.job(FAKE_REJECT="1")
-        self.assertEqual("failure", job.conclusion, job.log)
+        self.assertIs(Conclusion.FAILURE, job.conclusion, job.log)
         rejected = (self.state / "rejected").read_text(encoding="utf-8")
         self.assertRegex(job.log, rf"(?m)^FAIL {re.escape(rejected)}$")
         self.assertIn(f"{self.CHANGED}:1: doubled rejection", job.log)

@@ -17150,6 +17150,91 @@ fn a_rebuild_mid_run_does_not_reach_the_runs_later_tests() {
         .is_file());
 }
 
+/// The run's pin holds under the ways a run can start: several first tests at once
+/// publish one copy and leave no partial one, a first test that finds the binary
+/// mid-rebuild waits for it, and a copy left by a run over a day old is removed.
+#[test]
+fn a_runs_pin_survives_concurrent_first_tests_a_late_binary_and_stale_runs() {
+    let scratch = tempfile::tempdir().expect("scratch dir");
+    let profile = scratch.path().join("profile");
+    std::fs::create_dir_all(profile.join("deps")).expect("a profile directory");
+    let suite = profile
+        .join("deps")
+        .join(format!("e2e{}", std::env::consts::EXE_SUFFIX));
+    std::fs::copy(
+        std::env::current_exe().expect("the e2e test binary"),
+        &suite,
+    )
+    .expect("copy the suite");
+    let source = crozier_bin();
+    let built = profile.join(format!("crozier{}", std::env::consts::EXE_SUFFIX));
+    std::fs::copy(&source, &built).expect("copy the built binary");
+    let runs = profile.join("crozier-e2e-pinned");
+    let start = |run: &str| {
+        std::process::Command::new(&suite)
+            .args(["help_lists_generate", "--exact", "--test-threads", "1"])
+            .env_remove("CARGO_BIN_EXE_crozier")
+            .env("NEXTEST_RUN_ID", run)
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .expect("start the suite's own binary")
+    };
+    let passed = |child: std::process::Child| {
+        let output = child.wait_with_output().expect("the suite ends");
+        let stdout = String::from_utf8_lossy(&output.stdout).into_owned();
+        assert!(
+            output.status.success() && stdout.contains("1 passed"),
+            "{stdout}"
+        );
+    };
+
+    // Concurrent first tests: every one passes, and the run holds one complete copy.
+    let first: Vec<_> = (0..4).map(|_| start("concurrent")).collect();
+    first.into_iter().for_each(passed);
+    let held: Vec<String> = std::fs::read_dir(runs.join("concurrent"))
+        .expect("the run's directory")
+        .map(|entry| {
+            entry
+                .expect("an entry")
+                .file_name()
+                .to_string_lossy()
+                .into_owned()
+        })
+        .collect();
+    assert_eq!(
+        held,
+        [built.file_name().unwrap().to_string_lossy().into_owned()],
+        "{held:?}"
+    );
+
+    // A first test that finds no binary waits for the rebuild to land.
+    std::fs::remove_file(&built).expect("a rebuild in flight");
+    let late = start("late");
+    std::thread::sleep(std::time::Duration::from_secs(1));
+    // Cargo lands a binary whole, by renaming it into place.
+    let landing = profile.join("crozier.landing");
+    std::fs::copy(&source, &landing).expect("the rebuild's output");
+    std::fs::rename(&landing, &built).expect("the rebuild lands");
+    passed(late);
+
+    // A run over a day old leaves nothing behind once a new run starts.
+    #[cfg(unix)]
+    {
+        let stale = runs.join("stale");
+        std::fs::create_dir_all(&stale).expect("a stale run");
+        std::fs::write(stale.join("crozier"), "old").expect("its copy");
+        let two_days =
+            std::time::SystemTime::now() - std::time::Duration::from_secs(2 * 24 * 60 * 60);
+        std::fs::File::open(&stale)
+            .and_then(|dir| dir.set_modified(two_days))
+            .expect("age the stale run");
+        passed(start("fresh"));
+        assert!(!stale.exists(), "a run over a day old was kept");
+        assert!(runs.join("concurrent").exists(), "a recent run was removed");
+    }
+}
+
 #[test]
 fn a_binary_override_must_name_a_file() {
     let suite = std::env::current_exe().expect("the e2e test binary");

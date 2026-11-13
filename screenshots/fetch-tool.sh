@@ -16,14 +16,28 @@ if [ "$#" -ne 2 ]; then
 fi
 url=$1
 out=$2
-attempts=${FETCH_TOOL_ATTEMPTS:-4}
-delay=${FETCH_TOOL_DELAY:-2}
-case "$attempts$delay" in
-  *[!0-9]* | "")
-    echo "fetch-tool: FETCH_TOOL_ATTEMPTS and FETCH_TOOL_DELAY must be whole numbers" >&2
+if [ -d "$out" ]; then
+  echo "fetch-tool: $out is a directory, so the archive from $url cannot be written there; remove it or name a file, then re-run" >&2
+  exit 2
+fi
+# A whole number from MIN to MAX, read as decimal whatever its leading zeros.
+bounded() {
+  local name=$1 value=$2 min=$3 max=$4
+  case $value in
+    "" | *[!0-9]*)
+      echo "fetch-tool: $name must be a whole number from $min to $max, not '$value'" >&2
+      exit 2
+      ;;
+  esac
+  value=$((10#$value))
+  if [ "$value" -lt "$min" ] || [ "$value" -gt "$max" ]; then
+    echo "fetch-tool: $name must be a whole number from $min to $max, not '$2'" >&2
     exit 2
-    ;;
-esac
+  fi
+  echo "$value"
+}
+attempts=$(bounded FETCH_TOOL_ATTEMPTS "${FETCH_TOOL_ATTEMPTS:-4}" 1 10)
+delay=$(bounded FETCH_TOOL_DELAY "${FETCH_TOOL_DELAY:-2}" 0 60)
 
 attempt=0
 while :; do
@@ -31,10 +45,16 @@ while :; do
   status=0
   error=$(curl -fsSL --connect-timeout 30 -o "$out.part" "$url" 2>&1) || status=$?
   if [ "$status" -eq 0 ]; then
-    mv "$out.part" "$out"
+    if ! mv -f "$out.part" "$out"; then
+      echo "fetch-tool: downloaded $url but could not move it to $out; check that its directory is writable, then re-run" >&2
+      exit 1
+    fi
     exit 0
   fi
-  rm -f "$out.part"
+  if ! rm -f "$out.part"; then
+    echo "fetch-tool: could not remove the partial download $out.part (curl exit $status: $error); remove it, then re-run" >&2
+    exit 1
+  fi
   transient=false
   case $status in
     5 | 6 | 7 | 16 | 18 | 28 | 35 | 52 | 55 | 56 | 92) transient=true ;;

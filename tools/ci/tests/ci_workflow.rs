@@ -1077,6 +1077,23 @@ fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
         "{stderr}"
     );
 
+    std::fs::write(
+        scratch.path().join("just"),
+        "#!/bin/sh\necho 'just: cannot load its library' >&2\nexit 3\n",
+    )
+    .expect("a broken stand-in");
+    let broken = prove();
+    assert_eq!(
+        broken.status.code(),
+        Some(1),
+        "a tool that does not run fails the proof"
+    );
+    let stderr = String::from_utf8_lossy(&broken.stderr);
+    assert!(
+        stderr.contains("`just --version` did not run (exit 3): just: cannot load its library"),
+        "{stderr}"
+    );
+
     stand_in("just", "just 1.58.0");
     let present = prove();
     let stdout = String::from_utf8_lossy(&present.stdout);
@@ -1157,4 +1174,48 @@ fn no_lane_limit_rises_and_no_inventoried_verdict_is_dropped() {
             "{target}: the carrier no longer runs `just {recipe}`"
         );
     }
+}
+
+/// On Windows an npm-installed CLI is a `.cmd` shim, which only the shell runs: the proof
+/// finds it through PATHEXT and runs it, and still names one that is absent.
+#[cfg(windows)]
+#[test]
+fn the_tool_proof_runs_a_windows_cmd_shim_and_names_a_missing_one() {
+    use std::process::Command;
+
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let scratch = tempfile::tempdir().expect("a scratch directory");
+    std::fs::write(scratch.path().join("claude.cmd"), "@echo claude 2.0.0\r\n").expect("a shim");
+    let node = std::env::var_os("PATH")
+        .and_then(|path| {
+            std::env::split_paths(&path)
+                .map(|dir| dir.join("node.exe"))
+                .find(|candidate| candidate.is_file())
+        })
+        .expect("node is on PATH");
+    let path = std::env::join_paths([
+        scratch.path().to_path_buf(),
+        std::path::PathBuf::from(r"C:\Windows\System32"),
+    ])
+    .expect("a PATH");
+    let prove = |tools: &[&str]| {
+        Command::new(&node)
+            .arg("tools/ci/require-tools.mjs")
+            .args(tools)
+            .current_dir(&root)
+            .env("PATH", &path)
+            .output()
+            .expect("node runs the proof")
+    };
+    let shim = prove(&["claude@2.0.0"]);
+    assert_eq!(
+        shim.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&shim.stderr)
+    );
+    assert!(String::from_utf8_lossy(&shim.stdout).contains("claude 2.0.0"));
+    let missing = prove(&["claude", "llmlint"]);
+    assert_eq!(missing.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("`llmlint` is not on PATH"));
 }
