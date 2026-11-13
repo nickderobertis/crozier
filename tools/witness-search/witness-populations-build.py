@@ -42,7 +42,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import Any, NamedTuple, NoReturn
+from typing import NamedTuple, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 LEDGERS = {"github": "witness-search-github-code-search", "sourcegraph": "witness-search-sourcegraph"}
@@ -132,7 +132,21 @@ def earlier_rows(tree: Tree) -> dict[tuple[str, str], set[str]]:
     return listed
 
 
-def ledger_identities(tree: Tree, population: str) -> list[dict[str, Any]]:
+class LedgerRecord(NamedTuple):
+    """One candidate-ledger line the plan reads: a public identity and the ledger key that found it."""
+
+    repository: str
+    path: str
+    commit: str
+    sha256: str
+    key: str
+    selector: str
+    disposition: str
+    at: str
+    url: str
+
+
+def ledger_identities(tree: Tree, population: str) -> list[LedgerRecord]:
     """The ledgers' public identities: a full commit and SHA-256, from no repository the exclusion rule names.
 
     An opaque (screened non-public) identity and an excluded repository's document
@@ -152,7 +166,19 @@ def ledger_identities(tree: Tree, population: str) -> list[dict[str, Any]]:
                 and not index.excluded_repository(str(record.get("repository", "")))
             ):
                 continue
-            rows.append(record)
+            rows.append(
+                LedgerRecord(
+                    str(record.get("repository", "")),
+                    record["path"],
+                    record["commit"],
+                    record["sha256"],
+                    str(record.get("key", "")),
+                    str(record.get("selector", "")),
+                    str(record.get("disposition", "")),
+                    str(record.get("at", "")),
+                    str(record.get("url", "")),
+                )
+            )
     return rows
 
 
@@ -166,35 +192,32 @@ def identities(tree: Tree) -> list[SCREEN.Identity]:
     wanted = {key: ingredients(selector) for key, selector in tree.selectors().by_key.items()}
     out = []
     for population in LEDGERS:
-        grouped: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+        grouped: dict[tuple[str, str], list[LedgerRecord]] = defaultdict(list)
         for record in ledger_identities(tree, population):
-            repository = github_repository(str(record.get("repository", "")))
-            if repository is not None and SCREEN.witness_screen().repository_path(record["path"]):
-                grouped[(repository, record["path"])].append(record)
+            repository = github_repository(record.repository)
+            if repository is not None and SCREEN.witness_screen().repository_path(record.path):
+                grouped[(repository, record.path)].append(record)
         for (repository, path), records in sorted(grouped.items()):
-            if all(record.get("disposition") == "excluded-non-openapi-3" for record in records):
+            if all(record.disposition == "excluded-non-openapi-3" for record in records):
                 continue
             # One identity per document: the commit the ledgers read it at last.
-            latest = max(records, key=lambda record: (str(record.get("at", "")), record["commit"]))
-            fields = set().union(
-                *(ingredients(str(record["selector"])) for record in records if record.get("selector"))
-            )
+            latest = max(records, key=lambda record: (record.at, record.commit))
+            fields = set().union(*(ingredients(record.selector) for record in records if record.selector))
             matched = sum(1 for need in wanted.values() if need and need <= fields)
             pointer = any(
-                record.get("disposition") == "declares" and POINTER_LEDGER_KEYS.search(str(record.get("key", "")))
-                for record in records
+                record.disposition == "declares" and POINTER_LEDGER_KEYS.search(record.key) for record in records
             )
-            declares = any(record.get("disposition") == "declares" for record in records)
+            declares = any(record.disposition == "declares" for record in records)
             rank = matched + (100 if pointer else 0) + (10 if declares else 0)
             out.append(
                 SCREEN.Identity(
                     population,
                     f"{repository}/{path}",
                     repository,
-                    latest["commit"],
+                    latest.commit,
                     path,
-                    latest["sha256"],
-                    str(latest.get("url", "")),
+                    latest.sha256,
+                    latest.url,
                     rank,
                 )
             )
@@ -243,7 +266,7 @@ class Acquisition(NamedTuple):
 
     @property
     def held(self) -> bool:
-        return self.how in ("raw", "store", "shared-cache")
+        return self.how in SCREEN.HELD
 
 
 def acquisitions(path: Path) -> list[Acquisition]:
@@ -259,8 +282,12 @@ def acquisitions(path: Path) -> list[Acquisition]:
         if (
             not isinstance(row, dict)
             or not all(isinstance(row.get(field), str) for field in ("population", "document", "commit", "how"))
+            or not re.fullmatch(r"[0-9a-f]{40}", row["commit"])
             or not isinstance(pin, str)
+            or not (SCREEN.SHA.fullmatch(pin) or SCREEN.BLOB.fullmatch(pin))
             or not isinstance(digest, str)
+            or not (SCREEN.SHA.fullmatch(digest) or SCREEN.BLOB.fullmatch(digest))
+            or not SCREEN.acquisition_outcome(row["how"])
         ):
             fail(
                 f"{path}:{number} is no acquisition record (population, document, commit, pin, how); "
@@ -435,7 +462,26 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     return [entry for entry in entries if entry.unfetchable == "-" or entry.keys != "-"]
 
 
-def recorded_queries(evidence: Path) -> list[dict[str, Any]]:
+class CodeHit(NamedTuple):
+    """One file a code search answered with: where it is, at which commit, and its git blob."""
+
+    repository: str
+    path: str
+    commit: str
+    blob: str
+    url: str
+
+
+class RecordedQuery(NamedTuple):
+    """One recorded query: who answered it, for which key, how, and the files it named."""
+
+    source: str
+    key: str
+    outcome: str
+    hits: tuple[CodeHit, ...]
+
+
+def recorded_queries(evidence: Path) -> list[RecordedQuery]:
     """The search's recorded answers: its live `queries.jsonl`, or the `queries.jsonl.gz` it is committed as."""
     packed = evidence / "queries.jsonl.gz"
     if not (evidence / "queries.jsonl").is_file() and packed.is_file():
@@ -452,7 +498,24 @@ def recorded_queries(evidence: Path) -> list[dict[str, Any]]:
             or not all(isinstance(item, dict) for item in results)
         ):
             fail(f"{evidence}: query record {number} is no recorded query with a list of results; restore it from git")
-    return rows
+    return [
+        RecordedQuery(
+            row["source"],
+            str(row.get("key", "")),
+            str(row.get("outcome", "")),
+            tuple(
+                CodeHit(
+                    str(item.get("repository")),
+                    str(item.get("path")),
+                    str(item.get("commit")),
+                    str(item.get("sha")),
+                    str(item.get("url", "")),
+                )
+                for item in row.get("results", [])
+            ),
+        )
+        for row in rows
+    ]
 
 
 def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
@@ -478,7 +541,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
                 plan = client.query_plan(selector)["github-code-search"]
             except ValueError as error:
                 # An operation-level selector names no schema field a code search can spell.
-                if not any(row.get("key") == key for row in recorded_queries(args.evidence)):
+                if not any(row.key == key for row in recorded_queries(args.evidence)):
                     acquirer.write(
                         "queries.jsonl",
                         {
@@ -490,7 +553,8 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
                         },
                     )
                 continue
-            # The plan's `path:openapi` queries: its YAML and its JSON spelling.
+            # Only page 1 of the `path:openapi` spellings (YAML and JSON): the broadest document-location queries,
+            # which bound the pass to two requests a key against the code-search bucket's 10 a minute.
             for query in [query for query in plan if "path:openapi" in query.split()]:
                 try:
                     # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; the guard admits one code-search request at a time to its paced bucket, which an async client would not speed up.
@@ -501,7 +565,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
         # One anonymous Sourcegraph request in all, for `--sourcegraph-key` when the search covers it:
         # a recorded answer or refusal is not asked again.
         covered = not args.key or args.sourcegraph_key in args.key
-        if covered and not any(row.get("source") == "sourcegraph" for row in recorded_queries(args.evidence)):
+        if covered and not any(row.source == "sourcegraph" for row in recorded_queries(args.evidence)):
             query = client.query_plan(selectors.by_key[args.sourcegraph_key])["sourcegraph"][0]
             try:
                 # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; this is the search's one Sourcegraph request, through the guard's paced lane.
@@ -512,11 +576,9 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
     hits: dict[tuple[str, str], SCREEN.Identity] = {}
     for row in recorded_queries(args.evidence):
         # Ranked as the ledger plan is: the keys whose field names the query that found it spells.
-        found_by = wanted.get(str(row.get("key")), set())
+        found_by = wanted.get(row.key, set())
         rank = sum(1 for need in wanted.values() if need and need <= found_by)
-        for item in row.get("results", []) if row.get("source") == "github-code-search" else []:
-            repository, path = str(item.get("repository")), str(item.get("path"))
-            commit, blob = str(item.get("commit")), str(item.get("sha"))
+        for repository, path, commit, blob, url in row.hits if row.source == "github-code-search" else ():
             if (
                 (repository, path) in known
                 or not re.fullmatch(r"[0-9a-f]{40}", commit)
@@ -534,7 +596,7 @@ def search(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Identity]:
                     commit,
                     path,
                     f"blob:{blob}",
-                    str(item.get("url", "")),
+                    url,
                     rank,
                 ),
             )

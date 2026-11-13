@@ -232,7 +232,11 @@ class Operation(NamedTuple):
 
 
 def operations(document: Any) -> Iterator[Operation]:
-    """Every operation under `paths` (and 3.1 `webhooks`), in document order."""
+    """Every operation crozier generates a method for: those under `paths` and 3.1 `webhooks`, in document order.
+
+    A callback's operations and an unreferenced `components.pathItems` entry are no
+    SDK surface, so no trigger is read there.
+    """
     for section in ("paths", "webhooks"):
         items = document.get(section) if isinstance(document, dict) else None
         if not isinstance(items, dict):
@@ -273,7 +277,9 @@ def media_schemas(document: Any, holder: Any) -> Iterator[Any]:
 
 
 def schema_roots(document: Any) -> Iterator[Any]:
-    """Every Schema Object a document writes outside another schema, in document order."""
+    """Every Schema Object root the generated SDK reads, in document order: each component (schema, parameter,
+    header, request body, response) and each one an `operations` operation writes. A callback's schemas are
+    no SDK surface and are not walked."""
     components = document.get("components") if isinstance(document, dict) else None
     components = components if isinstance(components, dict) else {}
     schemas = components.get("schemas")
@@ -311,7 +317,7 @@ def schema_roots(document: Any) -> Iterator[Any]:
 
 
 def all_schemas(document: Any) -> Iterator[dict[Any, Any]]:
-    """Every Schema Object the document writes, each once, parents before children."""
+    """Every Schema Object below a `schema_roots` root, each once, parents before children."""
     seen: set[int] = set()
     stack = list(reversed(list(schema_roots(document))))
     while stack:
@@ -1253,7 +1259,7 @@ class Evidence:
                 return cls(EvidenceKind(kind), grant=rest)
             case "repository" | "aggregation":
                 found = re.fullmatch(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", rest)
-                if found:
+                if found and witness_screen().repository_name(found.group(1)):
                     return cls(EvidenceKind(kind), repository=found.group(1), commit=found.group(2))
             case "no-publisher-grant" | "-" if not colon:
                 return cls(EvidenceKind(kind))
@@ -1644,7 +1650,13 @@ def raw_licence_fetcher(evidence: Path | None, live: bool) -> LicenceFetch:
     return fetch
 
 
-Job = tuple[Entry, Path, Path, bool]
+class Job(NamedTuple):
+    """One worker's candidate: the entry, the repository it is read under, the store and whether to discover keys."""
+
+    entry: Entry
+    root: Path
+    store_root: Path
+    discover: bool
 
 
 def _screen_job(job: Job) -> tuple[list[ScreenRow], Entry | None]:
@@ -1683,7 +1695,7 @@ def run_screen(
     here with `fetch_file`, which may fetch it.
     """
     store_root = store_root or cache_root()
-    jobs = [(entry, root, store_root, discover) for entry in entries]
+    jobs = [Job(entry, root, store_root, discover) for entry in entries]
     if workers > 1:
         with concurrent.futures.ProcessPoolExecutor(workers) as pool:
             results = list(pool.map(_screen_job, jobs, chunksize=4))
@@ -1745,6 +1757,28 @@ class Identity(NamedTuple):
 
 
 IDENTITY_COLUMNS = Identity._fields
+
+
+class Acquired(StrEnum):
+    """How `acquire` had a planned identity's exact bytes, or why it did not (the ledger's `how`)."""
+
+    RAW = "raw"  # fetched through the guarded raw lane
+    STORE = "store"  # already kept in the store
+    SHARED_CACHE = "shared-cache"  # recovered from the shared response cache
+    DIGEST_DIFFERS = "digest-differs"  # fetched, but not the bytes the pin names
+
+
+# The outcomes after which the store holds the identity's bytes.
+HELD = frozenset({Acquired.RAW, Acquired.STORE, Acquired.SHARED_CACHE})
+# A fetch the far end refused, with its HTTP status (0 when no answer came at all).
+REFUSED_HTTP = re.compile(r"refused-http-(\d+)")
+
+
+def acquisition_outcome(how: str) -> bool:
+    """Whether `how` is an outcome `acquire` writes."""
+    return how in {outcome.value for outcome in Acquired} or REFUSED_HTTP.fullmatch(how) is not None
+
+
 # The populations whose documents the plan fetches at their exact commit.
 ACQUIRED = ("github", "sourcegraph", "handed-off")
 
@@ -1822,10 +1856,10 @@ def acquire(
         how = ""
         sha256 = identity.content_digest() or identity.pin
         if identity.content_digest() and cached(sha256, store_root) is not None:
-            how = "store"
+            how = Acquired.STORE
         elif sha256 in scanned and (data := body_bytes(scanned[sha256], sha256)):
             store(data, store_root)
-            how = "shared-cache"
+            how = Acquired.SHARED_CACHE
         elif time.monotonic() - started >= budget_s:
             tally["budget-spent"] += 1
             continue
@@ -1840,9 +1874,9 @@ def acquire(
                 status, data = 0, str(error).encode()
             if status == 200 and pinned_by(identity, data):
                 sha256 = store(data, store_root).name
-                how = "raw"
+                how = Acquired.RAW
             else:
-                how = f"refused-http-{status}" if status != 200 else "digest-differs"
+                how = f"refused-http-{status}" if status != 200 else Acquired.DIGEST_DIFFERS
         tally[how] += 1
         with ledger.open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(

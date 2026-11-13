@@ -28,7 +28,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, NamedTuple
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -62,8 +62,6 @@ def instant(value: Any) -> bool:
         return False
 
 
-# How `population_screen.py acquire` records an identity's bytes being had, or refused.
-ACQUIRED_HOW = re.compile(r"raw|store|shared-cache|digest-differs|refused-http-\d+")
 # The outcomes the guarded search records for a query.
 QUERY_OUTCOME = re.compile(
     r"answered|partitioned|refused|not-queryable|incomplete-stream|acquisition-failure|secondary-limiter"
@@ -77,7 +75,7 @@ FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     ),
     "population": lambda value: value in SCREEN.POPULATIONS,
     "document": lambda value: isinstance(value, str) and bool(value),
-    "how": lambda value: isinstance(value, str) and bool(ACQUIRED_HOW.fullmatch(value)),
+    "how": lambda value: isinstance(value, str) and SCREEN.acquisition_outcome(value),
     "status": lambda value: isinstance(value, int | str) and not isinstance(value, bool),
     "url": lambda value: isinstance(value, str) and value.startswith(("https://", "http://")),
     "host": lambda value: value in ("github", "sourcegraph"),
@@ -141,6 +139,87 @@ def table(header: list[str], rows: list[list[Any]], right: int = 0) -> str:
     return "\n".join(lines) + "\n"
 
 
+class Attempt(NamedTuple):
+    """One acquisition-ledger line: the planned document and how its bytes were had."""
+
+    population: str
+    document: str
+    how: str
+
+
+class RawCall(NamedTuple):
+    at: str
+    status: str
+
+
+class Wait(NamedTuple):
+    """One pause a lane took: when, why, for how long, and when it began."""
+
+    at: str
+    started_at: str
+    cause: str
+    duration_s: float
+
+
+class GuardCall(NamedTuple):
+    """One request the guard admitted, with the allowance its answer reported (None where it reports none)."""
+
+    at: str
+    host: str
+    status: str
+    bucket: str
+    remaining: int | None
+    limit: int | None
+
+
+class Query(NamedTuple):
+    source: str
+    key: str
+    outcome: str
+    result_count: int | None
+
+
+def attempts_of(rows: list[dict[str, Any]]) -> list[Attempt]:
+    return [Attempt(row["population"], row["document"], row["how"]) for row in rows]
+
+
+def raw_calls_of(rows: list[dict[str, Any]]) -> list[RawCall]:
+    return [RawCall(row["at"], str(row["status"])) for row in rows]
+
+
+def waits_of(rows: list[dict[str, Any]]) -> list[Wait]:
+    return [
+        Wait(row["at"], str(row.get("started_at") or row["at"]), str(row.get("cause", "-")), float(row["duration_s"]))
+        for row in rows
+    ]
+
+
+def guard_calls_of(rows: list[dict[str, Any]]) -> list[GuardCall]:
+    return [
+        GuardCall(
+            row["at"],
+            row["host"],
+            str(row["status"]),
+            str(row.get("bucket", "-")),
+            row.get("remaining"),
+            row.get("limit"),
+        )
+        for row in rows
+    ]
+
+
+def queries_of(rows: list[dict[str, Any]]) -> list[Query]:
+    return [
+        Query(
+            row["source"],
+            str(row.get("key", "")),
+            row["outcome"],
+            row["result_count"] if type(row.get("result_count")) is int else None,
+        )
+        for row in rows
+    ]
+
+
 def plan_rows(record: Path) -> list[SCREEN.Identity]:
     return SCREEN.read_identities(record / "identities.tsv.gz") + SCREEN.read_identities(
         record / "search-identities.tsv"
@@ -178,14 +257,14 @@ def render(record: Path, root: Path = REPO) -> str:
     rows = SCREEN.read_screen(record / "screen.tsv")
     entries = SCREEN.read_manifest(record / "population.tsv")
     plan = plan_rows(record)
-    attempts = jsonl(record / "acquisition" / "acquisitions.jsonl", ("population", "document", "how"))
-    raw_calls = jsonl(record / "acquisition" / "raw-github-calls.jsonl", ("at", "status", "url"))
-    raw_waits = jsonl(record / "acquisition" / "raw-github-waits.jsonl", ("at", "duration_s"))
-    queries = queries_log(record / "search")
-    calls = jsonl(record / "search" / "rate-limit-calls.jsonl", ("at", "host", "status"))
-    pacing = jsonl(record / "search" / "index-pacing-waits.jsonl", ("at", "duration_s"))
+    attempts = attempts_of(jsonl(record / "acquisition" / "acquisitions.jsonl", ("population", "document", "how")))
+    raw_calls = raw_calls_of(jsonl(record / "acquisition" / "raw-github-calls.jsonl", ("at", "status", "url")))
+    raw_waits = waits_of(jsonl(record / "acquisition" / "raw-github-waits.jsonl", ("at", "duration_s")))
+    queries = queries_of(queries_log(record / "search"))
+    calls = guard_calls_of(jsonl(record / "search" / "rate-limit-calls.jsonl", ("at", "host", "status")))
+    pacing = waits_of(jsonl(record / "search" / "index-pacing-waits.jsonl", ("at", "duration_s")))
     # The guard writes its floor-pause log only when it pauses for the floor.
-    floor_waits = jsonl(record / "search" / "rate-limit-waits.jsonl", ("at", "duration_s"), required=False)
+    floor_waits = waits_of(jsonl(record / "search" / "rate-limit-waits.jsonl", ("at", "duration_s"), required=False))
 
     by_key: dict[str, Counter[str]] = defaultdict(Counter)
     status: dict[str, Counter[str]] = defaultdict(Counter)
@@ -201,13 +280,13 @@ def render(record: Path, root: Path = REPO) -> str:
         planned[identity.population].add(identity.document)
     asked: dict[str, dict[str, str]] = defaultdict(dict)
     for attempt in attempts:
-        asked[attempt["population"]][attempt["document"]] = attempt["how"]
+        asked[attempt.population][attempt.document] = attempt.how
     held = {
-        population: {document for document, how in done.items() if how in ("raw", "store", "shared-cache")}
+        population: {document for document, how in done.items() if how in SCREEN.HELD}
         for population, done in asked.items()
     }
     refused = {
-        population: Counter(how for how in done.values() if how not in ("raw", "store", "shared-cache"))
+        population: Counter(how for how in done.values() if how not in SCREEN.HELD)
         for population, done in asked.items()
     }
     hits = sum(1 for identity in plan if SCREEN.BLOB.fullmatch(identity.pin))
@@ -218,20 +297,22 @@ def render(record: Path, root: Path = REPO) -> str:
     no_provenance = [row for row in handed if "@" not in row["document"]]
     served = jsonl(root / SERVED_ONLY, ("sha256",))
     registered_digests = {entry.sha256 for entry in entries if entry.population == "registered"}
-    served_registered = sum(1 for row in served if row.get("sha256") in registered_digests)
+    served_registered = sum(1 for row in served if row["sha256"] in registered_digests)
 
     def unfetched(population: str) -> int:
         return len(planned[population] - set(asked.get(population, {})))
 
-    sourcegraph_queries = [query for query in queries if query.get("source") == "sourcegraph"]
-    code = [query for query in queries if query.get("source") == "github-code-search"]
-    code_calls = [call for call in calls if call.get("host") == "github"]
-    sourcegraph_calls = [call for call in calls if call.get("host") == "sourcegraph"]
-    remaining = [(call["remaining"], call["limit"]) for call in code_calls if isinstance(call.get("remaining"), int)]
+    sourcegraph_queries = [query for query in queries if query.source == "sourcegraph"]
+    code = Counter(query.outcome for query in queries if query.source == "github-code-search")
+    code_calls = [call for call in calls if call.host == "github"]
+    sourcegraph_calls = [call for call in calls if call.host == "sourcegraph"]
+    remaining = [
+        (call.remaining, call.limit) for call in code_calls if call.remaining is not None and call.limit is not None
+    ]
     lowest = min(remaining, key=lambda pair: pair[0] / pair[1]) if remaining else None
     floor = float(GUARD.FLOOR)
-    raw_status = Counter(str(call.get("status")) for call in raw_calls)
-    raw_window = (stamp(raw_calls[0]["at"]), stamp(raw_calls[-1]["at"])) if raw_calls else ("-", "-")
+    raw_status = Counter(call.status for call in raw_calls)
+    raw_window = (stamp(raw_calls[0].at), stamp(raw_calls[-1].at)) if raw_calls else ("-", "-")
 
     out: list[str] = []
     w = out.append
@@ -391,7 +472,7 @@ def render(record: Path, root: Path = REPO) -> str:
         "the same terms (bytes not retained on this host; the six-hour bound spent first on higher-ranked "
         f"identities); {sum(refused.get('sourcegraph', Counter()).values())} fetched ones were refused. The "
         "anonymous Sourcegraph search answered "
-        + (f"{sourcegraph_queries[0].get('result_count')} matches" if sourcegraph_queries else "nothing")
+        + (f"{sourcegraph_queries[0].result_count} matches" if sourcegraph_queries else "nothing")
         + ", which name no content digest to pin a fetch to, so none was planned."
     )
     archive_why = (
@@ -431,10 +512,10 @@ def render(record: Path, root: Path = REPO) -> str:
     w(
         f"**GitHub code search** — {len(code_calls)} requests, every one through `tools/witness-search/rate_limit_guard.py` "
         f"and the shared response cache ([search/rate-limit-calls.jsonl](search/rate-limit-calls.jsonl)), for page 1 "
-        f"of each key's `path:openapi` YAML and JSON queries: {Counter(q['outcome'] for q in code).get('answered', 0)} "
-        f"answered, {Counter(q['outcome'] for q in code).get('partitioned', 0)} reported over 1,000 results and "
+        f"of each key's `path:openapi` YAML and JSON queries: {code['answered']} "
+        f"answered, {code['partitioned']} reported over 1,000 results and "
         "were recorded as partitions this bounded pass did not page, and "
-        f"{Counter(q['outcome'] for q in code).get('not-queryable', 0)} keys name no schema field a code search can "
+        f"{code['not-queryable']} keys name no schema field a code search can "
         f"spell ([search/queries.jsonl.gz](search/queries.jsonl.gz)). They yielded {hits} new blob-pinned identities. "
         + (
             f"The lowest remaining allowance any call reported was {lowest[0]} of {lowest[1]} "
@@ -450,7 +531,7 @@ def render(record: Path, root: Path = REPO) -> str:
         + f", and it paused {len(floor_waits)} times for the floor. "
         f"It paused {len(pacing)} times for its spacing (one code-search request per "
         f"{GITHUB.CODE_SEARCH_SPACING_S:.0f} s, "
-        f"{sum(w['duration_s'] for w in pacing):.0f} s in all, [search/index-pacing-waits.jsonl](search/index-pacing-waits.jsonl)). "
+        f"{sum(wait.duration_s for wait in pacing):.0f} s in all, [search/index-pacing-waits.jsonl](search/index-pacing-waits.jsonl)). "
         "No core or contents REST request was made.\n"
     )
     w(
@@ -458,11 +539,11 @@ def render(record: Path, root: Path = REPO) -> str:
             ["at", "bucket", "status", "remaining", "limit"],
             [
                 [
-                    stamp(c["at"]),
-                    c.get("bucket", "-"),
-                    c.get("status", "-"),
-                    c.get("remaining", "-"),
-                    c.get("limit", "-"),
+                    stamp(c.at),
+                    c.bucket,
+                    c.status,
+                    "-" if c.remaining is None else c.remaining,
+                    "-" if c.limit is None else c.limit,
                 ]
                 for c in code_calls
             ],
@@ -472,8 +553,8 @@ def render(record: Path, root: Path = REPO) -> str:
 
     def allowance_before(at: str) -> str:
         """The allowance the guard last reported before a pause began."""
-        earlier = [c for c in code_calls if c["at"] <= at and isinstance(c.get("remaining"), int)]
-        return f"{earlier[-1]['remaining']} of {earlier[-1]['limit']}" if earlier else "none reported yet"
+        earlier = [c for c in code_calls if c.at <= at and c.remaining is not None]
+        return f"{earlier[-1].remaining} of {earlier[-1].limit}" if earlier else "none reported yet"
 
     w("\nEach pause the guard took on the code-search bucket, with the allowance it last reported:\n")
     w(
@@ -481,10 +562,10 @@ def render(record: Path, root: Path = REPO) -> str:
             ["paused at", "cause", "seconds", "remaining allowance"],
             [
                 [
-                    stamp(wait["at"]),
-                    wait.get("cause", "-"),
-                    f"{wait.get('duration_s', 0):.0f}",
-                    allowance_before(str(wait.get("started_at") or wait["at"])),
+                    stamp(wait.at),
+                    wait.cause,
+                    f"{wait.duration_s:.0f}",
+                    allowance_before(wait.started_at),
                 ]
                 for wait in [*pacing, *floor_waits]
             ],
@@ -493,9 +574,13 @@ def render(record: Path, root: Path = REPO) -> str:
     )
     w(
         f"\n**Sourcegraph** — {len(sourcegraph_calls)} anonymous search requests through the guard's paced lane, "
-        + ", ".join(f"HTTP {c.get('status')}" for c in sourcegraph_calls)
-        + ". The first was the one attempt the manager allowed; the second was an unintended repeat by a re-run "
-        "of the search command before it learned to skip a recorded answer, and asked the same query.\n"
+        + ", ".join(f"HTTP {c.status}" for c in sourcegraph_calls)
+        + (
+            ". The first was the one attempt the manager allowed; the second was an unintended repeat by a re-run "
+            "of the search command before it learned to skip a recorded answer, and asked the same query.\n"
+            if len(sourcegraph_calls) == 2
+            else ".\n"
+        )
     )
     w(
         f"\n**Raw lane** — {len(raw_calls)} exact-commit downloads from raw.githubusercontent.com between "
@@ -506,7 +591,7 @@ def render(record: Path, root: Path = REPO) -> str:
         + f". It paused {len(raw_waits)} times for its spacing. Every answer was written to the shared response "
         "cache. Each planned identity it reached is in "
         "[acquisition/acquisitions.jsonl](acquisition/acquisitions.jsonl) with how its bytes were had: "
-        + ", ".join(f"{how} {n}" for how, n in sorted(Counter(a["how"] for a in attempts).items()))
+        + ", ".join(f"{how} {n}" for how, n in sorted(Counter(attempt.how for attempt in attempts).items()))
         + ".\n"
     )
     w("\n## Reproduce\n")
