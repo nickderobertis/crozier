@@ -190,6 +190,32 @@ OTHER_FAMILIES = {
     ("departure-evidence", DEPARTURE),
 }
 
+
+@dataclass(frozen=True)
+class StageAnswer:
+    """What a stood-in Fern stage exits with and prints."""
+
+    exit: int
+    printed: str
+
+
+@dataclass(frozen=True)
+class StoodInProbe:
+    """How the stood-in Fern answers one probe: its check stage, the stage that hangs past its
+    bound, and how long the check takes to answer (a runner too slow for the bound)."""
+
+    check: StageAnswer
+    hang: str | None = None
+    check_delay: float = 0
+
+    def rule(self) -> dict[str, object]:
+        """The stand-in's JSON rule for this probe."""
+        rule: dict[str, object] = {"check": [self.check.exit, self.check.printed], "check_delay": self.check_delay}
+        if self.hang is not None:
+            rule["hang"] = self.hang
+        return rule
+
+
 # A stand-in for Fern: it answers `fern check` and `fern generate` in the
 # workspace the recipe scaffolds, from rules keyed by the document's title, and
 # writes the tree the test prepared for that title, stamped with the CLI and
@@ -1581,21 +1607,19 @@ class WeeklyRunTests(unittest.TestCase):
             "about whether Fern refuses given more time or memory"
         )
 
+    PHRASE = "Default value '-createdAt' is not a valid enum value"
+
     def test_a_refusal_probe_whose_generation_overruns_reports_the_stages_that_overran(self) -> None:
         # Which stages overran is read from the check stage's own event, never from how fast this
         # runner starts a process: a check slower than the bound is the case below, not a failure here.
-        rule = {"check": [1, "Default value '-createdAt' is not a valid enum value"], "hang": "generate"}
-        state, item = self.refusal_journey(rule, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        probe = StoodInProbe(check=StageAnswer(exit=1, printed=self.PHRASE), hang="generate")
+        state, item = self.refusal_journey(probe.rule(), CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
         now = self.overrun_report(self.check_answered("probe"))
         self.assert_refusal_reported(state, item, "unsettled", now)
 
     def test_a_check_stage_a_slow_runner_also_overruns_is_reported_as_both_overrunning(self) -> None:
-        rule = {
-            "check": [1, "Default value '-createdAt' is not a valid enum value"],
-            "check_delay": 30,
-            "hang": "generate",
-        }
-        state, item = self.refusal_journey(rule, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        probe = StoodInProbe(check=StageAnswer(exit=1, printed=self.PHRASE), hang="generate", check_delay=30)
+        state, item = self.refusal_journey(probe.rule(), CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
         self.assertFalse(self.check_answered("probe"), "the bound ended the check stage before it answered")
         self.assert_refusal_reported(state, item, "unsettled", self.overrun_report(False))
 

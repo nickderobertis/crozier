@@ -39,6 +39,7 @@ import shutil
 import subprocess
 import sys
 import time
+from enum import IntEnum
 from pathlib import Path
 from typing import NoReturn
 
@@ -143,9 +144,17 @@ def batches(sizes: dict[str, int], budget: int) -> list[list[str]]:
     return out
 
 
-def severity(code: int) -> int:
-    """A batch's status on llmlint's 0/1/2 scale; anything else is an error."""
-    return code if code in (0, 1, 2) else 2
+class Verdict(IntEnum):
+    """A batch's or the run's outcome; its value is the exit status llmlint and this script use."""
+
+    PASSED = 0
+    REJECTED = 1
+    UNAVAILABLE = 2
+
+
+def severity(code: int) -> Verdict:
+    """A batch's verdict from llmlint's exit status; any status but 0 or 1 is no verdict."""
+    return Verdict(code) if code in (0, 1) else Verdict.UNAVAILABLE
 
 
 def retry_delay() -> float:
@@ -162,11 +171,11 @@ def retry_delay() -> float:
     return delay
 
 
-def judge(command: list[str], label: str, delay: float) -> int:
+def judge(command: list[str], label: str, delay: float) -> Verdict:
     """One batch's status, re-sending it while the judge gives no verdict, up to `RETRIES` times."""
     status = severity(subprocess.run(command).returncode)
     for attempt in range(1, RETRIES + 1):
-        if status != 2:
+        if status is not Verdict.UNAVAILABLE:
             break
         wait = delay * attempt
         print(
@@ -179,9 +188,9 @@ def judge(command: list[str], label: str, delay: float) -> int:
     return status
 
 
-def verdict(statuses: list[int]) -> int:
-    """The run's status: a failed rule over an unanswered batch over a pass."""
-    unanswered = statuses.count(2)
+def verdict(statuses: list[Verdict]) -> Verdict:
+    """The run's verdict: a failed rule over an unanswered batch over a pass."""
+    unanswered = statuses.count(Verdict.UNAVAILABLE)
     if unanswered:
         print(
             f"llmlint-diff: verification unavailable: {unanswered} of {len(statuses)} batch(es) got no "
@@ -190,9 +199,9 @@ def verdict(statuses: list[int]) -> int:
             file=sys.stderr,
             flush=True,
         )
-    if 1 in statuses:
-        return 1
-    return 2 if unanswered else 0
+    if Verdict.REJECTED in statuses:
+        return Verdict.REJECTED
+    return Verdict.UNAVAILABLE if unanswered else Verdict.PASSED
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -213,7 +222,7 @@ def main(argv: list[str] | None = None) -> int:
     command = [llmlint, "--diff", "git", "--diff-base", args.base, *extra]
     sizes = changed(args.base, llmlint)
     if sum(sizes.values()) <= args.budget:
-        return verdict([judge(command, "the diff", delay)])
+        return int(verdict([judge(command, "the diff", delay)]))
     groups = batches(sizes, args.budget)
     statuses = []
     for number, group in enumerate(groups, start=1):
@@ -221,7 +230,7 @@ def main(argv: list[str] | None = None) -> int:
         label = f"batch {number}/{len(groups)}"
         print(f"llmlint-diff: {label}: {len(group)} file(s), {size:,} bytes", flush=True)
         statuses.append(judge([*command, *group], label, delay))
-    return verdict(statuses)
+    return int(verdict(statuses))
 
 
 if __name__ == "__main__":
