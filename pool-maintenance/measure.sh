@@ -66,6 +66,11 @@ build() {
   }
 }
 
+# The ordinary build first, so the backlog pass and the timed pass see one steady state: a
+# job whose other steps built none of it (crozier-e2e's suite builds on the `e2e` profile)
+# would otherwise have (c) supersede dependency builds the backlog pass kept.
+build
+
 # (a) The backlog, cleared untimed; its own report kept as evidence.
 ONEBUDGETSPEC_RESULT="$scratch/backlog.json" just pool-maintenance >&2
 

@@ -6,6 +6,7 @@
     "type:tier",
     "cost:expensive",
     "tier:promoted",
+    "lang:python",
     "lane:live",
     "platform:linux"
   ],
