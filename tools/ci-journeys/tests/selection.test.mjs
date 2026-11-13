@@ -42,16 +42,23 @@ function realGraph(t) {
   // Its line endings, or a checkout here turns the workflows CRLF on a Windows runner's core.autocrlf.
   cpSync(join(REPO, ".gitattributes"), join(root, ".gitattributes"));
   symlinkSync(join(REPO, "node_modules"), join(root, "node_modules"), "junction");
+  // A target that carries another (tools/ci/lanes.json `carried`) keeps the source it runs and
+  // the recipe group it selects, which the inventory check holds it to; the recorder ignores both.
+  const carriers = new Map(Object.values(JSON.parse(readFileSync(join(REPO, "tools/ci/lanes.json"), "utf8")).carried ?? {}).map((row) => [row.by, row]));
   for (const path of tracked()) {
     const project = readProject(path);
     for (const [name, target] of Object.entries(project.targets ?? {})) {
       const inputs = target.inputs?.filter((input) => typeof input === "string" || !("runtime" in input));
       const id = `${project.name}:${name}`;
+      const carrier = carriers.get(id);
+      const recorded = carrier
+        ? { command: `${RECORD} ${id} ${carrier.source}`, env: { [carrier.selector.env]: carrier.selector.group } }
+        : { command: `${RECORD} ${id}` };
       project.targets[name] = id === "lane-inventory:lint"
         ? { command: "node tools/ci/lane-inventory.mjs", cache: false, inputs }
         : target.executor === "nx:noop"
         ? { ...target, ...(inputs ? { inputs } : {}) }
-        : { command: `${RECORD} ${id}`, cache: false, ...(target.dependsOn ? { dependsOn: target.dependsOn } : {}), ...(inputs ? { inputs } : {}), ...(target.parallelism === false ? { parallelism: false } : {}) };
+        : { executor: "nx:run-commands", options: recorded, cache: false, ...(target.dependsOn ? { dependsOn: target.dependsOn } : {}), ...(inputs ? { inputs } : {}), ...(target.parallelism === false ? { parallelism: false } : {}) };
     }
     write(root, { [path]: JSON.stringify(project) });
   }

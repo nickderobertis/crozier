@@ -503,12 +503,20 @@
     "corpus-match:test-match": {
       "by": "corpus-match:test-offline",
       "recipe": "test-corpus-match",
-      "source": "tests/corpus_match/corpus_offline_test.py"
+      "source": "tests/corpus_match/corpus_offline_test.py",
+      "selector": {
+        "env": "CORPUS_OFFLINE_RECIPES",
+        "group": "goldens"
+      }
     },
     "corpus-match:test-strict": {
       "by": "corpus-match:test-offline",
       "recipe": "test-corpus-match-strict",
-      "source": "tests/corpus_match/corpus_offline_test.py"
+      "source": "tests/corpus_match/corpus_offline_test.py",
+      "selector": {
+        "env": "CORPUS_OFFLINE_RECIPES",
+        "group": "goldens"
+      }
     }
   }
 }
