@@ -77,13 +77,15 @@ FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "source": lambda value: value in BUILD.QUERY_SOURCES,
     "outcome": lambda value: value in BUILD.query_outcomes(),
     "started_at": instant,
+    "key": lambda value: value in SCREEN.KEYS,
+    "result_count": lambda value: type(value) is int and value >= 0,
     "cause": lambda value: isinstance(value, str) and bool(value),
     "bucket": lambda value: isinstance(value, str) and bool(value),
     "sha256": lambda value: isinstance(value, str) and bool(SCREEN.SHA.fullmatch(value)),
 }
 
 
-OPTIONAL_FIELDS = ("started_at", "cause", "bucket")
+OPTIONAL_FIELDS = ("started_at", "cause", "bucket", "result_count")
 
 
 def allowance_failure(row: dict[str, Any]) -> bool:
@@ -127,11 +129,11 @@ def queries_log(search: Path) -> list[dict[str, Any]]:
     """The search's recorded answers: live as `queries.jsonl`, or committed packed as `queries.jsonl.gz`."""
     live, packed = search / "queries.jsonl", search / "queries.jsonl.gz"
     if live.is_file():
-        return jsonl(live, ("source", "outcome"))
+        return jsonl(live, ("source", "key", "outcome"))
     if not packed.is_file():
         raise ValueError(f"{live} (or {packed.name}) is missing")
     with gzip.open(packed, "rt", encoding="utf-8") as handle:
-        return records(packed, ("source", "outcome"), handle.read().splitlines())
+        return records(packed, ("source", "key", "outcome"), handle.read().splitlines())
 
 
 def table(header: list[str], rows: list[list[Any]], right: int = 0) -> str:
@@ -315,6 +317,7 @@ def render(record: Path, root: Path = REPO) -> str:
     ]
     lowest = min(remaining, key=lambda pair: pair[0] / pair[1]) if remaining else None
     floor = float(GUARD.FLOOR)
+    earlier = sum(len(keys) for keys in BUILD.earlier_rows(BUILD.Tree(root)).values())
     raw_status = Counter(call.status for call in raw_calls)
     raw_window = (stamp(raw_calls[0].at), stamp(raw_calls[-1].at)) if raw_calls else ("-", "-")
 
@@ -387,7 +390,7 @@ def render(record: Path, root: Path = REPO) -> str:
     w(
         "\nA candidate is a document whose bytes the key's census selector declares, or one the earlier "
         "[named census](../witness-search-ledger-remainders/census.tsv) already listed for the key; every one of "
-        "that census's 749 rows has a row here. The archive's documents are named `<provider>[/<service>]/<version>`, "
+        f"that census's {earlier} rows has a row here. The archive's documents are named `<provider>[/<service>]/<version>`, "
         "the archive path less `APIs/` and the file name, since one service carries several versions.\n"
     )
     w("## Verdicts\n")

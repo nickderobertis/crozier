@@ -1123,6 +1123,22 @@ def source_failure(population: str, source: str) -> str | None:
     return None
 
 
+def identity_failure(population: str, document: str, source: str) -> str | None:
+    """Why the document a row names is not the file its source pins, or None (a malformed source is reported apart)."""
+    segments = urllib.parse.urlsplit(source).path.split("/")[1:]
+    if population in (Population.REGISTERED, Population.ARCHIVE) or len(segments) < 4:
+        return None
+    repository, commit, path = "/".join(segments[:2]), segments[2], urllib.parse.unquote("/".join(segments[3:]))
+    match population:
+        case Population.HANDED_OFF:
+            expected = f"{repository}:{path}@{commit}"
+        case Population.APIS_GURU:
+            expected = path.removeprefix("APIs/").rsplit("/", 1)[0]
+        case _:
+            expected = f"{repository}/{path}"
+    return None if document == expected else f"document {document!r} is not the {expected!r} its source pins"
+
+
 def document_failure(population: str, document: str) -> str | None:
     if PLACEHOLDER.match(document) or "\t" in document or document != document.strip():
         return "document is empty, a placeholder or padded"
@@ -1143,6 +1159,7 @@ def row_failures(row: ScreenRow) -> list[str]:
     for failure in (
         document_failure(row.population, row.document),
         source_failure(row.population, row.source) if row.population in POPULATIONS else None,
+        identity_failure(row.population, row.document, row.source),
     ):
         if failure:
             wrong.append(failure)
@@ -1342,6 +1359,7 @@ def entry_failures(entry: Entry) -> list[str]:
         for failure in (
             document_failure(entry.population, entry.document),
             source_failure(entry.population, entry.source),
+            identity_failure(entry.population, entry.document, entry.source),
         )
         if failure
     ]

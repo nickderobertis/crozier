@@ -1284,7 +1284,7 @@ class ReaderTests(ScreenHarness):
             KEY_B,
             "handed-off",
             "acme/gone:openapi.yaml@" + COMMIT,
-            GOOD[3],
+            f"https://raw.githubusercontent.com/acme/gone/{COMMIT}/openapi.yaml",
             "-",
             "unread:HTTP 404",
             "unread:HTTP 404",
@@ -1320,6 +1320,7 @@ class ReaderTests(ScreenHarness):
                 (changed(source=f"https://example.com/acme/shop/{COMMIT}/openapi.json"),),
                 "no raw.githubusercontent.com URL pinned at a full commit",
             ),
+            ((changed(document="acme/shop/other.json"),), "is not the 'acme/shop/openapi.json' its source pins"),
             ((changed(population="registered", document="shop"),), "a registered document's source is `-`"),
             ((changed(sha256="-"),), "is no SHA-256"),
             ((changed(licence="admissible:"),), "licence 'admissible:' is none of"),
@@ -2245,6 +2246,29 @@ class RecordTests(unittest.TestCase):
         malformed = self.record_cli("--check")
         self.assertEqual(1, malformed.returncode)
         self.assertRegex(malformed.stderr, r"raw-github-calls\.jsonl:\d+ is no record carrying at, status, url")
+        calls.write_text(calls.read_text(encoding="utf-8").rsplit("\n", 2)[0] + "\n", encoding="utf-8")
+        for log, line, message in (
+            (
+                self.record / "search" / "rate-limit-calls.jsonl",
+                '{"at": "2026-11-13T00:00:00+00:00", "host": "github", "status": 200, "remaining": 11, "limit": 10}',
+                r"rate-limit-calls\.jsonl:\d+ is no record carrying at, host, status",
+            ),
+            (
+                self.record / "search" / "queries.jsonl",
+                '{"source": "sourcegraph", "key": "combo-nope", "outcome": "answered"}',
+                r"queries\.jsonl:1 is no record carrying source, key, outcome",
+            ),
+        ):
+            with self.subTest(log=log.name):
+                before = log.read_text(encoding="utf-8") if log.is_file() else None
+                log.write_text((before or "") + line + "\n", encoding="utf-8")
+                refused = self.record_cli("--check")
+                self.assertEqual(1, refused.returncode)
+                self.assertRegex(refused.stderr, message)
+                if before is None:
+                    log.unlink()
+                else:
+                    log.write_text(before, encoding="utf-8")
         (self.record / "acquisition" / "acquisitions.jsonl").unlink()
         missing = self.record_cli()
         self.assertEqual(1, missing.returncode)
