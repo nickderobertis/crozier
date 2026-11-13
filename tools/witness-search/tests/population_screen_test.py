@@ -1971,6 +1971,12 @@ class BuildTests(BuildHarness):
             (handed, f"\t{'1' * 64}\t-\t-\tdiffers\t-\t-\n", "names no document and SHA-256 of its bytes"),
             (census, "combo-nope\tregistered\tsample-api\t-\t1\tunscreened\t-\n", "key 'combo-nope' is none of"),
             (
+                census,
+                "combo-tag-only-operation-id\tregistered\t\t-\t1\tunscreened\t-\n",
+                "leaves its key, source or document empty",
+            ),
+            (self.root / "tests/fixtures/corpus-sources.tsv", "short-row\n", "names no row and source path"),
+            (
                 self.root / "docs/openapi-surface/witness-search-apis.guru/acquisition-manifest.tsv",
                 f"APIs-guru/openapi-directory\tAPIs/acme.local/1.0/openapi.json\t{BUILD.ARCHIVE_REVISION}\t{'2' * 64}\n",
                 "records APIs/acme.local/1.0/openapi.json a second time",
@@ -1982,6 +1988,7 @@ class BuildTests(BuildHarness):
                 refused = self.build(*args)
                 self.assertEqual(1, refused.returncode)
                 self.assertIn(message, refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
                 path.write_text(before, encoding="utf-8")
 
     def test_handed_off_bytes_are_recovered_from_the_tree_or_the_preflight_cache_into_an_empty_store(self) -> None:

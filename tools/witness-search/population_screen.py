@@ -1419,7 +1419,13 @@ def registered_files(root: Path = REPO) -> dict[str, Path]:
         for line in handle:
             if line.startswith("#") or not line.strip():
                 continue
-            name, relative, *_rest = line.rstrip("\n").split("\t")
+            cells = line.rstrip("\n").split("\t")
+            if len(cells) < 2 or not cells[0] or not cells[1]:
+                raise ScreenError(
+                    f"{root / 'tests/fixtures/corpus-sources.tsv'}: {line.strip()!r} names no row and source path; "
+                    "restore the manifest from git"
+                )
+            name, relative = cells[0], cells[1]
             if not witness_screen().repository_path(relative) or not (root / relative).resolve().is_relative_to(
                 root.resolve()
             ):

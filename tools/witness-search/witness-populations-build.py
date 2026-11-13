@@ -123,7 +123,12 @@ def earlier_rows(tree: Tree) -> dict[tuple[str, str], set[str]]:
     """`(population, document) -> keys` the earlier named census lists, documents as the new table names them."""
     listed: dict[tuple[str, str], set[str]] = defaultdict(set)
     with tree.earlier.open(encoding="utf-8", newline="") as handle:
-        for row in csv.DictReader(handle, delimiter="\t"):
+        reader = csv.DictReader(handle, delimiter="\t")
+        if not {"key", "source", "document"} <= set(reader.fieldnames or ()):
+            fail(f"{tree.earlier} names no key, source and document columns; restore it from git")
+        for number, row in enumerate(reader, 2):
+            if not all(isinstance(row.get(cell), str) and row[cell] for cell in ("key", "source", "document")):
+                fail(f"{tree.earlier}:{number} leaves its key, source or document empty; restore it from git")
             population = EARLIER_POPULATION.get(row["source"])
             if population is None:
                 fail(f"{tree.earlier}: source {row['source']!r} is none of {', '.join(EARLIER_POPULATION)}")
@@ -694,21 +699,24 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
     tree = Tree(args.root)
-    match args.command:
-        case "search":
-            if not args.replay and (args.evidence / "queries.jsonl.gz").is_file():
-                parser.error("the search's answers are committed packed; gunzip queries.jsonl.gz to resume it live")
-            rows = search(tree, args)
-            write_plan(args.output, rows)
-            print(f"witness-populations-build: {len(rows)} new code-search identities")
-        case "identities":
-            rows = identities(tree)
-            write_plan(args.output, rows)
-            print(f"witness-populations-build: {len(rows)} identities")
-        case _:
-            rows = manifest(tree, args)
-            SCREEN.write_manifest(args.output, rows)
-            print(f"witness-populations-build: {len(rows)} manifest entries")
+    if args.command == "search" and not args.replay and (args.evidence / "queries.jsonl.gz").is_file():
+        parser.error("the search's answers are committed packed; gunzip queries.jsonl.gz to resume it live")
+    try:
+        match args.command:
+            case "search":
+                rows = search(tree, args)
+                write_plan(args.output, rows)
+                print(f"witness-populations-build: {len(rows)} new code-search identities")
+            case "identities":
+                rows = identities(tree)
+                write_plan(args.output, rows)
+                print(f"witness-populations-build: {len(rows)} identities")
+            case _:
+                entries = manifest(tree, args)
+                SCREEN.write_manifest(args.output, entries)
+                print(f"witness-populations-build: {len(entries)} manifest entries")
+    except SCREEN.ScreenError as error:
+        fail(str(error))
     return 0
 
 
