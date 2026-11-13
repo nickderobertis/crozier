@@ -39,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: write  # cancel this run when the judge gives no verdict (the last step below)
       contents: write  # visual docs: push the pull request's gallery preview to gh-pages
       pull-requests: write  # the suppressions and visual docs comments
     steps:
@@ -140,7 +141,11 @@ jobs:
       - name: Validate llmlint config
         if: github.event_name == 'pull_request'
         run: just lint-llm-validate --diff-base origin/main
+      # The recipe retries a batch the judge left unanswered on this same tree and exits 2
+      # only once its retries are spent: that is no verdict, so this step records it rather
+      # than failing, and the last step of the lane withholds the lane's verdict.
       - name: Judge the changed files
+        id: judge
         if: github.event_name == 'pull_request'
         env:
           # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN for
@@ -153,7 +158,14 @@ jobs:
                  "are gated by the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
             exit 1
           fi
-          just lint-llm-diff origin/main
+          status=0
+          just lint-llm-diff origin/main || status=$?
+          if [ "$status" -eq 2 ]; then
+            echo "verdict=unavailable" >> "$GITHUB_OUTPUT"
+            echo "::warning::Judged lint unavailable: the judge gave no verdict after its retries, and no rule rejected this change."
+            exit 0
+          fi
+          exit "$status"
       # The visual docs as steps of this lane, not screencomp's reusable workflow, whose
       # jobs would each hold a slot: capture in the pinned container, compare against the
       # committed x86_64 baseline, publish the gallery preview and comment the before/after.
@@ -172,6 +184,22 @@ jobs:
           fail-on-drift: true
           publish: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
           github-token: ${{ github.token }}
+      # A job concludes success or failure unless its run is cancelled, so cancelling is how an
+      # unanswered judge ends this required lane as neither: it does not pass the merge gate and
+      # does not read as rejected code. It runs last, once every other verdict here is in, and
+      # stops the platform lanes too, which cannot make this head mergeable. Re-run the
+      # workflow once the judge answers.
+      - name: Withhold the verdict the judge could not give
+        if: steps.judge.outputs.verdict == 'unavailable'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "::error::Verification unavailable: the judged lint got no verdict from the judge after its retries; no rule rejected this change. Cancelling the run so this head reports no verdict; re-run the workflow once the judge answers." >&2
+          gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"
+          # The cancellation stops this step; outliving it means it never landed.
+          sleep 300
+          echo "::error::The run was not cancelled within 300 s; re-run this workflow." >&2
+          exit 1
 
   # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
   # The Linux test lane: the only platform for the Prism, corpus and packaging proof, which

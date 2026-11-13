@@ -8,7 +8,8 @@ name = "crozier-llmlint-resolution"
 version = "0.0.0"
 description = "Suites that run the real llmlint binary."
 requires-python = ">=3.11"
-dependencies = ["crozier-llmlint-tooling"]
+# pyyaml reads the workflow whose judged-lint steps judged_lint_job_test.py runs.
+dependencies = ["crozier-llmlint-tooling", "pyyaml>=6"]
 
 [tool.uv]
 package = false
