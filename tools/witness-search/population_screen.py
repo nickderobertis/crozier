@@ -1420,12 +1420,21 @@ def licence_verdict(
                 "re-run `screen` with --fetch-licence to read it through the guarded raw lane"
             )
         status, data = answer
-        if status == 200:
-            lines = [line for line in data.decode("utf-8", "replace").splitlines() if line.strip()]
-            family = screen.recognise("\n".join(lines[: screen.LICENCE_HEAD_LINES]))
-            if family in families:
-                return f"admissible:{family} ({name} at {commit})"
-            return f"inadmissible:no info.license, and {name} at {commit} names no grant the corpus rule admits"
+        match status:
+            case 200:
+                lines = [line for line in data.decode("utf-8", "replace").splitlines() if line.strip()]
+                family = screen.recognise("\n".join(lines[: screen.LICENCE_HEAD_LINES]))
+                if family in families:
+                    return f"admissible:{family} ({name} at {commit})"
+                return f"inadmissible:no info.license, and {name} at {commit} names no grant the corpus rule admits"
+            case 404:
+                continue
+            case _:
+                # Only a 404 says the file is not there: any other answer read nothing either way.
+                raise ScreenError(
+                    f"{name} at {repository}@{commit} answered HTTP {status}, which says nothing about whether it is "
+                    "there; re-run `screen --fetch-licence` once it answers"
+                )
     return "inadmissible:grants nothing: no info.license and no licence file at the pinned commit"
 
 

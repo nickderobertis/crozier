@@ -717,6 +717,8 @@ CASES += [
 class _RawServer(ThreadingHTTPServer):
     files: dict[str, bytes]
     requests: list[str]
+    # A path answered with this status instead of the file or a 404.
+    statuses: dict[str, int]
     # Reset the first connection unanswered, as a transient network failure would.
     drop_first: bool = False
 
@@ -736,6 +738,11 @@ class _Raw(BaseHTTPRequestHandler):
             self.close_connection = True
             return
         body = self.server.files.get(self.path)
+        if self.path in self.server.statuses:
+            self.send_response(self.server.statuses[self.path])
+            self.send_header("Content-Length", "0")
+            self.end_headers()
+            return
         self.send_response(200 if body is not None else 404)
         body = body if body is not None else b"404: Not Found"
         self.send_header("Content-Length", str(len(body)))
@@ -752,7 +759,7 @@ class ScreenHarness(unittest.TestCase):
         self.scratch = Path(scratch.name)
         self.store = self.scratch / "store"
         server = _RawServer(("127.0.0.1", 0), _Raw)
-        server.files, server.requests = {}, []
+        server.files, server.requests, server.statuses = {}, [], {}
         self.server = server
         threading.Thread(target=server.serve_forever, daemon=True).start()
         self.addCleanup(server.server_close)
@@ -976,6 +983,35 @@ class LicenceScreenTests(ScreenHarness):
             got,
         )
         self.assertEqual([], self.server.requests)
+
+    def test_a_licence_read_exhausting_every_filename_grants_nothing_and_another_failure_is_refused(self) -> None:
+        rows = [
+            self.entry("nothing", self.EXACT, [KEY_T]),
+            self.entry("unrecorded", self.EXACT, [KEY_T], evidence="-"),
+        ]
+        done, output = self.screen(rows, "--no-discover", "--fetch-licence")
+        self.assertEqual(0, done.returncode, done.stderr)
+        got = {row.document.split("/")[1]: (row.licence, row.status) for row in SCREEN.read_screen(output)}
+        self.assertEqual(
+            {
+                "nothing": (
+                    "inadmissible:grants nothing: no info.license and no licence file at the pinned commit",
+                    "rejected-licence",
+                ),
+                "unrecorded": (
+                    "inadmissible:grants nothing: no info.license and no recorded repository to read a licence file at",
+                    "rejected-licence",
+                ),
+            },
+            got,
+        )
+        self.assertEqual(
+            [f"/acme/nothing/{COMMIT}/{name}" for name in SCREEN.witness_screen().LICENCE_FILES], self.server.requests
+        )
+        self.server.statuses[f"/acme/broken/{COMMIT}/LICENSE"] = 500
+        refused, _output = self.screen([self.entry("broken", self.EXACT, [KEY_T])], "--no-discover", "--fetch-licence")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"LICENSE at acme/broken@{COMMIT} answered HTTP 500", refused.stderr)
 
     def test_bytes_never_had_or_that_do_not_parse_are_unfetchable_rows(self) -> None:
         rows = [
@@ -1555,7 +1591,22 @@ class BuildTests(BuildHarness):
         hits = self.scratch / "hits.tsv"
         blob = f"blob:{SCREEN.blob_sha(blobbed)}"
         hit = ("github", "acme/blobbed/openapi.json", "acme/blobbed", "b" * 40, "openapi.json", blob, "", "3")
-        hits.write_text("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n", encoding="utf-8")
+        # A publisher-looking repository holding an archive document's exact bytes is a copy of the aggregation.
+        mirror = (
+            "github",
+            "acme/mirror/openapi.json",
+            "acme/mirror",
+            "d" * 40,
+            "openapi.json",
+            hashlib.sha256(self.registered).hexdigest(),
+            "",
+            "1",
+        )
+        SCREEN.store(self.registered, self.store)
+        hits.write_text(
+            "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n" + "\t".join(mirror) + "\n",
+            encoding="utf-8",
+        )
         ledger = self.scratch / "acquisitions.jsonl"
         self.write(
             ledger,
@@ -1611,6 +1662,7 @@ class BuildTests(BuildHarness):
                 ),
                 ("github", "acme/pointers/openapi.json"): (f"repository:acme/pointers@{'2' * 40}", "-", "-"),
                 ("github", "acme/blobbed/openapi.json"): (f"repository:acme/blobbed@{'b' * 40}", "-", "-"),
+                ("github", "acme/mirror/openapi.json"): (f"aggregation:acme/mirror@{'d' * 40}", "-", "-"),
             },
             got,
         )
@@ -1729,6 +1781,9 @@ class BuildTests(BuildHarness):
 
 class _ServiceServer(ThreadingHTTPServer):
     requests: list[str]
+    # Answer code search with results naming no repository, and Sourcegraph with this status.
+    malformed: bool = False
+    sourcegraph_status: int = 200
 
 
 class _Services(BaseHTTPRequestHandler):
@@ -1752,6 +1807,13 @@ class _Services(BaseHTTPRequestHandler):
         if self.path == "/rate_limit":
             bucket = {"limit": 10, "used": 1, "remaining": 9, "reset": int(time.time()) + 60}
             self.reply(json.dumps({"resources": {"code_search": bucket, "core": bucket}}).encode(), "application/json")
+        elif self.path.startswith("/search/code") and self.server.malformed:
+            body = {"total_count": 1, "incomplete_results": False, "items": [{"path": "openapi.yaml"}]}
+            self.reply(json.dumps(body).encode(), "application/json", "code_search")
+        elif self.path.startswith("/.api/search/stream") and self.server.sourcegraph_status != 200:
+            self.send_response(self.server.sourcegraph_status)
+            self.send_header("Content-Length", "0")
+            self.end_headers()
         elif self.path.startswith("/search/code"):
             language = "yaml" if "YAML" in urllib.parse.unquote(self.path) else "json"
             item = {
@@ -1777,7 +1839,7 @@ class _Services(BaseHTTPRequestHandler):
 
 
 class LiveSearchTests(BuildHarness):
-    def test_the_bounded_search_asks_each_key_once_records_what_it_cannot_ask_and_one_sourcegraph_query(self) -> None:
+    def services(self) -> _ServiceServer:
         services = _ServiceServer(("127.0.0.1", 0), _Services)
         services.requests = []
         threading.Thread(target=services.serve_forever, daemon=True).start()
@@ -1785,6 +1847,49 @@ class LiveSearchTests(BuildHarness):
         self.addCleanup(services.shutdown)
         base = f"http://127.0.0.1:{services.server_port}"
         self.env.update(CROZIER_GITHUB_API_URL=base, CROZIER_SOURCEGRAPH_URL=base, GITHUB_TOKEN="offline-test-token")
+        return services
+
+    def test_a_refused_search_is_reported_and_recorded_and_the_rest_of_the_search_goes_on(self) -> None:
+        services = self.services()
+        services.malformed, services.sourcegraph_status = True, 500
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        evidence, output = self.scratch / "search", self.scratch / "hits.tsv"
+        args = (
+            "search",
+            "--evidence",
+            str(evidence),
+            "--identities",
+            str(plan),
+            "--output",
+            str(output),
+            "--key",
+            "combo-property-defs-pointer",
+            "--key",
+            "combo-tag-only-operation-id",
+        )
+        done = self.build(*args)
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn(
+            "witness-populations-build: search stopped: GitHub search returned malformed results", done.stderr
+        )
+        self.assertIn("witness-populations-build: sourcegraph: Sourcegraph refused search", done.stderr)
+        self.assertEqual([], SCREEN.read_identities(output))
+        rows = [json.loads(line) for line in (evidence / "queries.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertIn(
+            ("github-code-search", "combo-tag-only-operation-id", "not-queryable"),
+            {(row["source"], row["key"], row["outcome"]) for row in rows},
+        )
+        self.assertIn(
+            ("sourcegraph", "refused", 500), {(row["source"], row["outcome"], row.get("status")) for row in rows}
+        )
+        # The recorded refusal is the one Sourcegraph attempt: a later run does not ask again.
+        services.requests.clear()
+        self.assertEqual(0, self.build(*args).returncode)
+        self.assertEqual([], [path for path in services.requests if path.startswith("/.api/search/stream")])
+
+    def test_the_bounded_search_asks_each_key_once_records_what_it_cannot_ask_and_one_sourcegraph_query(self) -> None:
+        services = self.services()
         plan = self.scratch / "plan.tsv.gz"
         self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
         evidence, output = self.scratch / "search", self.scratch / "hits.tsv"

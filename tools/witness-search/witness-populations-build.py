@@ -40,7 +40,7 @@ import re
 import sys
 from collections import defaultdict
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from types import ModuleType
 from typing import Any, NamedTuple, NoReturn
 
@@ -49,6 +49,8 @@ LEDGERS = {"github": "witness-search-github-code-search", "sourcegraph": "witnes
 ARCHIVE_REVISION = "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49"
 ARCHIVE_REPOSITORY = "APIs-guru/openapi-directory"
 RAW = "https://raw.githubusercontent.com"
+# The archive's OpenAPI documents, as the directory names them.
+ARCHIVE_NAMES = ("openapi.yaml", "openapi.yml", "openapi.json")
 # Ledger keys whose selectors read a nested or `$defs` pointer: a document they
 # record as declaring is the likeliest witness of the eight pointer keys.
 POINTER_LEDGER_KEYS = re.compile(r"pointer|unnamed-segment|undeclared-component-head")
@@ -309,8 +311,15 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     if not archive.is_dir():
         fail(f"{archive} is no directory; pass --archive the extracted openapi-directory tree at {ARCHIVE_REVISION}")
     recorded = archive_digests(tree)
+    expected = {document for document in recorded if PurePosixPath(document).name in ARCHIVE_NAMES}
+    found = {path.relative_to(args.archive).as_posix() for path in archive.rglob("openapi.*")}
+    if expected - found:
+        fail(
+            f"{args.archive} lacks {len(expected - found)} of the {len(expected)} OpenAPI documents "
+            f"{tree.archive_manifest} records (first: {sorted(expected - found)[0]}); extract the pinned archive again"
+        )
     for path in sorted(archive.rglob("openapi.*")):
-        if path.suffix not in (".yaml", ".yml", ".json"):
+        if path.name not in ARCHIVE_NAMES:
             continue
         data = path.read_bytes()
         relative = path.relative_to(args.archive).as_posix()

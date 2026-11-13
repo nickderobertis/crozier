@@ -16,6 +16,7 @@ from __future__ import annotations
 import argparse
 import csv
 import datetime
+import fractions
 import gzip
 import importlib.util
 import json
@@ -47,6 +48,8 @@ RECORD = SCREEN.RECORD
 HANDED_OFF = Path("docs") / "fern-measurements" / "handed-off" / "documents.tsv"
 SERVED_ONLY = Path("docs") / "openapi-surface" / "witness-search-apis.guru" / "unread-responses.jsonl"
 BUILD = _load("witness_populations_record_build", Path(__file__).with_name("witness-populations-build.py"))
+GITHUB = BUILD.github()
+GUARD = _load("rate_limit_guard", Path(__file__).with_name("rate_limit_guard.py"))
 ARCHIVE = f"`{BUILD.ARCHIVE_REPOSITORY}` at `{BUILD.ARCHIVE_REVISION}`"
 
 
@@ -215,6 +218,7 @@ def render(record: Path, root: Path = REPO) -> str:
     sourcegraph_calls = [call for call in calls if call.get("host") == "sourcegraph"]
     remaining = [(call["remaining"], call["limit"]) for call in code_calls if isinstance(call.get("remaining"), int)]
     lowest = min(remaining, key=lambda pair: pair[0] / pair[1]) if remaining else None
+    floor = float(GUARD.FLOOR)
     raw_status = Counter(str(call.get("status")) for call in raw_calls)
     raw_window = (stamp(raw_calls[0]["at"]), stamp(raw_calls[-1]["at"])) if raw_calls else ("-", "-")
 
@@ -428,12 +432,13 @@ def render(record: Path, root: Path = REPO) -> str:
             else "No call reported an allowance"
         )
         + (
-            "; no call fell below the guard's 40% floor"
-            if all(left / limit >= 0.4 for left, limit in remaining)
-            else "; some calls fell below the guard's 40% floor"
+            f"; no call fell below the guard's {floor:.0%} floor"
+            if all(fractions.Fraction(left, limit) >= GUARD.FLOOR for left, limit in remaining)
+            else f"; some calls fell below the guard's {floor:.0%} floor"
         )
         + f", and it paused {len(floor_waits)} times for the floor. "
-        f"It paused {len(pacing)} times for its spacing (the code-search bucket's 10 requests a minute, "
+        f"It paused {len(pacing)} times for its spacing (one code-search request per "
+        f"{GITHUB.CODE_SEARCH_SPACING_S:.0f} s, "
         f"{sum(w['duration_s'] for w in pacing):.0f} s in all, [search/index-pacing-waits.jsonl](search/index-pacing-waits.jsonl)). "
         "No core or contents REST request was made.\n"
     )
@@ -483,7 +488,7 @@ def render(record: Path, root: Path = REPO) -> str:
     )
     w(
         f"\n**Raw lane** — {len(raw_calls)} exact-commit downloads from raw.githubusercontent.com between "
-        f"{raw_window[0]} and {raw_window[1]}, through the acquirer's paced raw lane (2 s spacing; the host "
+        f"{raw_window[0]} and {raw_window[1]}, through the acquirer's paced raw lane ({GITHUB.RAW_SPACING_S:g} s spacing; the host "
         "publishes no allowance, so no remaining figure exists to log), each logged with its status and digest "
         "in [acquisition/raw-github-calls.jsonl](acquisition/raw-github-calls.jsonl): "
         + ", ".join(f"HTTP {s} {n}" for s, n in sorted(raw_status.items()))
