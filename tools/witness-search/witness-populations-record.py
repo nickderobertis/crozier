@@ -59,7 +59,6 @@ def instant(value: Any) -> bool:
         return False
 
 
-# What each evidence field must hold for the README to count it.
 FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "at": instant,
     "duration_s": lambda value: (
@@ -105,7 +104,6 @@ def records(path: Path, fields: tuple[str, ...], lines: list[str]) -> list[dict[
         if (
             not isinstance(row, dict)
             or any(field not in row or not FIELD_CHECKS[field](row[field]) for field in fields)
-            # A field a record may leave out must still hold, where it is there.
             or any(field in row and not FIELD_CHECKS[field](row[field]) for field in OPTIONAL_FIELDS)
             or allowance_failure(row)
         ):

@@ -76,7 +76,6 @@ TABLE = RECORD / "screen.tsv"
 POPULATION = RECORD / "population.tsv"
 
 
-# The identifiers the table, the manifest and the plan carry, named for what they are.
 Key: TypeAlias = str  # a combination key, one of `KEYS`
 DocumentId: TypeAlias = str  # a candidate's name in its population
 Sha256: TypeAlias = str  # 64 hex digits: the digest of exact bytes
