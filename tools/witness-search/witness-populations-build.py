@@ -48,6 +48,9 @@ RAW = "https://raw.githubusercontent.com"
 # Ledger keys whose selectors read a nested or `$defs` pointer: a document they
 # record as declaring is the likeliest witness of the eight pointer keys.
 POINTER_LEDGER_KEYS = re.compile(r"pointer|unnamed-segment|undeclared-component-head")
+# Repositories that redistribute other publishers' descriptions: their own licence
+# is an aggregation's grant, never a publisher's.
+AGGREGATIONS = frozenset({"apis-guru/openapi-directory", "jentic/jentic-public-apis"})
 HANDED_OFF_ID = re.compile(r"([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+):(.+)@([0-9a-f]{40})")
 EARLIER_POPULATION = {"registered": "registered", "apis-guru": "apis-guru", "handed-off": "handed-off"}
 
@@ -176,6 +179,17 @@ def jsonl_rows(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
 
 
+def licence_evidence(repository: str, commit: str, digest: str, archived: set[str]) -> str:
+    """Where a fetched document's licence is read when it declares no `info.license`.
+
+    An aggregation's repository, or any copy byte-identical to an APIs.guru archive
+    document, carries an aggregation's grant, which is no publisher grant.
+    """
+    if repository.lower() in AGGREGATIONS or digest in archived:
+        return f"aggregation:{repository}@{commit}"
+    return f"repository:{repository}@{commit}"
+
+
 def tree_digests() -> dict[str, Path]:
     found = {}
     for path in sorted((REPO / "tests" / "fixtures" / "corpus-sources").rglob("*")):
@@ -205,13 +219,15 @@ def manifest(args: argparse.Namespace) -> list[list[str]]:
     def keys(population: str, document: str) -> str:
         return ";".join(sorted(listed.pop((population, document), set()))) or "-"
 
-    grants = SCREEN.corpus_grants()
+    corpus = SCREEN.corpus_rows()
+    grants = {name: row.grant for name, row in corpus.items()}
     for name, path in sorted(SCREEN.registered_files().items()):
         if name not in grants or not path.is_file():
             continue
         digest = hashlib.sha256(path.read_bytes()).hexdigest()
+        kind = "corpus-aggregation" if SCREEN.aggregator(corpus[name].source) else "corpus"
         entries.append(
-            ["registered", name, "-", digest, f"corpus:{grants[name] or '-'}", keys("registered", name), "-"]
+            ["registered", name, "-", digest, f"{kind}:{grants[name] or '-'}", keys("registered", name), "-"]
         )
     archive = args.archive / "APIs"
     if not archive.is_dir():
@@ -235,6 +251,7 @@ def manifest(args: argparse.Namespace) -> list[list[str]]:
                 "-",
             ]
         )
+    archived = {entry[3] for entry in entries if entry[0] == "apis-guru"}
     tree = tree_digests()
     preflight = scan(args.preflight) if args.preflight.is_dir() else {}
     with HANDED_OFF.open(encoding="utf-8", newline="") as handle:
@@ -261,7 +278,7 @@ def manifest(args: argparse.Namespace) -> list[list[str]]:
                     document,
                     source,
                     digest,
-                    f"repository:{repository}@{commit}",
+                    licence_evidence(repository, commit, digest, archived),
                     forced,
                     "-"
                     if have
@@ -293,7 +310,7 @@ def manifest(args: argparse.Namespace) -> list[list[str]]:
                 identity.document,
                 source,
                 digest,
-                f"repository:{identity.repository}@{identity.commit}",
+                licence_evidence(identity.repository, identity.commit, digest, archived),
                 "-",
                 "-",
             ]

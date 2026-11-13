@@ -1131,7 +1131,9 @@ class Entry(NamedTuple):
     document: str
     source: str
     sha256: str
-    # `corpus:<recorded grant>`, `repository:<owner>/<repo>@<commit>`, `no-publisher-grant` or `-`.
+    # `corpus:<recorded grant>` (`corpus-aggregation:<recorded grant>` for a row sourced from an aggregation),
+    # `repository:<owner>/<repo>@<commit>`, `aggregation:<owner>/<repo>@<commit>`
+    # (an aggregation's copy), `no-publisher-grant` (an APIs.guru archive copy) or `-`.
     evidence: str
     # The keys an earlier named census already lists it for, `;`-joined, or `-`.
     keys: str
@@ -1189,14 +1191,43 @@ def registered_files(root: Path = REPO) -> dict[str, Path]:
     return chosen
 
 
-def corpus_grants(root: Path = REPO) -> dict[str, str]:
-    """Each committed corpus row's recorded licence (the `license` cell of `CORPUS.md`)."""
-    grants = {}
+class CorpusRow(NamedTuple):
+    number: str
+    name: str
+    source: str
+    grant: str
+
+
+def corpus_rows(root: Path = REPO) -> dict[str, CorpusRow]:
+    """Each committed corpus row of `CORPUS.md`: its number, name, source URL and recorded licence."""
+    rows = {}
     for line in (root / "tests" / "fixtures" / "CORPUS.md").read_text(encoding="utf-8").splitlines():
         cells = [cell.strip() for cell in line.split("|")]
         if len(cells) >= 9 and cells[1].isdigit() and cells[7] in ("committed", "link-ok"):
-            grants[cells[2].strip("` ")] = cells[6]
-    return grants
+            name = cells[2].strip("` ")
+            rows[name] = CorpusRow(cells[1], name, cells[4], cells[6])
+    return rows
+
+
+def corpus_grants(root: Path = REPO) -> dict[str, str]:
+    """Each committed corpus row's recorded licence (the `license` cell of `CORPUS.md`)."""
+    return {name: row.grant for name, row in corpus_rows(root).items()}
+
+
+# The aggregations whose copies a corpus row may be sourced from, as its source URL names them.
+AGGREGATION_SOURCE = re.compile(
+    r"^https://(?:raw\.githubusercontent\.com/(?P<repository>APIs-guru/openapi-directory|jentic/jentic-public-apis)/"
+    r"|api\.apis\.guru/)",
+    re.I,
+)
+
+
+def aggregator(source: str) -> str | None:
+    """The aggregation a corpus row's source URL copies its document from, or None for a publisher's."""
+    match = AGGREGATION_SOURCE.match(source)
+    if match is None:
+        return None
+    return match.group("repository") or "APIs.guru (api.apis.guru)"
 
 
 def registered_bytes(document: str, root: Path = REPO) -> bytes | None:
@@ -1209,6 +1240,10 @@ def registered_bytes(document: str, root: Path = REPO) -> bytes | None:
 # ---------------------------------------------------------------------------
 
 LicenceFetch = Callable[[str, str, str], tuple[int, bytes] | None]
+LICENCE_FETCH_ATTEMPTS = 4
+LICENCE_FETCH_BACKOFF_S = 15.0
+# A recorded grant that is only an aggregation's: the corpus spells it this way.
+AGGREGATION_GRANT = re.compile(r"\baggregat", re.I)
 
 
 def cell_text(text: str) -> str:
@@ -1238,14 +1273,29 @@ def licence_verdict(
             return f"admissible:{family} (info.license '{cell_text(declared)}')"
         return f"inadmissible:info.license '{cell_text(declared)}' names no grant the corpus rule admits"
     evidence = entry.evidence
-    if evidence.startswith("corpus:"):
-        recorded = evidence[len("corpus:") :]
+    if evidence.startswith(("corpus:", "corpus-aggregation:")):
+        recorded = evidence.split(":", 1)[1]
         family = screen.recognise(recorded)
+        # A row copied from an aggregation stands on the aggregation's grant unless it records a publisher's.
+        copied = evidence.startswith("corpus-aggregation:") and not re.search(r"\bpublisher", recorded, re.I)
+        if copied or AGGREGATION_GRANT.search(recorded):
+            # An aggregation's grant without a publisher grant does not pass the licence
+            # screen: the ruling corpus rows 223 and 224 were withdrawn on.
+            return (
+                "inadmissible:grants nothing: no info.license, and the corpus row records only an "
+                "aggregation's grant, which is no publisher grant"
+            )
         if family in families:
             return f"admissible:{family} (the corpus row's recorded grant: {cell_text(recorded)})"
         return f"inadmissible:no info.license, and the corpus row's recorded grant {cell_text(recorded)!r} is none admitted"
     if evidence == "no-publisher-grant":
         return "inadmissible:grants nothing: no info.license, and an APIs.guru archive copy carries no publisher grant"
+    aggregated = re.fullmatch(r"aggregation:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", evidence)
+    if aggregated is not None:
+        return (
+            f"inadmissible:grants nothing: no info.license, and {aggregated.group(1)} redistributes it as an "
+            "aggregation, whose grant is no publisher grant"
+        )
     match = re.fullmatch(r"repository:([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)@([0-9a-f]{40})", evidence)
     if match is None:
         return "inadmissible:grants nothing: no info.license and no recorded repository to read a licence file at"
@@ -1380,7 +1430,19 @@ def raw_licence_fetcher(evidence: Path | None, live: bool) -> LicenceFetch:
             return None
         if acquirer is None:
             acquirer = github.Acquirer(evidence, cache=cache_root() / "acquirer", raw_github_url=raw_base)
-        return acquirer.raw_github_get(url, "witness-populations", f"{repository}:{name}")
+        # A transient network failure (a name lookup, a reset) is retried with backoff
+        # rather than costing the whole screen; one that persists is refused, naming it.
+        for attempt in range(LICENCE_FETCH_ATTEMPTS):
+            try:
+                return acquirer.raw_github_get(url, "witness-populations", f"{repository}:{name}")
+            except OSError as error:
+                if attempt + 1 == LICENCE_FETCH_ATTEMPTS:
+                    raise ScreenError(
+                        f"{name} at {repository}@{commit} could not be read after {LICENCE_FETCH_ATTEMPTS} attempts "
+                        f"({error}); re-run `screen --fetch-licence` once the network answers"
+                    ) from error
+                time.sleep(LICENCE_FETCH_BACKOFF_S * 2**attempt)
+        raise AssertionError  # unreachable: the last attempt returns or raises
 
     return fetch
 

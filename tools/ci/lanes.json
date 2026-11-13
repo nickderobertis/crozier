@@ -481,6 +481,11 @@
       "linux",
       "macos",
       "windows"
+    ],
+    "witness-search:test-population-screen": [
+      "linux",
+      "macos",
+      "windows"
     ]
   },
   "nonCheckWorkflows": {

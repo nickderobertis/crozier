@@ -20,6 +20,7 @@ import gzip
 import importlib.util
 import json
 import sys
+import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 from types import ModuleType
@@ -73,6 +74,29 @@ def plan_rows(record: Path) -> list[Any]:
     rows = list(SCREEN.read_identities(record / "identities.tsv.gz"))
     hits = record / "search-identities.tsv"
     return rows + (list(SCREEN.read_identities(hits)) if hits.is_file() else [])
+
+
+def aggregation_only(entries: list[Any]) -> list[list[str]]:
+    """Every registered row whose only recorded grant is an aggregation's: number, name, spec, aggregator."""
+    corpus = SCREEN.corpus_rows()
+    found = []
+    with tempfile.TemporaryDirectory(prefix="witness-populations-record-") as scratch:
+        for entry in entries:
+            if entry.population != "registered":
+                continue
+            data = SCREEN.registered_bytes(entry.document)
+            if data is None:
+                continue
+            try:
+                document = SCREEN.parse(data, Path(scratch))
+            except Exception:  # an unparseable source grants nothing it can be read for
+                continue
+            verdict = SCREEN.licence_verdict(document, entry, True, lambda *_args: None)
+            if verdict.startswith("inadmissible:") and "aggregation" in verdict:
+                row = corpus[entry.document]
+                named = SCREEN.aggregator(row.source) or "the aggregation its recorded grant names"
+                found.append([row.number, f"`{row.name}`", row.source, named])
+    return sorted(found, key=lambda cells: int(cells[0]))
 
 
 def stamp(value: str) -> str:
@@ -269,6 +293,16 @@ def render(record: Path) -> str:
             [[f"`{key}`", ", ".join(f"`{c}`" for c in SCREEN.CONDITIONS[key])] for key in sorted(SCREEN.KEYS)],
         )
     )
+    aggregated = aggregation_only(entries)
+    w("\n## Registered rows on an aggregation's grant alone\n")
+    w(
+        f"{len(aggregated)} registered corpus rows declare no `info.license` and record only an aggregation's grant "
+        "(or are copied from an aggregation and record no publisher's). Under the ruling corpus rows 223 and 224 "
+        "were withdrawn on, an aggregation's grant is no publisher grant, so this screen reads each one "
+        "`inadmissible:` wherever it is a candidate. No corpus row is changed here: whether these rows stay "
+        "registered is a decision taken to the user.\n"
+    )
+    w(table(["row", "corpus name", "spec", "aggregator"], aggregated))
     w("\n## Missing populations\n")
     gh_unfetched, sg_unfetched = unfetched("github"), unfetched("sourcegraph")
     gh_why = (
@@ -336,7 +370,12 @@ def render(record: Path) -> str:
             if lowest
             else "No call reported an allowance"
         )
-        + f"; no call fell below the guard's 40% floor, so it paused {len(floor_waits)} times for the floor. "
+        + (
+            "; no call fell below the guard's 40% floor"
+            if all(left / limit >= 0.4 for left, limit in remaining)
+            else "; some calls fell below the guard's 40% floor"
+        )
+        + f", and it paused {len(floor_waits)} times for the floor. "
         f"It paused {len(pacing)} times for its spacing (the code-search bucket's 10 requests a minute, "
         f"{sum(w['duration_s'] for w in pacing):.0f} s in all, [search/index-pacing-waits.jsonl](search/index-pacing-waits.jsonl)). "
         "No core or contents REST request was made.\n"
@@ -353,6 +392,28 @@ def render(record: Path) -> str:
                     c.get("limit", "-"),
                 ]
                 for c in code_calls
+            ],
+            right=2,
+        )
+    )
+
+    def allowance_before(at: str) -> str:
+        """The allowance the guard last reported before a pause began."""
+        earlier = [c for c in code_calls if c["at"] <= at and isinstance(c.get("remaining"), int)]
+        return f"{earlier[-1]['remaining']} of {earlier[-1]['limit']}" if earlier else "none reported yet"
+
+    w("\nEach pause the guard took on the code-search bucket, with the allowance it last reported:\n")
+    w(
+        table(
+            ["paused at", "cause", "seconds", "remaining allowance"],
+            [
+                [
+                    stamp(wait["at"]),
+                    wait.get("cause", "-"),
+                    f"{wait.get('duration_s', 0):.0f}",
+                    allowance_before(str(wait.get("started_at") or wait["at"])),
+                ]
+                for wait in [*pacing, *floor_waits]
             ],
             right=2,
         )

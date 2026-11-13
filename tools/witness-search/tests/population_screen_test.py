@@ -18,6 +18,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import socket
 import subprocess
 import sys
 import tempfile
@@ -675,6 +676,10 @@ class _Raw(BaseHTTPRequestHandler):
 
     def do_GET(self) -> None:
         self.server.requests.append(self.path)
+        if getattr(self.server, "drop_first", False) and len(self.server.requests) == 1:
+            # A connection the far end resets before answering: a transient network failure.
+            self.close_connection = True
+            return
         body = self.server.files.get(self.path)
         self.send_response(200 if body is not None else 404)
         body = body if body is not None else b"404: Not Found"
@@ -844,7 +849,29 @@ class LicenceScreenTests(ScreenHarness):
                 [KEY_T],
                 evidence="corpus:MIT (repository LICENSE at the pinned revision)",
             ),
+            # An aggregation's grant is no publisher grant, whether the corpus recorded it or a copy sits in one.
+            self.entry(
+                "registered-aggregation",
+                self.EXACT,
+                [KEY_T],
+                evidence="corpus:CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`)",
+            ),
+            self.entry("aggregated", self.EXACT, [KEY_T], evidence=f"aggregation:jentic/jentic-public-apis@{COMMIT}"),
+            # A row sourced from an aggregation stands on its grant unless the corpus recorded a publisher's.
+            self.entry(
+                "registered-copy",
+                self.EXACT,
+                [KEY_T],
+                evidence="corpus-aggregation:CC0 (repository LICENSE at the pinned revision)",
+            ),
+            self.entry(
+                "registered-copy-publisher",
+                self.EXACT,
+                [KEY_T],
+                evidence="corpus-aggregation:Apache-2.0 (the publisher repository's pinned `LICENSE`)",
+            ),
         ]
+        self.server.files[f"/jentic/jentic-public-apis/{COMMIT}/LICENSE"] = b"CC0 1.0 Universal\n"
         done, output = self.screen(rows, "--no-discover", "--fetch-licence")
         self.assertEqual(0, done.returncode, done.stderr)
         got = {row.document.split("/")[1]: (row.licence, row.status) for row in SCREEN.read_screen(output)}
@@ -865,6 +892,26 @@ class LicenceScreenTests(ScreenHarness):
                 "registered-grant": (
                     "admissible:MIT (the corpus row's recorded grant: MIT (repository LICENSE at the pinned revision))",
                     "certified-screen-pending",
+                ),
+                "registered-aggregation": (
+                    "inadmissible:grants nothing: no info.license, and the corpus row records only an aggregation's "
+                    "grant, which is no publisher grant",
+                    "rejected-licence",
+                ),
+                "registered-copy": (
+                    "inadmissible:grants nothing: no info.license, and the corpus row records only an aggregation's "
+                    "grant, which is no publisher grant",
+                    "rejected-licence",
+                ),
+                "registered-copy-publisher": (
+                    "admissible:Apache-2.0 (the corpus row's recorded grant: Apache-2.0 (the publisher repository's "
+                    "pinned `LICENSE`))",
+                    "certified-screen-pending",
+                ),
+                "aggregated": (
+                    "inadmissible:grants nothing: no info.license, and jentic/jentic-public-apis redistributes it as "
+                    "an aggregation, whose grant is no publisher grant",
+                    "rejected-licence",
                 ),
             },
             got,
@@ -898,6 +945,36 @@ class LicenceScreenTests(ScreenHarness):
         self.assertEqual(1, done.returncode)
         self.assertIn(f"no bytes carrying sha256 {row[3]} are in the store; acquire them first", done.stderr)
         self.assertFalse(output.exists())
+
+
+class LicenceFetchTests(ScreenHarness):
+    def test_a_transient_failure_is_retried_and_a_persistent_one_is_refused_naming_it(self) -> None:
+        self.server.files[f"/acme/flaky/{COMMIT}/LICENSE"] = b"MIT License\n"
+        self.server.drop_first = True  # type: ignore[attr-defined]
+        saved = (
+            SCREEN.LICENCE_FETCH_BACKOFF_S,
+            os.environ.get("CROZIER_RAW_GITHUB_URL"),
+            os.environ.get("XDG_CACHE_HOME"),
+        )
+        self.addCleanup(setattr, SCREEN, "LICENCE_FETCH_BACKOFF_S", saved[0])
+        for name, value in (("CROZIER_RAW_GITHUB_URL", saved[1]), ("XDG_CACHE_HOME", saved[2])):
+            self.addCleanup(lambda n=name, v=value: os.environ.pop(n, None) if v is None else os.environ.update({n: v}))
+        SCREEN.LICENCE_FETCH_BACKOFF_S = 0.0
+        os.environ["CROZIER_RAW_GITHUB_URL"] = self.env["CROZIER_RAW_GITHUB_URL"]
+        os.environ["XDG_CACHE_HOME"] = self.env["XDG_CACHE_HOME"]
+        fetch = SCREEN.raw_licence_fetcher(self.scratch / "evidence", live=True)
+        self.assertEqual((200, b"MIT License\n"), fetch("acme/flaky", COMMIT, "LICENSE"))
+        self.assertEqual([f"/acme/flaky/{COMMIT}/LICENSE"] * 2, self.server.requests)
+        # Nothing listens at a closed port: every attempt fails, and the screen is refused, naming why.
+        with socket.socket() as probe:
+            probe.bind(("127.0.0.1", 0))
+            closed = probe.getsockname()[1]
+        os.environ["CROZIER_RAW_GITHUB_URL"] = f"http://127.0.0.1:{closed}"
+        fetch = SCREEN.raw_licence_fetcher(self.scratch / "evidence-closed", live=True)
+        with self.assertRaisesRegex(
+            SCREEN.ScreenError, r"LICENSE at acme/gone@a{40} could not be read after 4 attempts"
+        ):
+            fetch("acme/gone", COMMIT, "LICENSE")
 
 
 GOOD = (
@@ -1135,10 +1212,9 @@ class CommittedTableTests(unittest.TestCase):
         cls.rows = SCREEN.read_screen(SCREEN.TABLE)
 
     def test_the_committed_table_reads_whole_through_the_reader(self) -> None:
-        self.assertTrue(self.rows)
-        self.assertEqual(
-            set(SCREEN.KEYS) - {row.key for row in self.rows}, set(SCREEN.KEYS) - {row.key for row in self.rows}
-        )
+        # `read_screen` refused nothing in setUpClass; every key has candidates screened.
+        self.assertEqual(set(SCREEN.KEYS), {row.key for row in self.rows})
+        self.assertEqual(len(self.rows), len({(row.key, row.population, row.document) for row in self.rows}))
 
     def test_every_candidate_the_earlier_named_census_lists_has_a_row(self) -> None:
         build = load("witness_populations_build_under_test", REPO / "tools/witness-search/witness-populations-build.py")
