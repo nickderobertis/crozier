@@ -37,7 +37,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= screenshots/tests/demo_gif_test.py screenshots/tests/capture_visual_docs_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= screenshots/tests/demo_gif_test.py screenshots/tests/capture_visual_docs_test.py screenshots/tests/fetch_tool_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/screenshots/test/.coverage"
         }

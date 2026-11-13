@@ -57,6 +57,10 @@ def test_it_pins_the_toolchain_mounts_the_checkout_and_keeps_the_build_off_the_h
     for tree in ("shots/current/x86_64", "shots/verify/x86_64"):
         assert f"capture {tree}" in arguments
     assert 'chown -R "$HOST_OWNER" shots docs/screenshots' in arguments
+    # Both pinned tools come through the retrying download, never a single curl attempt.
+    assert 'bash screenshots/fetch-tool.sh "https://github.com/charmbracelet/freeze/releases/download/' in arguments
+    assert 'bash screenshots/fetch-tool.sh "https://github.com/astral-sh/ruff/releases/download/' in arguments
+    assert "curl " not in arguments
 
 
 def test_outside_a_checkout_it_says_so_before_any_container(tmp_path: Path) -> None:

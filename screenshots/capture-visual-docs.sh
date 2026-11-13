@@ -30,13 +30,13 @@ docker run --rm -v "$PWD":/work -v "$git_common":"$git_common":ro -v crozier-vis
     git config --global --add safe.directory "$GIT_COMMON"
     # freeze renders the deterministic SVGs; ruff is what crozier defers Python
     # wrapping to. Both prebuilt, pinned to the files the local recipes read, so the
-    # local and CI renderers cannot silently diverge.
+    # local and CI renderers cannot silently diverge; fetch-tool.sh retries a dropped transfer.
     freeze_ver="$(cat .freeze-version)"
-    curl -fsSL -o /tmp/freeze.tgz "https://github.com/charmbracelet/freeze/releases/download/v${freeze_ver}/freeze_${freeze_ver}_Linux_x86_64.tar.gz"
+    bash screenshots/fetch-tool.sh "https://github.com/charmbracelet/freeze/releases/download/v${freeze_ver}/freeze_${freeze_ver}_Linux_x86_64.tar.gz" /tmp/freeze.tgz
     tar -xzf /tmp/freeze.tgz -C /tmp
     install /tmp/freeze*/freeze /usr/local/bin/freeze
     ruff_ver="$(cat .ruff-version)"
-    curl -fsSL -o /tmp/ruff.tgz "https://github.com/astral-sh/ruff/releases/download/${ruff_ver}/ruff-x86_64-unknown-linux-gnu.tar.gz"
+    bash screenshots/fetch-tool.sh "https://github.com/astral-sh/ruff/releases/download/${ruff_ver}/ruff-x86_64-unknown-linux-gnu.tar.gz" /tmp/ruff.tgz
     tar -xzf /tmp/ruff.tgz -C /tmp
     install /tmp/ruff-x86_64-unknown-linux-gnu/ruff /usr/local/bin/ruff
     # llmlint: ignore[work_goes_through_command_surface] The rust image carries no `just`, and each capture needs its own SHOTS_OUT; `just screenshots` is this same one-line script.

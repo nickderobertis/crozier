@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# fetch-tool.sh URL OUT: download one pinned tool archive for the visual-docs capture,
+# recovering a transient transfer failure. The capture's container runs it for each tool.
+#
+# A failure curl reports as transient (name or connection failure, a partial or reset
+# transfer, a timeout, a TLS handshake, an empty reply, or an HTTP 408, 429 or 5xx answer)
+# is retried after FETCH_TOOL_DELAY seconds (default 2), then twice and three times that,
+# for at most FETCH_TOOL_ATTEMPTS attempts (default 4). Anything else, a 404 for a version
+# that was never released included, fails at once. Either way it fails naming the URL and
+# curl's last error, and OUT is written only by a complete download.
+set -euo pipefail
+
+if [ "$#" -ne 2 ]; then
+  echo "fetch-tool: usage: screenshots/fetch-tool.sh URL OUT" >&2
+  exit 2
+fi
+url=$1
+out=$2
+attempts=${FETCH_TOOL_ATTEMPTS:-4}
+delay=${FETCH_TOOL_DELAY:-2}
+case "$attempts$delay" in
+  *[!0-9]* | "")
+    echo "fetch-tool: FETCH_TOOL_ATTEMPTS and FETCH_TOOL_DELAY must be whole numbers" >&2
+    exit 2
+    ;;
+esac
+
+attempt=0
+while :; do
+  attempt=$((attempt + 1))
+  status=0
+  error=$(curl -fsSL --connect-timeout 30 -o "$out.part" "$url" 2>&1) || status=$?
+  if [ "$status" -eq 0 ]; then
+    mv "$out.part" "$out"
+    exit 0
+  fi
+  rm -f "$out.part"
+  transient=false
+  case $status in
+    5 | 6 | 7 | 16 | 18 | 28 | 35 | 52 | 55 | 56 | 92) transient=true ;;
+    22) case $error in *"error: 408"* | *"error: 429"* | *"error: 5"[0-9][0-9]*) transient=true ;; esac ;;
+  esac
+  if [ "$transient" != true ] || [ "$attempt" -ge "$attempts" ]; then
+    break
+  fi
+  wait=$((delay * attempt))
+  echo "fetch-tool: $url: attempt $attempt/$attempts failed (curl exit $status: $error); retrying in ${wait}s" >&2
+  sleep "$wait"
+done
+echo "fetch-tool: could not download $url after $attempt attempt(s): curl exit $status: $error — check the pinned version file and the network, then re-run" >&2
+exit 1
