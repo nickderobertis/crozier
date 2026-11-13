@@ -1349,9 +1349,20 @@ def entry_failures(entry: Entry) -> list[str]:
     if not (SHA.fullmatch(entry.sha256) or (unfetchable and entry.sha256 == "-")):
         wrong.append(f"sha256 {entry.sha256!r} is no SHA-256 (`-` only beside an unfetchable reason)")
     try:
-        entry.licence_evidence()
+        evidence = entry.licence_evidence()
     except ScreenError as error:
         wrong.append(str(error))
+    else:
+        # A repository's licence file is read at the repository and commit the candidate's own source names.
+        segments = urllib.parse.urlsplit(entry.source).path.split("/")[1:]
+        named = ("/".join(segments[:2]), segments[2]) if len(segments) >= 3 else None
+        if evidence.kind in (EvidenceKind.REPOSITORY, EvidenceKind.AGGREGATION) and named != (
+            evidence.repository,
+            evidence.commit,
+        ):
+            wrong.append(
+                f"evidence {entry.evidence!r} names another repository or commit than its source {entry.source!r}"
+            )
     unknown = [key for key in entry.forced() if key not in KEYS]
     if unknown:
         wrong.append(f"keys {unknown} are no combination keys")

@@ -564,6 +564,28 @@ CASES += [
         ),
         {"combo-success-anyof-nullable": "exact"},
     ),
+    # A callback's operations and an unreferenced component Path Item are no SDK surface: no trigger there.
+    (
+        "callback-operation",
+        document(
+            paths={
+                "/subscribe": {
+                    "post": get(
+                        operationId="subscribe",
+                        callbacks={
+                            "event": {"{$request.body#/url}": {"post": get(operationId="Hooks_", tags=["Hooks"])}}
+                        },
+                    )
+                }
+            }
+        ),
+        {"combo-tag-only-operation-id": "absent"},
+    ),
+    (
+        "unreferenced-path-item",
+        with_components(document(), pathItems={"Hooks": {"get": get(operationId="Hooks_", tags=["Hooks"])}}),
+        {"combo-tag-only-operation-id": "absent"},
+    ),
     (
         "reference-cycle",
         success(
@@ -1038,7 +1060,7 @@ class LicenceScreenTests(ScreenHarness):
                 [KEY_T],
                 evidence="corpus:CC0-1.0 (the aggregating repository's own `LICENSE`; the document declares no `info.license`)",
             ),
-            self.entry("aggregated", self.EXACT, [KEY_T], evidence=f"aggregation:jentic/jentic-public-apis@{COMMIT}"),
+            self.entry("aggregated", self.EXACT, [KEY_T], evidence=f"aggregation:acme/aggregated@{COMMIT}"),
             self.entry(
                 "malformed", self.EXACT.replace(b'"version": "1"}', b'"version": "1", "license": "MIT"}'), [KEY_T]
             ),
@@ -1095,12 +1117,24 @@ class LicenceScreenTests(ScreenHarness):
                 ),
                 "malformed": ("inadmissible:info.license is there but is no License Object", "rejected-licence"),
                 "aggregated": (
-                    "inadmissible:grants nothing: no info.license, and jentic/jentic-public-apis redistributes it as "
+                    "inadmissible:grants nothing: no info.license, and acme/aggregated redistributes it as "
                     "an aggregation, whose grant is no publisher grant",
                     "rejected-licence",
                 ),
             },
             got,
+        )
+        self.assertEqual([], self.server.requests)
+
+    def test_a_cached_licence_file_decides_without_any_live_request(self) -> None:
+        responses = self.scratch / "responses"
+        self.env[GUARD.CACHE_DIR_ENV] = str(responses)
+        cache_answer(responses, f"{self.env['CROZIER_RAW_GITHUB_URL']}/acme/kept/{COMMIT}/LICENSE", b"MIT License\n")
+        done, output = self.screen([self.entry("kept", self.EXACT, [KEY_T])], "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        [row] = SCREEN.read_screen(output)
+        self.assertEqual(
+            (f"admissible:MIT (LICENSE at {COMMIT})", "certified-screen-pending"), (row.licence, row.status)
         )
         self.assertEqual([], self.server.requests)
 
@@ -1171,6 +1205,7 @@ class ManifestTests(ScreenHarness):
             ([[*good[:4], "repository:../x@" + COMMIT, *good[5:]]], None, "evidence 'repository:../x@"),
             ([[*good[:5], "combo-nope", good[6]]], None, "keys ['combo-nope'] are no combination keys"),
             ([good, good], None, "duplicates line 2's candidate"),
+            ([[*good[:4], f"repository:acme/other@{COMMIT}", *good[5:]]], None, "names another repository or commit"),
         ):
             with self.subTest(message=message):
                 path = self.manifest(rows)
@@ -1941,8 +1976,15 @@ class BuildTests(BuildHarness):
             str(output),
         )
         digest = hashlib.sha256(fetched).hexdigest()
-        for commit, pin in (("c" * 40, blob), ("b" * 40, "blob:" + "0" * 40), ("b" * 40, blob)):
-            with self.subTest(commit=commit, pin=pin):
+        other = hashlib.sha256(self.registered).hexdigest()
+        SCREEN.store(self.registered, self.store)
+        for commit, pin, content in (
+            ("c" * 40, blob, digest),
+            ("b" * 40, "blob:" + "0" * 40, digest),
+            ("b" * 40, blob, other),  # kept bytes that do not carry the planned blob
+            ("b" * 40, blob, digest),
+        ):
+            with self.subTest(commit=commit, pin=pin, content=content):
                 self.write(
                     ledger,
                     [
@@ -1952,13 +1994,13 @@ class BuildTests(BuildHarness):
                             "commit": commit,
                             "sha256": pin,
                             "how": "raw",
-                            "content_sha256": digest,
+                            "content_sha256": content,
                         }
                     ],
                 )
                 done = self.build(*args)
                 self.assertEqual(0, done.returncode, done.stderr)
-                attributed = (commit, pin) == ("b" * 40, blob)
+                attributed = (commit, pin, content) == ("b" * 40, blob, digest)
                 documents = {e.document for e in SCREEN.read_manifest(output)}
                 self.assertEqual(attributed, "acme/moved/openapi.json" in documents)
 

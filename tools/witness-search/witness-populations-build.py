@@ -446,7 +446,9 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
             identity.population not in LEDGERS
             or (identity.population, identity.document) in seen
             or not SCREEN.SHA.fullmatch(digest)
-            or SCREEN.cached(digest, store_root) is None
+            or (kept := SCREEN.cached(digest, store_root)) is None
+            # The ledger's digest is attributed only to bytes that carry the planned pin.
+            or not SCREEN.pinned_by(identity, kept)
         ):
             continue
         seen.add((identity.population, identity.document))

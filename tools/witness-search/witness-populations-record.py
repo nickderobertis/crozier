@@ -70,7 +70,8 @@ FIELD_CHECKS: dict[str, Callable[[Any], bool]] = {
     "population": lambda value: value in SCREEN.POPULATIONS,
     "document": lambda value: isinstance(value, str) and bool(value),
     "how": lambda value: isinstance(value, str) and SCREEN.acquisition_outcome(value),
-    "status": lambda value: isinstance(value, int | str) and not isinstance(value, bool),
+    # An HTTP status, or the raw lane's `IncompleteRead` for a transfer cut short.
+    "status": lambda value: (type(value) is int and 0 <= value <= 599) or value == "IncompleteRead",
     "url": lambda value: isinstance(value, str) and value.startswith(("https://", "http://")),
     "host": lambda value: value in ("github", "sourcegraph"),
     "source": lambda value: value in BUILD.QUERY_SOURCES,
