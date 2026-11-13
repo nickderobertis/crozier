@@ -56,7 +56,7 @@ class MatchUsage(unittest.TestCase):
                 "args = sys.argv[1:]\n"
                 "with Path(os.environ['MATCH_TEST_CALLS']).open('a') as calls:\n"
                 "    calls.write(json.dumps(args) + '\\n')\n"
-                "if args == ['run', '--locked', '--quiet', '--', 'config', 'python']:\n"
+                "if args == ['run', '--locked', '--quiet', '--profile', 'e2e', '--', 'config', 'python']:\n"
                 "    signal.signal(signal.SIGPIPE, signal.SIG_DFL)\n"
                 "    value = os.environ['MATCH_TEST_STRICT_VALUE']\n"
                 "    os.write(1, f'  fern-strict {value} (env)\\n'.encode())\n"
@@ -132,7 +132,7 @@ class MatchUsage(unittest.TestCase):
                 env={**os.environ, "CARGO_TARGET_DIR": str(blocker)},
             )
         self.assertEqual(101, result.returncode, result.stderr)
-        self.assertIn("corpus-match: `cargo build --locked --quiet -p crozier --bin crozier` exited 101", result.stderr)
+        self.assertIn("corpus-match: `cargo build --locked --quiet --profile e2e -p crozier --bin crozier` exited 101", result.stderr)
         self.assertIn("then re-run", result.stderr)
 
 
