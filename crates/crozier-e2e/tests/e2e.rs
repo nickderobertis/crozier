@@ -289,10 +289,23 @@ fn every_sdk_env_journey_is_selected_by_the_sdk_env_tier() {
             continue;
         }
         found.push(name);
-        let command = project["targets"]["test"]["options"]["command"]
+        // A target's one `command`, or the `commands` it runs in order (a build, then the suite).
+        let options = &project["targets"]["test"]["options"];
+        let commands: Vec<&str> = options["command"]
             .as_str()
-            .unwrap_or_default();
-        if command.contains("cargo nextest run") && command.contains("-p crozier-e2e") {
+            .into_iter()
+            .chain(
+                options["commands"]
+                    .as_array()
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|command| command.as_str()),
+            )
+            .collect();
+        for command in commands {
+            if !(command.contains("cargo nextest run") && command.contains("-p crozier-e2e")) {
+                continue;
+            }
             let expression = command
                 .split("-E \"")
                 .nth(1)

@@ -237,7 +237,8 @@ test('an ordinary pull request push runs exactly the four governed lanes, none w
   // The title and judged checks are steps of lint, once, rather than jobs of their own.
   const steps = ci.jobs.lint.steps;
   assert.equal(steps.filter(s => s.uses?.startsWith('amannn/action-semantic-pull-request@')).length, 1);
-  assert.equal(steps.filter(s => s.run?.trim().endsWith('just lint-llm-diff origin/main')).length, 1);
+  // The judge step records an unanswered judge rather than failing; its last step withholds the verdict.
+  assert.equal(steps.filter(s => /^ *just lint-llm-diff origin\/main \|\| status=\$\?$/m.test(s.run ?? '')).length, 1);
   assert.equal(steps.filter(s => s.run === 'just test-llmlint-plugins').length, 1);
 });
 
