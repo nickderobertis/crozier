@@ -1,6 +1,6 @@
 # Reference
 ## Keepers
-<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py">list_keepers</a>() -> typing.List[Keeper]</code></summary>
+<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py#L26-L49">list_keepers</a>() -> typing.List[Keeper]</code></summary>
 <dl>
 <dd>
 

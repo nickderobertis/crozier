@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">trace_a_path</a>(...) -> PutV1TraceResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L112-L141">trace_a_path</a>(...) -> PutV1TraceResponse</code></summary>
 <dl>
 <dd>
 
@@ -69,7 +69,7 @@ client.trace_a_path()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">trace_paths_given_switches</a>(...) -> PutV1TracesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L143-L174">trace_paths_given_switches</a>(...) -> PutV1TracesResponse</code></summary>
 <dl>
 <dd>
 

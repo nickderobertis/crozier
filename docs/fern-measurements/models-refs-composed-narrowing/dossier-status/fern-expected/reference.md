@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">file_dossier</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L133">file_dossier</a>(...)</code></summary>
 <dl>
 <dd>
 

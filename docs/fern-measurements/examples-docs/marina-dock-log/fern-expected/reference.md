@@ -1,6 +1,6 @@
 # Reference
 ## Docks
-<details><summary><code>client.docks.<a href="src/fern/docks/client.py">export_dock_log</a>(...) -> str</code></summary>
+<details><summary><code>client.docks.<a href="src/fern/docks/client.py#L25-L64">export_dock_log</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

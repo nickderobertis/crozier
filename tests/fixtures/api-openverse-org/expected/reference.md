@@ -1,6 +1,6 @@
 # Reference
 ## images
-<details><summary><code>client.images.<a href="src/fern/images/client.py">search_images</a>(...) -> PaginatedImageResults</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L36-L146">search_images</a>(...) -> PaginatedImageResults</code></summary>
 <dl>
 <dd>
 
@@ -191,7 +191,7 @@ client.images.search_images()
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image</a>(...) -> Image</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L148-L177">get_image</a>(...) -> Image</code></summary>
 <dl>
 <dd>
 
@@ -264,7 +264,7 @@ client.images.get_image(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_related_images</a>(...) -> PaginatedImageResults</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L179-L210">get_related_images</a>(...) -> PaginatedImageResults</code></summary>
 <dl>
 <dd>
 
@@ -337,7 +337,7 @@ client.images.get_related_images(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">report_image</a>(...)</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L212-L256">report_image</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -419,7 +419,7 @@ client.images.report_image(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L258-L289">get_image_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -492,7 +492,7 @@ client.images.get_image_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_oembed</a>(...) -> GetImageOembedResponse</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L291-L322">get_image_oembed</a>(...) -> GetImageOembedResponse</code></summary>
 <dl>
 <dd>
 
@@ -565,7 +565,7 @@ client.images.get_image_oembed(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">get_image_stats</a>() -> typing.List[SourceStats]</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L324-L348">get_image_stats</a>() -> typing.List[SourceStats]</code></summary>
 <dl>
 <dd>
 
@@ -629,7 +629,7 @@ client.images.get_image_stats()
 </details>
 
 ## audio
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">search_audio</a>(...) -> PaginatedAudioResults</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L35-L140">search_audio</a>(...) -> PaginatedAudioResults</code></summary>
 <dl>
 <dd>
 
@@ -812,7 +812,7 @@ client.audio.search_audio()
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">get_audio</a>(...) -> Audio</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L142-L171">get_audio</a>(...) -> Audio</code></summary>
 <dl>
 <dd>
 
@@ -885,7 +885,7 @@ client.audio.get_audio(
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">get_related_audio</a>(...) -> PaginatedAudioResults</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L173-L204">get_related_audio</a>(...) -> PaginatedAudioResults</code></summary>
 <dl>
 <dd>
 
@@ -958,7 +958,7 @@ client.audio.get_related_audio(
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">report_audio</a>(...)</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L206-L250">report_audio</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1040,7 +1040,7 @@ client.audio.report_audio(
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">get_audio_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L252-L283">get_audio_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1113,7 +1113,7 @@ client.audio.get_audio_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">get_audio_waveform</a>(...) -> GetAudioWaveformResponse</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L285-L316">get_audio_waveform</a>(...) -> GetAudioWaveformResponse</code></summary>
 <dl>
 <dd>
 
@@ -1186,7 +1186,7 @@ client.audio.get_audio_waveform(
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">get_audio_stats</a>() -> typing.List[SourceStats]</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L318-L342">get_audio_stats</a>() -> typing.List[SourceStats]</code></summary>
 <dl>
 <dd>
 
@@ -1250,7 +1250,7 @@ client.audio.get_audio_stats()
 </details>
 
 ## auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">register_application</a>(...) -> RegisterApplicationResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L32-L73">register_application</a>(...) -> RegisterApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1341,7 +1341,7 @@ client.auth.register_application(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_access_token</a>(...) -> GetAccessTokenResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L75-L120">get_access_token</a>(...) -> GetAccessTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1433,7 +1433,7 @@ client.auth.get_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_rate_limit</a>() -> GetRateLimitResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L122-L146">get_rate_limit</a>() -> GetRateLimitResponse</code></summary>
 <dl>
 <dd>
 

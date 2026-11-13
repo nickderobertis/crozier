@@ -1,6 +1,6 @@
 # Reference
 ## Bays
-<details><summary><code>client.bays.<a href="src/fern/bays/client.py">set_targets</a>(...)</code></summary>
+<details><summary><code>client.bays.<a href="src/fern/bays/client.py#L29-L66">set_targets</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.bays.set_targets(
 </dl>
 </details>
 
-<details><summary><code>client.bays.<a href="src/fern/bays/client.py">submit_readings</a>(...)</code></summary>
+<details><summary><code>client.bays.<a href="src/fern/bays/client.py#L68-L98">submit_readings</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">fetch_api_key</a>(...) -> ApiKeyResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L31-L96">fetch_api_key</a>(...) -> ApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -112,7 +112,7 @@ See the `require_email_format_usernames` parameter documented in
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">jwt_fetch_api_key</a>(...) -> JwtFetchApiKeyResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L98-L158">jwt_fetch_api_key</a>(...) -> JwtFetchApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -217,7 +217,7 @@ user's profile details in the response.
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">dev_fetch_api_key</a>(...) -> ApiKeyResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L160-L202">dev_fetch_api_key</a>(...) -> ApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -301,7 +301,7 @@ client.authentication.dev_fetch_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">dev_list_users</a>() -> DevListUsersResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L204-L238">dev_list_users</a>() -> DevListUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.authentication.dev_list_users()
 </details>
 
 ## RealTimeEvents
-<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py">get_events</a>(...) -> GetEventsResponse</code></summary>
+<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py#L36-L99">get_events</a>(...) -> GetEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -489,7 +489,7 @@ client a heartbeat event.
 </dl>
 </details>
 
-<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py">delete_queue</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py#L101-L132">delete_queue</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -566,7 +566,7 @@ The ID of an event queue that was previously registered via
 </dl>
 </details>
 
-<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py">register_queue</a>(...) -> RegisterQueueResponse</code></summary>
+<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py#L134-L490">register_queue</a>(...) -> RegisterQueueResponse</code></summary>
 <dl>
 <dd>
 
@@ -1007,7 +1007,7 @@ maximum allowed value is 7 days.
 </dl>
 </details>
 
-<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py">post_real_time</a>(...)</code></summary>
+<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py#L492-L534">post_real_time</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1095,7 +1095,7 @@ client.real_time_events.post_real_time()
 </dl>
 </details>
 
-<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py">rest_error_handling</a>()</code></summary>
+<details><summary><code>client.real_time_events.<a href="src/fern/real_time_events/client.py#L536-L560">rest_error_handling</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1160,7 +1160,7 @@ client.real_time_events.rest_error_handling()
 </details>
 
 ## Channels
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_stream_id</a>(...) -> GetStreamIdResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L91-L123">get_stream_id</a>(...) -> GetStreamIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1234,7 +1234,7 @@ client.channels.get_stream_id(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">add_default_stream</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L125-L160">add_default_stream</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -1311,7 +1311,7 @@ client.channels.add_default_stream(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">remove_default_stream</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L162-L197">remove_default_stream</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -1388,7 +1388,7 @@ client.channels.remove_default_stream(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_stream_topics</a>(...) -> GetStreamTopicsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L199-L259">get_stream_topics</a>(...) -> GetStreamTopicsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1491,7 +1491,7 @@ the empty string was not a valid topic.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_subscriptions</a>(...) -> GetSubscriptionsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L261-L321">get_subscriptions</a>(...) -> GetSubscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1590,7 +1590,7 @@ New in Zulip 2.1.0.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">subscribe</a>(...) -> SubscribeResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L323-L539">subscribe</a>(...) -> SubscribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1941,7 +1941,7 @@ This parameter adds the newly created channel to the specified
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">unsubscribe</a>(...) -> UnsubscribeResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L541-L621">unsubscribe</a>(...) -> UnsubscribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2068,7 +2068,7 @@ A list of channel names to unsubscribe from. This parameter is called
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_subscriptions</a>(...) -> UpdateSubscriptionsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L623-L665">update_subscriptions</a>(...) -> UpdateSubscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2155,7 +2155,7 @@ channel is to be created, its description.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">mute_topic</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L667-L740">mute_topic</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -2283,7 +2283,7 @@ instead of the `stream` parameter when possible.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_user_topic</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L742-L822">update_user_topic</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -2412,7 +2412,7 @@ a visibility policy option.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_subscription_status</a>(...) -> GetSubscriptionStatusResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L824-L865">get_subscription_status</a>(...) -> GetSubscriptionStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2500,7 +2500,7 @@ client.channels.get_subscription_status(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_user_channels</a>(...) -> GetUserChannelsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L867-L912">get_user_channels</a>(...) -> GetUserChannelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2587,7 +2587,7 @@ client.channels.get_user_channels(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_subscription_settings</a>(...) -> IgnoredParametersSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L914-L980">update_subscription_settings</a>(...) -> IgnoredParametersSuccess</code></summary>
 <dl>
 <dd>
 
@@ -2691,7 +2691,7 @@ being modified and its new `value`.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_subscription_property</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L982-L1033">update_subscription_property</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -2789,7 +2789,7 @@ client.channels.update_subscription_property(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_subscribers</a>(...) -> GetSubscribersResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1035-L1070">get_subscribers</a>(...) -> GetSubscribersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2866,7 +2866,7 @@ client.channels.get_subscribers(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_streams</a>(...) -> GetStreamsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1072-L1168">get_streams</a>(...) -> GetStreamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3032,7 +3032,7 @@ Include all the channels that the user has content access to.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_stream_by_id</a>(...) -> GetStreamByIdResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1170-L1207">get_stream_by_id</a>(...) -> GetStreamByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3111,7 +3111,7 @@ client.channels.get_stream_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">archive_stream</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1209-L1239">archive_stream</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -3185,7 +3185,7 @@ client.channels.archive_stream(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_stream</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1241-L1636">update_stream</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -3717,7 +3717,7 @@ could send messages in a channel, you could create topics in the channel.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_stream_email_address</a>(...) -> GetStreamEmailAddressResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1638-L1699">get_stream_email_address</a>(...) -> GetStreamEmailAddressResponse</code></summary>
 <dl>
 <dd>
 
@@ -3821,7 +3821,7 @@ Previously, the sender was always Email gateway bot.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">delete_topic</a>(...) -> DeleteTopicResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1701-L1778">delete_topic</a>(...) -> DeleteTopicResponse</code></summary>
 <dl>
 <dd>
 
@@ -3947,7 +3947,7 @@ was not a valid topic name for channel messages.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_channel</a>(...) -> CreateChannelResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1780-L1953">create_channel</a>(...) -> CreateChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -4254,7 +4254,7 @@ This parameter adds the newly created channel to the specified
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_channel_folder</a>(...) -> CreateChannelFolderResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L1955-L2014">create_channel_folder</a>(...) -> CreateChannelFolderResponse</code></summary>
 <dl>
 <dd>
 
@@ -4356,7 +4356,7 @@ folder is desired.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_channel_folders</a>() -> GetChannelFoldersResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2016-L2049">get_channel_folders</a>() -> GetChannelFoldersResponse</code></summary>
 <dl>
 <dd>
 
@@ -4426,7 +4426,7 @@ client.channels.get_channel_folders()
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">patch_channel_folders</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2051-L2095">patch_channel_folders</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -4517,7 +4517,7 @@ folders](/api/get-channel-folders), including archived folders.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_channel_folder</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2097-L2166">update_channel_folder</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -4635,7 +4635,7 @@ to determine the maximum channel folder description length.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_big_blue_button_video_call</a>(...) -> CreateBigBlueButtonVideoCallResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2168-L2221">create_big_blue_button_video_call</a>(...) -> CreateBigBlueButtonVideoCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -4731,7 +4731,7 @@ creator/moderator can edit this configuration.
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_nextcloud_talk_video_call</a>(...) -> CreateNextcloudTalkVideoCallResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2223-L2261">create_nextcloud_talk_video_call</a>(...) -> CreateNextcloudTalkVideoCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -4809,7 +4809,7 @@ client.channels.create_nextcloud_talk_video_call(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_webex_video_call</a>() -> CreateWebexVideoCallResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2263-L2301">create_webex_video_call</a>() -> CreateWebexVideoCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -4884,7 +4884,7 @@ client.channels.create_webex_video_call()
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_constructor_groups_video_call</a>() -> CreateConstructorGroupsVideoCallResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L2303-L2334">create_constructor_groups_video_call</a>() -> CreateConstructorGroupsVideoCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -4953,7 +4953,7 @@ client.channels.create_constructor_groups_video_call()
 </details>
 
 ## Messages
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">mark_all_as_read</a>() -> MarkAllAsReadResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L55-L106">mark_all_as_read</a>() -> MarkAllAsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -5043,7 +5043,7 @@ client.messages.mark_all_as_read()
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">mark_stream_as_read</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L108-L144">mark_stream_as_read</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -5121,7 +5121,7 @@ client.messages.mark_stream_as_read(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">mark_topic_as_read</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L146-L195">mark_topic_as_read</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -5217,7 +5217,7 @@ was not a valid topic name for channel messages.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_messages</a>(...) -> GetMessagesResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L197-L405">get_messages</a>(...) -> GetMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5513,7 +5513,7 @@ was not a valid topic.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">send_message</a>(...) -> SendMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L407-L543">send_message</a>(...) -> SendMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -5716,7 +5716,7 @@ on the client name.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_message_history</a>(...) -> GetMessageHistoryResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L545-L598">get_message_history</a>(...) -> GetMessageHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -5812,7 +5812,7 @@ returned replacing the empty string as the topic name.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">update_message_flags</a>(...) -> UpdateMessageFlagsResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L600-L651">update_message_flags</a>(...) -> UpdateMessageFlagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5912,7 +5912,7 @@ client.messages.update_message_flags(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">update_message_flags_for_narrow</a>(...) -> UpdateMessageFlagsForNarrowResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L653-L761">update_message_flags_for_narrow</a>(...) -> UpdateMessageFlagsForNarrowResponse</code></summary>
 <dl>
 <dd>
 
@@ -6085,7 +6085,7 @@ should be included in the update range.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">render_message</a>(...) -> RenderMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L763-L794">render_message</a>(...) -> RenderMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -6159,7 +6159,7 @@ client.messages.render_message(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">add_reaction</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L796-L853">add_reaction</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -6265,7 +6265,7 @@ emoji you want, and note that emoji's text name.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">remove_reaction</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L855-L911">remove_reaction</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -6370,7 +6370,7 @@ emoji you want, and note that emoji's text name.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_read_receipts</a>(...) -> GetReadReceiptsResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L913-L958">get_read_receipts</a>(...) -> GetReadReceiptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6457,7 +6457,7 @@ client.messages.get_read_receipts(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">check_messages_match_narrow</a>(...) -> CheckMessagesMatchNarrowResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L960-L1017">check_messages_match_narrow</a>(...) -> CheckMessagesMatchNarrowResponse</code></summary>
 <dl>
 <dd>
 
@@ -6561,7 +6561,7 @@ of search/narrow filter documentation.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_message</a>(...) -> GetMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1019-L1089">get_message</a>(...) -> GetMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -6677,7 +6677,7 @@ was not a valid topic.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">delete_message</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1091-L1157">delete_message</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -6785,7 +6785,7 @@ client.messages.delete_message(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">update_message</a>(...) -> UpdateMessageResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1159-L1388">update_message</a>(...) -> UpdateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -7084,7 +7084,7 @@ New in Zulip 3.0 (feature level 1).
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">report_message</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1390-L1467">report_message</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -7210,7 +7210,7 @@ and its value cannot be an empty string.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">upload_file</a>(...) -> UploadFileResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1469-L1526">upload_file</a>(...) -> UploadFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -7311,7 +7311,7 @@ client.messages.upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">check_thumbnail_status</a>(...) -> CheckThumbnailStatusResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1528-L1572">check_thumbnail_status</a>(...) -> CheckThumbnailStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -7406,7 +7406,7 @@ would be `4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`.
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">get_file_temporary_url</a>(...) -> GetFileTemporaryUrlResponse</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L1574-L1623">get_file_temporary_url</a>(...) -> GetFileTemporaryUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -7507,7 +7507,7 @@ would be `4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt`.
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_attachments</a>() -> GetAttachmentsResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L75-L100">get_attachments</a>() -> GetAttachmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7571,7 +7571,7 @@ client.users.get_attachments()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">remove_attachment</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L102-L144">remove_attachment</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -7655,7 +7655,7 @@ client.users.remove_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_users</a>(...) -> GetUsersResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L146-L229">get_users</a>(...) -> GetUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -7786,7 +7786,7 @@ the organization.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_user</a>(...) -> CreateUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L231-L290">create_user</a>(...) -> CreateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -7895,7 +7895,7 @@ client.users.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">reactivate_user</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L292-L324">reactivate_user</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -7971,7 +7971,7 @@ client.users.reactivate_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_status</a>(...) -> GetUserStatusResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L326-L363">get_user_status</a>(...) -> GetUserStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -8050,7 +8050,7 @@ client.users.get_user_status(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_status_for_user</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L365-L454">update_status_for_user</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -8195,7 +8195,7 @@ Must be one of the following values:
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_presence</a>(...) -> GetUserPresenceResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L456-L497">get_user_presence</a>(...) -> GetUserPresenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -8280,7 +8280,7 @@ identifying the user by Zulip API email.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_own_user</a>() -> GetOwnUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L499-L527">get_own_user</a>() -> GetOwnUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -8347,7 +8347,7 @@ client.users.get_own_user()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">deactivate_own_user</a>() -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L529-L557">deactivate_own_user</a>() -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -8414,7 +8414,7 @@ client.users.deactivate_own_user()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">regenerate_api_key</a>() -> RegenerateApiKeyResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L559-L601">regenerate_api_key</a>() -> RegenerateApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -8493,7 +8493,7 @@ client.users.regenerate_api_key()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_alert_words</a>() -> GetAlertWordsResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L603-L630">get_alert_words</a>() -> GetAlertWordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8559,7 +8559,7 @@ client.users.get_alert_words()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">add_alert_words</a>(...) -> AddAlertWordsResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L632-L670">add_alert_words</a>(...) -> AddAlertWordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8644,7 +8644,7 @@ Alert words are case insensitive.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">remove_alert_words</a>(...) -> RemoveAlertWordsResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L672-L710">remove_alert_words</a>(...) -> RemoveAlertWordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8728,7 +8728,7 @@ are ignored.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_presence</a>(...) -> UpdatePresenceResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L712-L884">update_presence</a>(...) -> UpdatePresenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -8963,7 +8963,7 @@ point).
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">remove_profile_data</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L886-L921">remove_profile_data</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9044,7 +9044,7 @@ the user.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_profile_data</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L923-L967">update_profile_data</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9132,7 +9132,7 @@ field data for the user.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_status</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L969-L1064">update_status</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9285,7 +9285,7 @@ Must be one of the following values:
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">mute_user</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1066-L1128">mute_user</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9393,7 +9393,7 @@ be muted/unmuted, and specifying a bot user's ID returned an error response.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">unmute_user</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1130-L1168">unmute_user</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9475,7 +9475,7 @@ be muted/unmuted, and specifying a bot user's ID returned an error response.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">add_apns_token</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1170-L1216">add_apns_token</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9570,7 +9570,7 @@ defaulted to `"org.zulip.Zulip"`).
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">remove_apns_token</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1218-L1255">remove_apns_token</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9651,7 +9651,7 @@ client.users.remove_apns_token(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">add_fcm_token</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1257-L1292">add_fcm_token</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9730,7 +9730,7 @@ client.users.add_fcm_token(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">remove_fcm_token</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1294-L1331">remove_fcm_token</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -9811,7 +9811,7 @@ client.users.remove_fcm_token(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">upload_avatar</a>(...) -> UploadAvatarResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1333-L1371">upload_avatar</a>(...) -> UploadAvatarResponse</code></summary>
 <dl>
 <dd>
 
@@ -9893,7 +9893,7 @@ client.users.upload_avatar(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_avatar</a>() -> DeleteAvatarResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1373-L1414">delete_avatar</a>() -> DeleteAvatarResponse</code></summary>
 <dl>
 <dd>
 
@@ -9973,7 +9973,7 @@ client.users.delete_avatar()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_by_email</a>(...) -> GetUserByEmailResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1416-L1520">get_user_by_email</a>(...) -> GetUserByEmailResponse</code></summary>
 <dl>
 <dd>
 
@@ -10125,7 +10125,7 @@ data via the API.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user_by_email</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1522-L1611">update_user_by_email</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -10272,7 +10272,7 @@ special permission.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user</a>(...) -> GetUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1613-L1686">get_user</a>(...) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -10391,7 +10391,7 @@ data via the API.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">deactivate_user</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1688-L1755">deactivate_user</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -10504,7 +10504,7 @@ to be included in the notification email.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1757-L1842">update_user</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -10645,7 +10645,7 @@ special permission.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_settings</a>(...) -> IgnoredParametersSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1844-L2607">update_settings</a>(...) -> IgnoredParametersSuccess</code></summary>
 <dl>
 <dd>
 
@@ -11782,7 +11782,7 @@ this behavior was not configurable.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">set_typing_status</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2609-L2766">set_typing_status</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -12000,7 +12000,7 @@ were only for direct messages.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">set_typing_status_for_message_edit</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2768-L2822">set_typing_status_for_message_edit</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -12095,7 +12095,7 @@ client.users.set_typing_status_for_message_edit(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_user_group</a>(...) -> CreateUserGroupResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2824-L2976">create_user_group</a>(...) -> CreateUserGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -12327,7 +12327,7 @@ permission was controlled by the `can_manage_group` setting.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_group_members</a>(...) -> GetUserGroupMembersResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2978-L3025">get_user_group_members</a>(...) -> GetUserGroupMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -12417,7 +12417,7 @@ of its subgroups. Default is `false`.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user_group_members</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3027-L3099">update_user_group_members</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -12541,7 +12541,7 @@ The list of user group IDs to be added to the user group.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user_group</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3101-L3274">update_user_group</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -12795,7 +12795,7 @@ endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_groups</a>() -> GetUserGroupsResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3276-L3309">get_user_groups</a>() -> GetUserGroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12867,7 +12867,7 @@ client.users.get_user_groups()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_group_subgroups</a>(...) -> GetUserGroupSubgroupsResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3311-L3358">get_user_group_subgroups</a>(...) -> GetUserGroupSubgroupsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12957,7 +12957,7 @@ or subgroups of subgroups also.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user_group_subgroups</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3360-L3413">update_user_group_subgroups</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -13055,7 +13055,7 @@ client.users.update_user_group_subgroups(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_is_user_group_member</a>(...) -> GetIsUserGroupMemberResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3415-L3474">get_is_user_group_member</a>(...) -> GetIsUserGroupMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -13161,7 +13161,7 @@ of its subgroups. Default is `false`.
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">deactivate_user_group</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3476-L3517">deactivate_user_group</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -13244,7 +13244,7 @@ client.users.deactivate_user_group(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_bot_api_key</a>(...) -> GetBotApiKeyResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3519-L3554">get_bot_api_key</a>(...) -> GetBotApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -13321,7 +13321,7 @@ client.users.get_bot_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">regenerate_bot_api_key</a>(...) -> RegenerateBotApiKeyResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L3556-L3589">regenerate_bot_api_key</a>(...) -> RegenerateBotApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -13397,7 +13397,7 @@ client.users.regenerate_bot_api_key(
 </details>
 
 ## Bots
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">get_bot_storage</a>(...) -> GetBotStorageResponse</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L30-L72">get_bot_storage</a>(...) -> GetBotStorageResponse</code></summary>
 <dl>
 <dd>
 
@@ -13483,7 +13483,7 @@ returned.
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">update_bot_storage</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L74-L122">update_bot_storage</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -13577,7 +13577,7 @@ stored for that key will be updated for the new value.
 </dl>
 </details>
 
-<details><summary><code>client.bots.<a href="src/fern/bots/client.py">remove_bot_storage</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.bots.<a href="src/fern/bots/client.py#L124-L169">remove_bot_storage</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -13664,7 +13664,7 @@ deleted.
 </details>
 
 ## Drafts
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">get_drafts</a>() -> GetDraftsResponse</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L35-L60">get_drafts</a>() -> GetDraftsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13728,7 +13728,7 @@ client.drafts.get_drafts()
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">create_drafts</a>(...) -> CreateDraftsResponse</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L62-L96">create_drafts</a>(...) -> CreateDraftsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13801,7 +13801,7 @@ client.drafts.create_drafts()
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">delete_draft</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L98-L129">delete_draft</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -13876,7 +13876,7 @@ client.drafts.delete_draft(
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">edit_draft</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L131-L176">edit_draft</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -13969,7 +13969,7 @@ client.drafts.edit_draft(
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">get_saved_snippets</a>() -> GetSavedSnippetsResponse</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L178-L207">get_saved_snippets</a>() -> GetSavedSnippetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14035,7 +14035,7 @@ client.drafts.get_saved_snippets()
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">create_saved_snippet</a>(...) -> CreateSavedSnippetResponse</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L209-L250">create_saved_snippet</a>(...) -> CreateSavedSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -14125,7 +14125,7 @@ a saved snippet.
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">delete_saved_snippet</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L252-L286">delete_saved_snippet</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -14201,7 +14201,7 @@ client.drafts.delete_saved_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py">edit_saved_snippet</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.drafts.<a href="src/fern/drafts/client.py#L288-L338">edit_saved_snippet</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -14299,7 +14299,7 @@ a saved snippet.
 </details>
 
 ## NavigationViews
-<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py">get_navigation_views</a>() -> GetNavigationViewsResponse</code></summary>
+<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py#L33-L62">get_navigation_views</a>() -> GetNavigationViewsResponse</code></summary>
 <dl>
 <dd>
 
@@ -14365,7 +14365,7 @@ client.navigation_views.get_navigation_views()
 </dl>
 </details>
 
-<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py">add_navigation_view</a>(...) -> AddNavigationViewResponse</code></summary>
+<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py#L64-L124">add_navigation_view</a>(...) -> AddNavigationViewResponse</code></summary>
 <dl>
 <dd>
 
@@ -14446,7 +14446,7 @@ client.navigation_views.add_navigation_view(
 </dl>
 </details>
 
-<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py">remove_navigation_view</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py#L126-L162">remove_navigation_view</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -14526,7 +14526,7 @@ This also serves as the identifier for the navigation view.
 </dl>
 </details>
 
-<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py">edit_navigation_view</a>(...) -> EditNavigationViewResponse</code></summary>
+<details><summary><code>client.navigation_views.<a href="src/fern/navigation_views/client.py#L164-L208">edit_navigation_view</a>(...) -> EditNavigationViewResponse</code></summary>
 <dl>
 <dd>
 
@@ -14617,7 +14617,7 @@ This also serves as the identifier for the navigation view.
 </details>
 
 ## Reminders
-<details><summary><code>client.reminders.<a href="src/fern/reminders/client.py">get_reminders</a>() -> GetRemindersResponse</code></summary>
+<details><summary><code>client.reminders.<a href="src/fern/reminders/client.py#L31-L62">get_reminders</a>() -> GetRemindersResponse</code></summary>
 <dl>
 <dd>
 
@@ -14687,7 +14687,7 @@ client.reminders.get_reminders()
 </dl>
 </details>
 
-<details><summary><code>client.reminders.<a href="src/fern/reminders/client.py">create_message_reminder</a>(...) -> CreateMessageReminderResponse</code></summary>
+<details><summary><code>client.reminders.<a href="src/fern/reminders/client.py#L64-L115">create_message_reminder</a>(...) -> CreateMessageReminderResponse</code></summary>
 <dl>
 <dd>
 
@@ -14784,7 +14784,7 @@ A note associated with the reminder shown in the Notification Bot message.
 </dl>
 </details>
 
-<details><summary><code>client.reminders.<a href="src/fern/reminders/client.py">delete_reminder</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.reminders.<a href="src/fern/reminders/client.py#L117-L155">delete_reminder</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -14867,7 +14867,7 @@ after being sent.
 </details>
 
 ## ScheduledMessages
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">get_scheduled_messages</a>() -> GetScheduledMessagesResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L37-L70">get_scheduled_messages</a>() -> GetScheduledMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -14937,7 +14937,7 @@ client.scheduled_messages.get_scheduled_messages()
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">create_scheduled_message</a>(...) -> CreateScheduledMessageResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L72-L180">create_scheduled_message</a>(...) -> CreateScheduledMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -15107,7 +15107,7 @@ on the client name and the recipient.
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">delete_scheduled_message</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L182-L220">delete_scheduled_message</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -15189,7 +15189,7 @@ after being sent.
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">update_scheduled_message</a>(...) -> UpdateScheduledMessageResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L222-L341">update_scheduled_message</a>(...) -> UpdateScheduledMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -15372,7 +15372,7 @@ response description at
 </details>
 
 ## Mobile
-<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py">test_notify</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py#L31-L82">test_notify</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -15467,7 +15467,7 @@ notification for other clients.
 </dl>
 </details>
 
-<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py">e2ee_test_notify</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py#L84-L130">e2ee_test_notify</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -15557,7 +15557,7 @@ Previously, `push_account_id` was used.
 </dl>
 </details>
 
-<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py">register_push_device</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py#L132-L277">register_push_device</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -15768,7 +15768,7 @@ The dictionary is JSON-encoded before encryption.
 </dl>
 </details>
 
-<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py">register_remote_push_device</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py#L279-L351">register_remote_push_device</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -15893,7 +15893,7 @@ to [register E2EE push device](/api/register-push-device).
 </dl>
 </details>
 
-<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py">register_client_device</a>() -> RegisterClientDeviceResponse</code></summary>
+<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py#L353-L385">register_client_device</a>() -> RegisterClientDeviceResponse</code></summary>
 <dl>
 <dd>
 
@@ -15962,7 +15962,7 @@ client.mobile.register_client_device()
 </dl>
 </details>
 
-<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py">remove_client_device</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.mobile.<a href="src/fern/mobile/client.py#L387-L425">remove_client_device</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -16043,7 +16043,7 @@ client.mobile.remove_client_device(
 </details>
 
 ## ServerAndOrganizations
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">upload_custom_emoji</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L62-L107">upload_custom_emoji</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -16134,7 +16134,7 @@ handles emoji).
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">deactivate_custom_emoji</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L109-L151">deactivate_custom_emoji</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -16218,7 +16218,7 @@ client.server_and_organizations.deactivate_custom_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_custom_emoji</a>() -> GetCustomEmojiResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L153-L178">get_custom_emoji</a>() -> GetCustomEmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -16282,7 +16282,7 @@ client.server_and_organizations.get_custom_emoji()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_presence</a>() -> GetPresenceResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L180-L213">get_presence</a>() -> GetPresenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -16354,7 +16354,7 @@ client.server_and_organizations.get_presence()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_realm_domains</a>() -> GetRealmDomainsResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L215-L246">get_realm_domains</a>() -> GetRealmDomainsResponse</code></summary>
 <dl>
 <dd>
 
@@ -16424,7 +16424,7 @@ client.server_and_organizations.get_realm_domains()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">add_realm_domain</a>(...) -> AddRealmDomainResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L248-L293">add_realm_domain</a>(...) -> AddRealmDomainResponse</code></summary>
 <dl>
 <dd>
 
@@ -16516,7 +16516,7 @@ JSON-encoding of this parameter was removed.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">delete_realm_domain</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L295-L331">delete_realm_domain</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -16594,7 +16594,7 @@ client.server_and_organizations.delete_realm_domain(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">patch_realm_domain</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L333-L375">patch_realm_domain</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -16681,7 +16681,7 @@ client.server_and_organizations.patch_realm_domain(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">deactivate_realm</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L377-L449">deactivate_realm</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -16792,7 +16792,7 @@ remaining before the demo organization's scheduled deletion.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_custom_profile_fields</a>() -> GetCustomProfileFieldsResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L451-L479">get_custom_profile_fields</a>() -> GetCustomProfileFieldsResponse</code></summary>
 <dl>
 <dd>
 
@@ -16857,7 +16857,7 @@ client.server_and_organizations.get_custom_profile_fields()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">create_custom_profile_field</a>(...) -> CreateCustomProfileFieldResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L481-L563">create_custom_profile_field</a>(...) -> CreateCustomProfileFieldResponse</code></summary>
 <dl>
 <dd>
 
@@ -17006,7 +17006,7 @@ fields and in the UI displaying a user's profile.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">reorder_custom_profile_fields</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L565-L604">reorder_custom_profile_fields</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -17101,7 +17101,7 @@ organization, in the desired new order.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">delete_custom_profile_field</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L606-L646">delete_custom_profile_field</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -17183,7 +17183,7 @@ client.server_and_organizations.delete_custom_profile_field(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">update_custom_profile_field</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L648-L739">update_custom_profile_field</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -17339,7 +17339,7 @@ fields and in the UI displaying a user's profile.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">update_realm_user_settings_defaults</a>(...) -> IgnoredParametersSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L741-L1311">update_realm_user_settings_defaults</a>(...) -> IgnoredParametersSuccess</code></summary>
 <dl>
 <dd>
 
@@ -18213,7 +18213,7 @@ this behavior was not configurable.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_linkifiers</a>() -> GetLinkifiersResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1313-L1345">get_linkifiers</a>() -> GetLinkifiersResponse</code></summary>
 <dl>
 <dd>
 
@@ -18284,7 +18284,7 @@ client.server_and_organizations.get_linkifiers()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">reorder_linkifiers</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1347-L1388">reorder_linkifiers</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -18372,7 +18372,7 @@ organization, in the desired new order.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">add_linkifier</a>(...) -> AddLinkifierResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1390-L1469">add_linkifier</a>(...) -> AddLinkifierResponse</code></summary>
 <dl>
 <dd>
 
@@ -18507,7 +18507,7 @@ templates have no effect on forward linkification.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">remove_linkifier</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1471-L1505">remove_linkifier</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -18583,7 +18583,7 @@ client.server_and_organizations.remove_linkifier(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">update_linkifier</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1507-L1596">update_linkifier</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -18731,7 +18731,7 @@ templates have no effect on forward linkification.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">add_code_playground</a>(...) -> AddCodePlaygroundResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1598-L1658">add_code_playground</a>(...) -> AddCodePlaygroundResponse</code></summary>
 <dl>
 <dd>
 
@@ -18842,7 +18842,7 @@ concatenating `url_prefix` and `code`.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">remove_code_playground</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1660-L1695">remove_code_playground</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -18919,7 +18919,7 @@ client.server_and_organizations.remove_code_playground(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">delete_realm_export</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1697-L1756">delete_realm_export</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -19020,7 +19020,7 @@ client.server_and_organizations.delete_realm_export(
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_realm_exports</a>() -> GetRealmExportsResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1758-L1791">get_realm_exports</a>() -> GetRealmExportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -19092,7 +19092,7 @@ client.server_and_organizations.get_realm_exports()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">export_realm</a>(...) -> ExportRealmResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1793-L1875">export_realm</a>(...) -> ExportRealmResponse</code></summary>
 <dl>
 <dd>
 
@@ -19215,7 +19215,7 @@ all export requests were public data exports.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_realm_export_consents</a>() -> GetRealmExportConsentsResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1877-L1911">get_realm_export_consents</a>() -> GetRealmExportConsentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -19286,7 +19286,7 @@ client.server_and_organizations.get_realm_export_consents()
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">test_welcome_bot_custom_message</a>(...) -> TestWelcomeBotCustomMessageResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1913-L1954">test_welcome_bot_custom_message</a>(...) -> TestWelcomeBotCustomMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -19369,7 +19369,7 @@ Maximum length is 8000 Unicode code points.
 </dl>
 </details>
 
-<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py">get_server_settings</a>() -> GetServerSettingsResponse</code></summary>
+<details><summary><code>client.server_and_organizations.<a href="src/fern/server_and_organizations/client.py#L1956-L1991">get_server_settings</a>() -> GetServerSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -19442,7 +19442,7 @@ client.server_and_organizations.get_server_settings()
 </details>
 
 ## Invites
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">get_invites</a>() -> GetInvitesResponse</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py#L34-L66">get_invites</a>() -> GetInvitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -19513,7 +19513,7 @@ client.invites.get_invites()
 </dl>
 </details>
 
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">send_invites</a>(...) -> SendInvitesResponse</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py#L68-L211">send_invites</a>(...) -> SendInvitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -19730,7 +19730,7 @@ users, the value is always `null`.
 </dl>
 </details>
 
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">create_invite_link</a>(...) -> CreateInviteLinkResponse</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py#L213-L339">create_invite_link</a>(...) -> CreateInviteLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -19917,7 +19917,7 @@ users, the value is always `null`.
 </dl>
 </details>
 
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">revoke_email_invite</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py#L341-L376">revoke_email_invite</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -19994,7 +19994,7 @@ client.invites.revoke_email_invite(
 </dl>
 </details>
 
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">revoke_invite_link</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py#L378-L416">revoke_invite_link</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -20074,7 +20074,7 @@ client.invites.revoke_invite_link(
 </dl>
 </details>
 
-<details><summary><code>client.invites.<a href="src/fern/invites/client.py">resend_email_invite</a>(...) -> JsonSuccess</code></summary>
+<details><summary><code>client.invites.<a href="src/fern/invites/client.py#L418-L453">resend_email_invite</a>(...) -> JsonSuccess</code></summary>
 <dl>
 <dd>
 
@@ -20152,7 +20152,7 @@ client.invites.resend_email_invite(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">zulip_outgoing_webhooks</a>() -> ZulipOutgoingWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L26-L54">zulip_outgoing_webhooks</a>() -> ZulipOutgoingWebhooksResponse</code></summary>
 <dl>
 <dd>
 

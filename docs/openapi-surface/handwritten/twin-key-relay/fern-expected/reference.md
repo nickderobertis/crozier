@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">relay_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L116-L154">relay_message</a>(...)</code></summary>
 <dl>
 <dd>
 

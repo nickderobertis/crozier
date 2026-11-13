@@ -1,6 +1,6 @@
 # Reference
 ## Rules
-<details><summary><code>client.rules.<a href="src/fern/rules/client.py">add_rule</a>(...)</code></summary>
+<details><summary><code>client.rules.<a href="src/fern/rules/client.py#L29-L59">add_rule</a>(...)</code></summary>
 <dl>
 <dd>
 

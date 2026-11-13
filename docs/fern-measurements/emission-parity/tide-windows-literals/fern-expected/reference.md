@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">plan_windows</a>(...) -> WindowPlan</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L135">plan_windows</a>(...) -> WindowPlan</code></summary>
 <dl>
 <dd>
 

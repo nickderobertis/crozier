@@ -1,6 +1,6 @@
 # Reference
 ## Inlined
-<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py">search</a>(...) -> InlinedSearchResponse</code></summary>
+<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py#L32-L70">search</a>(...) -> InlinedSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.inlined.search(
 </dl>
 </details>
 
-<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py">index</a>(...) -> InlinedIndexResponse</code></summary>
+<details><summary><code>client.inlined.<a href="src/fern/inlined/client.py#L72-L104">index</a>(...) -> InlinedIndexResponse</code></summary>
 <dl>
 <dd>
 

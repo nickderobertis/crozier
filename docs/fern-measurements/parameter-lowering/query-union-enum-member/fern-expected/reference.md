@@ -1,6 +1,6 @@
 # Reference
 ## Bolts
-<details><summary><code>client.bolts.<a href="src/fern/bolts/client.py">list_bolts</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.bolts.<a href="src/fern/bolts/client.py#L28-L62">list_bolts</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.bolts.list_bolts(
 </dl>
 </details>
 
-<details><summary><code>client.bolts.<a href="src/fern/bolts/client.py">get_bolts_by_weave</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.bolts.<a href="src/fern/bolts/client.py#L64-L92">get_bolts_by_weave</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

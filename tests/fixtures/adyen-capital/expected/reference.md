@@ -1,6 +1,6 @@
 # Reference
 ## Dynamic offers
-<details><summary><code>client.dynamic_offers.<a href="src/fern/dynamic_offers/client.py">get_dynamic_offers</a>(...) -> GetDynamicOffersResponse</code></summary>
+<details><summary><code>client.dynamic_offers.<a href="src/fern/dynamic_offers/client.py#L33-L75">get_dynamic_offers</a>(...) -> GetDynamicOffersResponse</code></summary>
 <dl>
 <dd>
 
@@ -85,7 +85,7 @@ Possible values: **businessFinancing**
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_offers.<a href="src/fern/dynamic_offers/client.py">post_dynamic_offers_id_calculate</a>(...) -> CalculatedGrantOffer</code></summary>
+<details><summary><code>client.dynamic_offers.<a href="src/fern/dynamic_offers/client.py#L77-L123">post_dynamic_offers_id_calculate</a>(...) -> CalculatedGrantOffer</code></summary>
 <dl>
 <dd>
 
@@ -177,7 +177,7 @@ client.dynamic_offers.post_dynamic_offers_id_calculate(
 </dl>
 </details>
 
-<details><summary><code>client.dynamic_offers.<a href="src/fern/dynamic_offers/client.py">post_dynamic_offers_id_grant_offer</a>(...) -> GrantOffer</code></summary>
+<details><summary><code>client.dynamic_offers.<a href="src/fern/dynamic_offers/client.py#L125-L171">post_dynamic_offers_id_grant_offer</a>(...) -> GrantOffer</code></summary>
 <dl>
 <dd>
 
@@ -270,7 +270,7 @@ client.dynamic_offers.post_dynamic_offers_id_grant_offer(
 </details>
 
 ## Grant accounts
-<details><summary><code>client.grant_accounts.<a href="src/fern/grant_accounts/client.py">get_grant_accounts_id</a>(...) -> GrantAccount</code></summary>
+<details><summary><code>client.grant_accounts.<a href="src/fern/grant_accounts/client.py#L26-L57">get_grant_accounts_id</a>(...) -> GrantAccount</code></summary>
 <dl>
 <dd>
 
@@ -344,7 +344,7 @@ client.grant_accounts.get_grant_accounts_id(
 </details>
 
 ## Grant offers
-<details><summary><code>client.grant_offers.<a href="src/fern/grant_offers/client.py">get_grant_offers</a>(...) -> GrantOffers</code></summary>
+<details><summary><code>client.grant_offers.<a href="src/fern/grant_offers/client.py#L27-L60">get_grant_offers</a>(...) -> GrantOffers</code></summary>
 <dl>
 <dd>
 
@@ -417,7 +417,7 @@ client.grant_offers.get_grant_offers(
 </dl>
 </details>
 
-<details><summary><code>client.grant_offers.<a href="src/fern/grant_offers/client.py">get_grant_offers_id</a>(...) -> GrantOffer</code></summary>
+<details><summary><code>client.grant_offers.<a href="src/fern/grant_offers/client.py#L62-L91">get_grant_offers_id</a>(...) -> GrantOffer</code></summary>
 <dl>
 <dd>
 
@@ -491,7 +491,7 @@ client.grant_offers.get_grant_offers_id(
 </details>
 
 ## Grants
-<details><summary><code>client.grants.<a href="src/fern/grants/client.py">get_grants</a>(...) -> Grants</code></summary>
+<details><summary><code>client.grants.<a href="src/fern/grants/client.py#L34-L67">get_grants</a>(...) -> Grants</code></summary>
 <dl>
 <dd>
 
@@ -564,7 +564,7 @@ client.grants.get_grants(
 </dl>
 </details>
 
-<details><summary><code>client.grants.<a href="src/fern/grants/client.py">post_grants</a>(...) -> Grant</code></summary>
+<details><summary><code>client.grants.<a href="src/fern/grants/client.py#L69-L117">post_grants</a>(...) -> Grant</code></summary>
 <dl>
 <dd>
 
@@ -654,7 +654,7 @@ client.grants.post_grants(
 </dl>
 </details>
 
-<details><summary><code>client.grants.<a href="src/fern/grants/client.py">get_grants_grant_id</a>(...) -> Grant</code></summary>
+<details><summary><code>client.grants.<a href="src/fern/grants/client.py#L119-L148">get_grants_grant_id</a>(...) -> Grant</code></summary>
 <dl>
 <dd>
 
@@ -727,7 +727,7 @@ client.grants.get_grants_grant_id(
 </dl>
 </details>
 
-<details><summary><code>client.grants.<a href="src/fern/grants/client.py">get_grants_grant_id_disbursements</a>(...) -> Disbursements</code></summary>
+<details><summary><code>client.grants.<a href="src/fern/grants/client.py#L150-L181">get_grants_grant_id_disbursements</a>(...) -> Disbursements</code></summary>
 <dl>
 <dd>
 
@@ -800,7 +800,7 @@ client.grants.get_grants_grant_id_disbursements(
 </dl>
 </details>
 
-<details><summary><code>client.grants.<a href="src/fern/grants/client.py">get_grants_grant_id_disbursements_disbursement_id</a>(...) -> Disbursement</code></summary>
+<details><summary><code>client.grants.<a href="src/fern/grants/client.py#L183-L220">get_grants_grant_id_disbursements_disbursement_id</a>(...) -> Disbursement</code></summary>
 <dl>
 <dd>
 
@@ -882,7 +882,7 @@ client.grants.get_grants_grant_id_disbursements_disbursement_id(
 </dl>
 </details>
 
-<details><summary><code>client.grants.<a href="src/fern/grants/client.py">patch_grants_grant_id_disbursements_disbursement_id</a>(...) -> Disbursement</code></summary>
+<details><summary><code>client.grants.<a href="src/fern/grants/client.py#L222-L267">patch_grants_grant_id_disbursements_disbursement_id</a>(...) -> Disbursement</code></summary>
 <dl>
 <dd>
 

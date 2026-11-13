@@ -1,6 +1,6 @@
 # Reference
 ## Darkroom
-<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py">get_contact_sheet</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py#L30-L50">get_contact_sheet</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.darkroom.get_contact_sheet()
 </dl>
 </details>
 
-<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py">get_archive</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py#L52-L65">get_archive</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -88,7 +88,7 @@ client.darkroom.get_archive()
 </dl>
 </details>
 
-<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py">replace_scan</a>(...) -> Print</code></summary>
+<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py#L67-L100">replace_scan</a>(...) -> Print</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.darkroom.replace_scan(
 </dl>
 </details>
 
-<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py">upload_negative</a>(...) -> Print</code></summary>
+<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py#L102-L125">upload_negative</a>(...) -> Print</code></summary>
 <dl>
 <dd>
 
@@ -213,7 +213,7 @@ client.darkroom.upload_negative(
 </dl>
 </details>
 
-<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py">add_proof</a>(...) -> Print</code></summary>
+<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py#L127-L156">add_proof</a>(...) -> Print</code></summary>
 <dl>
 <dd>
 
@@ -280,7 +280,7 @@ client.darkroom.add_proof(
 </dl>
 </details>
 
-<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py">flash_enlarger</a>(...) -> str</code></summary>
+<details><summary><code>client.darkroom.<a href="src/fern/darkroom/client.py#L158-L174">flash_enlarger</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

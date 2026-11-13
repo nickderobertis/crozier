@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">put_duration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L108-L131">put_duration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -57,7 +57,7 @@ client.put_duration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_email</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L133-L156">put_email</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.put_email(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_hostname</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L158-L181">put_hostname</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -173,7 +173,7 @@ client.put_hostname(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_idn_hostname</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L183-L206">put_idn_hostname</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -231,7 +231,7 @@ client.put_idn_hostname(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_ipv4</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L208-L231">put_ipv4</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -289,7 +289,7 @@ client.put_ipv4(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_iri</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L233-L256">put_iri</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -347,7 +347,7 @@ client.put_iri(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_json_pointer</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L258-L281">put_json_pointer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -405,7 +405,7 @@ client.put_json_pointer(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_password</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L283-L306">put_password</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ client.put_password(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_regex</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L308-L331">put_regex</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -521,7 +521,7 @@ client.put_regex(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_time</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L333-L356">put_time</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -579,7 +579,7 @@ client.put_time(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_uri</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L358-L381">put_uri</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -637,7 +637,7 @@ client.put_uri(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_uri_reference</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L383-L406">put_uri_reference</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -695,7 +695,7 @@ client.put_uri_reference(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_uri_template</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L408-L431">put_uri_template</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -753,7 +753,7 @@ client.put_uri_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_custom_thing</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L433-L456">put_custom_thing</a>(...)</code></summary>
 <dl>
 <dd>
 

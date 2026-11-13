@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">status</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L133">status</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.status()
 </details>
 
 ## queues
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">get_list_of_queues</a>() -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L29-L51">get_list_of_queues</a>() -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.queues.get_list_of_queues()
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">create_queue</a>() -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L53-L75">create_queue</a>() -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ client.queues.create_queue()
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">delete_queue</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L77-L111">delete_queue</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -266,7 +266,7 @@ client.queues.delete_queue(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">get_queue_config</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L113-L142">get_queue_config</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -338,7 +338,7 @@ client.queues.get_queue_config(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">update_queue_config</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L144-L172">update_queue_config</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -410,7 +410,7 @@ client.queues.update_queue_config(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">get_message_data</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L174-L207">get_message_data</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -491,7 +491,7 @@ client.queues.get_message_data(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">get_next_messages</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L209-L245">get_next_messages</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -571,7 +571,7 @@ client.queues.get_next_messages(
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">send_message_binary</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L247-L295">send_message_binary</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.queues.send_message_binary(...)
 </dl>
 </details>
 
-<details><summary><code>client.queues.<a href="src/fern/queues/client.py">ack_message</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.queues.<a href="src/fern/queues/client.py#L297-L330">ack_message</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 

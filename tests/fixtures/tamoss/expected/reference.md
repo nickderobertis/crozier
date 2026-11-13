@@ -1,6 +1,6 @@
 # Reference
 ## Service
-<details><summary><code>client.service.<a href="src/fern/service/client.py">get_root</a>() -> typing.Any</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L30-L55">get_root</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.service.get_root()
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">head_root</a>() -> str</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L57-L82">head_root</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -128,7 +128,7 @@ client.service.head_root()
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">get_service</a>() -> Service</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L84-L109">get_service</a>() -> Service</code></summary>
 <dl>
 <dd>
 
@@ -192,7 +192,7 @@ client.service.get_service()
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">post_service</a>(...)</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L111-L147">post_service</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.service.post_service()
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">head_service</a>() -> str</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L149-L174">head_service</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.service.head_service()
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">get_storage_backends</a>() -> StorageBackendsList</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L176-L201">get_storage_backends</a>() -> StorageBackendsList</code></summary>
 <dl>
 <dd>
 
@@ -400,7 +400,7 @@ client.service.get_storage_backends()
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">head_storage_backends</a>() -> str</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L203-L230">head_storage_backends</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -465,7 +465,7 @@ client.service.head_storage_backends()
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_webhooks</a>(...) -> typing.List[WebhookGet]</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L35-L92">get_webhooks</a>(...) -> typing.List[WebhookGet]</code></summary>
 <dl>
 <dd>
 
@@ -575,7 +575,7 @@ If left out then no filtering on tag presence is performed.
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">post_webhooks</a>(...) -> WebhookGet</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L94-L207">post_webhooks</a>(...) -> WebhookGet</code></summary>
 <dl>
 <dd>
 
@@ -766,7 +766,7 @@ client.webhooks.post_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">head_webhooks</a>(...) -> str</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L209-L264">head_webhooks</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -874,7 +874,7 @@ If left out then no filtering on tag presence is performed.
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_webhooks_webhook_id</a>(...) -> WebhookGet</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L266-L299">get_webhooks_webhook_id</a>(...) -> WebhookGet</code></summary>
 <dl>
 <dd>
 
@@ -949,7 +949,7 @@ client.webhooks.get_webhooks_webhook_id(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">put_webhooks</a>(...) -> WebhookGet</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L301-L432">put_webhooks</a>(...) -> WebhookGet</code></summary>
 <dl>
 <dd>
 
@@ -1163,7 +1163,7 @@ client.webhooks.put_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_webhooks_webhook_id</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L434-L470">delete_webhooks_webhook_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1242,7 +1242,7 @@ client.webhooks.delete_webhooks_webhook_id(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">head_webhooks_webhook_id</a>(...) -> str</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L472-L504">head_webhooks_webhook_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1317,7 +1317,7 @@ client.webhooks.head_webhooks_webhook_id(
 </details>
 
 ## Sources
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources</a>(...) -> typing.List[Source]</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L33-L102">get_sources</a>(...) -> typing.List[Source]</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ If left out then no filtering on tag presence is performed.
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">head_sources</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L104-L173">head_sources</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1565,7 +1565,7 @@ If left out then no filtering on tag presence is performed.
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources_source_id</a>(...) -> Source</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L175-L207">get_sources_source_id</a>(...) -> Source</code></summary>
 <dl>
 <dd>
 
@@ -1639,7 +1639,7 @@ client.sources.get_sources_source_id(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">head_sources_source_id</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L209-L241">head_sources_source_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1713,7 +1713,7 @@ client.sources.head_sources_source_id(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources_source_id_tags</a>(...) -> Tags</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L243-L275">get_sources_source_id_tags</a>(...) -> Tags</code></summary>
 <dl>
 <dd>
 
@@ -1787,7 +1787,7 @@ client.sources.get_sources_source_id_tags(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">head_sources_source_id_tags</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L277-L309">head_sources_source_id_tags</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1861,7 +1861,7 @@ client.sources.head_sources_source_id_tags(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources_source_id_tags_name</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L311-L347">get_sources_source_id_tags_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1944,7 +1944,7 @@ client.sources.get_sources_source_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">put_sources_source_id_tags_name</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L349-L389">put_sources_source_id_tags_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2036,7 +2036,7 @@ client.sources.put_sources_source_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">delete_sources_source_id_tags_name</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L391-L428">delete_sources_source_id_tags_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2119,7 +2119,7 @@ client.sources.delete_sources_source_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">head_sources_source_id_tags_name</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L430-L466">head_sources_source_id_tags_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2202,7 +2202,7 @@ client.sources.head_sources_source_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources_source_id_description</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L468-L500">get_sources_source_id_description</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2276,7 +2276,7 @@ client.sources.get_sources_source_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">put_sources_source_id_description</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L502-L538">put_sources_source_id_description</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2359,7 +2359,7 @@ client.sources.put_sources_source_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">delete_sources_source_id_description</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L540-L571">delete_sources_source_id_description</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2433,7 +2433,7 @@ client.sources.delete_sources_source_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">head_sources_source_id_description</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L573-L605">head_sources_source_id_description</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2507,7 +2507,7 @@ client.sources.head_sources_source_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources_source_id_label</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L607-L639">get_sources_source_id_label</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2581,7 +2581,7 @@ client.sources.get_sources_source_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">put_sources_source_id_label</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L641-L677">put_sources_source_id_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2664,7 +2664,7 @@ client.sources.put_sources_source_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">delete_sources_source_id_label</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L679-L710">delete_sources_source_id_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2738,7 +2738,7 @@ client.sources.delete_sources_source_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">head_sources_source_id_label</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L712-L744">head_sources_source_id_label</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2813,7 +2813,7 @@ client.sources.head_sources_source_id_label(
 </details>
 
 ## Flows
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows</a>(...) -> typing.List[Flow]</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L37-L136">get_flows</a>(...) -> typing.List[Flow]</code></summary>
 <dl>
 <dd>
 
@@ -2985,7 +2985,7 @@ If left out then no filtering on tag presence is performed.
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L138-L237">head_flows</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3157,7 +3157,7 @@ If left out then no filtering on tag presence is performed.
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id</a>(...) -> Flow</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L239-L284">get_flows_flow_id</a>(...) -> Flow</code></summary>
 <dl>
 <dd>
 
@@ -3247,7 +3247,7 @@ client.flows.get_flows_flow_id(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id</a>(...) -> typing.Optional[Flow]</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L286-L341">put_flows_flow_id</a>(...) -> typing.Optional[Flow]</code></summary>
 <dl>
 <dd>
 
@@ -3350,7 +3350,7 @@ client.flows.put_flows_flow_id(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id</a>(...) -> typing.Optional[DeletionRequest]</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L343-L376">delete_flows_flow_id</a>(...) -> typing.Optional[DeletionRequest]</code></summary>
 <dl>
 <dd>
 
@@ -3425,7 +3425,7 @@ client.flows.delete_flows_flow_id(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L378-L423">head_flows_flow_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3515,7 +3515,7 @@ client.flows.head_flows_flow_id(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_tags</a>(...) -> Tags</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L425-L455">get_flows_flow_id_tags</a>(...) -> Tags</code></summary>
 <dl>
 <dd>
 
@@ -3589,7 +3589,7 @@ client.flows.get_flows_flow_id_tags(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_tags</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L457-L489">head_flows_flow_id_tags</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3663,7 +3663,7 @@ client.flows.head_flows_flow_id_tags(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_tags_name</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L491-L527">get_flows_flow_id_tags_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3746,7 +3746,7 @@ client.flows.get_flows_flow_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_tags_name</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L529-L569">put_flows_flow_id_tags_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3838,7 +3838,7 @@ client.flows.put_flows_flow_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id_tags_name</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L571-L606">delete_flows_flow_id_tags_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3921,7 +3921,7 @@ client.flows.delete_flows_flow_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_tags_name</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L608-L644">head_flows_flow_id_tags_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4004,7 +4004,7 @@ client.flows.head_flows_flow_id_tags_name(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_description</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L646-L678">get_flows_flow_id_description</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4078,7 +4078,7 @@ client.flows.get_flows_flow_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_description</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L680-L716">put_flows_flow_id_description</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4161,7 +4161,7 @@ client.flows.put_flows_flow_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id_description</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L718-L749">delete_flows_flow_id_description</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4235,7 +4235,7 @@ client.flows.delete_flows_flow_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_description</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L751-L783">head_flows_flow_id_description</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4309,7 +4309,7 @@ client.flows.head_flows_flow_id_description(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_label</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L785-L815">get_flows_flow_id_label</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4383,7 +4383,7 @@ client.flows.get_flows_flow_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_label</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L817-L851">put_flows_flow_id_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4466,7 +4466,7 @@ client.flows.put_flows_flow_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id_label</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L853-L884">delete_flows_flow_id_label</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4540,7 +4540,7 @@ client.flows.delete_flows_flow_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_label</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L886-L918">head_flows_flow_id_label</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4614,7 +4614,7 @@ client.flows.head_flows_flow_id_label(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_read_only</a>(...) -> bool</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L920-L952">get_flows_flow_id_read_only</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -4688,7 +4688,7 @@ client.flows.get_flows_flow_id_read_only(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_read_only</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L954-L990">put_flows_flow_id_read_only</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4771,7 +4771,7 @@ client.flows.put_flows_flow_id_read_only(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_read_only</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L992-L1024">head_flows_flow_id_read_only</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4845,7 +4845,7 @@ client.flows.head_flows_flow_id_read_only(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_flow_collection</a>(...) -> FlowCollection</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1026-L1058">get_flows_flow_id_flow_collection</a>(...) -> FlowCollection</code></summary>
 <dl>
 <dd>
 
@@ -4919,7 +4919,7 @@ client.flows.get_flows_flow_id_flow_collection(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_flow_collection</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1060-L1105">put_flows_flow_id_flow_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5011,7 +5011,7 @@ client.flows.put_flows_flow_id_flow_collection(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id_flow_collection</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1107-L1138">delete_flows_flow_id_flow_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.flows.delete_flows_flow_id_flow_collection(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_flow_collection</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1140-L1172">head_flows_flow_id_flow_collection</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5159,7 +5159,7 @@ client.flows.head_flows_flow_id_flow_collection(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_max_bit_rate</a>(...) -> int</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1174-L1209">get_flows_flow_id_max_bit_rate</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5236,7 +5236,7 @@ client.flows.get_flows_flow_id_max_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_max_bit_rate</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1211-L1250">put_flows_flow_id_max_bit_rate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5322,7 +5322,7 @@ client.flows.put_flows_flow_id_max_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id_max_bit_rate</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1252-L1283">delete_flows_flow_id_max_bit_rate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5396,7 +5396,7 @@ client.flows.delete_flows_flow_id_max_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_max_bit_rate</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1285-L1317">head_flows_flow_id_max_bit_rate</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5470,7 +5470,7 @@ client.flows.head_flows_flow_id_max_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">get_flows_flow_id_avg_bit_rate</a>(...) -> int</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1319-L1354">get_flows_flow_id_avg_bit_rate</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5547,7 +5547,7 @@ client.flows.get_flows_flow_id_avg_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">put_flows_flow_id_avg_bit_rate</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1356-L1395">put_flows_flow_id_avg_bit_rate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5633,7 +5633,7 @@ client.flows.put_flows_flow_id_avg_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">delete_flows_flow_id_avg_bit_rate</a>(...)</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1397-L1428">delete_flows_flow_id_avg_bit_rate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5707,7 +5707,7 @@ client.flows.delete_flows_flow_id_avg_bit_rate(
 </dl>
 </details>
 
-<details><summary><code>client.flows.<a href="src/fern/flows/client.py">head_flows_flow_id_avg_bit_rate</a>(...) -> str</code></summary>
+<details><summary><code>client.flows.<a href="src/fern/flows/client.py#L1430-L1462">head_flows_flow_id_avg_bit_rate</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5782,7 +5782,7 @@ client.flows.head_flows_flow_id_avg_bit_rate(
 </details>
 
 ## FlowSegments
-<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py">get_flows_flow_id_segments</a>(...) -> typing.List[FlowSegment]</code></summary>
+<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py#L36-L158">get_flows_flow_id_segments</a>(...) -> typing.List[FlowSegment]</code></summary>
 <dl>
 <dd>
 
@@ -5980,7 +5980,7 @@ Assume `false` if omitted.
 </dl>
 </details>
 
-<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py">post_flows_flow_id_segments</a>(...) -> FlowSegmentBulkFailure</code></summary>
+<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py#L160-L239">post_flows_flow_id_segments</a>(...) -> FlowSegmentBulkFailure</code></summary>
 <dl>
 <dd>
 
@@ -6101,7 +6101,7 @@ client.flow_segments.post_flows_flow_id_segments(
 </dl>
 </details>
 
-<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py">delete_flows_flow_id_segments</a>(...) -> typing.Optional[DeletionRequest]</code></summary>
+<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py#L241-L286">delete_flows_flow_id_segments</a>(...) -> typing.Optional[DeletionRequest]</code></summary>
 <dl>
 <dd>
 
@@ -6191,7 +6191,7 @@ client.flow_segments.delete_flows_flow_id_segments(
 </dl>
 </details>
 
-<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py">head_flows_flow_id_segments</a>(...) -> str</code></summary>
+<details><summary><code>client.flow_segments.<a href="src/fern/flow_segments/client.py#L288-L391">head_flows_flow_id_segments</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6371,7 +6371,7 @@ Assume `false` if omitted.
 </details>
 
 ## MediaStorage
-<details><summary><code>client.media_storage.<a href="src/fern/media_storage/client.py">post_flows_flow_id_storage</a>(...) -> FlowStorage</code></summary>
+<details><summary><code>client.media_storage.<a href="src/fern/media_storage/client.py#L30-L96">post_flows_flow_id_storage</a>(...) -> FlowStorage</code></summary>
 <dl>
 <dd>
 
@@ -6487,7 +6487,7 @@ client.media_storage.post_flows_flow_id_storage(
 </details>
 
 ## Objects
-<details><summary><code>client.objects.<a href="src/fern/objects/client.py">get_objects</a>(...) -> Object</code></summary>
+<details><summary><code>client.objects.<a href="src/fern/objects/client.py#L31-L128">get_objects</a>(...) -> Object</code></summary>
 <dl>
 <dd>
 
@@ -6652,7 +6652,7 @@ Where multiple filter query parameters are provided, the returned `get_urls` wil
 </dl>
 </details>
 
-<details><summary><code>client.objects.<a href="src/fern/objects/client.py">head_objects</a>(...) -> str</code></summary>
+<details><summary><code>client.objects.<a href="src/fern/objects/client.py#L130-L224">head_objects</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6814,7 +6814,7 @@ Where multiple filter query parameters are provided, the returned `get_urls` wil
 </dl>
 </details>
 
-<details><summary><code>client.objects.<a href="src/fern/objects/client.py">post_objects_instances</a>(...)</code></summary>
+<details><summary><code>client.objects.<a href="src/fern/objects/client.py#L226-L274">post_objects_instances</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6911,7 +6911,7 @@ client.objects.post_objects_instances(
 </dl>
 </details>
 
-<details><summary><code>client.objects.<a href="src/fern/objects/client.py">delete_objects_instances</a>(...)</code></summary>
+<details><summary><code>client.objects.<a href="src/fern/objects/client.py#L276-L326">delete_objects_instances</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7008,7 +7008,7 @@ client.objects.delete_objects_instances(
 </details>
 
 ## FlowDeleteRequests
-<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py">get_flow_delete_requests</a>() -> typing.List[DeletionRequest]</code></summary>
+<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py#L26-L55">get_flow_delete_requests</a>() -> typing.List[DeletionRequest]</code></summary>
 <dl>
 <dd>
 
@@ -7074,7 +7074,7 @@ client.flow_delete_requests.get_flow_delete_requests()
 </dl>
 </details>
 
-<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py">head_flow_delete_requests</a>() -> str</code></summary>
+<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py#L57-L84">head_flow_delete_requests</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -7138,7 +7138,7 @@ client.flow_delete_requests.head_flow_delete_requests()
 </dl>
 </details>
 
-<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py">get_flow_delete_requests_request_id</a>(...) -> DeletionRequest</code></summary>
+<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py#L86-L120">get_flow_delete_requests_request_id</a>(...) -> DeletionRequest</code></summary>
 <dl>
 <dd>
 
@@ -7215,7 +7215,7 @@ client.flow_delete_requests.get_flow_delete_requests_request_id(
 </dl>
 </details>
 
-<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py">head_flow_delete_requests_request_id</a>(...) -> str</code></summary>
+<details><summary><code>client.flow_delete_requests.<a href="src/fern/flow_delete_requests/client.py#L122-L153">head_flow_delete_requests_request_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Scans
-<details><summary><code>client.scans.<a href="src/fern/scans/client.py">file_scan</a>(...)</code></summary>
+<details><summary><code>client.scans.<a href="src/fern/scans/client.py#L30-L58">file_scan</a>(...)</code></summary>
 <dl>
 <dd>
 

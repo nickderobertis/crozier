@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">watch_movements</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L128">watch_movements</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.watch_movements(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">watch_gangway</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L130-L160">watch_gangway</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

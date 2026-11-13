@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">send_alert</a>(...) -> QueuedAlert</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L156">send_alert</a>(...) -> QueuedAlert</code></summary>
 <dl>
 <dd>
 

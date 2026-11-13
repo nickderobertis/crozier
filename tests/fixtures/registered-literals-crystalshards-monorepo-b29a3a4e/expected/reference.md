@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">health_check</a>() -> GetApiHealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">health_check</a>() -> GetApiHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.health.health_check()
 </details>
 
 ## Shards
-<details><summary><code>client.shards.<a href="src/fern/shards/client.py">list_all_shards</a>(...) -> GetApiShardsResponse</code></summary>
+<details><summary><code>client.shards.<a href="src/fern/shards/client.py#L33-L75">list_all_shards</a>(...) -> GetApiShardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -151,7 +151,7 @@ client.shards.list_all_shards()
 </dl>
 </details>
 
-<details><summary><code>client.shards.<a href="src/fern/shards/client.py">create_a_new_shard</a>(...) -> PostApiShardsResponse</code></summary>
+<details><summary><code>client.shards.<a href="src/fern/shards/client.py#L77-L139">create_a_new_shard</a>(...) -> PostApiShardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.shards.create_a_new_shard(
 </dl>
 </details>
 
-<details><summary><code>client.shards.<a href="src/fern/shards/client.py">upload_shard_package</a>(...) -> PostApiShardsUploadResponse</code></summary>
+<details><summary><code>client.shards.<a href="src/fern/shards/client.py#L141-L225">upload_shard_package</a>(...) -> PostApiShardsUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -419,7 +419,7 @@ client.shards.upload_shard_package(
 </dl>
 </details>
 
-<details><summary><code>client.shards.<a href="src/fern/shards/client.py">get_shard_details_by_name_deprecated</a>(...)</code></summary>
+<details><summary><code>client.shards.<a href="src/fern/shards/client.py#L227-L263">get_shard_details_by_name_deprecated</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -498,7 +498,7 @@ client.shards.get_shard_details_by_name_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.shards.<a href="src/fern/shards/client.py">get_shard_details</a>(...) -> ShardDetail</code></summary>
+<details><summary><code>client.shards.<a href="src/fern/shards/client.py#L265-L308">get_shard_details</a>(...) -> ShardDetail</code></summary>
 <dl>
 <dd>
 
@@ -594,7 +594,7 @@ client.shards.get_shard_details(
 </details>
 
 ## Versions
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">list_shard_versions</a>(...) -> GetApiShardsHostOwnerRepoVersionsResponse</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L27-L66">list_shard_versions</a>(...) -> GetApiShardsHostOwnerRepoVersionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -685,7 +685,7 @@ client.versions.list_shard_versions(
 </dl>
 </details>
 
-<details><summary><code>client.versions.<a href="src/fern/versions/client.py">get_specific_version</a>(...) -> GetApiShardsHostOwnerRepoVersionResponse</code></summary>
+<details><summary><code>client.versions.<a href="src/fern/versions/client.py#L68-L111">get_specific_version</a>(...) -> GetApiShardsHostOwnerRepoVersionResponse</code></summary>
 <dl>
 <dd>
 
@@ -786,7 +786,7 @@ client.versions.get_specific_version(
 </details>
 
 ## Downloads
-<details><summary><code>client.downloads.<a href="src/fern/downloads/client.py">track_download</a>(...) -> PostApiShardsHostOwnerRepoVersionDownloadResponse</code></summary>
+<details><summary><code>client.downloads.<a href="src/fern/downloads/client.py#L28-L73">track_download</a>(...) -> PostApiShardsHostOwnerRepoVersionDownloadResponse</code></summary>
 <dl>
 <dd>
 

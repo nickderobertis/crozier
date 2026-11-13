@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-siafoundation-walletd-f03d7dc2",
   "corpus_spec_ref": "aa523f95c5b2a106a3c0d9675205c90305d2d9d9",
   "corpus_spec_url": "https://raw.githubusercontent.com/SiaFoundation/walletd/aa523f95c5b2a106a3c0d9675205c90305d2d9d9/openapi.yml"

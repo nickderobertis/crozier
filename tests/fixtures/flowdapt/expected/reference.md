@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">ping</a>() -> PingResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L115-L138">ping</a>() -> PingResponse</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.ping()
 </details>
 
 ## Workflows
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_workflows</a>() -> typing.List[V1Alpha1WorkflowResourceReadResponse]</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L34-L59">list_workflows</a>() -> typing.List[V1Alpha1WorkflowResourceReadResponse]</code></summary>
 <dl>
 <dd>
 
@@ -94,7 +94,7 @@ client.workflows.list_workflows()
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">create_workflow</a>(...) -> V1Alpha1WorkflowResourceCreateResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L61-L116">create_workflow</a>(...) -> V1Alpha1WorkflowResourceCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -177,7 +177,7 @@ client.workflows.create_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">get_workflow</a>(...) -> V1Alpha1WorkflowResourceReadResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L118-L147">get_workflow</a>(...) -> V1Alpha1WorkflowResourceReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -234,7 +234,7 @@ client.workflows.get_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">update_workflow</a>(...) -> V1Alpha1WorkflowResourceUpdateResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L149-L208">update_workflow</a>(...) -> V1Alpha1WorkflowResourceUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -326,7 +326,7 @@ client.workflows.update_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">delete_workflow</a>(...) -> V1Alpha1WorkflowResourceReadResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L210-L239">delete_workflow</a>(...) -> V1Alpha1WorkflowResourceReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -383,7 +383,7 @@ client.workflows.delete_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">list_workflow_runs</a>(...) -> typing.List[V1Alpha1WorkflowRunReadResponse]</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L241-L276">list_workflow_runs</a>(...) -> typing.List[V1Alpha1WorkflowRunReadResponse]</code></summary>
 <dl>
 <dd>
 
@@ -448,7 +448,7 @@ client.workflows.list_workflow_runs(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">run_workflow</a>(...) -> V1Alpha1WorkflowRunReadResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L278-L322">run_workflow</a>(...) -> V1Alpha1WorkflowRunReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -532,7 +532,7 @@ client.workflows.run_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">get_workflow_run</a>(...) -> V1Alpha1WorkflowRunReadResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L324-L353">get_workflow_run</a>(...) -> V1Alpha1WorkflowRunReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -589,7 +589,7 @@ client.workflows.get_workflow_run(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">delete_workflow_run</a>(...) -> V1Alpha1WorkflowRunReadResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L355-L384">delete_workflow_run</a>(...) -> V1Alpha1WorkflowRunReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -647,7 +647,7 @@ client.workflows.delete_workflow_run(
 </details>
 
 ## Configs
-<details><summary><code>client.configs.<a href="src/fern/configs/client.py">list_configs</a>() -> typing.List[V1Alpha1ConfigResourceReadResponse]</code></summary>
+<details><summary><code>client.configs.<a href="src/fern/configs/client.py#L34-L59">list_configs</a>() -> typing.List[V1Alpha1ConfigResourceReadResponse]</code></summary>
 <dl>
 <dd>
 
@@ -694,7 +694,7 @@ client.configs.list_configs()
 </dl>
 </details>
 
-<details><summary><code>client.configs.<a href="src/fern/configs/client.py">create_config</a>(...) -> V1Alpha1ConfigResourceCreateResponse</code></summary>
+<details><summary><code>client.configs.<a href="src/fern/configs/client.py#L61-L102">create_config</a>(...) -> V1Alpha1ConfigResourceCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -760,7 +760,7 @@ client.configs.create_config(
 </dl>
 </details>
 
-<details><summary><code>client.configs.<a href="src/fern/configs/client.py">get_config</a>(...) -> V1Alpha1ConfigResourceReadResponse</code></summary>
+<details><summary><code>client.configs.<a href="src/fern/configs/client.py#L104-L133">get_config</a>(...) -> V1Alpha1ConfigResourceReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -817,7 +817,7 @@ client.configs.get_config(
 </dl>
 </details>
 
-<details><summary><code>client.configs.<a href="src/fern/configs/client.py">update_config</a>(...) -> V1Alpha1ConfigResourceUpdateResponse</code></summary>
+<details><summary><code>client.configs.<a href="src/fern/configs/client.py#L135-L184">update_config</a>(...) -> V1Alpha1ConfigResourceUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -906,7 +906,7 @@ client.configs.update_config(
 </dl>
 </details>
 
-<details><summary><code>client.configs.<a href="src/fern/configs/client.py">delete_config</a>(...) -> V1Alpha1ConfigResourceReadResponse</code></summary>
+<details><summary><code>client.configs.<a href="src/fern/configs/client.py#L186-L215">delete_config</a>(...) -> V1Alpha1ConfigResourceReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -964,7 +964,7 @@ client.configs.delete_config(
 </details>
 
 ## Triggers
-<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py">list_triggers</a>() -> typing.List[V1Alpha1TriggerRuleResourceReadResponse]</code></summary>
+<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py#L33-L58">list_triggers</a>() -> typing.List[V1Alpha1TriggerRuleResourceReadResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1011,7 +1011,7 @@ client.triggers.list_triggers()
 </dl>
 </details>
 
-<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py">create_trigger</a>(...) -> V1Alpha1TriggerRuleResourceCreateResponse</code></summary>
+<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py#L60-L113">create_trigger</a>(...) -> V1Alpha1TriggerRuleResourceCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1094,7 +1094,7 @@ client.triggers.create_trigger(
 </dl>
 </details>
 
-<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py">get_trigger</a>(...) -> V1Alpha1TriggerRuleResourceReadResponse</code></summary>
+<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py#L115-L144">get_trigger</a>(...) -> V1Alpha1TriggerRuleResourceReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1151,7 +1151,7 @@ client.triggers.get_trigger(
 </dl>
 </details>
 
-<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py">update_trigger</a>(...) -> V1Alpha1TriggerRuleResourceUpdateResponse</code></summary>
+<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py#L146-L203">update_trigger</a>(...) -> V1Alpha1TriggerRuleResourceUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1243,7 +1243,7 @@ client.triggers.update_trigger(
 </dl>
 </details>
 
-<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py">delete_trigger</a>(...) -> V1Alpha1TriggerRuleResourceReadResponse</code></summary>
+<details><summary><code>client.triggers.<a href="src/fern/triggers/client.py#L205-L234">delete_trigger</a>(...) -> V1Alpha1TriggerRuleResourceReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1301,7 +1301,7 @@ client.triggers.delete_trigger(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">status</a>() -> V1Alpha1SystemStatus</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L28-L51">status</a>() -> V1Alpha1SystemStatus</code></summary>
 <dl>
 <dd>
 
@@ -1348,7 +1348,7 @@ client.health.status()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">metrics</a>(...) -> V1Alpha1Metrics</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L53-L94">metrics</a>(...) -> V1Alpha1Metrics</code></summary>
 <dl>
 <dd>
 
@@ -1428,7 +1428,7 @@ client.health.metrics()
 </details>
 
 ## Plugins
-<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py">get_plugin</a>(...) -> V1Alpha1Plugin</code></summary>
+<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py#L27-L56">get_plugin</a>(...) -> V1Alpha1Plugin</code></summary>
 <dl>
 <dd>
 
@@ -1485,7 +1485,7 @@ client.plugins.get_plugin(
 </dl>
 </details>
 
-<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py">list_plugins</a>() -> typing.List[V1Alpha1Plugin]</code></summary>
+<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py#L58-L81">list_plugins</a>() -> typing.List[V1Alpha1Plugin]</code></summary>
 <dl>
 <dd>
 
@@ -1532,7 +1532,7 @@ client.plugins.list_plugins()
 </dl>
 </details>
 
-<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py">list_plugin_files</a>(...) -> V1Alpha1PluginFiles</code></summary>
+<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py#L83-L112">list_plugin_files</a>(...) -> V1Alpha1PluginFiles</code></summary>
 <dl>
 <dd>
 
@@ -1589,7 +1589,7 @@ client.plugins.list_plugin_files(
 </dl>
 </details>
 
-<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py">get_plugin_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.plugins.<a href="src/fern/plugins/client.py#L114-L146">get_plugin_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

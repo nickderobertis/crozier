@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">subscribe_readings</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L127">subscribe_readings</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

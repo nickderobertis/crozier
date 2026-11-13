@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">list</a>(...) -> AccountsListResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L31-L131">list</a>(...) -> AccountsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -178,7 +178,7 @@ client.accounts.list(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">export</a>(...) -> AccountsExportResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L133-L358">export</a>(...) -> AccountsExportResponse</code></summary>
 <dl>
 <dd>
 
@@ -556,7 +556,7 @@ client.accounts.export(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">monitors</a>(...) -> AccountsMonitorsResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L360-L453">monitors</a>(...) -> AccountsMonitorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.accounts.monitors()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">names</a>(...) -> AccountsNamesResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L455-L590">names</a>(...) -> AccountsNamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -956,7 +956,7 @@ client.accounts.names(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">abis</a>(...) -> AccountsAbisResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L592-L692">abis</a>(...) -> AccountsAbisResponse</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1135,7 @@ client.accounts.abis(
 </details>
 
 ## Chain Data
-<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py">chaindata_blocks</a>(...) -> ChaindataBlocksResponse</code></summary>
+<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py#L33-L163">chaindata_blocks</a>(...) -> ChaindataBlocksResponse</code></summary>
 <dl>
 <dd>
 
@@ -1361,7 +1361,7 @@ client.chain_data.chaindata_blocks(
 </dl>
 </details>
 
-<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py">chaindata_transactions</a>(...) -> ChaindataTransactionsResponse</code></summary>
+<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py#L165-L270">chaindata_transactions</a>(...) -> ChaindataTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1547,7 +1547,7 @@ client.chain_data.chaindata_transactions(
 </dl>
 </details>
 
-<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py">chaindata_receipts</a>(...) -> ChaindataReceiptsResponse</code></summary>
+<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py#L272-L337">chaindata_receipts</a>(...) -> ChaindataReceiptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1669,7 +1669,7 @@ client.chain_data.chaindata_receipts(
 </dl>
 </details>
 
-<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py">chaindata_logs</a>(...) -> ChaindataLogsResponse</code></summary>
+<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py#L339-L414">chaindata_logs</a>(...) -> ChaindataLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1807,7 +1807,7 @@ client.chain_data.chaindata_logs(
 </dl>
 </details>
 
-<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py">chaindata_traces</a>(...) -> ChaindataTracesResponse</code></summary>
+<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py#L416-L496">chaindata_traces</a>(...) -> ChaindataTracesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1953,7 +1953,7 @@ client.chain_data.chaindata_traces(
 </dl>
 </details>
 
-<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py">chaindata_when</a>(...) -> ChaindataWhenResponse</code></summary>
+<details><summary><code>client.chain_data.<a href="src/fern/chain_data/client.py#L498-L591">chaindata_when</a>(...) -> ChaindataWhenResponse</code></summary>
 <dl>
 <dd>
 
@@ -2120,7 +2120,7 @@ client.chain_data.chaindata_when()
 </details>
 
 ## Chain State
-<details><summary><code>client.chain_state.<a href="src/fern/chain_state/client.py">chainstate_state</a>(...) -> ChainstateStateResponse</code></summary>
+<details><summary><code>client.chain_state.<a href="src/fern/chain_state/client.py#L29-L136">chainstate_state</a>(...) -> ChainstateStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2306,7 +2306,7 @@ client.chain_state.chainstate_state(
 </dl>
 </details>
 
-<details><summary><code>client.chain_state.<a href="src/fern/chain_state/client.py">chainstate_tokens</a>(...) -> ChainstateTokensResponse</code></summary>
+<details><summary><code>client.chain_state.<a href="src/fern/chain_state/client.py#L138-L230">chainstate_tokens</a>(...) -> ChainstateTokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -2469,7 +2469,7 @@ client.chain_state.chainstate_tokens(
 </details>
 
 ## Admin
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">config</a>(...) -> AdminConfigResponse</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L32-L90">config</a>(...) -> AdminConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -2579,7 +2579,7 @@ client.admin.config()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">status</a>(...) -> AdminStatusResponse</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L92-L172">status</a>(...) -> AdminStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2721,7 +2721,7 @@ client.admin.status()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">chunks</a>(...) -> AdminChunksResponse</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L174-L281">chunks</a>(...) -> AdminChunksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2906,7 +2906,7 @@ client.admin.chunks(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">init</a>(...) -> AdminInitResponse</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L283-L341">init</a>(...) -> AdminInitResponse</code></summary>
 <dl>
 <dd>
 
@@ -3017,7 +3017,7 @@ client.admin.init()
 </details>
 
 ## Other
-<details><summary><code>client.other.<a href="src/fern/other/client.py">slurp</a>(...) -> OtherSlurpResponse</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L28-L145">slurp</a>(...) -> OtherSlurpResponse</code></summary>
 <dl>
 <dd>
 

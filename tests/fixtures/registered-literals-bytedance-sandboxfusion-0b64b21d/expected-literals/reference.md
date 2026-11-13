@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">root_get</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L104-L126">root_get</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.root_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">index_v1ping_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L150">index_v1ping_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -94,7 +94,7 @@ client.index_v1ping_get()
 </details>
 
 ## Sandbox
-<details><summary><code>client.sandbox.<a href="src/fern/sandbox/client.py">run_code</a>(...) -> RunCodeResponseOutput</code></summary>
+<details><summary><code>client.sandbox.<a href="src/fern/sandbox/client.py#L32-L98">run_code</a>(...) -> RunCodeResponseOutput</code></summary>
 <dl>
 <dd>
 
@@ -200,7 +200,7 @@ client.sandbox.run_code(
 </dl>
 </details>
 
-<details><summary><code>client.sandbox.<a href="src/fern/sandbox/client.py">run_code_in_jupyter</a>(...) -> RunJupyterResponse</code></summary>
+<details><summary><code>client.sandbox.<a href="src/fern/sandbox/client.py#L100-L165">run_code_in_jupyter</a>(...) -> RunJupyterResponse</code></summary>
 <dl>
 <dd>
 
@@ -304,7 +304,7 @@ client.sandbox.run_code_in_jupyter(
 </details>
 
 ## Datasets
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">list_datasets</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L36-L60">list_datasets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -365,7 +365,7 @@ client.datasets.list_datasets()
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">list_ids</a>(...) -> typing.List[ListIdsListIdsPostResponseItem]</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L62-L107">list_ids</a>(...) -> typing.List[ListIdsListIdsPostResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -437,7 +437,7 @@ client.datasets.list_ids(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_prompt</a>(...) -> typing.List[Prompt]</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L109-L154">get_prompt</a>(...) -> typing.List[Prompt]</code></summary>
 <dl>
 <dd>
 
@@ -509,7 +509,7 @@ client.datasets.get_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_prompt_by_id</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L156-L199">get_prompt_by_id</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -598,7 +598,7 @@ client.datasets.get_prompt_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">submit</a>(...) -> EvalResultOutput</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L201-L248">submit</a>(...) -> EvalResultOutput</code></summary>
 <dl>
 <dd>
 
@@ -696,7 +696,7 @@ client.datasets.submit(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_metrics</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L250-L314">get_metrics</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -800,7 +800,7 @@ client.datasets.get_metrics(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_metrics_function</a>(...) -> GetMetricsFunctionResult</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L316-L351">get_metrics_function</a>(...) -> GetMetricsFunctionResult</code></summary>
 <dl>
 <dd>
 

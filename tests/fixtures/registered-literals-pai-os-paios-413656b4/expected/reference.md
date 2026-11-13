@@ -1,6 +1,6 @@
 # Reference
 ## Chat
-<details><summary><code>client.chat.<a href="src/fern/chat/client.py">create_chat_completion</a>(...) -> CreateChatCompletionResponse</code></summary>
+<details><summary><code>client.chat.<a href="src/fern/chat/client.py#L37-L198">create_chat_completion</a>(...) -> CreateChatCompletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -264,7 +264,7 @@ A list of functions the model may generate JSON inputs for.
 </details>
 
 ## Completions
-<details><summary><code>client.completions.<a href="src/fern/completions/client.py">create_completion</a>(...) -> CreateCompletionResponse</code></summary>
+<details><summary><code>client.completions.<a href="src/fern/completions/client.py#L32-L176">create_completion</a>(...) -> CreateCompletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -505,7 +505,7 @@ We generally recommend altering this or `temperature` but not both.
 </details>
 
 ## Images
-<details><summary><code>client.images.<a href="src/fern/images/client.py">create_image</a>(...) -> ImagesResponse</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L41-L111">create_image</a>(...) -> ImagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -620,7 +620,7 @@ client.images.create_image(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">create_image_edit</a>(...) -> ImagesResponse</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L113-L183">create_image_edit</a>(...) -> ImagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -737,7 +737,7 @@ client.images.create_image_edit(
 </dl>
 </details>
 
-<details><summary><code>client.images.<a href="src/fern/images/client.py">create_image_variation</a>(...) -> ImagesResponse</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L185-L243">create_image_variation</a>(...) -> ImagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -837,7 +837,7 @@ client.images.create_image_variation(
 </details>
 
 ## Embeddings
-<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py">create_embedding</a>(...) -> CreateEmbeddingResponse</code></summary>
+<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py#L32-L88">create_embedding</a>(...) -> CreateEmbeddingResponse</code></summary>
 <dl>
 <dd>
 
@@ -930,7 +930,7 @@ client.embeddings.create_embedding(
 </details>
 
 ## Audio
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">create_speech</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L40-L84">create_speech</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1010,7 +1010,7 @@ client.audio.create_speech(...)
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">create_transcription</a>(...) -> CreateTranscriptionResponse</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L86-L153">create_transcription</a>(...) -> CreateTranscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1118,7 +1118,7 @@ client.audio.create_transcription(
 </dl>
 </details>
 
-<details><summary><code>client.audio.<a href="src/fern/audio/client.py">create_translation</a>(...) -> CreateTranslationResponse</code></summary>
+<details><summary><code>client.audio.<a href="src/fern/audio/client.py#L155-L210">create_translation</a>(...) -> CreateTranslationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1211,7 +1211,7 @@ client.audio.create_translation(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_files</a>(...) -> ListFilesResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L33-L60">list_files</a>(...) -> ListFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1268,7 +1268,7 @@ client.files.list_files()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">create_file</a>(...) -> OpenAiFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L62-L102">create_file</a>(...) -> OpenAiFile</code></summary>
 <dl>
 <dd>
 
@@ -1341,7 +1341,7 @@ Use "fine-tune" for [Fine-tuning](/docs/api-reference/fine-tuning) and "assistan
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">retrieve_file</a>(...) -> OpenAiFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L104-L131">retrieve_file</a>(...) -> OpenAiFile</code></summary>
 <dl>
 <dd>
 
@@ -1400,7 +1400,7 @@ client.files.retrieve_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete_file</a>(...) -> DeleteFileResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L133-L162">delete_file</a>(...) -> DeleteFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1459,7 +1459,7 @@ client.files.delete_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">download_file</a>(...) -> str</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L164-L191">download_file</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1519,7 +1519,7 @@ client.files.download_file(
 </details>
 
 ## Fine-tuning
-<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py">list_paginated_fine_tuning_jobs</a>(...) -> ListPaginatedFineTuningJobsResponse</code></summary>
+<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py#L35-L71">list_paginated_fine_tuning_jobs</a>(...) -> ListPaginatedFineTuningJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1584,7 +1584,7 @@ client.fine_tuning.list_paginated_fine_tuning_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py">create_fine_tuning_job</a>(...) -> FineTuningJob</code></summary>
+<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py#L73-L158">create_fine_tuning_job</a>(...) -> FineTuningJob</code></summary>
 <dl>
 <dd>
 
@@ -1721,7 +1721,7 @@ If a seed is not specified, one will be generated for you.
 </dl>
 </details>
 
-<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py">retrieve_fine_tuning_job</a>(...) -> FineTuningJob</code></summary>
+<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py#L160-L189">retrieve_fine_tuning_job</a>(...) -> FineTuningJob</code></summary>
 <dl>
 <dd>
 
@@ -1780,7 +1780,7 @@ client.fine_tuning.retrieve_fine_tuning_job(
 </dl>
 </details>
 
-<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py">list_fine_tuning_events</a>(...) -> ListFineTuningJobEventsResponse</code></summary>
+<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py#L191-L233">list_fine_tuning_events</a>(...) -> ListFineTuningJobEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1855,7 +1855,7 @@ client.fine_tuning.list_fine_tuning_events(
 </dl>
 </details>
 
-<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py">cancel_fine_tuning_job</a>(...) -> FineTuningJob</code></summary>
+<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py#L235-L264">cancel_fine_tuning_job</a>(...) -> FineTuningJob</code></summary>
 <dl>
 <dd>
 
@@ -1914,7 +1914,7 @@ client.fine_tuning.cancel_fine_tuning_job(
 </dl>
 </details>
 
-<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py">list_fine_tuning_job_checkpoints</a>(...) -> ListFineTuningJobCheckpointsResponse</code></summary>
+<details><summary><code>client.fine_tuning.<a href="src/fern/fine_tuning/client.py#L266-L308">list_fine_tuning_job_checkpoints</a>(...) -> ListFineTuningJobCheckpointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1990,7 +1990,7 @@ client.fine_tuning.list_fine_tuning_job_checkpoints(
 </details>
 
 ## Models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list_models</a>() -> ListModelsResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L28-L50">list_models</a>() -> ListModelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2039,7 +2039,7 @@ client.models.list_models()
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">retrieve_model</a>(...) -> Model</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L52-L79">retrieve_model</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -2098,7 +2098,7 @@ client.models.retrieve_model(
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">delete_model</a>(...) -> DeleteModelResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L81-L110">delete_model</a>(...) -> DeleteModelResponse</code></summary>
 <dl>
 <dd>
 
@@ -2158,7 +2158,7 @@ client.models.delete_model(
 </details>
 
 ## Moderations
-<details><summary><code>client.moderations.<a href="src/fern/moderations/client.py">create_moderation</a>(...) -> CreateModerationResponse</code></summary>
+<details><summary><code>client.moderations.<a href="src/fern/moderations/client.py#L31-L69">create_moderation</a>(...) -> CreateModerationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2230,7 +2230,7 @@ The default is `text-moderation-latest` which will be automatically upgraded ove
 </details>
 
 ## Assistants
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">list_assistants</a>(...) -> ListAssistantsResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L64-L108">list_assistants</a>(...) -> ListAssistantsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2311,7 +2311,7 @@ client.assistants.list_assistants()
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_assistant</a>(...) -> AssistantObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L110-L175">create_assistant</a>(...) -> AssistantObject</code></summary>
 <dl>
 <dd>
 
@@ -2418,7 +2418,7 @@ client.assistants.create_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant</a>(...) -> AssistantObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L177-L206">get_assistant</a>(...) -> AssistantObject</code></summary>
 <dl>
 <dd>
 
@@ -2477,7 +2477,7 @@ client.assistants.get_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">modify_assistant</a>(...) -> AssistantObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L208-L278">modify_assistant</a>(...) -> AssistantObject</code></summary>
 <dl>
 <dd>
 
@@ -2592,7 +2592,7 @@ client.assistants.modify_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">delete_assistant</a>(...) -> DeleteAssistantResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L280-L309">delete_assistant</a>(...) -> DeleteAssistantResponse</code></summary>
 <dl>
 <dd>
 
@@ -2651,7 +2651,7 @@ client.assistants.delete_assistant(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_thread</a>(...) -> ThreadObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L311-L347">create_thread</a>(...) -> ThreadObject</code></summary>
 <dl>
 <dd>
 
@@ -2708,7 +2708,7 @@ client.assistants.create_thread()
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_thread</a>(...) -> ThreadObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L349-L376">get_thread</a>(...) -> ThreadObject</code></summary>
 <dl>
 <dd>
 
@@ -2767,7 +2767,7 @@ client.assistants.get_thread(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">modify_thread</a>(...) -> ThreadObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L378-L414">modify_thread</a>(...) -> ThreadObject</code></summary>
 <dl>
 <dd>
 
@@ -2834,7 +2834,7 @@ client.assistants.modify_thread(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">delete_thread</a>(...) -> DeleteThreadResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L416-L445">delete_thread</a>(...) -> DeleteThreadResponse</code></summary>
 <dl>
 <dd>
 
@@ -2893,7 +2893,7 @@ client.assistants.delete_thread(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">list_messages</a>(...) -> ListMessagesResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L447-L507">list_messages</a>(...) -> ListMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2992,7 +2992,7 @@ client.assistants.list_messages(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_message</a>(...) -> MessageObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L509-L563">create_message</a>(...) -> MessageObject</code></summary>
 <dl>
 <dd>
 
@@ -3061,7 +3061,7 @@ client.assistants.create_message(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_message</a>(...) -> MessageObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L565-L598">get_message</a>(...) -> MessageObject</code></summary>
 <dl>
 <dd>
 
@@ -3129,7 +3129,7 @@ client.assistants.get_message(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">modify_message</a>(...) -> MessageObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L600-L643">modify_message</a>(...) -> MessageObject</code></summary>
 <dl>
 <dd>
 
@@ -3205,7 +3205,7 @@ client.assistants.modify_message(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_thread_and_run</a>(...) -> RunObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L645-L737">create_thread_and_run</a>(...) -> RunObject</code></summary>
 <dl>
 <dd>
 
@@ -3360,7 +3360,7 @@ client.assistants.create_thread_and_run(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">list_runs</a>(...) -> ListRunsResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L739-L789">list_runs</a>(...) -> ListRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3451,7 +3451,7 @@ client.assistants.list_runs(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_run</a>(...) -> RunObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L791-L894">create_run</a>(...) -> RunObject</code></summary>
 <dl>
 <dd>
 
@@ -3623,7 +3623,7 @@ client.assistants.create_run(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_run</a>(...) -> RunObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L896-L929">get_run</a>(...) -> RunObject</code></summary>
 <dl>
 <dd>
 
@@ -3691,7 +3691,7 @@ client.assistants.get_run(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">modify_run</a>(...) -> RunObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L931-L972">modify_run</a>(...) -> RunObject</code></summary>
 <dl>
 <dd>
 
@@ -3767,7 +3767,7 @@ client.assistants.modify_run(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">submit_tool_ouputs_to_run</a>(...) -> RunObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L974-L1024">submit_tool_ouputs_to_run</a>(...) -> RunObject</code></summary>
 <dl>
 <dd>
 
@@ -3855,7 +3855,7 @@ client.assistants.submit_tool_ouputs_to_run(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">cancel_run</a>(...) -> RunObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1026-L1059">cancel_run</a>(...) -> RunObject</code></summary>
 <dl>
 <dd>
 
@@ -3923,7 +3923,7 @@ client.assistants.cancel_run(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">list_run_steps</a>(...) -> ListRunStepsResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1061-L1116">list_run_steps</a>(...) -> ListRunStepsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4023,7 +4023,7 @@ client.assistants.list_run_steps(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_run_step</a>(...) -> RunStepObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1118-L1155">get_run_step</a>(...) -> RunStepObject</code></summary>
 <dl>
 <dd>
 
@@ -4100,7 +4100,7 @@ client.assistants.get_run_step(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">list_assistant_files</a>(...) -> ListAssistantFilesResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1157-L1207">list_assistant_files</a>(...) -> ListAssistantFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4191,7 +4191,7 @@ client.assistants.list_assistant_files(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">create_assistant_file</a>(...) -> AssistantFileObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1209-L1244">create_assistant_file</a>(...) -> AssistantFileObject</code></summary>
 <dl>
 <dd>
 
@@ -4259,7 +4259,7 @@ client.assistants.create_assistant_file(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_assistant_file</a>(...) -> AssistantFileObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1246-L1279">get_assistant_file</a>(...) -> AssistantFileObject</code></summary>
 <dl>
 <dd>
 
@@ -4327,7 +4327,7 @@ client.assistants.get_assistant_file(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">delete_assistant_file</a>(...) -> DeleteAssistantFileResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1281-L1314">delete_assistant_file</a>(...) -> DeleteAssistantFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -4395,7 +4395,7 @@ client.assistants.delete_assistant_file(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">list_message_files</a>(...) -> ListMessageFilesResponse</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1316-L1371">list_message_files</a>(...) -> ListMessageFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4495,7 +4495,7 @@ client.assistants.list_message_files(
 </dl>
 </details>
 
-<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py">get_message_file</a>(...) -> MessageFileObject</code></summary>
+<details><summary><code>client.assistants.<a href="src/fern/assistants/client.py#L1373-L1410">get_message_file</a>(...) -> MessageFileObject</code></summary>
 <dl>
 <dd>
 

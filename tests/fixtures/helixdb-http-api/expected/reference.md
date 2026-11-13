@@ -1,6 +1,6 @@
 # Reference
 ## Queries
-<details><summary><code>client.queries.<a href="src/fern/queries/client.py">execute_query</a>(...) -> typing.Optional[QueryResponse]</code></summary>
+<details><summary><code>client.queries.<a href="src/fern/queries/client.py#L30-L105">execute_query</a>(...) -> typing.Optional[QueryResponse]</code></summary>
 <dl>
 <dd>
 
@@ -120,7 +120,7 @@ client.queries.execute_query(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">get_health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -183,7 +183,7 @@ client.health.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_readiness</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L52-L76">get_readiness</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 

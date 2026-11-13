@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-blues-notehub-js-9c5b2b63",
   "corpus_spec_ref": "c56a6b0bdaf1b0250dd068a1f5fe5ba2f956b831",
   "corpus_spec_url": "https://raw.githubusercontent.com/blues/notehub-js/c56a6b0bdaf1b0250dd068a1f5fe5ba2f956b831/openapi.yaml"

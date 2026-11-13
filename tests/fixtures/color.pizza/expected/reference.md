@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_all_colors_of_the_default_color_name_list</a>(...) -> GetNamesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L143">get_all_colors_of_the_default_color_name_list</a>(...) -> GetNamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.get_all_colors_of_the_default_color_name_list(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">generate_a_color_swatch_for_any_color</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L145-L177">generate_a_color_swatch_for_any_color</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

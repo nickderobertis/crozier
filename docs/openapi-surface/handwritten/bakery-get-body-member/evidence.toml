@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "2f5f03707716ef5117b83345043084ea4e6189a6b43fd365bc14171fb6e1176b"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "76d7423b20d173701d7f5dd9c50fe129add985ac72ed2d05edcd4dc60fd6b7e8"
 
 [[covers]]
 key = "get-request-body-union-member"

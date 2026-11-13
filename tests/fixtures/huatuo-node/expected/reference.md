@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_open_api</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L114-L137">get_open_api</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.get_open_api()
 </details>
 
 ## readiness
-<details><summary><code>client.readiness.<a href="src/fern/readiness/client.py">get_readiness</a>()</code></summary>
+<details><summary><code>client.readiness.<a href="src/fern/readiness/client.py#L25-L47">get_readiness</a>()</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.readiness.get_readiness()
 </details>
 
 ## config
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_config</a>(...)</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L28-L56">update_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -158,7 +158,7 @@ client.config.update_config(
 </details>
 
 ## containers
-<details><summary><code>client.containers.<a href="src/fern/containers/client.py">get_container</a>(...) -> ContainerResponse</code></summary>
+<details><summary><code>client.containers.<a href="src/fern/containers/client.py#L26-L55">get_container</a>(...) -> ContainerResponse</code></summary>
 <dl>
 <dd>
 
@@ -217,7 +217,7 @@ client.containers.get_container(
 </details>
 
 ## events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">watch_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L30-L63">watch_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.events.watch_events()
 </details>
 
 ## operations
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">start_operation</a>(...) -> OperationResponse</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py#L32-L103">start_operation</a>(...) -> OperationResponse</code></summary>
 <dl>
 <dd>
 
@@ -380,7 +380,7 @@ client.operations.start_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">get_operation</a>(...) -> OperationResponse</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py#L105-L134">get_operation</a>(...) -> OperationResponse</code></summary>
 <dl>
 <dd>
 
@@ -438,7 +438,7 @@ client.operations.get_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">stop_operation</a>(...) -> OperationResponse</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py#L136-L165">stop_operation</a>(...) -> OperationResponse</code></summary>
 <dl>
 <dd>
 

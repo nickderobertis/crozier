@@ -1,6 +1,6 @@
 # Reference
 ## Account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_all_accounts</a>(...) -> GetAllAccountsResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L27-L71">get_all_accounts</a>(...) -> GetAllAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -78,7 +78,7 @@ client.account.get_all_accounts(
 </details>
 
 ## Facebook Messenger
-<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py">create_messenger_account</a>(...) -> MessengerAccountResponse</code></summary>
+<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py#L30-L85">create_messenger_account</a>(...) -> MessengerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -168,7 +168,7 @@ This is the Facebook Business Page token. You can obtain the token using one of 
 </dl>
 </details>
 
-<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py">get_messenger_account</a>(...) -> MessengerAccountResponse</code></summary>
+<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py#L87-L117">get_messenger_account</a>(...) -> MessengerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -228,7 +228,7 @@ client.facebook_messenger.get_messenger_account(
 </dl>
 </details>
 
-<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py">delete_messenger_account</a>(...)</code></summary>
+<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py#L119-L148">delete_messenger_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.facebook_messenger.delete_messenger_account(
 </dl>
 </details>
 
-<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py">update_messenger_account</a>(...) -> UpdateMessengerAccountResponse</code></summary>
+<details><summary><code>client.facebook_messenger.<a href="src/fern/facebook_messenger/client.py#L150-L199">update_messenger_account</a>(...) -> UpdateMessengerAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -373,7 +373,7 @@ client.facebook_messenger.update_messenger_account(
 </details>
 
 ## Viber Service Message
-<details><summary><code>client.viber_service_message.<a href="src/fern/viber_service_message/client.py">get_vsm_account</a>(...) -> VsmAccountResponse</code></summary>
+<details><summary><code>client.viber_service_message.<a href="src/fern/viber_service_message/client.py#L26-L56">get_vsm_account</a>(...) -> VsmAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -434,7 +434,7 @@ client.viber_service_message.get_vsm_account(
 </details>
 
 ## WhatsApp
-<details><summary><code>client.whats_app.<a href="src/fern/whats_app/client.py">get_wa_account</a>(...) -> WaAccountResponse</code></summary>
+<details><summary><code>client.whats_app.<a href="src/fern/whats_app/client.py#L26-L56">get_wa_account</a>(...) -> WaAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -495,7 +495,7 @@ client.whats_app.get_wa_account(
 </details>
 
 ## Application
-<details><summary><code>client.application.<a href="src/fern/application/client.py">link_application</a>(...) -> AccountResponse</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L33-L80">link_application</a>(...) -> AccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -574,7 +574,7 @@ client.application.link_application(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">unli_without_applicationnk_application</a>(...)</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L82-L128">unli_without_applicationnk_application</a>(...)</code></summary>
 <dl>
 <dd>
 

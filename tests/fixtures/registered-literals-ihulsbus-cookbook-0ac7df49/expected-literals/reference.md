@@ -1,6 +1,6 @@
 # Reference
 ## recipe
-<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py">get_all_recipes</a>(...) -> PaginatedRecipeResponse</code></summary>
+<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py#L30-L66">get_all_recipes</a>(...) -> PaginatedRecipeResponse</code></summary>
 <dl>
 <dd>
 
@@ -79,7 +79,7 @@ client.recipe.get_all_recipes()
 </dl>
 </details>
 
-<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py">create_recipe</a>(...) -> Recipe</code></summary>
+<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py#L68-L118">create_recipe</a>(...) -> Recipe</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.recipe.create_recipe(
 </dl>
 </details>
 
-<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py">get_recipe</a>(...) -> Recipe</code></summary>
+<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py#L120-L149">get_recipe</a>(...) -> Recipe</code></summary>
 <dl>
 <dd>
 
@@ -227,7 +227,7 @@ client.recipe.get_recipe(
 </dl>
 </details>
 
-<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py">update_recipe</a>(...) -> Recipe</code></summary>
+<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py#L151-L211">update_recipe</a>(...) -> Recipe</code></summary>
 <dl>
 <dd>
 
@@ -311,7 +311,7 @@ client.recipe.update_recipe(
 </dl>
 </details>
 
-<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py">delete_recipe</a>(...)</code></summary>
+<details><summary><code>client.recipe.<a href="src/fern/recipe/client.py#L213-L241">delete_recipe</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -385,7 +385,7 @@ client.recipe.delete_recipe(
 </details>
 
 ## image
-<details><summary><code>client.image.<a href="src/fern/image/client.py">get_all_images</a>(...) -> PaginatedImageResponse</code></summary>
+<details><summary><code>client.image.<a href="src/fern/image/client.py#L32-L68">get_all_images</a>(...) -> PaginatedImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -464,7 +464,7 @@ client.image.get_all_images()
 </dl>
 </details>
 
-<details><summary><code>client.image.<a href="src/fern/image/client.py">get_image</a>(...) -> ImageData</code></summary>
+<details><summary><code>client.image.<a href="src/fern/image/client.py#L70-L99">get_image</a>(...) -> ImageData</code></summary>
 <dl>
 <dd>
 
@@ -537,7 +537,7 @@ client.image.get_image(
 </dl>
 </details>
 
-<details><summary><code>client.image.<a href="src/fern/image/client.py">update_image</a>(...) -> ImageData</code></summary>
+<details><summary><code>client.image.<a href="src/fern/image/client.py#L101-L140">update_image</a>(...) -> ImageData</code></summary>
 <dl>
 <dd>
 
@@ -620,7 +620,7 @@ client.image.update_image(
 </dl>
 </details>
 
-<details><summary><code>client.image.<a href="src/fern/image/client.py">delete_images</a>(...)</code></summary>
+<details><summary><code>client.image.<a href="src/fern/image/client.py#L142-L170">delete_images</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -693,7 +693,7 @@ client.image.delete_images(
 </dl>
 </details>
 
-<details><summary><code>client.image.<a href="src/fern/image/client.py">create_image</a>(...) -> ImageData</code></summary>
+<details><summary><code>client.image.<a href="src/fern/image/client.py#L172-L216">create_image</a>(...) -> ImageData</code></summary>
 <dl>
 <dd>
 
@@ -785,7 +785,7 @@ client.image.create_image(
 </dl>
 </details>
 
-<details><summary><code>client.image.<a href="src/fern/image/client.py">search_image</a>(...) -> ImageData</code></summary>
+<details><summary><code>client.image.<a href="src/fern/image/client.py#L218-L256">search_image</a>(...) -> ImageData</code></summary>
 <dl>
 <dd>
 
@@ -867,7 +867,7 @@ client.image.search_image(
 </details>
 
 ## search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">instruction</a>(...) -> InstructionSearch</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L27-L58">instruction</a>(...) -> InstructionSearch</code></summary>
 <dl>
 <dd>
 
@@ -940,7 +940,7 @@ client.search.instruction(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">global_search</a>() -> GlobalSearchResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L60-L84">global_search</a>() -> GlobalSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1004,7 +1004,7 @@ client.search.global_search()
 </details>
 
 ## instruction
-<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py">get_instruction</a>(...) -> Instruction</code></summary>
+<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py#L29-L60">get_instruction</a>(...) -> Instruction</code></summary>
 <dl>
 <dd>
 
@@ -1077,7 +1077,7 @@ client.instruction.get_instruction(
 </dl>
 </details>
 
-<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py">update_instruction</a>(...) -> Instruction</code></summary>
+<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py#L62-L133">update_instruction</a>(...) -> Instruction</code></summary>
 <dl>
 <dd>
 
@@ -1163,7 +1163,7 @@ client.instruction.update_instruction(
 </dl>
 </details>
 
-<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py">delete_instruction</a>(...)</code></summary>
+<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py#L135-L165">delete_instruction</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1236,7 +1236,7 @@ client.instruction.delete_instruction(
 </dl>
 </details>
 
-<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py">create_instruction</a>(...) -> Instruction</code></summary>
+<details><summary><code>client.instruction.<a href="src/fern/instruction/client.py#L167-L238">create_instruction</a>(...) -> Instruction</code></summary>
 <dl>
 <dd>
 
@@ -1323,7 +1323,7 @@ client.instruction.create_instruction(
 </details>
 
 ## tag
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">get_all_tags</a>(...) -> PaginatedTagResponse</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L30-L66">get_all_tags</a>(...) -> PaginatedTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -1402,7 +1402,7 @@ client.tag.get_all_tags()
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">create_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L68-L106">create_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -1475,7 +1475,7 @@ client.tag.create_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">get_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L108-L137">get_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -1548,7 +1548,7 @@ client.tag.get_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">update_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L139-L182">update_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -1630,7 +1630,7 @@ client.tag.update_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">delete_tag</a>(...)</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L184-L212">delete_tag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1704,7 +1704,7 @@ client.tag.delete_tag(
 </details>
 
 ## category
-<details><summary><code>client.category.<a href="src/fern/category/client.py">get_all_category</a>(...) -> PaginatedCategoryResponse</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py#L31-L67">get_all_category</a>(...) -> PaginatedCategoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1783,7 +1783,7 @@ client.category.get_all_category()
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">create_category</a>(...) -> Category</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py#L69-L107">create_category</a>(...) -> Category</code></summary>
 <dl>
 <dd>
 
@@ -1856,7 +1856,7 @@ client.category.create_category(
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">get_category</a>(...) -> Category</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py#L109-L138">get_category</a>(...) -> Category</code></summary>
 <dl>
 <dd>
 
@@ -1929,7 +1929,7 @@ client.category.get_category(
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">update_category</a>(...) -> Category</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py#L140-L183">update_category</a>(...) -> Category</code></summary>
 <dl>
 <dd>
 
@@ -2011,7 +2011,7 @@ client.category.update_category(
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">delete_category</a>(...)</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py#L185-L213">delete_category</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2084,7 +2084,7 @@ client.category.delete_category(
 </dl>
 </details>
 
-<details><summary><code>client.category.<a href="src/fern/category/client.py">create_cuisinetype</a>(...) -> CuisineType</code></summary>
+<details><summary><code>client.category.<a href="src/fern/category/client.py#L215-L253">create_cuisinetype</a>(...) -> CuisineType</code></summary>
 <dl>
 <dd>
 
@@ -2158,7 +2158,7 @@ client.category.create_cuisinetype(
 </details>
 
 ## cuisinetype
-<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py">get_all_cuisinetype</a>(...) -> PaginatedCuisineTypeResponse</code></summary>
+<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py#L30-L66">get_all_cuisinetype</a>(...) -> PaginatedCuisineTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2237,7 +2237,7 @@ client.cuisinetype.get_all_cuisinetype()
 </dl>
 </details>
 
-<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py">get_cuisinetype</a>(...) -> CuisineType</code></summary>
+<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py#L68-L99">get_cuisinetype</a>(...) -> CuisineType</code></summary>
 <dl>
 <dd>
 
@@ -2310,7 +2310,7 @@ client.cuisinetype.get_cuisinetype(
 </dl>
 </details>
 
-<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py">update_cuisinetype</a>(...) -> CuisineType</code></summary>
+<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py#L101-L146">update_cuisinetype</a>(...) -> CuisineType</code></summary>
 <dl>
 <dd>
 
@@ -2392,7 +2392,7 @@ client.cuisinetype.update_cuisinetype(
 </dl>
 </details>
 
-<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py">delete_cuisinetype</a>(...)</code></summary>
+<details><summary><code>client.cuisinetype.<a href="src/fern/cuisinetype/client.py#L148-L178">delete_cuisinetype</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2466,7 +2466,7 @@ client.cuisinetype.delete_cuisinetype(
 </details>
 
 ## difficultylevel
-<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py">get_all_dificultylevels</a>(...) -> PaginatedDifficultyLevelResponse</code></summary>
+<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py#L30-L66">get_all_dificultylevels</a>(...) -> PaginatedDifficultyLevelResponse</code></summary>
 <dl>
 <dd>
 
@@ -2545,7 +2545,7 @@ client.difficultylevel.get_all_dificultylevels()
 </dl>
 </details>
 
-<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py">create_difficultylevel</a>(...) -> DifficultyLevel</code></summary>
+<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py#L68-L106">create_difficultylevel</a>(...) -> DifficultyLevel</code></summary>
 <dl>
 <dd>
 
@@ -2618,7 +2618,7 @@ client.difficultylevel.create_difficultylevel(
 </dl>
 </details>
 
-<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py">get_single_difficultylevel</a>(...) -> DifficultyLevel</code></summary>
+<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py#L108-L139">get_single_difficultylevel</a>(...) -> DifficultyLevel</code></summary>
 <dl>
 <dd>
 
@@ -2691,7 +2691,7 @@ client.difficultylevel.get_single_difficultylevel(
 </dl>
 </details>
 
-<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py">update_difficultylevel</a>(...) -> DifficultyLevel</code></summary>
+<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py#L141-L186">update_difficultylevel</a>(...) -> DifficultyLevel</code></summary>
 <dl>
 <dd>
 
@@ -2773,7 +2773,7 @@ client.difficultylevel.update_difficultylevel(
 </dl>
 </details>
 
-<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py">delete_difficultylevel</a>(...)</code></summary>
+<details><summary><code>client.difficultylevel.<a href="src/fern/difficultylevel/client.py#L188-L218">delete_difficultylevel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2847,7 +2847,7 @@ client.difficultylevel.delete_difficultylevel(
 </details>
 
 ## preparationtime
-<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py">get_all_preparationtime</a>(...) -> PaginatedPreparationTimeResponse</code></summary>
+<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py#L30-L66">get_all_preparationtime</a>(...) -> PaginatedPreparationTimeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2926,7 +2926,7 @@ client.preparationtime.get_all_preparationtime()
 </dl>
 </details>
 
-<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py">create_preparationtime</a>(...) -> PreparationTime</code></summary>
+<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py#L68-L106">create_preparationtime</a>(...) -> PreparationTime</code></summary>
 <dl>
 <dd>
 
@@ -2999,7 +2999,7 @@ client.preparationtime.create_preparationtime(
 </dl>
 </details>
 
-<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py">get_preparationtime</a>(...) -> PreparationTime</code></summary>
+<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py#L108-L139">get_preparationtime</a>(...) -> PreparationTime</code></summary>
 <dl>
 <dd>
 
@@ -3072,7 +3072,7 @@ client.preparationtime.get_preparationtime(
 </dl>
 </details>
 
-<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py">put_preparationtime</a>(...) -> PreparationTime</code></summary>
+<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py#L141-L186">put_preparationtime</a>(...) -> PreparationTime</code></summary>
 <dl>
 <dd>
 
@@ -3154,7 +3154,7 @@ client.preparationtime.put_preparationtime(
 </dl>
 </details>
 
-<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py">delete_preparationtime</a>(...)</code></summary>
+<details><summary><code>client.preparationtime.<a href="src/fern/preparationtime/client.py#L188-L218">delete_preparationtime</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3228,7 +3228,7 @@ client.preparationtime.delete_preparationtime(
 </details>
 
 ## metadata
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">search_metadata</a>(...) -> MetadataSearchResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L29-L96">search_metadata</a>(...) -> MetadataSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -3350,7 +3350,7 @@ client.metadata.search_metadata(
 </details>
 
 ## ingredient
-<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py">get_all_ingredient</a>(...) -> PaginatedIngredientResponse</code></summary>
+<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py#L30-L66">get_all_ingredient</a>(...) -> PaginatedIngredientResponse</code></summary>
 <dl>
 <dd>
 
@@ -3429,7 +3429,7 @@ client.ingredient.get_all_ingredient()
 </dl>
 </details>
 
-<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py">create_ingredient</a>(...) -> Ingredient</code></summary>
+<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py#L68-L106">create_ingredient</a>(...) -> Ingredient</code></summary>
 <dl>
 <dd>
 
@@ -3502,7 +3502,7 @@ client.ingredient.create_ingredient(
 </dl>
 </details>
 
-<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py">get_ingredient</a>(...) -> Ingredient</code></summary>
+<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py#L108-L139">get_ingredient</a>(...) -> Ingredient</code></summary>
 <dl>
 <dd>
 
@@ -3575,7 +3575,7 @@ client.ingredient.get_ingredient(
 </dl>
 </details>
 
-<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py">update_ingredient</a>(...) -> Ingredient</code></summary>
+<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py#L141-L184">update_ingredient</a>(...) -> Ingredient</code></summary>
 <dl>
 <dd>
 
@@ -3657,7 +3657,7 @@ client.ingredient.update_ingredient(
 </dl>
 </details>
 
-<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py">delete_ingredient</a>(...)</code></summary>
+<details><summary><code>client.ingredient.<a href="src/fern/ingredient/client.py#L186-L214">delete_ingredient</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3731,7 +3731,7 @@ client.ingredient.delete_ingredient(
 </details>
 
 ## unit
-<details><summary><code>client.unit.<a href="src/fern/unit/client.py">get_al_units</a>(...) -> PaginatedUnitResponse</code></summary>
+<details><summary><code>client.unit.<a href="src/fern/unit/client.py#L30-L66">get_al_units</a>(...) -> PaginatedUnitResponse</code></summary>
 <dl>
 <dd>
 
@@ -3810,7 +3810,7 @@ client.unit.get_al_units()
 </dl>
 </details>
 
-<details><summary><code>client.unit.<a href="src/fern/unit/client.py">create_unit</a>(...) -> Unit</code></summary>
+<details><summary><code>client.unit.<a href="src/fern/unit/client.py#L68-L110">create_unit</a>(...) -> Unit</code></summary>
 <dl>
 <dd>
 
@@ -3881,7 +3881,7 @@ client.unit.create_unit()
 </dl>
 </details>
 
-<details><summary><code>client.unit.<a href="src/fern/unit/client.py">get_single_unit</a>(...) -> Unit</code></summary>
+<details><summary><code>client.unit.<a href="src/fern/unit/client.py#L112-L141">get_single_unit</a>(...) -> Unit</code></summary>
 <dl>
 <dd>
 
@@ -3954,7 +3954,7 @@ client.unit.get_single_unit(
 </dl>
 </details>
 
-<details><summary><code>client.unit.<a href="src/fern/unit/client.py">update_unit</a>(...) -> Unit</code></summary>
+<details><summary><code>client.unit.<a href="src/fern/unit/client.py#L143-L191">update_unit</a>(...) -> Unit</code></summary>
 <dl>
 <dd>
 
@@ -4035,7 +4035,7 @@ client.unit.update_unit(
 </dl>
 </details>
 
-<details><summary><code>client.unit.<a href="src/fern/unit/client.py">delete_unit</a>(...)</code></summary>
+<details><summary><code>client.unit.<a href="src/fern/unit/client.py#L193-L221">delete_unit</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4109,7 +4109,7 @@ client.unit.delete_unit(
 </details>
 
 ## amount
-<details><summary><code>client.amount.<a href="src/fern/amount/client.py">get_recipe_amounts</a>(...) -> typing.List[IngredientAmounts]</code></summary>
+<details><summary><code>client.amount.<a href="src/fern/amount/client.py#L29-L60">get_recipe_amounts</a>(...) -> typing.List[IngredientAmounts]</code></summary>
 <dl>
 <dd>
 
@@ -4182,7 +4182,7 @@ client.amount.get_recipe_amounts(
 </dl>
 </details>
 
-<details><summary><code>client.amount.<a href="src/fern/amount/client.py">post_recipe_amounts</a>(...) -> typing.List[IngredientAmounts]</code></summary>
+<details><summary><code>client.amount.<a href="src/fern/amount/client.py#L62-L108">post_recipe_amounts</a>(...) -> typing.List[IngredientAmounts]</code></summary>
 <dl>
 <dd>
 
@@ -4271,7 +4271,7 @@ client.amount.post_recipe_amounts(
 </dl>
 </details>
 
-<details><summary><code>client.amount.<a href="src/fern/amount/client.py">put_recipe_amounts</a>(...) -> typing.List[IngredientAmounts]</code></summary>
+<details><summary><code>client.amount.<a href="src/fern/amount/client.py#L110-L156">put_recipe_amounts</a>(...) -> typing.List[IngredientAmounts]</code></summary>
 <dl>
 <dd>
 
@@ -4360,7 +4360,7 @@ client.amount.put_recipe_amounts(
 </dl>
 </details>
 
-<details><summary><code>client.amount.<a href="src/fern/amount/client.py">delete_recipe_amounts</a>(...) -> str</code></summary>
+<details><summary><code>client.amount.<a href="src/fern/amount/client.py#L158-L199">delete_recipe_amounts</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

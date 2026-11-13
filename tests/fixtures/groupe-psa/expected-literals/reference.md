@@ -1,6 +1,6 @@
 # Reference
 ## Capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_vehicles_capabilities</a>(...) -> VehicleCapabilities</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L27-L74">get_vehicles_capabilities</a>(...) -> VehicleCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -91,7 +91,7 @@ client.capabilities.get_vehicles_capabilities(
 </details>
 
 ## Fleet
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleets</a>(...) -> Fleets</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L38-L77">get_fleets</a>(...) -> Fleets</code></summary>
 <dl>
 <dd>
 
@@ -171,7 +171,7 @@ client.fleet.get_fleets()
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet</a>(...) -> Fleet</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L79-L109">get_fleet</a>(...) -> Fleet</code></summary>
 <dl>
 <dd>
 
@@ -245,7 +245,7 @@ client.fleet.get_fleet(
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet_status_list</a>(...) -> StatusList</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L111-L175">get_fleet_status_list</a>(...) -> StatusList</code></summary>
 <dl>
 <dd>
 
@@ -361,7 +361,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet_mantenance_list</a>(...) -> MaintenanceList</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L177-L241">get_fleet_mantenance_list</a>(...) -> MaintenanceList</code></summary>
 <dl>
 <dd>
 
@@ -477,7 +477,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet_alert_list</a>(...) -> Alerts</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L243-L331">get_fleet_alert_list</a>(...) -> Alerts</code></summary>
 <dl>
 <dd>
 
@@ -622,7 +622,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet_alert_by_id</a>(...) -> Alert</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L333-L379">get_fleet_alert_by_id</a>(...) -> Alert</code></summary>
 <dl>
 <dd>
 
@@ -717,7 +717,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet_trips</a>(...) -> Trips</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L381-L503">get_fleet_trips</a>(...) -> Trips</code></summary>
 <dl>
 <dd>
 
@@ -911,7 +911,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_fleet_trip_collisions</a>(...) -> Collisions</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L505-L593">get_fleet_trip_collisions</a>(...) -> Collisions</code></summary>
 <dl>
 <dd>
 
@@ -1056,7 +1056,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py">get_collisions_by_id</a>(...) -> Collision</code></summary>
+<details><summary><code>client.fleet.<a href="src/fern/fleet/client.py#L595-L641">get_collisions_by_id</a>(...) -> Collision</code></summary>
 <dl>
 <dd>
 
@@ -1152,7 +1152,7 @@ Results will contain a relative view of the data depending on the selected profi
 </details>
 
 ## Vehicles
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicles_by_device</a>(...) -> Vehicles</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L47-L112">get_vehicles_by_device</a>(...) -> Vehicles</code></summary>
 <dl>
 <dd>
 
@@ -1266,7 +1266,7 @@ client.vehicles.get_vehicles_by_device(
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_byid</a>(...) -> Vehicle</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L114-L166">get_vehicle_byid</a>(...) -> Vehicle</code></summary>
 <dl>
 <dd>
 
@@ -1365,7 +1365,7 @@ client.vehicles.get_vehicle_byid(
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_car_last_position</a>(...) -> Position</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L168-L214">get_car_last_position</a>(...) -> Position</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1460,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_collision</a>(...) -> Collisions</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L216-L310">get_vehicle_collision</a>(...) -> Collisions</code></summary>
 <dl>
 <dd>
 
@@ -1614,7 +1614,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_collision_by_id</a>(...) -> Collision</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L312-L365">get_vehicle_collision_by_id</a>(...) -> Collision</code></summary>
 <dl>
 <dd>
 
@@ -1718,7 +1718,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_maintenance</a>(...) -> Maintenance</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L367-L413">get_vehicle_maintenance</a>(...) -> Maintenance</code></summary>
 <dl>
 <dd>
 
@@ -1813,7 +1813,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_fleet_vehicle_status</a>(...) -> Status</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L415-L463">get_fleet_vehicle_status</a>(...) -> Status</code></summary>
 <dl>
 <dd>
 
@@ -1908,7 +1908,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_alerts</a>(...) -> Alerts</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L465-L559">get_vehicle_alerts</a>(...) -> Alerts</code></summary>
 <dl>
 <dd>
 
@@ -2062,7 +2062,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_fleet_vehicle_alerts_by_id</a>(...) -> Alert</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L561-L614">get_fleet_vehicle_alerts_by_id</a>(...) -> Alert</code></summary>
 <dl>
 <dd>
 
@@ -2166,7 +2166,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_telemetry</a>(...) -> Telemetries</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L616-L723">get_telemetry</a>(...) -> Telemetries</code></summary>
 <dl>
 <dd>
 
@@ -2339,7 +2339,7 @@ Results will only contain Telemetry messages of this kind. You can add more than
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_alarms</a>(...) -> Alarms</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L725-L818">get_vehicle_alarms</a>(...) -> Alarms</code></summary>
 <dl>
 <dd>
 
@@ -2490,7 +2490,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_alarms_by_id</a>(...) -> AlarmDetails</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L820-L860">get_vehicle_alarms_by_id</a>(...) -> AlarmDetails</code></summary>
 <dl>
 <dd>
 
@@ -2582,7 +2582,7 @@ client.vehicles.get_vehicle_alarms_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_stolen_history</a>(...) -> StolenCollection</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L862-L949">get_vehicle_stolen_history</a>(...) -> StolenCollection</code></summary>
 <dl>
 <dd>
 
@@ -2724,7 +2724,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_stolen_by_id</a>(...) -> Stolen</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L951-L991">get_vehicle_stolen_by_id</a>(...) -> Stolen</code></summary>
 <dl>
 <dd>
 
@@ -2816,7 +2816,7 @@ client.vehicles.get_vehicle_stolen_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py">get_vehicle_stolen_id_position</a>(...) -> WayPoints</code></summary>
+<details><summary><code>client.vehicles.<a href="src/fern/vehicles/client.py#L993-L1033">get_vehicle_stolen_id_position</a>(...) -> WayPoints</code></summary>
 <dl>
 <dd>
 
@@ -2909,7 +2909,7 @@ client.vehicles.get_vehicle_stolen_id_position(
 </details>
 
 ## Monitors
-<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py">get_fleet_monitors</a>(...) -> Monitors</code></summary>
+<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py#L36-L89">get_fleet_monitors</a>(...) -> Monitors</code></summary>
 <dl>
 <dd>
 
@@ -3013,7 +3013,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py">create_fleet_vehicle_monitor</a>(...) -> MonitorRef</code></summary>
+<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py#L91-L202">create_fleet_vehicle_monitor</a>(...) -> MonitorRef</code></summary>
 <dl>
 <dd>
 
@@ -3121,7 +3121,7 @@ client.monitors.create_fleet_vehicle_monitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py">get_fleet_monitors_status_by_id</a>(...) -> Monitor</code></summary>
+<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py#L204-L240">get_fleet_monitors_status_by_id</a>(...) -> Monitor</code></summary>
 <dl>
 <dd>
 
@@ -3204,7 +3204,7 @@ client.monitors.get_fleet_monitors_status_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py">update_fleet_vehicle_monitor</a>(...) -> MonitorRef</code></summary>
+<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py#L242-L357">update_fleet_vehicle_monitor</a>(...) -> MonitorRef</code></summary>
 <dl>
 <dd>
 
@@ -3319,7 +3319,7 @@ client.monitors.update_fleet_vehicle_monitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py">delete_fleet_monitor</a>(...)</code></summary>
+<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py#L359-L394">delete_fleet_monitor</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3402,7 +3402,7 @@ client.monitors.delete_fleet_monitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py">set_fleet_vehicle_monitor_status</a>(...) -> MonitorRef</code></summary>
+<details><summary><code>client.monitors.<a href="src/fern/monitors/client.py#L396-L442">set_fleet_vehicle_monitor_status</a>(...) -> MonitorRef</code></summary>
 <dl>
 <dd>
 
@@ -3495,7 +3495,7 @@ client.monitors.set_fleet_vehicle_monitor_status(
 </details>
 
 ## Trips
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_trips_by_vehicle</a>(...) -> Trips</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L38-L166">get_trips_by_vehicle</a>(...) -> Trips</code></summary>
 <dl>
 <dd>
 
@@ -3698,7 +3698,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_fleet_trip_by_vehicle</a>(...) -> Trip</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L168-L221">get_fleet_trip_by_vehicle</a>(...) -> Trip</code></summary>
 <dl>
 <dd>
 
@@ -3802,7 +3802,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_trip_collisions_by_trip_and_vehicle</a>(...) -> Collisions</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L223-L316">get_trip_collisions_by_trip_and_vehicle</a>(...) -> Collisions</code></summary>
 <dl>
 <dd>
 
@@ -3953,7 +3953,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_fleet_trip_alert_by_vehicle</a>(...) -> Alerts</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L318-L418">get_fleet_trip_alert_by_vehicle</a>(...) -> Alerts</code></summary>
 <dl>
 <dd>
 
@@ -4116,7 +4116,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_fleet_trip_alert_by_vehicle_by_id</a>(...) -> Alert</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L420-L478">get_fleet_trip_alert_by_vehicle_by_id</a>(...) -> Alert</code></summary>
 <dl>
 <dd>
 
@@ -4229,7 +4229,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_path_for_trip</a>(...) -> WayPoints</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L480-L585">get_path_for_trip</a>(...) -> WayPoints</code></summary>
 <dl>
 <dd>
 
@@ -4400,7 +4400,7 @@ Results will contain a relative view of the data depending on the selected profi
 </dl>
 </details>
 
-<details><summary><code>client.trips.<a href="src/fern/trips/client.py">get_telemetry_for_trip_by_vehicle</a>(...) -> Telemetries</code></summary>
+<details><summary><code>client.trips.<a href="src/fern/trips/client.py#L587-L700">get_telemetry_for_trip_by_vehicle</a>(...) -> Telemetries</code></summary>
 <dl>
 <dd>
 
@@ -4583,7 +4583,7 @@ Results will only contain Telemetry messages of this kind. You can add more than
 </details>
 
 ## Remote
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">get_fleet_remotes</a>(...) -> RemoteCallbacks</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L50-L112">get_fleet_remotes</a>(...) -> RemoteCallbacks</code></summary>
 <dl>
 <dd>
 
@@ -4695,7 +4695,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">set_fleet_vehicle_remote</a>(...) -> CallbackRef</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L114-L189">set_fleet_vehicle_remote</a>(...) -> CallbackRef</code></summary>
 <dl>
 <dd>
 
@@ -4786,7 +4786,7 @@ client.remote.set_fleet_vehicle_remote(
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">get_fleet_remoteby_id</a>(...) -> RemoteCallback</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L191-L227">get_fleet_remoteby_id</a>(...) -> RemoteCallback</code></summary>
 <dl>
 <dd>
 
@@ -4869,7 +4869,7 @@ client.remote.get_fleet_remoteby_id(
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">set_fleet_vehicle_remote_by_id</a>(...) -> CallbackRef</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L229-L311">set_fleet_vehicle_remote_by_id</a>(...) -> CallbackRef</code></summary>
 <dl>
 <dd>
 
@@ -4970,7 +4970,7 @@ client.remote.set_fleet_vehicle_remote_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">delete_fleet_remote</a>(...)</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L313-L348">delete_fleet_remote</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5053,7 +5053,7 @@ client.remote.delete_fleet_remote(
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">set_flee_remote_callback_status</a>(...) -> CallbackRef</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L350-L396">set_flee_remote_callback_status</a>(...) -> CallbackRef</code></summary>
 <dl>
 <dd>
 
@@ -5145,7 +5145,7 @@ client.remote.set_flee_remote_callback_status(
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">get_remote_requests_for_vhl</a>(...) -> RemoteActions</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L398-L467">get_remote_requests_for_vhl</a>(...) -> RemoteActions</code></summary>
 <dl>
 <dd>
 
@@ -5267,7 +5267,7 @@ Results indexes will be included in this range (see **indexRange** model).
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">send_remote_to_vhl</a>(...) -> RemotePostResponse</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L469-L559">send_remote_to_vhl</a>(...) -> RemotePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -5367,7 +5367,7 @@ client.remote.send_remote_to_vhl(
 </dl>
 </details>
 
-<details><summary><code>client.remote.<a href="src/fern/remote/client.py">get_remote_request_for_vhl_by_id</a>(...) -> RemoteAction</code></summary>
+<details><summary><code>client.remote.<a href="src/fern/remote/client.py#L561-L607">get_remote_request_for_vhl_by_id</a>(...) -> RemoteAction</code></summary>
 <dl>
 <dd>
 

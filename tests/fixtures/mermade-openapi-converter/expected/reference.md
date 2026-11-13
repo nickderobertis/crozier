@@ -1,6 +1,6 @@
 # Reference
 ## validation
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">get_badge</a>(...)</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L29-L55">get_badge</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.validation.get_badge(
 </dl>
 </details>
 
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">validate_url</a>(...) -> ValidationResult</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L57-L84">validate_url</a>(...) -> ValidationResult</code></summary>
 <dl>
 <dd>
 
@@ -144,7 +144,7 @@ client.validation.validate_url(
 </dl>
 </details>
 
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">validate</a>(...) -> ValidationResult</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L86-L120">validate</a>(...) -> ValidationResult</code></summary>
 <dl>
 <dd>
 
@@ -223,7 +223,7 @@ client.validation.validate()
 </details>
 
 ## conversion
-<details><summary><code>client.conversion.<a href="src/fern/conversion/client.py">convert_url</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.conversion.<a href="src/fern/conversion/client.py#L29-L56">convert_url</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -295,7 +295,7 @@ client.conversion.convert_url(
 </dl>
 </details>
 
-<details><summary><code>client.conversion.<a href="src/fern/conversion/client.py">convert</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.conversion.<a href="src/fern/conversion/client.py#L58-L97">convert</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -382,7 +382,7 @@ client.conversion.convert()
 </details>
 
 ## metadata
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">get_status</a>() -> typing.Any</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L25-L47">get_status</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

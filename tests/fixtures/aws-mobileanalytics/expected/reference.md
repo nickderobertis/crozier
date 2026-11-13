@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">put_events</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L162-L206">put_events</a>(...)</code></summary>
 <dl>
 <dd>
 

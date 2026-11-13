@@ -1,6 +1,6 @@
 # Reference
 ## Photos
-<details><summary><code>client.photos.<a href="src/fern/photos/client.py">retouch_photo</a>(...) -> Photo</code></summary>
+<details><summary><code>client.photos.<a href="src/fern/photos/client.py#L31-L66">retouch_photo</a>(...) -> Photo</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.photos.retouch_photo(
 </dl>
 </details>
 
-<details><summary><code>client.photos.<a href="src/fern/photos/client.py">get_proof</a>(...) -> ProofResponse</code></summary>
+<details><summary><code>client.photos.<a href="src/fern/photos/client.py#L68-L94">get_proof</a>(...) -> ProofResponse</code></summary>
 <dl>
 <dd>
 

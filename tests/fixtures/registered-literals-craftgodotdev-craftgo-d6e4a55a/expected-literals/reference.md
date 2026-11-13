@@ -1,6 +1,6 @@
 # Reference
 ## Catalog
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_categories</a>(...) -> ListCategoriesRespBody</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L37-L73">list_categories</a>(...) -> ListCategoriesRespBody</code></summary>
 <dl>
 <dd>
 
@@ -81,7 +81,7 @@ client.catalog.list_categories(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">list_products</a>(...) -> ListProductsRespBody</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L75-L119">list_products</a>(...) -> ListProductsRespBody</code></summary>
 <dl>
 <dd>
 
@@ -178,7 +178,7 @@ client.catalog.list_products(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">create_product</a>(...) -> CreateProductRespBody</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L121-L184">create_product</a>(...) -> CreateProductRespBody</code></summary>
 <dl>
 <dd>
 
@@ -302,7 +302,7 @@ client.catalog.create_product(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_product</a>(...) -> GetProductRespBody</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L186-L214">get_product</a>(...) -> GetProductRespBody</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.catalog.get_product(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">delete_product</a>(...) -> DeleteProductRespBody</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L216-L246">delete_product</a>(...) -> DeleteProductRespBody</code></summary>
 <dl>
 <dd>
 
@@ -449,7 +449,7 @@ client.catalog.delete_product(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">list_customers</a>(...) -> ListCustomersRespBody</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L37-L73">list_customers</a>(...) -> ListCustomersRespBody</code></summary>
 <dl>
 <dd>
 
@@ -530,7 +530,7 @@ client.customers.list_customers(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer</a>(...) -> CreateCustomerRespBody</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L75-L135">create_customer</a>(...) -> CreateCustomerRespBody</code></summary>
 <dl>
 <dd>
 
@@ -643,7 +643,7 @@ client.customers.create_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">get_customer</a>(...) -> GetCustomerRespBody</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L137-L165">get_customer</a>(...) -> GetCustomerRespBody</code></summary>
 <dl>
 <dd>
 
@@ -716,7 +716,7 @@ client.customers.get_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete_customer</a>(...) -> DeleteCustomerRespBody</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L167-L197">delete_customer</a>(...) -> DeleteCustomerRespBody</code></summary>
 <dl>
 <dd>
 
@@ -789,7 +789,7 @@ client.customers.delete_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">upload_avatar</a>(...) -> UploadAvatarRespBody</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L199-L232">upload_avatar</a>(...) -> UploadAvatarRespBody</code></summary>
 <dl>
 <dd>
 
@@ -872,7 +872,7 @@ client.customers.upload_avatar(
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">create_order</a>(...) -> CreateOrderRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L44-L107">create_order</a>(...) -> CreateOrderRespBody</code></summary>
 <dl>
 <dd>
 
@@ -988,7 +988,7 @@ client.orders.create_order(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">get_order</a>(...) -> GetOrderRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L109-L137">get_order</a>(...) -> GetOrderRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1061,7 +1061,7 @@ client.orders.get_order(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">cancel_order</a>(...) -> CancelOrderRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L139-L167">cancel_order</a>(...) -> CancelOrderRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1134,7 +1134,7 @@ client.orders.cancel_order(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">replay</a>(...) -> ReplayRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L169-L197">replay</a>(...) -> ReplayRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1207,7 +1207,7 @@ client.orders.replay(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">force_ship</a>(...) -> ForceShipRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L199-L227">force_ship</a>(...) -> ForceShipRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1280,7 +1280,7 @@ client.orders.force_ship(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">track_public</a>(...) -> TrackPublicRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L229-L257">track_public</a>(...) -> TrackPublicRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1353,7 +1353,7 @@ client.orders.track_public(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">filter_orders</a>(...) -> FilterOrdersRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L259-L319">filter_orders</a>(...) -> FilterOrdersRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1470,7 +1470,7 @@ client.orders.filter_orders(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">defaults</a>(...) -> DefaultsRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L321-L383">defaults</a>(...) -> DefaultsRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1597,7 +1597,7 @@ client.orders.defaults()
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">bulk_export</a>(...) -> BulkExportRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L385-L426">bulk_export</a>(...) -> BulkExportRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1686,7 +1686,7 @@ client.orders.bulk_export(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">public_health</a>() -> PublicHealthRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L428-L452">public_health</a>() -> PublicHealthRespBody</code></summary>
 <dl>
 <dd>
 
@@ -1749,7 +1749,7 @@ client.orders.public_health()
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">list_orders</a>(...) -> ListOrdersRespBody</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L454-L495">list_orders</a>(...) -> ListOrdersRespBody</code></summary>
 <dl>
 <dd>
 

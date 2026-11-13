@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_cancel_job</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L149-L236">get_cancel_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ client.get_cancel_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_cancel_job</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L238-L314">post_cancel_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.post_cancel_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_create_job</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L316-L421">get_create_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -467,7 +467,7 @@ client.get_create_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_create_job</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L423-L499">post_create_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -603,7 +603,7 @@ client.post_create_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_shipping_label</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L501-L637">get_get_shipping_label</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -835,7 +835,7 @@ client.get_get_shipping_label(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_shipping_label</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L639-L715">post_get_shipping_label</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -971,7 +971,7 @@ client.post_get_shipping_label(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_get_status</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L717-L804">get_get_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1124,7 +1124,7 @@ client.get_get_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_get_status</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L806-L882">post_get_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1260,7 +1260,7 @@ client.post_get_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_list_jobs</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L884-L975">get_list_jobs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1420,7 +1420,7 @@ client.get_list_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_list_jobs</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L977-L1063">post_list_jobs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1572,7 +1572,7 @@ client.post_list_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_update_job</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1065-L1171">get_update_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1752,7 +1752,7 @@ client.get_update_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_update_job</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1173-L1249">post_update_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

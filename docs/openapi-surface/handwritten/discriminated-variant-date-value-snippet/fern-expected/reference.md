@@ -1,6 +1,6 @@
 # Reference
 ## Loans
-<details><summary><code>client.loans.<a href="src/fern/loans/client.py">set_due</a>(...)</code></summary>
+<details><summary><code>client.loans.<a href="src/fern/loans/client.py#L29-L65">set_due</a>(...)</code></summary>
 <dl>
 <dd>
 

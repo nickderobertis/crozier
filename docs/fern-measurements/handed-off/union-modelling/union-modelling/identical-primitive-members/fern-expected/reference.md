@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_survey</a>(...) -> Survey</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L126">get_survey</a>(...) -> Survey</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_survey(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_survey</a>(...) -> Survey</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L154">create_survey</a>(...) -> Survey</code></summary>
 <dl>
 <dd>
 

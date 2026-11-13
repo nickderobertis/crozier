@@ -1,6 +1,6 @@
 # Reference
 ## General
-<details><summary><code>client.general.<a href="src/fern/general/client.py">get_system_info</a>() -> GetSystemInfoResponse</code></summary>
+<details><summary><code>client.general.<a href="src/fern/general/client.py#L26-L51">get_system_info</a>() -> GetSystemInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.general.get_system_info()
 </details>
 
 ## Measurements
-<details><summary><code>client.measurements.<a href="src/fern/measurements/client.py">get_report</a>() -> GetReportResponse</code></summary>
+<details><summary><code>client.measurements.<a href="src/fern/measurements/client.py#L26-L51">get_report</a>() -> GetReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -130,7 +130,7 @@ client.measurements.get_report()
 </details>
 
 ## Streaming
-<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py">stream_live</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.streaming.<a href="src/fern/streaming/client.py#L25-L52">stream_live</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -195,7 +195,7 @@ client.streaming.stream_live()
 </details>
 
 ## Settings
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">get_settings</a>() -> GetSettingsResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L35-L60">get_settings</a>() -> GetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -259,7 +259,7 @@ client.settings.get_settings()
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">replace_settings</a>(...) -> ReplaceSettingsResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L62-L112">replace_settings</a>(...) -> ReplaceSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -350,7 +350,7 @@ client.settings.replace_settings(
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">update_settings</a>(...) -> UpdateSettingsResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L114-L162">update_settings</a>(...) -> UpdateSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -440,7 +440,7 @@ client.settings.update_settings(
 </details>
 
 ## Maintenance
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">reboot_device</a>()</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L29-L53">reboot_device</a>()</code></summary>
 <dl>
 <dd>
 
@@ -504,7 +504,7 @@ client.maintenance.reboot_device()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">upload_firmware</a>(...) -> str</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L55-L73">upload_firmware</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -566,7 +566,7 @@ client.maintenance.upload_firmware(...)
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">factory_reset</a>()</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L75-L99">factory_reset</a>()</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ client.maintenance.factory_reset()
 </details>
 
 ## Wi-Fi
-<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py">scan_wifi</a>() -> typing.List[ScanWifiResponseItem]</code></summary>
+<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py#L32-L59">scan_wifi</a>() -> typing.List[ScanWifiResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -695,7 +695,7 @@ client.wi_fi.scan_wifi()
 </dl>
 </details>
 
-<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py">get_wifi_sta_settings</a>() -> GetWifiStaSettingsResponse</code></summary>
+<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py#L61-L88">get_wifi_sta_settings</a>() -> GetWifiStaSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -759,7 +759,7 @@ client.wi_fi.get_wifi_sta_settings()
 </dl>
 </details>
 
-<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py">replace_wifi_sta_settings</a>(...) -> ReplaceWifiStaSettingsResponse</code></summary>
+<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py#L90-L160">replace_wifi_sta_settings</a>(...) -> ReplaceWifiStaSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -895,7 +895,7 @@ client.wi_fi.replace_wifi_sta_settings()
 </dl>
 </details>
 
-<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py">update_wifi_sta_settings</a>(...) -> UpdateWifiStaSettingsResponse</code></summary>
+<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py#L162-L232">update_wifi_sta_settings</a>(...) -> UpdateWifiStaSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.wi_fi.update_wifi_sta_settings()
 </dl>
 </details>
 
-<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py">delete_wifi_sta_settings</a>()</code></summary>
+<details><summary><code>client.wi_fi.<a href="src/fern/wi_fi/client.py#L234-L258">delete_wifi_sta_settings</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1096,7 +1096,7 @@ client.wi_fi.delete_wifi_sta_settings()
 </details>
 
 ## Ethernet
-<details><summary><code>client.ethernet.<a href="src/fern/ethernet/client.py">get_ethernet_settings</a>() -> GetEthernetSettingsResponse</code></summary>
+<details><summary><code>client.ethernet.<a href="src/fern/ethernet/client.py#L31-L58">get_ethernet_settings</a>() -> GetEthernetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1160,7 +1160,7 @@ client.ethernet.get_ethernet_settings()
 </dl>
 </details>
 
-<details><summary><code>client.ethernet.<a href="src/fern/ethernet/client.py">replace_ethernet_settings</a>(...) -> ReplaceEthernetSettingsResponse</code></summary>
+<details><summary><code>client.ethernet.<a href="src/fern/ethernet/client.py#L60-L115">replace_ethernet_settings</a>(...) -> ReplaceEthernetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1272,7 +1272,7 @@ client.ethernet.replace_ethernet_settings()
 </dl>
 </details>
 
-<details><summary><code>client.ethernet.<a href="src/fern/ethernet/client.py">update_ethernet_settings</a>(...) -> UpdateEthernetSettingsResponse</code></summary>
+<details><summary><code>client.ethernet.<a href="src/fern/ethernet/client.py#L117-L172">update_ethernet_settings</a>(...) -> UpdateEthernetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1385,7 +1385,7 @@ client.ethernet.update_ethernet_settings()
 </details>
 
 ## Actions
-<details><summary><code>client.actions.<a href="src/fern/actions/client.py">get_actions</a>() -> GetActionsResponse</code></summary>
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L34-L59">get_actions</a>() -> GetActionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1449,7 +1449,7 @@ client.actions.get_actions()
 </dl>
 </details>
 
-<details><summary><code>client.actions.<a href="src/fern/actions/client.py">set_actions</a>(...) -> SetActionsResponse</code></summary>
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L61-L97">set_actions</a>(...) -> SetActionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1529,7 +1529,7 @@ client.actions.set_actions()
 </dl>
 </details>
 
-<details><summary><code>client.actions.<a href="src/fern/actions/client.py">delete_actions</a>()</code></summary>
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L99-L123">delete_actions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1593,7 +1593,7 @@ client.actions.delete_actions()
 </dl>
 </details>
 
-<details><summary><code>client.actions.<a href="src/fern/actions/client.py">call_action</a>(...) -> CallActionResponse</code></summary>
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L125-L155">call_action</a>(...) -> CallActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1667,7 +1667,7 @@ client.actions.call_action(
 </dl>
 </details>
 
-<details><summary><code>client.actions.<a href="src/fern/actions/client.py">get_action_status</a>(...) -> typing.List[GetActionStatusResponseItem]</code></summary>
+<details><summary><code>client.actions.<a href="src/fern/actions/client.py#L157-L189">get_action_status</a>(...) -> typing.List[GetActionStatusResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1742,7 +1742,7 @@ client.actions.get_action_status(
 </details>
 
 ## SD Card
-<details><summary><code>client.sd_card.<a href="src/fern/sd_card/client.py">list_sd_root</a>() -> ListSdRootResponse</code></summary>
+<details><summary><code>client.sd_card.<a href="src/fern/sd_card/client.py#L26-L51">list_sd_root</a>() -> ListSdRootResponse</code></summary>
 <dl>
 <dd>
 
@@ -1806,7 +1806,7 @@ client.sd_card.list_sd_root()
 </dl>
 </details>
 
-<details><summary><code>client.sd_card.<a href="src/fern/sd_card/client.py">get_sd_path</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.sd_card.<a href="src/fern/sd_card/client.py#L53-L85">get_sd_path</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1880,7 +1880,7 @@ client.sd_card.get_sd_path(
 </dl>
 </details>
 
-<details><summary><code>client.sd_card.<a href="src/fern/sd_card/client.py">delete_sd_path</a>(...)</code></summary>
+<details><summary><code>client.sd_card.<a href="src/fern/sd_card/client.py#L87-L116">delete_sd_path</a>(...)</code></summary>
 <dl>
 <dd>
 

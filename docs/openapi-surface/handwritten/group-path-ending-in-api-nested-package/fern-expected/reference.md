@@ -1,6 +1,6 @@
 # Reference
 ## Beacon Api
-<details><summary><code>client.beacon.api.<a href="src/fern/beacon/api/client.py">status</a>() -> str</code></summary>
+<details><summary><code>client.beacon.api.<a href="src/fern/beacon/api/client.py#L25-L47">status</a>() -> str</code></summary>
 <dl>
 <dd>
 

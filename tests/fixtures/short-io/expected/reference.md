@@ -1,6 +1,6 @@
 # Reference
 ## LinkQueries
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">fetch_and_inspect_open_graph_tags_for_a_url_public_h_captcha_protected</a>(...) -> PostLinksOpengraphDebugResponse</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L34-L64">fetch_and_inspect_open_graph_tags_for_a_url_public_h_captcha_protected</a>(...) -> PostLinksOpengraphDebugResponse</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.link_queries.fetch_and_inspect_open_graph_tags_for_a_url_public_h_captcha
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_link_opengraph_properties</a>(...)</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L66-L96">get_link_opengraph_properties</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.link_queries.get_link_opengraph_properties(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">link_list</a>(...) -> GetApiLinksResponse</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L98-L167">link_list</a>(...) -> GetApiLinksResponse</code></summary>
 <dl>
 <dd>
 
@@ -264,7 +264,7 @@ client.link_queries.link_list(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_link_info_by_link_id</a>(...) -> GetLinksLinkIdResponse</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L169-L208">get_link_info_by_link_id</a>(...) -> GetLinksLinkIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -345,7 +345,7 @@ client.link_queries.get_link_info_by_link_id(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_link_info_by_path</a>(...) -> GetLinksExpandResponse</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L210-L245">get_link_info_by_path</a>(...) -> GetLinksExpandResponse</code></summary>
 <dl>
 <dd>
 
@@ -427,7 +427,7 @@ client.link_queries.get_link_info_by_path(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_link_info_by_original_url</a>(...)</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L247-L283">get_link_info_by_original_url</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -509,7 +509,7 @@ client.link_queries.get_link_info_by_original_url(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_links_info_by_original_url</a>(...)</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L285-L321">get_links_info_by_original_url</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -591,7 +591,7 @@ client.link_queries.get_links_info_by_original_url(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_links_folders_domain_id</a>(...)</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L323-L352">get_links_folders_domain_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -664,7 +664,7 @@ client.link_queries.get_links_folders_domain_id(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">get_links_folders_domain_id_folder_id</a>(...)</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L354-L388">get_links_folders_domain_id_folder_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -746,7 +746,7 @@ client.link_queries.get_links_folders_domain_id_folder_id(
 </dl>
 </details>
 
-<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py">post_links_folders</a>(...)</code></summary>
+<details><summary><code>client.link_queries.<a href="src/fern/link_queries/client.py#L390-L558">post_links_folders</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1085,7 +1085,7 @@ client.link_queries.post_links_folders(
 </details>
 
 ## LinkManagement
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">set_link_opengraph_properties</a>(...)</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L62-L102">set_link_opengraph_properties</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1165,7 +1165,7 @@ client.link_management.set_link_opengraph_properties(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">get_link_permissions</a>(...) -> typing.List[GetLinksPermissionsDomainIdLinkIdResponseItem]</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L104-L135">get_link_permissions</a>(...) -> typing.List[GetLinksPermissionsDomainIdLinkIdResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1233,7 +1233,7 @@ client.link_management.get_link_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">add_link_permission</a>(...) -> PostLinksPermissionsDomainIdLinkIdUserIdResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L137-L172">add_link_permission</a>(...) -> PostLinksPermissionsDomainIdLinkIdUserIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1310,7 +1310,7 @@ client.link_management.add_link_permission(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">delete_link_permissions</a>(...) -> DeleteLinksPermissionsDomainIdLinkIdUserIdResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L174-L210">delete_link_permissions</a>(...) -> DeleteLinksPermissionsDomainIdLinkIdUserIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1387,7 +1387,7 @@ client.link_management.delete_link_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">generate_qr_code_for_the_link</a>(...)</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L212-L271">generate_qr_code_for_the_link</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1495,7 +1495,7 @@ client.link_management.generate_qr_code_for_the_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">generate_qr_codes_for_the_link_in_bulk</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L273-L341">generate_qr_codes_for_the_link_in_bulk</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1629,7 +1629,7 @@ client.link_management.generate_qr_codes_for_the_link_in_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">delete_link</a>(...) -> DeleteLinksLinkIdResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L343-L376">delete_link</a>(...) -> DeleteLinksLinkIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1704,7 +1704,7 @@ client.link_management.delete_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">delete_links_in_bulk</a>(...) -> DeleteLinksDeleteBulkResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L378-L410">delete_links_in_bulk</a>(...) -> DeleteLinksDeleteBulkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1781,7 +1781,7 @@ client.link_management.delete_links_in_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">archive_link</a>(...) -> PostLinksArchiveResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L412-L446">archive_link</a>(...) -> PostLinksArchiveResponse</code></summary>
 <dl>
 <dd>
 
@@ -1848,7 +1848,7 @@ client.link_management.archive_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">archive_links_in_bulk</a>(...) -> PostLinksArchiveBulkResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L448-L484">archive_links_in_bulk</a>(...) -> PostLinksArchiveBulkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1917,7 +1917,7 @@ client.link_management.archive_links_in_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">unarchive_link</a>(...) -> PostLinksUnarchiveResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L486-L522">unarchive_link</a>(...) -> PostLinksUnarchiveResponse</code></summary>
 <dl>
 <dd>
 
@@ -1984,7 +1984,7 @@ client.link_management.unarchive_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">unarchive_links_in_bulk</a>(...) -> PostLinksUnarchiveBulkResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L524-L560">unarchive_links_in_bulk</a>(...) -> PostLinksUnarchiveBulkResponse</code></summary>
 <dl>
 <dd>
 
@@ -2053,7 +2053,7 @@ client.link_management.unarchive_links_in_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">update_existing_url</a>(...) -> PostLinksLinkIdResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L562-L754">update_existing_url</a>(...) -> PostLinksLinkIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2376,7 +2376,7 @@ client.link_management.update_existing_url(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">create_a_new_link</a>(...) -> PostLinksResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L756-L964">create_a_new_link</a>(...) -> PostLinksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2716,7 +2716,7 @@ client.link_management.create_a_new_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">create_a_new_link_simple_version</a>(...)</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L966-L1031">create_a_new_link_simple_version</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2834,7 +2834,7 @@ client.link_management.create_a_new_link_simple_version(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">create_a_new_link_using_public_api_key</a>(...) -> PostLinksPublicResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L1033-L1237">create_a_new_link_using_public_api_key</a>(...) -> PostLinksPublicResponse</code></summary>
 <dl>
 <dd>
 
@@ -3177,7 +3177,7 @@ client.link_management.create_a_new_link_using_public_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">create_up_to1000links_in_one_call</a>(...)</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L1239-L1304">create_up_to1000links_in_one_call</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3290,7 +3290,7 @@ client.link_management.create_up_to1000links_in_one_call(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">generate_example_links_for_a_domain</a>(...) -> PostLinksExamplesResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L1306-L1346">generate_example_links_for_a_domain</a>(...) -> PostLinksExamplesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3372,7 +3372,7 @@ client.link_management.generate_example_links_for_a_domain(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">duplicate_an_existing_link</a>(...) -> PostLinksDuplicateLinkIdResponse</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L1348-L1388">duplicate_an_existing_link</a>(...) -> PostLinksDuplicateLinkIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -3456,7 +3456,7 @@ client.link_management.duplicate_an_existing_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py">append_a_single_tag_to_the_links_in_bulk</a>(...)</code></summary>
+<details><summary><code>client.link_management.<a href="src/fern/link_management/client.py#L1390-L1422">append_a_single_tag_to_the_links_in_bulk</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3527,7 +3527,7 @@ client.link_management.append_a_single_tag_to_the_links_in_bulk(
 </details>
 
 ## LinkTargeting
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">get_link_countries</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L37-L70">get_link_countries</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3594,7 +3594,7 @@ client.link_targeting.get_link_countries(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">create_link_country</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L72-L118">create_link_country</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3680,7 +3680,7 @@ client.link_targeting.create_link_country(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">create_link_countries_in_bulk</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L120-L169">create_link_countries_in_bulk</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3762,7 +3762,7 @@ client.link_targeting.create_link_countries_in_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">delete_link_country</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L171-L213">delete_link_country</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3839,7 +3839,7 @@ client.link_targeting.delete_link_country(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">get_link_regions</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L215-L248">get_link_regions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3906,7 +3906,7 @@ client.link_targeting.get_link_regions(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">add_region_targeting_to_link</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L250-L309">add_region_targeting_to_link</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4015,7 +4015,7 @@ client.link_targeting.add_region_targeting_to_link(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">get_all_regions_by_country</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L311-L344">get_all_regions_by_country</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4075,7 +4075,7 @@ client.link_targeting.get_all_regions_by_country(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">create_link_regions_in_bulk</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L346-L396">create_link_regions_in_bulk</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4158,7 +4158,7 @@ client.link_targeting.create_link_regions_in_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py">delete_link_region_by_country</a>(...)</code></summary>
+<details><summary><code>client.link_targeting.<a href="src/fern/link_targeting/client.py#L398-L446">delete_link_region_by_country</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4245,7 +4245,7 @@ client.link_targeting.delete_link_region_by_country(
 </details>
 
 ## Domains
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">list_domains</a>(...) -> typing.List[GetApiDomainsResponseItem]</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L37-L95">list_domains</a>(...) -> typing.List[GetApiDomainsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4364,7 +4364,7 @@ client.domains.list_domains()
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">get_domain_details_by_id</a>(...) -> GetDomainsDomainIdResponse</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L97-L125">get_domain_details_by_id</a>(...) -> GetDomainsDomainIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4423,7 +4423,7 @@ client.domains.get_domain_details_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">update_domain_settings</a>(...) -> PostDomainsSettingsDomainIdResponse</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L127-L249">update_domain_settings</a>(...) -> PostDomainsSettingsDomainIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4656,7 +4656,7 @@ client.domains.update_domain_settings(
 </dl>
 </details>
 
-<details><summary><code>client.domains.<a href="src/fern/domains/client.py">create_a_domain</a>(...) -> PostDomainsResponse</code></summary>
+<details><summary><code>client.domains.<a href="src/fern/domains/client.py#L251-L291">create_a_domain</a>(...) -> PostDomainsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4732,7 +4732,7 @@ client.domains.create_a_domain(
 </details>
 
 ## LinkBundles
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">get_bundle_templates</a>()</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L29-L52">get_bundle_templates</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4795,7 +4795,7 @@ client.link_bundles.get_bundle_templates()
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">get_bundle_by_id</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L54-L82">get_bundle_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4868,7 +4868,7 @@ client.link_bundles.get_bundle_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">update_bundle</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L84-L209">update_bundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.link_bundles.update_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">delete_bundle</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L211-L239">delete_bundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5158,7 +5158,7 @@ client.link_bundles.delete_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">upload_bundle_logo</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L241-L274">upload_bundle_logo</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5240,7 +5240,7 @@ client.link_bundles.upload_bundle_logo(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">upload_bundle_background_image</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L276-L311">upload_bundle_background_image</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5322,7 +5322,7 @@ client.link_bundles.upload_bundle_background_image(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">create_bundle</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L313-L435">create_bundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5532,7 +5532,7 @@ client.link_bundles.create_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">get_bundle_links</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L437-L465">get_bundle_links</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5605,7 +5605,7 @@ client.link_bundles.get_bundle_links(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">add_link_to_bundle</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L467-L505">add_link_to_bundle</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5696,7 +5696,7 @@ client.link_bundles.add_link_to_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">update_link_sort_order</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L507-L551">update_link_sort_order</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5784,7 +5784,7 @@ client.link_bundles.update_link_sort_order(
 </dl>
 </details>
 
-<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py">remove_link_from_bundle</a>(...)</code></summary>
+<details><summary><code>client.link_bundles.<a href="src/fern/link_bundles/client.py#L553-L587">remove_link_from_bundle</a>(...)</code></summary>
 <dl>
 <dd>
 

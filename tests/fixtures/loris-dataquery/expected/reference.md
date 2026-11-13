@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_a_list_of_a_recent_shared_and_study_top_queries_for_the_current_user</a>() -> AllQueries</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L121-L147">get_a_list_of_a_recent_shared_and_study_top_queries_for_the_current_user</a>() -> AllQueries</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.get_a_list_of_a_recent_shared_and_study_top_queries_for_the_current_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_queries</a>(...) -> PostQueriesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L149-L197">post_queries</a>(...) -> PostQueriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -128,7 +128,7 @@ client.post_queries(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_a_list_of_a_recent_query_runs_for_the_current_user</a>() -> QueryRunList</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L199-L225">get_a_list_of_a_recent_query_runs_for_the_current_user</a>() -> QueryRunList</code></summary>
 <dl>
 <dd>
 
@@ -177,7 +177,7 @@ client.get_a_list_of_a_recent_query_runs_for_the_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_queries_query_id</a>(...) -> Query</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L227-L254">get_queries_query_id</a>(...) -> Query</code></summary>
 <dl>
 <dd>
 
@@ -236,7 +236,7 @@ client.get_queries_query_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_queries_query_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L256-L320">patch_queries_query_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -343,7 +343,7 @@ client.patch_queries_query_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_queries_query_id_run</a>(...) -> QueryRunList</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L322-L353">get_queries_query_id_run</a>(...) -> QueryRunList</code></summary>
 <dl>
 <dd>
 
@@ -416,7 +416,7 @@ client.get_queries_query_id_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_queries_query_id_run</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L355-L388">post_queries_query_id_run</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -491,7 +491,7 @@ client.post_queries_query_id_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_queries_query_id_count</a>(...) -> GetQueriesQueryIdCountResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L390-L421">get_queries_query_id_count</a>(...) -> GetQueriesQueryIdCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -550,7 +550,7 @@ client.get_queries_query_id_count(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_queries_query_id_run_query_run_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L423-L457">get_queries_query_id_run_query_run_id</a>(...)</code></summary>
 <dl>
 <dd>
 

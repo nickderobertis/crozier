@@ -1,6 +1,6 @@
 # Reference
 ## ComposedSchema
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">post_variant_body</a>(...) -> InputParam</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L36-L64">post_variant_body</a>(...) -> InputParam</code></summary>
 <dl>
 <dd>
 
@@ -57,7 +57,7 @@ client.composed_schema.post_variant_body(
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">post_alias_body</a>(...) -> ModelIdsResponses</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L66-L94">post_alias_body</a>(...) -> ModelIdsResponses</code></summary>
 <dl>
 <dd>
 
@@ -114,7 +114,7 @@ client.composed_schema.post_alias_body(
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">get_stream_events</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L96-L122">get_stream_events</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -161,7 +161,7 @@ client.composed_schema.get_stream_events()
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">upload_file</a>(...) -> str</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L124-L157">upload_file</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -226,7 +226,7 @@ client.composed_schema.upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">upload_variant_data</a>(...) -> str</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L159-L188">upload_variant_data</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -281,7 +281,7 @@ client.composed_schema.upload_variant_data()
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">get_dual_stream</a>(...) -> TimestampContainer</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L190-L218">get_dual_stream</a>(...) -> TimestampContainer</code></summary>
 <dl>
 <dd>
 
@@ -350,7 +350,7 @@ client.composed_schema.get_dual_stream()
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">get_inline_any_of_response</a>() -> GetInlineAnyOfResponseResponse</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L220-L244">get_inline_any_of_response</a>() -> GetInlineAnyOfResponseResponse</code></summary>
 <dl>
 <dd>
 
@@ -397,7 +397,7 @@ client.composed_schema.get_inline_any_of_response()
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">get_inline_one_of_events</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L246-L272">get_inline_one_of_events</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -444,7 +444,7 @@ client.composed_schema.get_inline_one_of_events()
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">get_dual_primitive_stream</a>() -> str</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L274-L296">get_dual_primitive_stream</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -491,7 +491,7 @@ client.composed_schema.get_dual_primitive_stream()
 </dl>
 </details>
 
-<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py">delete_without_content</a>()</code></summary>
+<details><summary><code>client.composed_schema.<a href="src/fern/composed_schema/client.py#L298-L319">delete_without_content</a>()</code></summary>
 <dl>
 <dd>
 

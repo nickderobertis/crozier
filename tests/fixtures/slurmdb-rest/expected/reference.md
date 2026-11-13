@@ -1,6 +1,6 @@
 # Reference
 ## slurm
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_job</a>(...) -> Dbv0037JobInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L47-L79">slurmdbd_get_job</a>(...) -> Dbv0037JobInfo</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.slurm.slurmdbd_get_job(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_db_config</a>() -> Dbv0037ConfigInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L81-L104">slurmdbd_get_db_config</a>() -> Dbv0037ConfigInfo</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.slurm.slurmdbd_get_db_config()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_set_db_config</a>() -> Dbv0037ConfigResponse</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L106-L131">slurmdbd_set_db_config</a>() -> Dbv0037ConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -174,7 +174,7 @@ client.slurm.slurmdbd_set_db_config()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_tres</a>() -> Dbv0037TresInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L133-L156">slurmdbd_get_tres</a>() -> Dbv0037TresInfo</code></summary>
 <dl>
 <dd>
 
@@ -224,7 +224,7 @@ client.slurm.slurmdbd_get_tres()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_update_tres</a>() -> Dbv0037ResponseTres</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L158-L181">slurmdbd_update_tres</a>() -> Dbv0037ResponseTres</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.slurm.slurmdbd_update_tres()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_single_qos</a>(...) -> Dbv0037QosInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L183-L213">slurmdbd_get_single_qos</a>(...) -> Dbv0037QosInfo</code></summary>
 <dl>
 <dd>
 
@@ -334,7 +334,7 @@ client.slurm.slurmdbd_get_single_qos(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_delete_qos</a>(...) -> Dbv0037ResponseQosDelete</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L215-L245">slurmdbd_delete_qos</a>(...) -> Dbv0037ResponseQosDelete</code></summary>
 <dl>
 <dd>
 
@@ -394,7 +394,7 @@ client.slurm.slurmdbd_delete_qos(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_qos</a>() -> Dbv0037QosInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L247-L270">slurmdbd_get_qos</a>() -> Dbv0037QosInfo</code></summary>
 <dl>
 <dd>
 
@@ -444,7 +444,7 @@ client.slurm.slurmdbd_get_qos()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_associations</a>() -> Dbv0037AssociationsInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L272-L297">slurmdbd_get_associations</a>() -> Dbv0037AssociationsInfo</code></summary>
 <dl>
 <dd>
 
@@ -494,7 +494,7 @@ client.slurm.slurmdbd_get_associations()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_association</a>(...) -> Dbv0037AssociationsInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L299-L344">slurmdbd_get_association</a>(...) -> Dbv0037AssociationsInfo</code></summary>
 <dl>
 <dd>
 
@@ -576,7 +576,7 @@ client.slurm.slurmdbd_get_association()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_delete_association</a>(...) -> Dbv0037ResponseAssociationDelete</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L346-L394">slurmdbd_delete_association</a>(...) -> Dbv0037ResponseAssociationDelete</code></summary>
 <dl>
 <dd>
 
@@ -661,7 +661,7 @@ client.slurm.slurmdbd_delete_association(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_user</a>(...) -> Dbv0037UserInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L396-L426">slurmdbd_get_user</a>(...) -> Dbv0037UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -721,7 +721,7 @@ client.slurm.slurmdbd_get_user(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_delete_user</a>(...) -> Dbv0037ResponseUserDelete</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L428-L458">slurmdbd_delete_user</a>(...) -> Dbv0037ResponseUserDelete</code></summary>
 <dl>
 <dd>
 
@@ -781,7 +781,7 @@ client.slurm.slurmdbd_delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_users</a>() -> Dbv0037UserInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L460-L483">slurmdbd_get_users</a>() -> Dbv0037UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -831,7 +831,7 @@ client.slurm.slurmdbd_get_users()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_update_users</a>() -> Dbv0037ResponseUserUpdate</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L485-L510">slurmdbd_update_users</a>() -> Dbv0037ResponseUserUpdate</code></summary>
 <dl>
 <dd>
 
@@ -881,7 +881,7 @@ client.slurm.slurmdbd_update_users()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_cluster</a>(...) -> Dbv0037ClusterInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L512-L542">slurmdbd_get_cluster</a>(...) -> Dbv0037ClusterInfo</code></summary>
 <dl>
 <dd>
 
@@ -941,7 +941,7 @@ client.slurm.slurmdbd_get_cluster(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_delete_cluster</a>(...) -> Dbv0037ResponseClusterDelete</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L544-L574">slurmdbd_delete_cluster</a>(...) -> Dbv0037ResponseClusterDelete</code></summary>
 <dl>
 <dd>
 
@@ -1001,7 +1001,7 @@ client.slurm.slurmdbd_delete_cluster(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_clusters</a>() -> Dbv0037ClusterInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L576-L599">slurmdbd_get_clusters</a>() -> Dbv0037ClusterInfo</code></summary>
 <dl>
 <dd>
 
@@ -1051,7 +1051,7 @@ client.slurm.slurmdbd_get_clusters()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_add_clusters</a>() -> Dbv0037ResponseClusterAdd</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L601-L626">slurmdbd_add_clusters</a>() -> Dbv0037ResponseClusterAdd</code></summary>
 <dl>
 <dd>
 
@@ -1101,7 +1101,7 @@ client.slurm.slurmdbd_add_clusters()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_wckey</a>(...) -> Dbv0037WckeyInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L628-L658">slurmdbd_get_wckey</a>(...) -> Dbv0037WckeyInfo</code></summary>
 <dl>
 <dd>
 
@@ -1161,7 +1161,7 @@ client.slurm.slurmdbd_get_wckey(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_delete_wckey</a>(...) -> Dbv0037ResponseWckeyDelete</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L660-L690">slurmdbd_delete_wckey</a>(...) -> Dbv0037ResponseWckeyDelete</code></summary>
 <dl>
 <dd>
 
@@ -1221,7 +1221,7 @@ client.slurm.slurmdbd_delete_wckey(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_wckeys</a>() -> Dbv0037WckeyInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L692-L715">slurmdbd_get_wckeys</a>() -> Dbv0037WckeyInfo</code></summary>
 <dl>
 <dd>
 
@@ -1271,7 +1271,7 @@ client.slurm.slurmdbd_get_wckeys()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_add_wckeys</a>() -> Dbv0037ResponseWckeyAdd</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L717-L742">slurmdbd_add_wckeys</a>() -> Dbv0037ResponseWckeyAdd</code></summary>
 <dl>
 <dd>
 
@@ -1321,7 +1321,7 @@ client.slurm.slurmdbd_add_wckeys()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_account</a>(...) -> Dbv0037AccountInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L744-L774">slurmdbd_get_account</a>(...) -> Dbv0037AccountInfo</code></summary>
 <dl>
 <dd>
 
@@ -1381,7 +1381,7 @@ client.slurm.slurmdbd_get_account(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_delete_account</a>(...) -> Dbv0037ResponseAccountDelete</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L776-L806">slurmdbd_delete_account</a>(...) -> Dbv0037ResponseAccountDelete</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ client.slurm.slurmdbd_delete_account(
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_accounts</a>() -> Dbv0037AccountInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L808-L831">slurmdbd_get_accounts</a>() -> Dbv0037AccountInfo</code></summary>
 <dl>
 <dd>
 
@@ -1491,7 +1491,7 @@ client.slurm.slurmdbd_get_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_update_account</a>() -> Dbv0037AccountResponse</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L833-L858">slurmdbd_update_account</a>() -> Dbv0037AccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -1541,7 +1541,7 @@ client.slurm.slurmdbd_update_account()
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_get_jobs</a>(...) -> Dbv0037JobInfo</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L860-L1029">slurmdbd_get_jobs</a>(...) -> Dbv0037JobInfo</code></summary>
 <dl>
 <dd>
 
@@ -1812,7 +1812,7 @@ YYYY-MM-DD[THH:MM[:SS]]
 </dl>
 </details>
 
-<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py">slurmdbd_diag</a>() -> Dbv0037Diag</code></summary>
+<details><summary><code>client.slurm.<a href="src/fern/slurm/client.py#L1031-L1054">slurmdbd_diag</a>() -> Dbv0037Diag</code></summary>
 <dl>
 <dd>
 
@@ -1863,7 +1863,7 @@ client.slurm.slurmdbd_diag()
 </details>
 
 ## Openapi
-<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py">retrieve_open_api_specification</a>()</code></summary>
+<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py#L25-L47">retrieve_open_api_specification</a>()</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## WebhookEvents
-<details><summary><code>client.webhook_events.<a href="src/fern/webhook_events/client.py">webhook_event_types</a>()</code></summary>
+<details><summary><code>client.webhook_events.<a href="src/fern/webhook_events/client.py#L25-L67">webhook_event_types</a>()</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.webhook_events.webhook_event_types()
 </details>
 
 ## Bulk Operations
-<details><summary><code>client.bulk_operations.<a href="src/fern/bulk_operations/client.py">bulk_import_hours</a>(...) -> V1BulkImportResponse</code></summary>
+<details><summary><code>client.bulk_operations.<a href="src/fern/bulk_operations/client.py#L31-L90">bulk_import_hours</a>(...) -> V1BulkImportResponse</code></summary>
 <dl>
 <dd>
 
@@ -175,7 +175,7 @@ client.bulk_operations.bulk_import_hours(
 </dl>
 </details>
 
-<details><summary><code>client.bulk_operations.<a href="src/fern/bulk_operations/client.py">bulk_import_events</a>(...) -> V1BulkImportResponse</code></summary>
+<details><summary><code>client.bulk_operations.<a href="src/fern/bulk_operations/client.py#L92-L151">bulk_import_events</a>(...) -> V1BulkImportResponse</code></summary>
 <dl>
 <dd>
 
@@ -268,7 +268,7 @@ client.bulk_operations.bulk_import_events(
 </details>
 
 ## Clients
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">list_all_clients_of_an_account</a>(...) -> typing.List[V1Company]</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L32-L84">list_all_clients_of_an_account</a>(...) -> typing.List[V1Company]</code></summary>
 <dl>
 <dd>
 
@@ -373,7 +373,7 @@ client.clients.list_all_clients_of_an_account(
 </dl>
 </details>
 
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">create_client</a>(...) -> V1Company</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L86-L128">create_client</a>(...) -> V1Company</code></summary>
 <dl>
 <dd>
 
@@ -458,7 +458,7 @@ client.clients.create_client(
 </dl>
 </details>
 
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">client_details</a>(...) -> V1Company</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L130-L175">client_details</a>(...) -> V1Company</code></summary>
 <dl>
 <dd>
 
@@ -548,7 +548,7 @@ client.clients.client_details(
 </dl>
 </details>
 
-<details><summary><code>client.clients.<a href="src/fern/clients/client.py">client_update</a>(...) -> V1Company</code></summary>
+<details><summary><code>client.clients.<a href="src/fern/clients/client.py#L177-L224">client_update</a>(...) -> V1Company</code></summary>
 <dl>
 <dd>
 
@@ -643,7 +643,7 @@ client.clients.client_update(
 </details>
 
 ## Day Properties
-<details><summary><code>client.day_properties.<a href="src/fern/day_properties/client.py">list_day_properties</a>(...) -> typing.List[V1DayProperty]</code></summary>
+<details><summary><code>client.day_properties.<a href="src/fern/day_properties/client.py#L32-L82">list_day_properties</a>(...) -> typing.List[V1DayProperty]</code></summary>
 <dl>
 <dd>
 
@@ -742,7 +742,7 @@ client.day_properties.list_day_properties(
 </dl>
 </details>
 
-<details><summary><code>client.day_properties.<a href="src/fern/day_properties/client.py">create_day_properties</a>(...) -> typing.List[V1DayProperty]</code></summary>
+<details><summary><code>client.day_properties.<a href="src/fern/day_properties/client.py#L84-L132">create_day_properties</a>(...) -> typing.List[V1DayProperty]</code></summary>
 <dl>
 <dd>
 
@@ -836,7 +836,7 @@ client.day_properties.create_day_properties(
 </dl>
 </details>
 
-<details><summary><code>client.day_properties.<a href="src/fern/day_properties/client.py">update_day_properties</a>(...) -> typing.List[V1DayProperty]</code></summary>
+<details><summary><code>client.day_properties.<a href="src/fern/day_properties/client.py#L134-L182">update_day_properties</a>(...) -> typing.List[V1DayProperty]</code></summary>
 <dl>
 <dd>
 
@@ -930,7 +930,7 @@ client.day_properties.update_day_properties(
 </details>
 
 ## Forecasts (Tasks)
-<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py">list_tasks</a>(...) -> typing.List[V1Forecast]</code></summary>
+<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py#L38-L125">list_tasks</a>(...) -> typing.List[V1Forecast]</code></summary>
 <dl>
 <dd>
 
@@ -1083,7 +1083,7 @@ client.forecasts_tasks.list_tasks(
 </dl>
 </details>
 
-<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py">create_task</a>(...) -> V1Forecast</code></summary>
+<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py#L127-L173">create_task</a>(...) -> V1Forecast</code></summary>
 <dl>
 <dd>
 
@@ -1172,7 +1172,7 @@ client.forecasts_tasks.create_task(
 </dl>
 </details>
 
-<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py">show_task</a>(...) -> V1Forecast</code></summary>
+<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py#L175-L210">show_task</a>(...) -> V1Forecast</code></summary>
 <dl>
 <dd>
 
@@ -1254,7 +1254,7 @@ client.forecasts_tasks.show_task(
 </dl>
 </details>
 
-<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py">delete_task</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py#L212-L247">delete_task</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1336,7 +1336,7 @@ client.forecasts_tasks.delete_task(
 </dl>
 </details>
 
-<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py">update_task</a>(...) -> V1Forecast</code></summary>
+<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py#L249-L296">update_task</a>(...) -> V1Forecast</code></summary>
 <dl>
 <dd>
 
@@ -1430,7 +1430,7 @@ client.forecasts_tasks.update_task(
 </dl>
 </details>
 
-<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py">list_task_summaries</a>(...) -> typing.List[V1ForecastSummary]</code></summary>
+<details><summary><code>client.forecasts_tasks.<a href="src/fern/forecasts_tasks/client.py#L298-L373">list_task_summaries</a>(...) -> typing.List[V1ForecastSummary]</code></summary>
 <dl>
 <dd>
 
@@ -1562,7 +1562,7 @@ client.forecasts_tasks.list_task_summaries(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">list_time_entries</a>(...) -> typing.List[V1Hour]</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L34-L121">list_time_entries</a>(...) -> typing.List[V1Hour]</code></summary>
 <dl>
 <dd>
 
@@ -1715,7 +1715,7 @@ client.events.list_time_entries(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">create_hour</a>(...) -> V1Hour</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L123-L166">create_hour</a>(...) -> V1Hour</code></summary>
 <dl>
 <dd>
 
@@ -1805,7 +1805,7 @@ client.events.create_hour(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">show_hour</a>(...) -> V1Hour</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L168-L201">show_hour</a>(...) -> V1Hour</code></summary>
 <dl>
 <dd>
 
@@ -1887,7 +1887,7 @@ client.events.show_hour(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">update_hour</a>(...) -> V1Hour</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L203-L251">update_hour</a>(...) -> V1Hour</code></summary>
 <dl>
 <dd>
 
@@ -1982,7 +1982,7 @@ client.events.update_hour(
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">delete_hour</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L253-L288">delete_hour</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2065,7 +2065,7 @@ client.events.delete_hour(
 </details>
 
 ## Event Timers
-<details><summary><code>client.event_timers.<a href="src/fern/event_timers/client.py">start_timer</a>(...) -> V1Hour</code></summary>
+<details><summary><code>client.event_timers.<a href="src/fern/event_timers/client.py#L26-L61">start_timer</a>(...) -> V1Hour</code></summary>
 <dl>
 <dd>
 
@@ -2147,7 +2147,7 @@ client.event_timers.start_timer(
 </dl>
 </details>
 
-<details><summary><code>client.event_timers.<a href="src/fern/event_timers/client.py">stop_timer</a>(...) -> V1Hour</code></summary>
+<details><summary><code>client.event_timers.<a href="src/fern/event_timers/client.py#L63-L98">stop_timer</a>(...) -> V1Hour</code></summary>
 <dl>
 <dd>
 
@@ -2230,7 +2230,7 @@ client.event_timers.stop_timer(
 </details>
 
 ## Event States
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">list_hour_states</a>(...) -> typing.List[V1State]</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L33-L64">list_hour_states</a>(...) -> typing.List[V1State]</code></summary>
 <dl>
 <dd>
 
@@ -2303,7 +2303,7 @@ client.event_states.list_hour_states(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">create_hour_state</a>(...) -> V1State</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L66-L103">create_hour_state</a>(...) -> V1State</code></summary>
 <dl>
 <dd>
 
@@ -2388,7 +2388,7 @@ client.event_states.create_hour_state(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">update_hour_state</a>(...) -> V1State</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L105-L150">update_hour_state</a>(...) -> V1State</code></summary>
 <dl>
 <dd>
 
@@ -2481,7 +2481,7 @@ client.event_states.update_hour_state(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">delete_hour_state</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L152-L187">delete_hour_state</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2563,7 +2563,7 @@ client.event_states.delete_hour_state(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">create_state_permissions</a>(...) -> typing.List[V1StatePermission]</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L189-L240">create_state_permissions</a>(...) -> typing.List[V1StatePermission]</code></summary>
 <dl>
 <dd>
 
@@ -2661,7 +2661,7 @@ client.event_states.create_state_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">delete_state_permissions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L242-L281">delete_state_permissions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2752,7 +2752,7 @@ client.event_states.delete_state_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">list_states</a>(...) -> typing.List[V1State]</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L283-L314">list_states</a>(...) -> typing.List[V1State]</code></summary>
 <dl>
 <dd>
 
@@ -2825,7 +2825,7 @@ client.event_states.list_states(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">create_state</a>(...) -> V1State</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L316-L356">create_state</a>(...) -> V1State</code></summary>
 <dl>
 <dd>
 
@@ -2913,7 +2913,7 @@ client.event_states.create_state(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">update_state</a>(...) -> V1State</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L358-L407">update_state</a>(...) -> V1State</code></summary>
 <dl>
 <dd>
 
@@ -3010,7 +3010,7 @@ client.event_states.update_state(
 </dl>
 </details>
 
-<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py">delete_state</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.event_states.<a href="src/fern/event_states/client.py#L409-L444">delete_state</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3093,7 +3093,7 @@ client.event_states.delete_state(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>(...) -> V1Label</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L32-L84">list_tags</a>(...) -> V1Label</code></summary>
 <dl>
 <dd>
 
@@ -3198,7 +3198,7 @@ client.tags.list_tags(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">create_tag</a>(...) -> V1Label</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L86-L126">create_tag</a>(...) -> V1Label</code></summary>
 <dl>
 <dd>
 
@@ -3285,7 +3285,7 @@ client.tags.create_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">get_tag</a>(...) -> V1Label</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L128-L161">get_tag</a>(...) -> V1Label</code></summary>
 <dl>
 <dd>
 
@@ -3367,7 +3367,7 @@ client.tags.get_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">update_tag</a>(...) -> V1Label</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L163-L211">update_tag</a>(...) -> V1Label</code></summary>
 <dl>
 <dd>
 
@@ -3462,7 +3462,7 @@ client.tags.update_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">delete_tag</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L213-L248">delete_tag</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3545,7 +3545,7 @@ client.tags.delete_tag(
 </details>
 
 ## OAuth
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">create_access_token</a>(...) -> V1OAuthTokenResponse</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L35-L101">create_access_token</a>(...) -> V1OAuthTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3661,7 +3661,7 @@ client.o_auth.create_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">revoke_access_token</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L103-L160">revoke_access_token</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3762,7 +3762,7 @@ client.o_auth.revoke_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">introspect_access_token</a>(...) -> V1OAuthIntrospectResponse</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L162-L202">introspect_access_token</a>(...) -> V1OAuthIntrospectResponse</code></summary>
 <dl>
 <dd>
 
@@ -3843,7 +3843,7 @@ client.o_auth.introspect_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">get_current_token_info</a>() -> GetCurrentTokenInfoResponse</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L204-L230">get_current_token_info</a>() -> GetCurrentTokenInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -3906,7 +3906,7 @@ client.o_auth.get_current_token_info()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">list_authorized_applications</a>() -> typing.List[V1OAuthAuthorizedApplication]</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L232-L258">list_authorized_applications</a>() -> typing.List[V1OAuthAuthorizedApplication]</code></summary>
 <dl>
 <dd>
 
@@ -3969,7 +3969,7 @@ client.o_auth.list_authorized_applications()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py">revoke_application_authorization</a>(...)</code></summary>
+<details><summary><code>client.o_auth.<a href="src/fern/o_auth/client.py#L260-L290">revoke_application_authorization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4043,7 +4043,7 @@ client.o_auth.revoke_application_authorization(
 </details>
 
 ## Permissions
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">list_current_user_permissions</a>(...) -> typing.List[V1Permission]</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L26-L57">list_current_user_permissions</a>(...) -> typing.List[V1Permission]</code></summary>
 <dl>
 <dd>
 
@@ -4116,7 +4116,7 @@ client.permissions.list_current_user_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">list_user_permissions</a>(...) -> typing.List[V1Permission]</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L59-L94">list_user_permissions</a>(...) -> typing.List[V1Permission]</code></summary>
 <dl>
 <dd>
 
@@ -4199,7 +4199,7 @@ client.permissions.list_user_permissions(
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_projects</a>(...) -> typing.List[V1Project]</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L34-L116">list_projects</a>(...) -> typing.List[V1Project]</code></summary>
 <dl>
 <dd>
 
@@ -4344,7 +4344,7 @@ client.projects.list_projects(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_project</a>(...) -> V1Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L118-L169">create_project</a>(...) -> V1Project</code></summary>
 <dl>
 <dd>
 
@@ -4440,7 +4440,7 @@ client.projects.create_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">show_project</a>(...) -> V1Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L171-L206">show_project</a>(...) -> V1Project</code></summary>
 <dl>
 <dd>
 
@@ -4522,7 +4522,7 @@ client.projects.show_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_project</a>(...) -> V1Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L208-L257">update_project</a>(...) -> V1Project</code></summary>
 <dl>
 <dd>
 
@@ -4618,7 +4618,7 @@ client.projects.update_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L259-L294">delete_project</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4701,7 +4701,7 @@ client.projects.delete_project(
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_reports</a>(...) -> typing.List[V1ReportTotals]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L29-L91">get_reports</a>(...) -> typing.List[V1ReportTotals]</code></summary>
 <dl>
 <dd>
 
@@ -4814,7 +4814,7 @@ client.reports.get_reports(
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">filter_reports</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L93-L185">filter_reports</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4976,7 +4976,7 @@ client.reports.filter_reports(
 </details>
 
 ## Roles
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">list_roles</a>(...) -> typing.List[V1Role]</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L26-L57">list_roles</a>(...) -> typing.List[V1Role]</code></summary>
 <dl>
 <dd>
 
@@ -5050,7 +5050,7 @@ client.roles.list_roles(
 </details>
 
 ## Teams
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">search_teams</a>(...) -> typing.List[V1Team]</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L33-L81">search_teams</a>(...) -> typing.List[V1Team]</code></summary>
 <dl>
 <dd>
 
@@ -5147,7 +5147,7 @@ client.teams.search_teams(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list_all_teams_of_an_account</a>(...) -> typing.List[V1Team]</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L83-L135">list_all_teams_of_an_account</a>(...) -> typing.List[V1Team]</code></summary>
 <dl>
 <dd>
 
@@ -5252,7 +5252,7 @@ client.teams.list_all_teams_of_an_account(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create_team</a>(...) -> V1Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L137-L177">create_team</a>(...) -> V1Team</code></summary>
 <dl>
 <dd>
 
@@ -5339,7 +5339,7 @@ client.teams.create_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">team_details</a>(...) -> V1Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L179-L214">team_details</a>(...) -> V1Team</code></summary>
 <dl>
 <dd>
 
@@ -5421,7 +5421,7 @@ client.teams.team_details(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">team_update</a>(...) -> V1Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L216-L278">team_update</a>(...) -> V1Team</code></summary>
 <dl>
 <dd>
 
@@ -5531,7 +5531,7 @@ client.teams.team_update(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">team_delete</a>(...) -> Delete11AccountIdTeamsIdResponse</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L280-L325">team_delete</a>(...) -> Delete11AccountIdTeamsIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -5621,7 +5621,7 @@ client.teams.team_delete(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">team_patch</a>(...) -> V1Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L327-L389">team_patch</a>(...) -> V1Team</code></summary>
 <dl>
 <dd>
 
@@ -5732,7 +5732,7 @@ client.teams.team_patch(
 </details>
 
 ## User Capacities
-<details><summary><code>client.user_capacities.<a href="src/fern/user_capacities/client.py">list_user_capacities</a>(...) -> typing.List[V1UserCapacity]</code></summary>
+<details><summary><code>client.user_capacities.<a href="src/fern/user_capacities/client.py#L28-L63">list_user_capacities</a>(...) -> typing.List[V1UserCapacity]</code></summary>
 <dl>
 <dd>
 
@@ -5814,7 +5814,7 @@ client.user_capacities.list_user_capacities(
 </dl>
 </details>
 
-<details><summary><code>client.user_capacities.<a href="src/fern/user_capacities/client.py">list_users_capacities</a>(...) -> typing.List[ListUsersCapacitiesResponseItem]</code></summary>
+<details><summary><code>client.user_capacities.<a href="src/fern/user_capacities/client.py#L65-L113">list_users_capacities</a>(...) -> typing.List[ListUsersCapacitiesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5912,7 +5912,7 @@ client.user_capacities.list_users_capacities(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_current_user</a>(...) -> V1User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L31-L60">get_current_user</a>(...) -> V1User</code></summary>
 <dl>
 <dd>
 
@@ -5985,7 +5985,7 @@ client.users.get_current_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_users</a>(...) -> typing.List[V1User]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L62-L114">list_users</a>(...) -> typing.List[V1User]</code></summary>
 <dl>
 <dd>
 
@@ -6090,7 +6090,7 @@ client.users.list_users(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">invite_user</a>(...) -> V1User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L116-L166">invite_user</a>(...) -> V1User</code></summary>
 <dl>
 <dd>
 
@@ -6183,7 +6183,7 @@ client.users.invite_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user</a>(...) -> V1User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L168-L201">get_user</a>(...) -> V1User</code></summary>
 <dl>
 <dd>
 
@@ -6265,7 +6265,7 @@ client.users.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user</a>(...) -> V1User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L203-L250">update_user</a>(...) -> V1User</code></summary>
 <dl>
 <dd>
 
@@ -6360,7 +6360,7 @@ client.users.update_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_user</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L252-L287">delete_user</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6442,7 +6442,7 @@ client.users.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">search_users</a>(...) -> typing.List[V1User]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L289-L338">search_users</a>(...) -> typing.List[V1User]</code></summary>
 <dl>
 <dd>
 
@@ -6541,7 +6541,7 @@ client.users.search_users(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list_webhooks</a>(...) -> typing.List[V1Webhook]</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L31-L75">list_webhooks</a>(...) -> typing.List[V1Webhook]</code></summary>
 <dl>
 <dd>
 
@@ -6630,7 +6630,7 @@ client.webhooks.list_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create_webhook</a>(...) -> V1Webhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L77-L145">create_webhook</a>(...) -> V1Webhook</code></summary>
 <dl>
 <dd>
 
@@ -6738,7 +6738,7 @@ client.webhooks.create_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">show_webhook</a>(...) -> V1Webhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L147-L182">show_webhook</a>(...) -> V1Webhook</code></summary>
 <dl>
 <dd>
 
@@ -6820,7 +6820,7 @@ client.webhooks.show_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update_webhook</a>(...) -> V1Webhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L184-L239">update_webhook</a>(...) -> V1Webhook</code></summary>
 <dl>
 <dd>
 
@@ -6919,7 +6919,7 @@ client.webhooks.update_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_webhook</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L241-L276">delete_webhook</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

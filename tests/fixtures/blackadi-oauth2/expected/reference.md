@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">o_auth_authorization_endpoint</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L133-L224">o_auth_authorization_endpoint</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -165,7 +165,7 @@ client.o_auth_authorization_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">o_auth_token_endpoint</a>(...) -> PostTokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L226-L318">o_auth_token_endpoint</a>(...) -> PostTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -350,7 +350,7 @@ client.o_auth_token_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">user_info_endpoint</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L320-L346">user_info_endpoint</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -413,7 +413,7 @@ client.user_info_endpoint()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">user_info_endpoint_post</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L348-L375">user_info_endpoint_post</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.user_info_endpoint_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">authlete_specific_token_introspection</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L377-L438">authlete_specific_token_introspection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -597,7 +597,7 @@ client.authlete_specific_token_introspection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">rfc7662token_introspection</a>(...) -> PostIntrospectionStandardResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L440-L470">rfc7662token_introspection</a>(...) -> PostIntrospectionStandardResponse</code></summary>
 <dl>
 <dd>
 
@@ -670,7 +670,7 @@ client.rfc7662token_introspection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">rfc7009token_revocation</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L472-L512">rfc7009token_revocation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -759,7 +759,7 @@ client.rfc7009token_revocation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">login_form</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L514-L537">login_form</a>()</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.login_form()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">submit_login</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L539-L580">submit_login</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -912,7 +912,7 @@ client.submit_login(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">consent_form</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L582-L605">consent_form</a>()</code></summary>
 <dl>
 <dd>
 
@@ -975,7 +975,7 @@ client.consent_form()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">submit_consent_decision</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L607-L644">submit_consent_decision</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1056,7 +1056,7 @@ client.submit_consent_decision(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">open_id_connect_discovery</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L646-L672">open_id_connect_discovery</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1119,7 +1119,7 @@ client.open_id_connect_discovery()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">jwks_endpoint</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L674-L698">jwks_endpoint</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1182,7 +1182,7 @@ client.jwks_endpoint()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">dynamic_client_registration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L700-L729">dynamic_client_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1257,7 +1257,7 @@ client.dynamic_client_registration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_registered_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L731-L766">get_registered_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1336,7 +1336,7 @@ client.get_registered_client()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_registered_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L768-L797">update_registered_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1411,7 +1411,7 @@ client.update_registered_client(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_registered_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L799-L828">delete_registered_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1486,7 +1486,7 @@ client.delete_registered_client(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">ciba_backchannel_authentication</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L830-L873">ciba_backchannel_authentication</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1575,7 +1575,7 @@ client.ciba_backchannel_authentication(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_ciba_auth_req_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L875-L902">issue_ciba_auth_req_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1646,7 +1646,7 @@ client.issue_ciba_auth_req_id()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fail_ciba_request</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L904-L938">fail_ciba_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1728,7 +1728,7 @@ client.fail_ciba_request(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">complete_ciba_request</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L940-L1001">complete_ciba_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1843,7 +1843,7 @@ client.complete_ciba_request(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pushed_authorization_request_rfc9126</a>(...) -> PostParResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1003-L1047">pushed_authorization_request_rfc9126</a>(...) -> PostParResponse</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.pushed_authorization_request_rfc9126(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">query_grant_status</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1049-L1076">query_grant_status</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2005,7 +2005,7 @@ client.query_grant_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">revoke_grant</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1078-L1105">revoke_grant</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2078,7 +2078,7 @@ client.revoke_grant(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">rp_initiated_logout_confirmation_page</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1107-L1158">rp_initiated_logout_confirmation_page</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2181,7 +2181,7 @@ client.rp_initiated_logout_confirmation_page()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">rp_initiated_logout_end_the_session</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1160-L1217">rp_initiated_logout_end_the_session</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2294,7 +2294,7 @@ client.rp_initiated_logout_end_the_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">backchannel_logout_receiver</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1219-L1250">backchannel_logout_receiver</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2367,7 +2367,7 @@ client.backchannel_logout_receiver(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_backchannel_logout_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1252-L1293">issue_backchannel_logout_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2457,7 +2457,7 @@ client.issue_backchannel_logout_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_and_deliver_logout_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1295-L1329">issue_and_deliver_logout_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2539,7 +2539,7 @@ client.issue_and_deliver_logout_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_and_deliver_logout_tokens_to_all_clients</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1331-L1368">issue_and_deliver_logout_tokens_to_all_clients</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2618,7 +2618,7 @@ client.issue_and_deliver_logout_tokens_to_all_clients()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tokens</a>() -> GetTokenListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1370-L1394">list_tokens</a>() -> GetTokenListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2681,7 +2681,7 @@ client.list_tokens()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_token_programmatically</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1396-L1468">create_token_programmatically</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2811,7 +2811,7 @@ client.create_token_programmatically(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1470-L1499">delete_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2884,7 +2884,7 @@ client.delete_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_token_scopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1501-L1536">update_token_scopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2963,7 +2963,7 @@ client.update_token_scopes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">revoke_token_via_management_api</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1538-L1587">revoke_token_via_management_api</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3058,7 +3058,7 @@ client.revoke_token_via_management_api()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">reissue_id_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1589-L1651">reissue_id_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3172,7 +3172,7 @@ client.reissue_id_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_local_jwt</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1653-L1720">create_local_jwt</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3295,7 +3295,7 @@ client.create_local_jwt(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">prometheus_metrics</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1722-L1746">prometheus_metrics</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3358,7 +3358,7 @@ client.prometheus_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">server_health</a>() -> GetHealthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1748-L1772">server_health</a>() -> GetHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -3421,7 +3421,7 @@ client.server_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">aggregate_health_check</a>() -> GetHealthAllResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1774-L1800">aggregate_health_check</a>() -> GetHealthAllResponse</code></summary>
 <dl>
 <dd>
 
@@ -3484,7 +3484,7 @@ client.aggregate_health_check()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">authlete_connectivity_check</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1802-L1832">authlete_connectivity_check</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3555,7 +3555,7 @@ client.authlete_connectivity_check()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_all_clients</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1834-L1875">list_all_clients</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3642,7 +3642,7 @@ client.list_all_clients()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1877-L1907">create_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3713,7 +3713,7 @@ client.create_client()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1909-L1936">get_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3786,7 +3786,7 @@ client.get_client(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1938-L1974">update_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3870,7 +3870,7 @@ client.update_client(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_client</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1976-L2003">delete_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3943,7 +3943,7 @@ client.delete_client(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_client_lock_flag</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2005-L2039">update_client_lock_flag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4025,7 +4025,7 @@ client.update_client_lock_flag(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">refresh_client_secret</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2041-L2070">refresh_client_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4098,7 +4098,7 @@ client.refresh_client_secret(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_client_secret</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2072-L2106">update_client_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4180,7 +4180,7 @@ client.update_client_secret(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_client_authorizations_for_a_subject</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2108-L2151">list_client_authorizations_for_a_subject</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4277,7 +4277,7 @@ client.list_client_authorizations_for_a_subject(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_client_authorization</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2153-L2193">update_client_authorization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4366,7 +4366,7 @@ client.update_client_authorization(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_client_authorization</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2195-L2227">delete_client_authorization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4448,7 +4448,7 @@ client.delete_client_authorization(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_granted_scopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2229-L2261">get_granted_scopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4530,7 +4530,7 @@ client.get_granted_scopes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_granted_scopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2263-L2295">delete_granted_scopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4612,7 +4612,7 @@ client.delete_granted_scopes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_requestable_scopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2297-L2326">get_requestable_scopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4685,7 +4685,7 @@ client.get_requestable_scopes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_requestable_scopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2328-L2365">update_requestable_scopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4766,7 +4766,7 @@ client.update_requestable_scopes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_requestable_scopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2367-L2396">delete_requestable_scopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4839,7 +4839,7 @@ client.delete_requestable_scopes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">device_authorization</a>(...) -> PostDeviceAuthorizationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2398-L2442">device_authorization</a>(...) -> PostDeviceAuthorizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -4928,7 +4928,7 @@ client.device_authorization(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">verify_device_user_code</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2444-L2473">verify_device_user_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5001,7 +5001,7 @@ client.verify_device_user_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">complete_device_authentication</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2475-L2536">complete_device_authentication</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5116,7 +5116,7 @@ client.complete_device_authentication(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">vci_metadata</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2538-L2565">vci_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5187,7 +5187,7 @@ client.vci_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">vci_jwt_issuer_metadata</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2567-L2594">vci_jwt_issuer_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5258,7 +5258,7 @@ client.vci_jwt_issuer_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">vci_jwks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2596-L2623">vci_jwks</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5329,7 +5329,7 @@ client.vci_jwks()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_credential_offer</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2625-L2726">create_credential_offer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5508,7 +5508,7 @@ client.create_credential_offer(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_offer_information</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2728-L2757">get_offer_information</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5581,7 +5581,7 @@ client.get_offer_information(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_single_credential</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2759-L2796">issue_single_credential</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5662,7 +5662,7 @@ client.issue_single_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_batch_credentials</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2798-L2837">issue_batch_credentials</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5743,7 +5743,7 @@ client.issue_batch_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_deferred_credential</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2839-L2878">issue_deferred_credential</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5826,7 +5826,7 @@ client.issue_deferred_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">vci_well_known_metadata</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2880-L2907">vci_well_known_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5897,7 +5897,7 @@ client.vci_well_known_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">oidc_federation_configuration</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2909-L2932">oidc_federation_configuration</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5960,7 +5960,7 @@ client.oidc_federation_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">open_id_federation_well_known</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2934-L2957">open_id_federation_well_known</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6023,7 +6023,7 @@ client.open_id_federation_well_known()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">federation_registration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2959-L2988">federation_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6098,7 +6098,7 @@ client.federation_registration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_hardware_security_key</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2990-L3042">create_hardware_security_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6204,7 +6204,7 @@ client.create_hardware_security_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_hardware_security_key</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3044-L3073">get_hardware_security_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6277,7 +6277,7 @@ client.get_hardware_security_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_hardware_security_key</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3075-L3104">delete_hardware_security_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6350,7 +6350,7 @@ client.delete_hardware_security_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_hardware_security_keys</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3106-L3129">list_hardware_security_keys</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6413,7 +6413,7 @@ client.list_hardware_security_keys()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fapi_configuration</a>() -> GetFapiConfigResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3131-L3155">fapi_configuration</a>() -> GetFapiConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -6476,7 +6476,7 @@ client.fapi_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fapi_status</a>() -> GetFapiStatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3157-L3181">fapi_status</a>() -> GetFapiStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -6539,7 +6539,7 @@ client.fapi_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">process_jwt_authenticated_request</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3183-L3222">process_jwt_authenticated_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6620,7 +6620,7 @@ client.process_jwt_authenticated_request(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">authorization_server_metadata_rfc8414</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3224-L3250">authorization_server_metadata_rfc8414</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6683,7 +6683,7 @@ client.authorization_server_metadata_rfc8414()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">native_sso_processing</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3252-L3281">native_sso_processing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6758,7 +6758,7 @@ client.native_sso_processing(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">native_sso_logout</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3283-L3312">native_sso_logout</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6833,7 +6833,7 @@ client.native_sso_logout(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">oid4vci_credential_issuer_metadata</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3314-L3337">oid4vci_credential_issuer_metadata</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6896,7 +6896,7 @@ client.oid4vci_credential_issuer_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">device_flow_browser_verification_page</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3339-L3362">device_flow_browser_verification_page</a>()</code></summary>
 <dl>
 <dd>
 

@@ -6,3 +6,17 @@ Warnings for generators.yml:
         issue: Default value for list type must be an array
 
 Found 1 error and 0 warnings in <n> seconds.
+[api]: Warnings for generators.yml:
+[api]: 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+         ╭────────────────────────────────────────────────────────────╮
+         │                                                            │
+         │                     Upgrades available                     │
+         │                                                            │
+         │                  Fern 5.200.0 → 5.211.0                    │
+         │                (Run fern upgrade to update)                │
+         │      Python SDK (Group: python-sdk) 5.41.25 → 5.41.28      │
+         │                                                            │
+         │   Run fern generator upgrade to upgrade your generators.   │
+         │                                                            │
+         ╰────────────────────────────────────────────────────────────╯
+

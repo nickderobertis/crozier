@@ -1,6 +1,6 @@
 # Reference
 ## Sailings
-<details><summary><code>client.sailings.<a href="src/fern/sailings/client.py">list_sailings</a>() -> typing.List[Sailing]</code></summary>
+<details><summary><code>client.sailings.<a href="src/fern/sailings/client.py#L30-L50">list_sailings</a>() -> typing.List[Sailing]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.sailings.list_sailings()
 </dl>
 </details>
 
-<details><summary><code>client.sailings.<a href="src/fern/sailings/client.py">book_vehicle</a>(...) -> Booking</code></summary>
+<details><summary><code>client.sailings.<a href="src/fern/sailings/client.py#L52-L100">book_vehicle</a>(...) -> Booking</code></summary>
 <dl>
 <dd>
 

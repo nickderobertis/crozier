@@ -1,6 +1,6 @@
 # Reference
 ## Kilns
-<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py">list_kilns</a>(...) -> typing.List[Kiln]</code></summary>
+<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py#L31-L55">list_kilns</a>(...) -> typing.List[Kiln]</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.kilns.list_kilns(
 </dl>
 </details>
 
-<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py">record_firing</a>(...) -> Firing</code></summary>
+<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py#L57-L88">record_firing</a>(...) -> Firing</code></summary>
 <dl>
 <dd>
 
@@ -125,7 +125,7 @@ client.kilns.record_firing(
 </dl>
 </details>
 
-<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py">add_glaze</a>(...) -> Firing</code></summary>
+<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py#L90-L118">add_glaze</a>(...) -> Firing</code></summary>
 <dl>
 <dd>
 

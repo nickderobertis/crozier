@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">retitle_manifest</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L133">retitle_manifest</a>(...)</code></summary>
 <dl>
 <dd>
 

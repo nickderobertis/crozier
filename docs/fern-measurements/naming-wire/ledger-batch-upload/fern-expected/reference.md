@@ -1,6 +1,6 @@
 # Reference
 ## Entries
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">create_entries</a>(...)</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L30-L59">create_entries</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.entries.create_entries(
 </dl>
 </details>
 
-<details><summary><code>client.entries.<a href="src/fern/entries/client.py">void_entries</a>(...)</code></summary>
+<details><summary><code>client.entries.<a href="src/fern/entries/client.py#L61-L86">void_entries</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Dashboards
-<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py">list</a>(...) -> DashboardsListResponse</code></summary>
+<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py#L33-L82">list</a>(...) -> DashboardsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.dashboards.list(
 </dl>
 </details>
 
-<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py">create</a>(...) -> DashboardResponse</code></summary>
+<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py#L84-L183">create</a>(...) -> DashboardResponse</code></summary>
 <dl>
 <dd>
 
@@ -213,7 +213,7 @@ client.dashboards.create(
 </dl>
 </details>
 
-<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py">get</a>(...) -> DashboardResponse</code></summary>
+<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py#L185-L214">get</a>(...) -> DashboardResponse</code></summary>
 <dl>
 <dd>
 
@@ -286,7 +286,7 @@ client.dashboards.get(
 </dl>
 </details>
 
-<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py">update</a>(...) -> DashboardResponse</code></summary>
+<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py#L216-L320">update</a>(...) -> DashboardResponse</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ client.dashboards.update(
 </dl>
 </details>
 
-<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.dashboards.<a href="src/fern/dashboards/client.py#L322-L350">delete</a>(...)</code></summary>
 <dl>
 <dd>
 

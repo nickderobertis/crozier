@@ -1,6 +1,6 @@
 # Reference
 ## Account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_account_metrics</a>(...) -> MetricsResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L27-L56">get_account_metrics</a>(...) -> MetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -71,7 +71,7 @@ client.account.get_account_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_account_metrics_v60</a>(...) -> MetricsV60Response</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L58-L87">get_account_metrics_v60</a>(...) -> MetricsV60Response</code></summary>
 <dl>
 <dd>
 
@@ -143,7 +143,7 @@ client.account.get_account_metrics_v60()
 </details>
 
 ## Data
-<details><summary><code>client.data.<a href="src/fern/data/client.py">get_tic_data</a>(...) -> TicResponse</code></summary>
+<details><summary><code>client.data.<a href="src/fern/data/client.py#L27-L59">get_tic_data</a>(...) -> TicResponse</code></summary>
 <dl>
 <dd>
 
@@ -215,7 +215,7 @@ client.data.get_tic_data()
 </details>
 
 ## MerchantTaxCloud
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_cart_calculate</a>(...) -> MerchantCartCalculateResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L48-L124">merchant_cart_calculate</a>(...) -> MerchantCartCalculateResponse</code></summary>
 <dl>
 <dd>
 
@@ -330,7 +330,7 @@ client.merchant_tax_cloud.merchant_cart_calculate(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_cert_create</a>(...) -> TaxCloudCertResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L126-L224">merchant_cert_create</a>(...) -> TaxCloudCertResponse</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.merchant_tax_cloud.merchant_cert_create(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_cert_delete</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L226-L263">merchant_cert_delete</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -566,7 +566,7 @@ client.merchant_tax_cloud.merchant_cert_delete(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_cert_get</a>(...) -> TaxCloudCertResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L265-L302">merchant_cert_get</a>(...) -> TaxCloudCertResponse</code></summary>
 <dl>
 <dd>
 
@@ -648,7 +648,7 @@ client.merchant_tax_cloud.merchant_cert_get(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_cert_list</a>(...) -> TaxCloudCertListResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L304-L371">merchant_cert_list</a>(...) -> TaxCloudCertListResponse</code></summary>
 <dl>
 <dd>
 
@@ -769,7 +769,7 @@ client.merchant_tax_cloud.merchant_cert_list(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_order_create</a>(...) -> TaxCloudOrderResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L373-L526">merchant_order_create</a>(...) -> TaxCloudOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -992,7 +992,7 @@ client.merchant_tax_cloud.merchant_order_create(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_order_create_from_cart</a>(...) -> TaxCloudOrderResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L528-L592">merchant_order_create_from_cart</a>(...) -> TaxCloudOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1107,7 +1107,7 @@ client.merchant_tax_cloud.merchant_order_create_from_cart(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_order_get</a>(...) -> TaxCloudOrderResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L594-L639">merchant_order_get</a>(...) -> TaxCloudOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1197,7 +1197,7 @@ client.merchant_tax_cloud.merchant_order_get(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_order_update</a>(...) -> TaxCloudOrderResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L641-L686">merchant_order_update</a>(...) -> TaxCloudOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -1287,7 +1287,7 @@ client.merchant_tax_cloud.merchant_order_update(
 </dl>
 </details>
 
-<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py">merchant_refund_create</a>(...) -> TaxCloudRefundResponse</code></summary>
+<details><summary><code>client.merchant_tax_cloud.<a href="src/fern/merchant_tax_cloud/client.py#L688-L746">merchant_refund_create</a>(...) -> TaxCloudRefundResponse</code></summary>
 <dl>
 <dd>
 
@@ -1394,7 +1394,7 @@ client.merchant_tax_cloud.merchant_refund_create(
 </details>
 
 ## Merchant
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">create_merchant</a>(...) -> CreateMerchantResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L38-L105">create_merchant</a>(...) -> CreateMerchantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1515,7 +1515,7 @@ client.merchant.create_merchant(
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">delete_merchant_credentials</a>(...) -> DeleteMerchantCredentialsResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L107-L140">delete_merchant_credentials</a>(...) -> DeleteMerchantCredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1588,7 +1588,7 @@ client.merchant.delete_merchant_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">get_merchant_credentials</a>(...) -> GetMerchantCredentialsResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L142-L173">get_merchant_credentials</a>(...) -> GetMerchantCredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1661,7 +1661,7 @@ client.merchant.get_merchant_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">set_merchant_credentials</a>(...) -> SetMerchantCredentialsResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L175-L221">set_merchant_credentials</a>(...) -> SetMerchantCredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1752,7 +1752,7 @@ client.merchant.set_merchant_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">delete_merchant</a>(...) -> DeleteMerchantResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L223-L254">delete_merchant</a>(...) -> DeleteMerchantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1825,7 +1825,7 @@ client.merchant.delete_merchant(
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">get_merchant</a>(...) -> GetMerchantResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L256-L287">get_merchant</a>(...) -> GetMerchantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1898,7 +1898,7 @@ client.merchant.get_merchant(
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">list_merchants</a>() -> typing.Optional[typing.List[Item]]</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L289-L315">list_merchants</a>() -> typing.Optional[typing.List[Item]]</code></summary>
 <dl>
 <dd>
 
@@ -1961,7 +1961,7 @@ client.merchant.list_merchants()
 </dl>
 </details>
 
-<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py">update_merchant</a>(...) -> UpdateMerchantResponse</code></summary>
+<details><summary><code>client.merchant.<a href="src/fern/merchant/client.py#L317-L356">update_merchant</a>(...) -> UpdateMerchantResponse</code></summary>
 <dl>
 <dd>
 
@@ -2046,7 +2046,7 @@ client.merchant.update_merchant(
 </details>
 
 ## Tax Rates
-<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py">get_tax_rates_v60</a>(...) -> V60Response</code></summary>
+<details><summary><code>client.tax_rates.<a href="src/fern/tax_rates/client.py#L29-L148">get_tax_rates_v60</a>(...) -> V60Response</code></summary>
 <dl>
 <dd>
 
@@ -2250,7 +2250,7 @@ client.tax_rates.get_tax_rates_v60(
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">get_tic_search_schema</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L30-L56">get_tic_search_schema</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2313,7 +2313,7 @@ client.search.get_tic_search_schema()
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">search_tic</a>(...) -> TicSearchResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L58-L87">search_tic</a>(...) -> TicSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2386,7 +2386,7 @@ client.search.search_tic(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">recommend_tic</a>(...) -> TicRecommendResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L89-L120">recommend_tic</a>(...) -> TicRecommendResponse</code></summary>
 <dl>
 <dd>
 
@@ -2460,7 +2460,7 @@ client.search.recommend_tic(
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L27-L51">get_health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -2523,7 +2523,7 @@ client.system.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_metadata</a>() -> MetadataResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L53-L77">get_metadata</a>() -> MetadataResponse</code></summary>
 <dl>
 <dd>
 

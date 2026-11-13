@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "841b493abbe7d181d5c4d0f1f11aab7d950ad1e15ff49a4cdc7966d65ec83964"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "671b6a373574f69d7390e8f4feb8e92a22b92a824d2076611b035f7349f41b5b"
 
 [[covers]]
 key = "property-oneof-sole-string-enum-member"

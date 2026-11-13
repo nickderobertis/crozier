@@ -1,6 +1,6 @@
 # Reference
 ## TestGeneration
-<details><summary><code>client.test_generation.<a href="src/fern/test_generation/client.py">generate_tests</a>(...) -> GenerateResponse</code></summary>
+<details><summary><code>client.test_generation.<a href="src/fern/test_generation/client.py#L29-L81">generate_tests</a>(...) -> GenerateResponse</code></summary>
 <dl>
 <dd>
 
@@ -96,7 +96,7 @@ client.test_generation.generate_tests()
 </details>
 
 ## WebCrawling
-<details><summary><code>client.web_crawling.<a href="src/fern/web_crawling/client.py">crawl_site</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.web_crawling.<a href="src/fern/web_crawling/client.py#L28-L70">crawl_site</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -178,7 +178,7 @@ client.web_crawling.crawl_site(
 </details>
 
 ## HealthCheck
-<details><summary><code>client.health_check.<a href="src/fern/health_check/client.py">health_check</a>() -> typing.Any</code></summary>
+<details><summary><code>client.health_check.<a href="src/fern/health_check/client.py#L25-L47">health_check</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -226,7 +226,7 @@ client.health_check.health_check()
 </details>
 
 ## ApiTesting
-<details><summary><code>client.api_testing.<a href="src/fern/api_testing/client.py">test_api</a>(...) -> ApiTestResponse</code></summary>
+<details><summary><code>client.api_testing.<a href="src/fern/api_testing/client.py#L31-L88">test_api</a>(...) -> ApiTestResponse</code></summary>
 <dl>
 <dd>
 

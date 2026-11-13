@@ -1,6 +1,6 @@
 # Reference
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">createauthtoken</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L29-L70">createauthtoken</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -77,7 +77,7 @@ client.authentication.createauthtoken(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">request_authorization</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L72-L126">request_authorization</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -176,7 +176,7 @@ client.authentication.request_authorization(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">request_access_token</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L128-L158">request_access_token</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.authentication.request_access_token(
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">refresh_access_token</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L160-L190">refresh_access_token</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -327,7 +327,7 @@ client.authentication.refresh_access_token(
 </details>
 
 ## Spend Data
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">listsettlements</a>(...) -> SettlementsResponse</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L31-L63">listsettlements</a>(...) -> SettlementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -392,7 +392,7 @@ client.spend_data.listsettlements()
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">updatesettlementstate</a>(...)</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L65-L95">updatesettlementstate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -462,7 +462,7 @@ client.spend_data.updatesettlementstate(
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">listbankfees</a>()</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L97-L118">listbankfees</a>()</code></summary>
 <dl>
 <dd>
 
@@ -511,7 +511,7 @@ client.spend_data.listbankfees()
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">getpayablessnapshot</a>(...) -> SnapshotResponse</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L120-L148">getpayablessnapshot</a>(...) -> SnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -570,7 +570,7 @@ client.spend_data.getpayablessnapshot(
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">createpayablessnapshot</a>(...) -> SnapshotResponse</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L150-L179">createpayablessnapshot</a>(...) -> SnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -627,7 +627,7 @@ client.spend_data.createpayablessnapshot()
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">getpayable</a>(...) -> Payable</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L181-L207">getpayable</a>(...) -> Payable</code></summary>
 <dl>
 <dd>
 
@@ -686,7 +686,7 @@ client.spend_data.getpayable(
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">getpayableattachments</a>(...)</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L209-L234">getpayableattachments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -745,7 +745,7 @@ client.spend_data.getpayableattachments(
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">updatebookkeepingstatus</a>(...)</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L236-L266">updatebookkeepingstatus</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -815,7 +815,7 @@ client.spend_data.updatebookkeepingstatus(
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">listwalletloads</a>()</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L268-L289">listwalletloads</a>()</code></summary>
 <dl>
 <dd>
 
@@ -864,7 +864,7 @@ client.spend_data.listwalletloads()
 </dl>
 </details>
 
-<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py">getwalletsummary</a>()</code></summary>
+<details><summary><code>client.spend_data.<a href="src/fern/spend_data/client.py#L291-L312">getwalletsummary</a>()</code></summary>
 <dl>
 <dd>
 
@@ -914,7 +914,7 @@ client.spend_data.getwalletsummary()
 </details>
 
 ## Analytical
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">listanalyticalfields</a>()</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L28-L49">listanalyticalfields</a>()</code></summary>
 <dl>
 <dd>
 
@@ -963,7 +963,7 @@ client.analytical.listanalyticalfields()
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">getanalyticalfieldvalues</a>(...)</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L51-L76">getanalyticalfieldvalues</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1022,7 +1022,7 @@ client.analytical.getanalyticalfieldvalues(
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">listexpensecategories</a>()</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L78-L99">listexpensecategories</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1071,7 +1071,7 @@ client.analytical.listexpensecategories()
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">listcostcenters</a>()</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L101-L122">listcostcenters</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1120,7 +1120,7 @@ client.analytical.listcostcenters()
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">createcostcenter</a>(...)</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L124-L153">createcostcenter</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1179,7 +1179,7 @@ client.analytical.createcostcenter(
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">updatecostcenter</a>(...)</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L155-L184">updatecostcenter</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1238,7 +1238,7 @@ client.analytical.updatecostcenter(
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">deletecostcenter</a>()</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L186-L207">deletecostcenter</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1287,7 +1287,7 @@ client.analytical.deletecostcenter()
 </dl>
 </details>
 
-<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py">get_analytical_field_values</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.analytical.<a href="src/fern/analytical/client.py#L209-L238">get_analytical_field_values</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1359,7 +1359,7 @@ client.analytical.get_analytical_field_values()
 </details>
 
 ## Suppliers
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">listsuppliers</a>(...)</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L30-L61">listsuppliers</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1424,7 +1424,7 @@ client.suppliers.listsuppliers()
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">createsupplier</a>(...)</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L63-L104">createsupplier</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1483,7 +1483,7 @@ client.suppliers.createsupplier(
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">updatesuppliers</a>(...)</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L106-L137">updatesuppliers</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1546,7 +1546,7 @@ client.suppliers.updatesuppliers(
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">getsupplier</a>(...)</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L139-L164">getsupplier</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1605,7 +1605,7 @@ client.suppliers.getsupplier(
 </dl>
 </details>
 
-<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py">updatesupplierstatus</a>(...)</code></summary>
+<details><summary><code>client.suppliers.<a href="src/fern/suppliers/client.py#L166-L202">updatesupplierstatus</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1675,7 +1675,7 @@ client.suppliers.updatesupplierstatus(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">listusers</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L25-L56">listusers</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1740,7 +1740,7 @@ client.users.listusers()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">getuser</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L58-L83">getuser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1800,7 +1800,7 @@ client.users.getuser(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">listwebhooks</a>()</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L28-L49">listwebhooks</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1849,7 +1849,7 @@ client.webhooks.listwebhooks()
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">createwebhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L51-L81">createwebhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1911,7 +1911,7 @@ client.webhooks.createwebhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">getwebhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L83-L108">getwebhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1970,7 +1970,7 @@ client.webhooks.getwebhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">updatewebhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L110-L148">updatewebhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2041,7 +2041,7 @@ client.webhooks.updatewebhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">deletewebhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L150-L175">deletewebhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2101,7 +2101,7 @@ client.webhooks.deletewebhook(
 </details>
 
 ## Purchase Orders
-<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py">listpurchaseorders</a>(...)</code></summary>
+<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py#L28-L59">listpurchaseorders</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2166,7 +2166,7 @@ client.purchase_orders.listpurchaseorders()
 </dl>
 </details>
 
-<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py">createpurchaseorder</a>(...)</code></summary>
+<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py#L61-L109">createpurchaseorder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2252,7 +2252,7 @@ client.purchase_orders.createpurchaseorder(
 </dl>
 </details>
 
-<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py">getpurchaseorder</a>(...)</code></summary>
+<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py#L111-L136">getpurchaseorder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2311,7 +2311,7 @@ client.purchase_orders.getpurchaseorder(
 </dl>
 </details>
 
-<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py">cancelpurchaseorder</a>(...)</code></summary>
+<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py#L138-L163">cancelpurchaseorder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2370,7 +2370,7 @@ client.purchase_orders.cancelpurchaseorder(
 </dl>
 </details>
 
-<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py">closepurchaseorder</a>(...)</code></summary>
+<details><summary><code>client.purchase_orders.<a href="src/fern/purchase_orders/client.py#L165-L190">closepurchaseorder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2430,7 +2430,7 @@ client.purchase_orders.closepurchaseorder(
 </details>
 
 ## Accounting
-<details><summary><code>client.accounting.<a href="src/fern/accounting/client.py">createjournalexport</a>(...)</code></summary>
+<details><summary><code>client.accounting.<a href="src/fern/accounting/client.py#L28-L55">createjournalexport</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2491,7 +2491,7 @@ client.accounting.createjournalexport(
 </dl>
 </details>
 
-<details><summary><code>client.accounting.<a href="src/fern/accounting/client.py">downloadjournal</a>(...)</code></summary>
+<details><summary><code>client.accounting.<a href="src/fern/accounting/client.py#L57-L82">downloadjournal</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2550,7 +2550,7 @@ client.accounting.downloadjournal(
 </dl>
 </details>
 
-<details><summary><code>client.accounting.<a href="src/fern/accounting/client.py">listjournaltemplates</a>()</code></summary>
+<details><summary><code>client.accounting.<a href="src/fern/accounting/client.py#L84-L105">listjournaltemplates</a>()</code></summary>
 <dl>
 <dd>
 

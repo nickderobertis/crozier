@@ -1,6 +1,6 @@
 # Reference
 ## VectorOperationsV2
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">delete</a>(...) -> HttpapiGenericRespCustomerDeleteResp</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L39-L96">delete</a>(...) -> HttpapiGenericRespCustomerDeleteResp</code></summary>
 <dl>
 <dd>
 
@@ -103,7 +103,7 @@ If specified, the data is to be deleted from the specified partition.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">insert</a>(...) -> HttpapiGenericRespCustomerInsertResp</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L98-L159">insert</a>(...) -> HttpapiGenericRespCustomerInsertResp</code></summary>
 <dl>
 <dd>
 
@@ -207,7 +207,7 @@ If specified, the data is to be inserted into the specified partition.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">query</a>(...) -> PostV2VectordbEntitiesQueryResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L161-L220">query</a>(...) -> PostV2VectordbEntitiesQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -311,7 +311,7 @@ client.vector_operations_v2.query(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">upsert</a>(...) -> HttpapiGenericRespCustomerUpsertResp</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L222-L283">upsert</a>(...) -> HttpapiGenericRespCustomerUpsertResp</code></summary>
 <dl>
 <dd>
 
@@ -415,7 +415,7 @@ If specified, the data is to be inserted into the specified partition.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">get</a>(...) -> PostV2VectordbEntitiesGetResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L285-L345">get</a>(...) -> PostV2VectordbEntitiesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -520,7 +520,7 @@ client.vector_operations_v2.get(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py">search</a>(...) -> PostV2VectordbEntitiesSearchResponse</code></summary>
+<details><summary><code>client.vector_operations_v2.<a href="src/fern/vector_operations_v2/client.py#L347-L455">search</a>(...) -> PostV2VectordbEntitiesSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -703,7 +703,7 @@ The sum of this value and **offset** in **param** should be less than 16,384.
 </details>
 
 ## CollectionOperationsV2
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">has_collection</a>(...) -> Has</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L36-L75">has_collection</a>(...) -> Has</code></summary>
 <dl>
 <dd>
 
@@ -784,7 +784,7 @@ client.collection_operations_v2.has_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">rename_collection</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L77-L137">rename_collection</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -894,7 +894,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">get_collection_stats</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L139-L179">get_collection_stats</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -978,7 +978,7 @@ Setting this to a non-existing database results in an error.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">load_collection</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L181-L233">load_collection</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1059,7 +1059,7 @@ client.collection_operations_v2.load_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">release_collection</a>(...) -> PostV2VectordbCollectionsReleaseResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L235-L279">release_collection</a>(...) -> PostV2VectordbCollectionsReleaseResponse</code></summary>
 <dl>
 <dd>
 
@@ -1145,7 +1145,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">create_collection</a>(...) -> HttpapiGenericRespCustomerCreateIndexResp</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L281-L372">create_collection</a>(...) -> HttpapiGenericRespCustomerCreateIndexResp</code></summary>
 <dl>
 <dd>
 
@@ -1303,7 +1303,7 @@ Possible values are **L2**, **IP**, and **COSINE**.
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">get_collection_load_state</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L374-L423">get_collection_load_state</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1391,7 +1391,7 @@ client.collection_operations_v2.get_collection_load_state(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">list_collections</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L425-L456">list_collections</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1463,7 +1463,7 @@ client.collection_operations_v2.list_collections(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">describe_collection</a>(...) -> PostV2VectordbCollectionsDescribeResponse</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L458-L497">describe_collection</a>(...) -> PostV2VectordbCollectionsDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1544,7 +1544,7 @@ client.collection_operations_v2.describe_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py">drop_collection</a>(...) -> HttpapiGenericRespCustomerDropCollectionResp</code></summary>
+<details><summary><code>client.collection_operations_v2.<a href="src/fern/collection_operations_v2/client.py#L499-L543">drop_collection</a>(...) -> HttpapiGenericRespCustomerDropCollectionResp</code></summary>
 <dl>
 <dd>
 
@@ -1617,7 +1617,7 @@ client.collection_operations_v2.drop_collection(
 </details>
 
 ## PartitionOperationsV2
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">list_partitions</a>(...) -> PostV2VectordbPartitionsListResponse</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L30-L69">list_partitions</a>(...) -> PostV2VectordbPartitionsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1698,7 +1698,7 @@ client.partition_operations_v2.list_partitions(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">create_partition</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L71-L123">create_partition</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1771,7 +1771,7 @@ client.partition_operations_v2.create_partition(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">drop_partition</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L125-L177">drop_partition</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1844,7 +1844,7 @@ client.partition_operations_v2.drop_partition(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">load_partitions</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L179-L231">load_partitions</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1920,7 +1920,7 @@ client.partition_operations_v2.load_partitions(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">release_partitions</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L233-L285">release_partitions</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1996,7 +1996,7 @@ client.partition_operations_v2.release_partitions(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">has_partition</a>(...) -> Has</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L287-L337">has_partition</a>(...) -> Has</code></summary>
 <dl>
 <dd>
 
@@ -2085,7 +2085,7 @@ client.partition_operations_v2.has_partition(
 </dl>
 </details>
 
-<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py">get_partition_statistics</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.partition_operations_v2.<a href="src/fern/partition_operations_v2/client.py#L339-L389">get_partition_statistics</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2175,7 +2175,7 @@ client.partition_operations_v2.get_partition_statistics(
 </details>
 
 ## UserOperationsV2
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">create_user</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L30-L70">create_user</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2259,7 +2259,7 @@ The password must be a string of 8 to 64 characters and must include at least th
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">update_user_password</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L72-L121">update_user_password</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2352,7 +2352,7 @@ The password must be a string of 8 to 64 characters and must include at least th
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">drop_user</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L123-L154">drop_user</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2424,7 +2424,7 @@ client.user_operations_v2.drop_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">describe_user</a>(...) -> PostV2VectordbUsersDescribeResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L156-L189">describe_user</a>(...) -> PostV2VectordbUsersDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2496,7 +2496,7 @@ client.user_operations_v2.describe_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">list_users</a>() -> PostV2VectordbUsersListResponse</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L191-L217">list_users</a>() -> PostV2VectordbUsersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2558,7 +2558,7 @@ client.user_operations_v2.list_users()
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">grant_role_to_user</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L219-L251">grant_role_to_user</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2630,7 +2630,7 @@ client.user_operations_v2.grant_role_to_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py">revoker_role_from_user</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.user_operations_v2.<a href="src/fern/user_operations_v2/client.py#L253-L287">revoker_role_from_user</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2705,7 +2705,7 @@ client.user_operations_v2.revoker_role_from_user(
 </details>
 
 ## RoleOperationsV2
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">list_roles</a>() -> typing.Any</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L29-L55">list_roles</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2767,7 +2767,7 @@ client.role_operations_v2.list_roles()
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">describe_role</a>(...) -> Privileges</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L57-L88">describe_role</a>(...) -> Privileges</code></summary>
 <dl>
 <dd>
 
@@ -2839,7 +2839,7 @@ client.role_operations_v2.describe_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">create_role</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L90-L121">create_role</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2911,7 +2911,7 @@ client.role_operations_v2.create_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">drop_role</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L123-L154">drop_role</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2983,7 +2983,7 @@ client.role_operations_v2.drop_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">grant_privilege_to_role</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L156-L213">grant_privilege_to_role</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3082,7 +3082,7 @@ client.role_operations_v2.grant_privilege_to_role(
 </dl>
 </details>
 
-<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py">revoke_privilege_from_role</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.role_operations_v2.<a href="src/fern/role_operations_v2/client.py#L215-L272">revoke_privilege_from_role</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3182,7 +3182,7 @@ client.role_operations_v2.revoke_privilege_from_role(
 </details>
 
 ## IndexOperationsV2
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">create_index</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L31-L91">create_index</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3288,7 +3288,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">drop_index</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L93-L142">drop_index</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3383,7 +3383,7 @@ Setting this to a non-existing database results in a **MilvusException**.
 </dl>
 </details>
 
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">describe_index</a>(...) -> PostV2VectordbIndexesDescribeResponse</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L144-L191">describe_index</a>(...) -> PostV2VectordbIndexesDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3472,7 +3472,7 @@ client.index_operations_v2.describe_index(
 </dl>
 </details>
 
-<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py">list_indexes</a>(...) -> PostV2VectordbIndexesListResponse</code></summary>
+<details><summary><code>client.index_operations_v2.<a href="src/fern/index_operations_v2/client.py#L193-L235">list_indexes</a>(...) -> PostV2VectordbIndexesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3553,7 +3553,7 @@ client.index_operations_v2.list_indexes(
 </details>
 
 ## AliasOperationsV2
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">list_aliases</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L29-L60">list_aliases</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3625,7 +3625,7 @@ client.alias_operations_v2.list_aliases(
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">describe_alias</a>(...) -> PostV2VectordbAliasesDescribeResponse</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L62-L101">describe_alias</a>(...) -> PostV2VectordbAliasesDescribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3706,7 +3706,7 @@ client.alias_operations_v2.describe_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">alter_alias</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L103-L135">alter_alias</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3778,7 +3778,7 @@ client.alias_operations_v2.alter_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">drop_alias</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L137-L185">drop_alias</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3870,7 +3870,7 @@ When dropping an alias, you do not need to provide the collection name because o
 </dl>
 </details>
 
-<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py">create_alias</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.alias_operations_v2.<a href="src/fern/alias_operations_v2/client.py#L187-L219">create_alias</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

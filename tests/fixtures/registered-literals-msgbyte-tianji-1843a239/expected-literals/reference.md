@@ -1,6 +1,6 @@
 # Reference
 ## Ai
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">classifysurvey</a>(...) -> AiClassifySurveyResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L41-L111">classifysurvey</a>(...) -> AiClassifySurveyResponse</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.ai.classifysurvey(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">translatesurvey</a>(...) -> AiTranslateSurveyResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L113-L178">translatesurvey</a>(...) -> AiTranslateSurveyResponse</code></summary>
 <dl>
 <dd>
 
@@ -263,7 +263,7 @@ client.ai.translatesurvey(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_info</a>(...) -> typing.Optional[AiGatewayInfoResponse]</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L180-L213">ai_gateway_info</a>(...) -> typing.Optional[AiGatewayInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -331,7 +331,7 @@ client.ai.ai_gateway_info(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_update</a>(...) -> AiGatewayUpdateResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L215-L279">ai_gateway_update</a>(...) -> AiGatewayUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -453,7 +453,7 @@ client.ai.ai_gateway_update(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_delete</a>(...) -> AiGatewayDeleteResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L281-L314">ai_gateway_delete</a>(...) -> AiGatewayDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -521,7 +521,7 @@ client.ai.ai_gateway_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_logs</a>(...) -> AiGatewayLogsResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L316-L367">ai_gateway_logs</a>(...) -> AiGatewayLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -613,7 +613,7 @@ client.ai.ai_gateway_logs(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_model_pricing</a>(...) -> AiGatewayModelPricingResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L369-L408">ai_gateway_model_pricing</a>(...) -> AiGatewayModelPricingResponse</code></summary>
 <dl>
 <dd>
 
@@ -688,7 +688,7 @@ client.ai.ai_gateway_model_pricing(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_quota_alert_get</a>(...) -> typing.Optional[AiGatewayQuotaAlertGetResponse]</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L410-L443">ai_gateway_quota_alert_get</a>(...) -> typing.Optional[AiGatewayQuotaAlertGetResponse]</code></summary>
 <dl>
 <dd>
 
@@ -756,7 +756,7 @@ client.ai.ai_gateway_quota_alert_get(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_quota_alert_upsert</a>(...) -> AiGatewayQuotaAlertUpsertResponse</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L445-L498">ai_gateway_quota_alert_upsert</a>(...) -> AiGatewayQuotaAlertUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -851,7 +851,7 @@ client.ai.ai_gateway_quota_alert_upsert(
 </dl>
 </details>
 
-<details><summary><code>client.ai.<a href="src/fern/ai/client.py">ai_gateway_quota_alert_delete</a>(...) -> bool</code></summary>
+<details><summary><code>client.ai.<a href="src/fern/ai/client.py#L500-L533">ai_gateway_quota_alert_delete</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -980,7 +980,7 @@ client.aigateway.all_(
 </details>
 
 ## Application
-<details><summary><code>client.application.<a href="src/fern/application/client.py">ai_gateway_create</a>(...) -> AiGatewayCreateResponse</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L40-L99">ai_gateway_create</a>(...) -> AiGatewayCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1152,7 +1152,7 @@ client.application.all_(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">info</a>(...) -> typing.Optional[ApplicationInfoResponse]</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L131-L162">info</a>(...) -> typing.Optional[ApplicationInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1220,7 +1220,7 @@ client.application.info(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">create</a>(...) -> ApplicationCreateResponse</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L164-L207">create</a>(...) -> ApplicationCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1304,7 +1304,7 @@ client.application.create(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">update</a>(...) -> ApplicationUpdateResponse</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L209-L261">update</a>(...) -> ApplicationUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1397,7 +1397,7 @@ client.application.update(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">delete</a>(...) -> ApplicationDeleteResponse</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L263-L294">delete</a>(...) -> ApplicationDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1465,7 +1465,7 @@ client.application.delete(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">storeappsearch</a>(...) -> typing.List[ApplicationStoreAppSearchResponseItem]</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L296-L337">storeappsearch</a>(...) -> typing.List[ApplicationStoreAppSearchResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1542,7 +1542,7 @@ client.application.storeappsearch(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">storeinfohistory</a>(...) -> typing.List[ApplicationStoreInfoHistoryResponseItem]</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L339-L397">storeinfohistory</a>(...) -> typing.List[ApplicationStoreInfoHistoryResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1645,7 +1645,7 @@ client.application.storeinfohistory(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">eventstats</a>(...) -> ApplicationEventStatsResponse</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L399-L456">eventstats</a>(...) -> ApplicationEventStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1748,7 +1748,7 @@ client.application.eventstats(
 </details>
 
 ## Global
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">config</a>() -> GlobalConfigResponse</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L26-L50">config</a>() -> GlobalConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -1812,7 +1812,7 @@ client.global_.config()
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">login</a>(...) -> UserLoginResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L31-L62">login</a>(...) -> UserLoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -1880,7 +1880,7 @@ client.user.login(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">loginwithtoken</a>(...) -> UserLoginWithTokenResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L64-L92">loginwithtoken</a>(...) -> UserLoginWithTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1939,7 +1939,7 @@ client.user.loginwithtoken(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">register</a>(...) -> UserRegisterResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L94-L125">register</a>(...) -> UserRegisterResponse</code></summary>
 <dl>
 <dd>
 
@@ -2008,7 +2008,7 @@ client.user.register(
 </details>
 
 ## Workspace
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">create</a>(...) -> WorkspaceCreateResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L36-L62">create</a>(...) -> WorkspaceCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2067,7 +2067,7 @@ client.workspace.create(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">switch</a>(...) -> WorkspaceSwitchResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L64-L92">switch</a>(...) -> WorkspaceSwitchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2126,7 +2126,7 @@ client.workspace.switch(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">rename</a>(...) -> WorkspaceRenameResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L94-L125">rename</a>(...) -> WorkspaceRenameResponse</code></summary>
 <dl>
 <dd>
 
@@ -2194,7 +2194,7 @@ client.workspace.rename(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">delete</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L127-L153">delete</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2253,7 +2253,7 @@ client.workspace.delete(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">members</a>(...) -> typing.List[WorkspaceMembersResponseItem]</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L155-L183">members</a>(...) -> typing.List[WorkspaceMembersResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -2312,7 +2312,7 @@ client.workspace.members(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">updatesettings</a>(...) -> WorkspaceUpdateSettingsResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L185-L220">updatesettings</a>(...) -> WorkspaceUpdateSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2382,7 +2382,7 @@ client.workspace.updatesettings(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">invite</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L222-L262">invite</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2458,7 +2458,7 @@ client.workspace.invite(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">tick</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L264-L297">tick</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2540,7 +2540,7 @@ client.workspace.tick(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">updatememberrole</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L299-L342">updatememberrole</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2631,7 +2631,7 @@ client.workspace.updatememberrole(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">getservicecount</a>(...) -> WorkspaceGetServiceCountResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L344-L372">getservicecount</a>(...) -> WorkspaceGetServiceCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -2690,7 +2690,7 @@ client.workspace.getservicecount(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">recheckpausestatus</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L374-L404">recheckpausestatus</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2764,7 +2764,7 @@ client.workspace.recheckpausestatus(
 </details>
 
 ## Website
-<details><summary><code>client.website.<a href="src/fern/website/client.py">onlinecount</a>(...) -> float</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L47-L78">onlinecount</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -2891,7 +2891,7 @@ client.website.all_(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">alloverview</a>(...) -> typing.Dict[str, float]</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L110-L138">alloverview</a>(...) -> typing.Dict[str, float]</code></summary>
 <dl>
 <dd>
 
@@ -2950,7 +2950,7 @@ client.website.alloverview(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">info</a>(...) -> typing.Optional[WebsiteInfoResponse]</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L140-L171">info</a>(...) -> typing.Optional[WebsiteInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -3018,7 +3018,7 @@ client.website.info(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">stats</a>(...) -> WebsiteStatsResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L173-L266">stats</a>(...) -> WebsiteStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3192,7 +3192,7 @@ client.website.stats(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">geostats</a>(...) -> typing.List[WebsiteGeoStatsResponseItem]</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L268-L313">geostats</a>(...) -> typing.List[WebsiteGeoStatsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3278,7 +3278,7 @@ client.website.geostats(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">pageviews</a>(...) -> WebsitePageviewsResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L315-L408">pageviews</a>(...) -> WebsitePageviewsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3452,7 +3452,7 @@ client.website.pageviews(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">metrics</a>(...) -> typing.List[WebsiteMetricsResponseItem]</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L410-L528">metrics</a>(...) -> typing.List[WebsiteMetricsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3675,7 +3675,7 @@ client.website.metrics(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">add</a>(...) -> WebsiteAddResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L530-L564">add</a>(...) -> WebsiteAddResponse</code></summary>
 <dl>
 <dd>
 
@@ -3752,7 +3752,7 @@ client.website.add(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">delete</a>(...) -> WebsiteDeleteResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L566-L597">delete</a>(...) -> WebsiteDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -3820,7 +3820,7 @@ client.website.delete(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">updateinfo</a>(...) -> WebsiteUpdateInfoResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L599-L647">updateinfo</a>(...) -> WebsiteUpdateInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -3914,7 +3914,7 @@ client.website.updateinfo(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">generatelighthousereport</a>(...) -> str</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L649-L685">generatelighthousereport</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3991,7 +3991,7 @@ client.website.generatelighthousereport(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">getlighthousereport</a>(...) -> WebsiteGetLighthouseReportResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L687-L730">getlighthousereport</a>(...) -> WebsiteGetLighthouseReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -4075,7 +4075,7 @@ client.website.getlighthousereport(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">getlighthousejson</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L732-L760">getlighthousejson</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4134,7 +4134,7 @@ client.website.getlighthousejson(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">getpublicinfobyshareid</a>(...) -> WebsiteGetPublicInfoByShareIdResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L762-L790">getpublicinfobyshareid</a>(...) -> WebsiteGetPublicInfoByShareIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4193,7 +4193,7 @@ client.website.getpublicinfobyshareid(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">getpublicstatsbyshareid</a>(...) -> WebsiteGetPublicStatsByShareIdResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L792-L826">getpublicstatsbyshareid</a>(...) -> WebsiteGetPublicStatsByShareIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4260,7 +4260,7 @@ client.website.getpublicstatsbyshareid(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">getpublicmetricsbyshareid</a>(...) -> typing.List[WebsiteGetPublicMetricsByShareIdResponseItem]</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L828-L868">getpublicmetricsbyshareid</a>(...) -> typing.List[WebsiteGetPublicMetricsByShareIdResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4336,7 +4336,7 @@ client.website.getpublicmetricsbyshareid(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">createorenableshare</a>(...) -> WebsiteCreateOrEnableShareResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L870-L901">createorenableshare</a>(...) -> WebsiteCreateOrEnableShareResponse</code></summary>
 <dl>
 <dd>
 
@@ -4404,7 +4404,7 @@ client.website.createorenableshare(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">disableshare</a>(...) -> WebsiteDisableShareResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L903-L934">disableshare</a>(...) -> WebsiteDisableShareResponse</code></summary>
 <dl>
 <dd>
 
@@ -4532,7 +4532,7 @@ client.monitor.all_(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">get</a>(...) -> typing.Optional[MonitorGetResponse]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L72-L103">get</a>(...) -> typing.Optional[MonitorGetResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4600,7 +4600,7 @@ client.monitor.get(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">getpublicinfo</a>(...) -> typing.List[MonitorGetPublicInfoResponseItem]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L105-L133">getpublicinfo</a>(...) -> typing.List[MonitorGetPublicInfoResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4661,7 +4661,7 @@ client.monitor.getpublicinfo(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">upsert</a>(...) -> MonitorUpsertResponse</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L135-L216">upsert</a>(...) -> MonitorUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -4813,7 +4813,7 @@ client.monitor.upsert(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">delete</a>(...) -> MonitorDeleteResponse</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L218-L249">delete</a>(...) -> MonitorDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -4881,7 +4881,7 @@ client.monitor.delete(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">regeneratepushtoken</a>(...) -> str</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L251-L282">regeneratepushtoken</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4949,7 +4949,7 @@ client.monitor.regeneratepushtoken(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">triggermonitor</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L284-L315">triggermonitor</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5017,7 +5017,7 @@ client.monitor.triggermonitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">data</a>(...) -> typing.List[MonitorDataResponseItem]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L317-L362">data</a>(...) -> typing.List[MonitorDataResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5103,7 +5103,7 @@ client.monitor.data(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">changeactive</a>(...) -> MonitorChangeActiveResponse</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L364-L405">changeactive</a>(...) -> MonitorChangeActiveResponse</code></summary>
 <dl>
 <dd>
 
@@ -5180,7 +5180,7 @@ client.monitor.changeactive(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">recentdata</a>(...) -> typing.List[MonitorRecentDataResponseItem]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L407-L446">recentdata</a>(...) -> typing.List[MonitorRecentDataResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5257,7 +5257,7 @@ client.monitor.recentdata(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">publicsummary</a>(...) -> typing.List[MonitorPublicSummaryResponseItem]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L448-L479">publicsummary</a>(...) -> typing.List[MonitorPublicSummaryResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5325,7 +5325,7 @@ client.monitor.publicsummary(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">publicdata</a>(...) -> typing.List[MonitorPublicDataResponseItem]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L481-L512">publicdata</a>(...) -> typing.List[MonitorPublicDataResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5393,7 +5393,7 @@ client.monitor.publicdata(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">datametrics</a>(...) -> MonitorDataMetricsResponse</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L514-L545">datametrics</a>(...) -> MonitorDataMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5461,7 +5461,7 @@ client.monitor.datametrics(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">events</a>(...) -> typing.List[MonitorEventsResponseItem]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L547-L586">events</a>(...) -> typing.List[MonitorEventsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5536,7 +5536,7 @@ client.monitor.events(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">clearevents</a>(...) -> float</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L588-L619">clearevents</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -5604,7 +5604,7 @@ client.monitor.clearevents(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">cleardata</a>(...) -> float</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L621-L652">cleardata</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -5672,7 +5672,7 @@ client.monitor.cleardata(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">getstatus</a>(...) -> typing.Optional[MonitorGetStatusResponse]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L654-L695">getstatus</a>(...) -> typing.Optional[MonitorGetStatusResponse]</code></summary>
 <dl>
 <dd>
 
@@ -5749,7 +5749,7 @@ client.monitor.getstatus(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">server_status_public_info</a>(...) -> typing.Dict[str, ServerStatusPublicInfoResponseValue]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L697-L734">server_status_public_info</a>(...) -> typing.Dict[str, ServerStatusPublicInfoResponseValue]</code></summary>
 <dl>
 <dd>
 
@@ -5820,7 +5820,7 @@ client.monitor.server_status_public_info(
 </details>
 
 ## Page
-<details><summary><code>client.page.<a href="src/fern/page/client.py">getallpages</a>(...) -> typing.List[PageGetAllPagesResponseItem]</code></summary>
+<details><summary><code>client.page.<a href="src/fern/page/client.py#L34-L68">getallpages</a>(...) -> typing.List[PageGetAllPagesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5887,7 +5887,7 @@ client.page.getallpages(
 </dl>
 </details>
 
-<details><summary><code>client.page.<a href="src/fern/page/client.py">getpageinfo</a>(...) -> typing.Optional[PageGetPageInfoResponse]</code></summary>
+<details><summary><code>client.page.<a href="src/fern/page/client.py#L70-L98">getpageinfo</a>(...) -> typing.Optional[PageGetPageInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -5946,7 +5946,7 @@ client.page.getpageinfo(
 </dl>
 </details>
 
-<details><summary><code>client.page.<a href="src/fern/page/client.py">createpage</a>(...) -> PageCreatePageResponse</code></summary>
+<details><summary><code>client.page.<a href="src/fern/page/client.py#L100-L128">createpage</a>(...) -> PageCreatePageResponse</code></summary>
 <dl>
 <dd>
 
@@ -6005,7 +6005,7 @@ client.page.createpage(
 </dl>
 </details>
 
-<details><summary><code>client.page.<a href="src/fern/page/client.py">editpage</a>(...) -> PageEditPageResponse</code></summary>
+<details><summary><code>client.page.<a href="src/fern/page/client.py#L130-L197">editpage</a>(...) -> PageEditPageResponse</code></summary>
 <dl>
 <dd>
 
@@ -6129,7 +6129,7 @@ client.page.editpage(
 </dl>
 </details>
 
-<details><summary><code>client.page.<a href="src/fern/page/client.py">deletepage</a>(...) -> PageDeletePageResponse</code></summary>
+<details><summary><code>client.page.<a href="src/fern/page/client.py#L199-L230">deletepage</a>(...) -> PageDeletePageResponse</code></summary>
 <dl>
 <dd>
 
@@ -6257,7 +6257,7 @@ client.telemetry.all_(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">info</a>(...) -> typing.Optional[TelemetryInfoResponse]</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L66-L97">info</a>(...) -> typing.Optional[TelemetryInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6325,7 +6325,7 @@ client.telemetry.info(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">alleventcount</a>(...) -> typing.Dict[str, float]</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L99-L127">alleventcount</a>(...) -> typing.Dict[str, float]</code></summary>
 <dl>
 <dd>
 
@@ -6384,7 +6384,7 @@ client.telemetry.alleventcount(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">eventcount</a>(...) -> float</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L129-L162">eventcount</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -6452,7 +6452,7 @@ client.telemetry.eventcount(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">upsert</a>(...) -> TelemetryUpsertResponse</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L164-L204">upsert</a>(...) -> TelemetryUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -6528,7 +6528,7 @@ client.telemetry.upsert(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">delete</a>(...) -> TelemetryDeleteResponse</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L206-L237">delete</a>(...) -> TelemetryDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -6596,7 +6596,7 @@ client.telemetry.delete(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">pageviews</a>(...) -> TelemetryPageviewsResponse</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L239-L312">pageviews</a>(...) -> TelemetryPageviewsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6730,7 +6730,7 @@ client.telemetry.pageviews(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">metrics</a>(...) -> typing.List[TelemetryMetricsResponseItem]</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L314-L388">metrics</a>(...) -> typing.List[TelemetryMetricsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -6865,7 +6865,7 @@ client.telemetry.metrics(
 </dl>
 </details>
 
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">stats</a>(...) -> TelemetryStatsResponse</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L390-L463">stats</a>(...) -> TelemetryStatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7073,7 +7073,7 @@ client.survey.all_(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">get</a>(...) -> typing.Optional[SurveyGetResponse]</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L73-L106">get</a>(...) -> typing.Optional[SurveyGetResponse]</code></summary>
 <dl>
 <dd>
 
@@ -7155,7 +7155,7 @@ client.survey.get(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">count</a>(...) -> float</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L108-L141">count</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -7237,7 +7237,7 @@ client.survey.count(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">allresultcount</a>(...) -> typing.Dict[str, float]</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L143-L173">allresultcount</a>(...) -> typing.Dict[str, float]</code></summary>
 <dl>
 <dd>
 
@@ -7310,7 +7310,7 @@ client.survey.allresultcount(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">submit</a>(...) -> SurveySubmitResponse</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L175-L216">submit</a>(...) -> SurveySubmitResponse</code></summary>
 <dl>
 <dd>
 
@@ -7403,7 +7403,7 @@ client.survey.submit(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">create</a>(...) -> SurveyCreateResponse</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L218-L296">create</a>(...) -> SurveyCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -7540,7 +7540,7 @@ client.survey.create(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">update</a>(...) -> SurveyUpdateResponse</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L298-L363">update</a>(...) -> SurveyUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -7670,7 +7670,7 @@ client.survey.update(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">delete</a>(...) -> SurveyDeleteResponse</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L365-L398">delete</a>(...) -> SurveyDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -7752,7 +7752,7 @@ client.survey.delete(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">duplicate</a>(...) -> SurveyDuplicateResponse</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L400-L436">duplicate</a>(...) -> SurveyDuplicateResponse</code></summary>
 <dl>
 <dd>
 
@@ -7843,7 +7843,7 @@ client.survey.duplicate(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">getresult</a>(...) -> typing.Optional[SurveyGetResultResponse]</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L438-L471">getresult</a>(...) -> typing.Optional[SurveyGetResultResponse]</code></summary>
 <dl>
 <dd>
 
@@ -7925,7 +7925,7 @@ client.survey.getresult(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">resultlist</a>(...) -> SurveyResultListResponse</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L473-L534">resultlist</a>(...) -> SurveyResultListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8047,7 +8047,7 @@ client.survey.resultlist(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">stats</a>(...) -> typing.List[SurveyStatsResponseItem]</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L536-L581">stats</a>(...) -> typing.List[SurveyStatsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8145,7 +8145,7 @@ client.survey.stats(
 </dl>
 </details>
 
-<details><summary><code>client.survey.<a href="src/fern/survey/client.py">aicategorylist</a>(...) -> typing.List[SurveyAiCategoryListResponseItem]</code></summary>
+<details><summary><code>client.survey.<a href="src/fern/survey/client.py#L583-L616">aicategorylist</a>(...) -> typing.List[SurveyAiCategoryListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8228,7 +8228,7 @@ client.survey.aicategorylist(
 </details>
 
 ## Auditlog
-<details><summary><code>client.auditlog.<a href="src/fern/auditlog/client.py">fetchbycursor</a>(...) -> AuditLogFetchByCursorResponse</code></summary>
+<details><summary><code>client.auditlog.<a href="src/fern/auditlog/client.py#L26-L67">fetchbycursor</a>(...) -> AuditLogFetchByCursorResponse</code></summary>
 <dl>
 <dd>
 
@@ -8317,7 +8317,7 @@ client.auditlog.fetchbycursor(
 </dl>
 </details>
 
-<details><summary><code>client.auditlog.<a href="src/fern/auditlog/client.py">clear</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.auditlog.<a href="src/fern/auditlog/client.py#L69-L97">clear</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -8391,7 +8391,7 @@ client.auditlog.clear(
 </details>
 
 ## Billing
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">usage</a>(...) -> BillingUsageResponse</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L36-L79">usage</a>(...) -> BillingUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -8482,7 +8482,7 @@ client.billing.usage(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">limit</a>(...) -> BillingLimitResponse</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L81-L111">limit</a>(...) -> BillingLimitResponse</code></summary>
 <dl>
 <dd>
 
@@ -8555,7 +8555,7 @@ client.billing.limit(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">currenttier</a>(...) -> BillingCurrentTierResponse</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L113-L143">currenttier</a>(...) -> BillingCurrentTierResponse</code></summary>
 <dl>
 <dd>
 
@@ -8628,7 +8628,7 @@ client.billing.currenttier(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">currentsubscription</a>(...) -> typing.Optional[BillingCurrentSubscriptionResponse]</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L145-L175">currentsubscription</a>(...) -> typing.Optional[BillingCurrentSubscriptionResponse]</code></summary>
 <dl>
 <dd>
 
@@ -8701,7 +8701,7 @@ client.billing.currentsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">credit</a>(...) -> BillingCreditResponse</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L177-L207">credit</a>(...) -> BillingCreditResponse</code></summary>
 <dl>
 <dd>
 
@@ -8774,7 +8774,7 @@ client.billing.credit(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">creditbills</a>(...) -> BillingCreditBillsResponse</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L209-L250">creditbills</a>(...) -> BillingCreditBillsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8863,7 +8863,7 @@ client.billing.creditbills(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">creditpacks</a>(...) -> typing.List[BillingCreditPacksResponseItem]</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L252-L282">creditpacks</a>(...) -> typing.List[BillingCreditPacksResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8936,7 +8936,7 @@ client.billing.creditpacks(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">creditcheckout</a>(...) -> BillingCreditCheckoutResponse</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L284-L326">creditcheckout</a>(...) -> BillingCreditCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -9027,7 +9027,7 @@ client.billing.creditcheckout(
 </details>
 
 ## Feed
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">channels</a>(...) -> typing.List[FeedChannelsResponseItem]</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L44-L72">channels</a>(...) -> typing.List[FeedChannelsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9086,7 +9086,7 @@ client.feed.channels(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">channelinfo</a>(...) -> typing.Optional[FeedChannelInfoResponse]</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L74-L105">channelinfo</a>(...) -> typing.Optional[FeedChannelInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -9154,7 +9154,7 @@ client.feed.channelinfo(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">updatechannelinfo</a>(...) -> typing.Optional[FeedUpdateChannelInfoResponse]</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L107-L165">updatechannelinfo</a>(...) -> typing.Optional[FeedUpdateChannelInfoResponse]</code></summary>
 <dl>
 <dd>
 
@@ -9257,7 +9257,7 @@ client.feed.updatechannelinfo(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">fetcheventsbycursor</a>(...) -> FeedFetchEventsByCursorResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L167-L215">fetcheventsbycursor</a>(...) -> FeedFetchEventsByCursorResponse</code></summary>
 <dl>
 <dd>
 
@@ -9363,7 +9363,7 @@ client.feed.fetcheventsbycursor(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">fetchpubliceventsbycursor</a>(...) -> FeedFetchPublicEventsByCursorResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L217-L258">fetchpubliceventsbycursor</a>(...) -> FeedFetchPublicEventsByCursorResponse</code></summary>
 <dl>
 <dd>
 
@@ -9452,7 +9452,7 @@ client.feed.fetchpubliceventsbycursor(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">getchannelbyshareid</a>(...) -> FeedGetChannelByShareIdResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L260-L290">getchannelbyshareid</a>(...) -> FeedGetChannelByShareIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -9525,7 +9525,7 @@ client.feed.getchannelbyshareid(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">createchannel</a>(...) -> FeedCreateChannelResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L292-L340">createchannel</a>(...) -> FeedCreateChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -9610,7 +9610,7 @@ client.feed.createchannel(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">refreshpublicshareid</a>(...) -> FeedRefreshPublicShareIdResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L342-L375">refreshpublicshareid</a>(...) -> FeedRefreshPublicShareIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -9692,7 +9692,7 @@ client.feed.refreshpublicshareid(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">disablepublicshareid</a>(...) -> FeedDisablePublicShareIdResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L377-L410">disablepublicshareid</a>(...) -> FeedDisablePublicShareIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -9774,7 +9774,7 @@ client.feed.disablepublicshareid(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">deletechannel</a>(...) -> FeedDeleteChannelResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L412-L443">deletechannel</a>(...) -> FeedDeleteChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -9842,7 +9842,7 @@ client.feed.deletechannel(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">sendevent</a>(...) -> FeedSendEventResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L445-L515">sendevent</a>(...) -> FeedSendEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -9969,7 +9969,7 @@ client.feed.sendevent(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">archiveevent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L517-L558">archiveevent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -10046,7 +10046,7 @@ client.feed.archiveevent(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">unarchiveevent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L560-L601">unarchiveevent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -10123,7 +10123,7 @@ client.feed.unarchiveevent(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">clearallarchivedevents</a>(...) -> float</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L603-L636">clearallarchivedevents</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -10191,7 +10191,7 @@ client.feed.clearallarchivedevents(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">integration_playground</a>(...) -> str</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L638-L666">integration_playground</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10250,7 +10250,7 @@ client.feed.integration_playground(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">integration_github</a>(...) -> str</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L668-L694">integration_github</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10309,7 +10309,7 @@ client.feed.integration_github(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">integration_stripe</a>(...) -> str</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L696-L722">integration_stripe</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10368,7 +10368,7 @@ client.feed.integration_stripe(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">integration_tencentcloudalarm</a>(...) -> str</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L724-L752">integration_tencentcloudalarm</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10427,7 +10427,7 @@ client.feed.integration_tencentcloudalarm(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">integration_sentry</a>(...) -> str</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L754-L780">integration_sentry</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10486,7 +10486,7 @@ client.feed.integration_sentry(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">state_all</a>(...) -> typing.List[FeedStateAllResponseItem]</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L782-L822">state_all</a>(...) -> typing.List[FeedStateAllResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10562,7 +10562,7 @@ client.feed.state_all(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">state_upsert</a>(...) -> FeedStateUpsertResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L824-L900">state_upsert</a>(...) -> FeedStateUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -10701,7 +10701,7 @@ client.feed.state_upsert(
 </dl>
 </details>
 
-<details><summary><code>client.feed.<a href="src/fern/feed/client.py">state_resolve</a>(...) -> FeedStateResolveResponse</code></summary>
+<details><summary><code>client.feed.<a href="src/fern/feed/client.py#L902-L943">state_resolve</a>(...) -> FeedStateResolveResponse</code></summary>
 <dl>
 <dd>
 
@@ -10838,7 +10838,7 @@ client.worker.all_(
 </dl>
 </details>
 
-<details><summary><code>client.worker.<a href="src/fern/worker/client.py">get</a>(...) -> typing.Optional[WorkerGetResponse]</code></summary>
+<details><summary><code>client.worker.<a href="src/fern/worker/client.py#L64-L95">get</a>(...) -> typing.Optional[WorkerGetResponse]</code></summary>
 <dl>
 <dd>
 
@@ -10906,7 +10906,7 @@ client.worker.get(
 </dl>
 </details>
 
-<details><summary><code>client.worker.<a href="src/fern/worker/client.py">upsert</a>(...) -> WorkerUpsertResponse</code></summary>
+<details><summary><code>client.worker.<a href="src/fern/worker/client.py#L97-L161">upsert</a>(...) -> WorkerUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -11023,7 +11023,7 @@ client.worker.upsert(
 </dl>
 </details>
 
-<details><summary><code>client.worker.<a href="src/fern/worker/client.py">delete</a>(...) -> WorkerDeleteResponse</code></summary>
+<details><summary><code>client.worker.<a href="src/fern/worker/client.py#L163-L194">delete</a>(...) -> WorkerDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -11091,7 +11091,7 @@ client.worker.delete(
 </dl>
 </details>
 
-<details><summary><code>client.worker.<a href="src/fern/worker/client.py">toggleactive</a>(...) -> WorkerToggleActiveResponse</code></summary>
+<details><summary><code>client.worker.<a href="src/fern/worker/client.py#L196-L237">toggleactive</a>(...) -> WorkerToggleActiveResponse</code></summary>
 <dl>
 <dd>
 
@@ -11168,7 +11168,7 @@ client.worker.toggleactive(
 </dl>
 </details>
 
-<details><summary><code>client.worker.<a href="src/fern/worker/client.py">getrevisions</a>(...) -> typing.List[WorkerGetRevisionsResponseItem]</code></summary>
+<details><summary><code>client.worker.<a href="src/fern/worker/client.py#L239-L270">getrevisions</a>(...) -> typing.List[WorkerGetRevisionsResponseItem]</code></summary>
 <dl>
 <dd>
 

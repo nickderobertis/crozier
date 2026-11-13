@@ -1,6 +1,6 @@
 # Reference
 ## auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">whoami</a>() -> Whoami</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L34-L60">whoami</a>() -> Whoami</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.auth.whoami()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_login_flows</a>() -> GetLoginFlowsResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L62-L84">get_login_flows</a>() -> GetLoginFlowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -114,7 +114,7 @@ client.auth.get_login_flows()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_login_i_ds</a>() -> GetLoginIDsResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L86-L108">get_login_i_ds</a>() -> GetLoginIDsResponse</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.auth.get_login_i_ds()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">start_login</a>(...) -> LoginStep</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L110-L165">start_login</a>(...) -> LoginStep</code></summary>
 <dl>
 <dd>
 
@@ -261,7 +261,7 @@ client.auth.start_login(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">submit_login_step_user_input</a>(...) -> LoginStep</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L167-L210">submit_login_step_user_input</a>(...) -> LoginStep</code></summary>
 <dl>
 <dd>
 
@@ -340,7 +340,7 @@ client.auth.submit_login_step_user_input(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">submit_login_step_cookies</a>(...) -> LoginStep</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L212-L255">submit_login_step_cookies</a>(...) -> LoginStep</code></summary>
 <dl>
 <dd>
 
@@ -419,7 +419,7 @@ client.auth.submit_login_step_cookies(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">submit_login_step_display_and_wait</a>(...) -> LoginStep</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L257-L292">submit_login_step_display_and_wait</a>(...) -> LoginStep</code></summary>
 <dl>
 <dd>
 
@@ -487,7 +487,7 @@ client.auth.submit_login_step_display_and_wait(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">logout</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L294-L323">logout</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -547,7 +547,7 @@ client.auth.logout(
 </details>
 
 ## snc
-<details><summary><code>client.snc.<a href="src/fern/snc/client.py">get_contacts</a>(...) -> GetContactsResponse</code></summary>
+<details><summary><code>client.snc.<a href="src/fern/snc/client.py#L38-L67">get_contacts</a>(...) -> GetContactsResponse</code></summary>
 <dl>
 <dd>
 
@@ -606,7 +606,7 @@ client.snc.get_contacts(
 </dl>
 </details>
 
-<details><summary><code>client.snc.<a href="src/fern/snc/client.py">search_users</a>(...) -> SearchUsersResponse</code></summary>
+<details><summary><code>client.snc.<a href="src/fern/snc/client.py#L69-L105">search_users</a>(...) -> SearchUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.snc.search_users(
 </dl>
 </details>
 
-<details><summary><code>client.snc.<a href="src/fern/snc/client.py">resolve_identifier</a>(...) -> ResolvedIdentifier</code></summary>
+<details><summary><code>client.snc.<a href="src/fern/snc/client.py#L107-L144">resolve_identifier</a>(...) -> ResolvedIdentifier</code></summary>
 <dl>
 <dd>
 
@@ -741,7 +741,7 @@ client.snc.resolve_identifier(
 </dl>
 </details>
 
-<details><summary><code>client.snc.<a href="src/fern/snc/client.py">create_dm</a>(...) -> CreateDmResponse</code></summary>
+<details><summary><code>client.snc.<a href="src/fern/snc/client.py#L146-L183">create_dm</a>(...) -> CreateDmResponse</code></summary>
 <dl>
 <dd>
 
@@ -809,7 +809,7 @@ client.snc.create_dm(
 </dl>
 </details>
 
-<details><summary><code>client.snc.<a href="src/fern/snc/client.py">create_group</a>(...) -> CreatedGroup</code></summary>
+<details><summary><code>client.snc.<a href="src/fern/snc/client.py#L185-L270">create_group</a>(...) -> CreatedGroup</code></summary>
 <dl>
 <dd>
 

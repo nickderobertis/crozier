@@ -1,6 +1,6 @@
 # Reference
 ## Common
-<details><summary><code>client.common.<a href="src/fern/common/client.py">get_all_resource_ur_ls</a>() -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.common.<a href="src/fern/common/client.py#L27-L51">get_all_resource_ur_ls</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.common.get_all_resource_ur_ls()
 </dl>
 </details>
 
-<details><summary><code>client.common.<a href="src/fern/common/client.py">get_list_of_all_available_resources_for_an_endpoint</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.common.<a href="src/fern/common/client.py#L53-L85">get_list_of_all_available_resources_for_an_endpoint</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.common.get_list_of_all_available_resources_for_an_endpoint(
 </details>
 
 ## CharacterData
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_an_ability_score_by_index</a>(...) -> AbilityScore</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py#L36-L69">get_an_ability_score_by_index</a>(...) -> AbilityScore</code></summary>
 <dl>
 <dd>
 
@@ -211,7 +211,7 @@ client.character_data.get_an_ability_score_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_an_alignment_by_index</a>(...) -> Alignment</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py#L71-L104">get_an_alignment_by_index</a>(...) -> Alignment</code></summary>
 <dl>
 <dd>
 
@@ -286,7 +286,7 @@ client.character_data.get_an_alignment_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_background_by_index</a>(...) -> Background</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py#L106-L141">get_a_background_by_index</a>(...) -> Background</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ client.character_data.get_a_background_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_language_by_index</a>(...) -> Language</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py#L143-L176">get_a_language_by_index</a>(...) -> Language</code></summary>
 <dl>
 <dd>
 
@@ -438,7 +438,7 @@ client.character_data.get_a_language_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_proficiency_by_index</a>(...) -> Proficiency</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py#L178-L211">get_a_proficiency_by_index</a>(...) -> Proficiency</code></summary>
 <dl>
 <dd>
 
@@ -516,7 +516,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </dl>
 </details>
 
-<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py">get_a_skill_by_index</a>(...) -> Skill</code></summary>
+<details><summary><code>client.character_data.<a href="src/fern/character_data/client.py#L213-L246">get_a_skill_by_index</a>(...) -> Skill</code></summary>
 <dl>
 <dd>
 
@@ -592,7 +592,7 @@ client.character_data.get_a_skill_by_index(
 </details>
 
 ## Class
-<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_a_class_by_index</a>(...) -> Class</code></summary>
+<details><summary><code>client.class_.<a href="src/fern/class_/client.py#L31-L67">get_a_class_by_index</a>(...) -> Class</code></summary>
 <dl>
 <dd>
 
@@ -670,7 +670,7 @@ client.class_.get_a_class_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_multiclassing_resource_for_a_class</a>(...) -> Multiclassing</code></summary>
+<details><summary><code>client.class_.<a href="src/fern/class_/client.py#L69-L101">get_multiclassing_resource_for_a_class</a>(...) -> Multiclassing</code></summary>
 <dl>
 <dd>
 
@@ -729,7 +729,7 @@ client.class_.get_multiclassing_resource_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_.<a href="src/fern/class_/client.py">get_spellcasting_info_for_a_class</a>(...) -> Spellcasting</code></summary>
+<details><summary><code>client.class_.<a href="src/fern/class_/client.py#L103-L135">get_spellcasting_info_for_a_class</a>(...) -> Spellcasting</code></summary>
 <dl>
 <dd>
 
@@ -789,7 +789,7 @@ client.class_.get_spellcasting_info_for_a_class(
 </details>
 
 ## ClassResourceLists
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_features_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py#L30-L59">get_features_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -848,7 +848,7 @@ client.class_resource_lists.get_features_available_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_proficiencies_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py#L61-L95">get_proficiencies_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -907,7 +907,7 @@ client.class_resource_lists.get_proficiencies_available_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_spells_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py#L97-L126">get_spells_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -966,7 +966,7 @@ client.class_resource_lists.get_spells_available_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py">get_subclasses_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.class_resource_lists.<a href="src/fern/class_resource_lists/client.py#L128-L160">get_subclasses_available_for_a_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -1026,7 +1026,7 @@ client.class_resource_lists.get_subclasses_available_for_a_class(
 </details>
 
 ## ClassLevels
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_all_level_resources_for_a_class</a>(...) -> typing.List[ClassLevel]</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py#L35-L74">get_all_level_resources_for_a_class</a>(...) -> typing.List[ClassLevel]</code></summary>
 <dl>
 <dd>
 
@@ -1094,7 +1094,7 @@ client.class_levels.get_all_level_resources_for_a_class(
 </dl>
 </details>
 
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_level_resource_for_a_class_and_level</a>(...) -> ClassLevel</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py#L76-L114">get_level_resource_for_a_class_and_level</a>(...) -> ClassLevel</code></summary>
 <dl>
 <dd>
 
@@ -1162,7 +1162,7 @@ client.class_levels.get_level_resource_for_a_class_and_level(
 </dl>
 </details>
 
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_features_available_to_a_class_at_the_requested_level</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py#L116-L156">get_features_available_to_a_class_at_the_requested_level</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -1230,7 +1230,7 @@ client.class_levels.get_features_available_to_a_class_at_the_requested_level(
 </dl>
 </details>
 
-<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py">get_spells_of_the_requested_level_available_to_the_class</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.class_levels.<a href="src/fern/class_levels/client.py#L158-L198">get_spells_of_the_requested_level_available_to_the_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -1299,7 +1299,7 @@ client.class_levels.get_spells_of_the_requested_level_available_to_the_class(
 </details>
 
 ## GameMechanics
-<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_condition_by_index</a>(...) -> Condition</code></summary>
+<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py#L31-L67">get_a_condition_by_index</a>(...) -> Condition</code></summary>
 <dl>
 <dd>
 
@@ -1377,7 +1377,7 @@ client.game_mechanics.get_a_condition_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_damage_type_by_index</a>(...) -> DamageType</code></summary>
+<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py#L69-L104">get_a_damage_type_by_index</a>(...) -> DamageType</code></summary>
 <dl>
 <dd>
 
@@ -1454,7 +1454,7 @@ client.game_mechanics.get_a_damage_type_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py">get_a_magic_school_by_index</a>(...) -> MagicSchool</code></summary>
+<details><summary><code>client.game_mechanics.<a href="src/fern/game_mechanics/client.py#L106-L142">get_a_magic_school_by_index</a>(...) -> MagicSchool</code></summary>
 <dl>
 <dd>
 
@@ -1533,7 +1533,7 @@ client.game_mechanics.get_a_magic_school_by_index(
 </details>
 
 ## Equipment
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_an_equipment_category_by_index</a>(...) -> EquipmentCategory</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py#L30-L61">get_an_equipment_category_by_index</a>(...) -> EquipmentCategory</code></summary>
 <dl>
 <dd>
 
@@ -1609,7 +1609,7 @@ Available values can be found in the resource list for this endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_an_equipment_item_by_index</a>(...) -> Equipment</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py#L63-L99">get_an_equipment_item_by_index</a>(...) -> Equipment</code></summary>
 <dl>
 <dd>
 
@@ -1690,7 +1690,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </dl>
 </details>
 
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_a_magic_item_by_index</a>(...) -> MagicItem</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py#L101-L132">get_a_magic_item_by_index</a>(...) -> MagicItem</code></summary>
 <dl>
 <dd>
 
@@ -1766,7 +1766,7 @@ Available values can be found in the resource list for this endpoint.
 </dl>
 </details>
 
-<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py">get_a_weapon_property_by_index</a>(...) -> WeaponProperty</code></summary>
+<details><summary><code>client.equipment.<a href="src/fern/equipment/client.py#L134-L163">get_a_weapon_property_by_index</a>(...) -> WeaponProperty</code></summary>
 <dl>
 <dd>
 
@@ -1826,7 +1826,7 @@ client.equipment.get_a_weapon_property_by_index(
 </details>
 
 ## Feats
-<details><summary><code>client.feats.<a href="src/fern/feats/client.py">get_a_feat_by_index</a>(...) -> Feat</code></summary>
+<details><summary><code>client.feats.<a href="src/fern/feats/client.py#L27-L60">get_a_feat_by_index</a>(...) -> Feat</code></summary>
 <dl>
 <dd>
 
@@ -1902,7 +1902,7 @@ client.feats.get_a_feat_by_index(
 </details>
 
 ## Features
-<details><summary><code>client.features.<a href="src/fern/features/client.py">get_a_feature_by_index</a>(...) -> Feature</code></summary>
+<details><summary><code>client.features.<a href="src/fern/features/client.py#L26-L60">get_a_feature_by_index</a>(...) -> Feature</code></summary>
 <dl>
 <dd>
 
@@ -1984,7 +1984,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </details>
 
 ## Monsters
-<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py">get_list_of_monsters_with_optional_filtering</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py#L27-L57">get_list_of_monsters_with_optional_filtering</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2040,7 +2040,7 @@ client.monsters.get_list_of_monsters_with_optional_filtering()
 </dl>
 </details>
 
-<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py">get_monster_by_index</a>(...) -> Monster</code></summary>
+<details><summary><code>client.monsters.<a href="src/fern/monsters/client.py#L59-L84">get_monster_by_index</a>(...) -> Monster</code></summary>
 <dl>
 <dd>
 
@@ -2099,7 +2099,7 @@ client.monsters.get_monster_by_index(
 </details>
 
 ## Races
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_a_race_by_index</a>(...) -> Race</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py#L31-L62">get_a_race_by_index</a>(...) -> Race</code></summary>
 <dl>
 <dd>
 
@@ -2172,7 +2172,7 @@ client.races.get_a_race_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_proficiencies_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py#L64-L96">get_proficiencies_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2231,7 +2231,7 @@ client.races.get_proficiencies_available_for_a_race(
 </dl>
 </details>
 
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_subraces_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py#L98-L127">get_subraces_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2290,7 +2290,7 @@ client.races.get_subraces_available_for_a_race(
 </dl>
 </details>
 
-<details><summary><code>client.races.<a href="src/fern/races/client.py">get_traits_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.races.<a href="src/fern/races/client.py#L129-L158">get_traits_available_for_a_race</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2350,7 +2350,7 @@ client.races.get_traits_available_for_a_race(
 </details>
 
 ## Rules
-<details><summary><code>client.rules.<a href="src/fern/rules/client.py">get_a_rule_section_by_index</a>(...) -> RuleSection</code></summary>
+<details><summary><code>client.rules.<a href="src/fern/rules/client.py#L29-L60">get_a_rule_section_by_index</a>(...) -> RuleSection</code></summary>
 <dl>
 <dd>
 
@@ -2423,7 +2423,7 @@ client.rules.get_a_rule_section_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.rules.<a href="src/fern/rules/client.py">get_a_rule_by_index</a>(...) -> Rule</code></summary>
+<details><summary><code>client.rules.<a href="src/fern/rules/client.py#L62-L97">get_a_rule_by_index</a>(...) -> Rule</code></summary>
 <dl>
 <dd>
 
@@ -2501,7 +2501,7 @@ client.rules.get_a_rule_by_index(
 </details>
 
 ## Spells
-<details><summary><code>client.spells.<a href="src/fern/spells/client.py">get_list_of_spells_with_optional_filtering</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.spells.<a href="src/fern/spells/client.py#L27-L61">get_list_of_spells_with_optional_filtering</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2565,7 +2565,7 @@ client.spells.get_list_of_spells_with_optional_filtering()
 </dl>
 </details>
 
-<details><summary><code>client.spells.<a href="src/fern/spells/client.py">get_a_spell_by_index</a>(...) -> Spell</code></summary>
+<details><summary><code>client.spells.<a href="src/fern/spells/client.py#L63-L90">get_a_spell_by_index</a>(...) -> Spell</code></summary>
 <dl>
 <dd>
 
@@ -2628,7 +2628,7 @@ Available values can be found in the [`ResourceList`](#get-/api/-endpoint-) for 
 </details>
 
 ## Subclasses
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_a_subclass_by_index</a>(...) -> Subclass</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py#L38-L69">get_a_subclass_by_index</a>(...) -> Subclass</code></summary>
 <dl>
 <dd>
 
@@ -2701,7 +2701,7 @@ client.subclasses.get_a_subclass_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_features_available_for_a_subclass</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py#L71-L103">get_features_available_for_a_subclass</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2760,7 +2760,7 @@ client.subclasses.get_features_available_for_a_subclass(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_all_level_resources_for_a_subclass</a>(...) -> typing.List[SubclassLevelResource]</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py#L105-L134">get_all_level_resources_for_a_subclass</a>(...) -> typing.List[SubclassLevelResource]</code></summary>
 <dl>
 <dd>
 
@@ -2819,7 +2819,7 @@ client.subclasses.get_all_level_resources_for_a_subclass(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_level_resources_for_a_subclass_and_level</a>(...) -> SubclassLevel</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py#L136-L174">get_level_resources_for_a_subclass_and_level</a>(...) -> SubclassLevel</code></summary>
 <dl>
 <dd>
 
@@ -2887,7 +2887,7 @@ client.subclasses.get_level_resources_for_a_subclass_and_level(
 </dl>
 </details>
 
-<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py">get_features_of_the_requested_spell_level_available_to_the_class</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.subclasses.<a href="src/fern/subclasses/client.py#L176-L216">get_features_of_the_requested_spell_level_available_to_the_class</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -2956,7 +2956,7 @@ client.subclasses.get_features_of_the_requested_spell_level_available_to_the_cla
 </details>
 
 ## Subraces
-<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_a_subrace_by_index</a>(...) -> Subrace</code></summary>
+<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py#L30-L61">get_a_subrace_by_index</a>(...) -> Subrace</code></summary>
 <dl>
 <dd>
 
@@ -3029,7 +3029,7 @@ client.subraces.get_a_subrace_by_index(
 </dl>
 </details>
 
-<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_proficiences_available_for_a_subrace</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py#L63-L95">get_proficiences_available_for_a_subrace</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -3088,7 +3088,7 @@ client.subraces.get_proficiences_available_for_a_subrace(
 </dl>
 </details>
 
-<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py">get_traits_available_for_a_subrace</a>(...) -> ApiReferenceList</code></summary>
+<details><summary><code>client.subraces.<a href="src/fern/subraces/client.py#L97-L126">get_traits_available_for_a_subrace</a>(...) -> ApiReferenceList</code></summary>
 <dl>
 <dd>
 
@@ -3148,7 +3148,7 @@ client.subraces.get_traits_available_for_a_subrace(
 </details>
 
 ## Traits
-<details><summary><code>client.traits.<a href="src/fern/traits/client.py">get_a_trait_by_index</a>(...) -> Trait</code></summary>
+<details><summary><code>client.traits.<a href="src/fern/traits/client.py#L27-L56">get_a_trait_by_index</a>(...) -> Trait</code></summary>
 <dl>
 <dd>
 

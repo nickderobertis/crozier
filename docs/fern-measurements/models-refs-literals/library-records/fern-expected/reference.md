@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">read_catalogue</a>() -> Catalogue</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L120">read_catalogue</a>() -> Catalogue</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.read_catalogue()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_curator</a>() -> Curator</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L122-L144">read_curator</a>() -> Curator</code></summary>
 <dl>
 <dd>
 

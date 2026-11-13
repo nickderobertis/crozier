@@ -1,6 +1,6 @@
 # Reference
 ## games
-<details><summary><code>client.games.<a href="src/fern/games/client.py">create_game</a>(...) -> CreateGameResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L37-L94">create_game</a>(...) -> CreateGameResponse</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.games.create_game()
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">get_game</a>(...) -> Game</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L96-L123">get_game</a>(...) -> Game</code></summary>
 <dl>
 <dd>
 
@@ -156,7 +156,7 @@ client.games.get_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">delete_game</a>(...)</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L125-L153">delete_game</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -229,7 +229,7 @@ client.games.delete_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">update_game</a>(...) -> GameSettings</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L155-L217">update_game</a>(...) -> GameSettings</code></summary>
 <dl>
 <dd>
 
@@ -310,7 +310,7 @@ client.games.update_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">get_players</a>(...) -> Players</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L219-L246">get_players</a>(...) -> Players</code></summary>
 <dl>
 <dd>
 
@@ -369,7 +369,7 @@ client.games.get_players(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">join_game</a>(...) -> JoinGameResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L248-L280">join_game</a>(...) -> JoinGameResponse</code></summary>
 <dl>
 <dd>
 
@@ -437,7 +437,7 @@ client.games.join_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">leave_game</a>(...)</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L282-L308">leave_game</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -496,7 +496,7 @@ client.games.leave_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">start_game</a>(...)</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L310-L338">start_game</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -569,7 +569,7 @@ client.games.start_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">get_code_template</a>(...) -> str</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L340-L372">get_code_template</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -651,7 +651,7 @@ client.games.get_code_template(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">test_solution</a>(...) -> TestSolutionResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L374-L424">test_solution</a>(...) -> TestSolutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -742,7 +742,7 @@ client.games.test_solution(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">submit_solution</a>(...)</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L426-L464">submit_solution</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -825,7 +825,7 @@ client.games.submit_solution(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">get_round</a>(...) -> Round</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L466-L513">get_round</a>(...) -> Round</code></summary>
 <dl>
 <dd>
 
@@ -919,7 +919,7 @@ client.games.get_round(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">get_round_results</a>(...)</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L515-L556">get_round_results</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1013,7 +1013,7 @@ client.games.get_round_results(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">subscribe_to_game_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L558-L593">subscribe_to_game_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

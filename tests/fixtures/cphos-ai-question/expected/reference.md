@@ -1,6 +1,6 @@
 # Reference
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">health</a>() -> HealthStatus</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L28-L53">health</a>() -> HealthStatus</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.system.health()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">version</a>() -> VersionInfo</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L55-L80">version</a>() -> VersionInfo</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.system.version()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_me</a>() -> MeResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L82-L107">get_me</a>() -> MeResponse</code></summary>
 <dl>
 <dd>
 
@@ -187,7 +187,7 @@ client.system.get_me()
 </details>
 
 ## Tasks
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">list_my_tasks</a>(...) -> PageTaskListItem</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L39-L92">list_my_tasks</a>(...) -> PageTaskListItem</code></summary>
 <dl>
 <dd>
 
@@ -297,7 +297,7 @@ client.tasks.list_my_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">create_task</a>(...) -> TaskCreated</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L94-L150">create_task</a>(...) -> TaskCreated</code></summary>
 <dl>
 <dd>
 
@@ -399,7 +399,7 @@ client.tasks.create_task()
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">create_task_upload</a>(...) -> TaskCreated</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L152-L204">create_task_upload</a>(...) -> TaskCreated</code></summary>
 <dl>
 <dd>
 
@@ -503,7 +503,7 @@ client.tasks.create_task_upload(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">get_task_status</a>(...) -> TaskStatus</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L206-L235">get_task_status</a>(...) -> TaskStatus</code></summary>
 <dl>
 <dd>
 
@@ -575,7 +575,7 @@ client.tasks.get_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">delete_task</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L237-L266">delete_task</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -647,7 +647,7 @@ client.tasks.delete_task(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">get_task_progress</a>(...) -> TaskProgress</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L268-L302">get_task_progress</a>(...) -> TaskProgress</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.tasks.get_task_progress(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">list_task_artifacts</a>(...) -> typing.List[ArtifactInfo]</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L304-L335">list_task_artifacts</a>(...) -> typing.List[ArtifactInfo]</code></summary>
 <dl>
 <dd>
 
@@ -794,7 +794,7 @@ client.tasks.list_task_artifacts(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">download_artifacts_archive</a>(...)</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L337-L369">download_artifacts_archive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -868,7 +868,7 @@ client.tasks.download_artifacts_archive(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">download_artifact</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L371-L419">download_artifact</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -961,7 +961,7 @@ client.tasks.download_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">get_task_result</a>(...) -> TaskResult</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L421-L450">get_task_result</a>(...) -> TaskResult</code></summary>
 <dl>
 <dd>
 
@@ -1033,7 +1033,7 @@ client.tasks.get_task_result(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">compile_task</a>(...) -> TaskCompileResult</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L452-L490">compile_task</a>(...) -> TaskCompileResult</code></summary>
 <dl>
 <dd>
 
@@ -1112,7 +1112,7 @@ client.tasks.compile_task(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">cancel_task</a>(...) -> TaskCancelAccepted</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L492-L528">cancel_task</a>(...) -> TaskCancelAccepted</code></summary>
 <dl>
 <dd>
 
@@ -1189,7 +1189,7 @@ client.tasks.cancel_task(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">retry_task</a>(...) -> TaskCreated</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L530-L562">retry_task</a>(...) -> TaskCreated</code></summary>
 <dl>
 <dd>
 
@@ -1264,7 +1264,7 @@ client.tasks.retry_task(
 </dl>
 </details>
 
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">stream_task_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L564-L605">stream_task_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1341,7 +1341,7 @@ client.tasks.stream_task_events(
 </details>
 
 ## Admin
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_users</a>(...) -> PageUserInfo</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L37-L82">list_users</a>(...) -> PageUserInfo</code></summary>
 <dl>
 <dd>
 
@@ -1435,7 +1435,7 @@ client.admin.list_users()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">create_user</a>(...) -> UserInfo</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L84-L114">create_user</a>(...) -> UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -1505,7 +1505,7 @@ client.admin.create_user()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_user</a>(...) -> UserDetail</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L116-L145">get_user</a>(...) -> UserDetail</code></summary>
 <dl>
 <dd>
 
@@ -1577,7 +1577,7 @@ client.admin.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">delete_user</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L147-L176">delete_user</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1649,7 +1649,7 @@ client.admin.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">update_user</a>(...) -> UserInfo</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L178-L213">update_user</a>(...) -> UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -1730,7 +1730,7 @@ client.admin.update_user(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_user_tasks</a>(...) -> PageTaskListItem</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L215-L257">list_user_tasks</a>(...) -> PageTaskListItem</code></summary>
 <dl>
 <dd>
 
@@ -1818,7 +1818,7 @@ client.admin.list_user_tasks(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_tokens</a>(...) -> PageTokenInfo</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L259-L307">list_tokens</a>(...) -> PageTokenInfo</code></summary>
 <dl>
 <dd>
 
@@ -1920,7 +1920,7 @@ client.admin.list_tokens()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">create_token</a>(...) -> TokenCreated</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L309-L354">create_token</a>(...) -> TokenCreated</code></summary>
 <dl>
 <dd>
 
@@ -2008,7 +2008,7 @@ client.admin.create_token(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">revoke_token</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L356-L387">revoke_token</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -2080,7 +2080,7 @@ client.admin.revoke_token(
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">list_all_tasks</a>(...) -> PageTaskListItem</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L389-L442">list_all_tasks</a>(...) -> PageTaskListItem</code></summary>
 <dl>
 <dd>
 
@@ -2190,7 +2190,7 @@ client.admin.list_all_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.admin.<a href="src/fern/admin/client.py">get_stats</a>() -> AdminStats</code></summary>
+<details><summary><code>client.admin.<a href="src/fern/admin/client.py#L444-L469">get_stats</a>() -> AdminStats</code></summary>
 <dl>
 <dd>
 
@@ -2253,7 +2253,7 @@ client.admin.get_stats()
 </details>
 
 ## LlmSettings
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">list_provider_kinds</a>() -> ProviderKindsResponse</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L38-L64">list_provider_kinds</a>() -> ProviderKindsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2316,7 +2316,7 @@ client.llm_settings.list_provider_kinds()
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">get_llm_options</a>() -> LlmOptions</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L66-L92">get_llm_options</a>() -> LlmOptions</code></summary>
 <dl>
 <dd>
 
@@ -2379,7 +2379,7 @@ client.llm_settings.get_llm_options()
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">list_providers</a>(...) -> PageProviderInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L94-L129">list_providers</a>(...) -> PageProviderInfo</code></summary>
 <dl>
 <dd>
 
@@ -2457,7 +2457,7 @@ client.llm_settings.list_providers()
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">create_provider</a>(...) -> ProviderInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L131-L195">create_provider</a>(...) -> ProviderInfo</code></summary>
 <dl>
 <dd>
 
@@ -2570,7 +2570,7 @@ client.llm_settings.create_provider(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">get_provider</a>(...) -> ProviderInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L197-L226">get_provider</a>(...) -> ProviderInfo</code></summary>
 <dl>
 <dd>
 
@@ -2628,7 +2628,7 @@ client.llm_settings.get_provider(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">delete_provider</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L228-L259">delete_provider</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -2700,7 +2700,7 @@ client.llm_settings.delete_provider(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">update_provider</a>(...) -> ProviderInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L261-L323">update_provider</a>(...) -> ProviderInfo</code></summary>
 <dl>
 <dd>
 
@@ -2820,7 +2820,7 @@ client.llm_settings.update_provider(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">list_model_configs</a>(...) -> PageModelConfigInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L325-L358">list_model_configs</a>(...) -> PageModelConfigInfo</code></summary>
 <dl>
 <dd>
 
@@ -2884,7 +2884,7 @@ client.llm_settings.list_model_configs()
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">create_model_config</a>(...) -> ModelConfigInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L360-L424">create_model_config</a>(...) -> ModelConfigInfo</code></summary>
 <dl>
 <dd>
 
@@ -2997,7 +2997,7 @@ client.llm_settings.create_model_config(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">get_model_config</a>(...) -> ModelConfigInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L426-L455">get_model_config</a>(...) -> ModelConfigInfo</code></summary>
 <dl>
 <dd>
 
@@ -3055,7 +3055,7 @@ client.llm_settings.get_model_config(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">delete_model_config</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L457-L488">delete_model_config</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3127,7 +3127,7 @@ client.llm_settings.delete_model_config(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">update_model_config</a>(...) -> ModelConfigInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L490-L549">update_model_config</a>(...) -> ModelConfigInfo</code></summary>
 <dl>
 <dd>
 
@@ -3233,7 +3233,7 @@ client.llm_settings.update_model_config(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">list_bindings</a>() -> typing.List[AgentBindingInfo]</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L551-L578">list_bindings</a>() -> typing.List[AgentBindingInfo]</code></summary>
 <dl>
 <dd>
 
@@ -3295,7 +3295,7 @@ client.llm_settings.list_bindings()
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">set_binding</a>(...) -> AgentBindingInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L580-L615">set_binding</a>(...) -> AgentBindingInfo</code></summary>
 <dl>
 <dd>
 
@@ -3376,7 +3376,7 @@ client.llm_settings.set_binding(
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">get_app_settings</a>() -> AppSettingsInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L617-L642">get_app_settings</a>() -> AppSettingsInfo</code></summary>
 <dl>
 <dd>
 
@@ -3438,7 +3438,7 @@ client.llm_settings.get_app_settings()
 </dl>
 </details>
 
-<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py">update_app_settings</a>(...) -> AppSettingsInfo</code></summary>
+<details><summary><code>client.llm_settings.<a href="src/fern/llm_settings/client.py#L644-L735">update_app_settings</a>(...) -> AppSettingsInfo</code></summary>
 <dl>
 <dd>
 

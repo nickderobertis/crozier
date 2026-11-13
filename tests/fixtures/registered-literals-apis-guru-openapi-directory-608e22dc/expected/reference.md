@@ -1,6 +1,6 @@
 # Reference
 ## Transfers
-<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py">retrieve_balance_transfers</a>(...) -> ListBalanceTransfersResponse</code></summary>
+<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py#L33-L83">retrieve_balance_transfers</a>(...) -> ListBalanceTransfersResponse</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.transfers.retrieve_balance_transfers(
 </dl>
 </details>
 
-<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py">transfer_balance</a>(...) -> TransferBalanceResponse</code></summary>
+<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py#L85-L137">transfer_balance</a>(...) -> TransferBalanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.transfers.transfer_balance(
 </dl>
 </details>
 
-<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py">retrieve_credit_transfers</a>(...) -> ListCreditTransfersResponse</code></summary>
+<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py#L139-L189">retrieve_credit_transfers</a>(...) -> ListCreditTransfersResponse</code></summary>
 <dl>
 <dd>
 
@@ -283,7 +283,7 @@ client.transfers.retrieve_credit_transfers(
 </dl>
 </details>
 
-<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py">transfer_credit</a>(...) -> TransferCreditResponse</code></summary>
+<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py#L191-L243">transfer_credit</a>(...) -> TransferCreditResponse</code></summary>
 <dl>
 <dd>
 
@@ -368,7 +368,7 @@ client.transfers.transfer_credit(
 </dl>
 </details>
 
-<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py">transfer_number</a>(...) -> TransferNumberResponse</code></summary>
+<details><summary><code>client.transfers.<a href="src/fern/transfers/client.py#L245-L294">transfer_number</a>(...) -> TransferNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -475,7 +475,7 @@ client.transfers.transfer_number(
 </details>
 
 ## Subaccount Management
-<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py">retrieve_subaccounts_list</a>(...) -> SubaccountsAllResponse</code></summary>
+<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py#L31-L63">retrieve_subaccounts_list</a>(...) -> SubaccountsAllResponse</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +549,7 @@ client.subaccount_management.retrieve_subaccounts_list(
 </dl>
 </details>
 
-<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py">create_sub_account</a>(...) -> SubaccountCreateResponse</code></summary>
+<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py#L65-L116">create_sub_account</a>(...) -> SubaccountCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -648,7 +648,7 @@ client.subaccount_management.create_sub_account(
 </dl>
 </details>
 
-<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py">retrieve_subaccount</a>(...) -> SubaccountResponse</code></summary>
+<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py#L118-L154">retrieve_subaccount</a>(...) -> SubaccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -731,7 +731,7 @@ client.subaccount_management.retrieve_subaccount(
 </dl>
 </details>
 
-<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py">modify_subaccount</a>(...) -> SubaccountResponse</code></summary>
+<details><summary><code>client.subaccount_management.<a href="src/fern/subaccount_management/client.py#L156-L212">modify_subaccount</a>(...) -> SubaccountResponse</code></summary>
 <dl>
 <dd>
 

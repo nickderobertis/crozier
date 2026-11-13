@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_zone</a>(...) -> Zone</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L123">get_zone</a>(...) -> Zone</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "d462ece7f7d7d5b6d325158763b5a5de103847910e1ad3c6dce1a880ce954d89"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "42b62d332fdc9a62f5b8b1cfd37a3c5b8ee508b34e0587f3233d70f7a628f10b"
 
 [[covers]]
 key = "readme-nested-group-post-preferred"

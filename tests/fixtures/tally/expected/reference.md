@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_forms</a>(...) -> ListFormsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L131-L173">list_forms</a>(...) -> ListFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -86,7 +86,7 @@ client.list_forms()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_form</a>(...) -> Form</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L175-L244">create_form</a>(...) -> Form</code></summary>
 <dl>
 <dd>
 
@@ -199,7 +199,7 @@ client.create_form(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_form</a>(...) -> GetFormResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L246-L275">get_form</a>(...) -> GetFormResponse</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.get_form(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_form</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L277-L305">delete_form</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -345,7 +345,7 @@ client.delete_form(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_form</a>(...) -> Form</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L307-L359">update_form</a>(...) -> Form</code></summary>
 <dl>
 <dd>
 
@@ -450,7 +450,7 @@ client.update_form(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_current_user</a>() -> GetCurrentUserResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L361-L385">get_current_user</a>() -> GetCurrentUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -513,7 +513,7 @@ client.get_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_workspaces</a>(...) -> ListWorkspacesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L387-L416">list_workspaces</a>(...) -> ListWorkspacesResponse</code></summary>
 <dl>
 <dd>
 
@@ -584,7 +584,7 @@ client.list_workspaces()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_workspace</a>(...) -> Workspace</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L418-L447">create_workspace</a>(...) -> Workspace</code></summary>
 <dl>
 <dd>
 
@@ -657,7 +657,7 @@ client.create_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workspace</a>(...) -> Workspace</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L449-L478">get_workspace</a>(...) -> Workspace</code></summary>
 <dl>
 <dd>
 
@@ -730,7 +730,7 @@ client.get_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_workspace</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L480-L508">delete_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -803,7 +803,7 @@ client.delete_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_workspace</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L510-L544">update_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.update_workspace(
 </details>
 
 ## Organization
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">list_organization_users</a>(...) -> typing.List[User]</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L30-L61">list_organization_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -959,7 +959,7 @@ client.organization.list_organization_users(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">remove_organization_user</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L63-L97">remove_organization_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1041,7 +1041,7 @@ client.organization.remove_organization_user(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">list_organization_invites</a>(...) -> typing.List[ListOrganizationInvitesResponseItem]</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L99-L130">list_organization_invites</a>(...) -> typing.List[ListOrganizationInvitesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1114,7 +1114,7 @@ client.organization.list_organization_invites(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">create_organization_invites</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L132-L177">create_organization_invites</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1207,7 +1207,7 @@ client.organization.create_organization_invites(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">cancel_organization_invite</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L179-L215">cancel_organization_invite</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1290,7 +1290,7 @@ client.organization.cancel_organization_invite(
 </details>
 
 ## Forms
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list_form_questions</a>(...) -> ListFormQuestionsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L36-L67">list_form_questions</a>(...) -> ListFormQuestionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1363,7 +1363,7 @@ client.forms.list_form_questions(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">update_form_question</a>(...) -> Question</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L69-L114">update_form_question</a>(...) -> Question</code></summary>
 <dl>
 <dd>
 
@@ -1453,7 +1453,7 @@ client.forms.update_form_question(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list_form_blocks</a>(...) -> ListFormBlocksResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L116-L147">list_form_blocks</a>(...) -> ListFormBlocksResponse</code></summary>
 <dl>
 <dd>
 
@@ -1526,7 +1526,7 @@ client.forms.list_form_blocks(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">update_form_blocks</a>(...) -> Block</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L149-L186">update_form_blocks</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 
@@ -1607,7 +1607,7 @@ client.forms.update_form_blocks(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list_form_submissions</a>(...) -> ListFormSubmissionsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L188-L255">list_form_submissions</a>(...) -> ListFormSubmissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1728,7 +1728,7 @@ client.forms.list_form_submissions(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">get_form_submission</a>(...) -> GetFormSubmissionResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L257-L292">get_form_submission</a>(...) -> GetFormSubmissionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1810,7 +1810,7 @@ client.forms.get_form_submission(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">delete_form_submission</a>(...)</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L294-L328">delete_form_submission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1893,7 +1893,7 @@ client.forms.delete_form_submission(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list_webhooks</a>(...) -> ListWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L34-L70">list_webhooks</a>(...) -> ListWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -1972,7 +1972,7 @@ client.webhooks.list_webhooks()
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create_webhook</a>(...) -> CreateWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L72-L136">create_webhook</a>(...) -> CreateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2089,7 +2089,7 @@ client.webhooks.create_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L138-L166">delete_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2162,7 +2162,7 @@ client.webhooks.delete_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L168-L238">update_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2289,7 +2289,7 @@ client.webhooks.update_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list_webhook_events</a>(...) -> ListWebhookEventsResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L240-L278">list_webhook_events</a>(...) -> ListWebhookEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2370,7 +2370,7 @@ client.webhooks.list_webhook_events(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">retry_webhook_event</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L280-L314">retry_webhook_event</a>(...)</code></summary>
 <dl>
 <dd>
 

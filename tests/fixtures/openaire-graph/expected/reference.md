@@ -1,6 +1,6 @@
 # Reference
 ## Research products
-<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py">search</a>(...) -> ResearchProductsSearchResponseV2</code></summary>
+<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py#L46-L314">search</a>(...) -> ResearchProductsSearchResponseV2</code></summary>
 <dl>
 <dd>
 
@@ -426,7 +426,7 @@ To get the next page of results, use nextCursor returned in the response.
 </dl>
 </details>
 
-<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py">get_by_id</a>(...) -> ApiResult</code></summary>
+<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py#L316-L343">get_by_id</a>(...) -> ApiResult</code></summary>
 <dl>
 <dd>
 
@@ -498,7 +498,7 @@ client.research_products.get_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py">search1</a>(...) -> ResearchProductsSearchResponse</code></summary>
+<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py#L345-L614">search1</a>(...) -> ResearchProductsSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -925,7 +925,7 @@ To get the next page of results, use nextCursor returned in the response.
 </dl>
 </details>
 
-<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py">get_by_id1</a>(...) -> GraphResult</code></summary>
+<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py#L616-L644">get_by_id1</a>(...) -> GraphResult</code></summary>
 <dl>
 <dd>
 
@@ -998,7 +998,7 @@ client.research_products.get_by_id1(
 </dl>
 </details>
 
-<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py">get_links</a>(...) -> SearchResponseRelation</code></summary>
+<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py#L646-L729">get_links</a>(...) -> SearchResponseRelation</code></summary>
 <dl>
 <dd>
 
@@ -1148,7 +1148,7 @@ client.research_products.get_links()
 </dl>
 </details>
 
-<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py">get_relations_info</a>() -> typing.Any</code></summary>
+<details><summary><code>client.research_products.<a href="src/fern/research_products/client.py#L731-L753">get_relations_info</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1211,7 +1211,7 @@ client.research_products.get_relations_info()
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">search2</a>(...) -> SearchResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L29-L188">search2</a>(...) -> SearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1485,7 +1485,7 @@ To get the next page of results, use nextCursor returned in the response.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_by_id2</a>(...) -> ProjectSearchResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L190-L217">get_by_id2</a>(...) -> ProjectSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1557,7 +1557,7 @@ client.projects.get_by_id2(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">search8</a>(...)</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L219-L341">search8</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1775,7 +1775,7 @@ sortBy=field,[ascending|descending] <br>
 </details>
 
 ## Persons
-<details><summary><code>client.persons.<a href="src/fern/persons/client.py">search3</a>(...) -> ApiPerson</code></summary>
+<details><summary><code>client.persons.<a href="src/fern/persons/client.py#L28-L122">search3</a>(...) -> ApiPerson</code></summary>
 <dl>
 <dd>
 
@@ -1945,7 +1945,7 @@ To get the next page of results, use nextCursor returned in the response.
 </dl>
 </details>
 
-<details><summary><code>client.persons.<a href="src/fern/persons/client.py">get_by_id3</a>(...) -> GraphResult</code></summary>
+<details><summary><code>client.persons.<a href="src/fern/persons/client.py#L124-L151">get_by_id3</a>(...) -> GraphResult</code></summary>
 <dl>
 <dd>
 
@@ -2018,7 +2018,7 @@ client.persons.get_by_id3(
 </details>
 
 ## Organizations
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">search4</a>(...) -> OrganizationSearchResponse</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L28-L131">search4</a>(...) -> OrganizationSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2202,7 +2202,7 @@ To get the next page of results, use nextCursor returned in the response.
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">get_by_id4</a>(...) -> ApiOrganization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L133-L160">get_by_id4</a>(...) -> ApiOrganization</code></summary>
 <dl>
 <dd>
 
@@ -2275,7 +2275,7 @@ client.organizations.get_by_id4(
 </details>
 
 ## Data sources
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">search5</a>(...) -> DataSourceSearchResponse</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L28-L151">search5</a>(...) -> DataSourceSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2491,7 +2491,7 @@ To get the next page of results, use nextCursor returned in the response.
 </dl>
 </details>
 
-<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py">get_by_id5</a>(...) -> Datasource</code></summary>
+<details><summary><code>client.data_sources.<a href="src/fern/data_sources/client.py#L153-L180">get_by_id5</a>(...) -> Datasource</code></summary>
 <dl>
 <dd>
 
@@ -2564,7 +2564,7 @@ client.data_sources.get_by_id5(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">search6</a>(...) -> SkgIfJsonLdResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L26-L105">search6</a>(...) -> SkgIfJsonLdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2693,7 +2693,7 @@ client.products.search6(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_by_id6</a>(...) -> SkgIfJsonLdResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L107-L136">get_by_id6</a>(...) -> SkgIfJsonLdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2766,7 +2766,7 @@ client.products.get_by_id6(
 </details>
 
 ## Publications
-<details><summary><code>client.publications.<a href="src/fern/publications/client.py">search7</a>(...)</code></summary>
+<details><summary><code>client.publications.<a href="src/fern/publications/client.py#L26-L228">search7</a>(...)</code></summary>
 <dl>
 <dd>
 

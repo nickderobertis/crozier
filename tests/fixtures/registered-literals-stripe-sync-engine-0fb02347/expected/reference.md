@@ -1,6 +1,6 @@
 # Reference
 ## Status
-<details><summary><code>client.status.<a href="src/fern/status/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L26-L48">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.status.health()
 </details>
 
 ## Pipelines
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">list</a>() -> PipelinesListResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L44-L66">list</a>() -> PipelinesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.pipelines.list()
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">create</a>(...) -> Pipeline</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L68-L134">create</a>(...) -> Pipeline</code></summary>
 <dl>
 <dd>
 
@@ -191,7 +191,7 @@ client.pipelines.create(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">get</a>(...) -> Pipeline</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L136-L163">get</a>(...) -> Pipeline</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.pipelines.get(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">delete</a>(...) -> PipelinesDeleteResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L165-L192">delete</a>(...) -> PipelinesDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.pipelines.delete(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">update</a>(...) -> Pipeline</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L194-L252">update</a>(...) -> Pipeline</code></summary>
 <dl>
 <dd>
 
@@ -402,7 +402,7 @@ client.pipelines.update(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">sync</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L254-L323">sync</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -529,7 +529,7 @@ client.pipelines.sync(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">sync_batch</a>(...) -> EofPayload</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L325-L394">sync_batch</a>(...) -> EofPayload</code></summary>
 <dl>
 <dd>
 
@@ -656,7 +656,7 @@ client.pipelines.sync_batch(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">check</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L396-L434">check</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -735,7 +735,7 @@ client.pipelines.check(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">setup</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L436-L474">setup</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -814,7 +814,7 @@ client.pipelines.setup(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">teardown</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L476-L514">teardown</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -893,7 +893,7 @@ client.pipelines.teardown(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">simulate_webhook_sync</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L516-L560">simulate_webhook_sync</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -980,7 +980,7 @@ client.pipelines.simulate_webhook_sync(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">sync_workflow_test</a>(...) -> PipelinesSyncWorkflowTestResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L562-L600">sync_workflow_test</a>(...) -> PipelinesSyncWorkflowTestResponse</code></summary>
 <dl>
 <dd>
 
@@ -1060,7 +1060,7 @@ client.pipelines.sync_workflow_test(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">push</a>(...) -> str</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L25-L53">push</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">export_trace</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L125">export_trace</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -55,7 +55,7 @@ client.export_trace(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_stations</a>() -> typing.List[Station]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L149">list_stations</a>() -> typing.List[Station]</code></summary>
 <dl>
 <dd>
 

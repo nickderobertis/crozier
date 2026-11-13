@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">partner_sdk_unmerge_provisional_account</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L284-L331">partner_sdk_unmerge_provisional_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.partner_sdk_unmerge_provisional_account(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_my_oauth2application</a>() -> PrivateApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L333-L357">get_my_oauth2application</a>() -> PrivateApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -133,7 +133,7 @@ client.get_my_oauth2application()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_my_connections</a>() -> typing.Optional[typing.List[ConnectedAccountResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L359-L383">list_my_connections</a>() -> typing.Optional[typing.List[ConnectedAccountResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -182,7 +182,7 @@ client.list_my_connections()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_dm</a>(...) -> CreateDmResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L385-L422">create_dm</a>(...) -> CreateDmResponse</code></summary>
 <dl>
 <dd>
 
@@ -255,7 +255,7 @@ client.create_dm()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_my_guilds</a>(...) -> typing.Optional[typing.List[MyGuildResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L424-L464">list_my_guilds</a>(...) -> typing.Optional[typing.List[MyGuildResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.list_my_guilds()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_my_application</a>() -> PrivateApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L466-L490">get_my_application</a>() -> PrivateApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -385,7 +385,7 @@ client.get_my_application()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_my_application</a>(...) -> PrivateApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L492-L578">update_my_application</a>(...) -> PrivateApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -442,7 +442,7 @@ client.update_my_application()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">partner_sdk_token</a>(...) -> ProvisionalTokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L580-L628">partner_sdk_token</a>(...) -> ProvisionalTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -527,7 +527,7 @@ client.partner_sdk_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_bot_gateway</a>() -> GatewayBotResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L630-L652">get_bot_gateway</a>() -> GatewayBotResponse</code></summary>
 <dl>
 <dd>
 
@@ -576,7 +576,7 @@ client.get_bot_gateway()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_openid_connect_userinfo</a>() -> OAuth2GetOpenIdConnectUserInfoResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L654-L678">get_openid_connect_userinfo</a>() -> OAuth2GetOpenIdConnectUserInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.get_openid_connect_userinfo()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_public_keys</a>() -> OAuth2GetKeys</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L680-L702">get_public_keys</a>() -> OAuth2GetKeys</code></summary>
 <dl>
 <dd>
 
@@ -674,7 +674,7 @@ client.get_public_keys()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_my_oauth2authorization</a>() -> OAuth2GetAuthorizationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L704-L728">get_my_oauth2authorization</a>() -> OAuth2GetAuthorizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -723,7 +723,7 @@ client.get_my_oauth2authorization()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_voice_regions</a>() -> typing.Optional[typing.List[VoiceRegionResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L730-L754">list_voice_regions</a>() -> typing.Optional[typing.List[VoiceRegionResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -772,7 +772,7 @@ client.list_voice_regions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_my_user</a>() -> UserPiiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L756-L778">get_my_user</a>() -> UserPiiResponse</code></summary>
 <dl>
 <dd>
 
@@ -821,7 +821,7 @@ client.get_my_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_my_user</a>(...) -> UserPiiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L780-L819">update_my_user</a>(...) -> UserPiiResponse</code></summary>
 <dl>
 <dd>
 
@@ -896,7 +896,7 @@ client.update_my_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_soundboard_default_sounds</a>() -> typing.List[SoundboardSoundResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L821-L845">get_soundboard_default_sounds</a>() -> typing.List[SoundboardSoundResponse]</code></summary>
 <dl>
 <dd>
 
@@ -945,7 +945,7 @@ client.get_soundboard_default_sounds()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_stage_instance</a>(...) -> StageInstanceResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L847-L898">create_stage_instance</a>(...) -> StageInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1037,7 +1037,7 @@ client.create_stage_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_sticker_packs</a>() -> StickerPackCollectionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L900-L924">list_sticker_packs</a>() -> StickerPackCollectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1086,7 +1086,7 @@ client.list_sticker_packs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_gateway</a>() -> GatewayResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L926-L948">get_gateway</a>() -> GatewayResponse</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1135,7 @@ client.get_gateway()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_lobby</a>(...) -> LobbyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L950-L990">create_lobby</a>(...) -> LobbyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1208,7 +1208,7 @@ client.create_lobby()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_or_join_lobby</a>(...) -> LobbyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L992-L1038">create_or_join_lobby</a>(...) -> LobbyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1291,7 +1291,7 @@ client.create_or_join_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild</a>(...) -> GuildResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1040-L1126">create_guild</a>(...) -> GuildResponse</code></summary>
 <dl>
 <dd>
 
@@ -1454,7 +1454,7 @@ client.create_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_my_private_archived_threads</a>(...) -> ThreadsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1128-L1167">list_my_private_archived_threads</a>(...) -> ThreadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1529,7 +1529,7 @@ client.list_my_private_archived_threads(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_application_command_permissions</a>(...) -> typing.List[CommandPermissionsResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1169-L1206">list_guild_application_command_permissions</a>(...) -> typing.List[CommandPermissionsResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1597,7 +1597,7 @@ client.list_guild_application_command_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_application_command_permissions</a>(...) -> CommandPermissionsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1208-L1249">get_guild_application_command_permissions</a>(...) -> CommandPermissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1674,7 +1674,7 @@ client.get_guild_application_command_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_guild_application_command_permissions</a>(...) -> CommandPermissionsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1251-L1295">set_guild_application_command_permissions</a>(...) -> CommandPermissionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1759,7 +1759,7 @@ client.set_guild_application_command_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_my_message_reaction</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1297-L1337">add_my_message_reaction</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1836,7 +1836,7 @@ client.add_my_message_reaction(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_my_message_reaction</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1339-L1379">delete_my_message_reaction</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1913,7 +1913,7 @@ client.delete_my_message_reaction(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_private_archived_threads</a>(...) -> ThreadsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1381-L1420">list_private_archived_threads</a>(...) -> ThreadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1988,7 +1988,7 @@ client.list_private_archived_threads(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_public_archived_threads</a>(...) -> ThreadsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1422-L1461">list_public_archived_threads</a>(...) -> ThreadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2063,7 +2063,7 @@ client.list_public_archived_threads(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_application_user_role_connection</a>(...) -> ApplicationUserRoleConnectionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1463-L1493">get_application_user_role_connection</a>(...) -> ApplicationUserRoleConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2122,7 +2122,7 @@ client.get_application_user_role_connection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_application_user_role_connection</a>(...) -> ApplicationUserRoleConnectionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1495-L1541">update_application_user_role_connection</a>(...) -> ApplicationUserRoleConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2205,7 +2205,7 @@ client.update_application_user_role_connection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_application_user_role_connection</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1543-L1572">delete_application_user_role_connection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2264,7 +2264,7 @@ client.delete_application_user_role_connection(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_my_guild_member</a>(...) -> PrivateGuildMemberResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1574-L1602">get_my_guild_member</a>(...) -> PrivateGuildMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -2323,7 +2323,7 @@ client.get_my_guild_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_application_role_connections_metadata</a>(...) -> typing.Optional[typing.List[ApplicationRoleConnectionsMetadataItemResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1604-L1634">get_application_role_connections_metadata</a>(...) -> typing.Optional[typing.List[ApplicationRoleConnectionsMetadataItemResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -2382,7 +2382,7 @@ client.get_application_role_connections_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_application_role_connections_metadata</a>(...) -> typing.Optional[typing.List[ApplicationRoleConnectionsMetadataItemResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1636-L1680">update_application_role_connections_metadata</a>(...) -> typing.Optional[typing.List[ApplicationRoleConnectionsMetadataItemResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -2457,7 +2457,7 @@ client.update_application_role_connections_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">consume_entitlement</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1682-L1718">consume_entitlement</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2525,7 +2525,7 @@ client.consume_entitlement(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1720-L1761">get_guild_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -2602,7 +2602,7 @@ client.get_guild_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_application_command</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1763-L1803">delete_guild_application_command</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2679,7 +2679,7 @@ client.delete_guild_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1805-L1889">update_guild_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -2764,7 +2764,7 @@ client.update_guild_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1891-L1931">list_guild_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -2840,7 +2840,7 @@ client.list_guild_application_commands(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1933-L2017">create_guild_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -2917,7 +2917,7 @@ client.create_guild_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_set_guild_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2019-L2064">bulk_set_guild_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -2998,7 +2998,7 @@ client.bulk_set_guild_application_commands(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">join_thread</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2066-L2093">join_thread</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3057,7 +3057,7 @@ client.join_thread(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">leave_thread</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2095-L2122">leave_thread</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3116,7 +3116,7 @@ client.leave_thread(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_delete_messages</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2124-L2160">bulk_delete_messages</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3186,7 +3186,7 @@ client.bulk_delete_messages(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_user_message_reaction</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2162-L2206">delete_user_message_reaction</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3272,7 +3272,7 @@ client.delete_user_message_reaction(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_message_reactions_by_emoji</a>(...) -> typing.List[UserResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2208-L2258">list_message_reactions_by_emoji</a>(...) -> typing.List[UserResponse]</code></summary>
 <dl>
 <dd>
 
@@ -3373,7 +3373,7 @@ client.list_message_reactions_by_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_all_message_reactions_by_emoji</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2260-L2300">delete_all_message_reactions_by_emoji</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3450,7 +3450,7 @@ client.delete_all_message_reactions_by_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_all_message_reactions</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2302-L2338">delete_all_message_reactions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3518,7 +3518,7 @@ client.delete_all_message_reactions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">crosspost_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2340-L2375">crosspost_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3586,7 +3586,7 @@ client.crosspost_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_thread_from_message</a>(...) -> ThreadResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2377-L2429">create_thread_from_message</a>(...) -> ThreadResponse</code></summary>
 <dl>
 <dd>
 
@@ -3679,7 +3679,7 @@ client.create_thread_from_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">thread_search</a>(...) -> ThreadSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2431-L2509">thread_search</a>(...) -> ThreadSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -3826,7 +3826,7 @@ client.thread_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_answer_voters</a>(...) -> PollAnswerDetailsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2511-L2558">get_answer_voters</a>(...) -> PollAnswerDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3919,7 +3919,7 @@ client.get_answer_voters(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">poll_expire</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2560-L2595">poll_expire</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3987,7 +3987,7 @@ client.poll_expire(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_original_webhook_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2597-L2637">get_original_webhook_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -4063,7 +4063,7 @@ client.get_original_webhook_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_original_webhook_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2639-L2678">delete_original_webhook_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4139,7 +4139,7 @@ client.delete_original_webhook_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_original_webhook_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2680-L2755">update_original_webhook_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -4231,7 +4231,7 @@ client.update_original_webhook_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">leave_lobby</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2757-L2782">leave_lobby</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4290,7 +4290,7 @@ client.leave_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_scheduled_event_users</a>(...) -> typing.Optional[typing.List[ScheduledEventUserResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2784-L2839">list_guild_scheduled_event_users</a>(...) -> typing.Optional[typing.List[ScheduledEventUserResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -4390,7 +4390,7 @@ client.list_guild_scheduled_event_users(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_auto_moderation_rule</a>(...) -> GetAutoModerationRuleResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2841-L2876">get_auto_moderation_rule</a>(...) -> GetAutoModerationRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -4458,7 +4458,7 @@ client.get_auto_moderation_rule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_auto_moderation_rule</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2878-L2912">delete_auto_moderation_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4526,7 +4526,7 @@ client.delete_auto_moderation_rule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_auto_moderation_rule</a>(...) -> UpdateAutoModerationRuleResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2914-L2955">update_auto_moderation_rule</a>(...) -> UpdateAutoModerationRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -4603,7 +4603,7 @@ client.update_auto_moderation_rule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_auto_moderation_rules</a>(...) -> typing.Optional[typing.List[typing.Optional[ListAutoModerationRulesResponseItem]]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2957-L2985">list_auto_moderation_rules</a>(...) -> typing.Optional[typing.List[typing.Optional[ListAutoModerationRulesResponseItem]]]</code></summary>
 <dl>
 <dd>
 
@@ -4662,7 +4662,7 @@ client.list_auto_moderation_rules(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_auto_moderation_rule</a>(...) -> CreateAutoModerationRuleResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2987-L3033">create_auto_moderation_rule</a>(...) -> CreateAutoModerationRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -4735,7 +4735,7 @@ client.create_auto_moderation_rule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_self_voice_state</a>(...) -> VoiceStateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3035-L3063">get_self_voice_state</a>(...) -> VoiceStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4794,7 +4794,7 @@ client.get_self_voice_state(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_self_voice_state</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3065-L3110">update_self_voice_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4877,7 +4877,7 @@ client.update_self_voice_state(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">search_guild_members</a>(...) -> typing.List[GuildMemberResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3112-L3153">search_guild_members</a>(...) -> typing.List[GuildMemberResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4954,7 +4954,7 @@ client.search_guild_members(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_active_guild_threads</a>(...) -> ThreadsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3155-L3183">get_active_guild_threads</a>(...) -> ThreadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5013,7 +5013,7 @@ client.get_active_guild_threads(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_my_guild_member</a>(...) -> PrivateGuildMemberResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3185-L3219">update_my_guild_member</a>(...) -> PrivateGuildMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -5080,7 +5080,7 @@ client.update_my_guild_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_guild_member_role</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3221-L3259">add_guild_member_role</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5157,7 +5157,7 @@ client.add_guild_member_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_member_role</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3261-L3301">delete_guild_member_role</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5234,7 +5234,7 @@ client.delete_guild_member_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">leave_guild</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3303-L3328">leave_guild</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5293,7 +5293,7 @@ client.leave_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">applications_get_activity_instance</a>(...) -> EmbeddedActivityInstance</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3330-L3367">applications_get_activity_instance</a>(...) -> EmbeddedActivityInstance</code></summary>
 <dl>
 <dd>
 
@@ -5361,7 +5361,7 @@ client.applications_get_activity_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_entitlement</a>(...) -> EntitlementResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3369-L3404">get_entitlement</a>(...) -> EntitlementResponse</code></summary>
 <dl>
 <dd>
 
@@ -5429,7 +5429,7 @@ client.get_entitlement(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_entitlement</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3406-L3440">delete_entitlement</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5497,7 +5497,7 @@ client.delete_entitlement(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_entitlements</a>(...) -> typing.List[typing.Optional[EntitlementResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3442-L3513">get_entitlements</a>(...) -> typing.List[typing.Optional[EntitlementResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -5629,7 +5629,7 @@ client.get_entitlements(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_entitlement</a>(...) -> EntitlementResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3515-L3560">create_entitlement</a>(...) -> EntitlementResponse</code></summary>
 <dl>
 <dd>
 
@@ -5715,7 +5715,7 @@ client.create_entitlement(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_application_attachment</a>(...) -> ActivitiesAttachmentResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3562-L3595">upload_application_attachment</a>(...) -> ActivitiesAttachmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -5783,7 +5783,7 @@ client.upload_application_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3597-L3634">get_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -5851,7 +5851,7 @@ client.get_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_application_command</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3636-L3672">delete_application_command</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5919,7 +5919,7 @@ client.delete_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3674-L3753">update_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -5995,7 +5995,7 @@ client.update_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3755-L3791">list_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -6062,7 +6062,7 @@ client.list_application_commands(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3793-L3872">create_application_command</a>(...) -> ApplicationCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -6130,7 +6130,7 @@ client.create_application_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_set_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3874-L3915">bulk_set_application_commands</a>(...) -> typing.Optional[typing.List[ApplicationCommandResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -6202,7 +6202,7 @@ client.bulk_set_application_commands(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_application_emoji</a>(...) -> EmojiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3917-L3952">get_application_emoji</a>(...) -> EmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -6270,7 +6270,7 @@ client.get_application_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_application_emoji</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3954-L3988">delete_application_emoji</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6338,7 +6338,7 @@ client.delete_application_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_application_emoji</a>(...) -> EmojiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3990-L4030">update_application_emoji</a>(...) -> EmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -6414,7 +6414,7 @@ client.update_application_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_application_emojis</a>(...) -> ListApplicationEmojisResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4032-L4060">list_application_emojis</a>(...) -> ListApplicationEmojisResponse</code></summary>
 <dl>
 <dd>
 
@@ -6473,7 +6473,7 @@ client.list_application_emojis(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_application_emoji</a>(...) -> EmojiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4062-L4103">create_application_emoji</a>(...) -> EmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -6550,7 +6550,7 @@ client.create_application_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_interaction_response</a>(...) -> typing.Optional[InteractionCallbackResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4105-L4160">create_interaction_response</a>(...) -> typing.Optional[InteractionCallbackResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6638,7 +6638,7 @@ client.create_interaction_response(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">send_soundboard_sound</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4162-L4201">send_soundboard_sound</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6714,7 +6714,7 @@ client.send_soundboard_sound(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_thread_member</a>(...) -> ThreadMemberResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4203-L4243">get_thread_member</a>(...) -> ThreadMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -6790,7 +6790,7 @@ client.get_thread_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_thread_member</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4245-L4279">add_thread_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6858,7 +6858,7 @@ client.add_thread_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_thread_member</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4281-L4315">delete_thread_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6926,7 +6926,7 @@ client.delete_thread_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_thread_members</a>(...) -> typing.List[ThreadMemberResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4317-L4359">list_thread_members</a>(...) -> typing.List[ThreadMemberResponse]</code></summary>
 <dl>
 <dd>
 
@@ -7009,7 +7009,7 @@ client.list_thread_members(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_channel_permission_overwrite</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4361-L4406">set_channel_permission_overwrite</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7101,7 +7101,7 @@ client.set_channel_permission_overwrite(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_channel_permission_overwrite</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4408-L4444">delete_channel_permission_overwrite</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7169,7 +7169,7 @@ client.delete_channel_permission_overwrite(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_group_dm_user</a>(...) -> typing.Optional[AddGroupDmUserResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4446-L4489">add_group_dm_user</a>(...) -> typing.Optional[AddGroupDmUserResponse]</code></summary>
 <dl>
 <dd>
 
@@ -7253,7 +7253,7 @@ client.add_group_dm_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_group_dm_user</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4491-L4525">delete_group_dm_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7321,7 +7321,7 @@ client.delete_group_dm_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">follow_channel</a>(...) -> ChannelFollowerResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4527-L4564">follow_channel</a>(...) -> ChannelFollowerResponse</code></summary>
 <dl>
 <dd>
 
@@ -7389,7 +7389,7 @@ client.follow_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4566-L4601">get_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -7457,7 +7457,7 @@ client.get_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4603-L4637">delete_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7525,7 +7525,7 @@ client.delete_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4639-L4706">update_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -7649,7 +7649,7 @@ client.update_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_messages</a>(...) -> typing.Optional[typing.List[MessageResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4708-L4753">list_messages</a>(...) -> typing.Optional[typing.List[MessageResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -7740,7 +7740,7 @@ client.list_messages(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4755-L4841">create_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -7903,7 +7903,7 @@ client.create_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_channel_webhooks</a>(...) -> typing.Optional[typing.List[ListChannelWebhooksResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4843-L4871">list_channel_webhooks</a>(...) -> typing.Optional[typing.List[ListChannelWebhooksResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -7962,7 +7962,7 @@ client.list_channel_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_webhook</a>(...) -> GuildIncomingWebhookResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4873-L4913">create_webhook</a>(...) -> GuildIncomingWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -8038,7 +8038,7 @@ client.create_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_channel_invites</a>(...) -> typing.Optional[typing.List[ListChannelInvitesResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4915-L4943">list_channel_invites</a>(...) -> typing.Optional[typing.List[ListChannelInvitesResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -8097,7 +8097,7 @@ client.list_channel_invites(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_channel_invite</a>(...) -> typing.Optional[CreateChannelInviteResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4945-L4980">create_channel_invite</a>(...) -> typing.Optional[CreateChannelInviteResponse]</code></summary>
 <dl>
 <dd>
 
@@ -8165,7 +8165,7 @@ client.create_channel_invite(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_thread</a>(...) -> CreatedThreadResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4982-L5024">create_thread</a>(...) -> CreatedThreadResponse</code></summary>
 <dl>
 <dd>
 
@@ -8236,7 +8236,7 @@ client.create_thread(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">trigger_typing_indicator</a>(...) -> typing.Optional[TypingIndicatorResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5026-L5054">trigger_typing_indicator</a>(...) -> typing.Optional[TypingIndicatorResponse]</code></summary>
 <dl>
 <dd>
 
@@ -8295,7 +8295,7 @@ client.trigger_typing_indicator(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pin_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5056-L5090">pin_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8363,7 +8363,7 @@ client.pin_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">unpin_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5092-L5126">unpin_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8431,7 +8431,7 @@ client.unpin_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_pinned_messages</a>(...) -> typing.Optional[typing.List[MessageResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5128-L5156">list_pinned_messages</a>(...) -> typing.Optional[typing.List[MessageResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -8490,7 +8490,7 @@ client.list_pinned_messages(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_webhook_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5158-L5202">get_webhook_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -8575,7 +8575,7 @@ client.get_webhook_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_webhook_message</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5204-L5247">delete_webhook_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8660,7 +8660,7 @@ client.delete_webhook_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_webhook_message</a>(...) -> MessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5249-L5329">update_webhook_message</a>(...) -> MessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -8761,7 +8761,7 @@ client.update_webhook_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">execute_github_compatible_webhook</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5331-L5463">execute_github_compatible_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9011,7 +9011,7 @@ client.execute_github_compatible_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">execute_slack_compatible_webhook</a>(...) -> typing.Optional[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5465-L5528">execute_slack_compatible_webhook</a>(...) -> typing.Optional[str]</code></summary>
 <dl>
 <dd>
 
@@ -9127,7 +9127,7 @@ client.execute_slack_compatible_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">edit_lobby_channel_link</a>(...) -> LobbyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5530-L5566">edit_lobby_channel_link</a>(...) -> LobbyResponse</code></summary>
 <dl>
 <dd>
 
@@ -9194,7 +9194,7 @@ client.edit_lobby_channel_link(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_lobby_message</a>(...) -> LobbyMessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5568-L5654">create_lobby_message</a>(...) -> LobbyMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -9357,7 +9357,7 @@ client.create_lobby_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_lobby_member</a>(...) -> LobbyMemberResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5656-L5699">add_lobby_member</a>(...) -> LobbyMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -9441,7 +9441,7 @@ client.add_lobby_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_lobby_member</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5701-L5735">delete_lobby_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9509,7 +9509,7 @@ client.delete_lobby_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5737-L5765">get_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -9568,7 +9568,7 @@ client.get_guild_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_from_template</a>(...) -> GuildResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5767-L5807">create_guild_from_template</a>(...) -> GuildResponse</code></summary>
 <dl>
 <dd>
 
@@ -9644,7 +9644,7 @@ client.create_guild_from_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_new_member_welcome</a>(...) -> typing.Optional[GuildHomeSettingsResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5809-L5837">get_guild_new_member_welcome</a>(...) -> typing.Optional[GuildHomeSettingsResponse]</code></summary>
 <dl>
 <dd>
 
@@ -9703,7 +9703,7 @@ client.get_guild_new_member_welcome(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_soundboard_sound</a>(...) -> SoundboardSoundResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5839-L5874">get_guild_soundboard_sound</a>(...) -> SoundboardSoundResponse</code></summary>
 <dl>
 <dd>
 
@@ -9771,7 +9771,7 @@ client.get_guild_soundboard_sound(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_soundboard_sound</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5876-L5910">delete_guild_soundboard_sound</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9839,7 +9839,7 @@ client.delete_guild_soundboard_sound(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_soundboard_sound</a>(...) -> SoundboardSoundResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5912-L5967">update_guild_soundboard_sound</a>(...) -> SoundboardSoundResponse</code></summary>
 <dl>
 <dd>
 
@@ -9939,7 +9939,7 @@ client.update_guild_soundboard_sound(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_soundboard_sounds</a>(...) -> ListGuildSoundboardSoundsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5969-L5997">list_guild_soundboard_sounds</a>(...) -> ListGuildSoundboardSoundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9998,7 +9998,7 @@ client.list_guild_soundboard_sounds(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_soundboard_sound</a>(...) -> SoundboardSoundResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L5999-L6055">create_guild_soundboard_sound</a>(...) -> SoundboardSoundResponse</code></summary>
 <dl>
 <dd>
 
@@ -10099,7 +10099,7 @@ client.create_guild_soundboard_sound(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_scheduled_event</a>(...) -> GetGuildScheduledEventResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6057-L6097">get_guild_scheduled_event</a>(...) -> GetGuildScheduledEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -10175,7 +10175,7 @@ client.get_guild_scheduled_event(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_scheduled_event</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6099-L6135">delete_guild_scheduled_event</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10243,7 +10243,7 @@ client.delete_guild_scheduled_event(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_scheduled_event</a>(...) -> UpdateGuildScheduledEventResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6137-L6178">update_guild_scheduled_event</a>(...) -> UpdateGuildScheduledEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -10320,7 +10320,7 @@ client.update_guild_scheduled_event(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_scheduled_events</a>(...) -> typing.Optional[typing.List[ListGuildScheduledEventsResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6180-L6216">list_guild_scheduled_events</a>(...) -> typing.Optional[typing.List[ListGuildScheduledEventsResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -10387,7 +10387,7 @@ client.list_guild_scheduled_events(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_scheduled_event</a>(...) -> CreateGuildScheduledEventResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6218-L6271">create_guild_scheduled_event</a>(...) -> CreateGuildScheduledEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -10464,7 +10464,7 @@ client.create_guild_scheduled_event(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_welcome_screen</a>(...) -> GuildWelcomeScreenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6273-L6301">get_guild_welcome_screen</a>(...) -> GuildWelcomeScreenResponse</code></summary>
 <dl>
 <dd>
 
@@ -10523,7 +10523,7 @@ client.get_guild_welcome_screen(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_welcome_screen</a>(...) -> GuildWelcomeScreenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6303-L6349">update_guild_welcome_screen</a>(...) -> GuildWelcomeScreenResponse</code></summary>
 <dl>
 <dd>
 
@@ -10606,7 +10606,7 @@ client.update_guild_welcome_screen(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_voice_state</a>(...) -> VoiceStateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6351-L6386">get_voice_state</a>(...) -> VoiceStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -10674,7 +10674,7 @@ client.get_voice_state(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_voice_state</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6388-L6430">update_voice_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10758,7 +10758,7 @@ client.update_voice_state(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_integration</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6432-L6466">delete_guild_integration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10826,7 +10826,7 @@ client.delete_guild_integration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_integrations</a>(...) -> typing.Optional[typing.List[ListGuildIntegrationsResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6468-L6496">list_guild_integrations</a>(...) -> typing.Optional[typing.List[ListGuildIntegrationsResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -10885,7 +10885,7 @@ client.list_guild_integrations(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_widget</a>(...) -> WidgetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6498-L6526">get_guild_widget</a>(...) -> WidgetResponse</code></summary>
 <dl>
 <dd>
 
@@ -10944,7 +10944,7 @@ client.get_guild_widget(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guilds_onboarding</a>(...) -> UserGuildOnboardingResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6528-L6556">get_guilds_onboarding</a>(...) -> UserGuildOnboardingResponse</code></summary>
 <dl>
 <dd>
 
@@ -11003,7 +11003,7 @@ client.get_guilds_onboarding(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_guilds_onboarding</a>(...) -> GuildOnboardingResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6558-L6608">put_guilds_onboarding</a>(...) -> GuildOnboardingResponse</code></summary>
 <dl>
 <dd>
 
@@ -11094,7 +11094,7 @@ client.put_guilds_onboarding(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_vanity_url</a>(...) -> VanityUrlResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6610-L6638">get_guild_vanity_url</a>(...) -> VanityUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -11153,7 +11153,7 @@ client.get_guild_vanity_url(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_audit_log_entries</a>(...) -> GuildAuditLogResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6640-L6698">list_guild_audit_log_entries</a>(...) -> GuildAuditLogResponse</code></summary>
 <dl>
 <dd>
 
@@ -11260,7 +11260,7 @@ client.list_guild_audit_log_entries(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_widget_png</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6700-L6734">get_guild_widget_png</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -11327,7 +11327,7 @@ client.get_guild_widget_png(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">sync_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6736-L6767">sync_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11395,7 +11395,7 @@ client.sync_guild_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6769-L6800">delete_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11463,7 +11463,7 @@ client.delete_guild_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6802-L6845">update_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11547,7 +11547,7 @@ client.update_guild_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_templates</a>(...) -> typing.Optional[typing.List[GuildTemplateResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6847-L6875">list_guild_templates</a>(...) -> typing.Optional[typing.List[GuildTemplateResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -11606,7 +11606,7 @@ client.list_guild_templates(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6877-L6917">create_guild_template</a>(...) -> GuildTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11682,7 +11682,7 @@ client.create_guild_template(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_sticker</a>(...) -> GuildStickerResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6919-L6954">get_guild_sticker</a>(...) -> GuildStickerResponse</code></summary>
 <dl>
 <dd>
 
@@ -11750,7 +11750,7 @@ client.get_guild_sticker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_sticker</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6956-L6990">delete_guild_sticker</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11818,7 +11818,7 @@ client.delete_guild_sticker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_sticker</a>(...) -> GuildStickerResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L6992-L7038">update_guild_sticker</a>(...) -> GuildStickerResponse</code></summary>
 <dl>
 <dd>
 
@@ -11910,7 +11910,7 @@ client.update_guild_sticker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_ban_users_from_guild</a>(...) -> BulkBanUsersResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7040-L7080">bulk_ban_users_from_guild</a>(...) -> BulkBanUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -11988,7 +11988,7 @@ client.bulk_ban_users_from_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_stickers</a>(...) -> typing.List[GuildStickerResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7082-L7110">list_guild_stickers</a>(...) -> typing.List[GuildStickerResponse]</code></summary>
 <dl>
 <dd>
 
@@ -12047,7 +12047,7 @@ client.list_guild_stickers(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_sticker</a>(...) -> GuildStickerResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7112-L7160">create_guild_sticker</a>(...) -> GuildStickerResponse</code></summary>
 <dl>
 <dd>
 
@@ -12141,7 +12141,7 @@ client.create_guild_sticker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_webhooks</a>(...) -> typing.Optional[typing.List[GetGuildWebhooksResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7162-L7190">get_guild_webhooks</a>(...) -> typing.Optional[typing.List[GetGuildWebhooksResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -12200,7 +12200,7 @@ client.get_guild_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_channels</a>(...) -> typing.Optional[typing.List[ListGuildChannelsResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7192-L7220">list_guild_channels</a>(...) -> typing.Optional[typing.List[ListGuildChannelsResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -12259,7 +12259,7 @@ client.list_guild_channels(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_channel</a>(...) -> GuildChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7222-L7329">create_guild_channel</a>(...) -> GuildChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -12463,7 +12463,7 @@ client.create_guild_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_update_guild_channels</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7331-L7367">bulk_update_guild_channels</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12533,7 +12533,7 @@ client.bulk_update_guild_channels(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_member</a>(...) -> GuildMemberResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7369-L7404">get_guild_member</a>(...) -> GuildMemberResponse</code></summary>
 <dl>
 <dd>
 
@@ -12601,7 +12601,7 @@ client.get_guild_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">add_guild_member</a>(...) -> typing.Optional[GuildMemberResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7406-L7470">add_guild_member</a>(...) -> typing.Optional[GuildMemberResponse]</code></summary>
 <dl>
 <dd>
 
@@ -12718,7 +12718,7 @@ client.add_guild_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_member</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7472-L7506">delete_guild_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12786,7 +12786,7 @@ client.delete_guild_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_member</a>(...) -> typing.Optional[GuildMemberResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7508-L7575">update_guild_member</a>(...) -> typing.Optional[GuildMemberResponse]</code></summary>
 <dl>
 <dd>
 
@@ -12910,7 +12910,7 @@ client.update_guild_member(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_members</a>(...) -> typing.List[GuildMemberResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7577-L7616">list_guild_members</a>(...) -> typing.List[GuildMemberResponse]</code></summary>
 <dl>
 <dd>
 
@@ -12985,7 +12985,7 @@ client.list_guild_members(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_preview</a>(...) -> GuildPreviewResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7618-L7646">get_guild_preview</a>(...) -> GuildPreviewResponse</code></summary>
 <dl>
 <dd>
 
@@ -13044,7 +13044,7 @@ client.get_guild_preview(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_invites</a>(...) -> typing.Optional[typing.List[ListGuildInvitesResponseItem]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7648-L7676">list_guild_invites</a>(...) -> typing.Optional[typing.List[ListGuildInvitesResponseItem]]</code></summary>
 <dl>
 <dd>
 
@@ -13103,7 +13103,7 @@ client.list_guild_invites(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_voice_regions</a>(...) -> typing.Optional[typing.List[VoiceRegionResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7678-L7706">list_guild_voice_regions</a>(...) -> typing.Optional[typing.List[VoiceRegionResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -13162,7 +13162,7 @@ client.list_guild_voice_regions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_emoji</a>(...) -> EmojiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7708-L7743">get_guild_emoji</a>(...) -> EmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -13230,7 +13230,7 @@ client.get_guild_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_emoji</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7745-L7779">delete_guild_emoji</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13298,7 +13298,7 @@ client.delete_guild_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_emoji</a>(...) -> EmojiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7781-L7824">update_guild_emoji</a>(...) -> EmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -13382,7 +13382,7 @@ client.update_guild_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_emojis</a>(...) -> typing.Optional[typing.List[EmojiResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7826-L7854">list_guild_emojis</a>(...) -> typing.Optional[typing.List[EmojiResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -13441,7 +13441,7 @@ client.list_guild_emojis(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_emoji</a>(...) -> EmojiResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7856-L7900">create_guild_emoji</a>(...) -> EmojiResponse</code></summary>
 <dl>
 <dd>
 
@@ -13526,7 +13526,7 @@ client.create_guild_emoji(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_widget_settings</a>(...) -> WidgetSettingsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7902-L7930">get_guild_widget_settings</a>(...) -> WidgetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13585,7 +13585,7 @@ client.get_guild_widget_settings(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_widget_settings</a>(...) -> WidgetSettingsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7932-L7971">update_guild_widget_settings</a>(...) -> WidgetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13660,7 +13660,7 @@ client.update_guild_widget_settings(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_role</a>(...) -> GuildRoleResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L7973-L8008">get_guild_role</a>(...) -> GuildRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -13728,7 +13728,7 @@ client.get_guild_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild_role</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8010-L8044">delete_guild_role</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13796,7 +13796,7 @@ client.delete_guild_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild_role</a>(...) -> GuildRoleResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8046-L8113">update_guild_role</a>(...) -> GuildRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -13920,7 +13920,7 @@ client.update_guild_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_roles</a>(...) -> typing.List[GuildRoleResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8115-L8143">list_guild_roles</a>(...) -> typing.List[GuildRoleResponse]</code></summary>
 <dl>
 <dd>
 
@@ -13979,7 +13979,7 @@ client.list_guild_roles(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_guild_role</a>(...) -> GuildRoleResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8145-L8207">create_guild_role</a>(...) -> GuildRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -14094,7 +14094,7 @@ client.create_guild_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_update_guild_roles</a>(...) -> typing.List[GuildRoleResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8209-L8244">bulk_update_guild_roles</a>(...) -> typing.List[GuildRoleResponse]</code></summary>
 <dl>
 <dd>
 
@@ -14164,7 +14164,7 @@ client.bulk_update_guild_roles(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">preview_prune_guild</a>(...) -> GuildPruneResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8246-L8285">preview_prune_guild</a>(...) -> GuildPruneResponse</code></summary>
 <dl>
 <dd>
 
@@ -14239,7 +14239,7 @@ client.preview_prune_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">prune_guild</a>(...) -> GuildPruneResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8287-L8333">prune_guild</a>(...) -> GuildPruneResponse</code></summary>
 <dl>
 <dd>
 
@@ -14322,7 +14322,7 @@ client.prune_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild_ban</a>(...) -> GuildBanResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8335-L8370">get_guild_ban</a>(...) -> GuildBanResponse</code></summary>
 <dl>
 <dd>
 
@@ -14390,7 +14390,7 @@ client.get_guild_ban(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">ban_user_from_guild</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8372-L8418">ban_user_from_guild</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14474,7 +14474,7 @@ client.ban_user_from_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">unban_user_from_guild</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8420-L8454">unban_user_from_guild</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14542,7 +14542,7 @@ client.unban_user_from_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_guild_bans</a>(...) -> typing.Optional[typing.List[GuildBanResponse]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8456-L8498">list_guild_bans</a>(...) -> typing.Optional[typing.List[GuildBanResponse]]</code></summary>
 <dl>
 <dd>
 
@@ -14625,7 +14625,7 @@ client.list_guild_bans(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_guild_mfa_level</a>(...) -> GuildMfaLevelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8500-L8531">set_guild_mfa_level</a>(...) -> GuildMfaLevelResponse</code></summary>
 <dl>
 <dd>
 
@@ -14693,7 +14693,7 @@ client.set_guild_mfa_level(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_stage_instance</a>(...) -> StageInstanceResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8533-L8561">get_stage_instance</a>(...) -> StageInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -14752,7 +14752,7 @@ client.get_stage_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_stage_instance</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8563-L8590">delete_stage_instance</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14811,7 +14811,7 @@ client.delete_stage_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_stage_instance</a>(...) -> StageInstanceResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8592-L8631">update_stage_instance</a>(...) -> StageInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -14886,7 +14886,7 @@ client.update_stage_instance(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_sticker_pack</a>(...) -> StickerPackResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8633-L8661">get_sticker_pack</a>(...) -> StickerPackResponse</code></summary>
 <dl>
 <dd>
 
@@ -14945,7 +14945,7 @@ client.get_sticker_pack(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_application</a>(...) -> PrivateApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8663-L8691">get_application</a>(...) -> PrivateApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -15004,7 +15004,7 @@ client.get_application(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_application</a>(...) -> PrivateApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8693-L8785">update_application</a>(...) -> PrivateApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -15071,7 +15071,7 @@ client.update_application(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_webhook_by_token</a>(...) -> GetWebhookByTokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8787-L8818">get_webhook_by_token</a>(...) -> GetWebhookByTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -15139,7 +15139,7 @@ client.get_webhook_by_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">execute_webhook</a>(...) -> typing.Optional[MessageResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8820-L8876">execute_webhook</a>(...) -> typing.Optional[MessageResponse]</code></summary>
 <dl>
 <dd>
 
@@ -15240,7 +15240,7 @@ client.execute_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_webhook_by_token</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8878-L8908">delete_webhook_by_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15308,7 +15308,7 @@ client.delete_webhook_by_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_webhook_by_token</a>(...) -> UpdateWebhookByTokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8910-L8953">update_webhook_by_token</a>(...) -> UpdateWebhookByTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -15392,7 +15392,7 @@ client.update_webhook_by_token(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_sticker</a>(...) -> GetStickerResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8955-L8983">get_sticker</a>(...) -> GetStickerResponse</code></summary>
 <dl>
 <dd>
 
@@ -15451,7 +15451,7 @@ client.get_sticker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_webhook</a>(...) -> GetWebhookResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L8985-L9013">get_webhook</a>(...) -> GetWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -15510,7 +15510,7 @@ client.get_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_webhook</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9015-L9042">delete_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15569,7 +15569,7 @@ client.delete_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_webhook</a>(...) -> UpdateWebhookResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9044-L9086">update_webhook</a>(...) -> UpdateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -15652,7 +15652,7 @@ client.update_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_channel</a>(...) -> GetChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9088-L9116">get_channel</a>(...) -> GetChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -15711,7 +15711,7 @@ client.get_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_channel</a>(...) -> DeleteChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9118-L9146">delete_channel</a>(...) -> DeleteChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -15770,7 +15770,7 @@ client.delete_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_channel</a>(...) -> UpdateChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9148-L9183">update_channel</a>(...) -> UpdateChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -15838,7 +15838,7 @@ client.update_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">invite_resolve</a>(...) -> InviteResolveResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9185-L9227">invite_resolve</a>(...) -> InviteResolveResponse</code></summary>
 <dl>
 <dd>
 
@@ -15913,7 +15913,7 @@ client.invite_resolve(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">invite_revoke</a>(...) -> InviteRevokeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9229-L9257">invite_revoke</a>(...) -> InviteRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -15972,7 +15972,7 @@ client.invite_revoke(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_lobby</a>(...) -> LobbyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9259-L9287">get_lobby</a>(...) -> LobbyResponse</code></summary>
 <dl>
 <dd>
 
@@ -16031,7 +16031,7 @@ client.get_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">edit_lobby</a>(...) -> LobbyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9289-L9335">edit_lobby</a>(...) -> LobbyResponse</code></summary>
 <dl>
 <dd>
 
@@ -16114,7 +16114,7 @@ client.edit_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_guild</a>(...) -> GuildWithCountsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9337-L9371">get_guild</a>(...) -> GuildWithCountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -16181,7 +16181,7 @@ client.get_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_guild</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9373-L9398">delete_guild</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16240,7 +16240,7 @@ client.delete_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_guild</a>(...) -> GuildResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9400-L9522">update_guild</a>(...) -> GuildResponse</code></summary>
 <dl>
 <dd>
 
@@ -16475,7 +16475,7 @@ client.update_guild(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_user</a>(...) -> UserResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L9524-L9552">get_user</a>(...) -> UserResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Lists
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">alle_lijsten_opvragen</a>() -> ListList</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L31-L56">alle_lijsten_opvragen</a>() -> ListList</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.lists.alle_lijsten_opvragen()
 </dl>
 </details>
 
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">lijst_toevoegen</a>(...) -> ListEnvelope</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L58-L116">lijst_toevoegen</a>(...) -> ListEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -170,7 +170,7 @@ client.lists.lijst_toevoegen(
 </dl>
 </details>
 
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">lijst_opvragen</a>(...) -> ListEnvelope</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L118-L148">lijst_opvragen</a>(...) -> ListEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -244,7 +244,7 @@ client.lists.lijst_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">lijst_wijzigen</a>(...) -> ListEnvelope</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L150-L213">lijst_wijzigen</a>(...) -> ListEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -358,7 +358,7 @@ client.lists.lijst_wijzigen(
 </dl>
 </details>
 
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">lijst_verwijderen</a>(...) -> ListEnvelope</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L215-L247">lijst_verwijderen</a>(...) -> ListEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -432,7 +432,7 @@ client.lists.lijst_verwijderen(
 </dl>
 </details>
 
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">lijst_synchroniseren_bulk</a>(...) -> SyncResult</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L249-L327">lijst_synchroniseren_bulk</a>(...) -> SyncResult</code></summary>
 <dl>
 <dd>
 
@@ -571,7 +571,7 @@ client.lists.lijst_synchroniseren_bulk(
 </dl>
 </details>
 
-<details><summary><code>client.lists.<a href="src/fern/lists/client.py">lijst_leegmaken</a>(...) -> ListEnvelope</code></summary>
+<details><summary><code>client.lists.<a href="src/fern/lists/client.py#L329-L359">lijst_leegmaken</a>(...) -> ListEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -646,7 +646,7 @@ client.lists.lijst_leegmaken(
 </details>
 
 ## Fields
-<details><summary><code>client.fields.<a href="src/fern/fields/client.py">alle_velden_opvragen</a>(...) -> FieldList</code></summary>
+<details><summary><code>client.fields.<a href="src/fern/fields/client.py#L34-L66">alle_velden_opvragen</a>(...) -> FieldList</code></summary>
 <dl>
 <dd>
 
@@ -720,7 +720,7 @@ client.fields.alle_velden_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.fields.<a href="src/fern/fields/client.py">veld_toevoegen</a>(...) -> FieldEnvelope</code></summary>
+<details><summary><code>client.fields.<a href="src/fern/fields/client.py#L68-L153">veld_toevoegen</a>(...) -> FieldEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -864,7 +864,7 @@ client.fields.veld_toevoegen(
 </dl>
 </details>
 
-<details><summary><code>client.fields.<a href="src/fern/fields/client.py">veld_opvragen</a>(...) -> FieldEnvelope</code></summary>
+<details><summary><code>client.fields.<a href="src/fern/fields/client.py#L155-L191">veld_opvragen</a>(...) -> FieldEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -947,7 +947,7 @@ client.fields.veld_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.fields.<a href="src/fern/fields/client.py">veld_wijzigen</a>(...) -> FieldEnvelope</code></summary>
+<details><summary><code>client.fields.<a href="src/fern/fields/client.py#L193-L277">veld_wijzigen</a>(...) -> FieldEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1095,7 +1095,7 @@ client.fields.veld_wijzigen(
 </dl>
 </details>
 
-<details><summary><code>client.fields.<a href="src/fern/fields/client.py">veld_verwijderen</a>(...) -> FieldEnvelope</code></summary>
+<details><summary><code>client.fields.<a href="src/fern/fields/client.py#L279-L315">veld_verwijderen</a>(...) -> FieldEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1179,7 +1179,7 @@ client.fields.veld_verwijderen(
 </details>
 
 ## Segments
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">alle_segmenten_opvragen</a>(...) -> SegmentList</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L30-L62">alle_segmenten_opvragen</a>(...) -> SegmentList</code></summary>
 <dl>
 <dd>
 
@@ -1253,7 +1253,7 @@ client.segments.alle_segmenten_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">segment_toevoegen</a>(...) -> SegmentEnvelope</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L64-L106">segment_toevoegen</a>(...) -> SegmentEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1345,7 +1345,7 @@ client.segments.segment_toevoegen(
 </dl>
 </details>
 
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">segment_opvragen</a>(...) -> SegmentEnvelope</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L108-L144">segment_opvragen</a>(...) -> SegmentEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1428,7 +1428,7 @@ client.segments.segment_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">segment_wijzigen</a>(...) -> SegmentEnvelope</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L146-L196">segment_wijzigen</a>(...) -> SegmentEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1527,7 +1527,7 @@ client.segments.segment_wijzigen(
 </dl>
 </details>
 
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">segment_verwijderen</a>(...) -> SegmentEnvelope</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L198-L234">segment_verwijderen</a>(...) -> SegmentEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1611,7 +1611,7 @@ client.segments.segment_verwijderen(
 </details>
 
 ## Subscribers
-<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py">alle_relaties_opvragen</a>(...) -> MemberList</code></summary>
+<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py#L34-L75">alle_relaties_opvragen</a>(...) -> MemberList</code></summary>
 <dl>
 <dd>
 
@@ -1693,7 +1693,7 @@ client.subscribers.alle_relaties_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py">relatie_toevoegen</a>(...) -> MemberEnvelope</code></summary>
+<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py#L77-L142">relatie_toevoegen</a>(...) -> MemberEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1809,7 +1809,7 @@ client.subscribers.relatie_toevoegen(
 </dl>
 </details>
 
-<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py">relatie_opvragen</a>(...) -> MemberEnvelope</code></summary>
+<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py#L144-L180">relatie_opvragen</a>(...) -> MemberEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1892,7 +1892,7 @@ client.subscribers.relatie_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py">relatie_wijzigen</a>(...) -> MemberEnvelope</code></summary>
+<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py#L182-L240">relatie_wijzigen</a>(...) -> MemberEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1999,7 +1999,7 @@ client.subscribers.relatie_wijzigen(
 </dl>
 </details>
 
-<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py">relatie_verwijderen</a>(...) -> MemberEnvelope</code></summary>
+<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py#L242-L278">relatie_verwijderen</a>(...) -> MemberEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2082,7 +2082,7 @@ client.subscribers.relatie_verwijderen(
 </dl>
 </details>
 
-<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py">relatiegeschiedenis_opvragen</a>(...) -> History</code></summary>
+<details><summary><code>client.subscribers.<a href="src/fern/subscribers/client.py#L280-L364">relatiegeschiedenis_opvragen</a>(...) -> History</code></summary>
 <dl>
 <dd>
 
@@ -2227,7 +2227,7 @@ client.subscribers.relatiegeschiedenis_opvragen(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">alle_webhooks_opvragen</a>(...) -> WebhookList</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L32-L64">alle_webhooks_opvragen</a>(...) -> WebhookList</code></summary>
 <dl>
 <dd>
 
@@ -2301,7 +2301,7 @@ client.webhooks.alle_webhooks_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">webhook_toevoegen</a>(...) -> WebhookEnvelope</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L66-L120">webhook_toevoegen</a>(...) -> WebhookEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2403,7 +2403,7 @@ client.webhooks.webhook_toevoegen(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">webhook_opvragen</a>(...) -> WebhookEnvelope</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L122-L158">webhook_opvragen</a>(...) -> WebhookEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2486,7 +2486,7 @@ client.webhooks.webhook_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">webhook_wijzigen</a>(...) -> WebhookEnvelope</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L160-L214">webhook_wijzigen</a>(...) -> WebhookEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2593,7 +2593,7 @@ client.webhooks.webhook_wijzigen(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">webhook_verwijderen</a>(...) -> WebhookEnvelope</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L216-L252">webhook_verwijderen</a>(...) -> WebhookEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2677,7 +2677,7 @@ client.webhooks.webhook_verwijderen(
 </details>
 
 ## Campaigns
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">alle_campagnes_opvragen</a>() -> CampaignList</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L33-L58">alle_campagnes_opvragen</a>() -> CampaignList</code></summary>
 <dl>
 <dd>
 
@@ -2741,7 +2741,7 @@ client.campaigns.alle_campagnes_opvragen()
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_aanmaken</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L60-L143">campagne_aanmaken</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2886,7 +2886,7 @@ client.campaigns.campagne_aanmaken(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_opvragen</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L145-L177">campagne_opvragen</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -2960,7 +2960,7 @@ client.campaigns.campagne_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_wijzigen</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L179-L257">campagne_wijzigen</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -3098,7 +3098,7 @@ client.campaigns.campagne_wijzigen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_verwijderen</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L259-L291">campagne_verwijderen</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -3172,7 +3172,7 @@ client.campaigns.campagne_verwijderen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_content_opvragen</a>(...) -> CampaignContent</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L293-L325">campagne_content_opvragen</a>(...) -> CampaignContent</code></summary>
 <dl>
 <dd>
 
@@ -3246,7 +3246,7 @@ client.campaigns.campagne_content_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_content_vullen</a>(...) -> CampaignContent</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L327-L410">campagne_content_vullen</a>(...) -> CampaignContent</code></summary>
 <dl>
 <dd>
 
@@ -3392,7 +3392,7 @@ client.campaigns.campagne_content_vullen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_testen</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L412-L448">campagne_testen</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -3475,7 +3475,7 @@ client.campaigns.campagne_testen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_inplannen</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L450-L488">campagne_inplannen</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -3558,7 +3558,7 @@ client.campaigns.campagne_inplannen(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagne_verzenden</a>(...) -> CampaignEnvelope</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L490-L522">campagne_verzenden</a>(...) -> CampaignEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -3632,7 +3632,7 @@ client.campaigns.campagne_verzenden(
 </dl>
 </details>
 
-<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py">campagnegeschiedenis_opvragen</a>(...) -> History</code></summary>
+<details><summary><code>client.campaigns.<a href="src/fern/campaigns/client.py#L524-L596">campagnegeschiedenis_opvragen</a>(...) -> History</code></summary>
 <dl>
 <dd>
 
@@ -3759,7 +3759,7 @@ client.campaigns.campagnegeschiedenis_opvragen(
 </details>
 
 ## Results
-<details><summary><code>client.results.<a href="src/fern/results/client.py">campagneresultaten_opvragen</a>(...) -> ReportEnvelope</code></summary>
+<details><summary><code>client.results.<a href="src/fern/results/client.py#L27-L59">campagneresultaten_opvragen</a>(...) -> ReportEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -3833,7 +3833,7 @@ client.results.campagneresultaten_opvragen(
 </dl>
 </details>
 
-<details><summary><code>client.results.<a href="src/fern/results/client.py">alle_resultaten_opvragen</a>() -> ReportList</code></summary>
+<details><summary><code>client.results.<a href="src/fern/results/client.py#L61-L86">alle_resultaten_opvragen</a>() -> ReportList</code></summary>
 <dl>
 <dd>
 

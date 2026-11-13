@@ -1,6 +1,6 @@
 # Reference
 ## Risk Coverages
-<details><summary><code>client.risk_coverages.<a href="src/fern/risk_coverages/client.py">get_pension_risk_coverages</a>(...) -> OkResponseRiskCoveragePension</code></summary>
+<details><summary><code>client.risk_coverages.<a href="src/fern/risk_coverages/client.py#L26-L62">get_pension_risk_coverages</a>(...) -> OkResponseRiskCoveragePension</code></summary>
 <dl>
 <dd>
 
@@ -79,7 +79,7 @@ client.risk_coverages.get_pension_risk_coverages()
 </details>
 
 ## Survival Coverages
-<details><summary><code>client.survival_coverages.<a href="src/fern/survival_coverages/client.py">get_pension_survival_coverages</a>(...) -> OkResponseSurvivalCoveragePension</code></summary>
+<details><summary><code>client.survival_coverages.<a href="src/fern/survival_coverages/client.py#L26-L62">get_pension_survival_coverages</a>(...) -> OkResponseSurvivalCoveragePension</code></summary>
 <dl>
 <dd>
 

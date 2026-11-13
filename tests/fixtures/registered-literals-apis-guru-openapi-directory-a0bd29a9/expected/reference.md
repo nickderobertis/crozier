@@ -1,6 +1,6 @@
 # Reference
 ## AgentTelemetry
-<details><summary><code>client.agent_telemetry.<a href="src/fern/agent_telemetry/client.py">post_api_v1agent_telemetry</a>(...)</code></summary>
+<details><summary><code>client.agent_telemetry.<a href="src/fern/agent_telemetry/client.py#L29-L56">post_api_v1agent_telemetry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.agent_telemetry.post_api_v1agent_telemetry(
 </dl>
 </details>
 
-<details><summary><code>client.agent_telemetry.<a href="src/fern/agent_telemetry/client.py">post_api_v1agent_telemetry_standalone</a>(...)</code></summary>
+<details><summary><code>client.agent_telemetry.<a href="src/fern/agent_telemetry/client.py#L58-L87">post_api_v1agent_telemetry_standalone</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -123,7 +123,7 @@ client.agent_telemetry.post_api_v1agent_telemetry_standalone(
 </details>
 
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get_api_v1agents_family</a>(...) -> AgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L26-L54">get_api_v1agents_family</a>(...) -> AgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -183,7 +183,7 @@ client.agents.get_api_v1agents_family(
 </details>
 
 ## Environments
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1environments</a>(...) -> typing.List[CloudEnvironmentResult]</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L44-L81">get_api_v1environments</a>(...) -> typing.List[CloudEnvironmentResult]</code></summary>
 <dl>
 <dd>
 
@@ -256,7 +256,7 @@ client.environments.get_api_v1environments()
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1environments</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L83-L242">post_api_v1environments</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -564,7 +564,7 @@ client.environments.post_api_v1environments(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_environment_route</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L244-L286">get_environment_route</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -647,7 +647,7 @@ client.environments.get_environment_route(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">delete_api_v1environments_environment_id</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L288-L317">delete_api_v1environments_environment_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -706,7 +706,7 @@ client.environments.delete_api_v1environments_environment_id(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">patch_api_v1environments_environment_id</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L319-L377">patch_api_v1environments_environment_id</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -813,7 +813,7 @@ client.environments.patch_api_v1environments_environment_id(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">update_environment_route</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L379-L419">update_environment_route</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -889,7 +889,7 @@ client.environments.update_environment_route(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1environments_environment_id_archive</a>(...) -> UnfilteredCloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L421-L451">get_api_v1environments_environment_id_archive</a>(...) -> UnfilteredCloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -948,7 +948,7 @@ client.environments.get_api_v1environments_environment_id_archive(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1environments_environment_id_archive</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L453-L483">post_api_v1environments_environment_id_archive</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1007,7 +1007,7 @@ client.environments.post_api_v1environments_environment_id_archive(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1environments_environment_id_export</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L485-L515">post_api_v1environments_environment_id_export</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1066,7 +1066,7 @@ client.environments.post_api_v1environments_environment_id_export(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">patch_api_v1environments_environment_id_folder</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L517-L553">patch_api_v1environments_environment_id_folder</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1133,7 +1133,7 @@ client.environments.patch_api_v1environments_environment_id_folder(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1environments_environment_id_heartbeattoken</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L555-L585">get_api_v1environments_environment_id_heartbeattoken</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1192,7 +1192,7 @@ client.environments.get_api_v1environments_environment_id_heartbeattoken(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1environments_environment_id_notify</a>(...) -> str</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L587-L637">post_api_v1environments_environment_id_notify</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1283,7 +1283,7 @@ client.environments.post_api_v1environments_environment_id_notify(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">put_api_v1environments_environment_id_ports_port</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L639-L681">put_api_v1environments_environment_id_ports_port</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1367,7 +1367,7 @@ client.environments.put_api_v1environments_environment_id_ports_port(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">delete_api_v1environments_environment_id_ports_port</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L683-L715">delete_api_v1environments_environment_id_ports_port</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1435,7 +1435,7 @@ client.environments.delete_api_v1environments_environment_id_ports_port(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">patch_api_v1environments_environment_id_restore</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L717-L746">patch_api_v1environments_environment_id_restore</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1494,7 +1494,7 @@ client.environments.patch_api_v1environments_environment_id_restore(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">put_api_v1environments_environment_id_secrets</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L748-L784">put_api_v1environments_environment_id_secrets</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1561,7 +1561,7 @@ client.environments.put_api_v1environments_environment_id_secrets(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1environments_environment_id_shutdown</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L786-L816">post_api_v1environments_environment_id_shutdown</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1620,7 +1620,7 @@ client.environments.post_api_v1environments_environment_id_shutdown(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1environments_environment_id_start</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L818-L854">post_api_v1environments_environment_id_start</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1687,7 +1687,7 @@ client.environments.post_api_v1environments_environment_id_start(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1environments_environment_id_state</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L856-L885">get_api_v1environments_environment_id_state</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1746,7 +1746,7 @@ client.environments.get_api_v1environments_environment_id_state(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1environments_environment_id_updates</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L887-L917">get_api_v1environments_environment_id_updates</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1805,7 +1805,7 @@ client.environments.get_api_v1environments_environment_id_updates(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1geneva_actions_environments_storage_environment_id_or_friendly_name_target_blob</a>(...) -> str</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L919-L958">get_api_v1geneva_actions_environments_storage_environment_id_or_friendly_name_target_blob</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1873,7 +1873,7 @@ client.environments.get_api_v1geneva_actions_environments_storage_environment_id
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_api_v1geneva_actions_environments_environment_id</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L960-L990">get_api_v1geneva_actions_environments_environment_id</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.environments.get_api_v1geneva_actions_environments_environment_id(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">delete_api_v1geneva_actions_environments_environment_id</a>(...)</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L992-L1027">delete_api_v1geneva_actions_environments_environment_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1999,7 +1999,7 @@ client.environments.delete_api_v1geneva_actions_environments_environment_id(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">put_api_v1geneva_actions_environments_environment_id_archive</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L1029-L1059">put_api_v1geneva_actions_environments_environment_id_archive</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -2058,7 +2058,7 @@ client.environments.put_api_v1geneva_actions_environments_environment_id_archive
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">put_api_v1geneva_actions_environments_environment_id_shutdown</a>(...) -> CloudEnvironmentResult</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L1061-L1091">put_api_v1geneva_actions_environments_environment_id_shutdown</a>(...) -> CloudEnvironmentResult</code></summary>
 <dl>
 <dd>
 
@@ -2117,7 +2117,7 @@ client.environments.put_api_v1geneva_actions_environments_environment_id_shutdow
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">post_api_v1geneva_actions_environments_environment_id_upload_running_vm_logs</a>(...) -> VmLogsUploadInfo</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L1093-L1123">post_api_v1geneva_actions_environments_environment_id_upload_running_vm_logs</a>(...) -> VmLogsUploadInfo</code></summary>
 <dl>
 <dd>
 
@@ -2177,7 +2177,7 @@ client.environments.post_api_v1geneva_actions_environments_environment_id_upload
 </details>
 
 ## Billing
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">post_api_v1geneva_actions_billing_resend</a>(...) -> BillSummary</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L32-L66">post_api_v1geneva_actions_billing_resend</a>(...) -> BillSummary</code></summary>
 <dl>
 <dd>
 
@@ -2242,7 +2242,7 @@ client.billing.post_api_v1geneva_actions_billing_resend()
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">get_api_v1geneva_actions_billing_environment_id</a>(...) -> BillSummary</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L68-L107">get_api_v1geneva_actions_billing_environment_id</a>(...) -> BillSummary</code></summary>
 <dl>
 <dd>
 
@@ -2317,7 +2317,7 @@ client.billing.get_api_v1geneva_actions_billing_environment_id(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">get_api_v1geneva_actions_billing_environment_id_state_changes</a>(...) -> EnvironmentStateChange</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L109-L139">get_api_v1geneva_actions_billing_environment_id_state_changes</a>(...) -> EnvironmentStateChange</code></summary>
 <dl>
 <dd>
 
@@ -2376,7 +2376,7 @@ client.billing.get_api_v1geneva_actions_billing_environment_id_state_changes(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">post_api_v1geneva_actions_billing_environment_id_state_changes</a>(...) -> EnvironmentStateChange</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L141-L183">post_api_v1geneva_actions_billing_environment_id_state_changes</a>(...) -> EnvironmentStateChange</code></summary>
 <dl>
 <dd>
 
@@ -2460,7 +2460,7 @@ client.billing.post_api_v1geneva_actions_billing_environment_id_state_changes(
 </details>
 
 ## Configuration
-<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py">post_api_v1geneva_actions_configuration_target</a>(...) -> SystemConfigurationResponse</code></summary>
+<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py#L29-L71">post_api_v1geneva_actions_configuration_target</a>(...) -> SystemConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2543,7 +2543,7 @@ client.configuration.post_api_v1geneva_actions_configuration_target(
 </dl>
 </details>
 
-<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py">get_api_v1geneva_actions_configuration_target_key</a>(...) -> SystemConfigurationResponse</code></summary>
+<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py#L73-L106">get_api_v1geneva_actions_configuration_target_key</a>(...) -> SystemConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2611,7 +2611,7 @@ client.configuration.get_api_v1geneva_actions_configuration_target_key(
 </dl>
 </details>
 
-<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py">delete_api_v1geneva_actions_configuration_target_key</a>(...)</code></summary>
+<details><summary><code>client.configuration.<a href="src/fern/configuration/client.py#L108-L140">delete_api_v1geneva_actions_configuration_target_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2680,7 +2680,7 @@ client.configuration.delete_api_v1geneva_actions_configuration_target_key(
 </details>
 
 ## Pools
-<details><summary><code>client.pools.<a href="src/fern/pools/client.py">post_api_v1geneva_actions_pools_change_resource_deletion_setting</a>(...) -> SystemConfigurationResponse</code></summary>
+<details><summary><code>client.pools.<a href="src/fern/pools/client.py#L30-L78">post_api_v1geneva_actions_pools_change_resource_deletion_setting</a>(...) -> SystemConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2769,7 +2769,7 @@ client.pools.post_api_v1geneva_actions_pools_change_resource_deletion_setting()
 </dl>
 </details>
 
-<details><summary><code>client.pools.<a href="src/fern/pools/client.py">post_api_v1geneva_actions_pools_pool_code_rotate_pool</a>(...)</code></summary>
+<details><summary><code>client.pools.<a href="src/fern/pools/client.py#L80-L109">post_api_v1geneva_actions_pools_pool_code_rotate_pool</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2828,7 +2828,7 @@ client.pools.post_api_v1geneva_actions_pools_pool_code_rotate_pool(
 </dl>
 </details>
 
-<details><summary><code>client.pools.<a href="src/fern/pools/client.py">post_api_v1geneva_actions_pools_target</a>(...) -> SystemConfigurationResponse</code></summary>
+<details><summary><code>client.pools.<a href="src/fern/pools/client.py#L111-L173">post_api_v1geneva_actions_pools_target</a>(...) -> SystemConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2943,7 +2943,7 @@ client.pools.post_api_v1geneva_actions_pools_target(
 </dl>
 </details>
 
-<details><summary><code>client.pools.<a href="src/fern/pools/client.py">get_api_v1pools_default</a>(...) -> typing.List[PoolStatusResponseBody]</code></summary>
+<details><summary><code>client.pools.<a href="src/fern/pools/client.py#L175-L204">get_api_v1pools_default</a>(...) -> typing.List[PoolStatusResponseBody]</code></summary>
 <dl>
 <dd>
 
@@ -3001,7 +3001,7 @@ client.pools.get_api_v1pools_default()
 </details>
 
 ## Prebuilds
-<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py">post_api_v1geneva_actions_prebuilds_pools_createorupdatesettings</a>(...)</code></summary>
+<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py#L33-L84">post_api_v1geneva_actions_prebuilds_pools_createorupdatesettings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3058,7 +3058,7 @@ client.prebuilds.post_api_v1geneva_actions_prebuilds_pools_createorupdatesetting
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py">post_api_v1geneva_actions_prebuilds_pools_delete</a>(...)</code></summary>
+<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py#L86-L137">post_api_v1geneva_actions_prebuilds_pools_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3115,7 +3115,7 @@ client.prebuilds.post_api_v1geneva_actions_prebuilds_pools_delete()
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py">post_api_v1prebuilds_pools_pool_id_instances</a>(...)</code></summary>
+<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py#L139-L177">post_api_v1prebuilds_pools_pool_id_instances</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3182,7 +3182,7 @@ client.prebuilds.post_api_v1prebuilds_pools_pool_id_instances(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py">put_api_v1prebuilds_pools_pool_id_instances</a>(...)</code></summary>
+<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py#L179-L217">put_api_v1prebuilds_pools_pool_id_instances</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3249,7 +3249,7 @@ client.prebuilds.put_api_v1prebuilds_pools_pool_id_instances(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py">get_template_info_route</a>(...) -> PrebuildTemplateInfoResult</code></summary>
+<details><summary><code>client.prebuilds.<a href="src/fern/prebuilds/client.py#L219-L247">get_template_info_route</a>(...) -> PrebuildTemplateInfoResult</code></summary>
 <dl>
 <dd>
 
@@ -3309,7 +3309,7 @@ client.prebuilds.get_template_info_route(
 </details>
 
 ## Privacy
-<details><summary><code>client.privacy.<a href="src/fern/privacy/client.py">post_api_v1geneva_actions_privacy_refresh_profile_telemetry_properties</a>(...) -> RefreshProfileTelemetryPropertiesResponse</code></summary>
+<details><summary><code>client.privacy.<a href="src/fern/privacy/client.py#L29-L66">post_api_v1geneva_actions_privacy_refresh_profile_telemetry_properties</a>(...) -> RefreshProfileTelemetryPropertiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3383,7 +3383,7 @@ client.privacy.post_api_v1geneva_actions_privacy_refresh_profile_telemetry_prope
 </details>
 
 ## Resources
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">post_api_v1geneva_actions_resources_resource_id_under_investigation</a>(...) -> UnderInvestigationResponseBody</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L26-L56">post_api_v1geneva_actions_resources_resource_id_under_investigation</a>(...) -> UnderInvestigationResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -3443,7 +3443,7 @@ client.resources.post_api_v1geneva_actions_resources_resource_id_under_investiga
 </details>
 
 ## VnetPoolDefinitions
-<details><summary><code>client.vnet_pool_definitions.<a href="src/fern/vnet_pool_definitions/client.py">post_api_v1geneva_actions_vnet_pool_definitions</a>(...)</code></summary>
+<details><summary><code>client.vnet_pool_definitions.<a href="src/fern/vnet_pool_definitions/client.py#L31-L93">post_api_v1geneva_actions_vnet_pool_definitions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3507,7 +3507,7 @@ client.vnet_pool_definitions.post_api_v1geneva_actions_vnet_pool_definitions(
 </dl>
 </details>
 
-<details><summary><code>client.vnet_pool_definitions.<a href="src/fern/vnet_pool_definitions/client.py">delete_api_v1geneva_actions_vnet_pool_definitions</a>(...)</code></summary>
+<details><summary><code>client.vnet_pool_definitions.<a href="src/fern/vnet_pool_definitions/client.py#L95-L157">delete_api_v1geneva_actions_vnet_pool_definitions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3572,7 +3572,7 @@ client.vnet_pool_definitions.delete_api_v1geneva_actions_vnet_pool_definitions(
 </details>
 
 ## HeartBeat
-<details><summary><code>client.heart_beat.<a href="src/fern/heart_beat/client.py">post_api_v1heart_beat</a>(...)</code></summary>
+<details><summary><code>client.heart_beat.<a href="src/fern/heart_beat/client.py#L30-L77">post_api_v1heart_beat</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3662,7 +3662,7 @@ client.heart_beat.post_api_v1heart_beat()
 </details>
 
 ## Locations
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">get_api_v1locations</a>() -> LocationsResult</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L27-L49">get_api_v1locations</a>() -> LocationsResult</code></summary>
 <dl>
 <dd>
 
@@ -3711,7 +3711,7 @@ client.locations.get_api_v1locations()
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">get_api_v1locations_location</a>(...) -> LocationInfoResult</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L51-L87">get_api_v1locations_location</a>(...) -> LocationInfoResult</code></summary>
 <dl>
 <dd>
 
@@ -3779,7 +3779,7 @@ client.locations.get_api_v1locations_location(
 </details>
 
 ## Sas
-<details><summary><code>client.sas.<a href="src/fern/sas/client.py">get_api_v1sas</a>() -> typing.List[ScopedSecretResultBody]</code></summary>
+<details><summary><code>client.sas.<a href="src/fern/sas/client.py#L26-L50">get_api_v1sas</a>() -> typing.List[ScopedSecretResultBody]</code></summary>
 <dl>
 <dd>
 
@@ -3829,7 +3829,7 @@ client.sas.get_api_v1sas()
 </details>
 
 ## Secrets
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">get_api_v1secrets</a>(...) -> typing.List[ScopedSecretResultBody]</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L32-L58">get_api_v1secrets</a>(...) -> typing.List[ScopedSecretResultBody]</code></summary>
 <dl>
 <dd>
 
@@ -3886,7 +3886,7 @@ client.secrets.get_api_v1secrets()
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">post_api_v1secrets</a>(...) -> ScopedSecretResultBody</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L60-L116">post_api_v1secrets</a>(...) -> ScopedSecretResultBody</code></summary>
 <dl>
 <dd>
 
@@ -3991,7 +3991,7 @@ client.secrets.post_api_v1secrets()
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">put_api_v1secrets_secret_id</a>(...) -> ScopedSecretResultBody</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L118-L176">put_api_v1secrets_secret_id</a>(...) -> ScopedSecretResultBody</code></summary>
 <dl>
 <dd>
 
@@ -4098,7 +4098,7 @@ client.secrets.put_api_v1secrets_secret_id(
 </dl>
 </details>
 
-<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py">delete_api_v1secrets_secret_id</a>(...)</code></summary>
+<details><summary><code>client.secrets.<a href="src/fern/secrets/client.py#L178-L216">delete_api_v1secrets_secret_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4174,7 +4174,7 @@ client.secrets.delete_api_v1secrets_secret_id(
 </details>
 
 ## Tenant
-<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py">get_api_v1tenant_tenant_id</a>(...) -> TenantInfoResult</code></summary>
+<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py#L26-L54">get_api_v1tenant_tenant_id</a>(...) -> TenantInfoResult</code></summary>
 <dl>
 <dd>
 
@@ -4233,7 +4233,7 @@ client.tenant.get_api_v1tenant_tenant_id(
 </dl>
 </details>
 
-<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py">put_api_v1tenant_tenant_id</a>(...)</code></summary>
+<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py#L56-L83">put_api_v1tenant_tenant_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4292,7 +4292,7 @@ client.tenant.put_api_v1tenant_tenant_id(
 </dl>
 </details>
 
-<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py">delete_api_v1tenant_tenant_id</a>(...)</code></summary>
+<details><summary><code>client.tenant.<a href="src/fern/tenant/client.py#L85-L112">delete_api_v1tenant_tenant_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4352,7 +4352,7 @@ client.tenant.delete_api_v1tenant_tenant_id(
 </details>
 
 ## Tokens
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">post_api_v1tokens_plans_plan_name_delete_all_codespaces</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L33-L71">post_api_v1tokens_plans_plan_name_delete_all_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4427,7 +4427,7 @@ client.tokens.post_api_v1tokens_plans_plan_name_delete_all_codespaces(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">post_api_v1tokens_plans_plan_name_read_all_codespaces</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L73-L111">post_api_v1tokens_plans_plan_name_read_all_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4502,7 +4502,7 @@ client.tokens.post_api_v1tokens_plans_plan_name_read_all_codespaces(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">post_api_v1tokens_plans_plan_name_write_codespaces</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L113-L151">post_api_v1tokens_plans_plan_name_write_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4577,7 +4577,7 @@ client.tokens.post_api_v1tokens_plans_plan_name_write_codespaces(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">post_api_v1tokens_plans_plan_name_write_delegates</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L153-L210">post_api_v1tokens_plans_plan_name_write_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4652,7 +4652,7 @@ client.tokens.post_api_v1tokens_plans_plan_name_write_delegates(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">put_api_v1tokens_subscriptions_subscription_id_resource_groups_resource_group_providers_provider_namespace_plans_resource_name</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L212-L296">put_api_v1tokens_subscriptions_subscription_id_resource_groups_resource_group_providers_provider_namespace_plans_resource_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4755,7 +4755,7 @@ client.tokens.put_api_v1tokens_subscriptions_subscription_id_resource_groups_res
 </details>
 
 ## Tunnel
-<details><summary><code>client.tunnel.<a href="src/fern/tunnel/client.py">get_api_v1tunnel_environment_id_port_info</a>(...) -> TunnelPortInfoResult</code></summary>
+<details><summary><code>client.tunnel.<a href="src/fern/tunnel/client.py#L26-L62">get_api_v1tunnel_environment_id_port_info</a>(...) -> TunnelPortInfoResult</code></summary>
 <dl>
 <dd>
 
@@ -4823,7 +4823,7 @@ client.tunnel.get_api_v1tunnel_environment_id_port_info(
 </details>
 
 ## UserSubscriptions
-<details><summary><code>client.user_subscriptions.<a href="src/fern/user_subscriptions/client.py">post_api_v1user_subscriptions</a>(...)</code></summary>
+<details><summary><code>client.user_subscriptions.<a href="src/fern/user_subscriptions/client.py#L25-L50">post_api_v1user_subscriptions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4880,7 +4880,7 @@ client.user_subscriptions.post_api_v1user_subscriptions()
 </dl>
 </details>
 
-<details><summary><code>client.user_subscriptions.<a href="src/fern/user_subscriptions/client.py">delete_api_v1user_subscriptions</a>(...)</code></summary>
+<details><summary><code>client.user_subscriptions.<a href="src/fern/user_subscriptions/client.py#L52-L77">delete_api_v1user_subscriptions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4938,7 +4938,7 @@ client.user_subscriptions.delete_api_v1user_subscriptions()
 </details>
 
 ## NetworkSettings
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">put_api_v1subscriptions_subscription_id_providers_git_hub_network_resource_type_subscription_life_cycle_notification</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L32-L82">put_api_v1subscriptions_subscription_id_providers_git_hub_network_resource_type_subscription_life_cycle_notification</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5014,7 +5014,7 @@ client.network_settings.put_api_v1subscriptions_subscription_id_providers_git_hu
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_providers_git_hub_network_resource_type_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L84-L123">post_api_v1subscriptions_subscription_id_providers_git_hub_network_resource_type_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5090,7 +5090,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_providers_git_h
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L125-L168">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5175,7 +5175,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">put_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L170-L246">put_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5269,7 +5269,7 @@ client.network_settings.put_api_v1subscriptions_subscription_id_resource_groups_
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">delete_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L248-L324">delete_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5363,7 +5363,7 @@ client.network_settings.delete_api_v1subscriptions_subscription_id_resource_grou
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">patch_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L326-L402">patch_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5457,7 +5457,7 @@ client.network_settings.patch_api_v1subscriptions_subscription_id_resource_group
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_creation_completed</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L404-L448">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_creation_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5543,7 +5543,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_creation_validate</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L450-L526">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_creation_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5637,7 +5637,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_deletion_completed</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L528-L572">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_deletion_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5723,7 +5723,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_deletion_validate</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L574-L650">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_deletion_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5817,7 +5817,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_patch_completed</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L652-L696">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_patch_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5903,7 +5903,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_patch_validate</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L698-L774">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_patch_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5997,7 +5997,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </dl>
 </details>
 
-<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.network_settings.<a href="src/fern/network_settings/client.py#L776-L852">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_git_hub_network_resource_type_resource_name_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6092,7 +6092,7 @@ client.network_settings.post_api_v1subscriptions_subscription_id_resource_groups
 </details>
 
 ## Plans
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">put_api_v1subscriptions_subscription_id_providers_microsoft_codespaces_plans_subscription_life_cycle_notification</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L35-L80">put_api_v1subscriptions_subscription_id_providers_microsoft_codespaces_plans_subscription_life_cycle_notification</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6159,7 +6159,7 @@ client.plans.put_api_v1subscriptions_subscription_id_providers_microsoft_codespa
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_providers_microsoft_codespaces_plans_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L82-L117">post_api_v1subscriptions_subscription_id_providers_microsoft_codespaces_plans_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6226,7 +6226,7 @@ client.plans.post_api_v1subscriptions_subscription_id_providers_microsoft_codesp
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">put_api_v1subscriptions_subscription_id_providers_microsoft_vs_online_plans_subscription_life_cycle_notification</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L119-L164">put_api_v1subscriptions_subscription_id_providers_microsoft_vs_online_plans_subscription_life_cycle_notification</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6293,7 +6293,7 @@ client.plans.put_api_v1subscriptions_subscription_id_providers_microsoft_vs_onli
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_providers_microsoft_vs_online_plans_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L166-L201">post_api_v1subscriptions_subscription_id_providers_microsoft_vs_online_plans_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6360,7 +6360,7 @@ client.plans.post_api_v1subscriptions_subscription_id_providers_microsoft_vs_onl
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L203-L242">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6436,7 +6436,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">put_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L244-L323">put_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6529,7 +6529,7 @@ client.plans.put_api_v1subscriptions_subscription_id_resource_groups_resource_gr
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_delete_all_codespaces</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L325-L368">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_delete_all_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6614,7 +6614,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_delete_all_environments</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L370-L413">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_delete_all_environments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6699,7 +6699,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_read_all_codespaces</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L415-L458">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_read_all_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6784,7 +6784,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_read_all_environments</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L460-L503">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_read_all_environments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6869,7 +6869,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_read_delegates</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L505-L545">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_read_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6946,7 +6946,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_creation_completed</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L547-L587">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_creation_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7023,7 +7023,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_creation_validate</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L589-L664">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_creation_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7108,7 +7108,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_deletion_validate</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L666-L706">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_deletion_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7185,7 +7185,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_patch_completed</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L708-L763">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_patch_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7278,7 +7278,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_patch_validate</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L765-L816">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_patch_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7363,7 +7363,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L818-L893">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7448,7 +7448,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_write_codespaces</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L895-L938">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_write_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7533,7 +7533,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_write_delegates</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L940-L1003">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_write_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7618,7 +7618,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_write_environments</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1005-L1048">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_codespaces_plans_resource_name_write_environments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7703,7 +7703,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1050-L1089">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7779,7 +7779,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">put_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1091-L1170">put_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7872,7 +7872,7 @@ client.plans.put_api_v1subscriptions_subscription_id_resource_groups_resource_gr
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_delete_all_codespaces</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1172-L1215">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_delete_all_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7957,7 +7957,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_delete_all_environments</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1217-L1260">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_delete_all_environments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8042,7 +8042,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_read_all_codespaces</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1262-L1305">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_read_all_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8127,7 +8127,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_read_all_environments</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1307-L1350">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_read_all_environments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8212,7 +8212,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_read_delegates</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1352-L1392">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_read_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8289,7 +8289,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_creation_completed</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1394-L1434">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_creation_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8366,7 +8366,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_creation_validate</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1436-L1511">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_creation_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8451,7 +8451,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_deletion_validate</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1513-L1553">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_deletion_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8528,7 +8528,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_patch_completed</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1555-L1610">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_patch_completed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8621,7 +8621,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_patch_validate</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1612-L1663">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_patch_validate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8706,7 +8706,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_read_begin</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1665-L1740">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_resource_read_begin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8791,7 +8791,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_write_codespaces</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1742-L1785">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_write_codespaces</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8876,7 +8876,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_write_delegates</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1787-L1850">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_write_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8961,7 +8961,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_write_environments</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1852-L1895">post_api_v1subscriptions_subscription_id_resource_groups_resource_group_providers_microsoft_vs_online_plans_resource_name_write_environments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9046,7 +9046,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_groups_resource_g
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_group_providers_microsoft_codespaces_plans_resource_name_delete_delegates</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1897-L1937">post_api_v1subscriptions_subscription_id_resource_group_providers_microsoft_codespaces_plans_resource_name_delete_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9123,7 +9123,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_group_providers_m
 </dl>
 </details>
 
-<details><summary><code>client.plans.<a href="src/fern/plans/client.py">post_api_v1subscriptions_subscription_id_resource_group_providers_microsoft_vs_online_plans_resource_name_delete_delegates</a>(...)</code></summary>
+<details><summary><code>client.plans.<a href="src/fern/plans/client.py#L1939-L1979">post_api_v1subscriptions_subscription_id_resource_group_providers_microsoft_vs_online_plans_resource_name_delete_delegates</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9201,7 +9201,7 @@ client.plans.post_api_v1subscriptions_subscription_id_resource_group_providers_m
 </details>
 
 ## Pool
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">get_api_v1tenant_tenant_id_pool_pool_name</a>(...) -> PoolResult</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L32-L65">get_api_v1tenant_tenant_id_pool_pool_name</a>(...) -> PoolResult</code></summary>
 <dl>
 <dd>
 
@@ -9269,7 +9269,7 @@ client.pool.get_api_v1tenant_tenant_id_pool_pool_name(
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">put_api_v1tenant_tenant_id_pool_pool_name</a>(...) -> PoolResult</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L67-L137">put_api_v1tenant_tenant_id_pool_pool_name</a>(...) -> PoolResult</code></summary>
 <dl>
 <dd>
 
@@ -9352,7 +9352,7 @@ client.pool.put_api_v1tenant_tenant_id_pool_pool_name(
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">delete_api_v1tenant_tenant_id_pool_pool_name</a>(...)</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L139-L171">delete_api_v1tenant_tenant_id_pool_pool_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9420,7 +9420,7 @@ client.pool.delete_api_v1tenant_tenant_id_pool_pool_name(
 </dl>
 </details>
 
-<details><summary><code>client.pool.<a href="src/fern/pool/client.py">patch_api_v1tenant_tenant_id_pool_pool_name</a>(...) -> PoolResult</code></summary>
+<details><summary><code>client.pool.<a href="src/fern/pool/client.py#L173-L243">patch_api_v1tenant_tenant_id_pool_pool_name</a>(...) -> PoolResult</code></summary>
 <dl>
 <dd>
 
@@ -9504,7 +9504,7 @@ client.pool.patch_api_v1tenant_tenant_id_pool_pool_name(
 </details>
 
 ## PoolGroup
-<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py">get_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...) -> PoolGroupResult</code></summary>
+<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py#L30-L63">get_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...) -> PoolGroupResult</code></summary>
 <dl>
 <dd>
 
@@ -9572,7 +9572,7 @@ client.pool_group.get_api_v1tenant_tenant_id_pool_group_pool_group_name(
 </dl>
 </details>
 
-<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py">put_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...)</code></summary>
+<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py#L65-L117">put_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9666,7 +9666,7 @@ client.pool_group.put_api_v1tenant_tenant_id_pool_group_pool_group_name(
 </dl>
 </details>
 
-<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py">delete_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...)</code></summary>
+<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py#L119-L151">delete_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9734,7 +9734,7 @@ client.pool_group.delete_api_v1tenant_tenant_id_pool_group_pool_group_name(
 </dl>
 </details>
 
-<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py">patch_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...)</code></summary>
+<details><summary><code>client.pool_group.<a href="src/fern/pool_group/client.py#L153-L196">patch_api_v1tenant_tenant_id_pool_group_pool_group_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9820,7 +9820,7 @@ client.pool_group.patch_api_v1tenant_tenant_id_pool_group_pool_group_name(
 </details>
 
 ## Vm
-<details><summary><code>client.vm.<a href="src/fern/vm/client.py">get_api_v1tenant_tenant_id_pool_pool_name_vm</a>(...) -> typing.List[VmResult]</code></summary>
+<details><summary><code>client.vm.<a href="src/fern/vm/client.py#L30-L63">get_api_v1tenant_tenant_id_pool_pool_name_vm</a>(...) -> typing.List[VmResult]</code></summary>
 <dl>
 <dd>
 
@@ -9888,7 +9888,7 @@ client.vm.get_api_v1tenant_tenant_id_pool_pool_name_vm(
 </dl>
 </details>
 
-<details><summary><code>client.vm.<a href="src/fern/vm/client.py">get_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name</a>(...) -> VmResult</code></summary>
+<details><summary><code>client.vm.<a href="src/fern/vm/client.py#L65-L101">get_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name</a>(...) -> VmResult</code></summary>
 <dl>
 <dd>
 
@@ -9965,7 +9965,7 @@ client.vm.get_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name(
 </dl>
 </details>
 
-<details><summary><code>client.vm.<a href="src/fern/vm/client.py">put_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name</a>(...) -> VmResult</code></summary>
+<details><summary><code>client.vm.<a href="src/fern/vm/client.py#L103-L150">put_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name</a>(...) -> VmResult</code></summary>
 <dl>
 <dd>
 
@@ -10053,7 +10053,7 @@ client.vm.put_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name(
 </dl>
 </details>
 
-<details><summary><code>client.vm.<a href="src/fern/vm/client.py">delete_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name</a>(...)</code></summary>
+<details><summary><code>client.vm.<a href="src/fern/vm/client.py#L152-L187">delete_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10130,7 +10130,7 @@ client.vm.delete_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name(
 </dl>
 </details>
 
-<details><summary><code>client.vm.<a href="src/fern/vm/client.py">post_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name_start</a>(...)</code></summary>
+<details><summary><code>client.vm.<a href="src/fern/vm/client.py#L189-L224">post_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name_start</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10207,7 +10207,7 @@ client.vm.post_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name_start(
 </dl>
 </details>
 
-<details><summary><code>client.vm.<a href="src/fern/vm/client.py">post_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name_stop</a>(...)</code></summary>
+<details><summary><code>client.vm.<a href="src/fern/vm/client.py#L226-L261">post_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name_stop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10285,7 +10285,7 @@ client.vm.post_api_v1tenant_tenant_id_pool_pool_name_vm_vm_name_stop(
 </details>
 
 ## PrebuildsV
-<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py">post_api_v2prebuilds_delete</a>(...)</code></summary>
+<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py#L34-L80">post_api_v2prebuilds_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10369,7 +10369,7 @@ client.prebuilds_v.post_api_v2prebuilds_delete(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py">delete_api_v2prebuilds_repository_repo_id_branch_branch_name</a>(...)</code></summary>
+<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py#L82-L114">delete_api_v2prebuilds_repository_repo_id_branch_branch_name</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10437,7 +10437,7 @@ client.prebuilds_v.delete_api_v2prebuilds_repository_repo_id_branch_branch_name(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py">post_api_v2prebuilds_templates</a>(...) -> CreateTemplateResult</code></summary>
+<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py#L116-L186">post_api_v2prebuilds_templates</a>(...) -> CreateTemplateResult</code></summary>
 <dl>
 <dd>
 
@@ -10568,7 +10568,7 @@ client.prebuilds_v.post_api_v2prebuilds_templates(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py">get_prebuild_readiness_skus_route</a>(...) -> PrebuildReadinessResult</code></summary>
+<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py#L188-L250">get_prebuild_readiness_skus_route</a>(...) -> PrebuildReadinessResult</code></summary>
 <dl>
 <dd>
 
@@ -10679,7 +10679,7 @@ client.prebuilds_v.get_prebuild_readiness_skus_route(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py">post_api_v2prebuilds_templates_updatemaxversions</a>(...)</code></summary>
+<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py#L252-L299">post_api_v2prebuilds_templates_updatemaxversions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10764,7 +10764,7 @@ client.prebuilds_v.post_api_v2prebuilds_templates_updatemaxversions(
 </dl>
 </details>
 
-<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py">post_api_v2prebuilds_templates_template_id_updatestatus</a>(...)</code></summary>
+<details><summary><code>client.prebuilds_v.<a href="src/fern/prebuilds_v/client.py#L301-L333">post_api_v2prebuilds_templates_template_id_updatestatus</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10833,7 +10833,7 @@ client.prebuilds_v.post_api_v2prebuilds_templates_template_id_updatestatus(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L46">get_health</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10883,7 +10883,7 @@ client.health.get_health()
 </details>
 
 ## Netmon
-<details><summary><code>client.netmon.<a href="src/fern/netmon/client.py">get_internal_netmon_correlation</a>(...) -> str</code></summary>
+<details><summary><code>client.netmon.<a href="src/fern/netmon/client.py#L25-L53">get_internal_netmon_correlation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -10941,7 +10941,7 @@ client.netmon.get_internal_netmon_correlation()
 </details>
 
 ## Warmup
-<details><summary><code>client.warmup.<a href="src/fern/warmup/client.py">get_warmup</a>()</code></summary>
+<details><summary><code>client.warmup.<a href="src/fern/warmup/client.py#L25-L46">get_warmup</a>()</code></summary>
 <dl>
 <dd>
 

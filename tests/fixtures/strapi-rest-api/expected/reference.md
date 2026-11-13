@@ -1,6 +1,6 @@
 # Reference
 ## page-metadata
-<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py">list_page_metadata</a>(...) -> PageMetadataListResponse</code></summary>
+<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py#L35-L135">list_page_metadata</a>(...) -> PageMetadataListResponse</code></summary>
 <dl>
 <dd>
 
@@ -175,7 +175,7 @@ client.page_metadata.list_page_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py">create_page_metadata</a>(...) -> PageMetadataSingleResponse</code></summary>
+<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py#L137-L167">create_page_metadata</a>(...) -> PageMetadataSingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.page_metadata.create_page_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py">get_page_metadata</a>(...) -> PageMetadataSingleResponse</code></summary>
+<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py#L169-L221">get_page_metadata</a>(...) -> PageMetadataSingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -353,7 +353,7 @@ client.page_metadata.get_page_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py">update_page_metadata</a>(...) -> PageMetadataSingleResponse</code></summary>
+<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py#L223-L257">update_page_metadata</a>(...) -> PageMetadataSingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -435,7 +435,7 @@ client.page_metadata.update_page_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py">delete_page_metadata</a>(...)</code></summary>
+<details><summary><code>client.page_metadata.<a href="src/fern/page_metadata/client.py#L259-L289">delete_page_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -509,7 +509,7 @@ client.page_metadata.delete_page_metadata(
 </details>
 
 ## collection-type
-<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py">list_entries</a>(...) -> EntryListResponse</code></summary>
+<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py#L34-L131">list_entries</a>(...) -> EntryListResponse</code></summary>
 <dl>
 <dd>
 
@@ -678,7 +678,7 @@ client.collection_type.list_entries(
 </dl>
 </details>
 
-<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py">create_entry</a>(...) -> EntrySingleResponse</code></summary>
+<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py#L133-L171">create_entry</a>(...) -> EntrySingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -762,7 +762,7 @@ client.collection_type.create_entry(
 </dl>
 </details>
 
-<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py">get_entry</a>(...) -> EntrySingleResponse</code></summary>
+<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py#L173-L236">get_entry</a>(...) -> EntrySingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -876,7 +876,7 @@ client.collection_type.get_entry(
 </dl>
 </details>
 
-<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py">update_entry</a>(...) -> EntrySingleResponse</code></summary>
+<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py#L238-L281">update_entry</a>(...) -> EntrySingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -969,7 +969,7 @@ client.collection_type.update_entry(
 </dl>
 </details>
 
-<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py">delete_entry</a>(...)</code></summary>
+<details><summary><code>client.collection_type.<a href="src/fern/collection_type/client.py#L283-L317">delete_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1052,7 +1052,7 @@ client.collection_type.delete_entry(
 </details>
 
 ## single-type
-<details><summary><code>client.single_type.<a href="src/fern/single_type/client.py">update_single_type</a>(...) -> EntrySingleResponse</code></summary>
+<details><summary><code>client.single_type.<a href="src/fern/single_type/client.py#L29-L67">update_single_type</a>(...) -> EntrySingleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1136,7 +1136,7 @@ client.single_type.update_single_type(
 </dl>
 </details>
 
-<details><summary><code>client.single_type.<a href="src/fern/single_type/client.py">delete_single_type</a>(...)</code></summary>
+<details><summary><code>client.single_type.<a href="src/fern/single_type/client.py#L69-L97">delete_single_type</a>(...)</code></summary>
 <dl>
 <dd>
 

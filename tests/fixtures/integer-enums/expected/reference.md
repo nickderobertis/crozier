@@ -1,6 +1,6 @@
 # Reference
 ## Enums
-<details><summary><code>client.enums.<a href="src/fern/enums/client.py">setpriority</a>(...) -> Ticket</code></summary>
+<details><summary><code>client.enums.<a href="src/fern/enums/client.py#L31-L63">setpriority</a>(...) -> Ticket</code></summary>
 <dl>
 <dd>
 

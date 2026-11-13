@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">posts_the_users_review_to_stellastra</a>(...) -> PostPostReviewResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L118-L179">posts_the_users_review_to_stellastra</a>(...) -> PostPostReviewResponse</code></summary>
 <dl>
 <dd>
 

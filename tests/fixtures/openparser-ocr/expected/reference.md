@@ -1,6 +1,6 @@
 # Reference
 ## models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list_ocr_models</a>() -> OcrModelsResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L28-L54">list_ocr_models</a>() -> OcrModelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.models.list_ocr_models()
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list_llm_models</a>(...) -> OcrLlmModelsResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L56-L109">list_llm_models</a>(...) -> OcrLlmModelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -170,7 +170,7 @@ client.models.list_llm_models()
 </details>
 
 ## parse
-<details><summary><code>client.parse.<a href="src/fern/parse/client.py">sync</a>(...) -> ParseResult</code></summary>
+<details><summary><code>client.parse.<a href="src/fern/parse/client.py#L34-L96">sync</a>(...) -> ParseResult</code></summary>
 <dl>
 <dd>
 
@@ -393,7 +393,7 @@ references an existing Eigenpal reusable file.
 </dl>
 </details>
 
-<details><summary><code>client.parse.<a href="src/fern/parse/client.py">batch</a>(...) -> BatchJobAccepted</code></summary>
+<details><summary><code>client.parse.<a href="src/fern/parse/client.py#L158-L212">batch</a>(...) -> BatchJobAccepted</code></summary>
 <dl>
 <dd>
 
@@ -501,7 +501,7 @@ Omit when every batch item supplies `file_id` instead.
 </details>
 
 ## extract
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">sync</a>(...) -> ExtractionTerminalResult</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L35-L87">sync</a>(...) -> ExtractionTerminalResult</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ references an existing Eigenpal reusable file.
 </dl>
 </details>
 
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">batch</a>(...) -> BatchJobAccepted</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L139-L193">batch</a>(...) -> BatchJobAccepted</code></summary>
 <dl>
 <dd>
 
@@ -811,7 +811,7 @@ Omit when every batch item supplies `file_id` instead.
 </dl>
 </details>
 
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">suggest_schema</a>(...) -> SuggestSchemaResponse</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L195-L237">suggest_schema</a>(...) -> SuggestSchemaResponse</code></summary>
 <dl>
 <dd>
 
@@ -895,7 +895,7 @@ client.extract.suggest_schema(
 </details>
 
 ## jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_jobs</a>(...) -> JobListResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L39-L90">list_jobs</a>(...) -> JobListResponse</code></summary>
 <dl>
 <dd>
 
@@ -999,7 +999,7 @@ never listed.
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L92-L138">get_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -1092,7 +1092,7 @@ client.jobs.get_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_extraction_review</a>(...) -> ExtractionReview</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L140-L173">get_extraction_review</a>(...) -> ExtractionReview</code></summary>
 <dl>
 <dd>
 
@@ -1167,7 +1167,7 @@ client.jobs.get_extraction_review(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">update_extraction_review</a>(...) -> ExtractionReview</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L175-L241">update_extraction_review</a>(...) -> ExtractionReview</code></summary>
 <dl>
 <dd>
 
@@ -1279,7 +1279,7 @@ client.jobs.update_extraction_review(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">complete_extraction_review</a>(...) -> ExtractionReview</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L243-L294">complete_extraction_review</a>(...) -> ExtractionReview</code></summary>
 <dl>
 <dd>
 
@@ -1381,7 +1381,7 @@ client.jobs.complete_extraction_review(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">reopen_extraction_review</a>(...) -> ExtractionReview</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L296-L336">reopen_extraction_review</a>(...) -> ExtractionReview</code></summary>
 <dl>
 <dd>
 
@@ -1467,7 +1467,7 @@ client.jobs.reopen_extraction_review(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_result</a>(...) -> ParseResult</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L338-L386">get_job_result</a>(...) -> ParseResult</code></summary>
 <dl>
 <dd>
 
@@ -1560,7 +1560,7 @@ re-runs OCR.
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_source</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L388-L423">get_job_source</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1638,7 +1638,7 @@ client.jobs.get_job_source(
 </details>
 
 ## files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">create_file</a>(...) -> PublicFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L31-L60">create_file</a>(...) -> PublicFile</code></summary>
 <dl>
 <dd>
 
@@ -1713,7 +1713,7 @@ client.files.create_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file</a>(...) -> PublicFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L62-L89">get_file</a>(...) -> PublicFile</code></summary>
 <dl>
 <dd>
 
@@ -1772,7 +1772,7 @@ client.files.get_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete_file</a>(...) -> DeleteFileResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L91-L118">delete_file</a>(...) -> DeleteFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1831,7 +1831,7 @@ client.files.delete_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file_content</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L120-L149">get_file_content</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1891,7 +1891,7 @@ client.files.get_file_content(
 </details>
 
 ## pipelines
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">list_extraction_pipelines</a>() -> ExtractionPipelineListResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L36-L62">list_extraction_pipelines</a>() -> ExtractionPipelineListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1954,7 +1954,7 @@ client.pipelines.list_extraction_pipelines()
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">create_extraction_pipeline</a>(...) -> ExtractionPipeline</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L64-L140">create_extraction_pipeline</a>(...) -> ExtractionPipeline</code></summary>
 <dl>
 <dd>
 
@@ -2102,7 +2102,7 @@ strict structured-output normalization as extract.
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">get_extraction_pipeline</a>(...) -> ExtractionPipeline</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L142-L174">get_extraction_pipeline</a>(...) -> ExtractionPipeline</code></summary>
 <dl>
 <dd>
 
@@ -2176,7 +2176,7 @@ client.pipelines.get_extraction_pipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">delete_extraction_pipeline</a>(...) -> DeleteExtractionPipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L176-L208">delete_extraction_pipeline</a>(...) -> DeleteExtractionPipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -2250,7 +2250,7 @@ client.pipelines.delete_extraction_pipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">update_extraction_pipeline</a>(...) -> ExtractionPipeline</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L210-L286">update_extraction_pipeline</a>(...) -> ExtractionPipeline</code></summary>
 <dl>
 <dd>
 

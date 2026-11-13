@@ -1,6 +1,6 @@
 # Reference
 ## Relays
-<details><summary><code>client._relays.<a href="src/fern/_relays/client.py">reset</a>(...)</code></summary>
+<details><summary><code>client._relays.<a href="src/fern/_relays/client.py#L28-L52">reset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client._relays.reset(
 </details>
 
 ## Signals
-<details><summary><code>client.signals.<a href="src/fern/signals/client.py">status</a>(...) -> RelayState</code></summary>
+<details><summary><code>client.signals.<a href="src/fern/signals/client.py#L26-L50">status</a>(...) -> RelayState</code></summary>
 <dl>
 <dd>
 
@@ -118,7 +118,7 @@ client.signals.status(
 </details>
 
 ## Audit Trail
-<details><summary><code>client._audit._trail.<a href="src/fern/_audit/_trail/client.py">export</a>() -> typing.List[AuditEntry]</code></summary>
+<details><summary><code>client._audit._trail.<a href="src/fern/_audit/_trail/client.py#L26-L46">export</a>() -> typing.List[AuditEntry]</code></summary>
 <dl>
 <dd>
 

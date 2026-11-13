@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">generate</a>(...) -> GenerateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L131-L226">generate</a>(...) -> GenerateResponse</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.generate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">chat</a>(...) -> ChatResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L228-L313">chat</a>(...) -> ChatResponse</code></summary>
 <dl>
 <dd>
 
@@ -320,7 +320,7 @@ client.chat(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">embed</a>(...) -> EmbedResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L315-L377">embed</a>(...) -> EmbedResponse</code></summary>
 <dl>
 <dd>
 
@@ -434,7 +434,7 @@ client.embed(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list</a>() -> ListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L379-L403">list</a>() -> ListResponse</code></summary>
 <dl>
 <dd>
 
@@ -497,7 +497,7 @@ client.list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">ps</a>() -> PsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L405-L429">ps</a>() -> PsResponse</code></summary>
 <dl>
 <dd>
 
@@ -560,7 +560,7 @@ client.ps()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">show</a>(...) -> ShowResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L431-L467">show</a>(...) -> ShowResponse</code></summary>
 <dl>
 <dd>
 
@@ -627,7 +627,7 @@ client.show(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L469-L576">create</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -800,7 +800,7 @@ client.create(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_blob</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L578-L601">create_blob</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -856,7 +856,7 @@ client.create_blob(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">head_blob</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L603-L631">head_blob</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -915,7 +915,7 @@ client.head_blob(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">copy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L633-L663">copy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -983,7 +983,7 @@ client.copy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pull</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L665-L707">pull</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1058,7 +1058,7 @@ client.pull(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">push</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L709-L751">push</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1133,7 +1133,7 @@ client.push(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L753-L779">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1192,7 +1192,7 @@ client.delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">version</a>() -> VersionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L781-L805">version</a>() -> VersionResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Access
-<details><summary><code>client.access.<a href="src/fern/access/client.py">add</a>(...) -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L26-L64">add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.access.del_(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_acldb</a>() -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L98-L123">get_acldb</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.access.get_acldb()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_admindir</a>() -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L125-L150">get_admindir</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.access.get_admindir()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_adminuser</a>() -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L152-L177">get_adminuser</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -358,7 +358,7 @@ client.access.get_adminuser()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">get_enabled</a>() -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L179-L204">get_enabled</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -422,7 +422,7 @@ client.access.get_enabled()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">list</a>() -> typing.List[AccessEntry]</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L206-L231">list</a>() -> typing.List[AccessEntry]</code></summary>
 <dl>
 <dd>
 
@@ -486,7 +486,7 @@ client.access.list()
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">load</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L233-L263">load</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -560,7 +560,7 @@ client.access.load(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">save</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L265-L295">save</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -634,7 +634,7 @@ client.access.save(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">set_acldb</a>(...) -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L297-L327">set_acldb</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -708,7 +708,7 @@ client.access.set_acldb(
 </dl>
 </details>
 
-<details><summary><code>client.access.<a href="src/fern/access/client.py">set_enabled</a>(...) -> str</code></summary>
+<details><summary><code>client.access.<a href="src/fern/access/client.py#L329-L359">set_enabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -783,7 +783,7 @@ client.access.set_enabled(
 </details>
 
 ## Agent
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">new</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L33-L77">new</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -877,7 +877,7 @@ client.agent.new(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_add</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L79-L119">from_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -969,7 +969,7 @@ client.agent.from_add(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_del</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L121-L161">from_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1061,7 +1061,7 @@ client.agent.from_del(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">from_list</a>(...) -> typing.List[IpSource]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L163-L195">from_list</a>(...) -> typing.List[IpSource]</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1135,7 @@ client.agent.from_list(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_changed</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L197-L227">get_changed</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1209,7 +1209,7 @@ client.agent.get_changed(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_config_changed</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L229-L259">get_config_changed</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1283,7 +1283,7 @@ client.agent.get_config_changed(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_delay</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L261-L291">get_delay</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1357,7 +1357,7 @@ client.agent.get_delay(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_drops</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L293-L323">get_drops</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1431,7 +1431,7 @@ client.agent.get_drops(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_host</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L325-L355">get_host</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1505,7 +1505,7 @@ client.agent.get_host(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_inform_timeout</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L357-L387">get_inform_timeout</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1579,7 +1579,7 @@ client.agent.get_inform_timeout(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_interface</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L389-L419">get_interface</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1653,7 +1653,7 @@ client.agent.get_interface(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_mask</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L421-L451">get_mask</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1727,7 +1727,7 @@ client.agent.get_mask(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_mibs</a>(...) -> typing.List[Triplet]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L453-L485">get_mibs</a>(...) -> typing.List[Triplet]</code></summary>
 <dl>
 <dd>
 
@@ -1801,7 +1801,7 @@ client.agent.get_mibs(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_number_starts</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L487-L517">get_number_starts</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1875,7 +1875,7 @@ client.agent.get_number_starts(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_oiddir</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L519-L549">get_oiddir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1949,7 +1949,7 @@ client.agent.get_oiddir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_owner</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L551-L581">get_owner</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2023,7 +2023,7 @@ client.agent.get_owner(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_pdusize</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L583-L613">get_pdusize</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2097,7 +2097,7 @@ client.agent.get_pdusize(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_port</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L615-L645">get_port</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2171,7 +2171,7 @@ client.agent.get_port(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_privdir</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L647-L677">get_privdir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2245,7 +2245,7 @@ client.agent.get_privdir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_protocols</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L679-L711">get_protocols</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2319,7 +2319,7 @@ client.agent.get_protocols(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_read_community</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L713-L743">get_read_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2393,7 +2393,7 @@ client.agent.get_read_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_scen</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L745-L775">get_scen</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2467,7 +2467,7 @@ client.agent.get_scen(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_sim</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L777-L807">get_sim</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2541,7 +2541,7 @@ client.agent.get_sim(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_starttime</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L809-L839">get_starttime</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2615,7 +2615,7 @@ client.agent.get_starttime(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_agent_state</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L841-L871">get_agent_state</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2689,7 +2689,7 @@ client.agent.get_agent_state(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_state_changed</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L873-L903">get_state_changed</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2763,7 +2763,7 @@ client.agent.get_state_changed(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L905-L937">get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -2837,7 +2837,7 @@ client.agent.get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_trace</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L939-L969">get_trace</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2911,7 +2911,7 @@ client.agent.get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_validate</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L971-L1001">get_validate</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -2985,7 +2985,7 @@ client.agent.get_validate(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">get_write_community</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1003-L1033">get_write_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3059,7 +3059,7 @@ client.agent.get_write_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">halt</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1035-L1065">halt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3133,7 +3133,7 @@ client.agent.halt(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">add_ipalias</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1067-L1122">add_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3243,7 +3243,7 @@ client.agent.add_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">del_ipalias</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1124-L1164">del_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3335,7 +3335,7 @@ client.agent.del_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">list_ipaliases</a>(...) -> typing.List[IpAlias]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1166-L1198">list_ipaliases</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -3409,7 +3409,7 @@ client.agent.list_ipaliases(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">start_ipalias</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1200-L1240">start_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ client.agent.start_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">status_ipalias</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1242-L1282">status_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3593,7 +3593,7 @@ client.agent.status_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">stop_ipalias</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1284-L1324">stop_ipalias</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3685,7 +3685,7 @@ client.agent.stop_ipalias(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">pause_now</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1326-L1356">pause_now</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3759,7 +3759,7 @@ client.agent.pause_now(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">protocol_get_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1358-L1394">protocol_get_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3842,7 +3842,7 @@ client.agent.protocol_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">reload</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1396-L1426">reload</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3916,7 +3916,7 @@ client.agent.reload(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">remove</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1428-L1458">remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3990,7 +3990,7 @@ client.agent.remove(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">resume</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1460-L1490">resume</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4064,7 +4064,7 @@ client.agent.resume(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">save</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1492-L1522">save</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4138,7 +4138,7 @@ client.agent.save(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_delay</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1524-L1558">set_delay</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4221,7 +4221,7 @@ client.agent.set_delay(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_drops</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1560-L1594">set_drops</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4304,7 +4304,7 @@ client.agent.set_drops(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_host</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1596-L1630">set_host</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4387,7 +4387,7 @@ client.agent.set_host(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_inform_timeout</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1632-L1668">set_inform_timeout</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4470,7 +4470,7 @@ client.agent.set_inform_timeout(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_interface</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1670-L1706">set_interface</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4553,7 +4553,7 @@ client.agent.set_interface(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_mask</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1708-L1742">set_mask</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4636,7 +4636,7 @@ client.agent.set_mask(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_mibs</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1744-L1783">set_mibs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4721,7 +4721,7 @@ client.agent.set_mibs(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_oiddir</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1785-L1821">set_oiddir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4804,7 +4804,7 @@ client.agent.set_oiddir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_owner</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1823-L1857">set_owner</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4887,7 +4887,7 @@ client.agent.set_owner(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_pdusize</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1859-L1895">set_pdusize</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -4970,7 +4970,7 @@ client.agent.set_pdusize(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_port</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1897-L1931">set_port</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5053,7 +5053,7 @@ client.agent.set_port(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_privdir</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1933-L1969">set_privdir</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5136,7 +5136,7 @@ client.agent.set_privdir(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_protocols</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L1971-L2006">set_protocols</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -5221,7 +5221,7 @@ client.agent.set_protocols(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_read_community</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2008-L2044">set_read_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5304,7 +5304,7 @@ client.agent.set_read_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_starttime</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2046-L2082">set_starttime</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5387,7 +5387,7 @@ client.agent.set_starttime(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_trace</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2084-L2118">set_trace</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5470,7 +5470,7 @@ client.agent.set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_validate</a>(...) -> int</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2120-L2156">set_validate</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5553,7 +5553,7 @@ client.agent.set_validate(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">set_write_community</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2158-L2194">set_write_community</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5636,7 +5636,7 @@ client.agent.set_write_community(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">start</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2196-L2226">start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5710,7 +5710,7 @@ client.agent.start(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">stop</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2228-L2258">stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5784,7 +5784,7 @@ client.agent.stop(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_copy</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2260-L2296">store_copy</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5867,7 +5867,7 @@ client.agent.store_copy(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_exists</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2298-L2332">store_exists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5950,7 +5950,7 @@ client.agent.store_exists(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_get</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2334-L2368">store_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6033,7 +6033,7 @@ client.agent.store_get(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2370-L2402">store_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -6107,7 +6107,7 @@ client.agent.store_list(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_lreplace</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2404-L2455">store_lreplace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6208,7 +6208,7 @@ client.agent.store_lreplace(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_persists</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2457-L2493">store_persists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6291,7 +6291,7 @@ client.agent.store_persists(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_set</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2495-L2546">store_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6392,7 +6392,7 @@ client.agent.store_set(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">store_unset</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2548-L2582">store_unset</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6475,7 +6475,7 @@ client.agent.store_unset(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">add_timer_script</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2584-L2634">add_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6576,7 +6576,7 @@ client.agent.add_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">del_timer_script</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2636-L2686">del_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6677,7 +6677,7 @@ client.agent.del_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">list_timer_scripts</a>(...) -> typing.List[TimerScript]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2688-L2720">list_timer_scripts</a>(...) -> typing.List[TimerScript]</code></summary>
 <dl>
 <dd>
 
@@ -6751,7 +6751,7 @@ client.agent.list_timer_scripts(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_add</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2722-L2762">trap_config_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6843,7 +6843,7 @@ client.agent.trap_config_add(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_del</a>(...) -> str</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2764-L2804">trap_config_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6935,7 +6935,7 @@ client.agent.trap_config_del(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_config_list</a>(...) -> typing.List[TrapDest]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2806-L2838">trap_config_list</a>(...) -> typing.List[TrapDest]</code></summary>
 <dl>
 <dd>
 
@@ -7009,7 +7009,7 @@ client.agent.trap_config_list(
 </dl>
 </details>
 
-<details><summary><code>client.agent.<a href="src/fern/agent/client.py">trap_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.agent.<a href="src/fern/agent/client.py#L2840-L2870">trap_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -7084,7 +7084,7 @@ client.agent.trap_list(
 </details>
 
 ## Coap
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L26-L58">protocol_coap_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7158,7 +7158,7 @@ client.coap.protocol_coap_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_config</a>(...) -> ConfigCoap</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L60-L92">protocol_coap_get_config</a>(...) -> ConfigCoap</code></summary>
 <dl>
 <dd>
 
@@ -7232,7 +7232,7 @@ client.coap.protocol_coap_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L94-L126">protocol_coap_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -7306,7 +7306,7 @@ client.coap.protocol_coap_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_trace</a>(...) -> ConfigCoap</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L128-L160">protocol_coap_get_trace</a>(...) -> ConfigCoap</code></summary>
 <dl>
 <dd>
 
@@ -7380,7 +7380,7 @@ client.coap.protocol_coap_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L162-L204">protocol_coap_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7472,7 +7472,7 @@ client.coap.protocol_coap_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L206-L242">protocol_coap_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7555,7 +7555,7 @@ client.coap.protocol_coap_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.coap.<a href="src/fern/coap/client.py">protocol_coap_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.coap.<a href="src/fern/coap/client.py#L244-L271">protocol_coap_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -7620,7 +7620,7 @@ client.coap.protocol_coap_get_stats_hdr()
 </details>
 
 ## Dhcp
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L26-L58">protocol_dhcp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7694,7 +7694,7 @@ client.dhcp.protocol_dhcp_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_config</a>(...) -> ConfigDhcp</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L60-L92">protocol_dhcp_get_config</a>(...) -> ConfigDhcp</code></summary>
 <dl>
 <dd>
 
@@ -7768,7 +7768,7 @@ client.dhcp.protocol_dhcp_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L94-L126">protocol_dhcp_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -7842,7 +7842,7 @@ client.dhcp.protocol_dhcp_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_trace</a>(...) -> ConfigDhcp</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L128-L160">protocol_dhcp_get_trace</a>(...) -> ConfigDhcp</code></summary>
 <dl>
 <dd>
 
@@ -7916,7 +7916,7 @@ client.dhcp.protocol_dhcp_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_params</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L162-L194">protocol_dhcp_params</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -7990,7 +7990,7 @@ client.dhcp.protocol_dhcp_params(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L196-L238">protocol_dhcp_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8082,7 +8082,7 @@ client.dhcp.protocol_dhcp_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L240-L276">protocol_dhcp_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8165,7 +8165,7 @@ client.dhcp.protocol_dhcp_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py">protocol_dhcp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.dhcp.<a href="src/fern/dhcp/client.py#L278-L305">protocol_dhcp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -8230,7 +8230,7 @@ client.dhcp.protocol_dhcp_get_stats_hdr()
 </details>
 
 ## Ipmi
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L26-L58">protocol_ipmi_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8304,7 +8304,7 @@ client.ipmi.protocol_ipmi_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_config</a>(...) -> ConfigIpmi</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L60-L92">protocol_ipmi_get_config</a>(...) -> ConfigIpmi</code></summary>
 <dl>
 <dd>
 
@@ -8378,7 +8378,7 @@ client.ipmi.protocol_ipmi_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L94-L126">protocol_ipmi_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -8452,7 +8452,7 @@ client.ipmi.protocol_ipmi_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_trace</a>(...) -> ConfigIpmi</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L128-L160">protocol_ipmi_get_trace</a>(...) -> ConfigIpmi</code></summary>
 <dl>
 <dd>
 
@@ -8526,7 +8526,7 @@ client.ipmi.protocol_ipmi_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_attr</a>(...) -> str</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L162-L198">protocol_ipmi_get_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8609,7 +8609,7 @@ client.ipmi.protocol_ipmi_get_attr(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L200-L242">protocol_ipmi_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8701,7 +8701,7 @@ client.ipmi.protocol_ipmi_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L244-L280">protocol_ipmi_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8784,7 +8784,7 @@ client.ipmi.protocol_ipmi_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_set_attr</a>(...) -> str</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L282-L321">protocol_ipmi_set_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8876,7 +8876,7 @@ client.ipmi.protocol_ipmi_set_attr(
 </dl>
 </details>
 
-<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py">protocol_ipmi_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.ipmi.<a href="src/fern/ipmi/client.py#L323-L350">protocol_ipmi_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -8941,7 +8941,7 @@ client.ipmi.protocol_ipmi_get_stats_hdr()
 </details>
 
 ## Mqtt
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_get_protstate</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L26-L58">protocol_mqtt_client_get_protstate</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9015,7 +9015,7 @@ client.mqtt.protocol_mqtt_client_get_protstate(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_get_state</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L60-L92">protocol_mqtt_client_get_state</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9089,7 +9089,7 @@ client.mqtt.protocol_mqtt_client_get_state(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_card</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L94-L126">protocol_mqtt_client_message_card</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9163,7 +9163,7 @@ client.mqtt.protocol_mqtt_client_message_card(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_get</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L128-L170">protocol_mqtt_client_message_get</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9255,7 +9255,7 @@ client.mqtt.protocol_mqtt_client_message_get(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_message_set</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L172-L224">protocol_mqtt_client_message_set</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9356,7 +9356,7 @@ client.mqtt.protocol_mqtt_client_message_set(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_resubscribe</a>(...) -> str</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L226-L264">protocol_mqtt_client_resubscribe</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -9439,7 +9439,7 @@ client.mqtt.protocol_mqtt_client_resubscribe(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_abort</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L266-L298">protocol_mqtt_client_runtime_abort</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9513,7 +9513,7 @@ client.mqtt.protocol_mqtt_client_runtime_abort(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_connect</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L300-L332">protocol_mqtt_client_runtime_connect</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9587,7 +9587,7 @@ client.mqtt.protocol_mqtt_client_runtime_connect(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_runtime_disconnect</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L334-L366">protocol_mqtt_client_runtime_disconnect</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -9661,7 +9661,7 @@ client.mqtt.protocol_mqtt_client_runtime_disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_broker</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L368-L406">protocol_mqtt_client_set_broker</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9744,7 +9744,7 @@ client.mqtt.protocol_mqtt_client_set_broker(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_cleansession</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L408-L446">protocol_mqtt_client_set_cleansession</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9827,7 +9827,7 @@ client.mqtt.protocol_mqtt_client_set_cleansession(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_clientid</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L448-L486">protocol_mqtt_client_set_clientid</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9910,7 +9910,7 @@ client.mqtt.protocol_mqtt_client_set_clientid(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_keepalive</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L488-L526">protocol_mqtt_client_set_keepalive</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -9993,7 +9993,7 @@ client.mqtt.protocol_mqtt_client_set_keepalive(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_on_disconnect</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L528-L566">protocol_mqtt_client_set_on_disconnect</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10076,7 +10076,7 @@ client.mqtt.protocol_mqtt_client_set_on_disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_password</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L568-L606">protocol_mqtt_client_set_password</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10159,7 +10159,7 @@ client.mqtt.protocol_mqtt_client_set_password(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_port</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L608-L644">protocol_mqtt_client_set_port</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10242,7 +10242,7 @@ client.mqtt.protocol_mqtt_client_set_port(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_username</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L646-L684">protocol_mqtt_client_set_username</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10325,7 +10325,7 @@ client.mqtt.protocol_mqtt_client_set_username(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willmsg</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L686-L722">protocol_mqtt_client_set_willmsg</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10408,7 +10408,7 @@ client.mqtt.protocol_mqtt_client_set_willmsg(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willqos</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L724-L760">protocol_mqtt_client_set_willqos</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10491,7 +10491,7 @@ client.mqtt.protocol_mqtt_client_set_willqos(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willretain</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L762-L800">protocol_mqtt_client_set_willretain</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10574,7 +10574,7 @@ client.mqtt.protocol_mqtt_client_set_willretain(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_set_willtopic</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L802-L840">protocol_mqtt_client_set_willtopic</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10657,7 +10657,7 @@ client.mqtt.protocol_mqtt_client_set_willtopic(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_card</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L842-L874">protocol_mqtt_client_subscribe_card</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -10731,7 +10731,7 @@ client.mqtt.protocol_mqtt_client_subscribe_card(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_get</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L876-L918">protocol_mqtt_client_subscribe_get</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -10823,7 +10823,7 @@ client.mqtt.protocol_mqtt_client_subscribe_get(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_subscribe_set</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L920-L972">protocol_mqtt_client_subscribe_set</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -10924,7 +10924,7 @@ client.mqtt.protocol_mqtt_client_subscribe_set(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_client_unsubscribe</a>(...) -> str</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L974-L1012">protocol_mqtt_client_unsubscribe</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11007,7 +11007,7 @@ client.mqtt.protocol_mqtt_client_unsubscribe(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1014-L1046">protocol_mqtt_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11081,7 +11081,7 @@ client.mqtt.protocol_mqtt_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_config</a>(...) -> ConfigMqtt</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1048-L1080">protocol_mqtt_get_config</a>(...) -> ConfigMqtt</code></summary>
 <dl>
 <dd>
 
@@ -11155,7 +11155,7 @@ client.mqtt.protocol_mqtt_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1082-L1114">protocol_mqtt_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -11229,7 +11229,7 @@ client.mqtt.protocol_mqtt_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_trace</a>(...) -> ConfigMqtt</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1116-L1148">protocol_mqtt_get_trace</a>(...) -> ConfigMqtt</code></summary>
 <dl>
 <dd>
 
@@ -11303,7 +11303,7 @@ client.mqtt.protocol_mqtt_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1150-L1192">protocol_mqtt_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11395,7 +11395,7 @@ client.mqtt.protocol_mqtt_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1194-L1230">protocol_mqtt_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11478,7 +11478,7 @@ client.mqtt.protocol_mqtt_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py">protocol_mqtt_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.mqtt.<a href="src/fern/mqtt/client.py#L1232-L1259">protocol_mqtt_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -11543,7 +11543,7 @@ client.mqtt.protocol_mqtt_get_stats_hdr()
 </details>
 
 ## Netflow
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_dfs</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L26-L62">protocol_netflow_change_dfs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11626,7 +11626,7 @@ client.netflow.protocol_netflow_change_dfs(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_tfs</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L64-L100">protocol_netflow_change_tfs</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11709,7 +11709,7 @@ client.netflow.protocol_netflow_change_tfs(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_change_attr</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L102-L155">protocol_netflow_change_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -11819,7 +11819,7 @@ client.netflow.protocol_netflow_change_attr(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_list</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L157-L189">protocol_netflow_list</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -11893,7 +11893,7 @@ client.netflow.protocol_netflow_list(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L191-L223">protocol_netflow_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11967,7 +11967,7 @@ client.netflow.protocol_netflow_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_config</a>(...) -> ConfigNetflow</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L225-L257">protocol_netflow_get_config</a>(...) -> ConfigNetflow</code></summary>
 <dl>
 <dd>
 
@@ -12041,7 +12041,7 @@ client.netflow.protocol_netflow_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L259-L291">protocol_netflow_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -12115,7 +12115,7 @@ client.netflow.protocol_netflow_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_trace</a>(...) -> ConfigNetflow</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L293-L325">protocol_netflow_get_trace</a>(...) -> ConfigNetflow</code></summary>
 <dl>
 <dd>
 
@@ -12189,7 +12189,7 @@ client.netflow.protocol_netflow_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_halt</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L327-L357">protocol_netflow_halt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12263,7 +12263,7 @@ client.netflow.protocol_netflow_halt(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_reload</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L359-L391">protocol_netflow_reload</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12337,7 +12337,7 @@ client.netflow.protocol_netflow_reload(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_resume</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L393-L425">protocol_netflow_resume</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12411,7 +12411,7 @@ client.netflow.protocol_netflow_resume(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_collector</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L427-L465">protocol_netflow_set_collector</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12494,7 +12494,7 @@ client.netflow.protocol_netflow_set_collector(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L467-L509">protocol_netflow_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12586,7 +12586,7 @@ client.netflow.protocol_netflow_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_file_name</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L511-L549">protocol_netflow_set_file_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12669,7 +12669,7 @@ client.netflow.protocol_netflow_set_file_name(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L551-L589">protocol_netflow_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -12752,7 +12752,7 @@ client.netflow.protocol_netflow_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py">protocol_netflow_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.netflow.<a href="src/fern/netflow/client.py#L591-L618">protocol_netflow_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -12817,7 +12817,7 @@ client.netflow.protocol_netflow_get_stats_hdr()
 </details>
 
 ## Proxy
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L26-L58">protocol_proxy_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12891,7 +12891,7 @@ client.proxy.protocol_proxy_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_config</a>(...) -> ConfigProxy</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L60-L92">protocol_proxy_get_config</a>(...) -> ConfigProxy</code></summary>
 <dl>
 <dd>
 
@@ -12965,7 +12965,7 @@ client.proxy.protocol_proxy_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L94-L126">protocol_proxy_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -13039,7 +13039,7 @@ client.proxy.protocol_proxy_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_trace</a>(...) -> ConfigProxy</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L128-L160">protocol_proxy_get_trace</a>(...) -> ConfigProxy</code></summary>
 <dl>
 <dd>
 
@@ -13113,7 +13113,7 @@ client.proxy.protocol_proxy_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_add</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L162-L211">protocol_proxy_port_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13214,7 +13214,7 @@ client.proxy.protocol_proxy_port_add(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_isstarted</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L213-L248">protocol_proxy_port_isstarted</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13297,7 +13297,7 @@ client.proxy.protocol_proxy_port_isstarted(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_list</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L250-L280">protocol_proxy_port_list</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -13357,7 +13357,7 @@ client.proxy.protocol_proxy_port_list(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_remove</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L282-L317">protocol_proxy_port_remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13440,7 +13440,7 @@ client.proxy.protocol_proxy_port_remove(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_start</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L319-L354">protocol_proxy_port_start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13523,7 +13523,7 @@ client.proxy.protocol_proxy_port_start(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_port_stop</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L356-L391">protocol_proxy_port_stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13606,7 +13606,7 @@ client.proxy.protocol_proxy_port_stop(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L393-L435">protocol_proxy_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13698,7 +13698,7 @@ client.proxy.protocol_proxy_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L437-L473">protocol_proxy_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -13781,7 +13781,7 @@ client.proxy.protocol_proxy_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">protocol_proxy_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L475-L502">protocol_proxy_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -13846,7 +13846,7 @@ client.proxy.protocol_proxy_get_stats_hdr()
 </details>
 
 ## Sflow
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L26-L58">protocol_sflow_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13920,7 +13920,7 @@ client.sflow.protocol_sflow_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_config</a>(...) -> ConfigSflow</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L60-L92">protocol_sflow_get_config</a>(...) -> ConfigSflow</code></summary>
 <dl>
 <dd>
 
@@ -13994,7 +13994,7 @@ client.sflow.protocol_sflow_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L94-L126">protocol_sflow_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -14068,7 +14068,7 @@ client.sflow.protocol_sflow_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_trace</a>(...) -> ConfigSflow</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L128-L160">protocol_sflow_get_trace</a>(...) -> ConfigSflow</code></summary>
 <dl>
 <dd>
 
@@ -14142,7 +14142,7 @@ client.sflow.protocol_sflow_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_halt</a>(...) -> str</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L162-L192">protocol_sflow_halt</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14216,7 +14216,7 @@ client.sflow.protocol_sflow_halt(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_reload</a>(...) -> str</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L194-L224">protocol_sflow_reload</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14290,7 +14290,7 @@ client.sflow.protocol_sflow_reload(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_resume</a>(...) -> str</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L226-L256">protocol_sflow_resume</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14364,7 +14364,7 @@ client.sflow.protocol_sflow_resume(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L258-L300">protocol_sflow_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14456,7 +14456,7 @@ client.sflow.protocol_sflow_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L302-L338">protocol_sflow_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14539,7 +14539,7 @@ client.sflow.protocol_sflow_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py">protocol_sflow_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.sflow.<a href="src/fern/sflow/client.py#L340-L367">protocol_sflow_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -14604,7 +14604,7 @@ client.sflow.protocol_sflow_get_stats_hdr()
 </details>
 
 ## Snmptcp
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L27-L59">protocol_snmptcp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14678,7 +14678,7 @@ client.snmptcp.protocol_snmptcp_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_config</a>(...) -> ConfigSnmptcp</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L61-L93">protocol_snmptcp_get_config</a>(...) -> ConfigSnmptcp</code></summary>
 <dl>
 <dd>
 
@@ -14752,7 +14752,7 @@ client.snmptcp.protocol_snmptcp_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L95-L127">protocol_snmptcp_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -14826,7 +14826,7 @@ client.snmptcp.protocol_snmptcp_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_trace</a>(...) -> ConfigSnmptcp</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L129-L161">protocol_snmptcp_get_trace</a>(...) -> ConfigSnmptcp</code></summary>
 <dl>
 <dd>
 
@@ -14900,7 +14900,7 @@ client.snmptcp.protocol_snmptcp_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_disable</a>(...) -> str</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L163-L203">protocol_snmptcp_ipalias_disable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -14992,7 +14992,7 @@ client.snmptcp.protocol_snmptcp_ipalias_disable(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_enable</a>(...) -> str</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L205-L245">protocol_snmptcp_ipalias_enable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15084,7 +15084,7 @@ client.snmptcp.protocol_snmptcp_ipalias_enable(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_isenabled</a>(...) -> str</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L247-L287">protocol_snmptcp_ipalias_isenabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15176,7 +15176,7 @@ client.snmptcp.protocol_snmptcp_ipalias_isenabled(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L289-L321">protocol_snmptcp_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -15250,7 +15250,7 @@ client.snmptcp.protocol_snmptcp_ipalias_list(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L323-L365">protocol_snmptcp_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15342,7 +15342,7 @@ client.snmptcp.protocol_snmptcp_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L367-L405">protocol_snmptcp_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15425,7 +15425,7 @@ client.snmptcp.protocol_snmptcp_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py">protocol_snmptcp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.snmptcp.<a href="src/fern/snmptcp/client.py#L407-L434">protocol_snmptcp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -15490,7 +15490,7 @@ client.snmptcp.protocol_snmptcp_get_stats_hdr()
 </details>
 
 ## SnmPv3
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_add</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L26-L112">protocol_snmpv3access_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15636,7 +15636,7 @@ client.snm_pv3.protocol_snmpv3access_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_clear</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L114-L146">protocol_snmpv3access_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15710,7 +15710,7 @@ client.snm_pv3.protocol_snmpv3access_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_del</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L148-L184">protocol_snmpv3access_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -15793,7 +15793,7 @@ client.snm_pv3.protocol_snmpv3access_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3access_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L186-L218">protocol_snmpv3access_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -15867,7 +15867,7 @@ client.snm_pv3.protocol_snmpv3access_list(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_config</a>(...) -> ConfigSnmPv3</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L220-L252">protocol_snmpv3get_config</a>(...) -> ConfigSnmPv3</code></summary>
 <dl>
 <dd>
 
@@ -15941,7 +15941,7 @@ client.snm_pv3.protocol_snmpv3get_config(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_context_engineid</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L254-L286">protocol_snmpv3get_context_engineid</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16015,7 +16015,7 @@ client.snm_pv3.protocol_snmpv3get_context_engineid(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_engineboots</a>(...) -> int</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L288-L320">protocol_snmpv3get_engineboots</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -16089,7 +16089,7 @@ client.snm_pv3.protocol_snmpv3get_engineboots(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_engineid</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L322-L354">protocol_snmpv3get_engineid</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16163,7 +16163,7 @@ client.snm_pv3.protocol_snmpv3get_engineid(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3get_enginetime</a>(...) -> int</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L356-L388">protocol_snmpv3get_enginetime</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -16237,7 +16237,7 @@ client.snm_pv3.protocol_snmpv3get_enginetime(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_add</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L390-L442">protocol_snmpv3group_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16338,7 +16338,7 @@ client.snm_pv3.protocol_snmpv3group_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_clear</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L444-L476">protocol_snmpv3group_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16412,7 +16412,7 @@ client.snm_pv3.protocol_snmpv3group_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_del</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L478-L514">protocol_snmpv3group_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16495,7 +16495,7 @@ client.snm_pv3.protocol_snmpv3group_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3group_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L516-L548">protocol_snmpv3group_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -16569,7 +16569,7 @@ client.snm_pv3.protocol_snmpv3group_list(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L550-L592">protocol_snmpv3set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16661,7 +16661,7 @@ client.snm_pv3.protocol_snmpv3set_config(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_add</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L594-L668">protocol_snmpv3user_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16789,7 +16789,7 @@ client.snm_pv3.protocol_snmpv3user_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_clear</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L670-L702">protocol_snmpv3user_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16863,7 +16863,7 @@ client.snm_pv3.protocol_snmpv3user_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_del</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L704-L740">protocol_snmpv3user_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -16946,7 +16946,7 @@ client.snm_pv3.protocol_snmpv3user_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3user_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L742-L774">protocol_snmpv3user_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17020,7 +17020,7 @@ client.snm_pv3.protocol_snmpv3user_list(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3usm_save</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L776-L808">protocol_snmpv3usm_save</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17094,7 +17094,7 @@ client.snm_pv3.protocol_snmpv3usm_save(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3usm_saveas</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L810-L846">protocol_snmpv3usm_saveas</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17177,7 +17177,7 @@ client.snm_pv3.protocol_snmpv3usm_saveas(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3vacm_save</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L848-L880">protocol_snmpv3vacm_save</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17251,7 +17251,7 @@ client.snm_pv3.protocol_snmpv3vacm_save(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3vacm_saveas</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L882-L918">protocol_snmpv3vacm_saveas</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17334,7 +17334,7 @@ client.snm_pv3.protocol_snmpv3vacm_saveas(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_add</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L920-L977">protocol_snmpv3view_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17444,7 +17444,7 @@ client.snm_pv3.protocol_snmpv3view_add(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_clear</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L979-L1011">protocol_snmpv3view_clear</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17518,7 +17518,7 @@ client.snm_pv3.protocol_snmpv3view_clear(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_del</a>(...) -> str</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L1013-L1049">protocol_snmpv3view_del</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -17601,7 +17601,7 @@ client.snm_pv3.protocol_snmpv3view_del(
 </dl>
 </details>
 
-<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py">protocol_snmpv3view_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.snm_pv3.<a href="src/fern/snm_pv3/client.py#L1051-L1083">protocol_snmpv3view_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -17676,7 +17676,7 @@ client.snm_pv3.protocol_snmpv3view_list(
 </details>
 
 ## Ssh
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L27-L59">protocol_ssh_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -17750,7 +17750,7 @@ client.ssh.protocol_ssh_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_config</a>(...) -> ConfigSsh</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L61-L93">protocol_ssh_get_config</a>(...) -> ConfigSsh</code></summary>
 <dl>
 <dd>
 
@@ -17824,7 +17824,7 @@ client.ssh.protocol_ssh_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L95-L127">protocol_ssh_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -17898,7 +17898,7 @@ client.ssh.protocol_ssh_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_trace</a>(...) -> ConfigSsh</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L129-L161">protocol_ssh_get_trace</a>(...) -> ConfigSsh</code></summary>
 <dl>
 <dd>
 
@@ -17972,7 +17972,7 @@ client.ssh.protocol_ssh_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_disable</a>(...) -> str</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L163-L203">protocol_ssh_ipalias_disable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18064,7 +18064,7 @@ client.ssh.protocol_ssh_ipalias_disable(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_enable</a>(...) -> str</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L205-L245">protocol_ssh_ipalias_enable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18156,7 +18156,7 @@ client.ssh.protocol_ssh_ipalias_enable(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_isenabled</a>(...) -> str</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L247-L287">protocol_ssh_ipalias_isenabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18248,7 +18248,7 @@ client.ssh.protocol_ssh_ipalias_isenabled(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L289-L321">protocol_ssh_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -18322,7 +18322,7 @@ client.ssh.protocol_ssh_ipalias_list(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L323-L365">protocol_ssh_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18414,7 +18414,7 @@ client.ssh.protocol_ssh_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L367-L403">protocol_ssh_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18497,7 +18497,7 @@ client.ssh.protocol_ssh_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py">protocol_ssh_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.ssh.<a href="src/fern/ssh/client.py#L405-L432">protocol_ssh_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -18562,7 +18562,7 @@ client.ssh.protocol_ssh_get_stats_hdr()
 </details>
 
 ## Syslog
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L29-L61">protocol_syslog_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -18636,7 +18636,7 @@ client.syslog.protocol_syslog_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_config</a>(...) -> ConfigSyslog</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L63-L95">protocol_syslog_get_config</a>(...) -> ConfigSyslog</code></summary>
 <dl>
 <dd>
 
@@ -18710,7 +18710,7 @@ client.syslog.protocol_syslog_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L97-L129">protocol_syslog_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -18784,7 +18784,7 @@ client.syslog.protocol_syslog_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_trace</a>(...) -> ConfigSyslog</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L131-L163">protocol_syslog_get_trace</a>(...) -> ConfigSyslog</code></summary>
 <dl>
 <dd>
 
@@ -18858,7 +18858,7 @@ client.syslog.protocol_syslog_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_attr</a>(...) -> str</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L165-L201">protocol_syslog_get_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -18941,7 +18941,7 @@ client.syslog.protocol_syslog_get_attr(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_send</a>(...) -> str</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L203-L267">protocol_syslog_send</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19064,7 +19064,7 @@ client.syslog.protocol_syslog_send(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L269-L311">protocol_syslog_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19156,7 +19156,7 @@ client.syslog.protocol_syslog_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L313-L351">protocol_syslog_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19239,7 +19239,7 @@ client.syslog.protocol_syslog_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_set_attr</a>(...) -> str</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L353-L392">protocol_syslog_set_attr</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -19331,7 +19331,7 @@ client.syslog.protocol_syslog_set_attr(
 </dl>
 </details>
 
-<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py">protocol_syslog_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.syslog.<a href="src/fern/syslog/client.py#L394-L421">protocol_syslog_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19396,7 +19396,7 @@ client.syslog.protocol_syslog_get_stats_hdr()
 </details>
 
 ## Telnet
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_logon</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L28-L77">protocol_telnet_connection_logon</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19497,7 +19497,7 @@ client.telnet.protocol_telnet_connection_logon(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_request</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L79-L124">protocol_telnet_connection_request</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19589,7 +19589,7 @@ client.telnet.protocol_telnet_connection_request(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_connection_signal</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L126-L171">protocol_telnet_connection_signal</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -19681,7 +19681,7 @@ client.telnet.protocol_telnet_connection_signal(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L173-L205">protocol_telnet_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -19755,7 +19755,7 @@ client.telnet.protocol_telnet_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_config</a>(...) -> ConfigTelnet</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L207-L239">protocol_telnet_get_config</a>(...) -> ConfigTelnet</code></summary>
 <dl>
 <dd>
 
@@ -19829,7 +19829,7 @@ client.telnet.protocol_telnet_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L241-L273">protocol_telnet_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -19903,7 +19903,7 @@ client.telnet.protocol_telnet_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_trace</a>(...) -> ConfigTelnet</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L275-L307">protocol_telnet_get_trace</a>(...) -> ConfigTelnet</code></summary>
 <dl>
 <dd>
 
@@ -19977,7 +19977,7 @@ client.telnet.protocol_telnet_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_disable</a>(...) -> str</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L309-L349">protocol_telnet_ipalias_disable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20069,7 +20069,7 @@ client.telnet.protocol_telnet_ipalias_disable(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_enable</a>(...) -> str</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L351-L391">protocol_telnet_ipalias_enable</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20161,7 +20161,7 @@ client.telnet.protocol_telnet_ipalias_enable(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_isenabled</a>(...) -> str</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L393-L433">protocol_telnet_ipalias_isenabled</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20253,7 +20253,7 @@ client.telnet.protocol_telnet_ipalias_isenabled(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L435-L467">protocol_telnet_ipalias_list</a>(...) -> typing.List[IpAlias]</code></summary>
 <dl>
 <dd>
 
@@ -20327,7 +20327,7 @@ client.telnet.protocol_telnet_ipalias_list(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_connections</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L469-L501">protocol_telnet_server_get_connections</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -20401,7 +20401,7 @@ client.telnet.protocol_telnet_server_get_connections(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_keymap</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L503-L535">protocol_telnet_server_get_keymap</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -20475,7 +20475,7 @@ client.telnet.protocol_telnet_server_get_keymap(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_rulesdb</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L537-L569">protocol_telnet_server_get_rulesdb</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -20549,7 +20549,7 @@ client.telnet.protocol_telnet_server_get_rulesdb(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_state</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L571-L603">protocol_telnet_server_get_state</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -20623,7 +20623,7 @@ client.telnet.protocol_telnet_server_get_state(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_userdb</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L605-L637">protocol_telnet_server_get_userdb</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -20697,7 +20697,7 @@ client.telnet.protocol_telnet_server_get_userdb(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_server_get_users</a>(...) -> typing.List[TelnetUser]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L639-L671">protocol_telnet_server_get_users</a>(...) -> typing.List[TelnetUser]</code></summary>
 <dl>
 <dd>
 
@@ -20771,7 +20771,7 @@ client.telnet.protocol_telnet_server_get_users(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L673-L715">protocol_telnet_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20863,7 +20863,7 @@ client.telnet.protocol_telnet_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L717-L755">protocol_telnet_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -20946,7 +20946,7 @@ client.telnet.protocol_telnet_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py">protocol_telnet_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.telnet.<a href="src/fern/telnet/client.py#L757-L784">protocol_telnet_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -21011,7 +21011,7 @@ client.telnet.protocol_telnet_get_stats_hdr()
 </details>
 
 ## Tftp
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L26-L58">protocol_tftp_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -21085,7 +21085,7 @@ client.tftp.protocol_tftp_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_config</a>(...) -> ConfigTftp</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L60-L92">protocol_tftp_get_config</a>(...) -> ConfigTftp</code></summary>
 <dl>
 <dd>
 
@@ -21159,7 +21159,7 @@ client.tftp.protocol_tftp_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L94-L126">protocol_tftp_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -21233,7 +21233,7 @@ client.tftp.protocol_tftp_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_trace</a>(...) -> ConfigTftp</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L128-L160">protocol_tftp_get_trace</a>(...) -> ConfigTftp</code></summary>
 <dl>
 <dd>
 
@@ -21307,7 +21307,7 @@ client.tftp.protocol_tftp_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_read</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L162-L198">protocol_tftp_session_read</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -21390,7 +21390,7 @@ client.tftp.protocol_tftp_session_read(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_write</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L200-L236">protocol_tftp_session_write</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -21473,7 +21473,7 @@ client.tftp.protocol_tftp_session_write(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L238-L280">protocol_tftp_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21565,7 +21565,7 @@ client.tftp.protocol_tftp_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L282-L318">protocol_tftp_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21648,7 +21648,7 @@ client.tftp.protocol_tftp_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_get_parameter</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L320-L367">protocol_tftp_session_get_parameter</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21740,7 +21740,7 @@ client.tftp.protocol_tftp_session_get_parameter(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_set_parameter</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L369-L421">protocol_tftp_session_set_parameter</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21841,7 +21841,7 @@ client.tftp.protocol_tftp_session_set_parameter(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_start</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L423-L459">protocol_tftp_session_start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -21924,7 +21924,7 @@ client.tftp.protocol_tftp_session_start(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_status</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L461-L499">protocol_tftp_session_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22007,7 +22007,7 @@ client.tftp.protocol_tftp_session_status(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_session_stop</a>(...) -> str</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L501-L537">protocol_tftp_session_stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22090,7 +22090,7 @@ client.tftp.protocol_tftp_session_stop(
 </dl>
 </details>
 
-<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py">protocol_tftp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.tftp.<a href="src/fern/tftp/client.py#L539-L566">protocol_tftp_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -22155,7 +22155,7 @@ client.tftp.protocol_tftp_get_stats_hdr()
 </details>
 
 ## Tod
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L26-L58">protocol_tod_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -22229,7 +22229,7 @@ client.tod.protocol_tod_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_config</a>(...) -> ConfigTod</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L60-L92">protocol_tod_get_config</a>(...) -> ConfigTod</code></summary>
 <dl>
 <dd>
 
@@ -22303,7 +22303,7 @@ client.tod.protocol_tod_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L94-L126">protocol_tod_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -22377,7 +22377,7 @@ client.tod.protocol_tod_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_trace</a>(...) -> ConfigTod</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L128-L160">protocol_tod_get_trace</a>(...) -> ConfigTod</code></summary>
 <dl>
 <dd>
 
@@ -22451,7 +22451,7 @@ client.tod.protocol_tod_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_gettime</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L162-L224">protocol_tod_gettime</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -22570,7 +22570,7 @@ client.tod.protocol_tod_gettime(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L226-L268">protocol_tod_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22662,7 +22662,7 @@ client.tod.protocol_tod_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L270-L306">protocol_tod_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -22745,7 +22745,7 @@ client.tod.protocol_tod_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.tod.<a href="src/fern/tod/client.py">protocol_tod_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.tod.<a href="src/fern/tod/client.py#L308-L335">protocol_tod_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -22810,7 +22810,7 @@ client.tod.protocol_tod_get_stats_hdr()
 </details>
 
 ## Web
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L26-L58">protocol_web_get_args</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -22884,7 +22884,7 @@ client.web.protocol_web_get_args(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_config</a>(...) -> ConfigWeb</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L60-L92">protocol_web_get_config</a>(...) -> ConfigWeb</code></summary>
 <dl>
 <dd>
 
@@ -22958,7 +22958,7 @@ client.web.protocol_web_get_config(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_statistics</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L94-L126">protocol_web_get_statistics</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -23032,7 +23032,7 @@ client.web.protocol_web_get_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_trace</a>(...) -> ConfigWeb</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L128-L160">protocol_web_get_trace</a>(...) -> ConfigWeb</code></summary>
 <dl>
 <dd>
 
@@ -23106,7 +23106,7 @@ client.web.protocol_web_get_trace(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_add</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L162-L198">protocol_web_port_add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23189,7 +23189,7 @@ client.web.protocol_web_port_add(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_exists</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L200-L236">protocol_web_port_exists</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -23272,7 +23272,7 @@ client.web.protocol_web_port_exists(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_remove</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L238-L274">protocol_web_port_remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23355,7 +23355,7 @@ client.web.protocol_web_port_remove(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_set</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L276-L328">protocol_web_port_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23456,7 +23456,7 @@ client.web.protocol_web_port_set(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_start</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L330-L366">protocol_web_port_start</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23539,7 +23539,7 @@ client.web.protocol_web_port_start(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_port_stop</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L368-L404">protocol_web_port_stop</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23622,7 +23622,7 @@ client.web.protocol_web_port_stop(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_set_config</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L406-L448">protocol_web_set_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23714,7 +23714,7 @@ client.web.protocol_web_set_config(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_set_trace</a>(...) -> str</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L450-L486">protocol_web_set_trace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23797,7 +23797,7 @@ client.web.protocol_web_set_trace(
 </dl>
 </details>
 
-<details><summary><code>client.web.<a href="src/fern/web/client.py">protocol_web_get_stats_hdr</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.web.<a href="src/fern/web/client.py#L488-L515">protocol_web_get_stats_hdr</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -23862,7 +23862,7 @@ client.web.protocol_web_get_stats_hdr()
 </details>
 
 ## Valuespace
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">add</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L28-L68">add</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -23954,7 +23954,7 @@ client.valuespace.add(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">eval_value</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L70-L110">eval_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24046,7 +24046,7 @@ client.valuespace.eval_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_value</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L112-L162">get_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24147,7 +24147,7 @@ client.valuespace.get_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_info</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L164-L198">get_info</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24230,7 +24230,7 @@ client.valuespace.get_info(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_instances</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L200-L236">get_instances</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -24313,7 +24313,7 @@ client.valuespace.get_instances(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_objects</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L238-L274">get_objects</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -24396,7 +24396,7 @@ client.valuespace.get_objects(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">meval_value</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L276-L316">meval_value</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -24478,7 +24478,7 @@ client.valuespace.meval_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">mget_value</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L318-L358">mget_value</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -24560,7 +24560,7 @@ client.valuespace.mget_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_mib</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L360-L394">get_mib</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24643,7 +24643,7 @@ client.valuespace.get_mib(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">mset_value</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L396-L435">mset_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24730,7 +24730,7 @@ client.valuespace.mset_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">munset_value</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L437-L476">munset_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24817,7 +24817,7 @@ client.valuespace.munset_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_name</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L478-L512">get_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24900,7 +24900,7 @@ client.valuespace.get_name(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_oid</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L514-L548">get_oid</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -24983,7 +24983,7 @@ client.valuespace.get_oid(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">remove</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L550-L590">remove</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -25075,7 +25075,7 @@ client.valuespace.remove(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">set_value</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L592-L648">set_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -25185,7 +25185,7 @@ client.valuespace.set_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">split_oid</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L650-L686">split_oid</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -25268,7 +25268,7 @@ client.valuespace.split_oid(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_state</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L688-L722">get_state</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -25351,7 +25351,7 @@ client.valuespace.get_state(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">set_state</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L724-L764">set_state</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -25443,7 +25443,7 @@ client.valuespace.set_state(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">unset_value</a>(...) -> str</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L766-L816">unset_value</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -25544,7 +25544,7 @@ client.valuespace.unset_value(
 </dl>
 </details>
 
-<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py">get_variables</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.valuespace.<a href="src/fern/valuespace/client.py#L818-L858">get_variables</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -25637,7 +25637,7 @@ client.valuespace.get_variables(
 </details>
 
 ## Daemon
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_new</a>(...) -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L30-L66">cfg_new</a>(...) -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25720,7 +25720,7 @@ client.daemon.cfg_new(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_active_data_list</a>() -> typing.List[int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L68-L93">get_active_data_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -25784,7 +25784,7 @@ client.daemon.get_active_data_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_active_list</a>() -> typing.List[int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L95-L120">get_active_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -25848,7 +25848,7 @@ client.daemon.get_active_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_cfgfile</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L122-L147">get_cfgfile</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25912,7 +25912,7 @@ client.daemon.get_cfgfile()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_cfg_file_changed</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L149-L174">get_cfg_file_changed</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -25976,7 +25976,7 @@ client.daemon.get_cfg_file_changed()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_changed_config_list</a>() -> typing.List[int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L176-L201">get_changed_config_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -26040,7 +26040,7 @@ client.daemon.get_changed_config_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_changed_state_list</a>() -> typing.List[AgentState]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L203-L230">get_changed_state_list</a>() -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -26104,7 +26104,7 @@ client.daemon.get_changed_state_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_clients</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L232-L257">get_clients</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26168,7 +26168,7 @@ client.daemon.get_clients()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_configured_list</a>() -> typing.List[int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L259-L284">get_configured_list</a>() -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -26232,7 +26232,7 @@ client.daemon.get_configured_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_interfaces</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L286-L311">get_interfaces</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26296,7 +26296,7 @@ client.daemon.get_interfaces()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_last</a>() -> int</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L313-L338">get_last</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -26360,7 +26360,7 @@ client.daemon.get_last()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_log</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L340-L365">get_log</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26424,7 +26424,7 @@ client.daemon.get_log()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_max</a>() -> int</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L367-L392">get_max</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -26488,7 +26488,7 @@ client.daemon.get_max()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_netaddr</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L394-L419">get_netaddr</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26552,7 +26552,7 @@ client.daemon.get_netaddr()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_netdev</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L421-L446">get_netdev</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26616,7 +26616,7 @@ client.daemon.get_netdev()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_product</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L448-L473">get_product</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26680,7 +26680,7 @@ client.daemon.get_product()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_daemon_protocols</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L475-L500">get_daemon_protocols</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26744,7 +26744,7 @@ client.daemon.get_daemon_protocols()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_return</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L502-L527">get_return</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26808,7 +26808,7 @@ client.daemon.get_return()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">get_version</a>() -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L529-L554">get_version</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -26872,7 +26872,7 @@ client.daemon.get_version()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_load</a>(...) -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L556-L608">cfg_load</a>(...) -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -26973,7 +26973,7 @@ client.daemon.cfg_load(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">mget_info</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L610-L642">mget_info</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -27045,7 +27045,7 @@ client.daemon.mget_info()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_save</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L644-L669">cfg_save</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27109,7 +27109,7 @@ client.daemon.cfg_save()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">cfg_saveas</a>(...) -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L671-L718">cfg_saveas</a>(...) -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27201,7 +27201,7 @@ client.daemon.cfg_saveas(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">set_log</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L720-L749">set_log</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27275,7 +27275,7 @@ client.daemon.set_log(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">set_netdev</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L751-L776">set_netdev</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27339,7 +27339,7 @@ client.daemon.set_netdev()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_save</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L778-L803">store_save</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27403,7 +27403,7 @@ client.daemon.store_save()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">start_all_agents</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L805-L830">start_all_agents</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27467,7 +27467,7 @@ client.daemon.start_all_agents()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">stop_all_agents</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L832-L857">stop_all_agents</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -27531,7 +27531,7 @@ client.daemon.stop_all_agents()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_exists</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L859-L889">store_exists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27605,7 +27605,7 @@ client.daemon.store_exists(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_get</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L891-L921">store_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27679,7 +27679,7 @@ client.daemon.store_get(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L923-L948">store_list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -27743,7 +27743,7 @@ client.daemon.store_list()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_lreplace</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L950-L989">store_lreplace</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27835,7 +27835,7 @@ client.daemon.store_lreplace(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_persists</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L991-L1021">store_persists</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -27909,7 +27909,7 @@ client.daemon.store_persists(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_set</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L1023-L1062">store_set</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -28001,7 +28001,7 @@ client.daemon.store_set(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">store_unset</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L1064-L1094">store_unset</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -28075,7 +28075,7 @@ client.daemon.store_unset(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">terminate</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L1096-L1121">terminate</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -28139,7 +28139,7 @@ client.daemon.terminate()
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">add_daemon_timer_script</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L1123-L1163">add_daemon_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -28231,7 +28231,7 @@ client.daemon.add_daemon_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">del_daemon_timer_script</a>(...) -> str</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L1165-L1205">del_daemon_timer_script</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -28323,7 +28323,7 @@ client.daemon.del_daemon_timer_script(
 </dl>
 </details>
 
-<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py">list_daemon_timer_scripts</a>() -> typing.List[TimerScript]</code></summary>
+<details><summary><code>client.daemon.<a href="src/fern/daemon/client.py#L1207-L1234">list_daemon_timer_scripts</a>() -> typing.List[TimerScript]</code></summary>
 <dl>
 <dd>
 

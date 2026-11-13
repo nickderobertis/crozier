@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_harvests</a>() -> HarvestBoard</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">list_harvests</a>() -> HarvestBoard</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">receipt_match</a>(...) -> CreateAsyncFileUploadResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L153">receipt_match</a>(...) -> CreateAsyncFileUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.receipt_match(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">receipt_upload</a>(...) -> CreateAsyncFileUploadResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L155-L194">receipt_upload</a>(...) -> CreateAsyncFileUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -161,7 +161,7 @@ client.receipt_upload(
 </details>
 
 ## Card Expenses
-<details><summary><code>client.card_expenses.<a href="src/fern/card_expenses/client.py">list_expenses</a>(...) -> PageExpandableExpense</code></summary>
+<details><summary><code>client.card_expenses.<a href="src/fern/card_expenses/client.py#L34-L127">list_expenses</a>(...) -> PageExpandableExpense</code></summary>
 <dl>
 <dd>
 
@@ -319,7 +319,7 @@ The cursor to use for pagination. This is the `next_cursor` value returned from 
 </dl>
 </details>
 
-<details><summary><code>client.card_expenses.<a href="src/fern/card_expenses/client.py">get_expense</a>(...) -> ExpandableExpense</code></summary>
+<details><summary><code>client.card_expenses.<a href="src/fern/card_expenses/client.py#L129-L172">get_expense</a>(...) -> ExpandableExpense</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.card_expenses.get_expense(
 </dl>
 </details>
 
-<details><summary><code>client.card_expenses.<a href="src/fern/card_expenses/client.py">update_expense</a>(...) -> Expense</code></summary>
+<details><summary><code>client.card_expenses.<a href="src/fern/card_expenses/client.py#L174-L211">update_expense</a>(...) -> Expense</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_auth_health</a>() -> GetAuthHealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L48">get_auth_health</a>() -> GetAuthHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.health.get_auth_health()
 </details>
 
 ## Account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_current_user</a>() -> MeResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L31-L53">get_current_user</a>() -> MeResponse</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.account.get_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">delete_current_user</a>(...) -> MeDeletionResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L55-L83">delete_current_user</a>(...) -> MeDeletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -158,7 +158,7 @@ client.account.delete_current_user(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_current_user</a>(...) -> MeResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L85-L119">update_current_user</a>(...) -> MeResponse</code></summary>
 <dl>
 <dd>
 
@@ -224,7 +224,7 @@ client.account.update_current_user()
 </details>
 
 ## Courses
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">list_courses</a>(...) -> ListCoursesResponse</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L37-L83">list_courses</a>(...) -> ListCoursesResponse</code></summary>
 <dl>
 <dd>
 
@@ -307,7 +307,7 @@ client.courses.list_courses(
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">search_catalog</a>(...) -> CatalogSearchResponse</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L85-L118">search_catalog</a>(...) -> CatalogSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -375,7 +375,7 @@ client.courses.search_catalog(
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">get_course</a>(...) -> CourseResource</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L120-L147">get_course</a>(...) -> CourseResource</code></summary>
 <dl>
 <dd>
 
@@ -434,7 +434,7 @@ client.courses.get_course(
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">list_language_courses</a>(...) -> LanguageCourseListResponse</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L149-L178">list_language_courses</a>(...) -> LanguageCourseListResponse</code></summary>
 <dl>
 <dd>
 
@@ -493,7 +493,7 @@ client.courses.list_language_courses(
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">get_course_edition</a>(...) -> CourseEditionResponse</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L180-L221">get_course_edition</a>(...) -> CourseEditionResponse</code></summary>
 <dl>
 <dd>
 
@@ -576,7 +576,7 @@ client.courses.get_course_edition(
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">resolve_course_edition</a>(...) -> CourseEditionResponse</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L223-L266">resolve_course_edition</a>(...) -> CourseEditionResponse</code></summary>
 <dl>
 <dd>
 
@@ -659,7 +659,7 @@ client.courses.resolve_course_edition(
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">list_current_user_courses</a>(...) -> CurrentUserCourseListResponse</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L268-L308">list_current_user_courses</a>(...) -> CurrentUserCourseListResponse</code></summary>
 <dl>
 <dd>
 
@@ -732,7 +732,7 @@ client.courses.list_current_user_courses()
 </dl>
 </details>
 
-<details><summary><code>client.courses.<a href="src/fern/courses/client.py">remove_current_user_course</a>(...)</code></summary>
+<details><summary><code>client.courses.<a href="src/fern/courses/client.py#L310-L338">remove_current_user_course</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -792,7 +792,7 @@ client.courses.remove_current_user_course(
 </details>
 
 ## Chapters
-<details><summary><code>client.chapters.<a href="src/fern/chapters/client.py">get_chapter</a>(...) -> ChapterResource</code></summary>
+<details><summary><code>client.chapters.<a href="src/fern/chapters/client.py#L27-L56">get_chapter</a>(...) -> ChapterResource</code></summary>
 <dl>
 <dd>
 
@@ -851,7 +851,7 @@ client.chapters.get_chapter(
 </dl>
 </details>
 
-<details><summary><code>client.chapters.<a href="src/fern/chapters/client.py">list_course_chapters</a>(...) -> CourseChapterListResponse</code></summary>
+<details><summary><code>client.chapters.<a href="src/fern/chapters/client.py#L58-L87">list_course_chapters</a>(...) -> CourseChapterListResponse</code></summary>
 <dl>
 <dd>
 
@@ -911,7 +911,7 @@ client.chapters.list_course_chapters(
 </details>
 
 ## Lessons
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">list_chapter_lessons</a>(...) -> ChapterLessonListResponse</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L37-L66">list_chapter_lessons</a>(...) -> ChapterLessonListResponse</code></summary>
 <dl>
 <dd>
 
@@ -970,7 +970,7 @@ client.lessons.list_chapter_lessons(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">get_lesson</a>(...) -> LessonResource</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L68-L95">get_lesson</a>(...) -> LessonResource</code></summary>
 <dl>
 <dd>
 
@@ -1029,7 +1029,7 @@ client.lessons.get_lesson(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">get_lesson_content</a>(...) -> LessonContentResponse</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L97-L126">get_lesson_content</a>(...) -> LessonContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1088,7 +1088,7 @@ client.lessons.get_lesson_content(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">get_lesson_successor</a>(...) -> LessonSuccessorResponse</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L128-L157">get_lesson_successor</a>(...) -> LessonSuccessorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1147,7 +1147,7 @@ client.lessons.get_lesson_successor(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">create_lesson_preload</a>(...) -> LessonPreloadResponse</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L159-L190">create_lesson_preload</a>(...) -> LessonPreloadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1220,7 +1220,7 @@ client.lessons.create_lesson_preload(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">get_lesson_question_thread</a>(...) -> typing.Optional[LessonQuestionThread]</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L192-L238">get_lesson_question_thread</a>(...) -> typing.Optional[LessonQuestionThread]</code></summary>
 <dl>
 <dd>
 
@@ -1303,7 +1303,7 @@ client.lessons.get_lesson_question_thread(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">create_lesson_question</a>(...) -> LessonQuestion</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L240-L287">create_lesson_question</a>(...) -> LessonQuestion</code></summary>
 <dl>
 <dd>
 
@@ -1389,7 +1389,7 @@ client.lessons.create_lesson_question(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">get_lesson_question</a>(...) -> LessonQuestion</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L289-L318">get_lesson_question</a>(...) -> LessonQuestion</code></summary>
 <dl>
 <dd>
 
@@ -1448,7 +1448,7 @@ client.lessons.get_lesson_question(
 </dl>
 </details>
 
-<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py">create_lesson_question_answer</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.lessons.<a href="src/fern/lessons/client.py#L320-L353">create_lesson_question_answer</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1522,7 +1522,7 @@ client.lessons.create_lesson_question_answer(
 </details>
 
 ## CoursePrompts
-<details><summary><code>client.course_prompts.<a href="src/fern/course_prompts/client.py">create_course_prompt</a>(...) -> ResolveCoursePromptResponse</code></summary>
+<details><summary><code>client.course_prompts.<a href="src/fern/course_prompts/client.py#L31-L64">create_course_prompt</a>(...) -> ResolveCoursePromptResponse</code></summary>
 <dl>
 <dd>
 
@@ -1598,7 +1598,7 @@ client.course_prompts.create_course_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.course_prompts.<a href="src/fern/course_prompts/client.py">get_course_prompt</a>(...) -> CoursePromptGenerationResponse</code></summary>
+<details><summary><code>client.course_prompts.<a href="src/fern/course_prompts/client.py#L66-L95">get_course_prompt</a>(...) -> CoursePromptGenerationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1658,7 +1658,7 @@ client.course_prompts.get_course_prompt(
 </details>
 
 ## Progress
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">list_current_user_course_continuations</a>() -> CourseContinuationListResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L44-L68">list_current_user_course_continuations</a>() -> CourseContinuationListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1707,7 +1707,7 @@ client.progress.list_current_user_course_continuations()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_lesson_visibility</a>() -> LessonVisibilityOutput</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L70-L94">get_current_user_lesson_visibility</a>() -> LessonVisibilityOutput</code></summary>
 <dl>
 <dd>
 
@@ -1756,7 +1756,7 @@ client.progress.get_current_user_lesson_visibility()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">update_current_user_lesson_visibility</a>(...) -> LessonVisibilityOutput</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L96-L129">update_current_user_lesson_visibility</a>(...) -> LessonVisibilityOutput</code></summary>
 <dl>
 <dd>
 
@@ -1817,7 +1817,7 @@ client.progress.update_current_user_lesson_visibility(
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">create_lesson_completion</a>(...) -> LessonCompletionResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L131-L202">create_lesson_completion</a>(...) -> LessonCompletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1926,7 +1926,7 @@ client.progress.create_lesson_completion(
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">create_lesson_start</a>(...)</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L204-L230">create_lesson_start</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1985,7 +1985,7 @@ client.progress.create_lesson_start(
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_progress</a>() -> CurrentUserProgressResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L232-L258">get_current_user_progress</a>() -> CurrentUserProgressResponse</code></summary>
 <dl>
 <dd>
 
@@ -2048,7 +2048,7 @@ client.progress.get_current_user_progress()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_activity</a>() -> CurrentUserActivityResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L260-L286">get_current_user_activity</a>() -> CurrentUserActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2111,7 +2111,7 @@ client.progress.get_current_user_activity()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_energy</a>() -> CurrentUserEnergyResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L288-L314">get_current_user_energy</a>() -> CurrentUserEnergyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2174,7 +2174,7 @@ client.progress.get_current_user_energy()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_level</a>() -> CurrentUserLevelResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L316-L340">get_current_user_level</a>() -> CurrentUserLevelResponse</code></summary>
 <dl>
 <dd>
 
@@ -2223,7 +2223,7 @@ client.progress.get_current_user_level()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_score</a>() -> CurrentUserScoreResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L342-L368">get_current_user_score</a>() -> CurrentUserScoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -2286,7 +2286,7 @@ client.progress.get_current_user_score()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_score_patterns</a>() -> CurrentUserScorePatternsResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L370-L396">get_current_user_score_patterns</a>() -> CurrentUserScorePatternsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2349,7 +2349,7 @@ client.progress.get_current_user_score_patterns()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_current_user_progress_snapshot</a>() -> CurrentUserProgressSnapshotResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L398-L424">get_current_user_progress_snapshot</a>() -> CurrentUserProgressSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -2412,7 +2412,7 @@ client.progress.get_current_user_progress_snapshot()
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_chapter_next_lesson</a>(...) -> NextLessonResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L426-L455">get_chapter_next_lesson</a>(...) -> NextLessonResponse</code></summary>
 <dl>
 <dd>
 
@@ -2471,7 +2471,7 @@ client.progress.get_chapter_next_lesson(
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_chapter_progress</a>(...) -> ChapterCompletionResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L457-L486">get_chapter_progress</a>(...) -> ChapterCompletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2530,7 +2530,7 @@ client.progress.get_chapter_progress(
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_course_next_lesson</a>(...) -> NextLessonResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L488-L517">get_course_next_lesson</a>(...) -> NextLessonResponse</code></summary>
 <dl>
 <dd>
 
@@ -2589,7 +2589,7 @@ client.progress.get_course_next_lesson(
 </dl>
 </details>
 
-<details><summary><code>client.progress.<a href="src/fern/progress/client.py">get_course_progress</a>(...) -> CourseCompletionResponse</code></summary>
+<details><summary><code>client.progress.<a href="src/fern/progress/client.py#L519-L548">get_course_progress</a>(...) -> CourseCompletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2649,7 +2649,7 @@ client.progress.get_course_progress(
 </details>
 
 ## Workflows
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">create_generation</a>(...) -> Generation</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L30-L63">create_generation</a>(...) -> Generation</code></summary>
 <dl>
 <dd>
 
@@ -2725,7 +2725,7 @@ client.workflows.create_generation(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">get_generation</a>(...) -> Generation</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L65-L94">get_generation</a>(...) -> Generation</code></summary>
 <dl>
 <dd>
 
@@ -2784,7 +2784,7 @@ client.workflows.get_generation(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">stream_generation_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L96-L138">stream_generation_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2866,7 +2866,7 @@ client.workflows.stream_generation_events(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_username_availability</a>(...) -> UsernameAvailabilityResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L57">get_username_availability</a>(...) -> UsernameAvailabilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2940,7 +2940,7 @@ client.users.get_username_availability(
 </details>
 
 ## Feedback
-<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py">create_feedback</a>(...) -> FeedbackResponse</code></summary>
+<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py#L29-L62">create_feedback</a>(...) -> FeedbackResponse</code></summary>
 <dl>
 <dd>
 
@@ -3009,7 +3009,7 @@ client.feedback.create_feedback(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_email_sign_in_code</a>(...)</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L30-L55">create_email_sign_in_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3068,7 +3068,7 @@ client.sessions.create_email_sign_in_code(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_apple_session</a>(...) -> SessionTokenResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L57-L105">create_apple_session</a>(...) -> SessionTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3129,7 +3129,7 @@ client.sessions.create_apple_session(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">delete_current_session</a>()</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L107-L130">delete_current_session</a>()</code></summary>
 <dl>
 <dd>
 
@@ -3192,7 +3192,7 @@ client.sessions.delete_current_session()
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_email_code_session</a>(...) -> SessionTokenResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L132-L163">create_email_code_session</a>(...) -> SessionTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3260,7 +3260,7 @@ client.sessions.create_email_code_session(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_google_session</a>(...) -> SessionTokenResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L165-L193">create_google_session</a>(...) -> SessionTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -3320,7 +3320,7 @@ client.sessions.create_google_session(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create_apple_subscription</a>(...) -> AppleSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L29-L59">create_apple_subscription</a>(...) -> AppleSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3379,7 +3379,7 @@ client.subscriptions.create_apple_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">create_apple_subscription_notification</a>(...)</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L61-L90">create_apple_subscription_notification</a>(...)</code></summary>
 <dl>
 <dd>
 

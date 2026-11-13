@@ -1,6 +1,6 @@
 # Reference
 ## Publishers
-<details><summary><code>client.publishers.<a href="src/fern/publishers/client.py">add_publisher</a>(...)</code></summary>
+<details><summary><code>client.publishers.<a href="src/fern/publishers/client.py#L29-L58">add_publisher</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.publishers.add_publisher()
 </dl>
 </details>
 
-<details><summary><code>client.publishers.<a href="src/fern/publishers/client.py">get_publisher</a>(...) -> PublisherRecord</code></summary>
+<details><summary><code>client.publishers.<a href="src/fern/publishers/client.py#L60-L86">get_publisher</a>(...) -> PublisherRecord</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.publishers.get_publisher(
 </details>
 
 ## Scores
-<details><summary><code>client.scores.<a href="src/fern/scores/client.py">submit_score</a>(...)</code></summary>
+<details><summary><code>client.scores.<a href="src/fern/scores/client.py#L28-L47">submit_score</a>(...)</code></summary>
 <dl>
 <dd>
 

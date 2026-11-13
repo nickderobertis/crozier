@@ -1,6 +1,6 @@
 # Reference
 ## Plots
-<details><summary><code>client.plots.<a href="src/fern/plots/client.py">plot_course</a>(...) -> PlotCourseResponse</code></summary>
+<details><summary><code>client.plots.<a href="src/fern/plots/client.py#L31-L85">plot_course</a>(...) -> PlotCourseResponse</code></summary>
 <dl>
 <dd>
 

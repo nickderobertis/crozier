@@ -1,6 +1,6 @@
 # Reference
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">list_logs</a>(...) -> V2LogListResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L34-L183">list_logs</a>(...) -> V2LogListResponse</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.logs.list_logs(
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">get_log</a>(...) -> V2LogDetailResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L185-L216">get_log</a>(...) -> V2LogDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -326,7 +326,7 @@ client.logs.get_log(
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">get_log_stats</a>(...) -> V2LogStatsResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L218-L292">get_log_stats</a>(...) -> V2LogStatsResponse</code></summary>
 <dl>
 <dd>
 

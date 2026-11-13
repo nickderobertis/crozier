@@ -1,6 +1,6 @@
 # Reference
 ## Capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_landing_page</a>(...) -> LandingPage</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L31-L69">get_landing_page</a>(...) -> LandingPage</code></summary>
 <dl>
 <dd>
 
@@ -71,7 +71,7 @@ client.capabilities.get_landing_page()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_open_api_document</a>()</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L71-L92">get_open_api_document</a>()</code></summary>
 <dl>
 <dd>
 
@@ -133,7 +133,7 @@ client.capabilities.get_open_api_document()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_conformance_declaration</a>(...) -> ConfClasses</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L94-L132">get_conformance_declaration</a>(...) -> ConfClasses</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.capabilities.get_conformance_declaration()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_cql_functions</a>(...) -> Functions</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L134-L166">get_cql_functions</a>(...) -> Functions</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.capabilities.get_cql_functions()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_collections</a>(...) -> Collections</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L168-L210">get_collections</a>(...) -> Collections</code></summary>
 <dl>
 <dd>
 
@@ -330,7 +330,7 @@ client.capabilities.get_collections()
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">describe_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L212-L259">describe_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -396,7 +396,7 @@ client.capabilities.describe_collection(
 </dl>
 </details>
 
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_queryables</a>(...) -> Queryables</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L261-L297">get_queryables</a>(...) -> Queryables</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ client.capabilities.get_queryables(
 </details>
 
 ## Data
-<details><summary><code>client.data.<a href="src/fern/data/client.py">get_features</a>(...) -> FeatureCollectionGeoJson</code></summary>
+<details><summary><code>client.data.<a href="src/fern/data/client.py#L41-L210">get_features</a>(...) -> FeatureCollectionGeoJson</code></summary>
 <dl>
 <dd>
 
@@ -702,7 +702,7 @@ parameter is subject to change in a future release. Its usage should be carefull
 </dl>
 </details>
 
-<details><summary><code>client.data.<a href="src/fern/data/client.py">search_features</a>(...) -> FeatureCollectionGeoJson</code></summary>
+<details><summary><code>client.data.<a href="src/fern/data/client.py#L212-L310">search_features</a>(...) -> FeatureCollectionGeoJson</code></summary>
 <dl>
 <dd>
 
@@ -860,7 +860,7 @@ client.data.search_features(
 </dl>
 </details>
 
-<details><summary><code>client.data.<a href="src/fern/data/client.py">get_feature</a>(...) -> FeatureGeoJson</code></summary>
+<details><summary><code>client.data.<a href="src/fern/data/client.py#L312-L374">get_feature</a>(...) -> FeatureGeoJson</code></summary>
 <dl>
 <dd>
 

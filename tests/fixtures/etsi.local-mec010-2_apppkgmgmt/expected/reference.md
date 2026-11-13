@@ -1,6 +1,6 @@
 # Reference
 ## app-pkgm
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_packages_get</a>(...) -> typing.List[AppPkgInfo]</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L39-L92">app_packages_get</a>(...) -> typing.List[AppPkgInfo]</code></summary>
 <dl>
 <dd>
 
@@ -102,7 +102,7 @@ client.app_pkgm.app_packages_get()
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_packages_post</a>(...) -> typing.List[AppPkgInfo]</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L94-L158">app_packages_post</a>(...) -> typing.List[AppPkgInfo]</code></summary>
 <dl>
 <dd>
 
@@ -223,7 +223,7 @@ The appPkgName with appPkgVersion can be used to uniquely identify the applicati
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_get</a>(...) -> AppPkgInfo</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L160-L189">app_package_get</a>(...) -> AppPkgInfo</code></summary>
 <dl>
 <dd>
 
@@ -295,7 +295,7 @@ client.app_pkgm.app_package_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_delete</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L191-L217">app_package_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -367,7 +367,7 @@ client.app_pkgm.app_package_delete(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_package_patch</a>(...) -> AppPkgInfoModifications</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L219-L257">app_package_patch</a>(...) -> AppPkgInfoModifications</code></summary>
 <dl>
 <dd>
 
@@ -448,7 +448,7 @@ client.app_pkgm.app_package_patch(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_pkg_id_get</a>(...) -> str</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L259-L319">app_pkg_id_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -560,7 +560,7 @@ client.app_pkgm.app_pkg_id_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_pkg_get</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L321-L347">app_pkg_get</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -632,7 +632,7 @@ client.app_pkgm.app_pkg_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_pkg_put</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L349-L374">app_pkg_put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -702,7 +702,7 @@ client.app_pkgm.app_pkg_put(...)
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_dget</a>(...) -> str</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L376-L436">app_dget</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -814,7 +814,7 @@ client.app_pkgm.app_dget(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_d_id_get</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L438-L464">app_d_id_get</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.app_pkgm.app_d_id_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">app_d_id_put</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L466-L491">app_d_id_put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -956,7 +956,7 @@ client.app_pkgm.app_d_id_put(...)
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">subscriptions_get</a>() -> AppPkgSubscriptionLinkList</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L493-L517">subscriptions_get</a>() -> AppPkgSubscriptionLinkList</code></summary>
 <dl>
 <dd>
 
@@ -1018,7 +1018,7 @@ client.app_pkgm.subscriptions_get()
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">subscriptions_post</a>(...) -> AppPkgSubscriptionInfo</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L519-L562">subscriptions_post</a>(...) -> AppPkgSubscriptionInfo</code></summary>
 <dl>
 <dd>
 
@@ -1107,7 +1107,7 @@ client.app_pkgm.subscriptions_post(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">individual_subscription_get</a>(...) -> AppPkgSubscriptionInfo</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L564-L593">individual_subscription_get</a>(...) -> AppPkgSubscriptionInfo</code></summary>
 <dl>
 <dd>
 
@@ -1179,7 +1179,7 @@ client.app_pkgm.individual_subscription_get(
 </dl>
 </details>
 
-<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py">individual_subscription_delete</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm.<a href="src/fern/app_pkgm/client.py#L595-L623">individual_subscription_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1252,7 +1252,7 @@ client.app_pkgm.individual_subscription_delete(
 </details>
 
 ## app-pkgm-notifications
-<details><summary><code>client.app_pkgm_notifications.<a href="src/fern/app_pkgm_notifications/client.py">app_pkg_notification_post</a>(...)</code></summary>
+<details><summary><code>client.app_pkgm_notifications.<a href="src/fern/app_pkgm_notifications/client.py#L36-L119">app_pkg_notification_post</a>(...)</code></summary>
 <dl>
 <dd>
 

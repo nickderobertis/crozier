@@ -1,6 +1,6 @@
 # Reference
 ## OAuth21Oidc
-<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py">authorize</a>(...)</code></summary>
+<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py#L42-L130">authorize</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -145,7 +145,7 @@ client.o_auth21oidc.authorize(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py">token</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py#L132-L209">token</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -280,7 +280,7 @@ client.o_auth21oidc.token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py">userinfo</a>() -> UserInfo</code></summary>
+<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py#L211-L235">userinfo</a>() -> UserInfo</code></summary>
 <dl>
 <dd>
 
@@ -343,7 +343,7 @@ client.o_auth21oidc.userinfo()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py">introspect</a>(...) -> IntrospectionResponse</code></summary>
+<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py#L237-L277">introspect</a>(...) -> IntrospectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -424,7 +424,7 @@ client.o_auth21oidc.introspect(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py">pushed_authorization_request</a>(...) -> PushedAuthorizationRequestResponse</code></summary>
+<details><summary><code>client.o_auth21oidc.<a href="src/fern/o_auth21oidc/client.py#L279-L357">pushed_authorization_request</a>(...) -> PushedAuthorizationRequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -568,7 +568,7 @@ client.o_auth21oidc.pushed_authorization_request(
 </details>
 
 ## ClientManagement
-<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py">register_client</a>(...) -> ClientRegistrationResponse</code></summary>
+<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py#L43-L140">register_client</a>(...) -> ClientRegistrationResponse</code></summary>
 <dl>
 <dd>
 
@@ -755,7 +755,7 @@ client.client_management.register_client(
 </dl>
 </details>
 
-<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py">get_client_configuration</a>(...) -> ClientConfiguration</code></summary>
+<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py#L142-L173">get_client_configuration</a>(...) -> ClientConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.client_management.get_client_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py">update_client_configuration</a>(...) -> ClientConfiguration</code></summary>
+<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py#L175-L244">update_client_configuration</a>(...) -> ClientConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -965,7 +965,7 @@ client.client_management.update_client_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py">delete_client</a>(...)</code></summary>
+<details><summary><code>client.client_management.<a href="src/fern/client_management/client.py#L246-L274">delete_client</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1039,7 +1039,7 @@ client.client_management.delete_client(
 </details>
 
 ## Discovery
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">openid_configuration</a>() -> OidcDiscovery</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L29-L53">openid_configuration</a>() -> OidcDiscovery</code></summary>
 <dl>
 <dd>
 
@@ -1102,7 +1102,7 @@ client.discovery.openid_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">fapi_configuration</a>() -> FapiConfiguration</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L55-L79">fapi_configuration</a>() -> FapiConfiguration</code></summary>
 <dl>
 <dd>
 
@@ -1165,7 +1165,7 @@ client.discovery.fapi_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">jwks</a>() -> JwkSet</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L81-L105">jwks</a>() -> JwkSet</code></summary>
 <dl>
 <dd>
 
@@ -1228,7 +1228,7 @@ client.discovery.jwks()
 </dl>
 </details>
 
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">swiss_banking_metadata</a>() -> SwissBankingMetadata</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L107-L133">swiss_banking_metadata</a>() -> SwissBankingMetadata</code></summary>
 <dl>
 <dd>
 
@@ -1292,7 +1292,7 @@ client.discovery.swiss_banking_metadata()
 </details>
 
 ## ConsentManagement
-<details><summary><code>client.consent_management.<a href="src/fern/consent_management/client.py">create_consent</a>(...) -> ConsentResponse</code></summary>
+<details><summary><code>client.consent_management.<a href="src/fern/consent_management/client.py#L34-L120">create_consent</a>(...) -> ConsentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1425,7 +1425,7 @@ client.consent_management.create_consent(
 </dl>
 </details>
 
-<details><summary><code>client.consent_management.<a href="src/fern/consent_management/client.py">get_consent_status</a>(...) -> ConsentStatus</code></summary>
+<details><summary><code>client.consent_management.<a href="src/fern/consent_management/client.py#L122-L152">get_consent_status</a>(...) -> ConsentStatus</code></summary>
 <dl>
 <dd>
 
@@ -1498,7 +1498,7 @@ client.consent_management.get_consent_status(
 </dl>
 </details>
 
-<details><summary><code>client.consent_management.<a href="src/fern/consent_management/client.py">revoke_consent</a>(...)</code></summary>
+<details><summary><code>client.consent_management.<a href="src/fern/consent_management/client.py#L154-L181">revoke_consent</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1572,7 +1572,7 @@ client.consent_management.revoke_consent(
 </details>
 
 ## Referenzprozess
-<details><summary><code>client.referenzprozess.<a href="src/fern/referenzprozess/client.py">initialize_process</a>(...) -> ProcessInitializationResponse</code></summary>
+<details><summary><code>client.referenzprozess.<a href="src/fern/referenzprozess/client.py#L35-L93">initialize_process</a>(...) -> ProcessInitializationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1672,7 +1672,7 @@ client.referenzprozess.initialize_process(
 </dl>
 </details>
 
-<details><summary><code>client.referenzprozess.<a href="src/fern/referenzprozess/client.py">execute_process_step</a>(...) -> ProcessStepResponse</code></summary>
+<details><summary><code>client.referenzprozess.<a href="src/fern/referenzprozess/client.py#L95-L150">execute_process_step</a>(...) -> ProcessStepResponse</code></summary>
 <dl>
 <dd>
 
@@ -1781,7 +1781,7 @@ client.referenzprozess.execute_process_step(
 </dl>
 </details>
 
-<details><summary><code>client.referenzprozess.<a href="src/fern/referenzprozess/client.py">get_process_status</a>(...) -> ProcessStatus</code></summary>
+<details><summary><code>client.referenzprozess.<a href="src/fern/referenzprozess/client.py#L152-L182">get_process_status</a>(...) -> ProcessStatus</code></summary>
 <dl>
 <dd>
 
@@ -1855,7 +1855,7 @@ client.referenzprozess.get_process_status(
 </details>
 
 ## CustomerData
-<details><summary><code>client.customer_data.<a href="src/fern/customer_data/client.py">check_customer</a>(...) -> CustomerCheckResponse</code></summary>
+<details><summary><code>client.customer_data.<a href="src/fern/customer_data/client.py#L35-L84">check_customer</a>(...) -> CustomerCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -1945,7 +1945,7 @@ client.customer_data.check_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customer_data.<a href="src/fern/customer_data/client.py">request_full_customer_data</a>(...) -> FullCustomerDataset</code></summary>
+<details><summary><code>client.customer_data.<a href="src/fern/customer_data/client.py#L86-L136">request_full_customer_data</a>(...) -> FullCustomerDataset</code></summary>
 <dl>
 <dd>
 
@@ -2037,7 +2037,7 @@ client.customer_data.request_full_customer_data(
 </dl>
 </details>
 
-<details><summary><code>client.customer_data.<a href="src/fern/customer_data/client.py">get_customer_data</a>(...) -> CustomerDataResponse</code></summary>
+<details><summary><code>client.customer_data.<a href="src/fern/customer_data/client.py#L138-L195">get_customer_data</a>(...) -> CustomerDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -2140,7 +2140,7 @@ client.customer_data.get_customer_data(
 </details>
 
 ## PortfolioServices
-<details><summary><code>client.portfolio_services.<a href="src/fern/portfolio_services/client.py">sync_portfolio_data</a>(...) -> PortfolioSyncResponse</code></summary>
+<details><summary><code>client.portfolio_services.<a href="src/fern/portfolio_services/client.py#L32-L86">sync_portfolio_data</a>(...) -> PortfolioSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -2250,7 +2250,7 @@ client.portfolio_services.sync_portfolio_data(
 </details>
 
 ## Compliance
-<details><summary><code>client.compliance.<a href="src/fern/compliance/client.py">perform_mi_fid_assessment</a>(...) -> MiFidAssessmentResponse</code></summary>
+<details><summary><code>client.compliance.<a href="src/fern/compliance/client.py#L31-L84">perform_mi_fid_assessment</a>(...) -> MiFidAssessmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2359,7 +2359,7 @@ client.compliance.perform_mi_fid_assessment(
 </details>
 
 ## AgeVerification
-<details><summary><code>client.age_verification.<a href="src/fern/age_verification/client.py">verify_age</a>(...) -> AgeVerificationResponse</code></summary>
+<details><summary><code>client.age_verification.<a href="src/fern/age_verification/client.py#L30-L97">verify_age</a>(...) -> AgeVerificationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2491,7 +2491,7 @@ client.age_verification.verify_age(
 </details>
 
 ## Identification
-<details><summary><code>client.identification.<a href="src/fern/identification/client.py">get_identification_status</a>(...) -> IdentificationStatusResponse</code></summary>
+<details><summary><code>client.identification.<a href="src/fern/identification/client.py#L33-L63">get_identification_status</a>(...) -> IdentificationStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2564,7 +2564,7 @@ client.identification.get_identification_status(
 </dl>
 </details>
 
-<details><summary><code>client.identification.<a href="src/fern/identification/client.py">verify_identification</a>(...) -> IdentificationResponse</code></summary>
+<details><summary><code>client.identification.<a href="src/fern/identification/client.py#L65-L116">verify_identification</a>(...) -> IdentificationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2664,7 +2664,7 @@ client.identification.verify_identification(
 </details>
 
 ## BackgroundChecks
-<details><summary><code>client.background_checks.<a href="src/fern/background_checks/client.py">perform_background_checks</a>(...) -> BackgroundChecksResponse</code></summary>
+<details><summary><code>client.background_checks.<a href="src/fern/background_checks/client.py#L35-L91">perform_background_checks</a>(...) -> BackgroundChecksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2773,7 +2773,7 @@ client.background_checks.perform_background_checks(
 </dl>
 </details>
 
-<details><summary><code>client.background_checks.<a href="src/fern/background_checks/client.py">perform_comprehensive_checks</a>(...) -> ComprehensiveCheckResponse</code></summary>
+<details><summary><code>client.background_checks.<a href="src/fern/background_checks/client.py#L93-L140">perform_comprehensive_checks</a>(...) -> ComprehensiveCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -2867,7 +2867,7 @@ client.background_checks.perform_comprehensive_checks(
 </details>
 
 ## SignatureServices
-<details><summary><code>client.signature_services.<a href="src/fern/signature_services/client.py">initiate_signature</a>(...) -> SignatureResponse</code></summary>
+<details><summary><code>client.signature_services.<a href="src/fern/signature_services/client.py#L33-L91">initiate_signature</a>(...) -> SignatureResponse</code></summary>
 <dl>
 <dd>
 
@@ -2973,7 +2973,7 @@ client.signature_services.initiate_signature(
 </dl>
 </details>
 
-<details><summary><code>client.signature_services.<a href="src/fern/signature_services/client.py">get_signature_status</a>(...) -> SignatureStatus</code></summary>
+<details><summary><code>client.signature_services.<a href="src/fern/signature_services/client.py#L93-L123">get_signature_status</a>(...) -> SignatureStatus</code></summary>
 <dl>
 <dd>
 
@@ -3047,7 +3047,7 @@ client.signature_services.get_signature_status(
 </details>
 
 ## Registry
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">list_participants</a>() -> ParticipantList</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L26-L50">list_participants</a>() -> ParticipantList</code></summary>
 <dl>
 <dd>
 
@@ -3111,7 +3111,7 @@ client.registry.list_participants()
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">check</a>() -> HealthStatus</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">check</a>() -> HealthStatus</code></summary>
 <dl>
 <dd>
 

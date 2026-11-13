@@ -1,6 +1,6 @@
 # Reference
 ## AdvancedAuthentication
-<details><summary><code>client.advanced_authentication.<a href="src/fern/advanced_authentication/client.py">post_auth_api_key</a>(...) -> AccessToken</code></summary>
+<details><summary><code>client.advanced_authentication.<a href="src/fern/advanced_authentication/client.py#L29-L62">post_auth_api_key</a>(...) -> AccessToken</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.advanced_authentication.post_auth_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.advanced_authentication.<a href="src/fern/advanced_authentication/client.py">post_auth_refresh</a>(...) -> AccessToken</code></summary>
+<details><summary><code>client.advanced_authentication.<a href="src/fern/advanced_authentication/client.py#L64-L97">post_auth_refresh</a>(...) -> AccessToken</code></summary>
 <dl>
 <dd>
 
@@ -151,7 +151,7 @@ client.advanced_authentication.post_auth_refresh(
 </details>
 
 ## Videos
-<details><summary><code>client.videos.<a href="src/fern/videos/client.py">post_videos_video_id_source</a>(...) -> Video</code></summary>
+<details><summary><code>client.videos.<a href="src/fern/videos/client.py#L30-L75">post_videos_video_id_source</a>(...) -> Video</code></summary>
 <dl>
 <dd>
 
@@ -242,7 +242,7 @@ client.videos.post_videos_video_id_source(
 </dl>
 </details>
 
-<details><summary><code>client.videos.<a href="src/fern/videos/client.py">post_upload</a>(...) -> Video</code></summary>
+<details><summary><code>client.videos.<a href="src/fern/videos/client.py#L77-L126">post_upload</a>(...) -> Video</code></summary>
 <dl>
 <dd>
 

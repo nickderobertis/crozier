@@ -1,6 +1,6 @@
 # Reference
 ## locations
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">monitoring_locations_global_metrics_scopes_list_metrics_scopes_by_monitored_project</a>(...) -> ListMetricsScopesByMonitoredProjectResponse</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L42-L138">monitoring_locations_global_metrics_scopes_list_metrics_scopes_by_monitored_project</a>(...) -> ListMetricsScopesByMonitoredProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -159,7 +159,7 @@ client.locations.monitoring_locations_global_metrics_scopes_list_metrics_scopes_
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">monitoring_locations_global_metrics_scopes_projects_create</a>(...) -> Operation</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L140-L242">monitoring_locations_global_metrics_scopes_projects_create</a>(...) -> Operation</code></summary>
 <dl>
 <dd>
 
@@ -329,7 +329,7 @@ client.locations.monitoring_locations_global_metrics_scopes_projects_create(
 </details>
 
 ## projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_dashboards_get</a>(...) -> Dashboard</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L89-L181">monitoring_projects_dashboards_get</a>(...) -> Dashboard</code></summary>
 <dl>
 <dd>
 
@@ -490,7 +490,7 @@ client.projects.monitoring_projects_dashboards_get(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_dashboards_delete</a>(...) -> Empty</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L183-L275">monitoring_projects_dashboards_delete</a>(...) -> Empty</code></summary>
 <dl>
 <dd>
 
@@ -651,7 +651,7 @@ client.projects.monitoring_projects_dashboards_delete(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_dashboards_patch</a>(...) -> Dashboard</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L277-L419">monitoring_projects_dashboards_patch</a>(...) -> Dashboard</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.projects.monitoring_projects_dashboards_patch(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1label_values</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L421-L540">monitoring_projects_location_prometheus_api_v1label_values</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1label_values(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1labels</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L542-L655">monitoring_projects_location_prometheus_api_v1labels</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -1225,7 +1225,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1labels(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1metadata_list</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L657-L765">monitoring_projects_location_prometheus_api_v1metadata_list</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -1411,7 +1411,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1metadata_list(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1query</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L767-L880">monitoring_projects_location_prometheus_api_v1query</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -1605,7 +1605,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1query(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1query_exemplars</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L882-L995">monitoring_projects_location_prometheus_api_v1query_exemplars</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -1799,7 +1799,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1query_exemplars(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1query_range</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L997-L1120">monitoring_projects_location_prometheus_api_v1query_range</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -2009,7 +2009,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1query_range(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_location_prometheus_api_v1series</a>(...) -> HttpBody</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1122-L1230">monitoring_projects_location_prometheus_api_v1series</a>(...) -> HttpBody</code></summary>
 <dl>
 <dd>
 
@@ -2195,7 +2195,7 @@ client.projects.monitoring_projects_location_prometheus_api_v1series(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_dashboards_list</a>(...) -> ListDashboardsResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1232-L1334">monitoring_projects_dashboards_list</a>(...) -> ListDashboardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2372,7 +2372,7 @@ client.projects.monitoring_projects_dashboards_list(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">monitoring_projects_dashboards_create</a>(...) -> Dashboard</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1336-L1478">monitoring_projects_dashboards_create</a>(...) -> Dashboard</code></summary>
 <dl>
 <dd>
 

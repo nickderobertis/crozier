@@ -1,6 +1,6 @@
 # Reference
 ## Signs
-<details><summary><code>client.signs.<a href="src/fern/signs/client.py">list_signs</a>(...)</code></summary>
+<details><summary><code>client.signs.<a href="src/fern/signs/client.py#L26-L51">list_signs</a>(...)</code></summary>
 <dl>
 <dd>
 

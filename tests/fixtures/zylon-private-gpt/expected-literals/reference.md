@@ -1,6 +1,6 @@
 # Reference
 ## ContextualCompletions
-<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py">prompt_completion_v1completions_post_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py#L31-L112">prompt_completion_v1completions_post_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.contextual_completions.prompt_completion_v1completions_post_stream(
 </dl>
 </details>
 
-<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py">prompt_completion</a>(...) -> OpenAiCompletion</code></summary>
+<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py#L114-L191">prompt_completion</a>(...) -> OpenAiCompletion</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.contextual_completions.prompt_completion_v1completions_post_stream(
 </dl>
 </details>
 
-<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py">chat_completion_v1chat_completions_post_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py#L193-L277">chat_completion_v1chat_completions_post_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -411,7 +411,7 @@ client.contextual_completions.chat_completion_v1chat_completions_post_stream(
 </dl>
 </details>
 
-<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py">chat_completion</a>(...) -> OpenAiCompletion</code></summary>
+<details><summary><code>client.contextual_completions.<a href="src/fern/contextual_completions/client.py#L279-L361">chat_completion</a>(...) -> OpenAiCompletion</code></summary>
 <dl>
 <dd>
 
@@ -551,7 +551,7 @@ client.contextual_completions.chat_completion_v1chat_completions_post_stream(
 </details>
 
 ## ContextChunks
-<details><summary><code>client.context_chunks.<a href="src/fern/context_chunks/client.py">chunks_retrieval</a>(...) -> ChunksResponse</code></summary>
+<details><summary><code>client.context_chunks.<a href="src/fern/context_chunks/client.py#L30-L95">chunks_retrieval</a>(...) -> ChunksResponse</code></summary>
 <dl>
 <dd>
 
@@ -664,7 +664,7 @@ client.context_chunks.chunks_retrieval(
 </details>
 
 ## Ingestion
-<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py">ingest</a>(...) -> IngestResponse</code></summary>
+<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py#L30-L59">ingest</a>(...) -> IngestResponse</code></summary>
 <dl>
 <dd>
 
@@ -737,7 +737,7 @@ client.ingestion.ingest(
 </dl>
 </details>
 
-<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py">ingest_file</a>(...) -> IngestResponse</code></summary>
+<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py#L61-L103">ingest_file</a>(...) -> IngestResponse</code></summary>
 <dl>
 <dd>
 
@@ -821,7 +821,7 @@ client.ingestion.ingest_file(
 </dl>
 </details>
 
-<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py">ingest_text</a>(...) -> IngestResponse</code></summary>
+<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py#L105-L147">ingest_text</a>(...) -> IngestResponse</code></summary>
 <dl>
 <dd>
 
@@ -910,7 +910,7 @@ client.ingestion.ingest_text(
 </dl>
 </details>
 
-<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py">list_ingested</a>() -> IngestResponse</code></summary>
+<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py#L149-L176">list_ingested</a>() -> IngestResponse</code></summary>
 <dl>
 <dd>
 
@@ -974,7 +974,7 @@ client.ingestion.list_ingested()
 </dl>
 </details>
 
-<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py">delete_ingested</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py#L178-L209">delete_ingested</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1049,7 +1049,7 @@ client.ingestion.delete_ingested(
 </details>
 
 ## Recipes
-<details><summary><code>client.recipes.<a href="src/fern/recipes/client.py">summarize</a>(...) -> SummarizeResponse</code></summary>
+<details><summary><code>client.recipes.<a href="src/fern/recipes/client.py#L30-L104">summarize</a>(...) -> SummarizeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1179,7 +1179,7 @@ client.recipes.summarize()
 </details>
 
 ## Embeddings
-<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py">embeddings_generation</a>(...) -> EmbeddingsResponse</code></summary>
+<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py#L30-L63">embeddings_generation</a>(...) -> EmbeddingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1254,7 +1254,7 @@ client.embeddings.embeddings_generation(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 

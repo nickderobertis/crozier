@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L118-L140">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">health_v1</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L142-L164">health_v1</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -123,7 +123,7 @@ client.health_v1()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_models</a>() -> ModelsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L166-L188">list_models</a>() -> ModelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -185,7 +185,7 @@ client.list_models()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">generate_code</a>(...) -> CodeGenerationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L190-L234">generate_code</a>(...) -> CodeGenerationResponse</code></summary>
 <dl>
 <dd>
 
@@ -275,7 +275,7 @@ client.generate_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">chat_generation</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L236-L315">chat_generation</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -420,7 +420,7 @@ client.chat_generation(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">render_video</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L317-L383">render_video</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -542,7 +542,7 @@ client.render_video(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">generate_video</a>(...) -> VideoRenderingResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L385-L446">generate_video</a>(...) -> VideoRenderingResponse</code></summary>
 <dl>
 <dd>
 

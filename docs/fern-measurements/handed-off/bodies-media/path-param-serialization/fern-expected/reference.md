@@ -1,6 +1,6 @@
 # Reference
 ## Blocks
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">get_block</a>(...) -> Block</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L27-L52">get_block</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 

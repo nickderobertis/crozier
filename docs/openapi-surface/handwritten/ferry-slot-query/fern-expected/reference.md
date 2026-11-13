@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">find_slots</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L125">find_slots</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

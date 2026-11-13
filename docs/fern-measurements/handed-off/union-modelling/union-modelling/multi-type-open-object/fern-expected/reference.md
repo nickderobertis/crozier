@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">submit_batch</a>(...) -> BatchReceipt</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L126">submit_batch</a>(...) -> BatchReceipt</code></summary>
 <dl>
 <dd>
 

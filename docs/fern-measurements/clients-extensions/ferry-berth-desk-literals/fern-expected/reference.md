@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">terminal_daily_report</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L131">terminal_daily_report</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.terminal_daily_report()
 </details>
 
 ## Berths
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">checkstatus</a>(...) -> BerthStatus</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L29-L53">checkstatus</a>(...) -> BerthStatus</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.berths.checkstatus(
 </dl>
 </details>
 
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">assignvessel</a>(...)</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L55-L84">assignvessel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -173,7 +173,7 @@ client.berths.assignvessel(
 </dl>
 </details>
 
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">release_hold</a>(...)</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L86-L109">release_hold</a>(...)</code></summary>
 <dl>
 <dd>
 

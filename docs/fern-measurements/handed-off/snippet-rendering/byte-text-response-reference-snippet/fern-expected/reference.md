@@ -1,6 +1,6 @@
 # Reference
 ## Reels
-<details><summary><code>client.reels.<a href="src/fern/reels/client.py">develop_reel</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.reels.<a href="src/fern/reels/client.py#L29-L51">develop_reel</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.reels.develop_reel(...)
 </dl>
 </details>
 
-<details><summary><code>client.reels.<a href="src/fern/reels/client.py">annotate_reel</a>(...) -> str</code></summary>
+<details><summary><code>client.reels.<a href="src/fern/reels/client.py#L53-L73">annotate_reel</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -120,7 +120,7 @@ client.reels.annotate_reel(...)
 </dl>
 </details>
 
-<details><summary><code>client.reels.<a href="src/fern/reels/client.py">get_reel_log</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.reels.<a href="src/fern/reels/client.py#L75-L107">get_reel_log</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

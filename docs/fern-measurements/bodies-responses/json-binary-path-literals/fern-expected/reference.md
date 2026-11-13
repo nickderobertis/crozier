@@ -1,6 +1,6 @@
 # Reference
 ## Depository
-<details><summary><code>client.depository.<a href="src/fern/depository/client.py">deposit_parcel</a>(...)</code></summary>
+<details><summary><code>client.depository.<a href="src/fern/depository/client.py#L28-L58">deposit_parcel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.depository.deposit_parcel(
 </dl>
 </details>
 
-<details><summary><code>client.depository.<a href="src/fern/depository/client.py">list_parcels</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.depository.<a href="src/fern/depository/client.py#L60-L82">list_parcels</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

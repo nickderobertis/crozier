@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_tuple</a>() -> Tuple</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L126">get_tuple</a>() -> Tuple</code></summary>
 <dl>
 <dd>
 
