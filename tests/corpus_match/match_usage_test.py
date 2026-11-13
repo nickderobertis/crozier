@@ -132,7 +132,10 @@ class MatchUsage(unittest.TestCase):
                 env={**os.environ, "CARGO_TARGET_DIR": str(blocker)},
             )
         self.assertEqual(101, result.returncode, result.stderr)
-        self.assertIn("corpus-match: `cargo build --locked --quiet --profile e2e -p crozier --bin crozier` exited 101", result.stderr)
+        self.assertIn(
+            "corpus-match: `cargo build --locked --quiet --profile e2e -p crozier --bin crozier` exited 101",
+            result.stderr,
+        )
         self.assertIn("then re-run", result.stderr)
 
 
