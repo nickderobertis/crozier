@@ -10,7 +10,8 @@ export function pytestFiles(command) {
   const words = command.split(/\s+/);
   const start = words.indexOf("pytest");
   if (start < 0) throw new Error(`'${command}' runs no pytest; pin this suite with its own collector`);
-  return words.slice(start + 1).filter((word) => !word.startsWith("-"));
+  // A `--deselect=ID` is what the target leaves to another, so the collection leaves it too.
+  return words.slice(start + 1).filter((word) => !word.startsWith("-") || word.startsWith("--deselect="));
 }
 
 /** Every string command a target runs. */

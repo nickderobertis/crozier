@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { pytestFiles, suitesIn } from "../core.mjs";
+import { collect, pytestFiles, suitesIn } from "../core.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 const SCRIPT = join(ROOT, "tools/ci/suite-cases/suite-cases.mjs");
@@ -53,5 +53,21 @@ test("an unknown suite is refused with the known names", () => {
 
 test("pytest's files are read off the target's own command", () => {
   assert.deepEqual(pytestFiles("uv run --locked --all-packages pytest --cov --cov-report= a_test.py b_test.py"), ["a_test.py", "b_test.py"]);
+  assert.deepEqual(pytestFiles("uv run pytest --cov --deselect=a_test.py::Slow a_test.py"), ["--deselect=a_test.py::Slow", "a_test.py"], "what a target deselects, its collection does too");
   assert.throws(() => pytestFiles("cargo nextest run"), /runs no pytest/);
+});
+
+test("the census's two halves run every census case exactly once between them", LINUX, () => {
+  const suites = suitesIn(ROOT);
+  const half = (name) => collect(ROOT, suites.find((suite) => suite.name === name));
+  const [census, verdicts] = [half("surface-census-test-census"), half("surface-census-test-census-verdicts")];
+  assert.ok(verdicts.length > 0, "the verdicts half collects cases");
+  assert.deepEqual(census.filter((id) => verdicts.includes(id)), [], "no case runs in both halves");
+  // The whole of the census's files, as one pytest collection of them sees it.
+  const project = JSON.parse(readFileSync(join(ROOT, "tools/surface-census/project.json"), "utf8"));
+  const files = pytestFiles(project.targets["test-census"].options.command).filter((word) => !word.startsWith("--"));
+  const whole = spawnSync("uv", ["run", "--locked", "--all-packages", "pytest", "--collect-only", "-q", "-p", "no:cacheprovider", ...files], { cwd: ROOT, encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  assert.equal(whole.status, 0, whole.stderr);
+  const all = whole.stdout.split(/\r?\n/).filter((line) => line.includes("::"));
+  assert.deepEqual([...census, ...verdicts].sort(), all.sort(), "together the halves are the whole census");
 });

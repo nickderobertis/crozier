@@ -14,7 +14,7 @@
       },
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-census/tests/surface_census_test.py tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py tools/surface-census/tests/reach_document_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= --deselect=tools/surface-census/tests/surface_census_test.py::HandedOffCombinationVerdictsTests --deselect=tools/surface-census/tests/surface_census_test.py::RankedBacklogTests --deselect=tools/surface-census/tests/surface_census_test.py::CombinationSearchRecordTests tools/surface-census/tests/surface_census_test.py tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py tools/surface-census/tests/reach_document_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/surface-census/test-census/.coverage"
         }
@@ -57,6 +57,57 @@
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/surface-census/test-census"
+      ]
+    },
+    "test-census-verdicts": {
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] This suite drives only git, python3 and loopback servers on 127.0.0.1, which every leg carries and which reach no network; it installs nothing, and ran in 219 s (measured with `just nx run surface-census:test-census --skipNxCache`). The repin suites (reach_store_test, repin_base_test, repin_merge_test, repin_messages_test) hold to the same: scratch git histories, merges and a local clone, python3, and a loopback stand-in for GitHub. A case that adds an install, a non-base host tool or a real network reach belongs in a split project, as llmlint-resolution and witness-search-git are. It is test-census's slowest third (the handed-off verdicts' CLI journey alone took 771 s of a 2567 s local run), run as a target of its own so Nx runs the two halves at once; test-census deselects exactly these classes, and suite-cases pins each half."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/surface-census/tests/surface_census_test.py::HandedOffCombinationVerdictsTests tools/surface-census/tests/surface_census_test.py::RankedBacklogTests tools/surface-census/tests/surface_census_test.py::CombinationSearchRecordTests",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/surface-census/test-census-verdicts/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-measurements/**/*",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tests/resolving-arm-inputs.json",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e/*.rs",
+        "{workspaceRoot}/tests/generation.rs",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
+        "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
+        "{workspaceRoot}/tools/witness-search/witness-search-registries-index.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/llmlint.yml",
+        "pythonTooling",
+        "generator",
+        "{workspaceRoot}/build.rs",
+        "{workspaceRoot}/ruff.toml",
+        "{workspaceRoot}/.ruff.toml",
+        "{workspaceRoot}/crozier.yml",
+        "{workspaceRoot}/crozier.yaml",
+        "{workspaceRoot}/.crozier.yml",
+        "{workspaceRoot}/.crozier.yaml"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/surface-census/test-census-verdicts"
       ]
     },
     "test-reuse": {
@@ -117,6 +168,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test-census",
+        "test-census-verdicts",
         "test-reuse"
       ]
     },

@@ -1,5 +1,6 @@
 [
   { "name": "surface-census-test-census", "collector": "pytest", "project": "tools/surface-census", "target": "test-census" },
+  { "name": "surface-census-test-census-verdicts", "collector": "pytest", "project": "tools/surface-census", "target": "test-census-verdicts" },
   { "name": "golden-reach-test-reach", "collector": "unittest", "project": "tools/golden-reach", "target": "test-reach" },
   { "name": "golden-reach-test-reach-portable", "collector": "unittest", "project": "tools/golden-reach", "target": "test-reach-portable" },
   { "name": "surface-reach-test-fixtures-coverage", "collector": "pytest", "project": "tools/surface-reach", "target": "test-fixtures-coverage" },
