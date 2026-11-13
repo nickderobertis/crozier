@@ -137,10 +137,10 @@ def earlier_rows(tree: Tree) -> dict[tuple[str, str], set[str]]:
 class LedgerRecord(NamedTuple):
     """One candidate-ledger line the plan reads: a public identity and the ledger key that found it."""
 
-    repository: str
+    repository: SCREEN.Repository
     path: str
-    commit: str
-    sha256: str
+    commit: SCREEN.Commit
+    sha256: SCREEN.Sha256
     key: str
     selector: str
     disposition: str
@@ -233,16 +233,16 @@ def identities(tree: Tree) -> list[SCREEN.Identity]:
 class Provenance(NamedTuple):
     """Where a handed-off document was published: its repository, its path there and the commit."""
 
-    repository: str
+    repository: SCREEN.Repository
     path: str
-    commit: str
+    commit: SCREEN.Commit
 
 
 class HandedOff(NamedTuple):
     """One handed-off document: its identity, the SHA-256 of the bytes handed off, and its provenance if recorded."""
 
-    document: str
-    sha256: str
+    document: SCREEN.DocumentId
+    sha256: SCREEN.Sha256
     provenance: Provenance | None
 
 
@@ -279,11 +279,11 @@ class Acquisition(NamedTuple):
     """One line of the acquisition ledger: a planned identity, how its bytes were had, and their digest."""
 
     population: str
-    document: str
-    commit: str
-    pin: str
+    document: SCREEN.DocumentId
+    commit: SCREEN.Commit
+    pin: SCREEN.Pin
     how: str
-    content_sha256: str
+    content_sha256: SCREEN.Sha256
 
     @property
     def held(self) -> bool:
@@ -497,7 +497,7 @@ class CodeHit(NamedTuple):
     repository: str
     path: str
     commit: str
-    blob: str
+    blob: str  # the git blob SHA-1 a code-search hit names; empty for a Sourcegraph match
     url: str
 
 
@@ -505,7 +505,7 @@ class RecordedQuery(NamedTuple):
     """One recorded query: who answered it, for which key, how, and the files it named."""
 
     source: str
-    key: str
+    key: SCREEN.Key
     outcome: str
     hits: tuple[CodeHit, ...]
 

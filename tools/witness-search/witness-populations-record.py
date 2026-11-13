@@ -146,7 +146,7 @@ class Attempt(NamedTuple):
     """One acquisition-ledger line: the planned document and how its bytes were had."""
 
     population: str
-    document: str
+    document: SCREEN.DocumentId
     how: str
 
 
@@ -177,7 +177,7 @@ class GuardCall(NamedTuple):
 
 class Query(NamedTuple):
     source: str
-    key: str
+    key: SCREEN.Key
     outcome: str
     result_count: int | None
 

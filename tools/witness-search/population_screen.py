@@ -68,12 +68,21 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
-from typing import IO, Any, Generic, NamedTuple, NoReturn, TypeVar
+from typing import IO, Any, Generic, NamedTuple, NoReturn, TypeAlias, TypeVar
 
 REPO = Path(__file__).resolve().parents[2]
 RECORD = REPO / "docs" / "openapi-surface" / "witness-search-combination-populations"
 TABLE = RECORD / "screen.tsv"
 POPULATION = RECORD / "population.tsv"
+
+
+# The identifiers the table, the manifest and the plan carry, named for what they are.
+Key: TypeAlias = str  # a combination key, one of `KEYS`
+DocumentId: TypeAlias = str  # a candidate's name in its population
+Sha256: TypeAlias = str  # 64 hex digits: the digest of exact bytes
+Commit: TypeAlias = str  # 40 hex digits: a full commit SHA
+Repository: TypeAlias = str  # `owner/name`
+Pin: TypeAlias = str  # a `Sha256`, or `blob:<sha1>` for bytes known only by their git blob
 
 
 class Population(StrEnum):
@@ -228,12 +237,13 @@ class Operation(NamedTuple):
 
 
 def operations(document: Any) -> Iterator[Operation]:
-    """Every operation crozier generates a method for: those under `paths` and 3.1 `webhooks`, in document order.
+    """Every operation crozier generates a method for: those under `paths`, in document order.
 
-    A callback's operations and an unreferenced `components.pathItems` entry are no
-    SDK surface, so no trigger is read there.
+    3.1 `webhooks` (which crozier does not read), a callback's operations and an
+    unreferenced `components.pathItems` entry are no SDK surface, so no trigger is
+    read there.
     """
-    for section in ("paths", "webhooks"):
+    for section in ("paths",):
         items = document.get(section) if isinstance(document, dict) else None
         if not isinstance(items, dict):
             continue
@@ -463,8 +473,12 @@ def allof_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
 
 
 def request_refs(document: Any) -> Iterator[tuple[Any, list[tuple[str, Check]]]]:
+    """Each request body schema `$ref`, read where the key's selector reads it: on a body the operation writes inline."""
     for operation in operations(document):
-        for schema in media_schemas(document, operation.node.get("requestBody")):
+        body = operation.node.get("requestBody")
+        if isinstance(body, dict) and "$ref" in body:
+            continue
+        for schema in media_schemas(document, body):
             if isinstance(ref_of(schema), str):
                 yield ref_of(schema), []
 
@@ -992,11 +1006,11 @@ class Selectors:
 class ScreenRow(NamedTuple):
     """One row of the table: a candidate document, screened for one key."""
 
-    key: str
+    key: Key
     population: Population
-    document: str
+    document: DocumentId
     source: str
-    sha256: str
+    sha256: Sha256
     licence: str
     trigger: str
     status: str
@@ -1304,9 +1318,9 @@ class Entry(NamedTuple):
     """One manifest row: a candidate document, its licence evidence and the keys it owes a row for."""
 
     population: Population
-    document: str
+    document: DocumentId
     source: str
-    sha256: str
+    sha256: Sha256
     # `corpus:<recorded grant>` (`corpus-aggregation:<recorded grant>` for a row sourced from an aggregation),
     # `repository:<owner>/<repo>@<commit>`, `aggregation:<owner>/<repo>@<commit>`
     # (an aggregation's copy), `no-publisher-grant` (an APIs.guru archive copy) or `-`.
@@ -1785,12 +1799,12 @@ class Identity(NamedTuple):
     """One document the acquisition plan would bring into the store, at its exact commit."""
 
     population: Population
-    document: str
-    repository: str
-    commit: str
+    document: DocumentId
+    repository: Repository
+    commit: Commit
     path: str
     # The bytes it names: a 64-hex SHA-256, or `blob:<sha1>` for a code-search hit known only by its git blob.
-    pin: str
+    pin: Pin
     url: str
     rank: int
 

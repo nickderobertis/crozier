@@ -28,7 +28,7 @@ A candidate is a document whose bytes the key's census selector declares, or one
 | `combo-array-unresolved-nested-pointer` | `search-incomplete` | 1 | 0 | 6 | 28 | 3 | 0 | 1 | 0 | 37 | 0 |
 | `combo-body-property-named-as-path-param` | `search-incomplete` | 1493 | 45 | 399 | 1161 | 499 | 0 | 19 | 0 | 630 | 0 |
 | `combo-header-array-accepted-placements` | `search-incomplete` | 366 | 1 | 2 | 330 | 142 | 0 | 0 | 86 | 23 | 0 |
-| `combo-header-string-default` | `search-incomplete` | 17 | 14 | 54 | 620 | 253 | 0 | 9 | 870 | 63 | 0 |
+| `combo-header-string-default` | `search-incomplete` | 18 | 14 | 54 | 620 | 253 | 0 | 9 | 869 | 63 | 0 |
 | `combo-map-beside-oneof` | `search-incomplete` | 10 | 9 | 3 | 556 | 146 | 0 | 8 | 704 | 8 | 0 |
 | `combo-map-unresolved-nested-pointer` | `search-incomplete` | 0 | 0 | 2 | 3 | 3 | 0 | 0 | 0 | 8 | 0 |
 | `combo-nullable-allof-parent-own-property` | `search-incomplete` | 0 | 2 | 2 | 6 | 8 | 0 | 1 | 19 | 0 | 0 |

@@ -478,13 +478,13 @@ def with_components(body: dict, **sections: Any) -> dict:
     return body
 
 
-# Triggers placed where only one walk reaches them: a webhook, a referenced Path Item, a parameter an
-# operation overrides, a component root, a reference chain, a reference cycle.
+# Triggers placed where only one walk reaches them (a referenced Path Item, a parameter an operation
+# overrides, a component root, a reference chain, a reference cycle) or where none should (a webhook).
 CASES += [
     (
         "webhook-operation",
         document(webhooks={"ping": {"post": get(operationId="Hooks_", tags=["Hooks"])}}),
-        {"combo-tag-only-operation-id": "exact"},
+        {"combo-tag-only-operation-id": "absent"},
     ),
     (
         "referenced-path-item",
@@ -529,7 +529,8 @@ CASES += [
             ),
             requestBodies={"B": {"content": {"application/json": {"schema": UNRESOLVED}}}},
         ),
-        {"combo-request-unresolved-nested-pointer": "exact"},
+        # The key's selector reads a request body the operation writes inline, not one it references.
+        {"combo-request-unresolved-nested-pointer": "absent"},
     ),
     (
         "component-response",
@@ -1606,6 +1607,20 @@ class ContractDriftTests(unittest.TestCase):
                         )
                     judged[key] += 1
         self.assertEqual([], [key for key, count in judged.items() if not count])
+
+    def test_an_exact_trigger_is_one_its_census_selector_declares(self) -> None:
+        # The screen validates the condition the census selector states and more: it never reads a trigger
+        # exact where the selector declares nothing, so a selector that moves fails here.
+        selectors = SCREEN.Selectors.read()
+        judged = 0
+        for name, body, expected in CASES:
+            declared = selectors.declarations(body)
+            for key, verdict in expected.items():
+                if verdict == "exact":
+                    judged += 1
+                    with self.subTest(case=name, key=key):
+                        self.assertGreater(declared[key], 0)
+        self.assertGreater(judged, len(SCREEN.KEYS))
 
     def test_the_header_policy_is_the_one_src_ir_rs_states(self) -> None:
         source = (REPO / "src" / "ir.rs").read_text(encoding="utf-8")
