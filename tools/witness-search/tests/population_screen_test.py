@@ -1884,6 +1884,24 @@ class BuildHarness(ScreenHarness):
 
 class BuildTests(BuildHarness):
     def test_the_plan_is_each_public_openapi_identity_once_at_its_latest_commit_ranked(self) -> None:
+        # A ledger line whose commit and digest are JSON numbers spelling 40 and 64 digits is no identity:
+        # its fields are not the strings a pin is, however their decimal spelling reads.
+        ledger = self.root / "docs/openapi-surface/witness-search-github-code-search/candidates.jsonl"
+        with ledger.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(
+                json.dumps(
+                    {
+                        "repository": "acme/numeric",
+                        "path": "openapi.json",
+                        "commit": int("1" * 40),
+                        "sha256": int("2" * 64),
+                        "key": "oneof-anyof-variant",
+                        "selector": "schema.oneOf>schema.anyOf",
+                        "disposition": "declares",
+                    }
+                )
+                + "\n"
+            )
         plan = self.scratch / "plan.tsv.gz"
         done = self.build("identities", "--output", str(plan))
         self.assertEqual((0, "witness-populations-build: 4 identities\n"), (done.returncode, done.stdout), done.stderr)

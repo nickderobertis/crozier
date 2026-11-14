@@ -329,8 +329,10 @@ def ledger_identities(tree: Tree, population: str) -> tuple[LedgerRecord, ...]:
             record = json.loads(line)
             if not (
                 isinstance(record, dict)
-                and re.fullmatch(r"[0-9a-f]{40}", str(record.get("commit", "")))
-                and re.fullmatch(r"[0-9a-f]{64}", str(record.get("sha256", "")))
+                and isinstance(record.get("commit"), str)
+                and re.fullmatch(r"[0-9a-f]{40}", record["commit"])
+                and isinstance(record.get("sha256"), str)
+                and re.fullmatch(r"[0-9a-f]{64}", record["sha256"])
                 and isinstance(record.get("path"), str)
                 and not index.opaque_identity(record["path"])
                 and not index.excluded_repository(str(record.get("repository", "")))

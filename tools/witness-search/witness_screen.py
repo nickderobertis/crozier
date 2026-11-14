@@ -707,6 +707,7 @@ def measure(
             # for a document that declares none: no path it makes unnecessary is fetched.
             files = []
             for name in LICENCE_FILES if declared == "" else ():
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; these fetches stop at the first licence file found, so they are sequential by design and an async client would serve no concurrency.
                 file_status, file_bytes = fetch(raw_url(raw_base, repository, commit, name), f"{repository}:{name}")
                 files.append((name, file_status, file_bytes))
                 if file_status == 200:
