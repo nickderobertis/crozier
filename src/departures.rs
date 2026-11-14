@@ -9200,7 +9200,7 @@ mod tests {
     }
 
     #[test]
-    fn a_flat_link_departs_only_to_the_module_the_flat_holds_client_module() {
+    fn a_flat_link_departs_only_to_the_module_the_flat_tree_holds() {
         let client = "class PetClient:\n    def add_pet(self) -> None:\n        pass\n";
         let context =
             Context::from_sources([("pet/client.py", client)], [("pet/client.py", client)]);

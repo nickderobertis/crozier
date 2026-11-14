@@ -24578,6 +24578,42 @@ fn sdk_env_xml_builder_name_collisions_resolve_through_the_sdk() {
     );
 }
 
+/// An XML model's extra keyword arguments through the generated SDK
+/// (fern-python-sdk 5.41.25's `check_xml_extra_attributes`): a declared
+/// attribute's wire name (`schemaLocation` for `xsi_schema_location`) sets it,
+/// naming it twice or by a case-only variant raises `TypeError`, and any other
+/// name stays an undeclared attribute. The document is authored for it; the SDK
+/// runs under its own pins.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_xml_extra_attributes_resolve_through_the_sdk() {
+    let journeys = repo_root().join("crates/crozier-e2e/tests/e2e");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(journeys.join("xml_extra_attributes.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "archive"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the journey needs the SDK's Python env: {reason}"));
+    let output = std::process::Command::new(&py)
+        .arg(journeys.join("xml_extra_attributes.py"))
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the XML extra-attributes journey");
+    assert!(
+        output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "ok",
+        "the XML model's extra attributes do not resolve at run time:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
 /// No child builder shadows pydantic: over the installed pydantic's every
 /// public `BaseModel` attribute, a document whose XML model holds a list child
 /// tagged with each name generates an SDK in which each child's builder is
