@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_profile</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L136">create_profile</a>(...)</code></summary>
 <dl>
 <dd>
 

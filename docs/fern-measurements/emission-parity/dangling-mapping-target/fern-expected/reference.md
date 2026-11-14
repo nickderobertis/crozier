@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">record_reading</a>(...) -> Logbook</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L103-L131">record_reading</a>(...) -> Logbook</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.record_reading(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_reading</a>(...) -> Logbook</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L133-L159">get_reading</a>(...) -> Logbook</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.get_reading(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">brightest_star</a>() -> StarReading</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L161-L183">brightest_star</a>() -> StarReading</code></summary>
 <dl>
 <dd>
 
@@ -160,7 +160,7 @@ client.brightest_star()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_instruments</a>() -> typing.List[Instrument]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L185-L207">list_instruments</a>() -> typing.List[Instrument]</code></summary>
 <dl>
 <dd>
 

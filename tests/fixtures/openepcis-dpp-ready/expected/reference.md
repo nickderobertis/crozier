@@ -1,6 +1,6 @@
 # Reference
 ## Life Cycle API
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">read_dpp_by_id</a>(...) -> DigitalProductPassport</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L38-L81">read_dpp_by_id</a>(...) -> DigitalProductPassport</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.life_cycle_api.read_dpp_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">delete_dpp_by_id</a>(...)</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L83-L114">delete_dpp_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -160,7 +160,7 @@ client.life_cycle_api.delete_dpp_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">update_dpp_by_id</a>(...) -> DigitalProductPassport</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L116-L178">update_dpp_by_id</a>(...) -> DigitalProductPassport</code></summary>
 <dl>
 <dd>
 
@@ -265,7 +265,7 @@ client.life_cycle_api.update_dpp_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">read_dpp_by_product_id</a>(...) -> DigitalProductPassport</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L180-L223">read_dpp_by_product_id</a>(...) -> DigitalProductPassport</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.life_cycle_api.read_dpp_by_product_id(
 </dl>
 </details>
 
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">read_dpp_version_by_id_and_date</a>(...) -> DigitalProductPassport</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L225-L277">read_dpp_version_by_id_and_date</a>(...) -> DigitalProductPassport</code></summary>
 <dl>
 <dd>
 
@@ -443,7 +443,7 @@ client.life_cycle_api.read_dpp_version_by_id_and_date(
 </dl>
 </details>
 
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">read_dpp_ids_by_product_ids</a>(...) -> DppIdPage</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L279-L325">read_dpp_ids_by_product_ids</a>(...) -> DppIdPage</code></summary>
 <dl>
 <dd>
 
@@ -537,7 +537,7 @@ client.life_cycle_api.read_dpp_ids_by_product_ids(
 </dl>
 </details>
 
-<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py">create_dpp</a>(...) -> CreateDppResult</code></summary>
+<details><summary><code>client.life_cycle_api.<a href="src/fern/life_cycle_api/client.py#L327-L381">create_dpp</a>(...) -> CreateDppResult</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ client.life_cycle_api.create_dpp(
 </details>
 
 ## Registry API
-<details><summary><code>client.registry_api.<a href="src/fern/registry_api/client.py">register_product_dpp</a>(...) -> RegisterResult</code></summary>
+<details><summary><code>client.registry_api.<a href="src/fern/registry_api/client.py#L29-L92">register_product_dpp</a>(...) -> RegisterResult</code></summary>
 <dl>
 <dd>
 
@@ -743,7 +743,7 @@ client.registry_api.register_product_dpp(
 </details>
 
 ## Fine Granular API
-<details><summary><code>client.fine_granular_api.<a href="src/fern/fine_granular_api/client.py">read_data_element</a>(...) -> DataElement</code></summary>
+<details><summary><code>client.fine_granular_api.<a href="src/fern/fine_granular_api/client.py#L32-L80">read_data_element</a>(...) -> DataElement</code></summary>
 <dl>
 <dd>
 
@@ -836,7 +836,7 @@ client.fine_granular_api.read_data_element(
 </dl>
 </details>
 
-<details><summary><code>client.fine_granular_api.<a href="src/fern/fine_granular_api/client.py">update_data_element</a>(...) -> DataElement</code></summary>
+<details><summary><code>client.fine_granular_api.<a href="src/fern/fine_granular_api/client.py#L82-L136">update_data_element</a>(...) -> DataElement</code></summary>
 <dl>
 <dd>
 

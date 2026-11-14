@@ -15,6 +15,7 @@ from ..core.xml_utilities import (
     XmlElement,
     XmlNode,
     build_xml_model,
+    check_xml_extra_attributes,
     extra_xml_attributes,
     order_xml_content,
     parse_xml,
@@ -89,13 +90,17 @@ class XmlFundingTree(UniversalBaseModel):
             Additional XML attributes not declared in the API definition.
         """
         super().__init__(
-            **dict(
-                funder=funder,
-                funding_level0=funding_level0,
-                funding_level1=funding_level1,
-                funding_level2=funding_level2,
-            ),
-            **extra_attributes,
+            **check_xml_extra_attributes(
+                type(self),
+                {},
+                dict(
+                    funder=funder,
+                    funding_level0=funding_level0,
+                    funding_level1=funding_level1,
+                    funding_level2=funding_level2,
+                ),
+                extra_attributes,
+            )
         )
         self._content.extend(order_xml_content([], self.funder))
 

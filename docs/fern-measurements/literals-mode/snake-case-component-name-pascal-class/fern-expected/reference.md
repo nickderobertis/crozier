@@ -1,6 +1,6 @@
 # Reference
 ## Hives
-<details><summary><code>client.hives.<a href="src/fern/hives/client.py">fetch_yield</a>(...) -> HoneyYield</code></summary>
+<details><summary><code>client.hives.<a href="src/fern/hives/client.py#L26-L52">fetch_yield</a>(...) -> HoneyYield</code></summary>
 <dl>
 <dd>
 

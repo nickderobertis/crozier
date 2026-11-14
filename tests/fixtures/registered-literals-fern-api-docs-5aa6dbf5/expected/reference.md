@@ -1,6 +1,6 @@
 # Reference
 ## Analytics
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">get_analytics_histogram</a>(...) -> GetHistogramAnalyticsResponse</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L30-L75">get_analytics_histogram</a>(...) -> GetHistogramAnalyticsResponse</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.analytics.get_analytics_histogram(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">generate_all_insights</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L77-L115">generate_all_insights</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -162,7 +162,7 @@ client.analytics.generate_all_insights()
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">trigger_scheduled_insights_generation</a>() -> typing.Any</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L117-L143">trigger_scheduled_insights_generation</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -225,7 +225,7 @@ client.analytics.trigger_scheduled_insights_generation()
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">get_query_insights</a>(...) -> GetInsightsResponse</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L145-L175">get_query_insights</a>(...) -> GetInsightsResponse</code></summary>
 <dl>
 <dd>
 
@@ -298,7 +298,7 @@ client.analytics.get_query_insights(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">get_scheduler_status</a>() -> typing.Any</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L177-L201">get_scheduler_status</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -361,7 +361,7 @@ client.analytics.get_scheduler_status()
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">get_conversation_resolution</a>(...) -> GetConversationResolutionResponse</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L203-L246">get_conversation_resolution</a>(...) -> GetConversationResolutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -451,7 +451,7 @@ client.analytics.get_conversation_resolution(
 </details>
 
 ## Chat
-<details><summary><code>client.chat.<a href="src/fern/chat/client.py">post_chat_completion</a>(...) -> PostChatCompletionResponse</code></summary>
+<details><summary><code>client.chat.<a href="src/fern/chat/client.py#L31-L121">post_chat_completion</a>(...) -> PostChatCompletionResponse</code></summary>
 <dl>
 <dd>
 
@@ -597,7 +597,7 @@ client.chat.post_chat_completion(
 </details>
 
 ## Code
-<details><summary><code>client.code.<a href="src/fern/code/client.py">create_code_record</a>(...) -> typing.List[CreateCodeRecordResponse]</code></summary>
+<details><summary><code>client.code.<a href="src/fern/code/client.py#L32-L63">create_code_record</a>(...) -> typing.List[CreateCodeRecordResponse]</code></summary>
 <dl>
 <dd>
 
@@ -665,7 +665,7 @@ client.code.create_code_record(
 </dl>
 </details>
 
-<details><summary><code>client.code.<a href="src/fern/code/client.py">batch_create_code_records</a>(...) -> typing.List[CreateCodeRecordResponse]</code></summary>
+<details><summary><code>client.code.<a href="src/fern/code/client.py#L65-L100">batch_create_code_records</a>(...) -> typing.List[CreateCodeRecordResponse]</code></summary>
 <dl>
 <dd>
 
@@ -733,7 +733,7 @@ client.code.batch_create_code_records(
 </dl>
 </details>
 
-<details><summary><code>client.code.<a href="src/fern/code/client.py">get_code_record_by_id</a>(...) -> GetCodeRecordResponse</code></summary>
+<details><summary><code>client.code.<a href="src/fern/code/client.py#L102-L133">get_code_record_by_id</a>(...) -> GetCodeRecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -801,7 +801,7 @@ client.code.get_code_record_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.code.<a href="src/fern/code/client.py">get_code_records</a>(...) -> GetCodeRecordsResponse</code></summary>
+<details><summary><code>client.code.<a href="src/fern/code/client.py#L135-L174">get_code_records</a>(...) -> GetCodeRecordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -876,7 +876,7 @@ client.code.get_code_records(
 </dl>
 </details>
 
-<details><summary><code>client.code.<a href="src/fern/code/client.py">delete_code_record_by_id</a>(...) -> DeleteCodeRecordResponse</code></summary>
+<details><summary><code>client.code.<a href="src/fern/code/client.py#L176-L208">delete_code_record_by_id</a>(...) -> DeleteCodeRecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -944,7 +944,7 @@ client.code.delete_code_record_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.code.<a href="src/fern/code/client.py">delete_all_code_records</a>(...) -> DeleteCodeRecordResponse</code></summary>
+<details><summary><code>client.code.<a href="src/fern/code/client.py#L210-L238">delete_all_code_records</a>(...) -> DeleteCodeRecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -1004,7 +1004,7 @@ client.code.delete_all_code_records(
 </details>
 
 ## Conversation
-<details><summary><code>client.conversation.<a href="src/fern/conversation/client.py">get_conversation_by_id</a>(...) -> GetConversationResponse</code></summary>
+<details><summary><code>client.conversation.<a href="src/fern/conversation/client.py#L26-L57">get_conversation_by_id</a>(...) -> GetConversationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1073,7 +1073,7 @@ client.conversation.get_conversation_by_id(
 </details>
 
 ## Document
-<details><summary><code>client.document.<a href="src/fern/document/client.py">create_document</a>(...) -> typing.List[CreateDocumentResponse]</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L35-L76">create_document</a>(...) -> typing.List[CreateDocumentResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1149,7 +1149,7 @@ client.document.create_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">batch_create_document</a>(...) -> typing.List[CreateDocumentResponse]</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L78-L119">batch_create_document</a>(...) -> typing.List[CreateDocumentResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1225,7 +1225,7 @@ client.document.batch_create_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">get_document_by_id</a>(...) -> GetDocumentResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L121-L162">get_document_by_id</a>(...) -> GetDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1301,7 +1301,7 @@ client.document.get_document_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">delete_document</a>(...) -> DeleteDocumentResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L164-L205">delete_document</a>(...) -> DeleteDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1377,7 +1377,7 @@ client.document.delete_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">update_document</a>(...) -> UpdateDocumentResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L207-L291">update_document</a>(...) -> UpdateDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1517,7 +1517,7 @@ client.document.update_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">delete_document_by_id</a>(...) -> DeleteDocumentResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L293-L335">delete_document_by_id</a>(...) -> DeleteDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1593,7 +1593,7 @@ client.document.delete_document_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">batch_delete_document</a>(...) -> DeleteDocumentResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L337-L382">batch_delete_document</a>(...) -> DeleteDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1673,7 +1673,7 @@ client.document.batch_delete_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">get_documents</a>(...) -> GetDocumentsResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L384-L429">get_documents</a>(...) -> GetDocumentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1756,7 +1756,7 @@ client.document.get_documents(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">delete_documents</a>(...) -> DeleteDocumentsResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L431-L494">delete_documents</a>(...) -> DeleteDocumentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1871,7 +1871,7 @@ client.document.delete_documents(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">delete_all_documents</a>(...) -> DeleteDocumentResponse</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L496-L533">delete_all_documents</a>(...) -> DeleteDocumentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1939,7 +1939,7 @@ client.document.delete_all_documents(
 </details>
 
 ## Feedback
-<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py">create_feedback</a>(...) -> CreateFeedbackResponse</code></summary>
+<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py#L30-L98">create_feedback</a>(...) -> CreateFeedbackResponse</code></summary>
 <dl>
 <dd>
 
@@ -2052,7 +2052,7 @@ client.feedback.create_feedback(
 </dl>
 </details>
 
-<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py">get_feedback_by_id</a>(...) -> GetFeedbackResponse</code></summary>
+<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py#L100-L131">get_feedback_by_id</a>(...) -> GetFeedbackResponse</code></summary>
 <dl>
 <dd>
 
@@ -2121,7 +2121,7 @@ client.feedback.get_feedback_by_id(
 </details>
 
 ## Guidance
-<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py">create_guidance</a>(...) -> CreateGuidanceResponse</code></summary>
+<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py#L33-L76">create_guidance</a>(...) -> CreateGuidanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2200,7 +2200,7 @@ client.guidance.create_guidance(
 </dl>
 </details>
 
-<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py">get_guidance_by_id</a>(...) -> GetGuidanceResponse</code></summary>
+<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py#L78-L109">get_guidance_by_id</a>(...) -> GetGuidanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2268,7 +2268,7 @@ client.guidance.get_guidance_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py">delete_guidance_by_id</a>(...) -> DeleteGuidanceResponse</code></summary>
+<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py#L111-L142">delete_guidance_by_id</a>(...) -> DeleteGuidanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2336,7 +2336,7 @@ client.guidance.delete_guidance_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py">update</a>(...) -> UpdateGuidanceResponse</code></summary>
+<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py#L144-L189">update</a>(...) -> UpdateGuidanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2420,7 +2420,7 @@ client.guidance.update(
 </dl>
 </details>
 
-<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py">get_guidances</a>(...) -> GetGuidancesResponse</code></summary>
+<details><summary><code>client.guidance.<a href="src/fern/guidance/client.py#L191-L230">get_guidances</a>(...) -> GetGuidancesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2496,7 +2496,7 @@ client.guidance.get_guidances(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">check</a>() -> typing.Any</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L49">check</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2560,7 +2560,7 @@ client.health.check()
 </details>
 
 ## Index
-<details><summary><code>client.index.<a href="src/fern/index/client.py">reconstruct_query_index</a>(...) -> ReconstructIndexResponse</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L31-L59">reconstruct_query_index</a>(...) -> ReconstructIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -2619,7 +2619,7 @@ client.index.reconstruct_query_index(
 </dl>
 </details>
 
-<details><summary><code>client.index.<a href="src/fern/index/client.py">sync_index_to_query_index</a>(...) -> SyncIndexResponse</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L61-L95">sync_index_to_query_index</a>(...) -> SyncIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -2687,7 +2687,7 @@ client.index.sync_index_to_query_index(
 </dl>
 </details>
 
-<details><summary><code>client.index.<a href="src/fern/index/client.py">sync_index_to_query_index_incremental</a>(...) -> SyncIndexResponse</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L97-L140">sync_index_to_query_index_incremental</a>(...) -> SyncIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -2766,7 +2766,7 @@ client.index.sync_index_to_query_index_incremental(
 </dl>
 </details>
 
-<details><summary><code>client.index.<a href="src/fern/index/client.py">get_job_status</a>(...) -> JobStatusResponse</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L142-L170">get_job_status</a>(...) -> JobStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2826,7 +2826,7 @@ client.index.get_job_status(
 </details>
 
 ## Mcp
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">get_mcp_semantic_query</a>(...) -> GetMcpSemanticQueryResponse</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L30-L64">get_mcp_semantic_query</a>(...) -> GetMcpSemanticQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2894,7 +2894,7 @@ client.mcp.get_mcp_semantic_query(
 </dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">get_mcp_bmf_query</a>(...) -> GetMcpBmfQueryResponse</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L66-L98">get_mcp_bmf_query</a>(...) -> GetMcpBmfQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2963,7 +2963,7 @@ client.mcp.get_mcp_bmf_query(
 </details>
 
 ## Query
-<details><summary><code>client.query.<a href="src/fern/query/client.py">create_query</a>(...) -> CreateQueryResponse</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L33-L122">create_query</a>(...) -> CreateQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3038,7 +3038,7 @@ client.query.create_query(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">get_recent_queries</a>(...) -> GetQueriesResponse</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L124-L193">get_recent_queries</a>(...) -> GetQueriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3154,7 +3154,7 @@ client.query.get_recent_queries(
 </details>
 
 ## Reindexing
-<details><summary><code>client.reindexing.<a href="src/fern/reindexing/client.py">get_reindexing_job_status_by_domain</a>(...) -> ReindexingJobRecord</code></summary>
+<details><summary><code>client.reindexing.<a href="src/fern/reindexing/client.py#L27-L57">get_reindexing_job_status_by_domain</a>(...) -> ReindexingJobRecord</code></summary>
 <dl>
 <dd>
 
@@ -3227,7 +3227,7 @@ client.reindexing.get_reindexing_job_status_by_domain(
 </dl>
 </details>
 
-<details><summary><code>client.reindexing.<a href="src/fern/reindexing/client.py">update_reindexing_job_status</a>(...) -> UpdateReindexingJobStatusResponse</code></summary>
+<details><summary><code>client.reindexing.<a href="src/fern/reindexing/client.py#L59-L135">update_reindexing_job_status</a>(...) -> UpdateReindexingJobStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -3380,7 +3380,7 @@ client.reindexing.update_reindexing_job_status(
 </dl>
 </details>
 
-<details><summary><code>client.reindexing.<a href="src/fern/reindexing/client.py">get_reindexing_job_status_by_task_arn</a>(...) -> ReindexingJobRecord</code></summary>
+<details><summary><code>client.reindexing.<a href="src/fern/reindexing/client.py#L137-L169">get_reindexing_job_status_by_task_arn</a>(...) -> ReindexingJobRecord</code></summary>
 <dl>
 <dd>
 
@@ -3454,7 +3454,7 @@ client.reindexing.get_reindexing_job_status_by_task_arn(
 </details>
 
 ## Sdks
-<details><summary><code>client.sdks.<a href="src/fern/sdks/client.py">analyze_commit_diff</a>(...) -> AnalyzeCommitDiffResponse</code></summary>
+<details><summary><code>client.sdks.<a href="src/fern/sdks/client.py#L29-L86">analyze_commit_diff</a>(...) -> AnalyzeCommitDiffResponse</code></summary>
 <dl>
 <dd>
 
@@ -3560,7 +3560,7 @@ client.sdks.analyze_commit_diff(
 </details>
 
 ## Settings
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">get_docs_settings</a>(...) -> GetSettingsResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L34-L64">get_docs_settings</a>(...) -> GetSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3633,7 +3633,7 @@ client.settings.get_docs_settings(
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">enable_ask_ai</a>(...) -> EnableAskAiResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L66-L119">enable_ask_ai</a>(...) -> EnableAskAiResponse</code></summary>
 <dl>
 <dd>
 
@@ -3739,7 +3739,7 @@ client.settings.enable_ask_ai(
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">toggle_ask_ai</a>(...) -> ToggleAskAiResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L121-L172">toggle_ask_ai</a>(...) -> ToggleAskAiResponse</code></summary>
 <dl>
 <dd>
 
@@ -3843,7 +3843,7 @@ client.settings.toggle_ask_ai(
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">reindex_ask_ai</a>(...) -> ToggleAskAiResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L174-L220">reindex_ask_ai</a>(...) -> ToggleAskAiResponse</code></summary>
 <dl>
 <dd>
 
@@ -3937,7 +3937,7 @@ client.settings.reindex_ask_ai(
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">get_toggle_status</a>(...) -> ToggleStatusResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L222-L252">get_toggle_status</a>(...) -> ToggleStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -4010,7 +4010,7 @@ client.settings.get_toggle_status(
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">reindex_callback</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L254-L301">reindex_callback</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4110,7 +4110,7 @@ client.settings.reindex_callback(
 </details>
 
 ## SlackAskFern
-<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py">handle_slack_events</a>() -> typing.Any</code></summary>
+<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py#L25-L47">handle_slack_events</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4159,7 +4159,7 @@ client.slack_ask_fern.handle_slack_events()
 </dl>
 </details>
 
-<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py">handle_slack_slash_commands</a>() -> typing.Any</code></summary>
+<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py#L49-L71">handle_slack_slash_commands</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4208,7 +4208,7 @@ client.slack_ask_fern.handle_slack_slash_commands()
 </dl>
 </details>
 
-<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py">handle_slack_interactions</a>() -> typing.Any</code></summary>
+<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py#L73-L95">handle_slack_interactions</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4257,7 +4257,7 @@ client.slack_ask_fern.handle_slack_interactions()
 </dl>
 </details>
 
-<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py">handle_slack_oauth_callback</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py#L97-L129">handle_slack_oauth_callback</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4324,7 +4324,7 @@ client.slack_ask_fern.handle_slack_oauth_callback(
 </dl>
 </details>
 
-<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py">get_slack_install_link</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.slack_ask_fern.<a href="src/fern/slack_ask_fern/client.py#L131-L159">get_slack_install_link</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4384,7 +4384,7 @@ client.slack_ask_fern.get_slack_install_link(
 </details>
 
 ## SlackScribe
-<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py">handle_scribe_slack_events</a>() -> typing.Any</code></summary>
+<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py#L25-L47">handle_scribe_slack_events</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4433,7 +4433,7 @@ client.slack_scribe.handle_scribe_slack_events()
 </dl>
 </details>
 
-<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py">get_fern_writer_install_link</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py#L49-L80">get_fern_writer_install_link</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4492,7 +4492,7 @@ client.slack_scribe.get_fern_writer_install_link(
 </dl>
 </details>
 
-<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py">handle_scribe_slack_oauth_callback</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py#L82-L114">handle_scribe_slack_oauth_callback</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4559,7 +4559,7 @@ client.slack_scribe.handle_scribe_slack_oauth_callback(
 </dl>
 </details>
 
-<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py">handle_scribe_slash_commands</a>() -> typing.Any</code></summary>
+<details><summary><code>client.slack_scribe.<a href="src/fern/slack_scribe/client.py#L116-L138">handle_scribe_slash_commands</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4609,7 +4609,7 @@ client.slack_scribe.handle_scribe_slash_commands()
 </details>
 
 ## Website
-<details><summary><code>client.website.<a href="src/fern/website/client.py">index_website</a>(...) -> IndexWebsiteResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L35-L133">index_website</a>(...) -> IndexWebsiteResponse</code></summary>
 <dl>
 <dd>
 
@@ -4780,7 +4780,7 @@ client.website.index_website(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">get_website_status</a>(...) -> GetWebsiteStatusResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L135-L169">get_website_status</a>(...) -> GetWebsiteStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -4862,7 +4862,7 @@ client.website.get_website_status(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">get_website_by_id</a>(...) -> GetWebsiteResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L171-L204">get_website_by_id</a>(...) -> GetWebsiteResponse</code></summary>
 <dl>
 <dd>
 
@@ -4944,7 +4944,7 @@ client.website.get_website_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">get_websites</a>(...) -> GetWebsitesResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L206-L247">get_websites</a>(...) -> GetWebsitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5033,7 +5033,7 @@ client.website.get_websites(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">reindex_website</a>(...) -> ReindexWebsiteResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L249-L347">reindex_website</a>(...) -> ReindexWebsiteResponse</code></summary>
 <dl>
 <dd>
 
@@ -5204,7 +5204,7 @@ client.website.reindex_website(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">delete_website</a>(...) -> DeleteWebsiteResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L349-L383">delete_website</a>(...) -> DeleteWebsiteResponse</code></summary>
 <dl>
 <dd>
 
@@ -5286,7 +5286,7 @@ client.website.delete_website(
 </dl>
 </details>
 
-<details><summary><code>client.website.<a href="src/fern/website/client.py">delete_all_websites</a>(...) -> DeleteAllWebsitesResponse</code></summary>
+<details><summary><code>client.website.<a href="src/fern/website/client.py#L385-L415">delete_all_websites</a>(...) -> DeleteAllWebsitesResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Firings
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">list_firings</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L29-L67">list_firings</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.firings.list_firings(
 </dl>
 </details>
 
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">list_cooling_firings</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L69-L111">list_cooling_firings</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

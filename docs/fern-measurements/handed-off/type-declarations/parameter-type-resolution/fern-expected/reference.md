@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_broadcasts</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L146">list_broadcasts</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -80,7 +80,7 @@ client.list_broadcasts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tag_broadcast</a>(...) -> int</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L148-L183">tag_broadcast</a>(...) -> int</code></summary>
 <dl>
 <dd>
 

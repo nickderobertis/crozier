@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_dispatch</a>(...) -> Dispatch</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L158">create_dispatch</a>(...) -> Dispatch</code></summary>
 <dl>
 <dd>
 

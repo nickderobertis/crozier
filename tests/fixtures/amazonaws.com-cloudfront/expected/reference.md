@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_cloud_front_origin_access_identities20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L140-L185">list_cloud_front_origin_access_identities20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -78,7 +78,7 @@ client.list_cloud_front_origin_access_identities20161125()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_cloud_front_origin_access_identity20161125</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L187-L220">create_cloud_front_origin_access_identity20161125</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -141,7 +141,7 @@ client.create_cloud_front_origin_access_identity20161125()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_distributions20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L222-L267">list_distributions20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.list_distributions20161125()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_distribution20161125</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L269-L300">create_distribution20161125</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -283,7 +283,7 @@ client.create_distribution20161125()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_distribution_with_tags20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L302-L341">create_distribution_with_tags20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -356,7 +356,7 @@ client.create_distribution_with_tags20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_invalidations20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L343-L394">list_invalidations20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -445,7 +445,7 @@ client.list_invalidations20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_invalidation20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L396-L434">create_invalidation20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -518,7 +518,7 @@ client.create_invalidation20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_streaming_distributions20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L436-L481">list_streaming_distributions20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -597,7 +597,7 @@ client.list_streaming_distributions20161125()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_streaming_distribution20161125</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L483-L514">create_streaming_distribution20161125</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -660,7 +660,7 @@ client.create_streaming_distribution20161125()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_streaming_distribution_with_tags20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L516-L555">create_streaming_distribution_with_tags20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -733,7 +733,7 @@ client.create_streaming_distribution_with_tags20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_cloud_front_origin_access_identity20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L557-L595">get_cloud_front_origin_access_identity20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -806,7 +806,7 @@ client.get_cloud_front_origin_access_identity20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_cloud_front_origin_access_identity20161125</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L597-L639">delete_cloud_front_origin_access_identity20161125</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -887,7 +887,7 @@ client.delete_cloud_front_origin_access_identity20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_distribution20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L641-L677">get_distribution20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -960,7 +960,7 @@ client.get_distribution20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_distribution20161125</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L679-L719">delete_distribution20161125</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1041,7 +1041,7 @@ client.delete_distribution20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_streaming_distribution20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L721-L759">get_streaming_distribution20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1114,7 +1114,7 @@ client.get_streaming_distribution20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_streaming_distribution20161125</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L761-L803">delete_streaming_distribution20161125</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1195,7 +1195,7 @@ client.delete_streaming_distribution20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_cloud_front_origin_access_identity_config20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L805-L845">get_cloud_front_origin_access_identity_config20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1268,7 +1268,7 @@ client.get_cloud_front_origin_access_identity_config20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_cloud_front_origin_access_identity20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L847-L890">update_cloud_front_origin_access_identity20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1349,7 +1349,7 @@ client.update_cloud_front_origin_access_identity20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_distribution_config20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L892-L930">get_distribution_config20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1422,7 +1422,7 @@ client.get_distribution_config20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_distribution20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L932-L973">update_distribution20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1503,7 +1503,7 @@ client.update_distribution20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_invalidation20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L975-L1017">get_invalidation20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1585,7 +1585,7 @@ client.get_invalidation20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_streaming_distribution_config20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1019-L1057">get_streaming_distribution_config20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1658,7 +1658,7 @@ client.get_streaming_distribution_config20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_streaming_distribution20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1059-L1102">update_streaming_distribution20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1739,7 +1739,7 @@ client.update_streaming_distribution20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_distributions_by_web_acl_id20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1104-L1155">list_distributions_by_web_acl_id20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1828,7 +1828,7 @@ client.list_distributions_by_web_acl_id20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tags_for_resource20161125</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1157-L1195">list_tags_for_resource20161125</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1901,7 +1901,7 @@ client.list_tags_for_resource20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tag_resource20161125</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1197-L1243">tag_resource20161125</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1983,7 +1983,7 @@ client.tag_resource20161125(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">untag_resource20161125</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1245-L1291">untag_resource20161125</a>(...)</code></summary>
 <dl>
 <dd>
 

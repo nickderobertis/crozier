@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">check_process_liveness</a>() -> Health</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L197-L219">check_process_liveness</a>() -> Health</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.check_process_liveness()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">check_database_and_schema_readiness</a>() -> Readiness</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L221-L245">check_database_and_schema_readiness</a>() -> Readiness</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.check_database_and_schema_readiness()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bootstrap_the_loopback_only_explicit_demo_ui_session</a>() -> DemoSession</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L247-L275">bootstrap_the_loopback_only_explicit_demo_ui_session</a>() -> DemoSession</code></summary>
 <dl>
 <dd>
 
@@ -160,7 +160,7 @@ client.bootstrap_the_loopback_only_explicit_demo_ui_session()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_the_authenticated_principal</a>() -> Principal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L277-L299">read_the_authenticated_principal</a>() -> Principal</code></summary>
 <dl>
 <dd>
 
@@ -209,7 +209,7 @@ client.read_the_authenticated_principal()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_users_owned_by_the_authenticated_tenant</a>() -> GetV1UsersResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L301-L325">list_users_owned_by_the_authenticated_tenant</a>() -> GetV1UsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -258,7 +258,7 @@ client.list_users_owned_by_the_authenticated_tenant()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_a_tenant_user</a>(...) -> UserEnvelope</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L327-L360">create_a_tenant_user</a>(...) -> UserEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -340,7 +340,7 @@ client.create_a_tenant_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">change_a_tenant_users_role</a>(...) -> UserEnvelope</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L362-L395">change_a_tenant_users_role</a>(...) -> UserEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -422,7 +422,7 @@ client.change_a_tenant_users_role(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_api_key_metadata</a>() -> GetV1ApiKeysResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L397-L421">list_tenant_api_key_metadata</a>() -> GetV1ApiKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -471,7 +471,7 @@ client.list_tenant_api_key_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">issue_a_one_time_api_key_for_a_tenant_user</a>(...) -> ApiKeyIssued</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L423-L453">issue_a_one_time_api_key_for_a_tenant_user</a>(...) -> ApiKeyIssued</code></summary>
 <dl>
 <dd>
 
@@ -530,7 +530,7 @@ client.issue_a_one_time_api_key_for_a_tenant_user(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">rotate_the_current_callers_api_key</a>() -> PostV1ApiKeysRotateResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L455-L479">rotate_the_current_callers_api_key</a>() -> PostV1ApiKeysRotateResponse</code></summary>
 <dl>
 <dd>
 
@@ -579,7 +579,7 @@ client.rotate_the_current_callers_api_key()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">revoke_a_tenant_api_key</a>(...) -> PostV1ApiKeysKeyIdRevokeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L481-L509">revoke_a_tenant_api_key</a>(...) -> PostV1ApiKeysKeyIdRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -638,7 +638,7 @@ client.revoke_a_tenant_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_marketplace_connector_accounts</a>() -> GetV1ConnectorsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L511-L537">list_tenant_owned_marketplace_connector_accounts</a>() -> GetV1ConnectorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -701,7 +701,7 @@ client.list_tenant_owned_marketplace_connector_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_a_tenant_marketplace_connector_account</a>(...) -> MarketplaceAccount</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L539-L578">create_a_tenant_marketplace_connector_account</a>(...) -> MarketplaceAccount</code></summary>
 <dl>
 <dd>
 
@@ -781,7 +781,7 @@ client.create_a_tenant_marketplace_connector_account(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_marketplace_connector_account</a>(...) -> MarketplaceAccount</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L580-L612">read_one_tenant_marketplace_connector_account</a>(...) -> MarketplaceAccount</code></summary>
 <dl>
 <dd>
 
@@ -854,7 +854,7 @@ client.read_one_tenant_marketplace_connector_account(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_a_tenant_marketplace_connector_account</a>(...) -> MarketplaceAccount</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L614-L660">update_a_tenant_marketplace_connector_account</a>(...) -> MarketplaceAccount</code></summary>
 <dl>
 <dd>
 
@@ -948,7 +948,7 @@ client.update_a_tenant_marketplace_connector_account(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_and_persist_a_connector_health_check</a>(...) -> MarketplaceAccount</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L662-L694">run_and_persist_a_connector_health_check</a>(...) -> MarketplaceAccount</code></summary>
 <dl>
 <dd>
 
@@ -1021,7 +1021,7 @@ client.run_and_persist_a_connector_health_check(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_provider_connectivity_tests</a>(...) -> ProviderSmokeTestList</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L696-L726">list_tenant_owned_provider_connectivity_tests</a>(...) -> ProviderSmokeTestList</code></summary>
 <dl>
 <dd>
 
@@ -1092,7 +1092,7 @@ client.list_tenant_owned_provider_connectivity_tests()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_an_audited_live_provider_connectivity_test</a>(...) -> ProviderSmokeTest</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L728-L770">run_an_audited_live_provider_connectivity_test</a>(...) -> ProviderSmokeTest</code></summary>
 <dl>
 <dd>
 
@@ -1176,7 +1176,7 @@ client.run_an_audited_live_provider_connectivity_test(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_provider_connectivity_test</a>(...) -> ProviderSmokeTest</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L772-L804">read_one_tenant_owned_provider_connectivity_test</a>(...) -> ProviderSmokeTest</code></summary>
 <dl>
 <dd>
 
@@ -1249,7 +1249,7 @@ client.read_one_tenant_owned_provider_connectivity_test(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_amazon_report_recipes</a>() -> GetV1ReportRecipesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L806-L832">list_tenant_owned_amazon_report_recipes</a>() -> GetV1ReportRecipesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1312,7 +1312,7 @@ client.list_tenant_owned_amazon_report_recipes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">persist_an_amazon_report_recipe</a>(...) -> ReportRecipe</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L834-L909">persist_an_amazon_report_recipe</a>(...) -> ReportRecipe</code></summary>
 <dl>
 <dd>
 
@@ -1451,7 +1451,7 @@ client.persist_an_amazon_report_recipe(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_amazon_report_recipe</a>(...) -> ReportRecipe</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L911-L943">read_one_tenant_owned_amazon_report_recipe</a>(...) -> ReportRecipe</code></summary>
 <dl>
 <dd>
 
@@ -1524,7 +1524,7 @@ client.read_one_tenant_owned_amazon_report_recipe(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_a_tenant_owned_amazon_report_recipe</a>(...) -> ReportRecipe</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L945-L1020">update_a_tenant_owned_amazon_report_recipe</a>(...) -> ReportRecipe</code></summary>
 <dl>
 <dd>
 
@@ -1663,7 +1663,7 @@ client.update_a_tenant_owned_amazon_report_recipe(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">enqueue_an_idempotent_amazon_report_synchronization</a>(...) -> ReportSync</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1022-L1057">enqueue_an_idempotent_amazon_report_synchronization</a>(...) -> ReportSync</code></summary>
 <dl>
 <dd>
 
@@ -1745,7 +1745,7 @@ client.enqueue_an_idempotent_amazon_report_synchronization(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_amazon_report_syncs</a>(...) -> GetV1ReportSyncsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1059-L1085">list_tenant_owned_amazon_report_syncs</a>(...) -> GetV1ReportSyncsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1802,7 +1802,7 @@ client.list_tenant_owned_amazon_report_syncs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_amazon_report_sync</a>(...) -> ReportSync</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1087-L1115">read_one_tenant_owned_amazon_report_sync</a>(...) -> ReportSync</code></summary>
 <dl>
 <dd>
 
@@ -1861,7 +1861,7 @@ client.read_one_tenant_owned_amazon_report_sync(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_amazon_ads_capability_gates</a>(...) -> GetV1AdsCapabilityGatesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1117-L1147">list_tenant_owned_amazon_ads_capability_gates</a>(...) -> GetV1AdsCapabilityGatesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.list_tenant_owned_amazon_ads_capability_gates()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_a_read_only_amazon_ads_capability_gate</a>(...) -> AdsCapabilityGate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1149-L1195">run_a_read_only_amazon_ads_capability_gate</a>(...) -> AdsCapabilityGate</code></summary>
 <dl>
 <dd>
 
@@ -2022,7 +2022,7 @@ client.run_a_read_only_amazon_ads_capability_gate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_amazon_ads_capability_gate</a>(...) -> AdsCapabilityGate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1197-L1227">read_one_tenant_owned_amazon_ads_capability_gate</a>(...) -> AdsCapabilityGate</code></summary>
 <dl>
 <dd>
 
@@ -2081,7 +2081,7 @@ client.read_one_tenant_owned_amazon_ads_capability_gate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_the_conditional_amazon_ads_adapter_status</a>(...) -> AdsAdapterStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1229-L1262">read_the_conditional_amazon_ads_adapter_status</a>(...) -> AdsAdapterStatus</code></summary>
 <dl>
 <dd>
 
@@ -2152,7 +2152,7 @@ client.read_the_conditional_amazon_ads_adapter_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">request_an_idempotent_action</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1264-L1305">request_an_idempotent_action</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -2224,7 +2224,7 @@ client.request_an_idempotent_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">approve_a_requested_action_as_a_second_actor</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1307-L1337">approve_a_requested_action_as_a_second_actor</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -2283,7 +2283,7 @@ client.approve_a_requested_action_as_a_second_actor(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">execute_an_approved_action</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1339-L1367">execute_an_approved_action</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -2342,7 +2342,7 @@ client.execute_an_approved_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">re_queue_a_failed_or_expired_execution_without_bypassing_approval</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1369-L1399">re_queue_a_failed_or_expired_execution_without_bypassing_approval</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -2401,7 +2401,7 @@ client.re_queue_a_failed_or_expired_execution_without_bypassing_approval(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_durable_proposals</a>(...) -> GetV1ProposalsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1401-L1435">list_tenant_owned_durable_proposals</a>(...) -> GetV1ProposalsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2466,7 +2466,7 @@ client.list_tenant_owned_durable_proposals()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">derive_an_idempotent_proposal_from_an_approved_daily_ops_priority</a>(...) -> Proposal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1437-L1493">derive_an_idempotent_proposal_from_an_approved_daily_ops_priority</a>(...) -> Proposal</code></summary>
 <dl>
 <dd>
 
@@ -2558,7 +2558,7 @@ client.derive_an_idempotent_proposal_from_an_approved_daily_ops_priority(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_tenant_owned_proposal_and_its_local_decisions</a>(...) -> Proposal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1495-L1525">read_a_tenant_owned_proposal_and_its_local_decisions</a>(...) -> Proposal</code></summary>
 <dl>
 <dd>
 
@@ -2617,7 +2617,7 @@ client.read_a_tenant_owned_proposal_and_its_local_decisions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">revise_a_draft_or_revision_required_proposal_optimistically</a>(...) -> Proposal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1527-L1598">revise_a_draft_or_revision_required_proposal_optimistically</a>(...) -> Proposal</code></summary>
 <dl>
 <dd>
 
@@ -2749,7 +2749,7 @@ client.revise_a_draft_or_revision_required_proposal_optimistically(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">submit_a_proposal_to_local_human_review</a>(...) -> Proposal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1600-L1633">submit_a_proposal_to_local_human_review</a>(...) -> Proposal</code></summary>
 <dl>
 <dd>
 
@@ -2817,7 +2817,7 @@ client.submit_a_proposal_to_local_human_review(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">record_a_local_human_review_decision_optimistically</a>(...) -> Proposal</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1635-L1686">record_a_local_human_review_decision_optimistically</a>(...) -> Proposal</code></summary>
 <dl>
 <dd>
 
@@ -2917,7 +2917,7 @@ client.record_a_local_human_review_decision_optimistically(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">idempotently_execute_an_approved_safe_read_proposal</a>(...) -> ProposalExecution</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1688-L1734">idempotently_execute_an_approved_safe_read_proposal</a>(...) -> ProposalExecution</code></summary>
 <dl>
 <dd>
 
@@ -3008,7 +3008,7 @@ client.idempotently_execute_an_approved_safe_read_proposal(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retry_a_failed_proposal_execution_idempotently_on_its_existing_durable_execution_row</a>(...) -> ProposalExecution</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1736-L1784">retry_a_failed_proposal_execution_idempotently_on_its_existing_durable_execution_row</a>(...) -> ProposalExecution</code></summary>
 <dl>
 <dd>
 
@@ -3099,7 +3099,7 @@ client.retry_a_failed_proposal_execution_idempotently_on_its_existing_durable_ex
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_proposal_executions</a>(...) -> GetV1ProposalExecutionsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1786-L1820">list_tenant_owned_proposal_executions</a>(...) -> GetV1ProposalExecutionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3164,7 +3164,7 @@ client.list_tenant_owned_proposal_executions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_proposal_execution</a>(...) -> ProposalExecution</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1822-L1852">read_one_tenant_owned_proposal_execution</a>(...) -> ProposalExecution</code></summary>
 <dl>
 <dd>
 
@@ -3223,7 +3223,7 @@ client.read_one_tenant_owned_proposal_execution(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_csv_evidence_imports</a>(...) -> GetV1EvidenceImportsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1854-L1882">list_tenant_owned_csv_evidence_imports</a>(...) -> GetV1EvidenceImportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3280,7 +3280,7 @@ client.list_tenant_owned_csv_evidence_imports()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">parse_and_persist_real_marketplace_csv_evidence</a>(...) -> EvidenceImport</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1884-L1949">parse_and_persist_real_marketplace_csv_evidence</a>(...) -> EvidenceImport</code></summary>
 <dl>
 <dd>
 
@@ -3398,7 +3398,7 @@ client.parse_and_persist_real_marketplace_csv_evidence(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_tenant_owned_evidence_import_metadata</a>(...) -> EvidenceImport</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1951-L1981">read_tenant_owned_evidence_import_metadata</a>(...) -> EvidenceImport</code></summary>
 <dl>
 <dd>
 
@@ -3457,7 +3457,7 @@ client.read_tenant_owned_evidence_import_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">materialize_durable_metric_observations_from_one_tenant_owned_evidence_import</a>(...) -> MetricMaterialization</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1983-L2018">materialize_durable_metric_observations_from_one_tenant_owned_evidence_import</a>(...) -> MetricMaterialization</code></summary>
 <dl>
 <dd>
 
@@ -3539,7 +3539,7 @@ client.materialize_durable_metric_observations_from_one_tenant_owned_evidence_im
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_persisted_metric_observations_owned_by_the_authenticated_tenant</a>(...) -> GetV1MetricObservationsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2020-L2075">list_persisted_metric_observations_owned_by_the_authenticated_tenant</a>(...) -> GetV1MetricObservationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3650,7 +3650,7 @@ client.list_persisted_metric_observations_owned_by_the_authenticated_tenant()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_persisted_metric_observation_owned_by_the_authenticated_tenant</a>(...) -> MetricObservation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2077-L2107">read_one_persisted_metric_observation_owned_by_the_authenticated_tenant</a>(...) -> MetricObservation</code></summary>
 <dl>
 <dd>
 
@@ -3709,7 +3709,7 @@ client.read_one_persisted_metric_observation_owned_by_the_authenticated_tenant(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_persisted_metric_materialization_attempts_owned_by_the_authenticated_tenant</a>(...) -> GetV1MetricMaterializationsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2109-L2155">list_persisted_metric_materialization_attempts_owned_by_the_authenticated_tenant</a>(...) -> GetV1MetricMaterializationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3804,7 +3804,7 @@ client.list_persisted_metric_materialization_attempts_owned_by_the_authenticated
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">materialize_a_bounded_page_of_existing_tenant_evidence_imports</a>(...) -> PostV1MetricMaterializationsBackfillResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2157-L2196">materialize_a_bounded_page_of_existing_tenant_evidence_imports</a>(...) -> PostV1MetricMaterializationsBackfillResponse</code></summary>
 <dl>
 <dd>
 
@@ -3885,7 +3885,7 @@ client.materialize_a_bounded_page_of_existing_tenant_evidence_imports(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_multi_agent_workflow_runs</a>(...) -> GetV1AgentRunsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2198-L2226">list_tenant_owned_multi_agent_workflow_runs</a>(...) -> GetV1AgentRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3942,7 +3942,7 @@ client.list_tenant_owned_multi_agent_workflow_runs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_an_idempotent_weekly_ops_council_run</a>(...) -> AgentRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2228-L2263">create_an_idempotent_weekly_ops_council_run</a>(...) -> AgentRun</code></summary>
 <dl>
 <dd>
 
@@ -4024,7 +4024,7 @@ client.create_an_idempotent_weekly_ops_council_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_daily_ops_schedules</a>() -> GetV1DailyOpsSchedulesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2265-L2291">list_tenant_owned_daily_ops_schedules</a>() -> GetV1DailyOpsSchedulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4087,7 +4087,7 @@ client.list_tenant_owned_daily_ops_schedules()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_a_daily_ops_schedule</a>(...) -> DailyOpsSchedule</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2293-L2373">create_a_daily_ops_schedule</a>(...) -> DailyOpsSchedule</code></summary>
 <dl>
 <dd>
 
@@ -4170,7 +4170,7 @@ client.create_a_daily_ops_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_tenant_owned_daily_ops_schedule</a>(...) -> DailyOpsSchedule</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2375-L2405">read_a_tenant_owned_daily_ops_schedule</a>(...) -> DailyOpsSchedule</code></summary>
 <dl>
 <dd>
 
@@ -4229,7 +4229,7 @@ client.read_a_tenant_owned_daily_ops_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">replace_a_daily_ops_schedule_configuration</a>(...) -> DailyOpsSchedule</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2407-L2494">replace_a_daily_ops_schedule_configuration</a>(...) -> DailyOpsSchedule</code></summary>
 <dl>
 <dd>
 
@@ -4387,7 +4387,7 @@ client.replace_a_daily_ops_schedule_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_or_return_the_local_date_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2496-L2539">create_or_return_the_local_date_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
 <dl>
 <dd>
 
@@ -4477,7 +4477,7 @@ client.create_or_return_the_local_date_daily_ops_occurrence(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_daily_ops_occurrences</a>(...) -> GetV1DailyOpsRunsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2541-L2577">list_tenant_owned_daily_ops_occurrences</a>(...) -> GetV1DailyOpsRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4556,7 +4556,7 @@ client.list_tenant_owned_daily_ops_occurrences()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_tenant_owned_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2579-L2607">read_a_tenant_owned_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
 <dl>
 <dd>
 
@@ -4615,7 +4615,7 @@ client.read_a_tenant_owned_daily_ops_occurrence(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_the_persisted_eligible_daily_ops_brief</a>(...) -> DailyOpsBriefEnvelope</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2609-L2641">read_the_persisted_eligible_daily_ops_brief</a>(...) -> DailyOpsBriefEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -4688,7 +4688,7 @@ client.read_the_persisted_eligible_daily_ops_brief(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">execute_one_queued_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2643-L2678">execute_one_queued_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
 <dl>
 <dd>
 
@@ -4772,7 +4772,7 @@ client.execute_one_queued_daily_ops_occurrence(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retry_one_failed_or_blocked_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2680-L2723">retry_one_failed_or_blocked_daily_ops_occurrence</a>(...) -> DailyOpsRun</code></summary>
 <dl>
 <dd>
 
@@ -4865,7 +4865,7 @@ client.retry_one_failed_or_blocked_daily_ops_occurrence(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_agent_graph_definitions</a>() -> GetV1AgentGraphsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2725-L2749">list_tenant_owned_agent_graph_definitions</a>() -> GetV1AgentGraphsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4914,7 +4914,7 @@ client.list_tenant_owned_agent_graph_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_an_immutable_versioned_agent_graph_definition</a>(...) -> AgentGraphBundle</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2751-L2806">create_an_immutable_versioned_agent_graph_definition</a>(...) -> AgentGraphBundle</code></summary>
 <dl>
 <dd>
 
@@ -5008,7 +5008,7 @@ client.create_an_immutable_versioned_agent_graph_definition(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_tenant_owned_agent_graph_and_versions</a>(...) -> AgentGraphBundle</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2808-L2838">read_a_tenant_owned_agent_graph_and_versions</a>(...) -> AgentGraphBundle</code></summary>
 <dl>
 <dd>
 
@@ -5067,7 +5067,7 @@ client.read_a_tenant_owned_agent_graph_and_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_a_new_draft_graph_version</a>(...) -> AgentGraphVersion</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2840-L2899">create_a_new_draft_graph_version</a>(...) -> AgentGraphVersion</code></summary>
 <dl>
 <dd>
 
@@ -5161,7 +5161,7 @@ client.create_a_new_draft_graph_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_agent_graph_version</a>(...) -> AgentGraphVersion</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2901-L2931">read_one_tenant_owned_agent_graph_version</a>(...) -> AgentGraphVersion</code></summary>
 <dl>
 <dd>
 
@@ -5220,7 +5220,7 @@ client.read_one_tenant_owned_agent_graph_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">publish_a_graph_version_after_validation_and_review</a>(...) -> AgentGraphVersion</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2933-L2963">publish_a_graph_version_after_validation_and_review</a>(...) -> AgentGraphVersion</code></summary>
 <dl>
 <dd>
 
@@ -5279,7 +5279,7 @@ client.publish_a_graph_version_after_validation_and_review(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">publish_a_graph_version_using_the_nested_compatibility_route</a>(...) -> AgentGraphVersion</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2965-L2998">publish_a_graph_version_using_the_nested_compatibility_route</a>(...) -> AgentGraphVersion</code></summary>
 <dl>
 <dd>
 
@@ -5347,7 +5347,7 @@ client.publish_a_graph_version_using_the_nested_compatibility_route(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_tenant_owned_run_with_tasks_artifacts_and_events</a>(...) -> AgentRunBundle</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3000-L3030">read_a_tenant_owned_run_with_tasks_artifacts_and_events</a>(...) -> AgentRunBundle</code></summary>
 <dl>
 <dd>
 
@@ -5406,7 +5406,7 @@ client.read_a_tenant_owned_run_with_tasks_artifacts_and_events(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_an_incremental_event_page_for_a_run</a>(...) -> GetV1AgentRunsRunIdEventsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3032-L3072">read_an_incremental_event_page_for_a_run</a>(...) -> GetV1AgentRunsRunIdEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5481,7 +5481,7 @@ client.read_an_incremental_event_page_for_a_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">execute_the_bound_domain_agent_graph_and_independent_reviewer</a>(...) -> AgentRunBundle</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3074-L3106">execute_the_bound_domain_agent_graph_and_independent_reviewer</a>(...) -> AgentRunBundle</code></summary>
 <dl>
 <dd>
 
@@ -5554,7 +5554,7 @@ client.execute_the_bound_domain_agent_graph_and_independent_reviewer(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">evaluate_a_completed_weekly_ops_run_with_deterministic_graders</a>(...) -> AgentEvaluation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3108-L3138">evaluate_a_completed_weekly_ops_run_with_deterministic_graders</a>(...) -> AgentEvaluation</code></summary>
 <dl>
 <dd>
 
@@ -5613,7 +5613,7 @@ client.evaluate_a_completed_weekly_ops_run_with_deterministic_graders(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_persisted_evaluations_for_a_run</a>(...) -> GetV1AgentRunsRunIdEvaluationsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3140-L3168">list_persisted_evaluations_for_a_run</a>(...) -> GetV1AgentRunsRunIdEvaluationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5672,7 +5672,7 @@ client.list_persisted_evaluations_for_a_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_durable_jobs</a>(...) -> GetV1JobsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3170-L3196">list_tenant_owned_durable_jobs</a>(...) -> GetV1JobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5729,7 +5729,7 @@ client.list_tenant_owned_durable_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">enqueue_an_agent_run_for_background_execution</a>(...) -> Job</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3198-L3238">enqueue_an_agent_run_for_background_execution</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -5805,7 +5805,7 @@ client.enqueue_an_agent_run_for_background_execution(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_owned_durable_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3240-L3268">read_one_tenant_owned_durable_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -5864,7 +5864,7 @@ client.read_one_tenant_owned_durable_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_owned_interval_schedules</a>() -> GetV1SchedulesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3270-L3294">list_tenant_owned_interval_schedules</a>() -> GetV1SchedulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5913,7 +5913,7 @@ client.list_tenant_owned_interval_schedules()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">schedule_repeated_weekly_ops_runs</a>(...) -> Schedule</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3296-L3324">schedule_repeated_weekly_ops_runs</a>(...) -> Schedule</code></summary>
 <dl>
 <dd>
 
@@ -5972,7 +5972,7 @@ client.schedule_repeated_weekly_ops_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">enable_or_disable_a_schedule</a>(...) -> Schedule</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3326-L3359">enable_or_disable_a_schedule</a>(...) -> Schedule</code></summary>
 <dl>
 <dd>
 
@@ -6040,7 +6040,7 @@ client.enable_or_disable_a_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_requested_actions_awaiting_a_second_actor</a>() -> GetV1ApprovalsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3361-L3385">list_requested_actions_awaiting_a_second_actor</a>() -> GetV1ApprovalsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6089,7 +6089,7 @@ client.list_requested_actions_awaiting_a_second_actor()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_a_tenants_operational_control_plane_snapshot</a>() -> MissionControl</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3387-L3411">read_a_tenants_operational_control_plane_snapshot</a>() -> MissionControl</code></summary>
 <dl>
 <dd>
 
@@ -6138,7 +6138,7 @@ client.read_a_tenants_operational_control_plane_snapshot()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">stream_tenant_scoped_mission_control_changes</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3413-L3453">stream_tenant_scoped_mission_control_changes</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -6217,7 +6217,7 @@ client.stream_tenant_scoped_mission_control_changes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_tenant_scoped_pilot_readiness_and_local_worker_health</a>() -> PilotStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3455-L3483">read_tenant_scoped_pilot_readiness_and_local_worker_health</a>() -> PilotStatus</code></summary>
 <dl>
 <dd>
 
@@ -6280,7 +6280,7 @@ client.read_tenant_scoped_pilot_readiness_and_local_worker_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tenant_scoped_durable_assurance_runs</a>(...) -> GetV1AssuranceRunsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3485-L3515">list_tenant_scoped_durable_assurance_runs</a>(...) -> GetV1AssuranceRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6351,7 +6351,7 @@ client.list_tenant_scoped_durable_assurance_runs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_a_tenant_assurance_evaluation_or_security_check</a>(...) -> AssuranceRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3517-L3556">run_a_tenant_assurance_evaluation_or_security_check</a>(...) -> AssuranceRun</code></summary>
 <dl>
 <dd>
 
@@ -6433,7 +6433,7 @@ client.run_a_tenant_assurance_evaluation_or_security_check(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_one_tenant_scoped_assurance_run</a>(...) -> AssuranceRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3558-L3588">read_one_tenant_scoped_assurance_run</a>(...) -> AssuranceRun</code></summary>
 <dl>
 <dd>
 
@@ -6492,7 +6492,7 @@ client.read_one_tenant_scoped_assurance_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_an_evidence_backed_operating_brief_for_one_marketplace</a>(...) -> OperatingBriefing</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3590-L3623">read_an_evidence_backed_operating_brief_for_one_marketplace</a>(...) -> OperatingBriefing</code></summary>
 <dl>
 <dd>
 
@@ -6563,7 +6563,7 @@ client.read_an_evidence_backed_operating_brief_for_one_marketplace()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_the_live_platform_report_workflow_and_action_catalog</a>() -> RuntimeCatalog</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3625-L3651">read_the_live_platform_report_workflow_and_action_catalog</a>() -> RuntimeCatalog</code></summary>
 <dl>
 <dd>
 
@@ -6612,7 +6612,7 @@ client.read_the_live_platform_report_workflow_and_action_catalog()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_tenant_audit_events</a>(...) -> GetV1AuditResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3653-L3679">read_tenant_audit_events</a>(...) -> GetV1AuditResponse</code></summary>
 <dl>
 <dd>
 
@@ -6669,7 +6669,7 @@ client.read_tenant_audit_events()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_tenant_owned_connector_records</a>(...) -> GetV1RecordsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3681-L3709">read_tenant_owned_connector_records</a>(...) -> GetV1RecordsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6726,7 +6726,7 @@ client.read_tenant_owned_connector_records()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_disposable_process_counters</a>() -> GetV1MetricsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3711-L3735">read_disposable_process_counters</a>() -> GetV1MetricsResponse</code></summary>
 <dl>
 <dd>
 

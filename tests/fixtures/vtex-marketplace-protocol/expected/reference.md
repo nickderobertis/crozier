@@ -1,6 +1,6 @@
 # Reference
 ## External Marketplace
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">fulfillment_simulation_external_marketplace</a>(...) -> FulfillmentSimulationExternalMarketplaceResponse</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L50-L141">fulfillment_simulation_external_marketplace</a>(...) -> FulfillmentSimulationExternalMarketplaceResponse</code></summary>
 <dl>
 <dd>
 
@@ -156,7 +156,7 @@ client.external_marketplace.fulfillment_simulation_external_marketplace(
 </dl>
 </details>
 
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">send_category_mapping_vtex_mapper</a>(...)</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L143-L197">send_category_mapping_vtex_mapper</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -250,7 +250,7 @@ client.external_marketplace.send_category_mapping_vtex_mapper(
 </dl>
 </details>
 
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">vtex_mapper_registration</a>(...)</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L199-L274">vtex_mapper_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -378,7 +378,7 @@ client.external_marketplace.vtex_mapper_registration(
 </dl>
 </details>
 
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">enqueue_new_order</a>(...) -> Deliverybyseller</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L276-L488">enqueue_new_order</a>(...) -> Deliverybyseller</code></summary>
 <dl>
 <dd>
 
@@ -671,7 +671,7 @@ It is required if the connector is native or does not use the App Template.
 </dl>
 </details>
 
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">update_order_status</a>(...) -> Approveorder</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L490-L579">update_order_status</a>(...) -> Approveorder</code></summary>
 <dl>
 <dd>
 
@@ -816,7 +816,7 @@ Required field including a string with the order’s status in the marketplace. 
 </dl>
 </details>
 
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">place_fulfillment_order</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L581-L716">place_fulfillment_order</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1020,7 +1020,7 @@ client.external_marketplace.place_fulfillment_order(
 </dl>
 </details>
 
-<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py">authorize_dispatch_for_fulfillment_order</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_marketplace.<a href="src/fern/external_marketplace/client.py#L718-L788">authorize_dispatch_for_fulfillment_order</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1141,7 +1141,7 @@ client.external_marketplace.authorize_dispatch_for_fulfillment_order(
 </details>
 
 ## External Seller
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">fulfillment_simulation</a>(...) -> FulfillmentSimulationResponse</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L36-L145">fulfillment_simulation</a>(...) -> FulfillmentSimulationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1300,7 +1300,7 @@ client.external_seller.fulfillment_simulation(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">order_placement</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L147-L287">order_placement</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1529,7 +1529,7 @@ client.external_seller.order_placement(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">mkp_order_cancellation</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L289-L347">mkp_order_cancellation</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1631,7 +1631,7 @@ client.external_seller.mkp_order_cancellation(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">authorize_fulfillment</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L349-L400">authorize_fulfillment</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1723,7 +1723,7 @@ client.external_seller.authorize_fulfillment(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">cancel_order_in_marketplace</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L402-L450">cancel_order_in_marketplace</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1815,7 +1815,7 @@ client.external_seller.cancel_order_in_marketplace(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">send_invoice</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L452-L550">send_invoice</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1974,7 +1974,7 @@ client.external_seller.send_invoice(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">send_tracking_information</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L552-L623">send_tracking_information</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2098,7 +2098,7 @@ client.external_seller.send_tracking_information(
 </dl>
 </details>
 
-<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py">update_tracking_status</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.external_seller.<a href="src/fern/external_seller/client.py#L625-L687">update_tracking_status</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

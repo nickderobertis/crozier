@@ -1,6 +1,6 @@
 # Reference
 ## Alerting
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_all_available_notification_channels</a>() -> typing.List[NotificationChannelResponse]</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L39-L63">returns_all_available_notification_channels</a>() -> typing.List[NotificationChannelResponse]</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.alerting.returns_all_available_notification_channels()
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">creates_a_new_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L65-L108">creates_a_new_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -112,7 +112,7 @@ client.alerting.creates_a_new_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_a_notification_channel_with_given_id</a>(...) -> NotificationChannelResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L110-L138">returns_a_notification_channel_with_given_id</a>(...) -> NotificationChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -171,7 +171,7 @@ client.alerting.returns_a_notification_channel_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">updates_an_existing_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L140-L188">updates_an_existing_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -243,7 +243,7 @@ client.alerting.updates_an_existing_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">deletes_an_existing_notification_channel</a>(...)</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L190-L217">deletes_an_existing_notification_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -302,7 +302,7 @@ client.alerting.deletes_an_existing_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_paginated_alert_events</a>(...) -> PagedAlertEventResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L219-L279">returns_paginated_alert_events</a>(...) -> PagedAlertEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -415,7 +415,7 @@ client.alerting.returns_paginated_alert_events()
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_a_single_alert_event_by_id</a>(...) -> AlertEventResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L281-L309">returns_a_single_alert_event_by_id</a>(...) -> AlertEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -474,7 +474,7 @@ client.alerting.returns_a_single_alert_event_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_all_available_alert_rules</a>() -> typing.List[AlertRuleResponse]</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L311-L335">returns_all_available_alert_rules</a>() -> typing.List[AlertRuleResponse]</code></summary>
 <dl>
 <dd>
 
@@ -523,7 +523,7 @@ client.alerting.returns_all_available_alert_rules()
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">creates_a_new_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L337-L415">creates_a_new_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -585,7 +585,7 @@ client.alerting.creates_a_new_alert_rule(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_an_alert_rule_with_given_id</a>(...) -> AlertRuleResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L417-L445">returns_an_alert_rule_with_given_id</a>(...) -> AlertRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -644,7 +644,7 @@ client.alerting.returns_an_alert_rule_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">updates_an_existing_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L447-L531">updates_an_existing_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -715,7 +715,7 @@ client.alerting.updates_an_existing_alert_rule(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">deletes_an_existing_alert_rule</a>(...)</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L533-L560">deletes_an_existing_alert_rule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -774,7 +774,7 @@ client.alerting.deletes_an_existing_alert_rule(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">disables_an_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L562-L590">disables_an_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -833,7 +833,7 @@ client.alerting.disables_an_alert_rule(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">enables_an_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L592-L620">enables_an_alert_rule</a>(...) -> AlertRuleResponse</code></summary>
 <dl>
 <dd>
 
@@ -892,7 +892,7 @@ client.alerting.enables_an_alert_rule(
 </dl>
 </details>
 
-<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py">returns_current_alert_status_summary</a>() -> AlertStatusResponse</code></summary>
+<details><summary><code>client.alerting.<a href="src/fern/alerting/client.py#L622-L646">returns_current_alert_status_summary</a>() -> AlertStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -942,7 +942,7 @@ client.alerting.returns_current_alert_status_summary()
 </details>
 
 ## CatalogResource
-<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py">returns_all_available_components_for_the_current_application_version</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py#L25-L53">returns_all_available_components_for_the_current_application_version</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -999,7 +999,7 @@ client.catalog_resource.returns_all_available_components_for_the_current_applica
 </dl>
 </details>
 
-<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py">returns_descriptors_for_a_specific_component_using_current_application_version</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py#L55-L88">returns_descriptors_for_a_specific_component_using_current_application_version</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1067,7 +1067,7 @@ client.catalog_resource.returns_descriptors_for_a_specific_component_using_curre
 </dl>
 </details>
 
-<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py">returns_all_available_components_for_a_specific_version</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py#L90-L126">returns_all_available_components_for_a_specific_version</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1134,7 +1134,7 @@ client.catalog_resource.returns_all_available_components_for_a_specific_version(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py">returns_descriptors_for_a_specific_component</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.catalog_resource.<a href="src/fern/catalog_resource/client.py#L128-L164">returns_descriptors_for_a_specific_component</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1212,7 +1212,7 @@ client.catalog_resource.returns_descriptors_for_a_specific_component(
 </details>
 
 ## Connections
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">returns_all_available_connections</a>() -> typing.List[ConnectionResponse]</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L32-L56">returns_all_available_connections</a>() -> typing.List[ConnectionResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1261,7 +1261,7 @@ client.connections.returns_all_available_connections()
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">creates_new_connection</a>(...) -> str</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L58-L100">creates_new_connection</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1321,7 +1321,7 @@ client.connections.creates_new_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">returns_a_list_of_json_schema_describing_the_required_field_for_a_connection</a>() -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L102-L128">returns_a_list_of_json_schema_describing_the_required_field_for_a_connection</a>() -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1370,7 +1370,7 @@ client.connections.returns_a_list_of_json_schema_describing_the_required_field_f
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">verify_that_the_connection_is_valid</a>(...) -> PostApiConnectionsValidateResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L130-L173">verify_that_the_connection_is_valid</a>(...) -> PostApiConnectionsValidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1430,7 +1430,7 @@ client.connections.verify_that_the_connection_is_valid(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">returns_a_connection_with_given_id</a>(...) -> ConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L175-L203">returns_a_connection_with_given_id</a>(...) -> ConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1489,7 +1489,7 @@ client.connections.returns_a_connection_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">updates_an_existing_connection</a>(...) -> ConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L205-L252">updates_an_existing_connection</a>(...) -> ConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1558,7 +1558,7 @@ client.connections.updates_an_existing_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">deletes_an_existing_connection</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L254-L281">deletes_an_existing_connection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1617,7 +1617,7 @@ client.connections.deletes_an_existing_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">returns_a_list_of_collection_names_available_on_the_source</a>(...) -> GetApiConnectionsIdCollectionsResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L283-L313">returns_a_list_of_collection_names_available_on_the_source</a>(...) -> GetApiConnectionsIdCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1677,7 +1677,7 @@ client.connections.returns_a_list_of_collection_names_available_on_the_source(
 </details>
 
 ## Destinations
-<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py">returns_all_available_destinations</a>() -> typing.List[DestinationResponse]</code></summary>
+<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py#L30-L54">returns_all_available_destinations</a>() -> typing.List[DestinationResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1726,7 +1726,7 @@ client.destinations.returns_all_available_destinations()
 </dl>
 </details>
 
-<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py">creates_new_destination</a>(...) -> str</code></summary>
+<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py#L56-L115">creates_new_destination</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1787,7 +1787,7 @@ client.destinations.creates_new_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py">returns_a_destination_with_given_id</a>(...) -> DestinationResponse</code></summary>
+<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py#L117-L145">returns_a_destination_with_given_id</a>(...) -> DestinationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1846,7 +1846,7 @@ client.destinations.returns_a_destination_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py">updates_an_existing_destination</a>(...) -> DestinationResponse</code></summary>
+<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py#L147-L212">updates_an_existing_destination</a>(...) -> DestinationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1916,7 +1916,7 @@ client.destinations.updates_an_existing_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py">deletes_an_existing_destination</a>(...)</code></summary>
+<details><summary><code>client.destinations.<a href="src/fern/destinations/client.py#L214-L241">deletes_an_existing_destination</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1976,7 +1976,7 @@ client.destinations.deletes_an_existing_destination(
 </details>
 
 ## Monitoring
-<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">list_available_monitoring_panels</a>() -> PanelsListResponse</code></summary>
+<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py#L28-L52">list_available_monitoring_panels</a>() -> PanelsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2025,7 +2025,7 @@ client.monitoring.list_available_monitoring_panels()
 </dl>
 </details>
 
-<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py">query_monitoring_panel_data_for_a_specific_pipeline</a>(...) -> PanelQueryResponse</code></summary>
+<details><summary><code>client.monitoring.<a href="src/fern/monitoring/client.py#L54-L112">query_monitoring_panel_data_for_a_specific_pipeline</a>(...) -> PanelQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2121,7 +2121,7 @@ client.monitoring.query_monitoring_panel_data_for_a_specific_pipeline(
 </details>
 
 ## Pipelines
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">returns_all_available_pipelines</a>() -> typing.List[PipelineResponse]</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L31-L55">returns_all_available_pipelines</a>() -> typing.List[PipelineResponse]</code></summary>
 <dl>
 <dd>
 
@@ -2170,7 +2170,7 @@ client.pipelines.returns_all_available_pipelines()
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">creates_new_pipeline</a>(...) -> str</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L57-L117">creates_new_pipeline</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2280,7 +2280,7 @@ client.pipelines.creates_new_pipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">returns_a_pipeline_with_given_id</a>(...) -> PipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L119-L147">returns_a_pipeline_with_given_id</a>(...) -> PipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -2339,7 +2339,7 @@ client.pipelines.returns_a_pipeline_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">updates_an_existing_pipeline</a>(...) -> PipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L149-L205">updates_an_existing_pipeline</a>(...) -> PipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -2440,7 +2440,7 @@ client.pipelines.updates_an_existing_pipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">deletes_an_existing_pipeline</a>(...)</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L207-L232">deletes_an_existing_pipeline</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2499,7 +2499,7 @@ client.pipelines.deletes_an_existing_pipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">returns_logs_for_pipeline_with_given_id</a>(...) -> str</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L234-L262">returns_logs_for_pipeline_with_given_id</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2558,7 +2558,7 @@ client.pipelines.returns_logs_for_pipeline_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">send_signal_to_pipeline_with_given_id</a>(...) -> SignalResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L264-L312">send_signal_to_pipeline_with_given_id</a>(...) -> SignalResponse</code></summary>
 <dl>
 <dd>
 
@@ -2653,7 +2653,7 @@ client.pipelines.send_signal_to_pipeline_with_given_id(
 </details>
 
 ## Sources
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">returns_all_available_sources</a>() -> typing.List[SourceResponse]</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L31-L55">returns_all_available_sources</a>() -> typing.List[SourceResponse]</code></summary>
 <dl>
 <dd>
 
@@ -2702,7 +2702,7 @@ client.sources.returns_all_available_sources()
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">creates_new_source</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L57-L116">creates_new_source</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2763,7 +2763,7 @@ client.sources.creates_new_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">verify_that_signal_data_collection_is_configured_correctly</a>(...) -> PostApiSourcesSignalsVerifyResponse</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L118-L157">verify_that_signal_data_collection_is_configured_correctly</a>(...) -> PostApiSourcesSignalsVerifyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2831,7 +2831,7 @@ client.sources.verify_that_signal_data_collection_is_configured_correctly(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">returns_a_source_with_given_id</a>(...) -> SourceResponse</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L159-L187">returns_a_source_with_given_id</a>(...) -> SourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2890,7 +2890,7 @@ client.sources.returns_a_source_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">updates_an_existing_source</a>(...) -> SourceResponse</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L189-L254">updates_an_existing_source</a>(...) -> SourceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2960,7 +2960,7 @@ client.sources.updates_an_existing_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">deletes_an_existing_source</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L256-L281">deletes_an_existing_source</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3020,7 +3020,7 @@ client.sources.deletes_an_existing_source(
 </details>
 
 ## Transforms
-<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py">returns_all_available_transformations</a>() -> typing.List[TransformResponse]</code></summary>
+<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py#L31-L55">returns_all_available_transformations</a>() -> typing.List[TransformResponse]</code></summary>
 <dl>
 <dd>
 
@@ -3069,7 +3069,7 @@ client.transforms.returns_all_available_transformations()
 </dl>
 </details>
 
-<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py">creates_new_transform</a>(...) -> str</code></summary>
+<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py#L57-L116">creates_new_transform</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3130,7 +3130,7 @@ client.transforms.creates_new_transform(
 </dl>
 </details>
 
-<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py">returns_a_transform_with_given_id</a>(...) -> TransformResponse</code></summary>
+<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py#L118-L146">returns_a_transform_with_given_id</a>(...) -> TransformResponse</code></summary>
 <dl>
 <dd>
 
@@ -3189,7 +3189,7 @@ client.transforms.returns_a_transform_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py">updates_an_existing_transform</a>(...) -> TransformResponse</code></summary>
+<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py#L148-L213">updates_an_existing_transform</a>(...) -> TransformResponse</code></summary>
 <dl>
 <dd>
 
@@ -3259,7 +3259,7 @@ client.transforms.updates_an_existing_transform(
 </dl>
 </details>
 
-<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py">deletes_an_existing_transform</a>(...)</code></summary>
+<details><summary><code>client.transforms.<a href="src/fern/transforms/client.py#L215-L242">deletes_an_existing_transform</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3319,7 +3319,7 @@ client.transforms.deletes_an_existing_transform(
 </details>
 
 ## Vaults
-<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py">returns_all_available_vaults</a>() -> typing.List[VaultResponse]</code></summary>
+<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py#L29-L53">returns_all_available_vaults</a>() -> typing.List[VaultResponse]</code></summary>
 <dl>
 <dd>
 
@@ -3368,7 +3368,7 @@ client.vaults.returns_all_available_vaults()
 </dl>
 </details>
 
-<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py">creates_new_vault</a>(...) -> str</code></summary>
+<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py#L55-L93">creates_new_vault</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3427,7 +3427,7 @@ client.vaults.creates_new_vault(
 </dl>
 </details>
 
-<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py">returns_a_vault_with_given_id</a>(...) -> VaultResponse</code></summary>
+<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py#L95-L123">returns_a_vault_with_given_id</a>(...) -> VaultResponse</code></summary>
 <dl>
 <dd>
 
@@ -3486,7 +3486,7 @@ client.vaults.returns_a_vault_with_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py">updates_an_existing_vault</a>(...) -> VaultResponse</code></summary>
+<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py#L125-L168">updates_an_existing_vault</a>(...) -> VaultResponse</code></summary>
 <dl>
 <dd>
 
@@ -3554,7 +3554,7 @@ client.vaults.updates_an_existing_vault(
 </dl>
 </details>
 
-<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py">deletes_an_existing_vault</a>(...)</code></summary>
+<details><summary><code>client.vaults.<a href="src/fern/vaults/client.py#L170-L195">deletes_an_existing_vault</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L26-L48">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.system.health()
 </details>
 
 ## Properties
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">list</a>() -> PropertiesListResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L49-L71">list</a>() -> PropertiesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.properties.list()
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">create</a>(...) -> PropertiesCreateResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L73-L157">create</a>(...) -> PropertiesCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -247,7 +247,7 @@ client.properties.create(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">byid</a>(...) -> PropertiesByIdResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L159-L185">byid</a>(...) -> PropertiesByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -306,7 +306,7 @@ client.properties.byid(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">update</a>(...) -> PropertiesUpdateResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L187-L276">update</a>(...) -> PropertiesUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ client.properties.update(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">delete</a>(...) -> PropertiesDeleteResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L278-L304">delete</a>(...) -> PropertiesDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -522,7 +522,7 @@ client.properties.delete(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">createimageuploadurl</a>(...) -> PropertiesCreateImageUploadUrlResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L306-L351">createimageuploadurl</a>(...) -> PropertiesCreateImageUploadUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -608,7 +608,7 @@ client.properties.createimageuploadurl(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">completeimageupload</a>(...) -> PropertiesCompleteImageUploadResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L353-L384">completeimageupload</a>(...) -> PropertiesCompleteImageUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -676,7 +676,7 @@ client.properties.completeimageupload(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">deleteimage</a>(...) -> PropertiesDeleteImageResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L386-L414">deleteimage</a>(...) -> PropertiesDeleteImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -735,7 +735,7 @@ client.properties.deleteimage(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">archive</a>(...) -> PropertiesArchiveResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L416-L442">archive</a>(...) -> PropertiesArchiveResponse</code></summary>
 <dl>
 <dd>
 
@@ -794,7 +794,7 @@ client.properties.archive(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">inactivate</a>(...) -> PropertiesInactivateResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L444-L472">inactivate</a>(...) -> PropertiesInactivateResponse</code></summary>
 <dl>
 <dd>
 
@@ -853,7 +853,7 @@ client.properties.inactivate(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">reactivate</a>(...) -> PropertiesReactivateResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L474-L502">reactivate</a>(...) -> PropertiesReactivateResponse</code></summary>
 <dl>
 <dd>
 
@@ -912,7 +912,7 @@ client.properties.reactivate(
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">updatenotes</a>(...) -> PropertiesUpdateNotesResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L504-L534">updatenotes</a>(...) -> PropertiesUpdateNotesResponse</code></summary>
 <dl>
 <dd>
 
@@ -980,7 +980,7 @@ client.properties.updatenotes(
 </details>
 
 ## Tenants
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">createimageuploadurl</a>(...) -> TenantsCreateImageUploadUrlResponse</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L32-L77">createimageuploadurl</a>(...) -> TenantsCreateImageUploadUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -1066,7 +1066,7 @@ client.tenants.createimageuploadurl(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">completeimageupload</a>(...) -> TenantsCompleteImageUploadResponse</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L79-L110">completeimageupload</a>(...) -> TenantsCompleteImageUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1134,7 +1134,7 @@ client.tenants.completeimageupload(
 </dl>
 </details>
 
-<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py">deleteimage</a>(...) -> TenantsDeleteImageResponse</code></summary>
+<details><summary><code>client.tenants.<a href="src/fern/tenants/client.py#L112-L140">deleteimage</a>(...) -> TenantsDeleteImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1194,7 +1194,7 @@ client.tenants.deleteimage(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list</a>() -> TagsListResponse</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L30-L52">list</a>() -> TagsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1243,7 +1243,7 @@ client.tags.list()
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">create</a>(...) -> TagsCreateResponse</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L54-L80">create</a>(...) -> TagsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1303,7 +1303,7 @@ client.tags.create(
 </details>
 
 ## UnitOptions
-<details><summary><code>client.unit_options.<a href="src/fern/unit_options/client.py">unit_options_list</a>() -> UnitOptionsListResponse</code></summary>
+<details><summary><code>client.unit_options.<a href="src/fern/unit_options/client.py#L26-L48">unit_options_list</a>() -> UnitOptionsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1353,7 +1353,7 @@ client.unit_options.unit_options_list()
 </details>
 
 ## Amenities
-<details><summary><code>client.amenities.<a href="src/fern/amenities/client.py">list</a>() -> AmenitiesListResponse</code></summary>
+<details><summary><code>client.amenities.<a href="src/fern/amenities/client.py#L30-L52">list</a>() -> AmenitiesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1402,7 +1402,7 @@ client.amenities.list()
 </dl>
 </details>
 
-<details><summary><code>client.amenities.<a href="src/fern/amenities/client.py">update</a>(...) -> AmenitiesUpdateResponse</code></summary>
+<details><summary><code>client.amenities.<a href="src/fern/amenities/client.py#L54-L88">update</a>(...) -> AmenitiesUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1480,7 +1480,7 @@ client.amenities.update(
 </details>
 
 ## Units
-<details><summary><code>client.units.<a href="src/fern/units/client.py">list</a>(...) -> UnitsListResponse</code></summary>
+<details><summary><code>client.units.<a href="src/fern/units/client.py#L35-L61">list</a>(...) -> UnitsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1537,7 +1537,7 @@ client.units.list()
 </dl>
 </details>
 
-<details><summary><code>client.units.<a href="src/fern/units/client.py">create</a>(...) -> UnitsCreateResponse</code></summary>
+<details><summary><code>client.units.<a href="src/fern/units/client.py#L63-L132">create</a>(...) -> UnitsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1663,7 +1663,7 @@ client.units.create(
 </dl>
 </details>
 
-<details><summary><code>client.units.<a href="src/fern/units/client.py">byid</a>(...) -> UnitsByIdResponse</code></summary>
+<details><summary><code>client.units.<a href="src/fern/units/client.py#L134-L160">byid</a>(...) -> UnitsByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1722,7 +1722,7 @@ client.units.byid(
 </dl>
 </details>
 
-<details><summary><code>client.units.<a href="src/fern/units/client.py">delete</a>(...) -> UnitsDeleteResponse</code></summary>
+<details><summary><code>client.units.<a href="src/fern/units/client.py#L162-L188">delete</a>(...) -> UnitsDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1781,7 +1781,7 @@ client.units.delete(
 </dl>
 </details>
 
-<details><summary><code>client.units.<a href="src/fern/units/client.py">update</a>(...) -> UnitsUpdateResponse</code></summary>
+<details><summary><code>client.units.<a href="src/fern/units/client.py#L190-L259">update</a>(...) -> UnitsUpdateResponse</code></summary>
 <dl>
 <dd>
 

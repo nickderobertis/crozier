@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_crane_summary</a>() -> typing.Dict[str, GetCraneSummaryResponseValue]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L122">get_crane_summary</a>() -> typing.Dict[str, GetCraneSummaryResponseValue]</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.get_crane_summary()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_crane</a>(...) -> Crane</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L124-L150">get_crane</a>(...) -> Crane</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">retrieve</a>() -> CapabilityDocument</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L26-L55">retrieve</a>() -> CapabilityDocument</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.capabilities.retrieve()
 </details>
 
 ## namespaces
-<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py">create</a>(...) -> NamespaceMetadata</code></summary>
+<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py#L34-L90">create</a>(...) -> NamespaceMetadata</code></summary>
 <dl>
 <dd>
 
@@ -159,7 +159,7 @@ window later.
 </dl>
 </details>
 
-<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py">retrieve</a>(...) -> NamespaceMetadata</code></summary>
+<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py#L92-L128">retrieve</a>(...) -> NamespaceMetadata</code></summary>
 <dl>
 <dd>
 
@@ -231,7 +231,7 @@ client.namespaces.retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py">delete</a>(...) -> DeleteNamespaceResponse</code></summary>
+<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py#L130-L175">delete</a>(...) -> DeleteNamespaceResponse</code></summary>
 <dl>
 <dd>
 
@@ -311,7 +311,7 @@ client.namespaces.delete(
 </dl>
 </details>
 
-<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py">fork</a>(...) -> NamespaceMetadata</code></summary>
+<details><summary><code>client.namespaces.<a href="src/fern/namespaces/client.py#L177-L227">fork</a>(...) -> NamespaceMetadata</code></summary>
 <dl>
 <dd>
 
@@ -401,7 +401,7 @@ client.namespaces.fork(
 </details>
 
 ## Changes
-<details><summary><code>client.changes.<a href="src/fern/changes/client.py">list</a>(...) -> ListChangesResponse</code></summary>
+<details><summary><code>client.changes.<a href="src/fern/changes/client.py#L29-L102">list</a>(...) -> ListChangesResponse</code></summary>
 <dl>
 <dd>
 
@@ -524,7 +524,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </details>
 
 ## Commits
-<details><summary><code>client.commits.<a href="src/fern/commits/client.py">create</a>(...) -> Commit</code></summary>
+<details><summary><code>client.commits.<a href="src/fern/commits/client.py#L33-L107">create</a>(...) -> Commit</code></summary>
 <dl>
 <dd>
 
@@ -644,7 +644,7 @@ client.commits.create(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">content</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L40-L117">content</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -773,7 +773,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">create_download</a>(...) -> CreateDownloadResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L119-L201">create_download</a>(...) -> CreateDownloadResponse</code></summary>
 <dl>
 <dd>
 
@@ -913,7 +913,7 @@ size. For a revision of zero bytes, it must be 0.
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list</a>(...) -> ListPathEntriesResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L203-L298">list</a>(...) -> ListPathEntriesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1066,7 +1066,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">retrieve</a>(...) -> PathEntry</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L300-L374">retrieve</a>(...) -> PathEntry</code></summary>
 <dl>
 <dd>
 
@@ -1191,7 +1191,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_revisions</a>(...) -> ListFileRevisionsResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L376-L452">list_revisions</a>(...) -> ListFileRevisionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1312,7 +1312,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">grep</a>(...) -> GrepResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L454-L546">grep</a>(...) -> GrepResponse</code></summary>
 <dl>
 <dd>
 
@@ -1463,7 +1463,7 @@ scan budget. The default is `false`.
 </details>
 
 ## Trash
-<details><summary><code>client.trash.<a href="src/fern/trash/client.py">list</a>(...) -> ListTrashResponse</code></summary>
+<details><summary><code>client.trash.<a href="src/fern/trash/client.py#L29-L99">list</a>(...) -> ListTrashResponse</code></summary>
 <dl>
 <dd>
 
@@ -1576,7 +1576,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </details>
 
 ## inodes
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">retrieve</a>(...) -> PathEntry</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L37-L111">retrieve</a>(...) -> PathEntry</code></summary>
 <dl>
 <dd>
 
@@ -1701,7 +1701,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">list_children</a>(...) -> ListInodeChildrenResponse</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L113-L208">list_children</a>(...) -> ListInodeChildrenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1854,7 +1854,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">content</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L210-L282">content</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1975,7 +1975,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">create_download</a>(...) -> CreateDownloadByInodeResponse</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L284-L358">create_download</a>(...) -> CreateDownloadByInodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2102,7 +2102,7 @@ For a file of zero bytes, it must be 0.
 </dl>
 </details>
 
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">list_revisions</a>(...) -> ListFileRevisionsResponse</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L360-L436">list_revisions</a>(...) -> ListFileRevisionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2223,7 +2223,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">revision_content</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L438-L511">revision_content</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2345,7 +2345,7 @@ milliseconds. The default is the server's `max_staleness_ms`.
 </dl>
 </details>
 
-<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py">create_revision_download</a>(...) -> CreateDownloadByInodeResponse</code></summary>
+<details><summary><code>client.inodes.<a href="src/fern/inodes/client.py#L513-L587">create_revision_download</a>(...) -> CreateDownloadByInodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2471,7 +2471,7 @@ size. For a revision of zero bytes, it must be 0.
 </details>
 
 ## Snapshots
-<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py">list</a>(...) -> ListSnapshotsResponse</code></summary>
+<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py#L33-L84">list</a>(...) -> ListSnapshotsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2559,7 +2559,7 @@ client.snapshots.list(
 </dl>
 </details>
 
-<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py">create</a>(...) -> Snapshot</code></summary>
+<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py#L86-L135">create</a>(...) -> Snapshot</code></summary>
 <dl>
 <dd>
 
@@ -2651,7 +2651,7 @@ keep the snapshot until it's deleted.
 </dl>
 </details>
 
-<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py">retrieve</a>(...) -> Snapshot</code></summary>
+<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py#L137-L177">retrieve</a>(...) -> Snapshot</code></summary>
 <dl>
 <dd>
 
@@ -2732,7 +2732,7 @@ client.snapshots.retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py">delete</a>(...) -> DeleteSnapshotResponse</code></summary>
+<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py#L179-L219">delete</a>(...) -> DeleteSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -2813,7 +2813,7 @@ client.snapshots.delete(
 </dl>
 </details>
 
-<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py">extend</a>(...) -> Snapshot</code></summary>
+<details><summary><code>client.snapshots.<a href="src/fern/snapshots/client.py#L221-L270">extend</a>(...) -> Snapshot</code></summary>
 <dl>
 <dd>
 
@@ -2904,7 +2904,7 @@ client.snapshots.extend(
 </details>
 
 ## uploads
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">create</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L33-L72">create</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -2985,7 +2985,7 @@ client.uploads.create(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">retrieve</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L74-L114">retrieve</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -3066,7 +3066,7 @@ client.uploads.retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">abort</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L116-L156">abort</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -3147,7 +3147,7 @@ client.uploads.abort(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">complete</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L158-L230">complete</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -3255,7 +3255,7 @@ client.uploads.complete(
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">put_content</a>(...) -> UploadSession</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L232-L264">put_content</a>(...) -> UploadSession</code></summary>
 <dl>
 <dd>
 
@@ -3333,7 +3333,7 @@ client.uploads.put_content(...)
 </dl>
 </details>
 
-<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py">sign_parts</a>(...) -> SignUploadPartsResponse</code></summary>
+<details><summary><code>client.uploads.<a href="src/fern/uploads/client.py#L266-L323">sign_parts</a>(...) -> SignUploadPartsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3432,7 +3432,7 @@ client.uploads.sign_parts(
 </details>
 
 ## Maintenance Checkpoints
-<details><summary><code>client.maintenance.checkpoints.<a href="src/fern/maintenance/checkpoints/client.py">list</a>(...) -> ListCheckpointsResponse</code></summary>
+<details><summary><code>client.maintenance.checkpoints.<a href="src/fern/maintenance/checkpoints/client.py#L28-L79">list</a>(...) -> ListCheckpointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3520,7 +3520,7 @@ client.maintenance.checkpoints.list(
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.checkpoints.<a href="src/fern/maintenance/checkpoints/client.py">retrieve</a>(...) -> Checkpoint</code></summary>
+<details><summary><code>client.maintenance.checkpoints.<a href="src/fern/maintenance/checkpoints/client.py#L81-L121">retrieve</a>(...) -> Checkpoint</code></summary>
 <dl>
 <dd>
 
@@ -3602,7 +3602,7 @@ client.maintenance.checkpoints.retrieve(
 </details>
 
 ## Maintenance Diagnostics
-<details><summary><code>client.maintenance.diagnostics.<a href="src/fern/maintenance/diagnostics/client.py">retrieve</a>(...) -> NamespaceDiagnostics</code></summary>
+<details><summary><code>client.maintenance.diagnostics.<a href="src/fern/maintenance/diagnostics/client.py#L26-L62">retrieve</a>(...) -> NamespaceDiagnostics</code></summary>
 <dl>
 <dd>
 
@@ -3675,7 +3675,7 @@ client.maintenance.diagnostics.retrieve(
 </details>
 
 ## Maintenance GrepIndex
-<details><summary><code>client.maintenance.grep_index.<a href="src/fern/maintenance/grep_index/client.py">retrieve</a>(...) -> GrepIndex</code></summary>
+<details><summary><code>client.maintenance.grep_index.<a href="src/fern/maintenance/grep_index/client.py#L26-L60">retrieve</a>(...) -> GrepIndex</code></summary>
 <dl>
 <dd>
 
@@ -3747,7 +3747,7 @@ client.maintenance.grep_index.retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.grep_index.<a href="src/fern/maintenance/grep_index/client.py">disable</a>(...) -> GrepIndex</code></summary>
+<details><summary><code>client.maintenance.grep_index.<a href="src/fern/maintenance/grep_index/client.py#L62-L96">disable</a>(...) -> GrepIndex</code></summary>
 <dl>
 <dd>
 
@@ -3819,7 +3819,7 @@ client.maintenance.grep_index.disable(
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.grep_index.<a href="src/fern/maintenance/grep_index/client.py">enable</a>(...) -> GrepIndex</code></summary>
+<details><summary><code>client.maintenance.grep_index.<a href="src/fern/maintenance/grep_index/client.py#L98-L132">enable</a>(...) -> GrepIndex</code></summary>
 <dl>
 <dd>
 
@@ -3892,7 +3892,7 @@ client.maintenance.grep_index.enable(
 </details>
 
 ## Maintenance Runs
-<details><summary><code>client.maintenance.runs.<a href="src/fern/maintenance/runs/client.py">create</a>(...) -> RunMaintenanceResponse</code></summary>
+<details><summary><code>client.maintenance.runs.<a href="src/fern/maintenance/runs/client.py#L30-L73">create</a>(...) -> RunMaintenanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -3974,7 +3974,7 @@ client.maintenance.runs.create(
 </details>
 
 ## Maintenance Store
-<details><summary><code>client.maintenance.store.<a href="src/fern/maintenance/store/client.py">probe</a>(...) -> StoreProbeResponse</code></summary>
+<details><summary><code>client.maintenance.store.<a href="src/fern/maintenance/store/client.py#L30-L65">probe</a>(...) -> StoreProbeResponse</code></summary>
 <dl>
 <dd>
 

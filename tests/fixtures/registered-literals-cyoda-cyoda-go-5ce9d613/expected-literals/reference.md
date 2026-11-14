@@ -1,6 +1,6 @@
 # Reference
 ## User, Account
-<details><summary><code>client.user_account.<a href="src/fern/user_account/client.py">account_get</a>() -> UserAccountInfoResponseDto</code></summary>
+<details><summary><code>client.user_account.<a href="src/fern/user_account/client.py#L27-L51">account_get</a>() -> UserAccountInfoResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.user_account.account_get()
 </dl>
 </details>
 
-<details><summary><code>client.user_account.<a href="src/fern/user_account/client.py">account_subscriptions_get</a>() -> SubscriptionsResponseDto</code></summary>
+<details><summary><code>client.user_account.<a href="src/fern/user_account/client.py#L53-L79">account_subscriptions_get</a>() -> SubscriptionsResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.user_account.account_subscriptions_get()
 </details>
 
 ## Entity, Audit
-<details><summary><code>client.entity_audit.<a href="src/fern/entity_audit/client.py">search_entity_audit_events</a>(...) -> EntityAuditEventsResponseDto</code></summary>
+<details><summary><code>client.entity_audit.<a href="src/fern/entity_audit/client.py#L30-L109">search_entity_audit_events</a>(...) -> EntityAuditEventsResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -258,7 +258,7 @@ client.entity_audit.search_entity_audit_events(
 </dl>
 </details>
 
-<details><summary><code>client.entity_audit.<a href="src/fern/entity_audit/client.py">get_state_machine_finished_event</a>(...) -> StateMachineFinishedDto</code></summary>
+<details><summary><code>client.entity_audit.<a href="src/fern/entity_audit/client.py#L111-L152">get_state_machine_finished_event</a>(...) -> StateMachineFinishedDto</code></summary>
 <dl>
 <dd>
 
@@ -345,7 +345,7 @@ client.entity_audit.get_state_machine_finished_event(
 </details>
 
 ## User, Machine
-<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py">list_technical_users</a>() -> typing.List[TechnicalUserDto]</code></summary>
+<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py#L34-L66">list_technical_users</a>() -> typing.List[TechnicalUserDto]</code></summary>
 <dl>
 <dd>
 
@@ -414,7 +414,7 @@ client.user_machine.list_technical_users()
 </dl>
 </details>
 
-<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py">create_technical_user</a>(...) -> TechnicalUserCredentialsDto</code></summary>
+<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py#L68-L108">create_technical_user</a>(...) -> TechnicalUserCredentialsDto</code></summary>
 <dl>
 <dd>
 
@@ -494,7 +494,7 @@ client.user_machine.create_technical_user()
 </dl>
 </details>
 
-<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py">delete_technical_user</a>(...) -> DeleteTechnicalUser200ResponseDto</code></summary>
+<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py#L110-L146">delete_technical_user</a>(...) -> DeleteTechnicalUser200ResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -572,7 +572,7 @@ client.user_machine.delete_technical_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py">reset_technical_user_secret</a>(...) -> TechnicalUserCredentialsDto</code></summary>
+<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py#L148-L184">reset_technical_user_secret</a>(...) -> TechnicalUserCredentialsDto</code></summary>
 <dl>
 <dd>
 
@@ -650,7 +650,7 @@ client.user_machine.reset_technical_user_secret(
 </dl>
 </details>
 
-<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py">get_technical_user_token</a>(...) -> TokenResponseDto</code></summary>
+<details><summary><code>client.user_machine.<a href="src/fern/user_machine/client.py#L186-L242">get_technical_user_token</a>(...) -> TokenResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -749,7 +749,7 @@ client.user_machine.get_technical_user_token()
 </details>
 
 ## Entity Management
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_entity_statistics</a>(...) -> ModelStatsDto</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L42-L74">get_entity_statistics</a>(...) -> ModelStatsDto</code></summary>
 <dl>
 <dd>
 
@@ -820,7 +820,7 @@ client.entity_management.get_entity_statistics()
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_entity_statistics_by_state</a>(...) -> ModelStateStatsDto</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L76-L114">get_entity_statistics_by_state</a>(...) -> ModelStateStatsDto</code></summary>
 <dl>
 <dd>
 
@@ -899,7 +899,7 @@ client.entity_management.get_entity_statistics_by_state()
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_entity_statistics_by_state_for_model</a>(...) -> ModelStateStatsDto</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L116-L165">get_entity_statistics_by_state_for_model</a>(...) -> ModelStateStatsDto</code></summary>
 <dl>
 <dd>
 
@@ -997,7 +997,7 @@ client.entity_management.get_entity_statistics_by_state_for_model(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_entity_statistics_for_model</a>(...) -> ModelStatsDto</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L167-L212">get_entity_statistics_for_model</a>(...) -> ModelStatsDto</code></summary>
 <dl>
 <dd>
 
@@ -1087,7 +1087,7 @@ client.entity_management.get_entity_statistics_for_model(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_one_entity</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L214-L259">get_one_entity</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1177,7 +1177,7 @@ client.entity_management.get_one_entity(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">delete_single_entity</a>(...) -> SingleDeleteResult</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L261-L292">delete_single_entity</a>(...) -> SingleDeleteResult</code></summary>
 <dl>
 <dd>
 
@@ -1250,7 +1250,7 @@ client.entity_management.delete_single_entity(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_entity_changes_metadata</a>(...) -> EntityChangeMeta</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L294-L353">get_entity_changes_metadata</a>(...) -> EntityChangeMeta</code></summary>
 <dl>
 <dd>
 
@@ -1350,7 +1350,7 @@ client.entity_management.get_entity_changes_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">get_all_entities</a>(...) -> JsonNode</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L355-L425">get_all_entities</a>(...) -> JsonNode</code></summary>
 <dl>
 <dd>
 
@@ -1468,7 +1468,7 @@ client.entity_management.get_all_entities(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">delete_entities</a>(...) -> StreamDeleteResult</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L427-L490">delete_entities</a>(...) -> StreamDeleteResult</code></summary>
 <dl>
 <dd>
 
@@ -1583,7 +1583,7 @@ client.entity_management.delete_entities(
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">create_collection</a>(...) -> EntityTransactionResponse</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L492-L579">create_collection</a>(...) -> EntityTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1719,7 +1719,7 @@ supported behavior.
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">update_collection</a>(...) -> EntityTransactionResponse</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L581-L667">update_collection</a>(...) -> EntityTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1864,7 +1864,7 @@ supported behavior.
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">update_single_with_loopback</a>(...) -> EntityTransactionResponse</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L669-L771">update_single_with_loopback</a>(...) -> EntityTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2007,7 +2007,7 @@ supported behavior.
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">update_single</a>(...) -> EntityTransactionResponse</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L773-L882">update_single</a>(...) -> EntityTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2160,7 +2160,7 @@ supported behavior.
 </dl>
 </details>
 
-<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py">create</a>(...) -> EntityTransactionResponse</code></summary>
+<details><summary><code>client.entity_management.<a href="src/fern/entity_management/client.py#L884-L997">create</a>(...) -> EntityTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2320,7 +2320,7 @@ supported behavior.
 </details>
 
 ## EdgeMessage
-<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py">delete_messages</a>(...) -> str</code></summary>
+<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py#L30-L69">delete_messages</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2401,7 +2401,7 @@ client.edge_message.delete_messages(
 </dl>
 </details>
 
-<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py">new_message</a>(...) -> str</code></summary>
+<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py#L71-L143">new_message</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2539,7 +2539,7 @@ client.edge_message.new_message(
 </dl>
 </details>
 
-<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py">get_message</a>(...) -> EdgeMessageDto</code></summary>
+<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py#L145-L176">get_message</a>(...) -> EdgeMessageDto</code></summary>
 <dl>
 <dd>
 
@@ -2612,7 +2612,7 @@ client.edge_message.get_message(
 </dl>
 </details>
 
-<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py">delete_message</a>(...) -> EntityTransactionResponse</code></summary>
+<details><summary><code>client.edge_message.<a href="src/fern/edge_message/client.py#L178-L209">delete_message</a>(...) -> EntityTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2686,7 +2686,7 @@ client.edge_message.delete_message(
 </details>
 
 ## Entity model
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">get_available_entity_models</a>() -> EntityModelDto</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L34-L65">get_available_entity_models</a>() -> EntityModelDto</code></summary>
 <dl>
 <dd>
 
@@ -2756,7 +2756,7 @@ client.entity_model.get_available_entity_models()
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">export_metadata</a>(...) -> str</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L67-L124">export_metadata</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2858,7 +2858,7 @@ client.entity_model.export_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">import_entity_model</a>(...) -> str</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L126-L210">import_entity_model</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2981,7 +2981,7 @@ client.entity_model.import_entity_model(
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">validate_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L212-L257">validate_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
 <dl>
 <dd>
 
@@ -3074,7 +3074,7 @@ client.entity_model.validate_entity_model(
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">delete_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L259-L305">delete_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
 <dl>
 <dd>
 
@@ -3167,7 +3167,7 @@ client.entity_model.delete_entity_model(
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">set_entity_model_change_level</a>(...) -> EntityModelActionResultDto</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L307-L372">set_entity_model_change_level</a>(...) -> EntityModelActionResultDto</code></summary>
 <dl>
 <dd>
 
@@ -3279,7 +3279,7 @@ Valid values: ARRAY_LENGTH, ARRAY_ELEMENTS, TYPE, STRUCTURAL
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">lock_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L374-L418">lock_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
 <dl>
 <dd>
 
@@ -3370,7 +3370,7 @@ client.entity_model.lock_entity_model(
 </dl>
 </details>
 
-<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py">unlock_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
+<details><summary><code>client.entity_model.<a href="src/fern/entity_model/client.py#L420-L467">unlock_entity_model</a>(...) -> EntityModelActionResultDto</code></summary>
 <dl>
 <dd>
 
@@ -3465,7 +3465,7 @@ client.entity_model.unlock_entity_model(
 </details>
 
 ## Entity Model, Workflow
-<details><summary><code>client.entity_model_workflow.<a href="src/fern/entity_model_workflow/client.py">export_entity_model_workflow</a>(...) -> WorkflowExportResponseDto</code></summary>
+<details><summary><code>client.entity_model_workflow.<a href="src/fern/entity_model_workflow/client.py#L31-L71">export_entity_model_workflow</a>(...) -> WorkflowExportResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -3550,7 +3550,7 @@ client.entity_model_workflow.export_entity_model_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.entity_model_workflow.<a href="src/fern/entity_model_workflow/client.py">import_entity_model_workflow</a>(...)</code></summary>
+<details><summary><code>client.entity_model_workflow.<a href="src/fern/entity_model_workflow/client.py#L73-L135">import_entity_model_workflow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3665,7 +3665,7 @@ client.entity_model_workflow.import_entity_model_workflow(
 </details>
 
 ## OAuth, Keys
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">issue_jwt_key_pair</a>(...) -> JwtKeyPairResponseDto</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L35-L97">issue_jwt_key_pair</a>(...) -> JwtKeyPairResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -3780,7 +3780,7 @@ client.o_auth_keys.issue_jwt_key_pair(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">get_current_jwt_key_pair</a>(...) -> JwtKeyPairResponseDto</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L99-L129">get_current_jwt_key_pair</a>(...) -> JwtKeyPairResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -3853,7 +3853,7 @@ client.o_auth_keys.get_current_jwt_key_pair(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">delete_jwt_key_pair</a>(...)</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L131-L160">delete_jwt_key_pair</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3927,7 +3927,7 @@ client.o_auth_keys.delete_jwt_key_pair(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">invalidate_jwt_key_pair</a>(...)</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L162-L203">invalidate_jwt_key_pair</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4010,7 +4010,7 @@ client.o_auth_keys.invalidate_jwt_key_pair(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">reactivate_jwt_key_pair</a>(...) -> JwtKeyPairResponseDto</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L205-L238">reactivate_jwt_key_pair</a>(...) -> JwtKeyPairResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -4085,7 +4085,7 @@ client.o_auth_keys.reactivate_jwt_key_pair(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">list_trusted_keys</a>() -> typing.List[TrustedKeyResponseDto]</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L240-L267">list_trusted_keys</a>() -> typing.List[TrustedKeyResponseDto]</code></summary>
 <dl>
 <dd>
 
@@ -4149,7 +4149,7 @@ client.o_auth_keys.list_trusted_keys()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">register_trusted_key</a>(...) -> TrustedKeyResponseDto</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L269-L356">register_trusted_key</a>(...) -> TrustedKeyResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -4298,7 +4298,7 @@ client.o_auth_keys.register_trusted_key(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">delete_trusted_key</a>(...)</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L358-L387">delete_trusted_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4372,7 +4372,7 @@ client.o_auth_keys.delete_trusted_key(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">invalidate_trusted_key</a>(...)</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L389-L430">invalidate_trusted_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4455,7 +4455,7 @@ client.o_auth_keys.invalidate_trusted_key(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py">reactivate_trusted_key</a>(...) -> TrustedKeyResponseDto</code></summary>
+<details><summary><code>client.o_auth_keys.<a href="src/fern/o_auth_keys/client.py#L432-L469">reactivate_trusted_key</a>(...) -> TrustedKeyResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -4535,7 +4535,7 @@ client.o_auth_keys.reactivate_trusted_key(
 </details>
 
 ## OAuth, OIDC Providers
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">list_oidc_providers</a>(...) -> typing.List[OidcProviderResponseDto]</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L29-L58">list_oidc_providers</a>(...) -> typing.List[OidcProviderResponseDto]</code></summary>
 <dl>
 <dd>
 
@@ -4606,7 +4606,7 @@ client.o_auth_oidc_providers.list_oidc_providers()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">register_oidc_provider</a>(...) -> OidcProviderResponseDto</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L60-L101">register_oidc_provider</a>(...) -> OidcProviderResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -4688,7 +4688,7 @@ client.o_auth_oidc_providers.register_oidc_provider(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">reload_oidc_providers</a>()</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L103-L135">reload_oidc_providers</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4760,7 +4760,7 @@ client.o_auth_oidc_providers.reload_oidc_providers()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">delete_oidc_provider</a>(...)</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L137-L166">delete_oidc_provider</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4834,7 +4834,7 @@ client.o_auth_oidc_providers.delete_oidc_provider(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">update_oidc_provider</a>(...) -> OidcProviderResponseDto</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L168-L211">update_oidc_provider</a>(...) -> OidcProviderResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -4920,7 +4920,7 @@ client.o_auth_oidc_providers.update_oidc_provider(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">invalidate_oidc_provider</a>(...)</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L213-L243">invalidate_oidc_provider</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4995,7 +4995,7 @@ client.o_auth_oidc_providers.invalidate_oidc_provider(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py">reactivate_oidc_provider</a>(...) -> OidcProviderResponseDto</code></summary>
+<details><summary><code>client.o_auth_oidc_providers.<a href="src/fern/o_auth_oidc_providers/client.py#L245-L287">reactivate_oidc_provider</a>(...) -> OidcProviderResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -5079,7 +5079,7 @@ client.o_auth_oidc_providers.reactivate_oidc_provider(
 </details>
 
 ## Stream Data
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">get_stream_data_config</a>(...) -> StreamDataConfigDef</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L38-L69">get_stream_data_config</a>(...) -> StreamDataConfigDef</code></summary>
 <dl>
 <dd>
 
@@ -5152,7 +5152,7 @@ client.stream_data.get_stream_data_config(
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">save_stream_data_config</a>(...) -> str</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L71-L125">save_stream_data_config</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5223,7 +5223,7 @@ client.stream_data.save_stream_data_config()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">update_stream_data_config</a>(...)</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L127-L180">update_stream_data_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5294,7 +5294,7 @@ client.stream_data.update_stream_data_config()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">delete_stream_data_config</a>(...)</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L182-L212">delete_stream_data_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5367,7 +5367,7 @@ client.stream_data.delete_stream_data_config(
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">get_all_configs</a>() -> typing.List[StreamDataConfigDef]</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L214-L240">get_all_configs</a>() -> typing.List[StreamDataConfigDef]</code></summary>
 <dl>
 <dd>
 
@@ -5430,7 +5430,7 @@ client.stream_data.get_all_configs()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">delete</a>(...) -> StreamDataDeleteResult</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L242-L292">delete</a>(...) -> StreamDataDeleteResult</code></summary>
 <dl>
 <dd>
 
@@ -5501,7 +5501,7 @@ client.stream_data.delete()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">export_all1</a>() -> StreamDataConfigDefContainer</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L294-L318">export_all1</a>() -> StreamDataConfigDefContainer</code></summary>
 <dl>
 <dd>
 
@@ -5564,7 +5564,7 @@ client.stream_data.export_all1()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">export_all</a>(...) -> StreamDataConfigDefContainer</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L320-L351">export_all</a>(...) -> StreamDataConfigDefContainer</code></summary>
 <dl>
 <dd>
 
@@ -5637,7 +5637,7 @@ client.stream_data.export_all(
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">export_by_ids</a>(...) -> StreamDataConfigDefContainer</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L353-L387">export_by_ids</a>(...) -> StreamDataConfigDefContainer</code></summary>
 <dl>
 <dd>
 
@@ -5712,7 +5712,7 @@ client.stream_data.export_by_ids(
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">get_stream_data</a>(...) -> StreamDataFetchResult</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L389-L439">get_stream_data</a>(...) -> StreamDataFetchResult</code></summary>
 <dl>
 <dd>
 
@@ -5783,7 +5783,7 @@ client.stream_data.get_stream_data()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">import_container</a>(...)</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L441-L477">import_container</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5862,7 +5862,7 @@ client.stream_data.import_container()
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">get_indexs</a>(...) -> typing.List[IndexConfigurationDto]</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L479-L510">get_indexs</a>(...) -> typing.List[IndexConfigurationDto]</code></summary>
 <dl>
 <dd>
 
@@ -5935,7 +5935,7 @@ client.stream_data.get_indexs(
 </dl>
 </details>
 
-<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py">get_query_plan</a>(...) -> QueryPlanDto</code></summary>
+<details><summary><code>client.stream_data.<a href="src/fern/stream_data/client.py#L512-L548">get_query_plan</a>(...) -> QueryPlanDto</code></summary>
 <dl>
 <dd>
 
@@ -6015,7 +6015,7 @@ client.stream_data.get_query_plan()
 </details>
 
 ## CQL Execution Statistics
-<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py">get_all</a>() -> typing.List[TableTimeStatsDto]</code></summary>
+<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py#L26-L50">get_all</a>() -> typing.List[TableTimeStatsDto]</code></summary>
 <dl>
 <dd>
 
@@ -6078,7 +6078,7 @@ client.cql_execution_statistics.get_all()
 </dl>
 </details>
 
-<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py">get_all_brief</a>() -> typing.List[TableTimeStatsDto]</code></summary>
+<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py#L52-L78">get_all_brief</a>() -> typing.List[TableTimeStatsDto]</code></summary>
 <dl>
 <dd>
 
@@ -6141,7 +6141,7 @@ client.cql_execution_statistics.get_all_brief()
 </dl>
 </details>
 
-<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py">clear</a>()</code></summary>
+<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py#L80-L103">clear</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6204,7 +6204,7 @@ client.cql_execution_statistics.clear()
 </dl>
 </details>
 
-<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py">get_table</a>(...) -> TableTimeStatsDto</code></summary>
+<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py#L105-L134">get_table</a>(...) -> TableTimeStatsDto</code></summary>
 <dl>
 <dd>
 
@@ -6277,7 +6277,7 @@ client.cql_execution_statistics.get_table(
 </dl>
 </details>
 
-<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py">get_tables</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.cql_execution_statistics.<a href="src/fern/cql_execution_statistics/client.py#L136-L160">get_tables</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -6341,7 +6341,7 @@ client.cql_execution_statistics.get_tables()
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">submit_async_search_job</a>(...) -> str</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L35-L143">submit_async_search_job</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -6501,7 +6501,7 @@ client.search.submit_async_search_job(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">get_async_search_results</a>(...) -> PagedEntityResultsDto</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L145-L205">get_async_search_results</a>(...) -> PagedEntityResultsDto</code></summary>
 <dl>
 <dd>
 
@@ -6606,7 +6606,7 @@ client.search.get_async_search_results(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">cancel_async_search</a>(...) -> CancelAsyncSearchDto</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L207-L241">cancel_async_search</a>(...) -> CancelAsyncSearchDto</code></summary>
 <dl>
 <dd>
 
@@ -6682,7 +6682,7 @@ client.search.cancel_async_search(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">get_async_search_status</a>(...) -> AsyncSearchStatusDto</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L243-L282">get_async_search_status</a>(...) -> AsyncSearchStatusDto</code></summary>
 <dl>
 <dd>
 
@@ -6763,7 +6763,7 @@ client.search.get_async_search_status(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">entities</a>(...) -> typing.List[EntityResultDto]</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L284-L371">entities</a>(...) -> typing.List[EntityResultDto]</code></summary>
 <dl>
 <dd>
 
@@ -6905,7 +6905,7 @@ client.search.entities(
 </details>
 
 ## SQL-Schema
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">get_schema_by_name</a>(...) -> SchemaConfigDto</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L30-L61">get_schema_by_name</a>(...) -> SchemaConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -6978,7 +6978,7 @@ client.sql_schema.get_schema_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">save_schema</a>(...) -> str</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L63-L323">save_schema</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7270,7 +7270,7 @@ client.sql_schema.save_schema(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">delete_schema_by_name</a>(...) -> str</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L325-L356">delete_schema_by_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7343,7 +7343,7 @@ client.sql_schema.delete_schema_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">gen_tables</a>(...) -> TableConfigDto</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L358-L389">gen_tables</a>(...) -> TableConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -7416,7 +7416,7 @@ client.sql_schema.gen_tables(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">get_schemas</a>() -> SchemaConfigDto</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L391-L415">get_schemas</a>() -> SchemaConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -7479,7 +7479,7 @@ client.sql_schema.get_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">put_schema</a>(...) -> SchemaConfigDto</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L417-L448">put_schema</a>(...) -> SchemaConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -7552,7 +7552,7 @@ client.sql_schema.put_schema(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">update_tables</a>(...) -> TableConfigDto</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L450-L484">update_tables</a>(...) -> TableConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -7634,7 +7634,7 @@ client.sql_schema.update_tables(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">get_schema</a>(...) -> SchemaConfigDto</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L486-L515">get_schema</a>(...) -> SchemaConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -7707,7 +7707,7 @@ client.sql_schema.get_schema(
 </dl>
 </details>
 
-<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py">delete_schema</a>(...) -> str</code></summary>
+<details><summary><code>client.sql_schema.<a href="src/fern/sql_schema/client.py#L517-L546">delete_schema</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

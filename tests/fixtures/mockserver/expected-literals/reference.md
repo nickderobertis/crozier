@@ -1,6 +1,6 @@
 # Reference
 ## Expectation
-<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py">create_expectation</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py#L33-L59">create_expectation</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.expectation.create_expectation(
 </dl>
 </details>
 
-<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py">create_expectations_from_open_api_or_swagger</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py#L61-L92">create_expectations_from_open_api_or_swagger</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.expectation.create_expectations_from_open_api_or_swagger(
 </dl>
 </details>
 
-<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py">generate_expectation_suggestion_s_from_an_unmatched_request</a>(...) -> PutMockserverGenerateExpectationResponse</code></summary>
+<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py#L94-L140">generate_expectation_suggestion_s_from_an_unmatched_request</a>(...) -> PutMockserverGenerateExpectationResponse</code></summary>
 <dl>
 <dd>
 
@@ -217,7 +217,7 @@ client.expectation.generate_expectation_suggestion_s_from_an_unmatched_request(
 </dl>
 </details>
 
-<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py">create_expectations_from_a_wsdl</a>() -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py#L142-L166">create_expectations_from_a_wsdl</a>() -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -279,7 +279,7 @@ client.expectation.create_expectations_from_a_wsdl()
 </dl>
 </details>
 
-<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py">create_expectations_from_a_graph_ql_schema</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py#L168-L197">create_expectations_from_a_graph_ql_schema</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.expectation.create_expectations_from_a_graph_ql_schema()
 </dl>
 </details>
 
-<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py">create_http_expectations_from_an_async_api_spec</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.expectation.<a href="src/fern/expectation/client.py#L199-L232">create_http_expectations_from_an_async_api_spec</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -425,7 +425,7 @@ client.expectation.create_http_expectations_from_an_async_api_spec(
 </details>
 
 ## Control
-<details><summary><code>client.control.<a href="src/fern/control/client.py">clears_expectations_and_recorded_requests_that_match_the_request_matcher</a>(...)</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L63-L99">clears_expectations_and_recorded_requests_that_match_the_request_matcher</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -493,7 +493,7 @@ client.control.clears_expectations_and_recorded_requests_that_match_the_request_
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">clears_all_expectations_and_recorded_requests</a>()</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L101-L122">clears_all_expectations_and_recorded_requests</a>()</code></summary>
 <dl>
 <dd>
 
@@ -541,7 +541,7 @@ client.control.clears_all_expectations_and_recorded_requests()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_recorded_requests_active_expectations_recorded_expectations_or_log_messages</a>(...) -> PutMockserverRetrieveResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L124-L190">retrieve_recorded_requests_active_expectations_recorded_expectations_or_log_messages</a>(...) -> PutMockserverRetrieveResponse</code></summary>
 <dl>
 <dd>
 
@@ -649,7 +649,7 @@ client.control.retrieve_recorded_requests_active_expectations_recorded_expectati
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">return_listening_ports</a>() -> Ports</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L192-L212">return_listening_ports</a>() -> Ports</code></summary>
 <dl>
 <dd>
 
@@ -697,7 +697,7 @@ client.control.return_listening_ports()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">bind_additional_listening_ports</a>(...) -> Ports</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L214-L245">bind_additional_listening_ports</a>(...) -> Ports</code></summary>
 <dl>
 <dd>
 
@@ -771,7 +771,7 @@ client.control.bind_additional_listening_ports(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_the_open_api_specification_for_mock_server</a>()</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L247-L272">retrieve_the_open_api_specification_for_mock_server</a>()</code></summary>
 <dl>
 <dd>
 
@@ -833,7 +833,7 @@ client.control.retrieve_the_open_api_specification_for_mock_server()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_the_current_configuration</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L274-L298">retrieve_the_current_configuration</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -895,7 +895,7 @@ client.control.retrieve_the_current_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">update_the_current_configuration</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L300-L328">update_the_current_configuration</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -969,7 +969,7 @@ client.control.update_the_current_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_the_current_server_clock_status</a>() -> ClockStatus</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L330-L354">retrieve_the_current_server_clock_status</a>() -> ClockStatus</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.control.retrieve_the_current_server_clock_status()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">control_the_server_clock_for_deterministic_time_based_testing</a>(...) -> ClockResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L356-L403">control_the_server_clock_for_deterministic_time_based_testing</a>(...) -> ClockResponse</code></summary>
 <dl>
 <dd>
 
@@ -1121,7 +1121,7 @@ client.control.control_the_server_clock_for_deterministic_time_based_testing(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_the_current_proxy_mock_operating_mode</a>() -> GetMockserverModeResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L405-L429">retrieve_the_current_proxy_mock_operating_mode</a>() -> GetMockserverModeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1183,7 +1183,7 @@ client.control.retrieve_the_current_proxy_mock_operating_mode()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">set_the_proxy_mock_operating_mode</a>(...) -> PutMockserverModeResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L431-L460">set_the_proxy_mock_operating_mode</a>(...) -> PutMockserverModeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1255,7 +1255,7 @@ client.control.set_the_proxy_mock_operating_mode(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">list_registered_cassettes</a>() -> GetMockserverCassettesResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L462-L486">list_registered_cassettes</a>() -> GetMockserverCassettesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1317,7 +1317,7 @@ client.control.list_registered_cassettes()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">register_or_update_a_record_replay_cassette</a>(...) -> PutMockserverCassettesResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L488-L538">register_or_update_a_record_replay_cassette</a>(...) -> PutMockserverCassettesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1416,7 +1416,7 @@ client.control.register_or_update_a_record_replay_cassette(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">remove_a_registered_cassette</a>(...) -> DeleteMockserverCassettesResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L540-L579">remove_a_registered_cassette</a>(...) -> DeleteMockserverCassettesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1496,7 +1496,7 @@ client.control.remove_a_registered_cassette(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">replay_a_previously_recorded_request_to_its_original_target</a>(...) -> HttpResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L581-L670">replay_a_previously_recorded_request_to_its_original_target</a>(...) -> HttpResponse</code></summary>
 <dl>
 <dd>
 
@@ -1572,7 +1572,7 @@ client.control.replay_a_previously_recorded_request_to_its_original_target(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">register_a_breakpoint_matcher</a>(...) -> PutMockserverBreakpointMatcherResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L672-L719">register_a_breakpoint_matcher</a>(...) -> PutMockserverBreakpointMatcherResponse</code></summary>
 <dl>
 <dd>
 
@@ -1667,7 +1667,7 @@ client.control.register_a_breakpoint_matcher(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">list_all_registered_breakpoint_matchers</a>() -> GetMockserverBreakpointMatchersResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L721-L745">list_all_registered_breakpoint_matchers</a>() -> GetMockserverBreakpointMatchersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1729,7 +1729,7 @@ client.control.list_all_registered_breakpoint_matchers()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">list_all_registered_breakpoint_matchers_put_variant</a>() -> PutMockserverBreakpointMatchersResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L747-L773">list_all_registered_breakpoint_matchers_put_variant</a>() -> PutMockserverBreakpointMatchersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1791,7 +1791,7 @@ client.control.list_all_registered_breakpoint_matchers_put_variant()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">remove_a_registered_breakpoint_matcher</a>(...) -> PutMockserverBreakpointMatcherRemoveResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L775-L804">remove_a_registered_breakpoint_matcher</a>(...) -> PutMockserverBreakpointMatcherRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -1863,7 +1863,7 @@ client.control.remove_a_registered_breakpoint_matcher(
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">remove_all_registered_breakpoint_matchers</a>() -> PutMockserverBreakpointMatcherClearResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L806-L830">remove_all_registered_breakpoint_matchers</a>() -> PutMockserverBreakpointMatcherClearResponse</code></summary>
 <dl>
 <dd>
 
@@ -1925,7 +1925,7 @@ client.control.remove_all_registered_breakpoint_matchers()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">stop_running_process</a>()</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L832-L853">stop_running_process</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1987,7 +1987,7 @@ client.control.stop_running_process()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">readiness_probe</a>() -> GetMockserverReadyResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L855-L877">readiness_probe</a>() -> GetMockserverReadyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2049,7 +2049,7 @@ client.control.readiness_probe()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_the_effective_configuration</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L879-L903">retrieve_the_effective_configuration</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2111,7 +2111,7 @@ client.control.retrieve_the_effective_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_client_proxy_setup_details</a>() -> GetMockserverProxyConfigurationResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L905-L929">retrieve_client_proxy_setup_details</a>() -> GetMockserverProxyConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2173,7 +2173,7 @@ client.control.retrieve_client_proxy_setup_details()
 </dl>
 </details>
 
-<details><summary><code>client.control.<a href="src/fern/control/client.py">retrieve_experimental_http3quic_listener_status</a>() -> GetMockserverHttp3StatusResponse</code></summary>
+<details><summary><code>client.control.<a href="src/fern/control/client.py#L931-L955">retrieve_experimental_http3quic_listener_status</a>() -> GetMockserverHttp3StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2236,7 +2236,7 @@ client.control.retrieve_experimental_http3quic_listener_status()
 </details>
 
 ## Verify
-<details><summary><code>client.verify.<a href="src/fern/verify/client.py">verify_a_request_has_been_received_a_specific_number_of_times</a>(...)</code></summary>
+<details><summary><code>client.verify.<a href="src/fern/verify/client.py#L32-L62">verify_a_request_has_been_received_a_specific_number_of_times</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2294,7 +2294,7 @@ client.verify.verify_a_request_has_been_received_a_specific_number_of_times(
 </dl>
 </details>
 
-<details><summary><code>client.verify.<a href="src/fern/verify/client.py">verify_a_sequence_of_request_has_been_received_in_the_specific_order</a>(...)</code></summary>
+<details><summary><code>client.verify.<a href="src/fern/verify/client.py#L64-L96">verify_a_sequence_of_request_has_been_received_in_the_specific_order</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2352,7 +2352,7 @@ client.verify.verify_a_sequence_of_request_has_been_received_in_the_specific_ord
 </dl>
 </details>
 
-<details><summary><code>client.verify.<a href="src/fern/verify/client.py">compare_two_http_requests_field_by_field</a>(...) -> PutMockserverDiffResponse</code></summary>
+<details><summary><code>client.verify.<a href="src/fern/verify/client.py#L98-L139">compare_two_http_requests_field_by_field</a>(...) -> PutMockserverDiffResponse</code></summary>
 <dl>
 <dd>
 
@@ -2446,7 +2446,7 @@ client.verify.compare_two_http_requests_field_by_field(
 </details>
 
 ## Import
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">import_expectations_from_a_har_or_postman_collection_or_re_import_recorded_traffic</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L32-L111">import_expectations_from_a_har_or_postman_collection_or_re_import_recorded_traffic</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -2562,7 +2562,7 @@ client.import_.import_expectations_from_a_har_or_postman_collection_or_re_import
 </dl>
 </details>
 
-<details><summary><code>client.import_.<a href="src/fern/import_/client.py">promote_recorded_traffic_to_active_expectations</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.import_.<a href="src/fern/import_/client.py#L113-L172">promote_recorded_traffic_to_active_expectations</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -2675,7 +2675,7 @@ client.import_.promote_recorded_traffic_to_active_expectations(
 </details>
 
 ## Crud
-<details><summary><code>client.crud.<a href="src/fern/crud/client.py">register_a_generated_crud_data_store</a>(...) -> PutMockserverCrudResponse</code></summary>
+<details><summary><code>client.crud.<a href="src/fern/crud/client.py#L30-L86">register_a_generated_crud_data_store</a>(...) -> PutMockserverCrudResponse</code></summary>
 <dl>
 <dd>
 
@@ -2786,7 +2786,7 @@ client.crud.register_a_generated_crud_data_store(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">store_a_file_in_the_file_store</a>(...) -> PutMockserverFilesStoreResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L29-L72">store_a_file_in_the_file_store</a>(...) -> PutMockserverFilesStoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -2875,7 +2875,7 @@ client.files.store_a_file_in_the_file_store(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">retrieve_a_file_from_the_file_store</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L74-L102">retrieve_a_file_from_the_file_store</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2947,7 +2947,7 @@ client.files.retrieve_a_file_from_the_file_store(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_files_in_the_file_store</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L104-L128">list_files_in_the_file_store</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -3009,7 +3009,7 @@ client.files.list_files_in_the_file_store()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete_a_file_from_the_file_store</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L130-L157">delete_a_file_from_the_file_store</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3082,7 +3082,7 @@ client.files.delete_a_file_from_the_file_store(
 </details>
 
 ## Chaos
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">list_registered_service_scoped_http_chaos</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L46-L70">list_registered_service_scoped_http_chaos</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3144,7 +3144,7 @@ client.chaos.list_registered_service_scoped_http_chaos()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">register_remove_or_clear_service_scoped_http_chaos</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L72-L128">register_remove_or_clear_service_scoped_http_chaos</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3222,7 +3222,7 @@ client.chaos.register_remove_or_clear_service_scoped_http_chaos(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">update_an_existing_service_scoped_http_chaos_profile_json_merge_patch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L130-L181">update_an_existing_service_scoped_http_chaos_profile_json_merge_patch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3297,7 +3297,7 @@ client.chaos.update_an_existing_service_scoped_http_chaos_profile_json_merge_pat
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">list_registered_tcp_chaos</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L183-L207">list_registered_tcp_chaos</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3359,7 +3359,7 @@ client.chaos.list_registered_tcp_chaos()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">register_remove_or_clear_tcp_chaos</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L209-L243">register_remove_or_clear_tcp_chaos</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3435,7 +3435,7 @@ client.chaos.register_remove_or_clear_tcp_chaos(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">update_an_existing_tcp_chaos_profile_json_merge_patch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L245-L275">update_an_existing_tcp_chaos_profile_json_merge_patch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3510,7 +3510,7 @@ client.chaos.update_an_existing_tcp_chaos_profile_json_merge_patch(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">list_registered_g_rpc_chaos</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L277-L301">list_registered_g_rpc_chaos</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3572,7 +3572,7 @@ client.chaos.list_registered_g_rpc_chaos()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">register_remove_or_clear_g_rpc_chaos</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L303-L341">register_remove_or_clear_g_rpc_chaos</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3647,7 +3647,7 @@ client.chaos.register_remove_or_clear_g_rpc_chaos(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">update_an_existing_g_rpc_chaos_profile_json_merge_patch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L343-L376">update_an_existing_g_rpc_chaos_profile_json_merge_patch</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3722,7 +3722,7 @@ client.chaos.update_an_existing_g_rpc_chaos_profile_json_merge_patch(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">get_the_status_of_the_current_chaos_experiment</a>() -> GetMockserverChaosExperimentResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L378-L402">get_the_status_of_the_current_chaos_experiment</a>() -> GetMockserverChaosExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3784,7 +3784,7 @@ client.chaos.get_the_status_of_the_current_chaos_experiment()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">start_a_scheduled_multi_stage_chaos_experiment</a>(...) -> PutMockserverChaosExperimentResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L404-L468">start_a_scheduled_multi_stage_chaos_experiment</a>(...) -> PutMockserverChaosExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3893,7 +3893,7 @@ client.chaos.start_a_scheduled_multi_stage_chaos_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">stop_the_current_chaos_experiment</a>() -> DeleteMockserverChaosExperimentResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L470-L494">stop_the_current_chaos_experiment</a>() -> DeleteMockserverChaosExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3955,7 +3955,7 @@ client.chaos.stop_the_current_chaos_experiment()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">retrieve_the_current_preemption_status</a>() -> PreemptionStatus</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L496-L520">retrieve_the_current_preemption_status</a>() -> PreemptionStatus</code></summary>
 <dl>
 <dd>
 
@@ -4017,7 +4017,7 @@ client.chaos.retrieve_the_current_preemption_status()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">cordon_and_drain_the_server_preemption_simulation</a>(...) -> PreemptionStatus</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L522-L575">cordon_and_drain_the_server_preemption_simulation</a>(...) -> PreemptionStatus</code></summary>
 <dl>
 <dd>
 
@@ -4116,7 +4116,7 @@ client.chaos.cordon_and_drain_the_server_preemption_simulation(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">uncordon_the_server_clear_preemption</a>() -> DeleteMockserverPreemptionResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L577-L601">uncordon_the_server_clear_preemption</a>() -> DeleteMockserverPreemptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4178,7 +4178,7 @@ client.chaos.uncordon_the_server_clear_preemption()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">list_saved_chaos_profile_names</a>() -> GetMockserverChaosExperimentProfilesResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L603-L627">list_saved_chaos_profile_names</a>() -> GetMockserverChaosExperimentProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4240,7 +4240,7 @@ client.chaos.list_saved_chaos_profile_names()
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">retrieve_a_saved_chaos_profile</a>(...) -> ChaosExperiment</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L629-L658">retrieve_a_saved_chaos_profile</a>(...) -> ChaosExperiment</code></summary>
 <dl>
 <dd>
 
@@ -4312,7 +4312,7 @@ client.chaos.retrieve_a_saved_chaos_profile(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">save_a_chaos_experiment_profile</a>(...) -> PutMockserverChaosExperimentProfilesNameResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L660-L717">save_a_chaos_experiment_profile</a>(...) -> PutMockserverChaosExperimentProfilesNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -4403,7 +4403,7 @@ client.chaos.save_a_chaos_experiment_profile(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">delete_a_saved_chaos_profile</a>(...) -> DeleteMockserverChaosExperimentProfilesNameResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L719-L748">delete_a_saved_chaos_profile</a>(...) -> DeleteMockserverChaosExperimentProfilesNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -4475,7 +4475,7 @@ client.chaos.delete_a_saved_chaos_profile(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">apply_a_saved_chaos_profile</a>(...) -> PostMockserverChaosExperimentApplyNameResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L750-L779">apply_a_saved_chaos_profile</a>(...) -> PostMockserverChaosExperimentApplyNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -4547,7 +4547,7 @@ client.chaos.apply_a_saved_chaos_profile(
 </dl>
 </details>
 
-<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py">retrieve_completed_chaos_experiment_history</a>() -> GetMockserverChaosExperimentHistoryResponse</code></summary>
+<details><summary><code>client.chaos.<a href="src/fern/chaos/client.py#L781-L805">retrieve_completed_chaos_experiment_history</a>() -> GetMockserverChaosExperimentHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -4610,7 +4610,7 @@ client.chaos.retrieve_completed_chaos_experiment_history()
 </details>
 
 ## Drift
-<details><summary><code>client.drift.<a href="src/fern/drift/client.py">retrieve_recorded_mock_drift</a>(...) -> GetMockserverDriftResponse</code></summary>
+<details><summary><code>client.drift.<a href="src/fern/drift/client.py#L27-L63">retrieve_recorded_mock_drift</a>(...) -> GetMockserverDriftResponse</code></summary>
 <dl>
 <dd>
 
@@ -4688,7 +4688,7 @@ client.drift.retrieve_recorded_mock_drift()
 </dl>
 </details>
 
-<details><summary><code>client.drift.<a href="src/fern/drift/client.py">clear_all_recorded_mock_drift</a>() -> PutMockserverDriftClearResponse</code></summary>
+<details><summary><code>client.drift.<a href="src/fern/drift/client.py#L65-L89">clear_all_recorded_mock_drift</a>() -> PutMockserverDriftClearResponse</code></summary>
 <dl>
 <dd>
 
@@ -4751,7 +4751,7 @@ client.drift.clear_all_recorded_mock_drift()
 </details>
 
 ## Audit
-<details><summary><code>client.audit.<a href="src/fern/audit/client.py">retrieve_the_control_plane_audit_log</a>(...) -> typing.List[GetMockserverAuditResponseItem]</code></summary>
+<details><summary><code>client.audit.<a href="src/fern/audit/client.py#L26-L53">retrieve_the_control_plane_audit_log</a>(...) -> typing.List[GetMockserverAuditResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4822,7 +4822,7 @@ client.audit.retrieve_the_control_plane_audit_log()
 </details>
 
 ## Scenario
-<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py">list_all_scenarios_and_their_current_state</a>() -> GetMockserverScenarioResponse</code></summary>
+<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py#L32-L56">list_all_scenarios_and_their_current_state</a>() -> GetMockserverScenarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -4884,7 +4884,7 @@ client.scenario.list_all_scenarios_and_their_current_state()
 </dl>
 </details>
 
-<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py">get_the_current_state_of_one_scenario</a>(...) -> GetMockserverScenarioNameResponse</code></summary>
+<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py#L58-L87">get_the_current_state_of_one_scenario</a>(...) -> GetMockserverScenarioNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -4956,7 +4956,7 @@ client.scenario.get_the_current_state_of_one_scenario(
 </dl>
 </details>
 
-<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py">set_a_scenarios_state_optionally_scheduling_a_timed_auto_transition</a>(...) -> PutMockserverScenarioNameResponse</code></summary>
+<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py#L89-L142">set_a_scenarios_state_optionally_scheduling_a_timed_auto_transition</a>(...) -> PutMockserverScenarioNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -5055,7 +5055,7 @@ client.scenario.set_a_scenarios_state_optionally_scheduling_a_timed_auto_transit
 </dl>
 </details>
 
-<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py">externally_trigger_a_scenario_state_transition</a>(...) -> PutMockserverScenarioNameTriggerResponse</code></summary>
+<details><summary><code>client.scenario.<a href="src/fern/scenario/client.py#L144-L179">externally_trigger_a_scenario_state_transition</a>(...) -> PutMockserverScenarioNameTriggerResponse</code></summary>
 <dl>
 <dd>
 
@@ -5137,7 +5137,7 @@ client.scenario.externally_trigger_a_scenario_state_transition(
 </details>
 
 ## oidc
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">mock_oidc_provider</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L29-L92">mock_oidc_provider</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -5257,7 +5257,7 @@ client.oidc.mock_oidc_provider(
 </details>
 
 ## saml
-<details><summary><code>client.saml.<a href="src/fern/saml/client.py">mock_saml_provider</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.saml.<a href="src/fern/saml/client.py#L29-L80">mock_saml_provider</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -5355,7 +5355,7 @@ client.saml.mock_saml_provider(
 </details>
 
 ## scim
-<details><summary><code>client.scim.<a href="src/fern/scim/client.py">mock_scim_provider</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.scim.<a href="src/fern/scim/client.py#L29-L75">mock_scim_provider</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -5657,7 +5657,7 @@ client.asyncapi.verify_async_api_messages(
 </details>
 
 ## Wasm
-<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py">list_loaded_web_assembly_modules</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py#L31-L55">list_loaded_web_assembly_modules</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -5719,7 +5719,7 @@ client.wasm.list_loaded_web_assembly_modules()
 </dl>
 </details>
 
-<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py">load_a_web_assembly_custom_rule_module</a>(...) -> PutMockserverWasmModulesResponse</code></summary>
+<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py#L57-L85">load_a_web_assembly_custom_rule_module</a>(...) -> PutMockserverWasmModulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5789,7 +5789,7 @@ client.wasm.load_a_web_assembly_custom_rule_module(...)
 </dl>
 </details>
 
-<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py">unload_a_web_assembly_custom_rule_module</a>(...)</code></summary>
+<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py#L87-L117">unload_a_web_assembly_custom_rule_module</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5861,7 +5861,7 @@ client.wasm.unload_a_web_assembly_custom_rule_module(
 </dl>
 </details>
 
-<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py">evaluate_a_web_assembly_custom_rule_against_a_sample_request</a>(...) -> PostMockserverWasmTestResponse</code></summary>
+<details><summary><code>client.wasm.<a href="src/fern/wasm/client.py#L119-L172">evaluate_a_web_assembly_custom_rule_against_a_sample_request</a>(...) -> PostMockserverWasmTestResponse</code></summary>
 <dl>
 <dd>
 
@@ -5968,7 +5968,7 @@ client.wasm.evaluate_a_web_assembly_custom_rule_against_a_sample_request(
 </details>
 
 ## Grpc
-<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py">load_ag_rpc_proto_descriptor_set</a>(...) -> PutMockserverGrpcDescriptorsResponse</code></summary>
+<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py#L32-L54">load_ag_rpc_proto_descriptor_set</a>(...) -> PutMockserverGrpcDescriptorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6030,7 +6030,7 @@ client.grpc.load_ag_rpc_proto_descriptor_set(...)
 </dl>
 </details>
 
-<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py">retrieve_g_rpc_health_serving_statuses</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py#L56-L80">retrieve_g_rpc_health_serving_statuses</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6092,7 +6092,7 @@ client.grpc.retrieve_g_rpc_health_serving_statuses()
 </dl>
 </details>
 
-<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py">set_ag_rpc_health_serving_status</a>(...) -> PutMockserverGrpcHealthResponse</code></summary>
+<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py#L82-L124">set_ag_rpc_health_serving_status</a>(...) -> PutMockserverGrpcHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -6181,7 +6181,7 @@ client.grpc.set_ag_rpc_health_serving_status(
 </dl>
 </details>
 
-<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py">list_loaded_g_rpc_services</a>() -> typing.List[PutMockserverGrpcServicesResponseItem]</code></summary>
+<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py#L126-L150">list_loaded_g_rpc_services</a>() -> typing.List[PutMockserverGrpcServicesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -6243,7 +6243,7 @@ client.grpc.list_loaded_g_rpc_services()
 </dl>
 </details>
 
-<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py">reset_the_g_rpc_descriptor_store</a>()</code></summary>
+<details><summary><code>client.grpc.<a href="src/fern/grpc/client.py#L152-L173">reset_the_g_rpc_descriptor_store</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6306,7 +6306,7 @@ client.grpc.reset_the_g_rpc_descriptor_store()
 </details>
 
 ## Troubleshooting
-<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py">explain_why_recent_requests_did_not_match_any_expectation</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py#L31-L62">explain_why_recent_requests_did_not_match_any_expectation</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6378,7 +6378,7 @@ client.troubleshooting.explain_why_recent_requests_did_not_match_any_expectation
 </dl>
 </details>
 
-<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py">return_per_expectation_mismatch_debug_information_for_a_request</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py#L64-L94">return_per_expectation_mismatch_debug_information_for_a_request</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6450,7 +6450,7 @@ client.troubleshooting.return_per_expectation_mismatch_debug_information_for_a_r
 </dl>
 </details>
 
-<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py">diff_a_baseline_set_of_expectations_against_another</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py#L96-L140">diff_a_baseline_set_of_expectations_against_another</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6537,7 +6537,7 @@ client.troubleshooting.diff_a_baseline_set_of_expectations_against_another(
 </dl>
 </details>
 
-<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py">validate_recorded_traffic_against_an_open_api_specification</a>(...) -> PutMockserverTrafficValidateResponse</code></summary>
+<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py#L142-L180">validate_recorded_traffic_against_an_open_api_specification</a>(...) -> PutMockserverTrafficValidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -6618,7 +6618,7 @@ client.troubleshooting.validate_recorded_traffic_against_an_open_api_specificati
 </details>
 
 ## Pact
-<details><summary><code>client.pact.<a href="src/fern/pact/client.py">export_active_expectations_as_a_pact_contract</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pact.<a href="src/fern/pact/client.py#L29-L65">export_active_expectations_as_a_pact_contract</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6696,7 +6696,7 @@ client.pact.export_active_expectations_as_a_pact_contract()
 </dl>
 </details>
 
-<details><summary><code>client.pact.<a href="src/fern/pact/client.py">verify_active_expectations_against_a_pact_contract</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.pact.<a href="src/fern/pact/client.py#L67-L111">verify_active_expectations_against_a_pact_contract</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6772,7 +6772,7 @@ client.pact.verify_active_expectations_against_a_pact_contract(
 </dl>
 </details>
 
-<details><summary><code>client.pact.<a href="src/fern/pact/client.py">import_a_pact_contract_as_expectations</a>(...) -> typing.List[Expectation]</code></summary>
+<details><summary><code>client.pact.<a href="src/fern/pact/client.py#L113-L177">import_a_pact_contract_as_expectations</a>(...) -> typing.List[Expectation]</code></summary>
 <dl>
 <dd>
 
@@ -6874,7 +6874,7 @@ client.pact.import_a_pact_contract_as_expectations(
 </details>
 
 ## Loadgen
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">list_all_registered_load_scenarios</a>() -> GetMockserverLoadScenarioResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L62-L86">list_all_registered_load_scenarios</a>() -> GetMockserverLoadScenarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -6936,7 +6936,7 @@ client.loadgen.list_all_registered_load_scenarios()
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">load_register_a_load_scenario_into_the_registry</a>(...) -> PutMockserverLoadScenarioResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L88-L226">load_register_a_load_scenario_into_the_registry</a>(...) -> PutMockserverLoadScenarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -7047,7 +7047,7 @@ client.loadgen.load_register_a_load_scenario_into_the_registry(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">clear_the_load_scenario_registry</a>() -> DeleteMockserverLoadScenarioResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L228-L252">clear_the_load_scenario_registry</a>() -> DeleteMockserverLoadScenarioResponse</code></summary>
 <dl>
 <dd>
 
@@ -7109,7 +7109,7 @@ client.loadgen.clear_the_load_scenario_registry()
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">retrieve_one_registered_load_scenario</a>(...) -> LoadScenarioListEntry</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L254-L283">retrieve_one_registered_load_scenario</a>(...) -> LoadScenarioListEntry</code></summary>
 <dl>
 <dd>
 
@@ -7181,7 +7181,7 @@ client.loadgen.retrieve_one_registered_load_scenario(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">remove_one_registered_load_scenario</a>(...) -> DeleteMockserverLoadScenarioNameResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L285-L314">remove_one_registered_load_scenario</a>(...) -> DeleteMockserverLoadScenarioNameResponse</code></summary>
 <dl>
 <dd>
 
@@ -7253,7 +7253,7 @@ client.loadgen.remove_one_registered_load_scenario(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">end_of_run_summary_report_for_a_load_scenario_run</a>(...) -> LoadScenarioReport</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L316-L354">end_of_run_summary_report_for_a_load_scenario_run</a>(...) -> LoadScenarioReport</code></summary>
 <dl>
 <dd>
 
@@ -7333,7 +7333,7 @@ client.loadgen.end_of_run_summary_report_for_a_load_scenario_run(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">seed_a_load_scenario_from_an_open_api_specification</a>(...) -> PutMockserverLoadScenarioGenerateFromOpenApiResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L356-L415">seed_a_load_scenario_from_an_open_api_specification</a>(...) -> PutMockserverLoadScenarioGenerateFromOpenApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -7436,7 +7436,7 @@ client.loadgen.seed_a_load_scenario_from_an_open_api_specification(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">seed_a_load_scenario_from_recorded_proxy_traffic</a>(...) -> PutMockserverLoadScenarioGenerateFromRecordingResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L417-L485">seed_a_load_scenario_from_recorded_proxy_traffic</a>(...) -> PutMockserverLoadScenarioGenerateFromRecordingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7555,7 +7555,7 @@ client.loadgen.seed_a_load_scenario_from_recorded_proxy_traffic(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">trigger_registered_load_scenario_s_to_run</a>(...) -> PutMockserverLoadScenarioStartResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L487-L523">trigger_registered_load_scenario_s_to_run</a>(...) -> PutMockserverLoadScenarioStartResponse</code></summary>
 <dl>
 <dd>
 
@@ -7638,7 +7638,7 @@ client.loadgen.trigger_registered_load_scenario_s_to_run(
 </dl>
 </details>
 
-<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py">stop_running_load_scenario_s</a>(...) -> PutMockserverLoadScenarioStopResponse</code></summary>
+<details><summary><code>client.loadgen.<a href="src/fern/loadgen/client.py#L525-L561">stop_running_load_scenario_s</a>(...) -> PutMockserverLoadScenarioStopResponse</code></summary>
 <dl>
 <dd>
 
@@ -7721,7 +7721,7 @@ client.loadgen.stop_running_load_scenario_s(
 </details>
 
 ## Slo
-<details><summary><code>client.slo.<a href="src/fern/slo/client.py">verify_a_service_level_objective_over_a_window</a>(...) -> SloVerdict</code></summary>
+<details><summary><code>client.slo.<a href="src/fern/slo/client.py#L31-L106">verify_a_service_level_objective_over_a_window</a>(...) -> SloVerdict</code></summary>
 <dl>
 <dd>
 
@@ -7848,7 +7848,7 @@ client.slo.verify_a_service_level_objective_over_a_window(
 </details>
 
 ## Contract
-<details><summary><code>client.contract.<a href="src/fern/contract/client.py">run_an_open_api_spec_as_a_contract_test_against_a_live_service</a>(...) -> ContractTestReport</code></summary>
+<details><summary><code>client.contract.<a href="src/fern/contract/client.py#L29-L81">run_an_open_api_spec_as_a_contract_test_against_a_live_service</a>(...) -> ContractTestReport</code></summary>
 <dl>
 <dd>
 
@@ -7947,7 +7947,7 @@ client.contract.run_an_open_api_spec_as_a_contract_test_against_a_live_service(
 </details>
 
 ## Metrics
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">scrape_prometheus_metrics</a>() -> str</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L25-L47">scrape_prometheus_metrics</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -8010,7 +8010,7 @@ client.metrics.scrape_prometheus_metrics()
 </details>
 
 ## Cluster
-<details><summary><code>client.cluster.<a href="src/fern/cluster/client.py">retrieve_cluster_membership_status</a>() -> GetMockserverClusterResponse</code></summary>
+<details><summary><code>client.cluster.<a href="src/fern/cluster/client.py#L26-L50">retrieve_cluster_membership_status</a>() -> GetMockserverClusterResponse</code></summary>
 <dl>
 <dd>
 
@@ -8073,7 +8073,7 @@ client.cluster.retrieve_cluster_membership_status()
 </details>
 
 ## Llm
-<details><summary><code>client.llm.<a href="src/fern/llm/client.py">retrieve_the_llm_optimisation_report</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.llm.<a href="src/fern/llm/client.py#L31-L75">retrieve_the_llm_optimisation_report</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8167,7 +8167,7 @@ client.llm.retrieve_the_llm_optimisation_report()
 </dl>
 </details>
 
-<details><summary><code>client.llm.<a href="src/fern/llm/client.py">diff_two_captured_llm_agent_runs</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.llm.<a href="src/fern/llm/client.py#L77-L127">diff_two_captured_llm_agent_runs</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8262,7 +8262,7 @@ client.llm.diff_two_captured_llm_agent_runs(
 </details>
 
 ## Mcp
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">not_supported</a>()</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L28-L49">not_supported</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8324,7 +8324,7 @@ client.mcp.not_supported()
 </dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">mcp_model_context_protocol_json_rpc_endpoint</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L51-L97">mcp_model_context_protocol_json_rpc_endpoint</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8409,7 +8409,7 @@ client.mcp.mcp_model_context_protocol_json_rpc_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py">end_an_mcp_session</a>(...)</code></summary>
+<details><summary><code>client.mcp.<a href="src/fern/mcp/client.py#L99-L127">end_an_mcp_session</a>(...)</code></summary>
 <dl>
 <dd>
 

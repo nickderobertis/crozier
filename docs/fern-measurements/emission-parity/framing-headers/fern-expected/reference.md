@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">send_lower</a>(...) -> Parcel</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L339">send_lower</a>(...) -> Parcel</code></summary>
 <dl>
 <dd>
 
@@ -425,7 +425,7 @@ client.send_lower(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">send_canonical</a>(...) -> Parcel</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L341-L580">send_canonical</a>(...) -> Parcel</code></summary>
 <dl>
 <dd>
 
@@ -851,7 +851,7 @@ client.send_canonical(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">send_optional</a>(...) -> Parcel</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L582-L631">send_optional</a>(...) -> Parcel</code></summary>
 <dl>
 <dd>
 
@@ -935,7 +935,7 @@ client.send_optional(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_relays</a>() -> typing.List[Parcel]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L633-L655">list_relays</a>() -> typing.List[Parcel]</code></summary>
 <dl>
 <dd>
 

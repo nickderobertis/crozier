@@ -1,6 +1,6 @@
 # Reference
 ## Archives
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_archives</a>(...) -> typing.List[Archive]</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L36-L101">list_archives</a>(...) -> typing.List[Archive]</code></summary>
 <dl>
 <dd>
 
@@ -119,7 +119,7 @@ client.archives.list_archives()
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">create_archive</a>(...) -> Archive</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L103-L153">create_archive</a>(...) -> Archive</code></summary>
 <dl>
 <dd>
 
@@ -216,7 +216,7 @@ client.archives.create_archive(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">retrieve_archive</a>(...) -> Archive</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L155-L184">retrieve_archive</a>(...) -> Archive</code></summary>
 <dl>
 <dd>
 
@@ -289,7 +289,7 @@ client.archives.retrieve_archive(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">delete_archive</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L186-L214">delete_archive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -362,7 +362,7 @@ client.archives.delete_archive(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">modify_archive</a>(...) -> Archive</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L216-L258">modify_archive</a>(...) -> Archive</code></summary>
 <dl>
 <dd>
 
@@ -451,7 +451,7 @@ client.archives.modify_archive(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">list_agents_for_archive</a>(...) -> typing.List[AgentState]</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L260-L326">list_agents_for_archive</a>(...) -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -564,7 +564,7 @@ client.archives.list_agents_for_archive(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">create_passage_in_archive</a>(...) -> Passage</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L328-L379">create_passage_in_archive</a>(...) -> Passage</code></summary>
 <dl>
 <dd>
 
@@ -664,7 +664,7 @@ client.archives.create_passage_in_archive(
 </dl>
 </details>
 
-<details><summary><code>client.archives.<a href="src/fern/archives/client.py">delete_passage_from_archive</a>(...)</code></summary>
+<details><summary><code>client.archives.<a href="src/fern/archives/client.py#L381-L419">delete_passage_from_archive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -749,7 +749,7 @@ client.archives.delete_passage_from_archive(
 </details>
 
 ## Tools
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">retrieve_tool</a>(...) -> Tool</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L45-L74">retrieve_tool</a>(...) -> Tool</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.tools.retrieve_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">delete_tool</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L76-L105">delete_tool</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -895,7 +895,7 @@ client.tools.delete_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">modify_tool</a>(...) -> Tool</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L107-L204">modify_tool</a>(...) -> Tool</code></summary>
 <dl>
 <dd>
 
@@ -1064,7 +1064,7 @@ client.tools.modify_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">count_tools</a>(...) -> int</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L206-L275">count_tools</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1191,7 +1191,7 @@ client.tools.count_tools()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">list_tools</a>(...) -> typing.List[Tool]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L277-L367">list_tools</a>(...) -> typing.List[Tool]</code></summary>
 <dl>
 <dd>
 
@@ -1350,7 +1350,7 @@ client.tools.list_tools()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">create_tool</a>(...) -> Tool</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L369-L456">create_tool</a>(...) -> Tool</code></summary>
 <dl>
 <dd>
 
@@ -1423,7 +1423,7 @@ client.tools.create_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">upsert_tool</a>(...) -> Tool</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L458-L545">upsert_tool</a>(...) -> Tool</code></summary>
 <dl>
 <dd>
 
@@ -1496,7 +1496,7 @@ client.tools.upsert_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">search_tools</a>(...) -> typing.List[ToolSearchResult]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L547-L607">search_tools</a>(...) -> typing.List[ToolSearchResult]</code></summary>
 <dl>
 <dd>
 
@@ -1604,7 +1604,7 @@ client.tools.search_tools()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">add_base_tools</a>() -> typing.List[Tool]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L609-L633">add_base_tools</a>() -> typing.List[Tool]</code></summary>
 <dl>
 <dd>
 
@@ -1667,7 +1667,7 @@ client.tools.add_base_tools()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">run_tool_from_source</a>(...) -> ToolReturnMessage</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L635-L713">run_tool_from_source</a>(...) -> ToolReturnMessage</code></summary>
 <dl>
 <dd>
 
@@ -1807,7 +1807,7 @@ client.tools.run_tool_from_source(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">list_mcp_servers</a>() -> typing.Dict[str, ListMcpServersResponseValue]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L715-L741">list_mcp_servers</a>() -> typing.Dict[str, ListMcpServersResponseValue]</code></summary>
 <dl>
 <dd>
 
@@ -1870,7 +1870,7 @@ client.tools.list_mcp_servers()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">add_mcp_server</a>(...) -> typing.List[AddMcpServerResponseItem]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L743-L777">add_mcp_server</a>(...) -> typing.List[AddMcpServerResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1949,7 +1949,7 @@ client.tools.add_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">list_mcp_tools_by_server</a>(...) -> typing.List[McpTool]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L779-L809">list_mcp_tools_by_server</a>(...) -> typing.List[McpTool]</code></summary>
 <dl>
 <dd>
 
@@ -2022,7 +2022,7 @@ client.tools.list_mcp_tools_by_server(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">resync_mcp_server_tools</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L811-L855">resync_mcp_server_tools</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2109,7 +2109,7 @@ client.tools.resync_mcp_server_tools(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">add_mcp_tool</a>(...) -> Tool</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L857-L890">add_mcp_tool</a>(...) -> Tool</code></summary>
 <dl>
 <dd>
 
@@ -2191,7 +2191,7 @@ client.tools.add_mcp_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">delete_mcp_server</a>(...) -> typing.List[DeleteMcpServerResponseItem]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L892-L922">delete_mcp_server</a>(...) -> typing.List[DeleteMcpServerResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -2264,7 +2264,7 @@ client.tools.delete_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">update_mcp_server</a>(...) -> UpdateMcpServerResponse</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L924-L963">update_mcp_server</a>(...) -> UpdateMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -2346,7 +2346,7 @@ client.tools.update_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">test_mcp_server</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L965-L1000">test_mcp_server</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2426,7 +2426,7 @@ client.tools.test_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">connect_mcp_server</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L1002-L1037">connect_mcp_server</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2506,7 +2506,7 @@ client.tools.connect_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">execute_mcp_tool</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L1039-L1083">execute_mcp_tool</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2597,7 +2597,7 @@ client.tools.execute_mcp_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">mcp_oauth_callback</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L1085-L1132">mcp_oauth_callback</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2694,7 +2694,7 @@ client.tools.mcp_oauth_callback()
 </details>
 
 ## Sources
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">count_sources</a>() -> int</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L35-L59">count_sources</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -2757,7 +2757,7 @@ client.sources.count_sources()
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">retrieve_source</a>(...) -> Source</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L61-L90">retrieve_source</a>(...) -> Source</code></summary>
 <dl>
 <dd>
 
@@ -2830,7 +2830,7 @@ client.sources.retrieve_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">delete_source</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L92-L121">delete_source</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2903,7 +2903,7 @@ client.sources.delete_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">modify_source</a>(...) -> Source</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L123-L185">modify_source</a>(...) -> Source</code></summary>
 <dl>
 <dd>
 
@@ -2984,7 +2984,7 @@ client.sources.modify_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_source_id_by_name</a>(...) -> str</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L187-L217">get_source_id_by_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3057,7 +3057,7 @@ client.sources.get_source_id_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_sources_metadata</a>(...) -> OrganizationSourcesStats</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L219-L258">get_sources_metadata</a>(...) -> OrganizationSourcesStats</code></summary>
 <dl>
 <dd>
 
@@ -3134,7 +3134,7 @@ client.sources.get_sources_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">list_sources</a>() -> typing.List[Source]</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L260-L284">list_sources</a>() -> typing.List[Source]</code></summary>
 <dl>
 <dd>
 
@@ -3197,7 +3197,7 @@ client.sources.list_sources()
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">create_source</a>(...) -> Source</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L286-L353">create_source</a>(...) -> Source</code></summary>
 <dl>
 <dd>
 
@@ -3270,7 +3270,7 @@ client.sources.create_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">upload_file_to_source</a>(...) -> FileMetadata</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L355-L403">upload_file_to_source</a>(...) -> FileMetadata</code></summary>
 <dl>
 <dd>
 
@@ -3368,7 +3368,7 @@ client.sources.upload_file_to_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_agents_for_source</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L405-L436">get_agents_for_source</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -3441,7 +3441,7 @@ client.sources.get_agents_for_source(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">list_source_passages</a>(...) -> typing.List[Passage]</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L438-L486">list_source_passages</a>(...) -> typing.List[Passage]</code></summary>
 <dl>
 <dd>
 
@@ -3538,7 +3538,7 @@ client.sources.list_source_passages(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">list_source_files</a>(...) -> typing.List[FileMetadata]</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L488-L545">list_source_files</a>(...) -> typing.List[FileMetadata]</code></summary>
 <dl>
 <dd>
 
@@ -3643,7 +3643,7 @@ client.sources.list_source_files(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">get_file_metadata</a>(...) -> FileMetadata</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L547-L592">get_file_metadata</a>(...) -> FileMetadata</code></summary>
 <dl>
 <dd>
 
@@ -3733,7 +3733,7 @@ client.sources.get_file_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.sources.<a href="src/fern/sources/client.py">delete_file_from_source</a>(...)</code></summary>
+<details><summary><code>client.sources.<a href="src/fern/sources/client.py#L594-L628">delete_file_from_source</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3816,7 +3816,7 @@ client.sources.delete_file_from_source(
 </details>
 
 ## Folders
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">count_folders</a>() -> int</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L43-L67">count_folders</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -3879,7 +3879,7 @@ client.folders.count_folders()
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">retrieve_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L69-L98">retrieve_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -3952,7 +3952,7 @@ client.folders.retrieve_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">delete_folder</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L100-L129">delete_folder</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4025,7 +4025,7 @@ client.folders.delete_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">modify_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L131-L193">modify_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -4106,7 +4106,7 @@ client.folders.modify_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">get_folder_by_name</a>(...) -> str</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L195-L226">get_folder_by_name</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4182,7 +4182,7 @@ client.folders.get_folder_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">retrieve_metadata</a>(...) -> OrganizationSourcesStats</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L228-L267">retrieve_metadata</a>(...) -> OrganizationSourcesStats</code></summary>
 <dl>
 <dd>
 
@@ -4259,7 +4259,7 @@ client.folders.retrieve_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">list_folders</a>(...) -> typing.List[Folder]</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L269-L329">list_folders</a>(...) -> typing.List[Folder]</code></summary>
 <dl>
 <dd>
 
@@ -4370,7 +4370,7 @@ client.folders.list_folders()
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">create_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L331-L398">create_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -4443,7 +4443,7 @@ client.folders.create_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">upload_file_to_folder</a>(...) -> FileMetadata</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L400-L448">upload_file_to_folder</a>(...) -> FileMetadata</code></summary>
 <dl>
 <dd>
 
@@ -4541,7 +4541,7 @@ client.folders.upload_file_to_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">list_agents_for_folder</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L450-L512">list_agents_for_folder</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -4654,7 +4654,7 @@ client.folders.list_agents_for_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">list_folder_passages</a>(...) -> typing.List[Passage]</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L514-L576">list_folder_passages</a>(...) -> typing.List[Passage]</code></summary>
 <dl>
 <dd>
 
@@ -4767,7 +4767,7 @@ client.folders.list_folder_passages(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">list_files_for_folder</a>(...) -> typing.List[FileMetadata]</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L578-L645">list_files_for_folder</a>(...) -> typing.List[FileMetadata]</code></summary>
 <dl>
 <dd>
 
@@ -4888,7 +4888,7 @@ client.folders.list_files_for_folder(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">retrieve_file</a>(...) -> FileMetadata</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L647-L692">retrieve_file</a>(...) -> FileMetadata</code></summary>
 <dl>
 <dd>
 
@@ -4978,7 +4978,7 @@ client.folders.retrieve_file(
 </dl>
 </details>
 
-<details><summary><code>client.folders.<a href="src/fern/folders/client.py">delete_file_from_folder</a>(...)</code></summary>
+<details><summary><code>client.folders.<a href="src/fern/folders/client.py#L694-L728">delete_file_from_folder</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5061,7 +5061,7 @@ client.folders.delete_file_from_folder(
 </details>
 
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_agents</a>(...) -> typing.List[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L98-L225">list_agents</a>(...) -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -5276,7 +5276,7 @@ client.agents.list_agents()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">create_agent</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L227-L502">create_agent</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -5731,7 +5731,7 @@ client.agents.create_agent()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">count_agents</a>(...) -> int</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L504-L585">count_agents</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -5875,7 +5875,7 @@ client.agents.count_agents()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">export_agent</a>(...) -> str</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L587-L637">export_agent</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5972,7 +5972,7 @@ client.agents.export_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">import_agent</a>(...) -> ImportedAgentsResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L639-L729">import_agent</a>(...) -> ImportedAgentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6134,7 +6134,7 @@ client.agents.import_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">retrieve_agent_context_window</a>(...) -> ContextWindowOverview</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L731-L771">retrieve_agent_context_window</a>(...) -> ContextWindowOverview</code></summary>
 <dl>
 <dd>
 
@@ -6215,7 +6215,7 @@ client.agents.retrieve_agent_context_window(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">retrieve_agent</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L773-L819">retrieve_agent</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -6304,7 +6304,7 @@ client.agents.retrieve_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">delete_agent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L821-L850">delete_agent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -6377,7 +6377,7 @@ client.agents.delete_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">modify_agent</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L852-L1074">modify_agent</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -6746,7 +6746,7 @@ client.agents.modify_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_tools_for_agent</a>(...) -> typing.List[Tool]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1076-L1138">list_tools_for_agent</a>(...) -> typing.List[Tool]</code></summary>
 <dl>
 <dd>
 
@@ -6859,7 +6859,7 @@ client.agents.list_tools_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">attach_tool_to_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1140-L1175">attach_tool_to_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -6941,7 +6941,7 @@ client.agents.attach_tool_to_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">detach_tool_from_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1177-L1212">detach_tool_from_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -7023,7 +7023,7 @@ client.agents.detach_tool_from_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">modify_approval_for_tool</a>(...) -> typing.Optional[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1214-L1266">modify_approval_for_tool</a>(...) -> typing.Optional[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -7126,7 +7126,7 @@ client.agents.modify_approval_for_tool(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">run_tool_for_agent</a>(...) -> ToolExecutionResult</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1268-L1313">run_tool_for_agent</a>(...) -> ToolExecutionResult</code></summary>
 <dl>
 <dd>
 
@@ -7219,7 +7219,7 @@ client.agents.run_tool_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">attach_source_to_agent</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1315-L1350">attach_source_to_agent</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -7301,7 +7301,7 @@ client.agents.attach_source_to_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">attach_folder_to_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1352-L1387">attach_folder_to_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -7383,7 +7383,7 @@ client.agents.attach_folder_to_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">detach_source_from_agent</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1389-L1424">detach_source_from_agent</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -7465,7 +7465,7 @@ client.agents.detach_source_from_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">detach_folder_from_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1426-L1461">detach_folder_from_agent</a>(...) -> typing.Optional[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -7547,7 +7547,7 @@ client.agents.detach_folder_from_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">close_all_files_for_agent</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1463-L1497">close_all_files_for_agent</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -7623,7 +7623,7 @@ client.agents.close_all_files_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">open_file_for_agent</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1499-L1538">open_file_for_agent</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -7709,7 +7709,7 @@ client.agents.open_file_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">close_file_for_agent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1540-L1578">close_file_for_agent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -7794,7 +7794,7 @@ client.agents.close_file_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_agent_sources</a>(...) -> typing.List[Source]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1580-L1642">list_agent_sources</a>(...) -> typing.List[Source]</code></summary>
 <dl>
 <dd>
 
@@ -7907,7 +7907,7 @@ client.agents.list_agent_sources(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_folders_for_agent</a>(...) -> typing.List[Source]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1644-L1706">list_folders_for_agent</a>(...) -> typing.List[Source]</code></summary>
 <dl>
 <dd>
 
@@ -8020,7 +8020,7 @@ client.agents.list_folders_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_files_for_agent</a>(...) -> PaginatedAgentFiles</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1708-L1780">list_files_for_agent</a>(...) -> PaginatedAgentFiles</code></summary>
 <dl>
 <dd>
 
@@ -8149,7 +8149,7 @@ client.agents.list_files_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">retrieve_agent_memory</a>(...) -> Memory</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1782-L1814">retrieve_agent_memory</a>(...) -> Memory</code></summary>
 <dl>
 <dd>
 
@@ -8223,7 +8223,7 @@ client.agents.retrieve_agent_memory(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">retrieve_core_memory_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1816-L1850">retrieve_core_memory_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -8305,7 +8305,7 @@ client.agents.retrieve_core_memory_block(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">modify_core_memory_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1852-L1974">modify_core_memory_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -8395,7 +8395,7 @@ client.agents.modify_core_memory_block(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_core_memory_blocks</a>(...) -> typing.List[BlockResponse]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L1976-L2038">list_core_memory_blocks</a>(...) -> typing.List[BlockResponse]</code></summary>
 <dl>
 <dd>
 
@@ -8508,7 +8508,7 @@ client.agents.list_core_memory_blocks(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">attach_core_memory_block</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2040-L2075">attach_core_memory_block</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -8590,7 +8590,7 @@ client.agents.attach_core_memory_block(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">detach_core_memory_block</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2077-L2112">detach_core_memory_block</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -8672,7 +8672,7 @@ client.agents.detach_core_memory_block(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">attach_archive_to_agent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2114-L2148">attach_archive_to_agent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -8754,7 +8754,7 @@ client.agents.attach_archive_to_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">detach_archive_from_agent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2150-L2184">detach_archive_from_agent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -8836,7 +8836,7 @@ client.agents.detach_archive_from_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">attach_identity_to_agent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2186-L2220">attach_identity_to_agent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -8918,7 +8918,7 @@ client.agents.attach_identity_to_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">detach_identity_from_agent</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2222-L2256">detach_identity_from_agent</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -9000,7 +9000,7 @@ client.agents.detach_identity_from_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_passages</a>(...) -> typing.List[Passage]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2258-L2320">list_passages</a>(...) -> typing.List[Passage]</code></summary>
 <dl>
 <dd>
 
@@ -9113,7 +9113,7 @@ client.agents.list_passages(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">create_passage</a>(...) -> typing.List[Passage]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2322-L2371">create_passage</a>(...) -> typing.List[Passage]</code></summary>
 <dl>
 <dd>
 
@@ -9211,7 +9211,7 @@ client.agents.create_passage(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">search_archival_memory</a>(...) -> ArchivalMemorySearchResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2373-L2445">search_archival_memory</a>(...) -> ArchivalMemorySearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -9337,7 +9337,7 @@ client.agents.search_archival_memory(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">delete_passage</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2447-L2481">delete_passage</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -9419,7 +9419,7 @@ client.agents.delete_passage(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2483-L2575">list_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
 <dl>
 <dd>
 
@@ -9580,7 +9580,7 @@ client.agents.list_messages(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">send_message</a>(...) -> LettaResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2577-L2694">send_message</a>(...) -> LettaResponse</code></summary>
 <dl>
 <dd>
 
@@ -9671,7 +9671,7 @@ client.agents.send_message(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">modify_message</a>(...) -> ModifyMessageResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2696-L2745">modify_message</a>(...) -> ModifyMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -9765,7 +9765,7 @@ client.agents.modify_message(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">create_agent_message_stream</a>(...) -> LettaStreamingResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2747-L2859">create_agent_message_stream</a>(...) -> LettaStreamingResponse</code></summary>
 <dl>
 <dd>
 
@@ -9851,7 +9851,7 @@ client.agents.create_agent_message_stream(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">cancel_message</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2861-L2901">cancel_message</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -9934,7 +9934,7 @@ client.agents.cancel_message(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">search_messages</a>(...) -> typing.List[MessageSearchResult]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2903-L2985">search_messages</a>(...) -> typing.List[MessageSearchResult]</code></summary>
 <dl>
 <dd>
 
@@ -10079,7 +10079,7 @@ client.agents.search_messages()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">create_agent_message_async</a>(...) -> Run</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L2987-L3082">create_agent_message_async</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -10243,7 +10243,7 @@ client.agents.create_agent_message_async(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">reset_messages</a>(...) -> typing.Optional[AgentState]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L3084-L3124">reset_messages</a>(...) -> typing.Optional[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -10324,7 +10324,7 @@ client.agents.reset_messages(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_groups_for_agent</a>(...) -> typing.List[Group]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L3126-L3193">list_groups_for_agent</a>(...) -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -10445,7 +10445,7 @@ client.agents.list_groups_for_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">preview_model_request</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L3195-L3237">preview_model_request</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10531,7 +10531,7 @@ client.agents.preview_model_request(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">summarize_messages</a>(...) -> CompactionResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L3239-L3277">summarize_messages</a>(...) -> CompactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -10613,7 +10613,7 @@ client.agents.summarize_messages(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">searchdeployedagents</a>(...) -> AgentsSearchDeployedAgentsResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L3279-L3337">searchdeployedagents</a>(...) -> AgentsSearchDeployedAgentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10732,7 +10732,7 @@ client.agents.searchdeployedagents()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">getagentvariables</a>(...) -> AgentsGetAgentVariablesResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L3339-L3369">getagentvariables</a>(...) -> AgentsGetAgentVariablesResponse</code></summary>
 <dl>
 <dd>
 
@@ -10806,7 +10806,7 @@ client.agents.getagentvariables(
 </details>
 
 ## Conversations
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">list_conversations</a>(...) -> typing.List[Conversation]</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L39-L83">list_conversations</a>(...) -> typing.List[Conversation]</code></summary>
 <dl>
 <dd>
 
@@ -10895,7 +10895,7 @@ client.conversations.list_conversations(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">create_conversation</a>(...) -> Conversation</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L85-L132">create_conversation</a>(...) -> Conversation</code></summary>
 <dl>
 <dd>
 
@@ -10984,7 +10984,7 @@ client.conversations.create_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">retrieve_conversation</a>(...) -> Conversation</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L134-L165">retrieve_conversation</a>(...) -> Conversation</code></summary>
 <dl>
 <dd>
 
@@ -11057,7 +11057,7 @@ client.conversations.retrieve_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">update_conversation</a>(...) -> Conversation</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L167-L207">update_conversation</a>(...) -> Conversation</code></summary>
 <dl>
 <dd>
 
@@ -11138,7 +11138,7 @@ client.conversations.update_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">list_conversation_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L209-L284">list_conversation_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
 <dl>
 <dd>
 
@@ -11270,7 +11270,7 @@ client.conversations.list_conversation_messages(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">send_conversation_message</a>(...) -> LettaStreamingResponse</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L286-L396">send_conversation_message</a>(...) -> LettaStreamingResponse</code></summary>
 <dl>
 <dd>
 
@@ -11354,7 +11354,7 @@ client.conversations.send_conversation_message(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">retrieve_conversation_stream</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L398-L458">retrieve_conversation_stream</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -11438,7 +11438,7 @@ client.conversations.retrieve_conversation_stream(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">cancel_conversation</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L460-L493">cancel_conversation</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11513,7 +11513,7 @@ client.conversations.cancel_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">compact_conversation</a>(...) -> CompactionResponse</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L495-L538">compact_conversation</a>(...) -> CompactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -11599,7 +11599,7 @@ client.conversations.compact_conversation(
 </details>
 
 ## Chat
-<details><summary><code>client.chat.<a href="src/fern/chat/client.py">create_chat_completion</a>(...) -> ChatCompletion</code></summary>
+<details><summary><code>client.chat.<a href="src/fern/chat/client.py#L31-L131">create_chat_completion</a>(...) -> ChatCompletion</code></summary>
 <dl>
 <dd>
 
@@ -11765,7 +11765,7 @@ client.chat.create_chat_completion(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>(...) -> typing.List[Group]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L46-L111">list_groups</a>(...) -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -11884,7 +11884,7 @@ client.groups.list_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L113-L181">create_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -12008,7 +12008,7 @@ client.groups.create_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">count_groups</a>() -> int</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L183-L207">count_groups</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -12071,7 +12071,7 @@ client.groups.count_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">retrieve_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L209-L238">retrieve_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -12144,7 +12144,7 @@ client.groups.retrieve_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L240-L269">delete_group</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -12217,7 +12217,7 @@ client.groups.delete_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">modify_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L271-L338">modify_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -12338,7 +12338,7 @@ client.groups.modify_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_group_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L340-L417">list_group_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
 <dl>
 <dd>
 
@@ -12475,7 +12475,7 @@ client.groups.list_group_messages(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">send_group_message</a>(...) -> LettaResponse</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L419-L507">send_group_message</a>(...) -> LettaResponse</code></summary>
 <dl>
 <dd>
 
@@ -12557,7 +12557,7 @@ client.groups.send_group_message(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">send_group_message_streaming</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L509-L618">send_group_message_streaming</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -12640,7 +12640,7 @@ client.groups.send_group_message_streaming(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">modify_group_message</a>(...) -> ModifyGroupMessageResponse</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L620-L669">modify_group_message</a>(...) -> ModifyGroupMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -12734,7 +12734,7 @@ client.groups.modify_group_message(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">reset_group_messages</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L671-L702">reset_group_messages</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -12807,7 +12807,7 @@ client.groups.reset_group_messages(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">attach_block_to_group</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L704-L739">attach_block_to_group</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -12890,7 +12890,7 @@ client.groups.attach_block_to_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">detach_block_from_group</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L741-L776">detach_block_from_group</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -12974,7 +12974,7 @@ client.groups.detach_block_from_group(
 </details>
 
 ## Identities
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">list_identities</a>(...) -> typing.List[Identity]</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L40-L112">list_identities</a>(...) -> typing.List[Identity]</code></summary>
 <dl>
 <dd>
 
@@ -13109,7 +13109,7 @@ client.identities.list_identities()
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">create_identity</a>(...) -> Identity</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L114-L186">create_identity</a>(...) -> Identity</code></summary>
 <dl>
 <dd>
 
@@ -13226,7 +13226,7 @@ client.identities.create_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">upsert_identity</a>(...) -> Identity</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L188-L260">upsert_identity</a>(...) -> Identity</code></summary>
 <dl>
 <dd>
 
@@ -13343,7 +13343,7 @@ client.identities.upsert_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">count_identities</a>() -> int</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L262-L286">count_identities</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -13406,7 +13406,7 @@ client.identities.count_identities()
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">retrieve_identity</a>(...) -> Identity</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L288-L317">retrieve_identity</a>(...) -> Identity</code></summary>
 <dl>
 <dd>
 
@@ -13465,7 +13465,7 @@ client.identities.retrieve_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">delete_identity</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L319-L350">delete_identity</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -13538,7 +13538,7 @@ client.identities.delete_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">update_identity</a>(...) -> Identity</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L352-L417">update_identity</a>(...) -> Identity</code></summary>
 <dl>
 <dd>
 
@@ -13645,7 +13645,7 @@ client.identities.update_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">upsert_properties_for_identity</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L419-L463">upsert_properties_for_identity</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -13719,7 +13719,7 @@ client.identities.upsert_properties_for_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">list_agents_for_identity</a>(...) -> typing.List[AgentState]</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L465-L536">list_agents_for_identity</a>(...) -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -13840,7 +13840,7 @@ client.identities.list_agents_for_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identities.<a href="src/fern/identities/client.py">list_blocks_for_identity</a>(...) -> typing.List[BlockResponse]</code></summary>
+<details><summary><code>client.identities.<a href="src/fern/identities/client.py#L538-L600">list_blocks_for_identity</a>(...) -> typing.List[BlockResponse]</code></summary>
 <dl>
 <dd>
 
@@ -13954,7 +13954,7 @@ client.identities.list_blocks_for_identity(
 </details>
 
 ## InternalAgents
-<details><summary><code>client.internal_agents.<a href="src/fern/internal_agents/client.py">count_internal_agents</a>(...) -> int</code></summary>
+<details><summary><code>client.internal_agents.<a href="src/fern/internal_agents/client.py#L29-L60">count_internal_agents</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -14025,7 +14025,7 @@ client.internal_agents.count_internal_agents()
 </dl>
 </details>
 
-<details><summary><code>client.internal_agents.<a href="src/fern/internal_agents/client.py">modify_internal_core_memory_block</a>(...) -> Block</code></summary>
+<details><summary><code>client.internal_agents.<a href="src/fern/internal_agents/client.py#L62-L184">modify_internal_core_memory_block</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 
@@ -14116,7 +14116,7 @@ client.internal_agents.modify_internal_core_memory_block(
 </details>
 
 ## InternalBlocks
-<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py">list_internal_blocks</a>(...) -> typing.List[Block]</code></summary>
+<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py#L34-L147">list_internal_blocks</a>(...) -> typing.List[Block]</code></summary>
 <dl>
 <dd>
 
@@ -14301,7 +14301,7 @@ client.internal_blocks.list_internal_blocks()
 </dl>
 </details>
 
-<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py">create_internal_block</a>(...) -> Block</code></summary>
+<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py#L149-L259">create_internal_block</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 
@@ -14361,7 +14361,7 @@ client.internal_blocks.create_internal_block(
 </dl>
 </details>
 
-<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py">delete_internal_block</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py#L261-L290">delete_internal_block</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -14420,7 +14420,7 @@ client.internal_blocks.delete_internal_block(
 </dl>
 </details>
 
-<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py">list_agents_for_internal_block</a>(...) -> typing.List[AgentState]</code></summary>
+<details><summary><code>client.internal_blocks.<a href="src/fern/internal_blocks/client.py#L292-L365">list_agents_for_internal_block</a>(...) -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -14551,7 +14551,7 @@ client.internal_blocks.list_agents_for_internal_block(
 </details>
 
 ## InternalRuns
-<details><summary><code>client.internal_runs.<a href="src/fern/internal_runs/client.py">list_internal_runs</a>(...) -> typing.List[Run]</code></summary>
+<details><summary><code>client.internal_runs.<a href="src/fern/internal_runs/client.py#L32-L182">list_internal_runs</a>(...) -> typing.List[Run]</code></summary>
 <dl>
 <dd>
 
@@ -14807,7 +14807,7 @@ client.internal_runs.list_internal_runs()
 </details>
 
 ## InternalTemplates
-<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py">create_internal_template_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py#L44-L125">create_internal_template_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -14950,7 +14950,7 @@ client.internal_templates.create_internal_template_group(
 </dl>
 </details>
 
-<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py">create_internal_template_agent</a>(...) -> AgentState</code></summary>
+<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py#L127-L412">create_internal_template_agent</a>(...) -> AgentState</code></summary>
 <dl>
 <dd>
 
@@ -15418,7 +15418,7 @@ client.internal_templates.create_internal_template_agent(
 </dl>
 </details>
 
-<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py">create_internal_template_block</a>(...) -> Block</code></summary>
+<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py#L414-L530">create_internal_template_block</a>(...) -> Block</code></summary>
 <dl>
 <dd>
 
@@ -15496,7 +15496,7 @@ client.internal_templates.create_internal_template_block(
 </dl>
 </details>
 
-<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py">create_internal_template_blocks_batch</a>(...) -> typing.List[Block]</code></summary>
+<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py#L532-L576">create_internal_template_blocks_batch</a>(...) -> typing.List[Block]</code></summary>
 <dl>
 <dd>
 
@@ -15578,7 +15578,7 @@ client.internal_templates.create_internal_template_blocks_batch(
 </dl>
 </details>
 
-<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py">list_deployment_entities</a>(...) -> ListDeploymentEntitiesResponse</code></summary>
+<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py#L578-L618">list_deployment_entities</a>(...) -> ListDeploymentEntitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -15660,7 +15660,7 @@ client.internal_templates.list_deployment_entities(
 </dl>
 </details>
 
-<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py">delete_deployment</a>(...) -> DeleteDeploymentResponse</code></summary>
+<details><summary><code>client.internal_templates.<a href="src/fern/internal_templates/client.py#L620-L651">delete_deployment</a>(...) -> DeleteDeploymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -15735,7 +15735,7 @@ client.internal_templates.delete_deployment(
 </details>
 
 ## Models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list_models</a>(...) -> typing.List[Model]</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L29-L74">list_models</a>(...) -> typing.List[Model]</code></summary>
 <dl>
 <dd>
 
@@ -15825,7 +15825,7 @@ client.models.list_models()
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list_embedding_models</a>() -> typing.List[EmbeddingModel]</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L76-L105">list_embedding_models</a>() -> typing.List[EmbeddingModel]</code></summary>
 <dl>
 <dd>
 
@@ -15891,7 +15891,7 @@ client.models.list_embedding_models()
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">listembeddingmodels</a>()</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L107-L128">listembeddingmodels</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15941,7 +15941,7 @@ client.models.listembeddingmodels()
 </details>
 
 ## McpServers
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_list_mcp_servers</a>() -> typing.List[McpListMcpServersResponseItem]</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L36-L62">mcp_list_mcp_servers</a>() -> typing.List[McpListMcpServersResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -16004,7 +16004,7 @@ client.mcp_servers.mcp_list_mcp_servers()
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_create_mcp_server</a>(...) -> McpCreateMcpServerResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L64-L109">mcp_create_mcp_server</a>(...) -> McpCreateMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -16089,7 +16089,7 @@ client.mcp_servers.mcp_create_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_retrieve_mcp_server</a>(...) -> McpRetrieveMcpServerResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L111-L141">mcp_retrieve_mcp_server</a>(...) -> McpRetrieveMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -16162,7 +16162,7 @@ client.mcp_servers.mcp_retrieve_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_delete_mcp_server</a>(...)</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L143-L172">mcp_delete_mcp_server</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16235,7 +16235,7 @@ client.mcp_servers.mcp_delete_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_update_mcp_server</a>(...) -> McpUpdateMcpServerResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L174-L220">mcp_update_mcp_server</a>(...) -> McpUpdateMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -16328,7 +16328,7 @@ client.mcp_servers.mcp_update_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_list_tools_for_mcp_server</a>(...) -> typing.List[Tool]</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L222-L252">mcp_list_tools_for_mcp_server</a>(...) -> typing.List[Tool]</code></summary>
 <dl>
 <dd>
 
@@ -16401,7 +16401,7 @@ client.mcp_servers.mcp_list_tools_for_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_retrieve_mcp_tool</a>(...) -> Tool</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L254-L287">mcp_retrieve_mcp_tool</a>(...) -> Tool</code></summary>
 <dl>
 <dd>
 
@@ -16483,7 +16483,7 @@ client.mcp_servers.mcp_retrieve_mcp_tool(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_run_tool</a>(...) -> ToolExecutionResult</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L289-L332">mcp_run_tool</a>(...) -> ToolExecutionResult</code></summary>
 <dl>
 <dd>
 
@@ -16575,7 +16575,7 @@ client.mcp_servers.mcp_run_tool(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_refresh_mcp_server_tools</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L334-L378">mcp_refresh_mcp_server_tools</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -16662,7 +16662,7 @@ client.mcp_servers.mcp_refresh_mcp_server_tools(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">mcp_connect_mcp_server</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L380-L411">mcp_connect_mcp_server</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -16737,7 +16737,7 @@ client.mcp_servers.mcp_connect_mcp_server(
 </details>
 
 ## Blocks
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">list_blocks</a>(...) -> typing.List[BlockResponse]</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L35-L158">list_blocks</a>(...) -> typing.List[BlockResponse]</code></summary>
 <dl>
 <dd>
 
@@ -16938,7 +16938,7 @@ client.blocks.list_blocks()
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">create_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L160-L270">create_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -16998,7 +16998,7 @@ client.blocks.create_block(
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">count_blocks</a>(...) -> int</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L272-L333">count_blocks</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -17110,7 +17110,7 @@ client.blocks.count_blocks()
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">retrieve_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L335-L364">retrieve_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -17169,7 +17169,7 @@ client.blocks.retrieve_block(
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">delete_block</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L366-L393">delete_block</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -17228,7 +17228,7 @@ client.blocks.delete_block(
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">modify_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L395-L510">modify_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -17295,7 +17295,7 @@ client.blocks.modify_block(
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">list_agents_for_block</a>(...) -> typing.List[AgentState]</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L512-L587">list_agents_for_block</a>(...) -> typing.List[AgentState]</code></summary>
 <dl>
 <dd>
 
@@ -17425,7 +17425,7 @@ client.blocks.list_agents_for_block(
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">attach_identity_to_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L589-L623">attach_identity_to_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -17507,7 +17507,7 @@ client.blocks.attach_identity_to_block(
 </dl>
 </details>
 
-<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py">detach_identity_from_block</a>(...) -> BlockResponse</code></summary>
+<details><summary><code>client.blocks.<a href="src/fern/blocks/client.py#L625-L659">detach_identity_from_block</a>(...) -> BlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -17590,7 +17590,7 @@ client.blocks.detach_identity_from_block(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_jobs</a>(...) -> typing.List[Job]</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L28-L98">list_jobs</a>(...) -> typing.List[Job]</code></summary>
 <dl>
 <dd>
 
@@ -17717,7 +17717,7 @@ client.jobs.list_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_active_jobs</a>(...) -> typing.List[Job]</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L100-L155">list_active_jobs</a>(...) -> typing.List[Job]</code></summary>
 <dl>
 <dd>
 
@@ -17820,7 +17820,7 @@ client.jobs.list_active_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">retrieve_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L157-L186">retrieve_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -17893,7 +17893,7 @@ client.jobs.retrieve_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">delete_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L188-L217">delete_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -17966,7 +17966,7 @@ client.jobs.delete_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel_job</a>(...) -> Job</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L219-L251">cancel_job</a>(...) -> Job</code></summary>
 <dl>
 <dd>
 
@@ -18043,7 +18043,7 @@ client.jobs.cancel_job(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">check_health</a>() -> Health</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L50">check_health</a>() -> Health</code></summary>
 <dl>
 <dd>
 
@@ -18107,7 +18107,7 @@ client.health.check_health()
 </details>
 
 ## Providers
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">list_providers</a>(...) -> typing.List[Provider]</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L32-L97">list_providers</a>(...) -> typing.List[Provider]</code></summary>
 <dl>
 <dd>
 
@@ -18226,7 +18226,7 @@ client.providers.list_providers()
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">create_provider</a>(...) -> Provider</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L99-L168">create_provider</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -18349,7 +18349,7 @@ client.providers.create_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">retrieve_provider</a>(...) -> Provider</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L170-L201">retrieve_provider</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -18422,7 +18422,7 @@ client.providers.retrieve_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">delete_provider</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L203-L234">delete_provider</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -18495,7 +18495,7 @@ client.providers.delete_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">modify_provider</a>(...) -> Provider</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L236-L299">modify_provider</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -18609,7 +18609,7 @@ client.providers.modify_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">check_provider</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L301-L364">check_provider</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -18723,7 +18723,7 @@ client.providers.check_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">check_existing_provider</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L366-L397">check_existing_provider</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -18796,7 +18796,7 @@ client.providers.check_existing_provider(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">refresh_provider_models</a>(...) -> Provider</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L399-L431">refresh_provider_models</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -18871,7 +18871,7 @@ client.providers.refresh_provider_models(
 </details>
 
 ## Runs
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">list_runs</a>(...) -> typing.List[Run]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L40-L135">list_runs</a>(...) -> typing.List[Run]</code></summary>
 <dl>
 <dd>
 
@@ -19038,7 +19038,7 @@ client.runs.list_runs()
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">list_active_runs</a>(...) -> typing.List[Run]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L137-L175">list_active_runs</a>(...) -> typing.List[Run]</code></summary>
 <dl>
 <dd>
 
@@ -19117,7 +19117,7 @@ client.runs.list_active_runs()
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">retrieve_run</a>(...) -> Run</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L177-L205">retrieve_run</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -19190,7 +19190,7 @@ client.runs.retrieve_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">delete_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L207-L235">delete_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -19263,7 +19263,7 @@ client.runs.delete_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">list_messages_for_run</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L237-L298">list_messages_for_run</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
 <dl>
 <dd>
 
@@ -19376,7 +19376,7 @@ client.runs.list_messages_for_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">retrieve_usage_for_run</a>(...) -> UsageStatistics</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L300-L330">retrieve_usage_for_run</a>(...) -> UsageStatistics</code></summary>
 <dl>
 <dd>
 
@@ -19449,7 +19449,7 @@ client.runs.retrieve_usage_for_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">retrieve_metrics_for_run</a>(...) -> RunMetrics</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L332-L362">retrieve_metrics_for_run</a>(...) -> RunMetrics</code></summary>
 <dl>
 <dd>
 
@@ -19522,7 +19522,7 @@ client.runs.retrieve_metrics_for_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">list_steps_for_run</a>(...) -> typing.List[Step]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L364-L425">list_steps_for_run</a>(...) -> typing.List[Step]</code></summary>
 <dl>
 <dd>
 
@@ -19635,7 +19635,7 @@ client.runs.list_steps_for_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">retrieve_trace_for_run</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L427-L472">retrieve_trace_for_run</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -19724,7 +19724,7 @@ client.runs.retrieve_trace_for_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">retrieve_stream_for_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L474-L528">retrieve_stream_for_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -19792,7 +19792,7 @@ client.runs.retrieve_stream_for_run(
 </details>
 
 ## Steps
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">list_steps</a>(...) -> typing.List[Step]</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L38-L143">list_steps</a>(...) -> typing.List[Step]</code></summary>
 <dl>
 <dd>
 
@@ -19975,7 +19975,7 @@ client.steps.list_steps()
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">retrieve_step</a>(...) -> Step</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L145-L174">retrieve_step</a>(...) -> Step</code></summary>
 <dl>
 <dd>
 
@@ -20048,7 +20048,7 @@ client.steps.retrieve_step(
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">retrieve_metrics_for_step</a>(...) -> StepMetrics</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L176-L207">retrieve_metrics_for_step</a>(...) -> StepMetrics</code></summary>
 <dl>
 <dd>
 
@@ -20121,7 +20121,7 @@ client.steps.retrieve_metrics_for_step(
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">retrieve_trace_for_step</a>(...) -> typing.Optional[ProviderTrace]</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L209-L238">retrieve_trace_for_step</a>(...) -> typing.Optional[ProviderTrace]</code></summary>
 <dl>
 <dd>
 
@@ -20180,7 +20180,7 @@ client.steps.retrieve_trace_for_step(
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">modify_feedback_for_step</a>(...) -> Step</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L240-L284">modify_feedback_for_step</a>(...) -> Step</code></summary>
 <dl>
 <dd>
 
@@ -20269,7 +20269,7 @@ client.steps.modify_feedback_for_step(
 </dl>
 </details>
 
-<details><summary><code>client.steps.<a href="src/fern/steps/client.py">list_messages_for_step</a>(...) -> typing.List[ListMessagesForStepResponseItem]</code></summary>
+<details><summary><code>client.steps.<a href="src/fern/steps/client.py#L286-L348">list_messages_for_step</a>(...) -> typing.List[ListMessagesForStepResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -20383,7 +20383,7 @@ client.steps.list_messages_for_step(
 </details>
 
 ## Tag
-<details><summary><code>client.tag.<a href="src/fern/tag/client.py">list_tags</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.tag.<a href="src/fern/tag/client.py#L27-L92">list_tags</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -20503,7 +20503,7 @@ client.tag.list_tags()
 </details>
 
 ## Telemetry
-<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py">retrieve_provider_trace</a>(...) -> typing.Optional[ProviderTrace]</code></summary>
+<details><summary><code>client.telemetry.<a href="src/fern/telemetry/client.py#L26-L58">retrieve_provider_trace</a>(...) -> typing.Optional[ProviderTrace]</code></summary>
 <dl>
 <dd>
 
@@ -20579,7 +20579,7 @@ client.telemetry.retrieve_provider_trace(
 </details>
 
 ## Messages
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">list_all_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L40-L95">list_all_messages</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
 <dl>
 <dd>
 
@@ -20682,7 +20682,7 @@ client.messages.list_all_messages()
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">search_all_messages</a>(...) -> typing.List[SearchAllMessagesResponseItem]</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L97-L167">search_all_messages</a>(...) -> typing.List[SearchAllMessagesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -20806,7 +20806,7 @@ client.messages.search_all_messages(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">list_batches</a>(...) -> typing.List[BatchJob]</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L169-L219">list_batches</a>(...) -> typing.List[BatchJob]</code></summary>
 <dl>
 <dd>
 
@@ -20909,7 +20909,7 @@ client.messages.list_batches()
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">create_batch</a>(...) -> BatchJob</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L221-L268">create_batch</a>(...) -> BatchJob</code></summary>
 <dl>
 <dd>
 
@@ -20997,7 +20997,7 @@ client.messages.create_batch(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">retrieve_batch</a>(...) -> BatchJob</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L270-L298">retrieve_batch</a>(...) -> BatchJob</code></summary>
 <dl>
 <dd>
 
@@ -21070,7 +21070,7 @@ client.messages.retrieve_batch(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">list_messages_for_batch</a>(...) -> LettaBatchMessages</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L300-L366">list_messages_for_batch</a>(...) -> LettaBatchMessages</code></summary>
 <dl>
 <dd>
 
@@ -21191,7 +21191,7 @@ client.messages.list_messages_for_batch(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">cancel_batch</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L368-L396">cancel_batch</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -21264,7 +21264,7 @@ client.messages.cancel_batch(
 </dl>
 </details>
 
-<details><summary><code>client.messages.<a href="src/fern/messages/client.py">retrieve_message</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
+<details><summary><code>client.messages.<a href="src/fern/messages/client.py#L398-L429">retrieve_message</a>(...) -> typing.List[LettaMessageUnion]</code></summary>
 <dl>
 <dd>
 
@@ -21338,7 +21338,7 @@ client.messages.retrieve_message(
 </details>
 
 ## Passages
-<details><summary><code>client.passages.<a href="src/fern/passages/client.py">search_passages</a>(...) -> typing.List[PassageSearchResult]</code></summary>
+<details><summary><code>client.passages.<a href="src/fern/passages/client.py#L31-L110">search_passages</a>(...) -> typing.List[PassageSearchResult]</code></summary>
 <dl>
 <dd>
 
@@ -21475,7 +21475,7 @@ client.passages.search_passages(
 </details>
 
 ## Voice
-<details><summary><code>client.voice.<a href="src/fern/voice/client.py">create_voice_chat_completions</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.voice.<a href="src/fern/voice/client.py#L28-L72">create_voice_chat_completions</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -21565,7 +21565,7 @@ client.voice.create_voice_chat_completions(
 </details>
 
 ## Embeddings
-<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py">get_total_storage_size</a>(...) -> float</code></summary>
+<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py#L25-L49">get_total_storage_size</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -21637,7 +21637,7 @@ client.embeddings.get_total_storage_size()
 </details>
 
 ## Templates
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">createagentsfromtemplate</a>(...)</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L65-L139">createagentsfromtemplate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21767,7 +21767,7 @@ client.templates.createagentsfromtemplate(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">createagentsfromtemplatenoproject</a>(...) -> TemplatesCreateAgentsFromTemplateNoProjectResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L141-L210">createagentsfromtemplatenoproject</a>(...) -> TemplatesCreateAgentsFromTemplateNoProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -21888,7 +21888,7 @@ client.templates.createagentsfromtemplatenoproject(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">listtemplates</a>(...) -> TemplatesListTemplatesResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L212-L284">listtemplates</a>(...) -> TemplatesListTemplatesResponse</code></summary>
 <dl>
 <dd>
 
@@ -22031,7 +22031,7 @@ client.templates.listtemplates()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">createtemplatenoproject</a>(...) -> TemplatesCreateTemplateNoProjectResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L286-L323">createtemplatenoproject</a>(...) -> TemplatesCreateTemplateNoProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -22107,7 +22107,7 @@ client.templates.createtemplatenoproject(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">savetemplateversion</a>(...) -> TemplatesSaveTemplateVersionResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L325-L400">savetemplateversion</a>(...) -> TemplatesSaveTemplateVersionResponse</code></summary>
 <dl>
 <dd>
 
@@ -22237,7 +22237,7 @@ client.templates.savetemplateversion(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">deletetemplate</a>(...) -> TemplatesDeleteTemplateResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L402-L437">deletetemplate</a>(...) -> TemplatesDeleteTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -22319,7 +22319,7 @@ client.templates.deletetemplate(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">gettemplatesnapshot</a>(...) -> TemplatesGetTemplateSnapshotResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L439-L474">gettemplatesnapshot</a>(...) -> TemplatesGetTemplateSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -22401,7 +22401,7 @@ client.templates.gettemplatesnapshot(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">setcurrenttemplatefromsnapshot</a>(...) -> TemplatesSetCurrentTemplateFromSnapshotResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L476-L520">setcurrenttemplatefromsnapshot</a>(...) -> TemplatesSetCurrentTemplateFromSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -22491,7 +22491,7 @@ client.templates.setcurrenttemplatefromsnapshot(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">forktemplate</a>(...) -> TemplatesForkTemplateResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L522-L567">forktemplate</a>(...) -> TemplatesForkTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -22581,7 +22581,7 @@ client.templates.forktemplate(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">createtemplate</a>(...) -> TemplatesCreateTemplateResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L569-L611">createtemplate</a>(...) -> TemplatesCreateTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -22666,7 +22666,7 @@ client.templates.createtemplate(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">deletetemplatenoproject</a>(...) -> TemplatesDeleteTemplateNoProjectResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L613-L644">deletetemplatenoproject</a>(...) -> TemplatesDeleteTemplateNoProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -22739,7 +22739,7 @@ client.templates.deletetemplatenoproject(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">updatecurrenttemplatefromagentfilenoproject</a>(...) -> TemplatesUpdateCurrentTemplateFromAgentFileNoProjectResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L646-L699">updatecurrenttemplatefromagentfilenoproject</a>(...) -> TemplatesUpdateCurrentTemplateFromAgentFileNoProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -22839,7 +22839,7 @@ client.templates.updatecurrenttemplatefromagentfilenoproject(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">renametemplate</a>(...) -> TemplatesRenameTemplateResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L701-L747">renametemplate</a>(...) -> TemplatesRenameTemplateResponse</code></summary>
 <dl>
 <dd>
 
@@ -22930,7 +22930,7 @@ client.templates.renametemplate(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">updatetemplatedescription</a>(...) -> TemplatesUpdateTemplateDescriptionResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L749-L794">updatetemplatedescription</a>(...) -> TemplatesUpdateTemplateDescriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -23020,7 +23020,7 @@ client.templates.updatetemplatedescription(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">listtemplateversions</a>(...) -> TemplatesListTemplateVersionsResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L796-L843">listtemplateversions</a>(...) -> TemplatesListTemplateVersionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -23118,7 +23118,7 @@ client.templates.listtemplateversions(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">migratedeployment</a>(...) -> TemplatesMigrateDeploymentResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L845-L920">migratedeployment</a>(...) -> TemplatesMigrateDeploymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -23250,7 +23250,7 @@ client.templates.migratedeployment(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">updatecurrenttemplatefromagentfile</a>(...) -> TemplatesUpdateCurrentTemplateFromAgentFileResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L922-L981">updatecurrenttemplatefromagentfile</a>(...) -> TemplatesUpdateCurrentTemplateFromAgentFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -23359,7 +23359,7 @@ client.templates.updatecurrenttemplatefromagentfile(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">legacymigration</a>(...) -> TemplatesLegacyMigrationResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L983-L1014">legacymigration</a>(...) -> TemplatesLegacyMigrationResponse</code></summary>
 <dl>
 <dd>
 
@@ -23433,7 +23433,7 @@ client.templates.legacymigration(
 </details>
 
 ## ClientSideAccessTokens
-<details><summary><code>client.client_side_access_tokens.<a href="src/fern/client_side_access_tokens/client.py">client_side_access_tokens_list_client_side_access_tokens</a>(...) -> ClientSideAccessTokensListClientSideAccessTokensResponse</code></summary>
+<details><summary><code>client.client_side_access_tokens.<a href="src/fern/client_side_access_tokens/client.py#L37-L79">client_side_access_tokens_list_client_side_access_tokens</a>(...) -> ClientSideAccessTokensListClientSideAccessTokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -23520,7 +23520,7 @@ client.client_side_access_tokens.client_side_access_tokens_list_client_side_acce
 </dl>
 </details>
 
-<details><summary><code>client.client_side_access_tokens.<a href="src/fern/client_side_access_tokens/client.py">client_side_access_tokens_create_client_side_access_token</a>(...) -> ClientSideAccessTokensCreateClientSideAccessTokenResponse</code></summary>
+<details><summary><code>client.client_side_access_tokens.<a href="src/fern/client_side_access_tokens/client.py#L81-L139">client_side_access_tokens_create_client_side_access_token</a>(...) -> ClientSideAccessTokensCreateClientSideAccessTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -23619,7 +23619,7 @@ client.client_side_access_tokens.client_side_access_tokens_create_client_side_ac
 </dl>
 </details>
 
-<details><summary><code>client.client_side_access_tokens.<a href="src/fern/client_side_access_tokens/client.py">client_side_access_tokens_delete_client_side_access_token</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.client_side_access_tokens.<a href="src/fern/client_side_access_tokens/client.py#L141-L177">client_side_access_tokens_delete_client_side_access_token</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -23702,7 +23702,7 @@ client.client_side_access_tokens.client_side_access_tokens_delete_client_side_ac
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">listprojects</a>(...) -> ProjectsListProjectsResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L32-L71">listprojects</a>(...) -> ProjectsListProjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -23789,7 +23789,7 @@ client.projects.listprojects()
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">createproject</a>(...) -> ProjectsCreateProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L73-L103">createproject</a>(...) -> ProjectsCreateProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -23862,7 +23862,7 @@ client.projects.createproject(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">deleteproject</a>(...) -> ProjectsDeleteProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L105-L141">deleteproject</a>(...) -> ProjectsDeleteProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -23944,7 +23944,7 @@ client.projects.deleteproject(
 </details>
 
 ## Metadata
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">retrievecurrentbalances</a>() -> MetadataRetrieveCurrentBalancesResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L36-L62">retrievecurrentbalances</a>() -> MetadataRetrieveCurrentBalancesResponse</code></summary>
 <dl>
 <dd>
 
@@ -24007,7 +24007,7 @@ client.metadata.retrievecurrentbalances()
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">sendfeedback</a>(...) -> MetadataSendFeedbackResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L64-L124">sendfeedback</a>(...) -> MetadataSendFeedbackResponse</code></summary>
 <dl>
 <dd>
 
@@ -24128,7 +24128,7 @@ client.metadata.sendfeedback(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">sendtelemetry</a>(...) -> MetadataSendTelemetryResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L126-L177">sendtelemetry</a>(...) -> MetadataSendTelemetryResponse</code></summary>
 <dl>
 <dd>
 
@@ -24219,7 +24219,7 @@ client.metadata.sendtelemetry(
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">getstatus</a>() -> MetadataGetStatusResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L179-L201">getstatus</a>() -> MetadataGetStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -24268,7 +24268,7 @@ client.metadata.getstatus()
 </dl>
 </details>
 
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">getuser</a>() -> MetadataGetUserResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L203-L227">getuser</a>() -> MetadataGetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -24332,7 +24332,7 @@ client.metadata.getuser()
 </details>
 
 ## ScheduledMessages
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">scheduled_messages_list_scheduled_messages</a>(...) -> ScheduledMessagesListScheduledMessagesResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L46-L87">scheduled_messages_list_scheduled_messages</a>(...) -> ScheduledMessagesListScheduledMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -24421,7 +24421,7 @@ client.scheduled_messages.scheduled_messages_list_scheduled_messages(
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">scheduled_messages_schedule_agent_message</a>(...) -> ScheduledMessagesScheduleAgentMessageResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L89-L167">scheduled_messages_schedule_agent_message</a>(...) -> ScheduledMessagesScheduleAgentMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -24548,7 +24548,7 @@ client.scheduled_messages.scheduled_messages_schedule_agent_message(
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">scheduled_messages_retrieve_scheduled_message</a>(...) -> ScheduledMessagesRetrieveScheduledMessageResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L169-L204">scheduled_messages_retrieve_scheduled_message</a>(...) -> ScheduledMessagesRetrieveScheduledMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -24630,7 +24630,7 @@ client.scheduled_messages.scheduled_messages_retrieve_scheduled_message(
 </dl>
 </details>
 
-<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py">scheduled_messages_delete_scheduled_message</a>(...) -> ScheduledMessagesDeleteScheduledMessageResponse</code></summary>
+<details><summary><code>client.scheduled_messages.<a href="src/fern/scheduled_messages/client.py#L206-L253">scheduled_messages_delete_scheduled_message</a>(...) -> ScheduledMessagesDeleteScheduledMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -24723,7 +24723,7 @@ client.scheduled_messages.scheduled_messages_delete_scheduled_message(
 </details>
 
 ## Feeds
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">listfeeds</a>(...) -> FeedsListFeedsResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L49-L91">listfeeds</a>(...) -> FeedsListFeedsResponse</code></summary>
 <dl>
 <dd>
 
@@ -24818,7 +24818,7 @@ client.feeds.listfeeds()
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">createfeed</a>(...) -> FeedsCreateFeedResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L93-L135">createfeed</a>(...) -> FeedsCreateFeedResponse</code></summary>
 <dl>
 <dd>
 
@@ -24908,7 +24908,7 @@ client.feeds.createfeed(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">getfeed</a>(...) -> FeedsGetFeedResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L137-L165">getfeed</a>(...) -> FeedsGetFeedResponse</code></summary>
 <dl>
 <dd>
 
@@ -24981,7 +24981,7 @@ client.feeds.getfeed(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">deletefeed</a>(...) -> FeedsDeleteFeedResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L167-L206">deletefeed</a>(...) -> FeedsDeleteFeedResponse</code></summary>
 <dl>
 <dd>
 
@@ -25064,7 +25064,7 @@ client.feeds.deletefeed(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">listmessages</a>(...) -> FeedsListMessagesResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L208-L249">listmessages</a>(...) -> FeedsListMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -25153,7 +25153,7 @@ client.feeds.listmessages(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">publishmessages</a>(...) -> FeedsPublishMessagesResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L251-L294">publishmessages</a>(...) -> FeedsPublishMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -25240,7 +25240,7 @@ client.feeds.publishmessages(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">getmessage</a>(...) -> FeedsGetMessageResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L296-L329">getmessage</a>(...) -> FeedsGetMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -25322,7 +25322,7 @@ client.feeds.getmessage(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">subscribeagent</a>(...) -> FeedsSubscribeAgentResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L331-L381">subscribeagent</a>(...) -> FeedsSubscribeAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -25421,7 +25421,7 @@ client.feeds.subscribeagent(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">deletesubscription</a>(...) -> FeedsDeleteSubscriptionResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L383-L428">deletesubscription</a>(...) -> FeedsDeleteSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -25513,7 +25513,7 @@ client.feeds.deletesubscription(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">updatesubscription</a>(...) -> FeedsUpdateSubscriptionResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L430-L483">updatesubscription</a>(...) -> FeedsUpdateSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -25619,7 +25619,7 @@ client.feeds.updatesubscription(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">unsubscribeagent</a>(...) -> FeedsUnsubscribeAgentResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L485-L518">unsubscribeagent</a>(...) -> FeedsUnsubscribeAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -25701,7 +25701,7 @@ client.feeds.unsubscribeagent(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">triggersubscription</a>(...) -> FeedsTriggerSubscriptionResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L520-L553">triggersubscription</a>(...) -> FeedsTriggerSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -25783,7 +25783,7 @@ client.feeds.triggersubscription(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">backfillsubscription</a>(...) -> FeedsBackfillSubscriptionResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L555-L604">backfillsubscription</a>(...) -> FeedsBackfillSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -25881,7 +25881,7 @@ client.feeds.backfillsubscription(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">listsubscriptionhistory</a>(...) -> FeedsListSubscriptionHistoryResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L606-L655">listsubscriptionhistory</a>(...) -> FeedsListSubscriptionHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -25979,7 +25979,7 @@ client.feeds.listsubscriptionhistory(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">updateallsubscriptionscron</a>(...) -> FeedsUpdateAllSubscriptionsCronResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L657-L692">updateallsubscriptionscron</a>(...) -> FeedsUpdateAllSubscriptionsCronResponse</code></summary>
 <dl>
 <dd>
 
@@ -26061,7 +26061,7 @@ client.feeds.updateallsubscriptionscron(
 </dl>
 </details>
 
-<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py">listsubscriptions</a>(...) -> FeedsListSubscriptionsResponse</code></summary>
+<details><summary><code>client.feeds.<a href="src/fern/feeds/client.py#L694-L738">listsubscriptions</a>(...) -> FeedsListSubscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -26159,7 +26159,7 @@ client.feeds.listsubscriptions(
 </details>
 
 ## Pipelines
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">listpipelines</a>(...) -> PipelinesListPipelinesResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L42-L88">listpipelines</a>(...) -> PipelinesListPipelinesResponse</code></summary>
 <dl>
 <dd>
 
@@ -26254,7 +26254,7 @@ client.pipelines.listpipelines()
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">createpipeline</a>(...) -> PipelinesCreatePipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L90-L170">createpipeline</a>(...) -> PipelinesCreatePipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -26388,7 +26388,7 @@ client.pipelines.createpipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">countpipelines</a>(...) -> PipelinesCountPipelinesResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L172-L208">countpipelines</a>(...) -> PipelinesCountPipelinesResponse</code></summary>
 <dl>
 <dd>
 
@@ -26467,7 +26467,7 @@ client.pipelines.countpipelines()
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">getpipeline</a>(...) -> PipelinesGetPipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L210-L240">getpipeline</a>(...) -> PipelinesGetPipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -26540,7 +26540,7 @@ client.pipelines.getpipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">deletepipeline</a>(...) -> PipelinesDeletePipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L242-L272">deletepipeline</a>(...) -> PipelinesDeletePipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -26613,7 +26613,7 @@ client.pipelines.deletepipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">updatepipeline</a>(...) -> PipelinesUpdatePipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L274-L315">updatepipeline</a>(...) -> PipelinesUpdatePipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -26702,7 +26702,7 @@ client.pipelines.updatepipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">previewpipeline</a>(...) -> PipelinesPreviewPipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L317-L380">previewpipeline</a>(...) -> PipelinesPreviewPipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -26803,7 +26803,7 @@ client.pipelines.previewpipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">syncpipeline</a>(...) -> PipelinesSyncPipelineResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L382-L412">syncpipeline</a>(...) -> PipelinesSyncPipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -26876,7 +26876,7 @@ client.pipelines.syncpipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py">listpipelinesynchistory</a>(...) -> PipelinesListPipelineSyncHistoryResponse</code></summary>
+<details><summary><code>client.pipelines.<a href="src/fern/pipelines/client.py#L414-L444">listpipelinesynchistory</a>(...) -> PipelinesListPipelineSyncHistoryResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Search Manager
-<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py">search_history</a>(...) -> typing.List[SavedRecentSearch]</code></summary>
+<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py#L35-L73">search_history</a>(...) -> typing.List[SavedRecentSearch]</code></summary>
 <dl>
 <dd>
 
@@ -81,7 +81,7 @@ client.search_manager.search_history(
 </dl>
 </details>
 
-<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py">search_history_by_id</a>(...) -> SearchModel</code></summary>
+<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py#L75-L104">search_history_by_id</a>(...) -> SearchModel</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.search_manager.search_history_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py">search_history_manage</a>(...) -> SearchResponseModelSearchModel</code></summary>
+<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py#L106-L242">search_history_manage</a>(...) -> SearchResponseModelSearchModel</code></summary>
 <dl>
 <dd>
 
@@ -246,7 +246,7 @@ client.search_manager.search_history_manage(
 </dl>
 </details>
 
-<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py">search_history_delete</a>(...)</code></summary>
+<details><summary><code>client.search_manager.<a href="src/fern/search_manager/client.py#L244-L272">search_history_delete</a>(...)</code></summary>
 <dl>
 <dd>
 

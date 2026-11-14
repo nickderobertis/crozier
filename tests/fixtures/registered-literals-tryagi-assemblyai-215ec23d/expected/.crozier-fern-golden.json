@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-tryagi-assemblyai-215ec23d",
   "corpus_spec_ref": "1028f8b61cda3f1dc8777d732093fd3e4558d9c9",
   "corpus_spec_url": "https://raw.githubusercontent.com/tryAGI/AssemblyAI/1028f8b61cda3f1dc8777d732093fd3e4558d9c9/src/libs/AssemblyAI/openapi.yaml"

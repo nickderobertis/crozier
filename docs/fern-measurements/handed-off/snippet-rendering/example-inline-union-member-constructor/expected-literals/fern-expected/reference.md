@@ -1,6 +1,6 @@
 # Reference
 ## Checkouts
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">update_checkout</a>(...) -> UpdateCheckoutResponse</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L30-L72">update_checkout</a>(...) -> UpdateCheckoutResponse</code></summary>
 <dl>
 <dd>
 

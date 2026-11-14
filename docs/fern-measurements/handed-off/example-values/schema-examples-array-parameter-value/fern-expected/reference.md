@@ -1,6 +1,6 @@
 # Reference
 ## Lamps
-<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py">get_lamp</a>(...) -> GetLampResponse</code></summary>
+<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py#L30-L64">get_lamp</a>(...) -> GetLampResponse</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.lamps.get_lamp(
 </dl>
 </details>
 
-<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py">get_lamp_manual</a>(...)</code></summary>
+<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py#L66-L101">get_lamp_manual</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -150,7 +150,7 @@ client.lamps.get_lamp_manual(
 </dl>
 </details>
 
-<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py">update_lamp_settings</a>(...) -> UpdateLampSettingsResponse</code></summary>
+<details><summary><code>client.lamps.<a href="src/fern/lamps/client.py#L103-L134">update_lamp_settings</a>(...) -> UpdateLampSettingsResponse</code></summary>
 <dl>
 <dd>
 

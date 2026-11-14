@@ -1,6 +1,6 @@
 # Reference
 ## Workspace
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">api_ocs_find_all</a>(...) -> WorkspaceApiOcsFindAllResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L32-L75">api_ocs_find_all</a>(...) -> WorkspaceApiOcsFindAllResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.workspace.api_ocs_find_all()
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">api_ocs_create</a>(...) -> WorkspaceApiOcsCreateResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L77-L109">api_ocs_create</a>(...) -> WorkspaceApiOcsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -132,7 +132,7 @@ client.workspace.api_ocs_create(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">api_ocs_find</a>(...) -> WorkspaceApiOcsFindResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L111-L143">api_ocs_find</a>(...) -> WorkspaceApiOcsFindResponse</code></summary>
 <dl>
 <dd>
 
@@ -191,7 +191,7 @@ client.workspace.api_ocs_find(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">api_ocs_delete</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L145-L174">api_ocs_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -250,7 +250,7 @@ client.workspace.api_ocs_delete(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">api_ocs_edit</a>(...) -> WorkspaceApiOcsEditResponse</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L176-L225">api_ocs_edit</a>(...) -> WorkspaceApiOcsEditResponse</code></summary>
 <dl>
 <dd>
 
@@ -334,7 +334,7 @@ client.workspace.api_ocs_edit(
 </details>
 
 ## WorkspaceUsers
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_find_users_by_id</a>(...) -> WorkspaceApiOcsFindUsersByIdResponse</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L34-L66">workspace_api_ocs_find_users_by_id</a>(...) -> WorkspaceApiOcsFindUsersByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -393,7 +393,7 @@ client.workspace_users.workspace_api_ocs_find_users_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_add_users_in_workspace</a>(...) -> WorkspaceApiOcsAddUsersInWorkspaceResponse</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L68-L106">workspace_api_ocs_add_users_in_workspace</a>(...) -> WorkspaceApiOcsAddUsersInWorkspaceResponse</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ client.workspace_users.workspace_api_ocs_add_users_in_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_remove_users_in_workspace</a>(...)</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L108-L149">workspace_api_ocs_remove_users_in_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -533,7 +533,7 @@ client.workspace_users.workspace_api_ocs_remove_users_in_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_add_user_as_workspace_manager</a>(...) -> WorkspaceApiOcsAddUserAsWorkspaceManagerResponse</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L151-L189">workspace_api_ocs_add_user_as_workspace_manager</a>(...) -> WorkspaceApiOcsAddUserAsWorkspaceManagerResponse</code></summary>
 <dl>
 <dd>
 
@@ -601,7 +601,7 @@ client.workspace_users.workspace_api_ocs_add_user_as_workspace_manager(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_remove_user_as_workspace_manager</a>(...)</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L191-L228">workspace_api_ocs_remove_user_as_workspace_manager</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -669,7 +669,7 @@ client.workspace_users.workspace_api_ocs_remove_user_as_workspace_manager(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_add_users_to_group</a>(...) -> WorkspaceApiOcsAddUsersToGroupResponse</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L230-L272">workspace_api_ocs_add_users_to_group</a>(...) -> WorkspaceApiOcsAddUsersToGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -748,7 +748,7 @@ client.workspace_users.workspace_api_ocs_add_users_to_group(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py">workspace_api_ocs_remove_users_from_group</a>(...)</code></summary>
+<details><summary><code>client.workspace_users.<a href="src/fern/workspace_users/client.py#L274-L320">workspace_api_ocs_remove_users_from_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.workspace_users.workspace_api_ocs_remove_users_from_group(
 </details>
 
 ## WorkspaceGroups
-<details><summary><code>client.workspace_groups.<a href="src/fern/workspace_groups/client.py">workspace_api_ocs_find_groups_by_space_id</a>(...) -> WorkspaceApiOcsFindGroupsBySpaceIdResponse</code></summary>
+<details><summary><code>client.workspace_groups.<a href="src/fern/workspace_groups/client.py#L30-L62">workspace_api_ocs_find_groups_by_space_id</a>(...) -> WorkspaceApiOcsFindGroupsBySpaceIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -887,7 +887,7 @@ client.workspace_groups.workspace_api_ocs_find_groups_by_space_id(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_groups.<a href="src/fern/workspace_groups/client.py">workspace_api_ocs_create_sub_group</a>(...) -> WorkspaceApiOcsCreateSubGroupResponse</code></summary>
+<details><summary><code>client.workspace_groups.<a href="src/fern/workspace_groups/client.py#L64-L100">workspace_api_ocs_create_sub_group</a>(...) -> WorkspaceApiOcsCreateSubGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -955,7 +955,7 @@ client.workspace_groups.workspace_api_ocs_create_sub_group(
 </dl>
 </details>
 
-<details><summary><code>client.workspace_groups.<a href="src/fern/workspace_groups/client.py">workspace_api_ocs_remove_group</a>(...)</code></summary>
+<details><summary><code>client.workspace_groups.<a href="src/fern/workspace_groups/client.py#L102-L137">workspace_api_ocs_remove_group</a>(...)</code></summary>
 <dl>
 <dd>
 

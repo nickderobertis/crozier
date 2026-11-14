@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_stations</a>() -> StationBoard</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">list_stations</a>() -> StationBoard</code></summary>
 <dl>
 <dd>
 

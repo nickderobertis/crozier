@@ -1,6 +1,6 @@
 # Reference
 ## Watches
-<details><summary><code>client.watches.<a href="src/fern/watches/client.py">end_watch</a>(...)</code></summary>
+<details><summary><code>client.watches.<a href="src/fern/watches/client.py#L27-L55">end_watch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -57,7 +57,7 @@ client.watches.end_watch(
 </dl>
 </details>
 
-<details><summary><code>client.watches.<a href="src/fern/watches/client.py">list_watches</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.watches.<a href="src/fern/watches/client.py#L57-L85">list_watches</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "65537dde1771605fd7d0ce54561bb5e90e6d66818758a4d4f9b0d7825113ec67"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "0d05c99fefbd09d66b0ccde1436763109f95b9cd1b3c950d2777a923e0a7667f"
 
 [[covers]]
 key = "readme-multipart-optional-file-params"

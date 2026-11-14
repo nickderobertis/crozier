@@ -1,6 +1,6 @@
 # Reference
 ## games
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_search</a>(...) -> typing.List[GameSearchResponseItem]</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L40-L68">game_search</a>(...) -> typing.List[GameSearchResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.games.game_search(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_cover_art</a>(...) -> GameGetCoverArtResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L70-L98">game_get_cover_art</a>(...) -> GameGetCoverArtResponse</code></summary>
 <dl>
 <dd>
 
@@ -118,7 +118,7 @@ client.games.game_get_cover_art(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_filter_counts</a>(...) -> GameGetFilterCountsResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L100-L137">game_get_filter_counts</a>(...) -> GameGetFilterCountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -191,7 +191,7 @@ client.games.game_get_filter_counts()
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_games</a>(...) -> GameGetGamesResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L139-L191">game_get_games</a>(...) -> GameGetGamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.games.game_get_games()
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_sitemap_entries</a>() -> typing.List[GameGetSitemapEntriesResponseItem]</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L193-L217">game_get_sitemap_entries</a>() -> typing.List[GameGetSitemapEntriesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -337,7 +337,7 @@ client.games.game_get_sitemap_entries()
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_by_id</a>(...) -> GameGetByIdResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L219-L247">game_get_by_id</a>(...) -> GameGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -396,7 +396,7 @@ client.games.game_get_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_screenshot_signed_urls</a>(...) -> typing.List[GameGetScreenshotSignedUrlsResponseItem]</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L249-L282">game_get_screenshot_signed_urls</a>(...) -> typing.List[GameGetScreenshotSignedUrlsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -457,7 +457,7 @@ client.games.game_get_screenshot_signed_urls(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">game_get_prices</a>(...) -> typing.Optional[GameGetPricesResponse]</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L284-L312">game_get_prices</a>(...) -> typing.Optional[GameGetPricesResponse]</code></summary>
 <dl>
 <dd>
 
@@ -517,7 +517,7 @@ client.games.game_get_prices(
 </details>
 
 ## reviews
-<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py">review_list_mine</a>() -> typing.List[ReviewListMineResponseItem]</code></summary>
+<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py#L38-L62">review_list_mine</a>() -> typing.List[ReviewListMineResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -566,7 +566,7 @@ client.reviews.review_list_mine()
 </dl>
 </details>
 
-<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py">review_get_upload_url</a>(...) -> ReviewGetUploadUrlResponse</code></summary>
+<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py#L64-L100">review_get_upload_url</a>(...) -> ReviewGetUploadUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -643,7 +643,7 @@ client.reviews.review_get_upload_url(
 </dl>
 </details>
 
-<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py">review_create</a>(...) -> typing.Optional[ReviewCreateResponse]</code></summary>
+<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py#L102-L186">review_create</a>(...) -> typing.Optional[ReviewCreateResponse]</code></summary>
 <dl>
 <dd>
 
@@ -787,7 +787,7 @@ client.reviews.review_create(
 </dl>
 </details>
 
-<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py">review_delete_review</a>(...) -> ReviewDeleteReviewResponse</code></summary>
+<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py#L188-L221">review_delete_review</a>(...) -> ReviewDeleteReviewResponse</code></summary>
 <dl>
 <dd>
 
@@ -855,7 +855,7 @@ client.reviews.review_delete_review(
 </dl>
 </details>
 
-<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py">review_update_review</a>(...) -> ReviewUpdateReviewResponse</code></summary>
+<details><summary><code>client.reviews.<a href="src/fern/reviews/client.py#L223-L282">review_update_review</a>(...) -> ReviewUpdateReviewResponse</code></summary>
 <dl>
 <dd>
 
@@ -964,7 +964,7 @@ client.reviews.review_update_review(
 </details>
 
 ## mac-configs
-<details><summary><code>client.mac_configs.<a href="src/fern/mac_configs/client.py">review_get_mac_configs</a>(...) -> typing.List[ReviewGetMacConfigsResponseItem]</code></summary>
+<details><summary><code>client.mac_configs.<a href="src/fern/mac_configs/client.py#L27-L61">review_get_mac_configs</a>(...) -> typing.List[ReviewGetMacConfigsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1029,7 +1029,7 @@ client.mac_configs.review_get_mac_configs()
 </dl>
 </details>
 
-<details><summary><code>client.mac_configs.<a href="src/fern/mac_configs/client.py">review_get_mac_config_by_id</a>(...) -> typing.Optional[ReviewGetMacConfigByIdResponse]</code></summary>
+<details><summary><code>client.mac_configs.<a href="src/fern/mac_configs/client.py#L63-L91">review_get_mac_config_by_id</a>(...) -> typing.Optional[ReviewGetMacConfigByIdResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1089,7 +1089,7 @@ client.mac_configs.review_get_mac_config_by_id(
 </details>
 
 ## contributors
-<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py">contributor_get_by_id</a>(...) -> ContributorGetByIdResponse</code></summary>
+<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py#L27-L55">contributor_get_by_id</a>(...) -> ContributorGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1148,7 +1148,7 @@ client.contributors.contributor_get_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py">contributor_get_top_contributors</a>(...) -> ContributorGetTopContributorsResponse</code></summary>
+<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py#L57-L91">contributor_get_top_contributors</a>(...) -> ContributorGetTopContributorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1214,7 +1214,7 @@ client.contributors.contributor_get_top_contributors()
 </details>
 
 ## Library
-<details><summary><code>client.library.<a href="src/fern/library/client.py">linkstarturl</a>() -> LibraryLinkStartUrlResponse</code></summary>
+<details><summary><code>client.library.<a href="src/fern/library/client.py#L30-L52">linkstarturl</a>() -> LibraryLinkStartUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -1263,7 +1263,7 @@ client.library.linkstarturl()
 </dl>
 </details>
 
-<details><summary><code>client.library.<a href="src/fern/library/client.py">status</a>() -> LibraryStatusResponse</code></summary>
+<details><summary><code>client.library.<a href="src/fern/library/client.py#L54-L76">status</a>() -> LibraryStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1312,7 +1312,7 @@ client.library.status()
 </dl>
 </details>
 
-<details><summary><code>client.library.<a href="src/fern/library/client.py">sync</a>() -> LibrarySyncResponse</code></summary>
+<details><summary><code>client.library.<a href="src/fern/library/client.py#L78-L100">sync</a>() -> LibrarySyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -1361,7 +1361,7 @@ client.library.sync()
 </dl>
 </details>
 
-<details><summary><code>client.library.<a href="src/fern/library/client.py">list</a>() -> typing.List[LibraryListResponseItem]</code></summary>
+<details><summary><code>client.library.<a href="src/fern/library/client.py#L102-L124">list</a>() -> typing.List[LibraryListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1410,7 +1410,7 @@ client.library.list()
 </dl>
 </details>
 
-<details><summary><code>client.library.<a href="src/fern/library/client.py">unlink</a>() -> LibraryUnlinkResponse</code></summary>
+<details><summary><code>client.library.<a href="src/fern/library/client.py#L126-L148">unlink</a>() -> LibraryUnlinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1460,7 @@ client.library.unlink()
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">report_create</a>(...) -> ReportCreateResponse</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L30-L69">report_create</a>(...) -> ReportCreateResponse</code></summary>
 <dl>
 <dd>
 

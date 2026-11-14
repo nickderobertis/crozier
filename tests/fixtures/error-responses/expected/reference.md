@@ -1,6 +1,6 @@
 # Reference
 ## Widgets
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">getwidget</a>(...) -> Widget</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L29-L56">getwidget</a>(...) -> Widget</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.widgets.getwidget(
 </dl>
 </details>
 
-<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py">createwidget</a>(...) -> Widget</code></summary>
+<details><summary><code>client.widgets.<a href="src/fern/widgets/client.py#L58-L89">createwidget</a>(...) -> Widget</code></summary>
 <dl>
 <dd>
 

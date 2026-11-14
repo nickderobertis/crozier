@@ -105,7 +105,7 @@ client.🚧_legacy_endpoints.get_legacy_account()
 </details>
 
 ## Moorings
-<details><summary><code>client.moorings.<a href="src/fern/moorings/client.py">list_moorings</a>() -> typing.List[Account]</code></summary>
+<details><summary><code>client.moorings.<a href="src/fern/moorings/client.py#L26-L48">list_moorings</a>() -> typing.List[Account]</code></summary>
 <dl>
 <dd>
 

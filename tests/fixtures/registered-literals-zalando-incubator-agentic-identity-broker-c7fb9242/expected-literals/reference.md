@@ -1,6 +1,6 @@
 # Reference
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L72">get_health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -86,7 +86,7 @@ client.health.get_health()
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_current_user</a>() -> GetUserInfoResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L26-L66">get_current_user</a>() -> GetUserInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.user.get_current_user()
 </details>
 
 ## Consent
-<details><summary><code>client.consent.<a href="src/fern/consent/client.py">get_agent_delegations</a>() -> GetAgentDelegationsResponse</code></summary>
+<details><summary><code>client.consent.<a href="src/fern/consent/client.py#L33-L81">get_agent_delegations</a>() -> GetAgentDelegationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.consent.get_agent_delegations()
 </dl>
 </details>
 
-<details><summary><code>client.consent.<a href="src/fern/consent/client.py">get_agent_detail</a>(...) -> GetAgentDetailResponse</code></summary>
+<details><summary><code>client.consent.<a href="src/fern/consent/client.py#L83-L148">get_agent_detail</a>(...) -> GetAgentDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -359,7 +359,7 @@ Agents are registered in the identity broker and represent AI assistants or auto
 </dl>
 </details>
 
-<details><summary><code>client.consent.<a href="src/fern/consent/client.py">get_agent_grants</a>(...) -> GetAgentGrantsResponse</code></summary>
+<details><summary><code>client.consent.<a href="src/fern/consent/client.py#L150-L206">get_agent_grants</a>(...) -> GetAgentGrantsResponse</code></summary>
 <dl>
 <dd>
 
@@ -459,7 +459,7 @@ Agents are registered in the identity broker and represent AI assistants or auto
 </dl>
 </details>
 
-<details><summary><code>client.consent.<a href="src/fern/consent/client.py">create_or_update_grant</a>(...) -> typing.Optional[CreateOrUpdateGrantResponse]</code></summary>
+<details><summary><code>client.consent.<a href="src/fern/consent/client.py#L208-L339">create_or_update_grant</a>(...) -> typing.Optional[CreateOrUpdateGrantResponse]</code></summary>
 <dl>
 <dd>
 
@@ -641,7 +641,7 @@ Optional grant expiration (ISO 8601 format).
 </dl>
 </details>
 
-<details><summary><code>client.consent.<a href="src/fern/consent/client.py">revoke_agent_grant</a>(...)</code></summary>
+<details><summary><code>client.consent.<a href="src/fern/consent/client.py#L341-L386">revoke_agent_grant</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -734,7 +734,7 @@ Agents are registered in the identity broker and represent AI assistants or auto
 </details>
 
 ## Third-Party Sessions
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">list_third_party_sessions</a>() -> ListThirdPartySessionsResponse</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L30-L64">list_third_party_sessions</a>() -> ListThirdPartySessionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -805,7 +805,7 @@ client.third_party_sessions.list_third_party_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">initiate_o_auth2flow</a>(...)</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L66-L114">initiate_o_auth2flow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -901,7 +901,7 @@ Must match the host of the incoming request (same-origin validation).
 </dl>
 </details>
 
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">handle_o_auth2callback</a>(...)</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L116-L197">handle_o_auth2callback</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.third_party_sessions.handle_o_auth2callback(
 </dl>
 </details>
 
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">get_session_details</a>(...) -> GetSessionDetailsResponse</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L199-L232">get_session_details</a>(...) -> GetSessionDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1106,7 +1106,7 @@ client.third_party_sessions.get_session_details(
 </dl>
 </details>
 
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">terminate_session</a>(...) -> TerminateSessionResponse</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L234-L271">terminate_session</a>(...) -> TerminateSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1185,7 +1185,7 @@ client.third_party_sessions.terminate_session(
 </dl>
 </details>
 
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">refresh_third_party_session</a>(...) -> RefreshThirdPartySessionResponse</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L273-L309">refresh_third_party_session</a>(...) -> RefreshThirdPartySessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1263,7 +1263,7 @@ client.third_party_sessions.refresh_third_party_session(
 </dl>
 </details>
 
-<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py">get_affected_agents</a>(...) -> GetAffectedAgentsResponse</code></summary>
+<details><summary><code>client.third_party_sessions.<a href="src/fern/third_party_sessions/client.py#L311-L344">get_affected_agents</a>(...) -> GetAffectedAgentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1339,7 +1339,7 @@ client.third_party_sessions.get_affected_agents(
 </details>
 
 ## OAuth2 Token
-<details><summary><code>client.o_auth2token.<a href="src/fern/o_auth2token/client.py">oauth2authorize</a>(...)</code></summary>
+<details><summary><code>client.o_auth2token.<a href="src/fern/o_auth2token/client.py#L35-L137">oauth2authorize</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1496,7 +1496,7 @@ client.o_auth2token.oauth2authorize(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth2token.<a href="src/fern/o_auth2token/client.py">token_exchange</a>(...) -> TokenExchangeResponse</code></summary>
+<details><summary><code>client.o_auth2token.<a href="src/fern/o_auth2token/client.py#L139-L384">token_exchange</a>(...) -> TokenExchangeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1670,7 +1670,7 @@ client.o_auth2token.token_exchange(
 </details>
 
 ## Approvals
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">sync_approvals</a>(...) -> ApprovalSyncResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L41-L91">sync_approvals</a>(...) -> ApprovalSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -1768,7 +1768,7 @@ client.approvals.sync_approvals()
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">create_approval</a>(...) -> CreateApprovalResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L93-L156">create_approval</a>(...) -> CreateApprovalResponse</code></summary>
 <dl>
 <dd>
 
@@ -1884,7 +1884,7 @@ client.approvals.create_approval(
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">list_pending_approvals</a>() -> ListPendingApprovalsResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L158-L187">list_pending_approvals</a>() -> ListPendingApprovalsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1950,7 +1950,7 @@ client.approvals.list_pending_approvals()
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">list_permanent_approvals</a>() -> ListPermanentApprovalsResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L189-L218">list_permanent_approvals</a>() -> ListPermanentApprovalsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2016,7 +2016,7 @@ client.approvals.list_permanent_approvals()
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">get_approval</a>(...) -> ApprovalDetailResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L220-L252">get_approval</a>(...) -> ApprovalDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -2091,7 +2091,7 @@ client.approvals.get_approval(
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">approve_approval</a>(...) -> ApproveResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L254-L299">approve_approval</a>(...) -> ApproveResponse</code></summary>
 <dl>
 <dd>
 
@@ -2183,7 +2183,7 @@ client.approvals.approve_approval(
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">preview_approval_scope</a>(...) -> ScopePreviewResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L301-L339">preview_approval_scope</a>(...) -> ScopePreviewResponse</code></summary>
 <dl>
 <dd>
 
@@ -2251,7 +2251,7 @@ client.approvals.preview_approval_scope(
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">deny_approval</a>(...) -> DenyResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L341-L379">deny_approval</a>(...) -> DenyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2334,7 +2334,7 @@ client.approvals.deny_approval(
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">consume_approval</a>(...) -> ConsumeResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L381-L413">consume_approval</a>(...) -> ConsumeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2411,7 +2411,7 @@ client.approvals.consume_approval(
 </dl>
 </details>
 
-<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py">revoke_permanent_approval</a>(...) -> DenyResponse</code></summary>
+<details><summary><code>client.approvals.<a href="src/fern/approvals/client.py#L415-L447">revoke_permanent_approval</a>(...) -> DenyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2487,7 +2487,7 @@ client.approvals.revoke_permanent_approval(
 </details>
 
 ## OAuth2 Discovery
-<details><summary><code>client.o_auth2discovery.<a href="src/fern/o_auth2discovery/client.py">get_jwks</a>() -> JwkSetResponse</code></summary>
+<details><summary><code>client.o_auth2discovery.<a href="src/fern/o_auth2discovery/client.py#L27-L73">get_jwks</a>() -> JwkSetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2572,7 +2572,7 @@ client.o_auth2discovery.get_jwks()
 </dl>
 </details>
 
-<details><summary><code>client.o_auth2discovery.<a href="src/fern/o_auth2discovery/client.py">get_o_auth2server_metadata</a>() -> OAuth2MetadataResponse</code></summary>
+<details><summary><code>client.o_auth2discovery.<a href="src/fern/o_auth2discovery/client.py#L75-L118">get_o_auth2server_metadata</a>() -> OAuth2MetadataResponse</code></summary>
 <dl>
 <dd>
 

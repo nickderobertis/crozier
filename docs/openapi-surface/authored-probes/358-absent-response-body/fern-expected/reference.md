@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_holder</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L96-L118">get_holder</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">read_parcel</a>() -> ReadParcelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">read_parcel</a>() -> ReadParcelResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Utilities
-<details><summary><code>client.utilities.<a href="src/fern/utilities/client.py">ping</a>() -> PingResponse</code></summary>
+<details><summary><code>client.utilities.<a href="src/fern/utilities/client.py#L30-L54">ping</a>() -> PingResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.utilities.ping()
 </dl>
 </details>
 
-<details><summary><code>client.utilities.<a href="src/fern/utilities/client.py">get_customer_hub_embed</a>(...) -> GetCustomerHubEmbedResponse</code></summary>
+<details><summary><code>client.utilities.<a href="src/fern/utilities/client.py#L56-L87">get_customer_hub_embed</a>(...) -> GetCustomerHubEmbedResponse</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.utilities.get_customer_hub_embed(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">list_products</a>(...) -> ListProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L31-L63">list_products</a>(...) -> ListProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -208,7 +208,7 @@ client.products.list_products()
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get_product</a>(...) -> GetProductResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L65-L96">get_product</a>(...) -> GetProductResponse</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +282,7 @@ client.products.get_product(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">get_customer</a>(...) -> GetCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L29-L60">get_customer</a>(...) -> GetCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -356,7 +356,7 @@ client.customers.get_customer(
 </details>
 
 ## Transactions
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L31-L79">list_transactions</a>(...) -> ListTransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -459,7 +459,7 @@ client.transactions.list_transactions()
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_transaction</a>(...) -> GetTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L81-L111">get_transaction</a>(...) -> GetTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -532,7 +532,7 @@ client.transactions.get_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">refund_transaction</a>(...) -> RefundTransactionResponse</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L113-L155">refund_transaction</a>(...) -> RefundTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -622,7 +622,7 @@ client.transactions.refund_transaction(
 </details>
 
 ## Subscriptions
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">cancel_subscription</a>(...) -> CancelSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L28-L58">cancel_subscription</a>(...) -> CancelSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -695,7 +695,7 @@ client.subscriptions.cancel_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">pause_subscription</a>(...) -> PauseSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L60-L90">pause_subscription</a>(...) -> PauseSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -768,7 +768,7 @@ client.subscriptions.pause_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py">resume_subscription</a>(...) -> ResumeSubscriptionResponse</code></summary>
+<details><summary><code>client.subscriptions.<a href="src/fern/subscriptions/client.py#L92-L122">resume_subscription</a>(...) -> ResumeSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -842,7 +842,7 @@ client.subscriptions.resume_subscription(
 </details>
 
 ## Students
-<details><summary><code>client.students.<a href="src/fern/students/client.py">create_student</a>(...) -> CreateStudentResponse</code></summary>
+<details><summary><code>client.students.<a href="src/fern/students/client.py#L29-L71">create_student</a>(...) -> CreateStudentResponse</code></summary>
 <dl>
 <dd>
 
@@ -932,7 +932,7 @@ client.students.create_student(
 </details>
 
 ## EventSubscriptions
-<details><summary><code>client.event_subscriptions.<a href="src/fern/event_subscriptions/client.py">create_event_subscription</a>(...) -> CreateEventSubscriptionResponse</code></summary>
+<details><summary><code>client.event_subscriptions.<a href="src/fern/event_subscriptions/client.py#L31-L78">create_event_subscription</a>(...) -> CreateEventSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1023,7 +1023,7 @@ client.event_subscriptions.create_event_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.event_subscriptions.<a href="src/fern/event_subscriptions/client.py">delete_event_subscription</a>(...) -> DeleteEventSubscriptionResponse</code></summary>
+<details><summary><code>client.event_subscriptions.<a href="src/fern/event_subscriptions/client.py#L80-L112">delete_event_subscription</a>(...) -> DeleteEventSubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1097,7 +1097,7 @@ client.event_subscriptions.delete_event_subscription(
 </details>
 
 ## Coupons
-<details><summary><code>client.coupons.<a href="src/fern/coupons/client.py">list_coupons</a>(...) -> ListCouponsResponse</code></summary>
+<details><summary><code>client.coupons.<a href="src/fern/coupons/client.py#L32-L60">list_coupons</a>(...) -> ListCouponsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1168,7 +1168,7 @@ client.coupons.list_coupons()
 </dl>
 </details>
 
-<details><summary><code>client.coupons.<a href="src/fern/coupons/client.py">create_coupon</a>(...) -> CreateCouponResponse</code></summary>
+<details><summary><code>client.coupons.<a href="src/fern/coupons/client.py#L62-L120">create_coupon</a>(...) -> CreateCouponResponse</code></summary>
 <dl>
 <dd>
 

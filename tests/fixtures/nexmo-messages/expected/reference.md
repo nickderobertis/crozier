@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">send_message</a>(...) -> SendMessageResponseMessageUuid</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L161">send_message</a>(...) -> SendMessageResponseMessageUuid</code></summary>
 <dl>
 <dd>
 

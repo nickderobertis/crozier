@@ -1,6 +1,6 @@
 # Reference
 ## Galleys
-<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">set_galley</a>(...)</code></summary>
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py#L28-L53">set_galley</a>(...)</code></summary>
 <dl>
 <dd>
 

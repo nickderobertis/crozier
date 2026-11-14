@@ -1,6 +1,6 @@
 # Reference
 ## Query
-<details><summary><code>client.query.<a href="src/fern/query/client.py">query_all_properties</a>(...) -> Property</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L30-L56">query_all_properties</a>(...) -> Property</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.query.query_all_properties(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">query_specific_property</a>(...) -> Property</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L58-L87">query_specific_property</a>(...) -> Property</code></summary>
 <dl>
 <dd>
 
@@ -125,7 +125,7 @@ client.query.query_specific_property(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">batch_metadata_query</a>(...) -> PostMetadataQueryResponse</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L89-L123">batch_metadata_query</a>(...) -> PostMetadataQueryResponse</code></summary>
 <dl>
 <dd>
 

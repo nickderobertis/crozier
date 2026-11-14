@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">validate_token</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L116-L139">validate_token</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.validate_token()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">validate_token_front</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L141-L164">validate_token_front</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.validate_token_front()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">health_health_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L166-L191">health_health_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.health_health_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">forecast</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L193-L382">forecast</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -438,7 +438,7 @@ client.forecast(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">historic_forecast</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L384-L495">historic_forecast</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -516,7 +516,7 @@ client.historic_forecast(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">forecast_multi_series</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L497-L583">forecast_multi_series</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -586,7 +586,7 @@ client.forecast_multi_series()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">historic_forecast_multi_series</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L585-L741">historic_forecast_multi_series</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -663,7 +663,7 @@ client.historic_forecast_multi_series(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">anomaly_detection_multi_series</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L743-L804">anomaly_detection_multi_series</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -733,7 +733,7 @@ client.anomaly_detection_multi_series()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">cross_validation_multi_series</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L806-L1427">cross_validation_multi_series</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -920,7 +920,7 @@ client.cross_validation_multi_series(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">model_input_size</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1429-L1513">model_input_size</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -976,7 +976,7 @@ client.model_input_size()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">model_params</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1515-L1599">model_params</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1032,7 +1032,7 @@ client.model_params()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1601-L1790">timegpt</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1313,7 +1313,7 @@ client.timegpt(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_historic</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1792-L1903">timegpt_historic</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1391,7 +1391,7 @@ client.timegpt_historic(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_multi_series</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1905-L1991">timegpt_multi_series</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1461,7 +1461,7 @@ client.timegpt_multi_series()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_multi_series_historic</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1993-L2149">timegpt_multi_series_historic</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1538,7 +1538,7 @@ client.timegpt_multi_series_historic(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_multi_series_anomalies</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2151-L2212">timegpt_multi_series_anomalies</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1608,7 +1608,7 @@ client.timegpt_multi_series_anomalies()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_multi_series_cross_validation</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2214-L2310">timegpt_multi_series_cross_validation</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1678,7 +1678,7 @@ client.timegpt_multi_series_cross_validation()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_input_size</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2312-L2396">timegpt_input_size</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1734,7 +1734,7 @@ client.timegpt_input_size()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">timegpt_model_params</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2398-L2482">timegpt_model_params</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

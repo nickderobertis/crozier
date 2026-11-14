@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">export_bytes</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L96-L109">export_bytes</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -39,7 +39,7 @@ client.export_bytes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">export_mixed</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L133">export_mixed</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -86,7 +86,7 @@ client.export_mixed()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">export_integer</a>() -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L135-L157">export_integer</a>() -> str</code></summary>
 <dl>
 <dd>
 

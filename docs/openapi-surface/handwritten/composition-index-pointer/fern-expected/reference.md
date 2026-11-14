@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_account</a>(...) -> Account</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L27-L59">get_account</a>(...) -> Account</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.accounts.get_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">list_categorised_accounts</a>(...) -> typing.List[CategorisedAccount]</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L61-L90">list_categorised_accounts</a>(...) -> typing.List[CategorisedAccount]</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.accounts.list_categorised_accounts(
 </details>
 
 ## Drawings
-<details><summary><code>client.drawings.<a href="src/fern/drawings/client.py">get_drawing</a>(...) -> Drawing</code></summary>
+<details><summary><code>client.drawings.<a href="src/fern/drawings/client.py#L26-L53">get_drawing</a>(...) -> Drawing</code></summary>
 <dl>
 <dd>
 
@@ -182,7 +182,7 @@ client.drawings.get_drawing(
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">get_report</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L25-L43">get_report</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.reports.get_report(...)
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">download_report</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L45-L74">download_report</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.reports.download_report(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">accounts_updated</a>() -> AccountsWebhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L26-L48">accounts_updated</a>() -> AccountsWebhook</code></summary>
 <dl>
 <dd>
 

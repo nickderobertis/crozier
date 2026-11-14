@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">ping</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L123">ping</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.ping()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_logbook</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L125-L148">read_logbook</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

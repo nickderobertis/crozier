@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">login_token_post</a>(...) -> LoginTokenPostResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L123-L184">login_token_post</a>(...) -> LoginTokenPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -99,7 +99,7 @@ client.login_token_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_users_me_users_me_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L186-L208">read_users_me_users_me_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -148,7 +148,7 @@ client.read_users_me_users_me_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">hello_world_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L210-L232">hello_world_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -197,7 +197,7 @@ client.hello_world_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">read_items_items_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L234-L256">read_items_items_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -246,7 +246,7 @@ client.read_items_items_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_unhealthy_assets_get</a>(...) -> GetUnhealthyAssetsGetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L258-L288">get_unhealthy_assets_get</a>(...) -> GetUnhealthyAssetsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.get_unhealthy_assets_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_work_order_get</a>(...) -> CreateWorkOrderGetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L290-L339">create_work_order_get</a>(...) -> CreateWorkOrderGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -391,7 +391,7 @@ client.create_work_order_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">check_asset_for_work_orders_get</a>(...) -> CheckAssetForWorkOrdersGetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L341-L374">check_asset_for_work_orders_get</a>(...) -> CheckAssetForWorkOrdersGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -459,7 +459,7 @@ client.check_asset_for_work_orders_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">check_multiple_assets_for_work_orders_get</a>(...) -> CheckMultipleAssetsForWorkOrdersGetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L376-L420">check_multiple_assets_for_work_orders_get</a>(...) -> CheckMultipleAssetsForWorkOrdersGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -537,7 +537,7 @@ client.check_multiple_assets_for_work_orders_get(
 </details>
 
 ## Hello
-<details><summary><code>client.hello.<a href="src/fern/hello/client.py">hello</a>() -> typing.Any</code></summary>
+<details><summary><code>client.hello.<a href="src/fern/hello/client.py#L25-L47">hello</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

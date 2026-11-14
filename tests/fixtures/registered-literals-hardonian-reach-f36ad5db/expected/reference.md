@@ -1,6 +1,6 @@
 # Reference
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L27-L49">get_health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.system.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_version</a>() -> VersionResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L51-L73">get_version</a>() -> VersionResponse</code></summary>
 <dl>
 <dd>
 
@@ -125,7 +125,7 @@ client.system.get_version()
 </details>
 
 ## Runs
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">create_run</a>(...) -> Run</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L31-L71">create_run</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -210,7 +210,7 @@ client.runs.create_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">get_run</a>(...) -> Run</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L73-L100">get_run</a>(...) -> Run</code></summary>
 <dl>
 <dd>
 
@@ -282,7 +282,7 @@ client.runs.get_run(
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">get_run_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L102-L126">get_run_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -353,7 +353,7 @@ client.runs.get_run_events(...)
 </dl>
 </details>
 
-<details><summary><code>client.runs.<a href="src/fern/runs/client.py">replay_run</a>(...) -> ReplayResponse</code></summary>
+<details><summary><code>client.runs.<a href="src/fern/runs/client.py#L128-L155">replay_run</a>(...) -> ReplayResponse</code></summary>
 <dl>
 <dd>
 
@@ -426,7 +426,7 @@ client.runs.replay_run(
 </details>
 
 ## Capsules
-<details><summary><code>client.capsules.<a href="src/fern/capsules/client.py">create_capsule</a>(...) -> Capsule</code></summary>
+<details><summary><code>client.capsules.<a href="src/fern/capsules/client.py#L30-L57">create_capsule</a>(...) -> Capsule</code></summary>
 <dl>
 <dd>
 
@@ -498,7 +498,7 @@ client.capsules.create_capsule(
 </dl>
 </details>
 
-<details><summary><code>client.capsules.<a href="src/fern/capsules/client.py">verify_capsule</a>(...) -> VerificationResult</code></summary>
+<details><summary><code>client.capsules.<a href="src/fern/capsules/client.py#L59-L88">verify_capsule</a>(...) -> VerificationResult</code></summary>
 <dl>
 <dd>
 
@@ -571,7 +571,7 @@ client.capsules.verify_capsule(
 </details>
 
 ## Federation
-<details><summary><code>client.federation.<a href="src/fern/federation/client.py">get_federation_status</a>() -> FederationStatus</code></summary>
+<details><summary><code>client.federation.<a href="src/fern/federation/client.py#L26-L48">get_federation_status</a>() -> FederationStatus</code></summary>
 <dl>
 <dd>
 
@@ -634,7 +634,7 @@ client.federation.get_federation_status()
 </details>
 
 ## Packs
-<details><summary><code>client.packs.<a href="src/fern/packs/client.py">list_packs</a>(...) -> PacksResponse</code></summary>
+<details><summary><code>client.packs.<a href="src/fern/packs/client.py#L31-L58">list_packs</a>(...) -> PacksResponse</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ client.packs.list_packs()
 </dl>
 </details>
 
-<details><summary><code>client.packs.<a href="src/fern/packs/client.py">install_pack</a>(...) -> InstallPackResponse</code></summary>
+<details><summary><code>client.packs.<a href="src/fern/packs/client.py#L60-L89">install_pack</a>(...) -> InstallPackResponse</code></summary>
 <dl>
 <dd>
 
@@ -776,7 +776,7 @@ client.packs.install_pack(
 </dl>
 </details>
 
-<details><summary><code>client.packs.<a href="src/fern/packs/client.py">verify_pack</a>(...) -> VerificationResult</code></summary>
+<details><summary><code>client.packs.<a href="src/fern/packs/client.py#L91-L117">verify_pack</a>(...) -> VerificationResult</code></summary>
 <dl>
 <dd>
 

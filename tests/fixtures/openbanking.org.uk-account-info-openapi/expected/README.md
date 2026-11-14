@@ -73,7 +73,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 from fern.account_access import ObReadConsent1Data, ObReadConsent1DataPermissionsItem
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, ObRisk2
 
 client = AsyncFernApi(
     token="<token>",

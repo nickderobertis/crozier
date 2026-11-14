@@ -1,6 +1,6 @@
 # Reference
 ## NpqApplications
-<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py">retrieve_multiple_npq_applications</a>(...) -> ApplicationsResponse</code></summary>
+<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py#L36-L73">retrieve_multiple_npq_applications</a>(...) -> ApplicationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.npq_applications.retrieve_multiple_npq_applications()
 </dl>
 </details>
 
-<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py">retrieve_a_single_npq_application</a>(...) -> ApplicationResponse</code></summary>
+<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py#L75-L103">retrieve_a_single_npq_application</a>(...) -> ApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -132,7 +132,7 @@ client.npq_applications.retrieve_a_single_npq_application(
 </dl>
 </details>
 
-<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py">accept_an_npq_application</a>(...) -> ApplicationResponse</code></summary>
+<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py#L105-L146">accept_an_npq_application</a>(...) -> ApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.npq_applications.accept_an_npq_application(
 </dl>
 </details>
 
-<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py">reject_an_npq_application</a>(...) -> ApplicationResponse</code></summary>
+<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py#L148-L176">reject_an_npq_application</a>(...) -> ApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -263,7 +263,7 @@ client.npq_applications.reject_an_npq_application(
 </dl>
 </details>
 
-<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py">change_funded_place_value_of_an_npq_application</a>(...) -> ApplicationResponse</code></summary>
+<details><summary><code>client.npq_applications.<a href="src/fern/npq_applications/client.py#L178-L226">change_funded_place_value_of_an_npq_application</a>(...) -> ApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -338,7 +338,7 @@ client.npq_applications.change_funded_place_value_of_an_npq_application(
 </details>
 
 ## ParticipantDeclarations
-<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py">retrieve_multiple_participant_declarations</a>(...) -> ParticipantDeclarationsResponse</code></summary>
+<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py#L37-L71">retrieve_multiple_participant_declarations</a>(...) -> ParticipantDeclarationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -403,7 +403,7 @@ client.participant_declarations.retrieve_multiple_participant_declarations()
 </dl>
 </details>
 
-<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py">declare_a_participant_has_reached_a_milestone</a>(...) -> ParticipantDeclarationResponse</code></summary>
+<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py#L73-L127">declare_a_participant_has_reached_a_milestone</a>(...) -> ParticipantDeclarationResponse</code></summary>
 <dl>
 <dd>
 
@@ -473,7 +473,7 @@ client.participant_declarations.declare_a_participant_has_reached_a_milestone(
 </dl>
 </details>
 
-<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py">retrieve_a_single_participant_declarations</a>(...) -> ParticipantDeclarationResponse</code></summary>
+<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py#L129-L157">retrieve_a_single_participant_declarations</a>(...) -> ParticipantDeclarationResponse</code></summary>
 <dl>
 <dd>
 
@@ -532,7 +532,7 @@ client.participant_declarations.retrieve_a_single_participant_declarations(
 </dl>
 </details>
 
-<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py">void_a_declaration</a>(...) -> ParticipantDeclarationResponse</code></summary>
+<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py#L159-L187">void_a_declaration</a>(...) -> ParticipantDeclarationResponse</code></summary>
 <dl>
 <dd>
 
@@ -591,7 +591,7 @@ client.participant_declarations.void_a_declaration(
 </dl>
 </details>
 
-<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py">change_declaration_delivery_partner</a>(...) -> ParticipantDeclarationResponse</code></summary>
+<details><summary><code>client.participant_declarations.<a href="src/fern/participant_declarations/client.py#L189-L237">change_declaration_delivery_partner</a>(...) -> ParticipantDeclarationResponse</code></summary>
 <dl>
 <dd>
 
@@ -667,7 +667,7 @@ client.participant_declarations.change_declaration_delivery_partner(
 </details>
 
 ## DeliveryPartners
-<details><summary><code>client.delivery_partners.<a href="src/fern/delivery_partners/client.py">retrieve_multiple_delivery_partners</a>(...) -> DeliveryPartnersResponse</code></summary>
+<details><summary><code>client.delivery_partners.<a href="src/fern/delivery_partners/client.py#L29-L66">retrieve_multiple_delivery_partners</a>(...) -> DeliveryPartnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -741,7 +741,7 @@ client.delivery_partners.retrieve_multiple_delivery_partners()
 </details>
 
 ## NpqParticipantOutcomes
-<details><summary><code>client.npq_participant_outcomes.<a href="src/fern/npq_participant_outcomes/client.py">retrieve_multiple_npq_outcomes_for_all_participants</a>(...) -> ParticipantOutcomesResponse</code></summary>
+<details><summary><code>client.npq_participant_outcomes.<a href="src/fern/npq_participant_outcomes/client.py#L34-L68">retrieve_multiple_npq_outcomes_for_all_participants</a>(...) -> ParticipantOutcomesResponse</code></summary>
 <dl>
 <dd>
 
@@ -806,7 +806,7 @@ client.npq_participant_outcomes.retrieve_multiple_npq_outcomes_for_all_participa
 </dl>
 </details>
 
-<details><summary><code>client.npq_participant_outcomes.<a href="src/fern/npq_participant_outcomes/client.py">retrieve_multiple_npq_outcomes_for_a_single_participant</a>(...) -> ParticipantOutcomesResponse</code></summary>
+<details><summary><code>client.npq_participant_outcomes.<a href="src/fern/npq_participant_outcomes/client.py#L70-L106">retrieve_multiple_npq_outcomes_for_a_single_participant</a>(...) -> ParticipantOutcomesResponse</code></summary>
 <dl>
 <dd>
 
@@ -873,7 +873,7 @@ client.npq_participant_outcomes.retrieve_multiple_npq_outcomes_for_a_single_part
 </dl>
 </details>
 
-<details><summary><code>client.npq_participant_outcomes.<a href="src/fern/npq_participant_outcomes/client.py">submit_a_npq_outcome_for_a_single_participant</a>(...) -> ParticipantOutcomeResponse</code></summary>
+<details><summary><code>client.npq_participant_outcomes.<a href="src/fern/npq_participant_outcomes/client.py#L108-L160">submit_a_npq_outcome_for_a_single_participant</a>(...) -> ParticipantOutcomeResponse</code></summary>
 <dl>
 <dd>
 
@@ -950,7 +950,7 @@ client.npq_participant_outcomes.submit_a_npq_outcome_for_a_single_participant(
 </details>
 
 ## NpqParticipants
-<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py">retrieve_multiple_npq_participants</a>(...) -> ParticipantsResponse</code></summary>
+<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py#L38-L75">retrieve_multiple_npq_participants</a>(...) -> ParticipantsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1023,7 +1023,7 @@ client.npq_participants.retrieve_multiple_npq_participants()
 </dl>
 </details>
 
-<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py">retrieve_a_single_npq_participant</a>(...) -> ParticipantResponse</code></summary>
+<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py#L77-L105">retrieve_a_single_npq_participant</a>(...) -> ParticipantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1082,7 +1082,7 @@ client.npq_participants.retrieve_a_single_npq_participant(
 </dl>
 </details>
 
-<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py">resume_an_npq_participant</a>(...) -> ParticipantResponse</code></summary>
+<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py#L107-L154">resume_an_npq_participant</a>(...) -> ParticipantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1156,7 +1156,7 @@ client.npq_participants.resume_an_npq_participant(
 </dl>
 </details>
 
-<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py">defer_an_npq_participant</a>(...) -> ParticipantResponse</code></summary>
+<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py#L156-L205">defer_an_npq_participant</a>(...) -> ParticipantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1231,7 +1231,7 @@ client.npq_participants.defer_an_npq_participant(
 </dl>
 </details>
 
-<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py">withdraw_an_npq_participant</a>(...) -> ParticipantResponse</code></summary>
+<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py#L207-L256">withdraw_an_npq_participant</a>(...) -> ParticipantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1306,7 +1306,7 @@ client.npq_participants.withdraw_an_npq_participant(
 </dl>
 </details>
 
-<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py">notify_that_an_npq_participant_is_changing_training_schedule</a>(...) -> ParticipantResponse</code></summary>
+<details><summary><code>client.npq_participants.<a href="src/fern/npq_participants/client.py#L258-L309">notify_that_an_npq_participant_is_changing_training_schedule</a>(...) -> ParticipantResponse</code></summary>
 <dl>
 <dd>
 
@@ -1382,7 +1382,7 @@ client.npq_participants.notify_that_an_npq_participant_is_changing_training_sche
 </details>
 
 ## Statements
-<details><summary><code>client.statements.<a href="src/fern/statements/client.py">retrieve_financial_statements</a>(...) -> StatementsResponse</code></summary>
+<details><summary><code>client.statements.<a href="src/fern/statements/client.py#L30-L64">retrieve_financial_statements</a>(...) -> StatementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1447,7 +1447,7 @@ client.statements.retrieve_financial_statements()
 </dl>
 </details>
 
-<details><summary><code>client.statements.<a href="src/fern/statements/client.py">retrieve_a_specific_financial_statement</a>(...) -> StatementResponse</code></summary>
+<details><summary><code>client.statements.<a href="src/fern/statements/client.py#L66-L94">retrieve_a_specific_financial_statement</a>(...) -> StatementResponse</code></summary>
 <dl>
 <dd>
 

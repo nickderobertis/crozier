@@ -1,6 +1,6 @@
 # Reference
 ## Base
-<details><summary><code>client.base.<a href="src/fern/base/client.py">read</a>()</code></summary>
+<details><summary><code>client.base.<a href="src/fern/base/client.py#L25-L51">read</a>()</code></summary>
 <dl>
 <dd>
 
@@ -68,7 +68,7 @@ client.base.read()
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">actions</a>()</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L26-L109">actions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -192,7 +192,7 @@ client.logs.actions()
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">read</a>(...) -> LogsReadResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L111-L143">read</a>(...) -> LogsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -270,7 +270,7 @@ client.logs.read(
 </details>
 
 ## Addons
-<details><summary><code>client.addons.<a href="src/fern/addons/client.py">list</a>() -> typing.List[AddonsListResponseItem]</code></summary>
+<details><summary><code>client.addons.<a href="src/fern/addons/client.py#L26-L57">list</a>() -> typing.List[AddonsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -342,7 +342,7 @@ client.addons.list()
 </details>
 
 ## Citations
-<details><summary><code>client.citations.<a href="src/fern/citations/client.py">styles_list</a>() -> typing.List[CitationsStylesListResponseItem]</code></summary>
+<details><summary><code>client.citations.<a href="src/fern/citations/client.py#L27-L66">styles_list</a>() -> typing.List[CitationsStylesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -419,7 +419,7 @@ client.citations.styles_list()
 </dl>
 </details>
 
-<details><summary><code>client.citations.<a href="src/fern/citations/client.py">styles_read</a>(...) -> CitationsStylesReadResponse</code></summary>
+<details><summary><code>client.citations.<a href="src/fern/citations/client.py#L68-L101">styles_read</a>(...) -> CitationsStylesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -496,7 +496,7 @@ client.citations.styles_read(
 </details>
 
 ## Collections
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">list</a>() -> typing.List[CollectionsListResponseItem]</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L30-L61">list</a>() -> typing.List[CollectionsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -565,7 +565,7 @@ client.collections.list()
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">create</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L63-L106">create</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -649,7 +649,7 @@ client.collections.create(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">detail</a>(...) -> typing.List[CollectionsDetailResponseItem]</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L108-L144">detail</a>(...) -> typing.List[CollectionsDetailResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -728,7 +728,7 @@ client.collections.detail(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L146-L176">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -804,7 +804,7 @@ client.collections.delete(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">metadata_registrations_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L178-L216">metadata_registrations_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -885,7 +885,7 @@ client.collections.metadata_registrations_list(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">add_metadata</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L218-L271">add_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -975,7 +975,7 @@ client.collections.add_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">metadata_registrations_detail</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L273-L316">metadata_registrations_detail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1065,7 +1065,7 @@ client.collections.metadata_registrations_detail(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">metadata_detail</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L318-L378">metadata_detail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1164,7 +1164,7 @@ client.collections.metadata_detail(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">metadata_delete</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L380-L419">metadata_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1252,7 +1252,7 @@ client.collections.metadata_delete(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">metadata_subjects_relationships</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L421-L463">metadata_subjects_relationships</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1340,7 +1340,7 @@ client.collections.metadata_subjects_relationships(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">metadata_subjects_relationships_update</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L465-L519">metadata_subjects_relationships_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1440,7 +1440,7 @@ client.collections.metadata_subjects_relationships_update(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">collected_metadata</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L521-L564">collected_metadata</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1531,7 +1531,7 @@ client.collections.collected_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_nodes_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L566-L603">linked_nodes_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1611,7 +1611,7 @@ client.collections.linked_nodes_list(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_nodes_relationships_create</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L605-L641">linked_nodes_relationships_create</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1690,7 +1690,7 @@ client.collections.linked_nodes_relationships_create(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_nodes_relationships</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L643-L696">linked_nodes_relationships</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1781,7 +1781,7 @@ client.collections.linked_nodes_relationships(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_nodes_relationships_delete</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L698-L748">linked_nodes_relationships_delete</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1869,7 +1869,7 @@ client.collections.linked_nodes_relationships_delete(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_preprints_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L750-L787">linked_preprints_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1949,7 +1949,7 @@ client.collections.linked_preprints_list(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_registrations_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L789-L826">linked_registrations_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2029,7 +2029,7 @@ client.collections.linked_registrations_list(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_registrations_relationships_create</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L828-L866">linked_registrations_relationships_create</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2108,7 +2108,7 @@ client.collections.linked_registrations_relationships_create(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_registrations_relationships</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L868-L921">linked_registrations_relationships</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2199,7 +2199,7 @@ client.collections.linked_registrations_relationships(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">linked_registrations_relationships_delete</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L923-L973">linked_registrations_relationships_delete</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2288,7 +2288,7 @@ client.collections.linked_registrations_relationships_delete(
 </details>
 
 ## Comments
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">read</a>(...) -> CommentsReadResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L29-L60">read</a>(...) -> CommentsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -2364,7 +2364,7 @@ client.comments.read(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L62-L107">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2451,7 +2451,7 @@ client.comments.put(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L109-L139">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2528,7 +2528,7 @@ client.comments.delete(
 </details>
 
 ## Draft Registrations
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">read</a>() -> DraftRegistrationsReadResponse</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L43-L71">read</a>() -> DraftRegistrationsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -2596,7 +2596,7 @@ client.draft_registrations.read()
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">create</a>(...) -> DraftRegistrationsCreateResponse</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L73-L119">create</a>(...) -> DraftRegistrationsCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2681,7 +2681,7 @@ client.draft_registrations.create(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">retrieve_a_draft_registration</a>(...) -> GetDraftRegistrationsDraftIdResponse</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L121-L159">retrieve_a_draft_registration</a>(...) -> GetDraftRegistrationsDraftIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2762,7 +2762,7 @@ client.draft_registrations.retrieve_a_draft_registration(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">delete_a_draft_registration</a>(...)</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L161-L194">delete_a_draft_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2839,7 +2839,7 @@ client.draft_registrations.delete_a_draft_registration(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">update_a_draft_registration</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L196-L248">update_a_draft_registration</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2927,7 +2927,7 @@ client.draft_registrations.update_a_draft_registration(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">draft_registration_contributors_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L250-L281">draft_registration_contributors_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3001,7 +3001,7 @@ client.draft_registrations.draft_registration_contributors_list(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">draft_registration_contributors_create</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L283-L341">draft_registration_contributors_create</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3102,7 +3102,7 @@ client.draft_registrations.draft_registration_contributors_create(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">retreive_a_contributor_from_a_draft_registration</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L343-L382">retreive_a_contributor_from_a_draft_registration</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -3187,7 +3187,7 @@ client.draft_registrations.retreive_a_contributor_from_a_draft_registration(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">retrieve_institutions_afilliated_with_a_draft_registration</a>(...) -> GetDraftRegistrationsDraftIdInstitutionsResponse</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L384-L415">retrieve_institutions_afilliated_with_a_draft_registration</a>(...) -> GetDraftRegistrationsDraftIdInstitutionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3259,7 +3259,7 @@ client.draft_registrations.retrieve_institutions_afilliated_with_a_draft_registr
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">nodes_draft_registrations_subjects</a>(...) -> NodesDraftRegistrationsSubjectsResponse</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L417-L446">nodes_draft_registrations_subjects</a>(...) -> NodesDraftRegistrationsSubjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3331,7 +3331,7 @@ client.draft_registrations.nodes_draft_registrations_subjects(
 </dl>
 </details>
 
-<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py">nodes_draft_registrations_read</a>(...) -> NodesDraftRegistrationsReadResponse</code></summary>
+<details><summary><code>client.draft_registrations.<a href="src/fern/draft_registrations/client.py#L448-L490">nodes_draft_registrations_read</a>(...) -> NodesDraftRegistrationsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -3422,7 +3422,7 @@ client.draft_registrations.nodes_draft_registrations_read(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">detail</a>(...) -> typing.List[FilesDetailResponseItem]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L31-L99">detail</a>(...) -> typing.List[FilesDetailResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3533,7 +3533,7 @@ client.files.detail(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">patch</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L101-L146">patch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3620,7 +3620,7 @@ client.files.patch(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">versions</a>(...) -> typing.List[FilesVersionsResponseItem]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L148-L186">versions</a>(...) -> typing.List[FilesVersionsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3701,7 +3701,7 @@ client.files.versions(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">version_detail</a>(...) -> typing.List[FilesVersionDetailResponseItem]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L188-L226">version_detail</a>(...) -> typing.List[FilesVersionDetailResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3788,7 +3788,7 @@ client.files.version_detail(
 </details>
 
 ## Institutions
-<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py">list</a>() -> typing.List[InstitutionsListResponseItem]</code></summary>
+<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py#L29-L66">list</a>() -> typing.List[InstitutionsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3863,7 +3863,7 @@ client.institutions.list()
 </dl>
 </details>
 
-<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py">detail</a>(...) -> typing.List[InstitutionsDetailResponseItem]</code></summary>
+<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py#L68-L101">detail</a>(...) -> typing.List[InstitutionsDetailResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3939,7 +3939,7 @@ client.institutions.detail(
 </dl>
 </details>
 
-<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py">node_list</a>(...) -> typing.List[InstitutionsNodeListResponseItem]</code></summary>
+<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py#L103-L146">node_list</a>(...) -> typing.List[InstitutionsNodeListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4025,7 +4025,7 @@ client.institutions.node_list(
 </dl>
 </details>
 
-<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py">registration_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py#L148-L189">registration_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4109,7 +4109,7 @@ client.institutions.registration_list(
 </dl>
 </details>
 
-<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py">users_list</a>(...) -> typing.List[InstitutionsUsersListResponseItem]</code></summary>
+<details><summary><code>client.institutions.<a href="src/fern/institutions/client.py#L191-L232">users_list</a>(...) -> typing.List[InstitutionsUsersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4194,7 +4194,7 @@ client.institutions.users_list(
 </details>
 
 ## Licenses
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">read</a>(...) -> LicensesReadResponse</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L27-L58">read</a>(...) -> LicensesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -4270,7 +4270,7 @@ client.licenses.read(
 </dl>
 </details>
 
-<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py">license_list</a>() -> typing.List[LicenseListResponseItem]</code></summary>
+<details><summary><code>client.licenses.<a href="src/fern/licenses/client.py#L60-L95">license_list</a>() -> typing.List[LicenseListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4344,7 +4344,7 @@ client.licenses.license_list()
 </details>
 
 ## Nodes
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">list</a>() -> typing.List[NodesListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L72-L115">list</a>() -> typing.List[NodesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4427,7 +4427,7 @@ client.nodes.list()
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L117-L180">create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4536,7 +4536,7 @@ client.nodes.create(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">read</a>(...) -> NodesReadResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L182-L217">read</a>(...) -> NodesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -4616,7 +4616,7 @@ client.nodes.read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L219-L252">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4695,7 +4695,7 @@ client.nodes.delete(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">partial_update</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L254-L307">partial_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4786,7 +4786,7 @@ client.nodes.partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">addons_list</a>(...) -> typing.List[NodesAddonsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L309-L345">addons_list</a>(...) -> typing.List[NodesAddonsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -4865,7 +4865,7 @@ client.nodes.addons_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">addon_read</a>(...) -> NodesAddonReadResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L347-L387">addon_read</a>(...) -> NodesAddonReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -4953,7 +4953,7 @@ client.nodes.addon_read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">node_addon_update</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L389-L455">node_addon_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5057,7 +5057,7 @@ client.nodes.node_addon_update(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">addons_folders_list</a>(...) -> typing.List[NodesAddonsFoldersListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L457-L499">addons_folders_list</a>(...) -> typing.List[NodesAddonsFoldersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5147,7 +5147,7 @@ client.nodes.addons_folders_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">children_list</a>(...) -> typing.List[NodesChildrenListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L501-L547">children_list</a>(...) -> typing.List[NodesChildrenListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5236,7 +5236,7 @@ client.nodes.children_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">children_create</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L549-L617">children_create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5354,7 +5354,7 @@ client.nodes.children_create(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">citation_list</a>(...) -> NodesCitationListResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L619-L650">citation_list</a>(...) -> NodesCitationListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5428,7 +5428,7 @@ client.nodes.citation_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">citation_read</a>(...) -> NodesCitationReadResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L652-L687">citation_read</a>(...) -> NodesCitationReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -5511,7 +5511,7 @@ client.nodes.citation_read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">comments_list</a>(...) -> typing.List[NodesCommentsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L689-L741">comments_list</a>(...) -> typing.List[NodesCommentsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5606,7 +5606,7 @@ client.nodes.comments_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">comment_create</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L743-L795">comment_create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5705,7 +5705,7 @@ client.nodes.comment_create(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">contributors_list</a>(...) -> typing.List[NodesContributorsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L797-L843">contributors_list</a>(...) -> typing.List[NodesContributorsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5794,7 +5794,7 @@ client.nodes.contributors_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">contributors_create</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L845-L905">contributors_create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5900,7 +5900,7 @@ client.nodes.contributors_create(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">contributors_read</a>(...) -> typing.List[NodesContributorsReadResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L907-L948">contributors_read</a>(...) -> typing.List[NodesContributorsReadResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5989,7 +5989,7 @@ client.nodes.contributors_read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">contributors_delete</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L950-L990">contributors_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6078,7 +6078,7 @@ client.nodes.contributors_delete(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">contributors_partial_update</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L992-L1053">contributors_partial_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6189,7 +6189,7 @@ client.nodes.contributors_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">draft_registrations_list</a>(...) -> typing.List[NodesDraftRegistrationsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1055-L1096">draft_registrations_list</a>(...) -> typing.List[NodesDraftRegistrationsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -6273,7 +6273,7 @@ client.nodes.draft_registrations_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">draft_registrations_create</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1098-L1151">draft_registrations_create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6368,7 +6368,7 @@ client.nodes.draft_registrations_create(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">draft_registrations_delete</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1153-L1191">draft_registrations_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6455,7 +6455,7 @@ client.nodes.draft_registrations_delete(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">draft_registrations_partial_update</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1193-L1252">draft_registrations_partial_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6560,7 +6560,7 @@ client.nodes.draft_registrations_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">providers_list</a>(...) -> typing.List[NodesProvidersListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1254-L1295">providers_list</a>(...) -> typing.List[NodesProvidersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -6644,7 +6644,7 @@ client.nodes.providers_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">providers_read</a>(...) -> NodesProvidersReadResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1297-L1334">providers_read</a>(...) -> NodesProvidersReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -6729,7 +6729,7 @@ client.nodes.providers_read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">files_list</a>(...) -> typing.List[NodesFilesListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1336-L1415">files_list</a>(...) -> typing.List[NodesFilesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -6856,7 +6856,7 @@ client.nodes.files_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">files_read</a>(...) -> NodesFilesReadResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1417-L1458">files_read</a>(...) -> NodesFilesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -6950,7 +6950,7 @@ client.nodes.files_read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">forks_list</a>(...) -> typing.List[NodesForksListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1460-L1500">forks_list</a>(...) -> typing.List[NodesForksListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7033,7 +7033,7 @@ client.nodes.forks_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">forks_create</a>(...)</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1502-L1567">forks_create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7148,7 +7148,7 @@ client.nodes.forks_create(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">identifiers_list</a>(...) -> typing.List[NodesIdentifiersListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1569-L1609">identifiers_list</a>(...) -> typing.List[NodesIdentifiersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7231,7 +7231,7 @@ client.nodes.identifiers_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">institutions_list</a>(...) -> typing.List[NodesInstitutionsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1611-L1646">institutions_list</a>(...) -> typing.List[NodesInstitutionsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7309,7 +7309,7 @@ client.nodes.institutions_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">linked_nodes_list</a>(...) -> typing.List[NodesLinkedNodesListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1648-L1687">linked_nodes_list</a>(...) -> typing.List[NodesLinkedNodesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7391,7 +7391,7 @@ client.nodes.linked_nodes_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">logs_list</a>(...) -> typing.List[NodesLogsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1689-L1733">logs_list</a>(...) -> typing.List[NodesLogsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7478,7 +7478,7 @@ client.nodes.logs_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">preprints_list</a>(...) -> typing.List[NodesPreprintsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1735-L1772">preprints_list</a>(...) -> typing.List[NodesPreprintsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7558,7 +7558,7 @@ client.nodes.preprints_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">registrations_list</a>(...) -> typing.List[NodesRegistrationsListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1774-L1815">registrations_list</a>(...) -> typing.List[NodesRegistrationsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7642,7 +7642,7 @@ client.nodes.registrations_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">view_only_links_list</a>(...) -> typing.List[NodesViewOnlyLinksListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1817-L1862">view_only_links_list</a>(...) -> typing.List[NodesViewOnlyLinksListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7730,7 +7730,7 @@ client.nodes.view_only_links_list(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">view_only_links_read</a>(...) -> NodesViewOnlyLinksReadResponse</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1864-L1904">view_only_links_read</a>(...) -> NodesViewOnlyLinksReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -7818,7 +7818,7 @@ client.nodes.view_only_links_read(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">wikis_list</a>(...) -> typing.List[NodesWikisListResponseItem]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L1906-L1947">wikis_list</a>(...) -> typing.List[NodesWikisListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7903,7 +7903,7 @@ client.nodes.wikis_list(
 </details>
 
 ## PreprintProviders
-<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py">preprint_provider_list</a>() -> PreprintProviderListResponse</code></summary>
+<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py#L30-L67">preprint_provider_list</a>() -> PreprintProviderListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7978,7 +7978,7 @@ client.preprint_providers.preprint_provider_list()
 </dl>
 </details>
 
-<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py">preprint_provider_detail</a>(...) -> PreprintProviderDetailResponse</code></summary>
+<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py#L69-L143">preprint_provider_detail</a>(...) -> PreprintProviderDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -8095,7 +8095,7 @@ client.preprint_providers.preprint_provider_detail(
 </dl>
 </details>
 
-<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py">preprint_provider_licenses_list</a>(...) -> PreprintProviderLicensesListResponse</code></summary>
+<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py#L145-L185">preprint_provider_licenses_list</a>(...) -> PreprintProviderLicensesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8176,7 +8176,7 @@ client.preprint_providers.preprint_provider_licenses_list(
 </dl>
 </details>
 
-<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py">preprints_list</a>(...) -> typing.List[PreprintProvidersPreprintsListResponseItem]</code></summary>
+<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py#L187-L230">preprints_list</a>(...) -> typing.List[PreprintProvidersPreprintsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8262,7 +8262,7 @@ client.preprint_providers.preprints_list(
 </dl>
 </details>
 
-<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py">preprint_provider_taxonomies_list</a>(...) -> PreprintProviderTaxonomiesListResponse</code></summary>
+<details><summary><code>client.preprint_providers.<a href="src/fern/preprint_providers/client.py#L232-L272">preprint_provider_taxonomies_list</a>(...) -> PreprintProviderTaxonomiesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8344,7 +8344,7 @@ client.preprint_providers.preprint_provider_taxonomies_list(
 </details>
 
 ## Preprints
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">list</a>() -> typing.List[PreprintsListResponseItem]</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L39-L76">list</a>() -> typing.List[PreprintsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8419,7 +8419,7 @@ client.preprints.list()
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L78-L130">create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8517,7 +8517,7 @@ client.preprints.create(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">read</a>(...) -> PreprintsReadResponse</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L132-L165">read</a>(...) -> PreprintsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -8593,7 +8593,7 @@ client.preprints.read(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">partial_update</a>(...)</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L167-L216">partial_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8680,7 +8680,7 @@ client.preprints.partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">bibliographic_contributors_list</a>(...) -> typing.List[PreprintsBibliographicContributorsListResponseItem]</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L218-L263">bibliographic_contributors_list</a>(...) -> typing.List[PreprintsBibliographicContributorsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8768,7 +8768,7 @@ client.preprints.bibliographic_contributors_list(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">citation_list</a>(...) -> PreprintsCitationListResponse</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L265-L296">citation_list</a>(...) -> PreprintsCitationListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8842,7 +8842,7 @@ client.preprints.citation_list(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">citation_read</a>(...) -> PreprintsCitationReadResponse</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L298-L333">citation_read</a>(...) -> PreprintsCitationReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -8925,7 +8925,7 @@ client.preprints.citation_read(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">contributors_list</a>(...) -> typing.List[PreprintsContributorsListResponseItem]</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L335-L381">contributors_list</a>(...) -> typing.List[PreprintsContributorsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9014,7 +9014,7 @@ client.preprints.contributors_list(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">contributors_create</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L383-L435">contributors_create</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -9108,7 +9108,7 @@ client.preprints.contributors_create(
 </dl>
 </details>
 
-<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py">contributor_read</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.preprints.<a href="src/fern/preprints/client.py#L437-L477">contributor_read</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -9197,7 +9197,7 @@ client.preprints.contributor_read(
 </details>
 
 ## Registrations
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">list</a>() -> typing.List[RegistrationsListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L47-L95">list</a>() -> typing.List[RegistrationsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9283,7 +9283,7 @@ client.registrations.list()
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">read</a>(...) -> RegistrationsReadResponse</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L97-L141">read</a>(...) -> RegistrationsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -9370,7 +9370,7 @@ client.registrations.read(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">partial_update</a>(...)</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L143-L179">partial_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9452,7 +9452,7 @@ client.registrations.partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">children_list</a>(...) -> typing.List[RegistrationsChildrenListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L181-L228">children_list</a>(...) -> typing.List[RegistrationsChildrenListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9542,7 +9542,7 @@ client.registrations.children_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">citations_list</a>(...) -> typing.List[RegistrationsCitationsListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L230-L271">citations_list</a>(...) -> typing.List[RegistrationsCitationsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9626,7 +9626,7 @@ client.registrations.citations_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">citation_read</a>(...) -> RegistrationsCitationReadResponse</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L273-L308">citation_read</a>(...) -> RegistrationsCitationReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -9709,7 +9709,7 @@ client.registrations.citation_read(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">comments_list</a>(...) -> typing.List[RegistrationsCommentsListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L310-L362">comments_list</a>(...) -> typing.List[RegistrationsCommentsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9804,7 +9804,7 @@ client.registrations.comments_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">contributors_list</a>(...) -> typing.List[RegistrationsContributorsListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L364-L411">contributors_list</a>(...) -> typing.List[RegistrationsContributorsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9894,7 +9894,7 @@ client.registrations.contributors_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">contributors_read</a>(...) -> typing.List[RegistrationsContributorsReadResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L413-L451">contributors_read</a>(...) -> typing.List[RegistrationsContributorsReadResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9980,7 +9980,7 @@ client.registrations.contributors_read(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">providers_list</a>(...) -> typing.List[RegistrationsProvidersListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L453-L494">providers_list</a>(...) -> typing.List[RegistrationsProvidersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10064,7 +10064,7 @@ client.registrations.providers_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">files_list</a>(...) -> typing.List[RegistrationsFilesListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L496-L543">files_list</a>(...) -> typing.List[RegistrationsFilesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10159,7 +10159,7 @@ client.registrations.files_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">files_read</a>(...) -> RegistrationsFilesReadResponse</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L545-L586">files_read</a>(...) -> RegistrationsFilesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -10253,7 +10253,7 @@ client.registrations.files_read(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">forks_list</a>(...) -> typing.List[RegistrationsForksListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L588-L628">forks_list</a>(...) -> typing.List[RegistrationsForksListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10336,7 +10336,7 @@ client.registrations.forks_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">forks_create</a>(...)</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L630-L669">forks_create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10421,7 +10421,7 @@ client.registrations.forks_create(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">identifiers_list</a>(...) -> typing.List[RegistrationsIdentifiersListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L671-L711">identifiers_list</a>(...) -> typing.List[RegistrationsIdentifiersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10504,7 +10504,7 @@ client.registrations.identifiers_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">institutions_list</a>(...) -> typing.List[RegistrationsInstitutionsListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L713-L748">institutions_list</a>(...) -> typing.List[RegistrationsInstitutionsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10582,7 +10582,7 @@ client.registrations.institutions_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">linked_nodes_list</a>(...) -> typing.List[RegistrationsLinkedNodesListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L750-L789">linked_nodes_list</a>(...) -> typing.List[RegistrationsLinkedNodesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10664,7 +10664,7 @@ client.registrations.linked_nodes_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">logs_list</a>(...) -> typing.List[RegistrationsLogsListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L791-L833">logs_list</a>(...) -> typing.List[RegistrationsLogsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10749,7 +10749,7 @@ client.registrations.logs_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">view_only_links_list</a>(...) -> typing.List[RegistrationsViewOnlyLinksListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L835-L880">view_only_links_list</a>(...) -> typing.List[RegistrationsViewOnlyLinksListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -10837,7 +10837,7 @@ client.registrations.view_only_links_list(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">view_only_links_read</a>(...) -> RegistrationsViewOnlyLinksReadResponse</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L882-L922">view_only_links_read</a>(...) -> RegistrationsViewOnlyLinksReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -10925,7 +10925,7 @@ client.registrations.view_only_links_read(
 </dl>
 </details>
 
-<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py">wikis_list</a>(...) -> typing.List[RegistrationsWikisListResponseItem]</code></summary>
+<details><summary><code>client.registrations.<a href="src/fern/registrations/client.py#L924-L963">wikis_list</a>(...) -> typing.List[RegistrationsWikisListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -11008,7 +11008,7 @@ client.registrations.wikis_list(
 </details>
 
 ## Schema Responses
-<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py">list</a>() -> SchemaResponsesListResponse</code></summary>
+<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py#L38-L64">list</a>() -> SchemaResponsesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -11074,7 +11074,7 @@ client.schema_responses.list()
 </dl>
 </details>
 
-<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py">schema_response_ppost</a>(...) -> SchemaResponsePpostResponse</code></summary>
+<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py#L66-L119">schema_response_ppost</a>(...) -> SchemaResponsePpostResponse</code></summary>
 <dl>
 <dd>
 
@@ -11176,7 +11176,7 @@ client.schema_responses.schema_response_ppost(
 </dl>
 </details>
 
-<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py">read</a>(...) -> SchemaResponsesReadResponse</code></summary>
+<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py#L121-L154">read</a>(...) -> SchemaResponsesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -11252,7 +11252,7 @@ client.schema_responses.read(
 </dl>
 </details>
 
-<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py">schema_response_delete</a>(...)</code></summary>
+<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py#L156-L188">schema_response_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11328,7 +11328,7 @@ client.schema_responses.schema_response_delete(
 </dl>
 </details>
 
-<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py">schema_response_patch</a>(...) -> SchemaResponsePatchResponse</code></summary>
+<details><summary><code>client.schema_responses.<a href="src/fern/schema_responses/client.py#L190-L253">schema_response_patch</a>(...) -> SchemaResponsePatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -11440,7 +11440,7 @@ client.schema_responses.schema_response_patch(
 </details>
 
 ## Schema Response Actions
-<details><summary><code>client.schema_response_actions.<a href="src/fern/schema_response_actions/client.py">schema_response_action_read</a>(...) -> SchemaResponseActionReadResponse</code></summary>
+<details><summary><code>client.schema_response_actions.<a href="src/fern/schema_response_actions/client.py#L29-L62">schema_response_action_read</a>(...) -> SchemaResponseActionReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -11516,7 +11516,7 @@ client.schema_response_actions.schema_response_action_read(
 </dl>
 </details>
 
-<details><summary><code>client.schema_response_actions.<a href="src/fern/schema_response_actions/client.py">create_a_new_schema_response_action</a>(...)</code></summary>
+<details><summary><code>client.schema_response_actions.<a href="src/fern/schema_response_actions/client.py#L64-L98">create_a_new_schema_response_action</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11592,7 +11592,7 @@ client.schema_response_actions.create_a_new_schema_response_action(
 </dl>
 </details>
 
-<details><summary><code>client.schema_response_actions.<a href="src/fern/schema_response_actions/client.py">a_schema_response_action_from_a_schema_response</a>(...) -> GetSchemaResponsesSchemaResponseIdActionsSchemaResponseActionIdResponse</code></summary>
+<details><summary><code>client.schema_response_actions.<a href="src/fern/schema_response_actions/client.py#L100-L143">a_schema_response_action_from_a_schema_response</a>(...) -> GetSchemaResponsesSchemaResponseIdActionsSchemaResponseActionIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -11678,7 +11678,7 @@ client.schema_response_actions.a_schema_response_action_from_a_schema_response(
 </details>
 
 ## Registration Schema Blocks
-<details><summary><code>client.registration_schema_blocks.<a href="src/fern/registration_schema_blocks/client.py">schema_response_blocks_read</a>(...) -> SchemaResponseBlocksReadResponse</code></summary>
+<details><summary><code>client.registration_schema_blocks.<a href="src/fern/registration_schema_blocks/client.py#L29-L62">schema_response_blocks_read</a>(...) -> SchemaResponseBlocksReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -11754,7 +11754,7 @@ client.registration_schema_blocks.schema_response_blocks_read(
 </dl>
 </details>
 
-<details><summary><code>client.registration_schema_blocks.<a href="src/fern/registration_schema_blocks/client.py">retrieve_a_registration_schema_block</a>(...) -> GetSchemaResponsesSchemaResponseIdSchemaBlocksSchemaResponseBlockIdResponse</code></summary>
+<details><summary><code>client.registration_schema_blocks.<a href="src/fern/registration_schema_blocks/client.py#L64-L107">retrieve_a_registration_schema_block</a>(...) -> GetSchemaResponsesSchemaResponseIdSchemaBlocksSchemaResponseBlockIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -11840,7 +11840,7 @@ client.registration_schema_blocks.retrieve_a_registration_schema_block(
 </details>
 
 ## Registration Schemas
-<details><summary><code>client.registration_schemas.<a href="src/fern/registration_schemas/client.py">list</a>() -> RegistrationSchemasListResponse</code></summary>
+<details><summary><code>client.registration_schemas.<a href="src/fern/registration_schemas/client.py#L27-L55">list</a>() -> RegistrationSchemasListResponse</code></summary>
 <dl>
 <dd>
 
@@ -11908,7 +11908,7 @@ client.registration_schemas.list()
 </dl>
 </details>
 
-<details><summary><code>client.registration_schemas.<a href="src/fern/registration_schemas/client.py">registration_schema_read</a>(...) -> RegistrationSchemaReadResponse</code></summary>
+<details><summary><code>client.registration_schemas.<a href="src/fern/registration_schemas/client.py#L57-L90">registration_schema_read</a>(...) -> RegistrationSchemaReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -11985,7 +11985,7 @@ client.registration_schemas.registration_schema_read(
 </details>
 
 ## Taxonomies
-<details><summary><code>client.taxonomies.<a href="src/fern/taxonomies/client.py">list</a>() -> typing.List[TaxonomiesListResponseItem]</code></summary>
+<details><summary><code>client.taxonomies.<a href="src/fern/taxonomies/client.py#L27-L65">list</a>() -> typing.List[TaxonomiesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12061,7 +12061,7 @@ client.taxonomies.list()
 </dl>
 </details>
 
-<details><summary><code>client.taxonomies.<a href="src/fern/taxonomies/client.py">read</a>(...) -> TaxonomiesReadResponse</code></summary>
+<details><summary><code>client.taxonomies.<a href="src/fern/taxonomies/client.py#L67-L101">read</a>(...) -> TaxonomiesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -12139,7 +12139,7 @@ client.taxonomies.read(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list</a>() -> typing.List[UsersListResponseItem]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L38-L77">list</a>() -> typing.List[UsersListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12218,7 +12218,7 @@ client.users.list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">read</a>(...) -> UsersReadResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L79-L116">read</a>(...) -> UsersReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -12300,7 +12300,7 @@ client.users.read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">partial_update</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L118-L166">partial_update</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12392,7 +12392,7 @@ client.users.partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">addons_list</a>(...) -> typing.List[UsersAddonsListResponseItem]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L168-L213">addons_list</a>(...) -> typing.List[UsersAddonsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12480,7 +12480,7 @@ client.users.addons_list(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">addons_read</a>(...) -> UsersAddonsReadResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L215-L259">addons_read</a>(...) -> UsersAddonsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -12572,7 +12572,7 @@ client.users.addons_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">addon_accounts_list</a>(...) -> typing.List[UsersAddonAccountsListResponseItem]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L261-L306">addon_accounts_list</a>(...) -> typing.List[UsersAddonAccountsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12665,7 +12665,7 @@ client.users.addon_accounts_list(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">addon_accounts_read</a>(...) -> UsersAddonAccountsReadResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L308-L354">addon_accounts_read</a>(...) -> UsersAddonAccountsReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -12764,7 +12764,7 @@ client.users.addon_accounts_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">institutions_list</a>(...) -> typing.List[UsersInstitutionsListResponseItem]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L356-L391">institutions_list</a>(...) -> typing.List[UsersInstitutionsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12842,7 +12842,7 @@ client.users.institutions_list(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">nodes_list</a>(...) -> typing.List[UsersNodesListResponseItem]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L393-L436">nodes_list</a>(...) -> typing.List[UsersNodesListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12928,7 +12928,7 @@ client.users.nodes_list(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">preprints_list</a>(...) -> typing.List[UsersPreprintsListResponseItem]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L438-L477">preprints_list</a>(...) -> typing.List[UsersPreprintsListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -13010,7 +13010,7 @@ client.users.preprints_list(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">registrations_list</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L479-L522">registrations_list</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -13097,7 +13097,7 @@ client.users.registrations_list(
 </details>
 
 ## ViewOnlyLinks
-<details><summary><code>client.view_only_links.<a href="src/fern/view_only_links/client.py">read</a>(...) -> ViewOnlyLinksReadResponse</code></summary>
+<details><summary><code>client.view_only_links.<a href="src/fern/view_only_links/client.py#L27-L61">read</a>(...) -> ViewOnlyLinksReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -13174,7 +13174,7 @@ client.view_only_links.read(
 </dl>
 </details>
 
-<details><summary><code>client.view_only_links.<a href="src/fern/view_only_links/client.py">node_list</a>(...) -> typing.List[ViewOnlyLinksNodeListResponseItem]</code></summary>
+<details><summary><code>client.view_only_links.<a href="src/fern/view_only_links/client.py#L63-L102">node_list</a>(...) -> typing.List[ViewOnlyLinksNodeListResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -13257,7 +13257,7 @@ client.view_only_links.node_list(
 </details>
 
 ## Wikis
-<details><summary><code>client.wikis.<a href="src/fern/wikis/client.py">wiki_read</a>(...) -> WikiReadResponse</code></summary>
+<details><summary><code>client.wikis.<a href="src/fern/wikis/client.py#L26-L58">wiki_read</a>(...) -> WikiReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -13334,7 +13334,7 @@ client.wikis.wiki_read(
 </dl>
 </details>
 
-<details><summary><code>client.wikis.<a href="src/fern/wikis/client.py">wiki_content</a>(...)</code></summary>
+<details><summary><code>client.wikis.<a href="src/fern/wikis/client.py#L60-L89">wiki_content</a>(...)</code></summary>
 <dl>
 <dd>
 

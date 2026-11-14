@@ -1,6 +1,6 @@
 # Reference
 ## VectorOperations
-<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py">delete</a>(...) -> PostV1VectorDeleteResponse</code></summary>
+<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py#L39-L85">delete</a>(...) -> PostV1VectorDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -90,7 +90,7 @@ client.vector_operations.delete(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py">insert</a>(...) -> PostV1VectorInsertResponse</code></summary>
+<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py#L87-L143">insert</a>(...) -> PostV1VectorInsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -188,7 +188,7 @@ client.vector_operations.insert(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py">upsert</a>(...) -> PostV1VectorUpsertResponse</code></summary>
+<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py#L145-L193">upsert</a>(...) -> PostV1VectorUpsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -278,7 +278,7 @@ client.vector_operations.upsert(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py">search</a>(...) -> PostV1VectorSearchResponse</code></summary>
+<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py#L195-L277">search</a>(...) -> PostV1VectorSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -424,7 +424,7 @@ The sum of this value of that of `offset` should be less than **16,384**.
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py">query</a>(...) -> PostV1VectorQueryResponse</code></summary>
+<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py#L279-L351">query</a>(...) -> PostV1VectorQueryResponse</code></summary>
 <dl>
 <dd>
 
@@ -552,7 +552,7 @@ client.vector_operations.query(
 </dl>
 </details>
 
-<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py">get</a>(...) -> PostV1VectorGetResponse</code></summary>
+<details><summary><code>client.vector_operations.<a href="src/fern/vector_operations/client.py#L353-L412">get</a>(...) -> PostV1VectorGetResponse</code></summary>
 <dl>
 <dd>
 

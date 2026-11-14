@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_grids</a>() -> Grids</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">get_grids</a>() -> Grids</code></summary>
 <dl>
 <dd>
 

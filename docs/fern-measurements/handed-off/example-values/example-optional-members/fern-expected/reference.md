@@ -1,6 +1,6 @@
 # Reference
 ## Signals
-<details><summary><code>client.signals.<a href="src/fern/signals/client.py">list_signals</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.signals.<a href="src/fern/signals/client.py#L28-L86">list_signals</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

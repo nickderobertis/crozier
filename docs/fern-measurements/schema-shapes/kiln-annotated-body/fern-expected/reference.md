@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_schedule</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L133">create_schedule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.create_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">default_schedule</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L135-L168">default_schedule</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.default_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_flat_schedule</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L170-L199">create_flat_schedule</a>(...)</code></summary>
 <dl>
 <dd>
 

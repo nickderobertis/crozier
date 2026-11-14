@@ -1,6 +1,6 @@
 # Reference
 ## Lenses
-<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py">update_lens_settings</a>(...) -> UpdateLensSettingsResponse</code></summary>
+<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py#L31-L59">update_lens_settings</a>(...) -> UpdateLensSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.lenses.update_lens_settings(
 </dl>
 </details>
 
-<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py">append_lens_logs</a>(...) -> AppendLensLogsResponse</code></summary>
+<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py#L61-L99">append_lens_logs</a>(...) -> AppendLensLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -129,7 +129,7 @@ client.lenses.append_lens_logs(
 </dl>
 </details>
 
-<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py">batch_lens_records</a>(...) -> BatchLensRecordsResponse</code></summary>
+<details><summary><code>client.lenses.<a href="src/fern/lenses/client.py#L101-L139">batch_lens_records</a>(...) -> BatchLensRecordsResponse</code></summary>
 <dl>
 <dd>
 

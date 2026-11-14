@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">v1login_start</a>(...) -> EmptySuccess</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L114-L142">v1login_start</a>(...) -> EmptySuccess</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.v1login_start(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_v1noauth</a>() -> EmptySuccess</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L144-L166">get_v1noauth</a>() -> EmptySuccess</code></summary>
 <dl>
 <dd>
 

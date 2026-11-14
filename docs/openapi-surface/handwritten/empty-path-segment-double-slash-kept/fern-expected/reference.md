@@ -1,6 +1,6 @@
 # Reference
 ## Bays
-<details><summary><code>client.bays.<a href="src/fern/bays/client.py">clear_bay</a>(...)</code></summary>
+<details><summary><code>client.bays.<a href="src/fern/bays/client.py#L25-L55">clear_bay</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## AppV1
-<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py">get_apps</a>() -> typing.List[ApplicationWithLatestDeploymentAndBuild]</code></summary>
+<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py#L33-L59">get_apps</a>() -> typing.List[ApplicationWithLatestDeploymentAndBuild]</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.app_v1.get_apps()
 </dl>
 </details>
 
-<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py">create_app</a>(...) -> Application</code></summary>
+<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py#L61-L100">create_app</a>(...) -> Application</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.app_v1.create_app(
 </dl>
 </details>
 
-<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py">update_app</a>(...) -> Application</code></summary>
+<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py#L102-L145">update_app</a>(...) -> Application</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.app_v1.update_app(
 </dl>
 </details>
 
-<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py">get_app_info</a>(...) -> Application</code></summary>
+<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py#L147-L175">get_app_info</a>(...) -> Application</code></summary>
 <dl>
 <dd>
 
@@ -293,7 +293,7 @@ client.app_v1.get_app_info(
 </dl>
 </details>
 
-<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py">delete_app</a>(...)</code></summary>
+<details><summary><code>client.app_v1.<a href="src/fern/app_v1/client.py#L177-L204">delete_app</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -367,7 +367,7 @@ client.app_v1.delete_app(
 </details>
 
 ## AuthV1
-<details><summary><code>client.auth_v1.<a href="src/fern/auth_v1/client.py">login_anonymous</a>(...) -> LoginResponse</code></summary>
+<details><summary><code>client.auth_v1.<a href="src/fern/auth_v1/client.py#L30-L60">login_anonymous</a>(...) -> LoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -440,7 +440,7 @@ client.auth_v1.login_anonymous(
 </dl>
 </details>
 
-<details><summary><code>client.auth_v1.<a href="src/fern/auth_v1/client.py">login_nickname</a>(...) -> LoginResponse</code></summary>
+<details><summary><code>client.auth_v1.<a href="src/fern/auth_v1/client.py#L62-L96">login_nickname</a>(...) -> LoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -522,7 +522,7 @@ client.auth_v1.login_nickname(
 </dl>
 </details>
 
-<details><summary><code>client.auth_v1.<a href="src/fern/auth_v1/client.py">login_google</a>(...) -> LoginResponse</code></summary>
+<details><summary><code>client.auth_v1.<a href="src/fern/auth_v1/client.py#L98-L132">login_google</a>(...) -> LoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -605,7 +605,7 @@ client.auth_v1.login_google(
 </details>
 
 ## BillingV1
-<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py">get_balance</a>() -> float</code></summary>
+<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py#L30-L52">get_balance</a>() -> float</code></summary>
 <dl>
 <dd>
 
@@ -654,7 +654,7 @@ client.billing_v1.get_balance()
 </dl>
 </details>
 
-<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py">get_payment_method</a>() -> PaymentMethod</code></summary>
+<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py#L54-L76">get_payment_method</a>() -> PaymentMethod</code></summary>
 <dl>
 <dd>
 
@@ -703,7 +703,7 @@ client.billing_v1.get_payment_method()
 </dl>
 </details>
 
-<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py">init_stripe_customer_portal_url</a>(...) -> str</code></summary>
+<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py#L78-L108">init_stripe_customer_portal_url</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -762,7 +762,7 @@ client.billing_v1.init_stripe_customer_portal_url(
 </dl>
 </details>
 
-<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py">get_invoices</a>() -> typing.List[Invoice]</code></summary>
+<details><summary><code>client.billing_v1.<a href="src/fern/billing_v1/client.py#L110-L132">get_invoices</a>() -> typing.List[Invoice]</code></summary>
 <dl>
 <dd>
 
@@ -812,7 +812,7 @@ client.billing_v1.get_invoices()
 </details>
 
 ## BuildV1
-<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py">get_builds</a>(...) -> typing.List[Build]</code></summary>
+<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py#L33-L63">get_builds</a>(...) -> typing.List[Build]</code></summary>
 <dl>
 <dd>
 
@@ -885,7 +885,7 @@ client.build_v1.get_builds(
 </dl>
 </details>
 
-<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py">get_build_info</a>(...) -> Build</code></summary>
+<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py#L65-L98">get_build_info</a>(...) -> Build</code></summary>
 <dl>
 <dd>
 
@@ -967,7 +967,7 @@ client.build_v1.get_build_info(
 </dl>
 </details>
 
-<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py">create_build</a>(...) -> Build</code></summary>
+<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py#L100-L136">create_build</a>(...) -> Build</code></summary>
 <dl>
 <dd>
 
@@ -1048,7 +1048,7 @@ client.build_v1.create_build(
 </dl>
 </details>
 
-<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py">run_build</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py#L138-L167">run_build</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1126,7 +1126,7 @@ client.build_v1.run_build(...)
 </dl>
 </details>
 
-<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py">delete_build</a>(...)</code></summary>
+<details><summary><code>client.build_v1.<a href="src/fern/build_v1/client.py#L169-L201">delete_build</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1209,7 +1209,7 @@ client.build_v1.delete_build(
 </details>
 
 ## DeploymentV1
-<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py">get_deployments_deprecated</a>(...) -> typing.List[Deployment]</code></summary>
+<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py#L37-L67">get_deployments_deprecated</a>(...) -> typing.List[Deployment]</code></summary>
 <dl>
 <dd>
 
@@ -1282,7 +1282,7 @@ client.deployment_v1.get_deployments_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py">get_latest_deployment_deprecated</a>(...) -> Deployment</code></summary>
+<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py#L69-L99">get_latest_deployment_deprecated</a>(...) -> Deployment</code></summary>
 <dl>
 <dd>
 
@@ -1355,7 +1355,7 @@ client.deployment_v1.get_latest_deployment_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py">get_deployment_info_deprecated</a>(...) -> Deployment</code></summary>
+<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py#L101-L136">get_deployment_info_deprecated</a>(...) -> Deployment</code></summary>
 <dl>
 <dd>
 
@@ -1437,7 +1437,7 @@ client.deployment_v1.get_deployment_info_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py">create_deployment_deprecated</a>(...) -> Deployment</code></summary>
+<details><summary><code>client.deployment_v1.<a href="src/fern/deployment_v1/client.py#L138-L224">create_deployment_deprecated</a>(...) -> Deployment</code></summary>
 <dl>
 <dd>
 
@@ -1590,7 +1590,7 @@ for five minutes.
 </details>
 
 ## DeploymentV2
-<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py">get_deployments</a>(...) -> typing.List[DeploymentV2]</code></summary>
+<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py#L36-L66">get_deployments</a>(...) -> typing.List[DeploymentV2]</code></summary>
 <dl>
 <dd>
 
@@ -1663,7 +1663,7 @@ client.deployment_v2.get_deployments(
 </dl>
 </details>
 
-<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py">get_latest_deployment</a>(...) -> DeploymentV2</code></summary>
+<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py#L68-L98">get_latest_deployment</a>(...) -> DeploymentV2</code></summary>
 <dl>
 <dd>
 
@@ -1736,7 +1736,7 @@ client.deployment_v2.get_latest_deployment(
 </dl>
 </details>
 
-<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py">get_deployment_info</a>(...) -> DeploymentV2</code></summary>
+<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py#L100-L133">get_deployment_info</a>(...) -> DeploymentV2</code></summary>
 <dl>
 <dd>
 
@@ -1818,7 +1818,7 @@ client.deployment_v2.get_deployment_info(
 </dl>
 </details>
 
-<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py">create_deployment</a>(...) -> DeploymentV2</code></summary>
+<details><summary><code>client.deployment_v2.<a href="src/fern/deployment_v2/client.py#L135-L229">create_deployment</a>(...) -> DeploymentV2</code></summary>
 <dl>
 <dd>
 
@@ -1981,7 +1981,7 @@ for five minutes.
 </details>
 
 ## DiscoveryV1
-<details><summary><code>client.discovery_v1.<a href="src/fern/discovery_v1/client.py">get_ping_service_endpoints</a>() -> DiscoveryResponse</code></summary>
+<details><summary><code>client.discovery_v1.<a href="src/fern/discovery_v1/client.py#L26-L52">get_ping_service_endpoints</a>() -> DiscoveryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2045,7 +2045,7 @@ client.discovery_v1.get_ping_service_endpoints()
 </details>
 
 ## LobbyV1
-<details><summary><code>client.lobby_v1.<a href="src/fern/lobby_v1/client.py">create_private_lobby_deprecated</a>(...) -> RoomId</code></summary>
+<details><summary><code>client.lobby_v1.<a href="src/fern/lobby_v1/client.py#L29-L68">create_private_lobby_deprecated</a>(...) -> RoomId</code></summary>
 <dl>
 <dd>
 
@@ -2120,7 +2120,7 @@ client.lobby_v1.create_private_lobby_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v1.<a href="src/fern/lobby_v1/client.py">create_public_lobby_deprecated</a>(...) -> RoomId</code></summary>
+<details><summary><code>client.lobby_v1.<a href="src/fern/lobby_v1/client.py#L70-L109">create_public_lobby_deprecated</a>(...) -> RoomId</code></summary>
 <dl>
 <dd>
 
@@ -2195,7 +2195,7 @@ client.lobby_v1.create_public_lobby_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v1.<a href="src/fern/lobby_v1/client.py">list_active_public_lobbies_deprecated_v1</a>(...) -> typing.List[Lobby]</code></summary>
+<details><summary><code>client.lobby_v1.<a href="src/fern/lobby_v1/client.py#L111-L150">list_active_public_lobbies_deprecated_v1</a>(...) -> typing.List[Lobby]</code></summary>
 <dl>
 <dd>
 
@@ -2271,7 +2271,7 @@ client.lobby_v1.list_active_public_lobbies_deprecated_v1(
 </details>
 
 ## LobbyV2
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">create_private_lobby</a>(...) -> Lobby</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L34-L79">create_private_lobby</a>(...) -> Lobby</code></summary>
 <dl>
 <dd>
 
@@ -2359,7 +2359,7 @@ client.lobby_v2.create_private_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">create_public_lobby</a>(...) -> Lobby</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L81-L126">create_public_lobby</a>(...) -> Lobby</code></summary>
 <dl>
 <dd>
 
@@ -2447,7 +2447,7 @@ client.lobby_v2.create_public_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">create_local_lobby</a>(...) -> Lobby</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L128-L173">create_local_lobby</a>(...) -> Lobby</code></summary>
 <dl>
 <dd>
 
@@ -2535,7 +2535,7 @@ client.lobby_v2.create_local_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">create_lobby_deprecated</a>(...) -> Lobby</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L175-L231">create_lobby_deprecated</a>(...) -> Lobby</code></summary>
 <dl>
 <dd>
 
@@ -2646,7 +2646,7 @@ client.lobby_v2.create_lobby_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">list_active_public_lobbies_deprecated_v2</a>(...) -> typing.List[Lobby]</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L233-L272">list_active_public_lobbies_deprecated_v2</a>(...) -> typing.List[Lobby]</code></summary>
 <dl>
 <dd>
 
@@ -2727,7 +2727,7 @@ client.lobby_v2.list_active_public_lobbies_deprecated_v2(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">get_lobby_info</a>(...) -> Lobby</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L274-L307">get_lobby_info</a>(...) -> Lobby</code></summary>
 <dl>
 <dd>
 
@@ -2809,7 +2809,7 @@ client.lobby_v2.get_lobby_info(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py">set_lobby_state</a>(...) -> Lobby</code></summary>
+<details><summary><code>client.lobby_v2.<a href="src/fern/lobby_v2/client.py#L309-L351">set_lobby_state</a>(...) -> Lobby</code></summary>
 <dl>
 <dd>
 
@@ -2903,7 +2903,7 @@ client.lobby_v2.set_lobby_state(
 </details>
 
 ## LobbyV3
-<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py">create_lobby</a>(...) -> LobbyV3</code></summary>
+<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py#L35-L95">create_lobby</a>(...) -> LobbyV3</code></summary>
 <dl>
 <dd>
 
@@ -3020,7 +3020,7 @@ client.lobby_v3.create_lobby(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py">list_active_public_lobbies</a>(...) -> typing.List[LobbyV3]</code></summary>
+<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py#L97-L134">list_active_public_lobbies</a>(...) -> typing.List[LobbyV3]</code></summary>
 <dl>
 <dd>
 
@@ -3101,7 +3101,7 @@ client.lobby_v3.list_active_public_lobbies(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py">get_lobby_info_by_room_id</a>(...) -> LobbyV3</code></summary>
+<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py#L136-L169">get_lobby_info_by_room_id</a>(...) -> LobbyV3</code></summary>
 <dl>
 <dd>
 
@@ -3183,7 +3183,7 @@ client.lobby_v3.get_lobby_info_by_room_id(
 </dl>
 </details>
 
-<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py">get_lobby_info_by_short_code</a>(...) -> LobbyV3</code></summary>
+<details><summary><code>client.lobby_v3.<a href="src/fern/lobby_v3/client.py#L171-L204">get_lobby_info_by_short_code</a>(...) -> LobbyV3</code></summary>
 <dl>
 <dd>
 
@@ -3266,7 +3266,7 @@ client.lobby_v3.get_lobby_info_by_short_code(
 </details>
 
 ## LogV1
-<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py">get_logs_for_app</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py#L31-L75">get_logs_for_app</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3363,7 +3363,7 @@ client.log_v1.get_logs_for_app(
 </dl>
 </details>
 
-<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py">get_logs_for_process</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py#L77-L122">get_logs_for_process</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3461,7 +3461,7 @@ client.log_v1.get_logs_for_process(
 </dl>
 </details>
 
-<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py">download_log_for_process</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py#L124-L157">download_log_for_process</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3543,7 +3543,7 @@ client.log_v1.download_log_for_process(
 </dl>
 </details>
 
-<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py">get_logs_for_deployment</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.log_v1.<a href="src/fern/log_v1/client.py#L159-L204">get_logs_for_deployment</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3642,7 +3642,7 @@ client.log_v1.get_logs_for_deployment(
 </details>
 
 ## ManagementV1
-<details><summary><code>client.management_v1.<a href="src/fern/management_v1/client.py">send_verification_email</a>(...) -> VerificationEmailResponse</code></summary>
+<details><summary><code>client.management_v1.<a href="src/fern/management_v1/client.py#L29-L57">send_verification_email</a>(...) -> VerificationEmailResponse</code></summary>
 <dl>
 <dd>
 
@@ -3702,7 +3702,7 @@ client.management_v1.send_verification_email(
 </details>
 
 ## MetricsV1
-<details><summary><code>client.metrics_v1.<a href="src/fern/metrics_v1/client.py">get_metrics</a>(...) -> MetricsResponse</code></summary>
+<details><summary><code>client.metrics_v1.<a href="src/fern/metrics_v1/client.py#L30-L84">get_metrics</a>(...) -> MetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3817,7 +3817,7 @@ client.metrics_v1.get_metrics(
 </details>
 
 ## ProcessesV1
-<details><summary><code>client.processes_v1.<a href="src/fern/processes_v1/client.py">get_running_processes</a>(...) -> typing.List[ProcessWithRooms]</code></summary>
+<details><summary><code>client.processes_v1.<a href="src/fern/processes_v1/client.py#L30-L66">get_running_processes</a>(...) -> typing.List[ProcessWithRooms]</code></summary>
 <dl>
 <dd>
 
@@ -3898,7 +3898,7 @@ client.processes_v1.get_running_processes(
 </dl>
 </details>
 
-<details><summary><code>client.processes_v1.<a href="src/fern/processes_v1/client.py">get_stopped_processes</a>(...) -> typing.List[Process]</code></summary>
+<details><summary><code>client.processes_v1.<a href="src/fern/processes_v1/client.py#L68-L104">get_stopped_processes</a>(...) -> typing.List[Process]</code></summary>
 <dl>
 <dd>
 
@@ -3979,7 +3979,7 @@ client.processes_v1.get_stopped_processes(
 </dl>
 </details>
 
-<details><summary><code>client.processes_v1.<a href="src/fern/processes_v1/client.py">get_process_info_deprecated</a>(...) -> Process</code></summary>
+<details><summary><code>client.processes_v1.<a href="src/fern/processes_v1/client.py#L106-L139">get_process_info_deprecated</a>(...) -> Process</code></summary>
 <dl>
 <dd>
 
@@ -4062,7 +4062,7 @@ client.processes_v1.get_process_info_deprecated(
 </details>
 
 ## ProcessesV2
-<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py">get_process_info</a>(...) -> ProcessV2</code></summary>
+<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py#L30-L63">get_process_info</a>(...) -> ProcessV2</code></summary>
 <dl>
 <dd>
 
@@ -4144,7 +4144,7 @@ client.processes_v2.get_process_info(
 </dl>
 </details>
 
-<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py">get_latest_processes</a>(...) -> typing.List[ProcessV2]</code></summary>
+<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py#L65-L106">get_latest_processes</a>(...) -> typing.List[ProcessV2]</code></summary>
 <dl>
 <dd>
 
@@ -4233,7 +4233,7 @@ client.processes_v2.get_latest_processes(
 </dl>
 </details>
 
-<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py">stop_process</a>(...)</code></summary>
+<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py#L108-L140">stop_process</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4315,7 +4315,7 @@ client.processes_v2.stop_process(
 </dl>
 </details>
 
-<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py">create_process</a>(...) -> ProcessV2</code></summary>
+<details><summary><code>client.processes_v2.<a href="src/fern/processes_v2/client.py#L142-L175">create_process</a>(...) -> ProcessV2</code></summary>
 <dl>
 <dd>
 
@@ -4398,7 +4398,7 @@ client.processes_v2.create_process(
 </details>
 
 ## RoomV1
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">create_room_deprecated</a>(...) -> RoomId</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L36-L80">create_room_deprecated</a>(...) -> RoomId</code></summary>
 <dl>
 <dd>
 
@@ -4475,7 +4475,7 @@ client.room_v1.create_room_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">get_room_info_deprecated</a>(...) -> Room</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L82-L113">get_room_info_deprecated</a>(...) -> Room</code></summary>
 <dl>
 <dd>
 
@@ -4543,7 +4543,7 @@ client.room_v1.get_room_info_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">get_active_rooms_for_process_deprecated</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L115-L148">get_active_rooms_for_process_deprecated</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
 <dl>
 <dd>
 
@@ -4611,7 +4611,7 @@ client.room_v1.get_active_rooms_for_process_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">get_inactive_rooms_for_process_deprecated</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L150-L183">get_inactive_rooms_for_process_deprecated</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
 <dl>
 <dd>
 
@@ -4679,7 +4679,7 @@ client.room_v1.get_inactive_rooms_for_process_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">destroy_room_deprecated</a>(...)</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L185-L215">destroy_room_deprecated</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4747,7 +4747,7 @@ client.room_v1.destroy_room_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">suspend_room_deprecated</a>(...)</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L217-L247">suspend_room_deprecated</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4815,7 +4815,7 @@ client.room_v1.suspend_room_deprecated(
 </dl>
 </details>
 
-<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py">get_connection_info_deprecated</a>(...) -> ConnectionInfo</code></summary>
+<details><summary><code>client.room_v1.<a href="src/fern/room_v1/client.py#L249-L280">get_connection_info_deprecated</a>(...) -> ConnectionInfo</code></summary>
 <dl>
 <dd>
 
@@ -4884,7 +4884,7 @@ client.room_v1.get_connection_info_deprecated(
 </details>
 
 ## RoomV2
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">create_room</a>(...) -> CreateRoomResponse</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L37-L83">create_room</a>(...) -> CreateRoomResponse</code></summary>
 <dl>
 <dd>
 
@@ -4975,7 +4975,7 @@ client.room_v2.create_room(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">get_room_info</a>(...) -> Room</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L85-L118">get_room_info</a>(...) -> Room</code></summary>
 <dl>
 <dd>
 
@@ -5057,7 +5057,7 @@ client.room_v2.get_room_info(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">get_active_rooms_for_process</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L120-L153">get_active_rooms_for_process</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
 <dl>
 <dd>
 
@@ -5139,7 +5139,7 @@ client.room_v2.get_active_rooms_for_process(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">get_inactive_rooms_for_process</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L155-L188">get_inactive_rooms_for_process</a>(...) -> typing.List[RoomWithoutAllocations]</code></summary>
 <dl>
 <dd>
 
@@ -5221,7 +5221,7 @@ client.room_v2.get_inactive_rooms_for_process(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">destroy_room</a>(...)</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L190-L222">destroy_room</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5303,7 +5303,7 @@ client.room_v2.destroy_room(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">suspend_room</a>(...)</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L224-L256">suspend_room</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5385,7 +5385,7 @@ client.room_v2.suspend_room(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">get_connection_info</a>(...) -> ConnectionInfoV2</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L258-L291">get_connection_info</a>(...) -> ConnectionInfoV2</code></summary>
 <dl>
 <dd>
 
@@ -5467,7 +5467,7 @@ client.room_v2.get_connection_info(
 </dl>
 </details>
 
-<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py">update_room_config</a>(...)</code></summary>
+<details><summary><code>client.room_v2.<a href="src/fern/room_v2/client.py#L293-L333">update_room_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5545,7 +5545,7 @@ client.room_v2.update_room_config(
 </details>
 
 ## OrgTokensV1
-<details><summary><code>client.org_tokens_v1.<a href="src/fern/org_tokens_v1/client.py">get_org_tokens</a>(...) -> ListOrgTokens</code></summary>
+<details><summary><code>client.org_tokens_v1.<a href="src/fern/org_tokens_v1/client.py#L32-L62">get_org_tokens</a>(...) -> ListOrgTokens</code></summary>
 <dl>
 <dd>
 
@@ -5618,7 +5618,7 @@ client.org_tokens_v1.get_org_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.org_tokens_v1.<a href="src/fern/org_tokens_v1/client.py">create_org_token</a>(...) -> CreatedOrgToken</code></summary>
+<details><summary><code>client.org_tokens_v1.<a href="src/fern/org_tokens_v1/client.py#L64-L97">create_org_token</a>(...) -> CreatedOrgToken</code></summary>
 <dl>
 <dd>
 
@@ -5700,7 +5700,7 @@ client.org_tokens_v1.create_org_token(
 </dl>
 </details>
 
-<details><summary><code>client.org_tokens_v1.<a href="src/fern/org_tokens_v1/client.py">revoke_org_token</a>(...) -> bool</code></summary>
+<details><summary><code>client.org_tokens_v1.<a href="src/fern/org_tokens_v1/client.py#L99-L132">revoke_org_token</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 

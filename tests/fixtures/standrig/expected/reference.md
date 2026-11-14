@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_api_health</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L121-L143">get_api_health</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.get_api_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_context</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L145-L167">get_api_context</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.get_api_context()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_parts</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L169-L189">get_api_parts</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -143,7 +143,7 @@ client.get_api_parts()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_deformers</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L191-L213">get_api_deformers</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -191,7 +191,7 @@ client.get_api_deformers()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_params</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L215-L237">get_api_params</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -239,7 +239,7 @@ client.get_api_params()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_modeling</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L239-L261">get_api_modeling</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -287,7 +287,7 @@ client.get_api_modeling()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_modeling_audit</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L263-L285">get_api_modeling_audit</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -335,7 +335,7 @@ client.get_api_modeling_audit()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_modeling_techniques</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L287-L309">get_api_modeling_techniques</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -383,7 +383,7 @@ client.get_api_modeling_techniques()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_modeling_role_suggestions</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L311-L333">get_api_modeling_role_suggestions</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -431,7 +431,7 @@ client.get_api_modeling_role_suggestions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_modeling_artmesh_presets</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L335-L357">get_api_modeling_artmesh_presets</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -479,7 +479,7 @@ client.get_api_modeling_artmesh_presets()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_rig_summary</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L359-L381">get_api_rig_summary</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -527,7 +527,7 @@ client.get_api_rig_summary()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_rig_validate</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L383-L405">get_api_rig_validate</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -575,7 +575,7 @@ client.get_api_rig_validate()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_rig_inspect</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L407-L429">get_api_rig_inspect</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -623,7 +623,7 @@ client.get_api_rig_inspect()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_reference</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L431-L453">get_api_reference</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -671,7 +671,7 @@ client.get_api_reference()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_qa_golden</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L455-L477">get_api_qa_golden</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -719,7 +719,7 @@ client.get_api_qa_golden()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_bundle</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L479-L501">get_api_bundle</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -767,7 +767,7 @@ client.get_api_bundle()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_schema</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L503-L525">get_api_schema</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -815,7 +815,7 @@ client.get_api_schema()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_changes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L527-L551">get_api_changes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -871,7 +871,7 @@ client.get_api_changes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_parts_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L553-L579">get_api_parts_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -929,7 +929,7 @@ client.get_api_parts_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_deformers_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L581-L607">get_api_deformers_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -987,7 +987,7 @@ client.get_api_deformers_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_rig</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L609-L633">get_api_rig</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1043,7 +1043,7 @@ client.get_api_rig()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_api_rig</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L635-L671">put_api_rig</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1125,7 +1125,7 @@ client.put_api_rig(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_qa_check</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L673-L767">post_api_qa_check</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1181,7 +1181,7 @@ client.post_api_qa_check()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_modeling_transaction</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L769-L824">post_api_modeling_transaction</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1259,7 +1259,7 @@ client.post_api_modeling_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_assets_externalize</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L826-L862">post_api_assets_externalize</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1341,7 +1341,7 @@ client.post_api_assets_externalize(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_screenshot</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L864-L926">get_api_screenshot</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1461,7 +1461,7 @@ client.get_api_screenshot()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_reference_sheet</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L928-L990">get_api_reference_sheet</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1581,7 +1581,7 @@ client.get_api_reference_sheet()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_qa_failure_image</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L992-L1067">post_api_qa_failure_image</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1720,7 +1720,7 @@ client.post_api_qa_failure_image(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">optional_bridge_connection_status</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1069-L1088">optional_bridge_connection_status</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1768,7 +1768,7 @@ client.optional_bridge_connection_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">optional_cubism_bridge_requires_idle_api110server</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1090-L1132">optional_cubism_bridge_requires_idle_api110server</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1836,7 +1836,7 @@ client.optional_cubism_bridge_requires_idle_api110server(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_sample</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1134-L1156">get_api_sample</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1884,7 +1884,7 @@ client.get_api_sample()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_exports_bundle</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1158-L1184">post_api_exports_bundle</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1944,7 +1944,7 @@ client.post_api_exports_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_playback_motion</a>() -> GetApiPlaybackMotionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1186-L1208">get_api_playback_motion</a>() -> GetApiPlaybackMotionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1992,7 +1992,7 @@ client.get_api_playback_motion()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_playback_motion</a>(...) -> PostApiPlaybackMotionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1210-L1263">post_api_playback_motion</a>(...) -> PostApiPlaybackMotionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2069,7 +2069,7 @@ client.post_api_playback_motion(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_playback_events</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1265-L1289">get_api_playback_events</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2117,7 +2117,7 @@ client.get_api_playback_events()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_playback</a>() -> GetApiPlaybackResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1291-L1311">get_api_playback</a>() -> GetApiPlaybackResponse</code></summary>
 <dl>
 <dd>
 
@@ -2165,7 +2165,7 @@ client.get_api_playback()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_playback_parameters</a>(...) -> PostApiPlaybackParametersResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1313-L1367">post_api_playback_parameters</a>(...) -> PostApiPlaybackParametersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2259,7 +2259,7 @@ client.post_api_playback_parameters(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_playback_control</a>(...) -> PostApiPlaybackControlResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1369-L1409">post_api_playback_control</a>(...) -> PostApiPlaybackControlResponse</code></summary>
 <dl>
 <dd>
 
@@ -2341,7 +2341,7 @@ client.post_api_playback_control(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_playback_reload</a>(...) -> PostApiPlaybackReloadResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1411-L1437">post_api_playback_reload</a>(...) -> PostApiPlaybackReloadResponse</code></summary>
 <dl>
 <dd>
 
@@ -2401,7 +2401,7 @@ client.post_api_playback_reload(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_checkpoints</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1439-L1461">get_api_checkpoints</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2449,7 +2449,7 @@ client.get_api_checkpoints()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_checkpoints</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1463-L1489">post_api_checkpoints</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2509,7 +2509,7 @@ client.post_api_checkpoints(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_api_checkpoints_restore</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1491-L1522">post_api_checkpoints_restore</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

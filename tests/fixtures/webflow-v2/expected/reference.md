@@ -1,6 +1,6 @@
 # Reference
 ## Token
-<details><summary><code>client.token.<a href="src/fern/token/client.py">authorized_by</a>() -> AuthorizedByTokenResponse</code></summary>
+<details><summary><code>client.token.<a href="src/fern/token/client.py#L27-L53">authorized_by</a>() -> AuthorizedByTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.token.authorized_by()
 </dl>
 </details>
 
-<details><summary><code>client.token.<a href="src/fern/token/client.py">introspect</a>() -> IntrospectTokenResponse</code></summary>
+<details><summary><code>client.token.<a href="src/fern/token/client.py#L55-L81">introspect</a>() -> IntrospectTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -131,7 +131,7 @@ client.token.introspect()
 </details>
 
 ## Sites
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">create</a>(...) -> CreateSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L56-L113">create</a>(...) -> CreateSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -233,7 +233,7 @@ client.sites.create(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">list</a>() -> ListSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L115-L141">list</a>() -> ListSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -298,7 +298,7 @@ client.sites.list()
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">get</a>(...) -> GetSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L143-L174">get</a>(...) -> GetSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -373,7 +373,7 @@ client.sites.get(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L176-L208">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -450,7 +450,7 @@ client.sites.delete(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">update</a>(...) -> UpdateSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L210-L258">update</a>(...) -> UpdateSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -543,7 +543,7 @@ client.sites.update(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">get_custom_domain</a>(...) -> GetCustomDomainSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L260-L293">get_custom_domain</a>(...) -> GetCustomDomainSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -618,7 +618,7 @@ client.sites.get_custom_domain(
 </dl>
 </details>
 
-<details><summary><code>client.sites.<a href="src/fern/sites/client.py">publish</a>(...) -> PublishSitesResponse</code></summary>
+<details><summary><code>client.sites.<a href="src/fern/sites/client.py#L295-L360">publish</a>(...) -> PublishSitesResponse</code></summary>
 <dl>
 <dd>
 
@@ -732,7 +732,7 @@ client.sites.publish(
 </details>
 
 ## Collections
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">list</a>(...) -> ListCollectionsResponse</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L42-L73">list</a>(...) -> ListCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -807,7 +807,7 @@ client.collections.list(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">create</a>(...) -> CreateCollectionsResponse</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L75-L170">create</a>(...) -> CreateCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -943,7 +943,7 @@ client.collections.create(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get</a>(...) -> GetCollectionsResponse</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L172-L205">get</a>(...) -> GetCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1018,7 +1018,7 @@ client.collections.get(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L207-L237">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1093,7 +1093,7 @@ client.collections.delete(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">patch</a>(...) -> PatchCollectionsResponse</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L239-L304">patch</a>(...) -> PatchCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1207,7 +1207,7 @@ client.collections.patch(
 </details>
 
 ## Pages
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">list</a>(...) -> ListPagesResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L42-L95">list</a>(...) -> ListPagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1311,7 +1311,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">get_metadata</a>(...) -> GetMetadataPagesResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L97-L157">get_metadata</a>(...) -> GetMetadataPagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1420,7 +1420,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">update_page_settings</a>(...) -> UpdatePageSettingsResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L159-L247">update_page_settings</a>(...) -> UpdatePageSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1559,7 +1559,7 @@ Slug for the page.
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">get_content</a>(...) -> GetContentPagesResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L249-L324">get_content</a>(...) -> GetContentPagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1686,7 +1686,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">update_static_content</a>(...) -> UpdateStaticContentResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L326-L437">update_static_content</a>(...) -> UpdateStaticContentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1834,7 +1834,7 @@ client.pages.update_static_content(
 </details>
 
 ## Components
-<details><summary><code>client.components.<a href="src/fern/components/client.py">list</a>(...) -> ListComponentsResponse</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L35-L86">list</a>(...) -> ListComponentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1934,7 +1934,7 @@ client.components.list(
 </dl>
 </details>
 
-<details><summary><code>client.components.<a href="src/fern/components/client.py">get_content</a>(...) -> GetContentComponentsResponse</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L88-L176">get_content</a>(...) -> GetContentComponentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2080,7 +2080,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.components.<a href="src/fern/components/client.py">update_content</a>(...) -> UpdateContentComponentsResponse</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L178-L306">update_content</a>(...) -> UpdateContentComponentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2249,7 +2249,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.components.<a href="src/fern/components/client.py">get_properties</a>(...) -> GetPropertiesComponentsResponse</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L308-L395">get_properties</a>(...) -> GetPropertiesComponentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2394,7 +2394,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.components.<a href="src/fern/components/client.py">update_properties</a>(...) -> UpdatePropertiesComponentsResponse</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L397-L479">update_properties</a>(...) -> UpdatePropertiesComponentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2526,7 +2526,7 @@ Unique identifier for a specific Locale.
 </details>
 
 ## Scripts
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">list</a>(...) -> ListScriptsResponse</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L31-L68">list</a>(...) -> ListScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2607,7 +2607,7 @@ client.scripts.list(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">register_hosted</a>(...) -> RegisterHostedScriptsResponse</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L70-L145">register_hosted</a>(...) -> RegisterHostedScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2733,7 +2733,7 @@ client.scripts.register_hosted(
 </dl>
 </details>
 
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">register_inline</a>(...) -> RegisterInlineScriptsResponse</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L147-L220">register_inline</a>(...) -> RegisterInlineScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2858,7 +2858,7 @@ client.scripts.register_inline(
 </details>
 
 ## Assets
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">list</a>(...) -> ListAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L35-L98">list</a>(...) -> ListAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2973,7 +2973,7 @@ Must be a 24-character hex ObjectId.
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">create</a>(...) -> CreateAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L100-L165">create</a>(...) -> CreateAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3083,7 +3083,7 @@ client.assets.create(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">get</a>(...) -> GetAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L167-L210">get</a>(...) -> GetAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3171,7 +3171,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L212-L242">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3246,7 +3246,7 @@ client.assets.delete(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">update</a>(...) -> UpdateAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L244-L297">update</a>(...) -> UpdateAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3350,7 +3350,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">list_folders</a>(...) -> ListFoldersAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L299-L332">list_folders</a>(...) -> ListFoldersAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3425,7 +3425,7 @@ client.assets.list_folders(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">create_folder</a>(...) -> CreateFolderAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L334-L381">create_folder</a>(...) -> CreateFolderAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3517,7 +3517,7 @@ client.assets.create_folder(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">get_folder</a>(...) -> GetFolderAssetsResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L383-L416">get_folder</a>(...) -> GetFolderAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3593,7 +3593,7 @@ client.assets.get_folder(
 </details>
 
 ## Custom Fonts
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">list</a>(...) -> ListCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L41-L85">list</a>(...) -> ListCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3684,7 +3684,7 @@ client.custom_fonts.list(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">create</a>(...) -> CreateCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L87-L175">create</a>(...) -> CreateCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3828,7 +3828,7 @@ client.custom_fonts.create(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">get</a>(...) -> GetCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L177-L214">get</a>(...) -> GetCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3912,7 +3912,7 @@ client.custom_fonts.get(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L216-L250">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3996,7 +3996,7 @@ client.custom_fonts.delete(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">update</a>(...) -> UpdateCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L252-L320">update</a>(...) -> UpdateCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4115,7 +4115,7 @@ client.custom_fonts.update(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">replace_file</a>(...) -> ReplaceFileCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L322-L384">replace_file</a>(...) -> ReplaceFileCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4230,7 +4230,7 @@ client.custom_fonts.replace_file(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">batch_create</a>(...) -> BatchCreateCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L386-L455">batch_create</a>(...) -> BatchCreateCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4338,7 +4338,7 @@ client.custom_fonts.batch_create(
 </dl>
 </details>
 
-<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py">batch_delete</a>(...) -> BatchDeleteCustomFontsResponse</code></summary>
+<details><summary><code>client.custom_fonts.<a href="src/fern/custom_fonts/client.py#L457-L508">batch_delete</a>(...) -> BatchDeleteCustomFontsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4433,7 +4433,7 @@ client.custom_fonts.batch_delete(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list</a>(...) -> ListWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L33-L64">list</a>(...) -> ListWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -4508,7 +4508,7 @@ client.webhooks.list(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create</a>(...) -> CreateWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L66-L123">create</a>(...) -> CreateWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -4613,7 +4613,7 @@ client.webhooks.create(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get</a>(...) -> GetWebhooksResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L125-L156">get</a>(...) -> GetWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -4688,7 +4688,7 @@ client.webhooks.get(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L158-L188">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4764,7 +4764,7 @@ client.webhooks.delete(
 </details>
 
 ## Forms
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list</a>(...) -> ListFormsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L33-L77">list</a>(...) -> ListFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4855,7 +4855,7 @@ client.forms.list(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">get</a>(...) -> GetFormsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L79-L110">get</a>(...) -> GetFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4930,7 +4930,7 @@ client.forms.get(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">list_submissions</a>(...) -> ListSubmissionsFormsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L112-L164">list_submissions</a>(...) -> ListSubmissionsFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5027,7 +5027,7 @@ client.forms.list_submissions(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">get_submission</a>(...) -> GetSubmissionFormsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L166-L199">get_submission</a>(...) -> GetSubmissionFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5102,7 +5102,7 @@ client.forms.get_submission(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">delete_submission</a>(...)</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L201-L234">delete_submission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5178,7 +5178,7 @@ client.forms.delete_submission(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">update_submission</a>(...) -> UpdateSubmissionFormsResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L236-L278">update_submission</a>(...) -> UpdateSubmissionFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5262,7 +5262,7 @@ client.forms.update_submission(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">list</a>(...) -> ListProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L44-L91">list</a>(...) -> ListProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5356,7 +5356,7 @@ client.products.list(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">create</a>(...) -> CreateProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L93-L223">create</a>(...) -> CreateProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5527,7 +5527,7 @@ client.products.create(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">get</a>(...) -> GetProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L225-L263">get</a>(...) -> GetProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5612,7 +5612,7 @@ client.products.get(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">update</a>(...) -> UpdateProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L265-L327">update</a>(...) -> UpdateProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5722,7 +5722,7 @@ client.products.update(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">create_sku</a>(...) -> CreateSkuProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L329-L401">create_sku</a>(...) -> CreateSkuProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5838,7 +5838,7 @@ client.products.create_sku(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">update_sku</a>(...) -> UpdateSkuProductsResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L403-L478">update_sku</a>(...) -> UpdateSkuProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5962,7 +5962,7 @@ client.products.update_sku(
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">list</a>(...) -> ListOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L36-L86">list</a>(...) -> ListOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6061,7 +6061,7 @@ client.orders.list(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">get</a>(...) -> GetOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L88-L126">get</a>(...) -> GetOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6146,7 +6146,7 @@ client.orders.get(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update</a>(...) -> UpdateOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L128-L195">update</a>(...) -> UpdateOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6264,7 +6264,7 @@ client.orders.update(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_fulfill</a>(...) -> UpdateFulfillOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L197-L244">update_fulfill</a>(...) -> UpdateFulfillOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6356,7 +6356,7 @@ client.orders.update_fulfill(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_unfulfill</a>(...) -> UpdateUnfulfillOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L246-L283">update_unfulfill</a>(...) -> UpdateUnfulfillOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6440,7 +6440,7 @@ client.orders.update_unfulfill(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">refund</a>(...) -> RefundOrdersResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L285-L331">refund</a>(...) -> RefundOrdersResponse</code></summary>
 <dl>
 <dd>
 
@@ -6534,7 +6534,7 @@ client.orders.refund(
 </details>
 
 ## Inventory
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">list</a>(...) -> ListInventoryResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L31-L68">list</a>(...) -> ListInventoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -6618,7 +6618,7 @@ client.inventory.list(
 </dl>
 </details>
 
-<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py">update</a>(...) -> UpdateInventoryResponse</code></summary>
+<details><summary><code>client.inventory.<a href="src/fern/inventory/client.py#L70-L137">update</a>(...) -> UpdateInventoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -6733,7 +6733,7 @@ client.inventory.update(
 </details>
 
 ## Ecommerce
-<details><summary><code>client.ecommerce.<a href="src/fern/ecommerce/client.py">get_settings</a>(...) -> GetSettingsEcommerceResponse</code></summary>
+<details><summary><code>client.ecommerce.<a href="src/fern/ecommerce/client.py#L26-L59">get_settings</a>(...) -> GetSettingsEcommerceResponse</code></summary>
 <dl>
 <dd>
 
@@ -6809,7 +6809,7 @@ client.ecommerce.get_settings(
 </details>
 
 ## Analyze Reports
-<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">traffic</a>(...) -> TrafficReportsResponse</code></summary>
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py#L49-L185">traffic</a>(...) -> TrafficReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7019,7 +7019,7 @@ Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a 
 </dl>
 </details>
 
-<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">top_pages</a>(...) -> TopPagesReportsResponse</code></summary>
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py#L187-L326">top_pages</a>(...) -> TopPagesReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7236,7 +7236,7 @@ Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a 
 </dl>
 </details>
 
-<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">top_dimensions</a>(...) -> TopDimensionsReportsResponse</code></summary>
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py#L328-L472">top_dimensions</a>(...) -> TopDimensionsReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7454,7 +7454,7 @@ Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a 
 </dl>
 </details>
 
-<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">top_events</a>(...) -> TopEventsReportsResponse</code></summary>
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py#L474-L602">top_events</a>(...) -> TopEventsReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7654,7 +7654,7 @@ Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a 
 </dl>
 </details>
 
-<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py">time_on_page</a>(...) -> TimeOnPageReportsResponse</code></summary>
+<details><summary><code>client.analyze.reports.<a href="src/fern/analyze/reports/client.py#L604-L739">time_on_page</a>(...) -> TimeOnPageReportsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7864,7 +7864,7 @@ Each dimension entry takes at least one of `eq`, `in`, `ne`, or `nin`. Filter a 
 </details>
 
 ## Collections Fields
-<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py">create</a>(...) -> CreateFieldsResponse</code></summary>
+<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py#L31-L82">create</a>(...) -> CreateFieldsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7958,7 +7958,7 @@ client.collections.fields.create(
 </dl>
 </details>
 
-<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py#L84-L120">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8042,7 +8042,7 @@ client.collections.fields.delete(
 </dl>
 </details>
 
-<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py">update</a>(...) -> UpdateFieldsResponse</code></summary>
+<details><summary><code>client.collections.fields.<a href="src/fern/collections/fields/client.py#L122-L185">update</a>(...) -> UpdateFieldsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8154,7 +8154,7 @@ client.collections.fields.update(
 </details>
 
 ## Collections Items
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">list_items</a>(...) -> ListItemsItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L64-L240">list_items</a>(...) -> ListItemsItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8411,7 +8411,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">create_item</a>(...) -> CreateItemItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L242-L339">create_item</a>(...) -> CreateItemItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8544,7 +8544,7 @@ client.collections.items.create_item(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_items</a>(...)</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L341-L388">delete_items</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8635,7 +8635,7 @@ client.collections.items.delete_items(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_items</a>(...) -> UpdateItemsItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L390-L497">update_items</a>(...) -> UpdateItemsItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8784,7 +8784,7 @@ client.collections.items.update_items(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">list_items_live</a>(...) -> ListItemsLiveItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L499-L679">list_items_live</a>(...) -> ListItemsLiveItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9045,7 +9045,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">create_item_live</a>(...) -> CreateItemLiveItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L681-L778">create_item_live</a>(...) -> CreateItemLiveItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9178,7 +9178,7 @@ client.collections.items.create_item_live(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_items_live</a>(...)</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L780-L827">delete_items_live</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9269,7 +9269,7 @@ client.collections.items.delete_items_live(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_items_live</a>(...) -> UpdateItemsLiveItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L829-L925">update_items_live</a>(...) -> UpdateItemsLiveItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9407,7 +9407,7 @@ client.collections.items.update_items_live(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">create_items</a>(...) -> CreateItemsItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L927-L1018">create_items</a>(...) -> CreateItemsItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9549,7 +9549,7 @@ client.collections.items.create_items(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">get_item</a>(...) -> GetItemItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1020-L1096">get_item</a>(...) -> GetItemItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9672,7 +9672,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_item</a>(...)</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1098-L1144">delete_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9764,7 +9764,7 @@ client.collections.items.delete_item(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_item</a>(...) -> UpdateItemItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1146-L1247">update_item</a>(...) -> UpdateItemItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9921,7 +9921,7 @@ Setting `isDraft: true` never unpublishes an item. To remove an item from the li
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">get_item_live</a>(...) -> GetItemLiveItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1249-L1329">get_item_live</a>(...) -> GetItemLiveItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10048,7 +10048,7 @@ Omitting `translatable` returns the same response as if this parameter didn't ex
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">delete_item_live</a>(...)</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1331-L1379">delete_item_live</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10142,7 +10142,7 @@ client.collections.items.delete_item_live(
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">update_item_live</a>(...) -> UpdateItemLiveItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1381-L1473">update_item_live</a>(...) -> UpdateItemLiveItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10290,7 +10290,7 @@ Setting `isDraft: true` never unpublishes an item. To remove an item from the li
 </dl>
 </details>
 
-<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py">publish_item</a>(...) -> PublishItemItemsResponse</code></summary>
+<details><summary><code>client.collections.items.<a href="src/fern/collections/items/client.py#L1475-L1523">publish_item</a>(...) -> PublishItemItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10382,7 +10382,7 @@ client.collections.items.publish_item(
 </details>
 
 ## Pages Scripts
-<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py">get_custom_code</a>(...) -> GetCustomCodeScriptsResponse</code></summary>
+<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py#L31-L66">get_custom_code</a>(...) -> GetCustomCodeScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10459,7 +10459,7 @@ client.pages.scripts.get_custom_code(
 </dl>
 </details>
 
-<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py">upsert_custom_code</a>(...) -> UpsertCustomCodeScriptsResponse</code></summary>
+<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py#L68-L132">upsert_custom_code</a>(...) -> UpsertCustomCodeScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10564,7 +10564,7 @@ client.pages.scripts.upsert_custom_code(
 </dl>
 </details>
 
-<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py">delete_custom_code</a>(...)</code></summary>
+<details><summary><code>client.pages.scripts.<a href="src/fern/pages/scripts/client.py#L134-L168">delete_custom_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10644,7 +10644,7 @@ client.pages.scripts.delete_custom_code(
 </details>
 
 ## Sites Redirects
-<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">list</a>(...) -> ListRedirectsResponse</code></summary>
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py#L32-L67">list</a>(...) -> ListRedirectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10723,7 +10723,7 @@ client.sites.redirects.list(
 </dl>
 </details>
 
-<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">create</a>(...) -> CreateRedirectsResponse</code></summary>
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py#L69-L119">create</a>(...) -> CreateRedirectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10820,7 +10820,7 @@ client.sites.redirects.create(
 </dl>
 </details>
 
-<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">delete</a>(...) -> DeleteRedirectsResponse</code></summary>
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py#L121-L162">delete</a>(...) -> DeleteRedirectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10908,7 +10908,7 @@ client.sites.redirects.delete(
 </dl>
 </details>
 
-<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py">update</a>(...) -> UpdateRedirectsResponse</code></summary>
+<details><summary><code>client.sites.redirects.<a href="src/fern/sites/redirects/client.py#L164-L219">update</a>(...) -> UpdateRedirectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -11013,7 +11013,7 @@ client.sites.redirects.update(
 </details>
 
 ## Sites Plans
-<details><summary><code>client.sites.plans.<a href="src/fern/sites/plans/client.py">get_site_plan</a>(...) -> GetSitePlanPlansResponse</code></summary>
+<details><summary><code>client.sites.plans.<a href="src/fern/sites/plans/client.py#L26-L61">get_site_plan</a>(...) -> GetSitePlanPlansResponse</code></summary>
 <dl>
 <dd>
 
@@ -11091,7 +11091,7 @@ client.sites.plans.get_site_plan(
 </details>
 
 ## Sites RobotsTxt
-<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">get</a>(...) -> GetRobotsTxtResponse</code></summary>
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py#L35-L68">get</a>(...) -> GetRobotsTxtResponse</code></summary>
 <dl>
 <dd>
 
@@ -11168,7 +11168,7 @@ client.sites.robots_txt.get(
 </dl>
 </details>
 
-<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">put</a>(...) -> PutRobotsTxtResponse</code></summary>
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py#L70-L126">put</a>(...) -> PutRobotsTxtResponse</code></summary>
 <dl>
 <dd>
 
@@ -11275,7 +11275,7 @@ client.sites.robots_txt.put(
 </dl>
 </details>
 
-<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">delete</a>(...) -> DeleteRobotsTxtResponse</code></summary>
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py#L128-L185">delete</a>(...) -> DeleteRobotsTxtResponse</code></summary>
 <dl>
 <dd>
 
@@ -11382,7 +11382,7 @@ client.sites.robots_txt.delete(
 </dl>
 </details>
 
-<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py">patch</a>(...) -> PatchRobotsTxtResponse</code></summary>
+<details><summary><code>client.sites.robots_txt.<a href="src/fern/sites/robots_txt/client.py#L187-L243">patch</a>(...) -> PatchRobotsTxtResponse</code></summary>
 <dl>
 <dd>
 
@@ -11490,7 +11490,7 @@ client.sites.robots_txt.patch(
 </details>
 
 ## Sites WellKnown
-<details><summary><code>client.sites.well_known.<a href="src/fern/sites/well_known/client.py">put</a>(...)</code></summary>
+<details><summary><code>client.sites.well_known.<a href="src/fern/sites/well_known/client.py#L29-L98">put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11604,7 +11604,7 @@ client.sites.well_known.put(
 </dl>
 </details>
 
-<details><summary><code>client.sites.well_known.<a href="src/fern/sites/well_known/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.sites.well_known.<a href="src/fern/sites/well_known/client.py#L100-L141">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11690,7 +11690,7 @@ client.sites.well_known.delete(
 </details>
 
 ## Sites GoogleTag
-<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">list</a>(...) -> ListGoogleTagResponse</code></summary>
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py#L32-L63">list</a>(...) -> ListGoogleTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -11765,7 +11765,7 @@ client.sites.google_tag.list(
 </dl>
 </details>
 
-<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">delete_all</a>(...)</code></summary>
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py#L65-L95">delete_all</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11840,7 +11840,7 @@ client.sites.google_tag.delete_all(
 </dl>
 </details>
 
-<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">upsert</a>(...) -> UpsertGoogleTagResponse</code></summary>
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py#L97-L148">upsert</a>(...) -> UpsertGoogleTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -11933,7 +11933,7 @@ client.sites.google_tag.upsert(
 </dl>
 </details>
 
-<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py">delete</a>(...) -> DeleteGoogleTagResponse</code></summary>
+<details><summary><code>client.sites.google_tag.<a href="src/fern/sites/google_tag/client.py#L150-L187">delete</a>(...) -> DeleteGoogleTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -12018,7 +12018,7 @@ client.sites.google_tag.delete(
 </details>
 
 ## Sites ActivityLogs
-<details><summary><code>client.sites.activity_logs.<a href="src/fern/sites/activity_logs/client.py">list</a>(...) -> ListActivityLogsResponse</code></summary>
+<details><summary><code>client.sites.activity_logs.<a href="src/fern/sites/activity_logs/client.py#L26-L72">list</a>(...) -> ListActivityLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12112,7 +12112,7 @@ client.sites.activity_logs.list(
 </details>
 
 ## Sites Comments
-<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">list_comment_threads</a>(...) -> ListCommentThreadsCommentsResponse</code></summary>
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py#L39-L110">list_comment_threads</a>(...) -> ListCommentThreadsCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12236,7 +12236,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">get_comment_thread</a>(...) -> GetCommentThreadCommentsResponse</code></summary>
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py#L112-L189">get_comment_thread</a>(...) -> GetCommentThreadCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12369,7 +12369,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">resolve_comment_thread</a>(...) -> ResolveCommentThreadCommentsResponse</code></summary>
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py#L191-L243">resolve_comment_thread</a>(...) -> ResolveCommentThreadCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12466,7 +12466,7 @@ client.sites.comments.resolve_comment_thread(
 </dl>
 </details>
 
-<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">list_comment_replies</a>(...) -> ListCommentRepliesCommentsResponse</code></summary>
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py#L245-L322">list_comment_replies</a>(...) -> ListCommentRepliesCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12599,7 +12599,7 @@ Unique identifier for a specific Locale.
 </dl>
 </details>
 
-<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py">create_comment_reply</a>(...) -> CreateCommentReplyCommentsResponse</code></summary>
+<details><summary><code>client.sites.comments.<a href="src/fern/sites/comments/client.py#L324-L379">create_comment_reply</a>(...) -> CreateCommentReplyCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12700,7 +12700,7 @@ client.sites.comments.create_comment_reply(
 </details>
 
 ## Sites Scripts
-<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">get_custom_code</a>(...) -> GetCustomCodeScriptsResponse</code></summary>
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py#L32-L71">get_custom_code</a>(...) -> GetCustomCodeScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12781,7 +12781,7 @@ client.sites.scripts.get_custom_code(
 </dl>
 </details>
 
-<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">upsert_custom_code</a>(...) -> UpsertCustomCodeScriptsResponse</code></summary>
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py#L73-L137">upsert_custom_code</a>(...) -> UpsertCustomCodeScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12886,7 +12886,7 @@ client.sites.scripts.upsert_custom_code(
 </dl>
 </details>
 
-<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">delete_custom_code</a>(...)</code></summary>
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py#L139-L173">delete_custom_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12965,7 +12965,7 @@ client.sites.scripts.delete_custom_code(
 </dl>
 </details>
 
-<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py">list_custom_code_blocks</a>(...) -> ListCustomCodeBlocksScriptsResponse</code></summary>
+<details><summary><code>client.sites.scripts.<a href="src/fern/sites/scripts/client.py#L175-L229">list_custom_code_blocks</a>(...) -> ListCustomCodeBlocksScriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13065,7 +13065,7 @@ client.sites.scripts.list_custom_code_blocks(
 </details>
 
 ## Sites Forms
-<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">list_submissions_by_site</a>(...) -> ListSubmissionsBySiteFormsResponse</code></summary>
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py#L32-L91">list_submissions_by_site</a>(...) -> ListSubmissionsBySiteFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13173,7 +13173,7 @@ client.sites.forms.list_submissions_by_site(
 </dl>
 </details>
 
-<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">list_submissions</a>(...) -> ListSubmissionsFormsResponse</code></summary>
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py#L93-L146">list_submissions</a>(...) -> ListSubmissionsFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13275,7 +13275,7 @@ client.sites.forms.list_submissions(
 </dl>
 </details>
 
-<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">get_submission</a>(...) -> GetSubmissionFormsResponse</code></summary>
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py#L148-L185">get_submission</a>(...) -> GetSubmissionFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13359,7 +13359,7 @@ client.sites.forms.get_submission(
 </dl>
 </details>
 
-<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">delete_submission</a>(...)</code></summary>
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py#L187-L223">delete_submission</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13443,7 +13443,7 @@ client.sites.forms.delete_submission(
 </dl>
 </details>
 
-<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py">update_submission</a>(...) -> UpdateSubmissionFormsResponse</code></summary>
+<details><summary><code>client.sites.forms.<a href="src/fern/sites/forms/client.py#L225-L272">update_submission</a>(...) -> UpdateSubmissionFormsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13536,7 +13536,7 @@ client.sites.forms.update_submission(
 </details>
 
 ## Workspaces AuditLogs
-<details><summary><code>client.workspaces.audit_logs.<a href="src/fern/workspaces/audit_logs/client.py">get_workspace_audit_logs</a>(...) -> GetWorkspaceAuditLogsAuditLogsResponse</code></summary>
+<details><summary><code>client.workspaces.audit_logs.<a href="src/fern/workspaces/audit_logs/client.py#L29-L108">get_workspace_audit_logs</a>(...) -> GetWorkspaceAuditLogsAuditLogsResponse</code></summary>
 <dl>
 <dd>
 

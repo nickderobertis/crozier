@@ -1,6 +1,6 @@
 # Reference
 ## Library RPC
-<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py">protoform_conformance_v1library_service_list_books</a>(...) -> ProtoformConformanceV1ListBooksResponse</code></summary>
+<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py#L32-L81">protoform_conformance_v1library_service_list_books</a>(...) -> ProtoformConformanceV1ListBooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -90,7 +90,7 @@ client.library_rpc.protoform_conformance_v1library_service_list_books(
 </dl>
 </details>
 
-<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py">protoform_conformance_v1library_service_get_book</a>(...) -> ProtoformConformanceV1Book</code></summary>
+<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py#L83-L111">protoform_conformance_v1library_service_get_book</a>(...) -> ProtoformConformanceV1Book</code></summary>
 <dl>
 <dd>
 
@@ -148,7 +148,7 @@ client.library_rpc.protoform_conformance_v1library_service_get_book(
 </dl>
 </details>
 
-<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py">protoform_conformance_v1library_service_create_book</a>(...) -> ProtoformConformanceV1Book</code></summary>
+<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py#L113-L166">protoform_conformance_v1library_service_create_book</a>(...) -> ProtoformConformanceV1Book</code></summary>
 <dl>
 <dd>
 
@@ -243,7 +243,7 @@ client.library_rpc.protoform_conformance_v1library_service_create_book(
 </dl>
 </details>
 
-<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py">protoform_conformance_v1library_service_update_book</a>(...) -> ProtoformConformanceV1Book</code></summary>
+<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py#L168-L221">protoform_conformance_v1library_service_update_book</a>(...) -> ProtoformConformanceV1Book</code></summary>
 <dl>
 <dd>
 
@@ -337,7 +337,7 @@ client.library_rpc.protoform_conformance_v1library_service_update_book(
 </dl>
 </details>
 
-<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py">protoform_conformance_v1library_service_delete_book</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.library_rpc.<a href="src/fern/library_rpc/client.py#L223-L266">protoform_conformance_v1library_service_delete_book</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

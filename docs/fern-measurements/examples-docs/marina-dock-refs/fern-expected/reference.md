@@ -1,6 +1,6 @@
 # Reference
 ## Docks
-<details><summary><code>client.docks.<a href="src/fern/docks/client.py">get_dock</a>(...) -> GetDockResponse</code></summary>
+<details><summary><code>client.docks.<a href="src/fern/docks/client.py#L26-L54">get_dock</a>(...) -> GetDockResponse</code></summary>
 <dl>
 <dd>
 

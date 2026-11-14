@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post_properties</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L124">post_properties</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.post_properties(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_items</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L153">post_items</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.post_items(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_additional</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L155-L187">post_additional</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

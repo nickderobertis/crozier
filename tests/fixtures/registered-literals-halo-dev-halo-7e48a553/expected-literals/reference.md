@@ -1,6 +1,6 @@
 # Reference
 ## AttachmentV1Alpha1Console
-<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py">search_attachments</a>(...) -> AttachmentList</code></summary>
+<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py#L32-L103">search_attachments</a>(...) -> AttachmentList</code></summary>
 <dl>
 <dd>
 
@@ -128,7 +128,7 @@ client.attachment_v1alpha1console.search_attachments()
 </dl>
 </details>
 
-<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py">external_transfer_attachment</a>(...) -> Attachment</code></summary>
+<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py#L105-L155">external_transfer_attachment</a>(...) -> Attachment</code></summary>
 <dl>
 <dd>
 
@@ -227,7 +227,7 @@ client.attachment_v1alpha1console.external_transfer_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py">upload_attachment</a>(...) -> Attachment</code></summary>
+<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py#L157-L202">upload_attachment</a>(...) -> Attachment</code></summary>
 <dl>
 <dd>
 
@@ -318,7 +318,7 @@ client.attachment_v1alpha1console.upload_attachment(
 </dl>
 </details>
 
-<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py">match_attachment_permalinks_for_console</a>(...) -> AttachmentPermalinkMatchList</code></summary>
+<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py#L204-L235">match_attachment_permalinks_for_console</a>(...) -> AttachmentPermalinkMatchList</code></summary>
 <dl>
 <dd>
 
@@ -394,7 +394,7 @@ client.attachment_v1alpha1console.match_attachment_permalinks_for_console(
 </dl>
 </details>
 
-<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py">upload_attachment_for_console</a>(...) -> Attachment</code></summary>
+<details><summary><code>client.attachment_v1alpha1console.<a href="src/fern/attachment_v1alpha1console/client.py#L237-L280">upload_attachment_for_console</a>(...) -> Attachment</code></summary>
 <dl>
 <dd>
 
@@ -485,7 +485,7 @@ client.attachment_v1alpha1console.upload_attachment_for_console(
 </details>
 
 ## AuthProviderV1Alpha1Console
-<details><summary><code>client.auth_provider_v1alpha1console.<a href="src/fern/auth_provider_v1alpha1console/client.py">list_auth_providers</a>() -> typing.List[ListedAuthProvider]</code></summary>
+<details><summary><code>client.auth_provider_v1alpha1console.<a href="src/fern/auth_provider_v1alpha1console/client.py#L27-L54">list_auth_providers</a>() -> typing.List[ListedAuthProvider]</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +549,7 @@ client.auth_provider_v1alpha1console.list_auth_providers()
 </dl>
 </details>
 
-<details><summary><code>client.auth_provider_v1alpha1console.<a href="src/fern/auth_provider_v1alpha1console/client.py">disable_auth_provider</a>(...) -> AuthProvider</code></summary>
+<details><summary><code>client.auth_provider_v1alpha1console.<a href="src/fern/auth_provider_v1alpha1console/client.py#L56-L88">disable_auth_provider</a>(...) -> AuthProvider</code></summary>
 <dl>
 <dd>
 
@@ -623,7 +623,7 @@ client.auth_provider_v1alpha1console.disable_auth_provider(
 </dl>
 </details>
 
-<details><summary><code>client.auth_provider_v1alpha1console.<a href="src/fern/auth_provider_v1alpha1console/client.py">enable_auth_provider</a>(...) -> AuthProvider</code></summary>
+<details><summary><code>client.auth_provider_v1alpha1console.<a href="src/fern/auth_provider_v1alpha1console/client.py#L90-L122">enable_auth_provider</a>(...) -> AuthProvider</code></summary>
 <dl>
 <dd>
 
@@ -698,7 +698,7 @@ client.auth_provider_v1alpha1console.enable_auth_provider(
 </details>
 
 ## CategoryV1Alpha1Console
-<details><summary><code>client.category_v1alpha1console.<a href="src/fern/category_v1alpha1console/client.py">list_category_tree</a>() -> typing.List[CategoryTreeNode]</code></summary>
+<details><summary><code>client.category_v1alpha1console.<a href="src/fern/category_v1alpha1console/client.py#L29-L56">list_category_tree</a>() -> typing.List[CategoryTreeNode]</code></summary>
 <dl>
 <dd>
 
@@ -762,7 +762,7 @@ client.category_v1alpha1console.list_category_tree()
 </dl>
 </details>
 
-<details><summary><code>client.category_v1alpha1console.<a href="src/fern/category_v1alpha1console/client.py">update_category_position</a>(...) -> typing.List[CategoryTreeNode]</code></summary>
+<details><summary><code>client.category_v1alpha1console.<a href="src/fern/category_v1alpha1console/client.py#L58-L103">update_category_position</a>(...) -> typing.List[CategoryTreeNode]</code></summary>
 <dl>
 <dd>
 
@@ -853,7 +853,7 @@ client.category_v1alpha1console.update_category_position(
 </details>
 
 ## CommentV1Alpha1Console
-<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py">list_comments</a>(...) -> ListedCommentList</code></summary>
+<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py#L33-L109">list_comments</a>(...) -> ListedCommentList</code></summary>
 <dl>
 <dd>
 
@@ -989,7 +989,7 @@ client.comment_v1alpha1console.list_comments()
 </dl>
 </details>
 
-<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py">create_comment</a>(...) -> Comment</code></summary>
+<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py#L111-L178">create_comment</a>(...) -> Comment</code></summary>
 <dl>
 <dd>
 
@@ -1109,7 +1109,7 @@ client.comment_v1alpha1console.create_comment(
 </dl>
 </details>
 
-<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py">update_comment_content</a>(...) -> Comment</code></summary>
+<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py#L180-L229">update_comment_content</a>(...) -> Comment</code></summary>
 <dl>
 <dd>
 
@@ -1194,7 +1194,7 @@ client.comment_v1alpha1console.update_comment_content(
 </dl>
 </details>
 
-<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py">create_reply</a>(...) -> Reply</code></summary>
+<details><summary><code>client.comment_v1alpha1console.<a href="src/fern/comment_v1alpha1console/client.py#L231-L300">create_reply</a>(...) -> Reply</code></summary>
 <dl>
 <dd>
 
@@ -1319,7 +1319,7 @@ client.comment_v1alpha1console.create_reply(
 </details>
 
 ## IndicesV1Alpha1Console
-<details><summary><code>client.indices_v1alpha1console.<a href="src/fern/indices_v1alpha1console/client.py">rebuild_all_indices</a>()</code></summary>
+<details><summary><code>client.indices_v1alpha1console.<a href="src/fern/indices_v1alpha1console/client.py#L25-L49">rebuild_all_indices</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1384,7 +1384,7 @@ client.indices_v1alpha1console.rebuild_all_indices()
 </details>
 
 ## MenuItemV1Alpha1Console
-<details><summary><code>client.menu_item_v1alpha1console.<a href="src/fern/menu_item_v1alpha1console/client.py">list_menu_item_tree</a>(...) -> typing.List[MenuItemTreeNode]</code></summary>
+<details><summary><code>client.menu_item_v1alpha1console.<a href="src/fern/menu_item_v1alpha1console/client.py#L29-L61">list_menu_item_tree</a>(...) -> typing.List[MenuItemTreeNode]</code></summary>
 <dl>
 <dd>
 
@@ -1458,7 +1458,7 @@ client.menu_item_v1alpha1console.list_menu_item_tree(
 </dl>
 </details>
 
-<details><summary><code>client.menu_item_v1alpha1console.<a href="src/fern/menu_item_v1alpha1console/client.py">update_menu_item_position</a>(...) -> typing.List[MenuItemTreeNode]</code></summary>
+<details><summary><code>client.menu_item_v1alpha1console.<a href="src/fern/menu_item_v1alpha1console/client.py#L63-L113">update_menu_item_position</a>(...) -> typing.List[MenuItemTreeNode]</code></summary>
 <dl>
 <dd>
 
@@ -1558,7 +1558,7 @@ client.menu_item_v1alpha1console.update_menu_item_position(
 </details>
 
 ## MenuV1Alpha1Console
-<details><summary><code>client.menu_v1alpha1console.<a href="src/fern/menu_v1alpha1console/client.py">delete_menu</a>(...) -> Menu</code></summary>
+<details><summary><code>client.menu_v1alpha1console.<a href="src/fern/menu_v1alpha1console/client.py#L26-L56">delete_menu</a>(...) -> Menu</code></summary>
 <dl>
 <dd>
 
@@ -1633,7 +1633,7 @@ client.menu_v1alpha1console.delete_menu(
 </details>
 
 ## NotifierV1Alpha1Console
-<details><summary><code>client.notifier_v1alpha1console.<a href="src/fern/notifier_v1alpha1console/client.py">fetch_sender_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.notifier_v1alpha1console.<a href="src/fern/notifier_v1alpha1console/client.py#L28-L60">fetch_sender_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1707,7 +1707,7 @@ client.notifier_v1alpha1console.fetch_sender_config(
 </dl>
 </details>
 
-<details><summary><code>client.notifier_v1alpha1console.<a href="src/fern/notifier_v1alpha1console/client.py">save_sender_config</a>(...)</code></summary>
+<details><summary><code>client.notifier_v1alpha1console.<a href="src/fern/notifier_v1alpha1console/client.py#L62-L100">save_sender_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1792,7 +1792,7 @@ client.notifier_v1alpha1console.save_sender_config(
 </dl>
 </details>
 
-<details><summary><code>client.notifier_v1alpha1console.<a href="src/fern/notifier_v1alpha1console/client.py">verify_email_sender_config</a>(...)</code></summary>
+<details><summary><code>client.notifier_v1alpha1console.<a href="src/fern/notifier_v1alpha1console/client.py#L102-L166">verify_email_sender_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1921,7 +1921,7 @@ client.notifier_v1alpha1console.verify_email_sender_config()
 </details>
 
 ## PluginV1Alpha1Console
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">list_plugins</a>(...) -> PluginList</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L35-L101">list_plugins</a>(...) -> PluginList</code></summary>
 <dl>
 <dd>
 
@@ -2041,7 +2041,7 @@ client.plugin_v1alpha1console.list_plugins()
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">fetch_css_bundle</a>() -> str</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L103-L128">fetch_css_bundle</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2105,7 +2105,7 @@ client.plugin_v1alpha1console.fetch_css_bundle()
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">fetch_js_bundle</a>() -> str</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L130-L155">fetch_js_bundle</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2169,7 +2169,7 @@ client.plugin_v1alpha1console.fetch_js_bundle()
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">install_plugin_from_uri</a>(...) -> Plugin</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L157-L187">install_plugin_from_uri</a>(...) -> Plugin</code></summary>
 <dl>
 <dd>
 
@@ -2243,7 +2243,7 @@ client.plugin_v1alpha1console.install_plugin_from_uri(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">install_plugin</a>(...) -> Plugin</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L189-L232">install_plugin</a>(...) -> Plugin</code></summary>
 <dl>
 <dd>
 
@@ -2333,7 +2333,7 @@ client.plugin_v1alpha1console.install_plugin(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">fetch_plugin_json_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L234-L266">fetch_plugin_json_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2407,7 +2407,7 @@ client.plugin_v1alpha1console.fetch_plugin_json_config(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">update_plugin_json_config</a>(...)</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L268-L306">update_plugin_json_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2492,7 +2492,7 @@ client.plugin_v1alpha1console.update_plugin_json_config(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">change_plugin_running_state</a>(...) -> Plugin</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L308-L354">change_plugin_running_state</a>(...) -> Plugin</code></summary>
 <dl>
 <dd>
 
@@ -2583,7 +2583,7 @@ client.plugin_v1alpha1console.change_plugin_running_state(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">reload_plugin</a>(...) -> Plugin</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L356-L386">reload_plugin</a>(...) -> Plugin</code></summary>
 <dl>
 <dd>
 
@@ -2657,7 +2657,7 @@ client.plugin_v1alpha1console.reload_plugin(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">reset_plugin_config</a>(...) -> ConfigMap</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L388-L418">reset_plugin_config</a>(...) -> ConfigMap</code></summary>
 <dl>
 <dd>
 
@@ -2731,7 +2731,7 @@ client.plugin_v1alpha1console.reset_plugin_config(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">fetch_plugin_setting</a>(...) -> Setting</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L420-L450">fetch_plugin_setting</a>(...) -> Setting</code></summary>
 <dl>
 <dd>
 
@@ -2805,7 +2805,7 @@ client.plugin_v1alpha1console.fetch_plugin_setting(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">upgrade_plugin</a>(...) -> Plugin</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L452-L501">upgrade_plugin</a>(...) -> Plugin</code></summary>
 <dl>
 <dd>
 
@@ -2904,7 +2904,7 @@ client.plugin_v1alpha1console.upgrade_plugin(
 </dl>
 </details>
 
-<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py">upgrade_plugin_from_uri</a>(...) -> Plugin</code></summary>
+<details><summary><code>client.plugin_v1alpha1console.<a href="src/fern/plugin_v1alpha1console/client.py#L503-L539">upgrade_plugin_from_uri</a>(...) -> Plugin</code></summary>
 <dl>
 <dd>
 
@@ -2988,7 +2988,7 @@ client.plugin_v1alpha1console.upgrade_plugin_from_uri(
 </details>
 
 ## PostV1Alpha1Console
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">list_posts</a>(...) -> ListedPostList</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L34-L105">list_posts</a>(...) -> ListedPostList</code></summary>
 <dl>
 <dd>
 
@@ -3116,7 +3116,7 @@ client.post_v1alpha1console.list_posts()
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">draft_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L107-L164">draft_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3214,7 +3214,7 @@ client.post_v1alpha1console.draft_post(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">update_draft_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L166-L234">update_draft_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3321,7 +3321,7 @@ client.post_v1alpha1console.update_draft_post(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">fetch_post_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L236-L274">fetch_post_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -3404,7 +3404,7 @@ client.post_v1alpha1console.fetch_post_content(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">update_post_content</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L276-L328">update_post_content</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3489,7 +3489,7 @@ client.post_v1alpha1console.update_post_content(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">delete_post_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L330-L368">delete_post_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -3572,7 +3572,7 @@ client.post_v1alpha1console.delete_post_content(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">fetch_post_head_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L370-L402">fetch_post_head_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -3646,7 +3646,7 @@ client.post_v1alpha1console.fetch_post_head_content(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">publish_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L404-L449">publish_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3736,7 +3736,7 @@ client.post_v1alpha1console.publish_post(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">recycle_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L451-L481">recycle_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3810,7 +3810,7 @@ client.post_v1alpha1console.recycle_post(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">fetch_post_release_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L483-L515">fetch_post_release_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -3884,7 +3884,7 @@ client.post_v1alpha1console.fetch_post_release_content(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">revert_to_specified_snapshot_for_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L517-L555">revert_to_specified_snapshot_for_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -3967,7 +3967,7 @@ client.post_v1alpha1console.revert_to_specified_snapshot_for_post(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">list_post_snapshots</a>(...) -> typing.List[ListedSnapshotDto]</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L557-L589">list_post_snapshots</a>(...) -> typing.List[ListedSnapshotDto]</code></summary>
 <dl>
 <dd>
 
@@ -4041,7 +4041,7 @@ client.post_v1alpha1console.list_post_snapshots(
 </dl>
 </details>
 
-<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py">unpublish_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.post_v1alpha1console.<a href="src/fern/post_v1alpha1console/client.py#L591-L621">unpublish_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -4116,7 +4116,7 @@ client.post_v1alpha1console.unpublish_post(
 </details>
 
 ## ReplyV1Alpha1Console
-<details><summary><code>client.reply_v1alpha1console.<a href="src/fern/reply_v1alpha1console/client.py">list_replies</a>(...) -> ListedReplyList</code></summary>
+<details><summary><code>client.reply_v1alpha1console.<a href="src/fern/reply_v1alpha1console/client.py#L30-L93">list_replies</a>(...) -> ListedReplyList</code></summary>
 <dl>
 <dd>
 
@@ -4230,7 +4230,7 @@ client.reply_v1alpha1console.list_replies(
 </dl>
 </details>
 
-<details><summary><code>client.reply_v1alpha1console.<a href="src/fern/reply_v1alpha1console/client.py">update_reply_content</a>(...) -> Reply</code></summary>
+<details><summary><code>client.reply_v1alpha1console.<a href="src/fern/reply_v1alpha1console/client.py#L95-L144">update_reply_content</a>(...) -> Reply</code></summary>
 <dl>
 <dd>
 
@@ -4316,7 +4316,7 @@ client.reply_v1alpha1console.update_reply_content(
 </details>
 
 ## SinglePageV1Alpha1Console
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">list_single_pages</a>(...) -> ListedSinglePageList</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L35-L111">list_single_pages</a>(...) -> ListedSinglePageList</code></summary>
 <dl>
 <dd>
 
@@ -4452,7 +4452,7 @@ client.single_page_v1alpha1console.list_single_pages()
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">draft_single_page</a>(...) -> SinglePage</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L113-L177">draft_single_page</a>(...) -> SinglePage</code></summary>
 <dl>
 <dd>
 
@@ -4550,7 +4550,7 @@ client.single_page_v1alpha1console.draft_single_page(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">update_draft_single_page</a>(...) -> SinglePage</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L179-L254">update_draft_single_page</a>(...) -> SinglePage</code></summary>
 <dl>
 <dd>
 
@@ -4657,7 +4657,7 @@ client.single_page_v1alpha1console.update_draft_single_page(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">fetch_single_page_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L256-L294">fetch_single_page_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -4740,7 +4740,7 @@ client.single_page_v1alpha1console.fetch_single_page_content(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">update_single_page_content</a>(...) -> SinglePage</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L296-L348">update_single_page_content</a>(...) -> SinglePage</code></summary>
 <dl>
 <dd>
 
@@ -4825,7 +4825,7 @@ client.single_page_v1alpha1console.update_single_page_content(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">delete_single_page_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L350-L388">delete_single_page_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -4908,7 +4908,7 @@ client.single_page_v1alpha1console.delete_single_page_content(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">fetch_single_page_head_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L390-L422">fetch_single_page_head_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -4982,7 +4982,7 @@ client.single_page_v1alpha1console.fetch_single_page_head_content(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">publish_single_page</a>(...) -> SinglePage</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L424-L463">publish_single_page</a>(...) -> SinglePage</code></summary>
 <dl>
 <dd>
 
@@ -5064,7 +5064,7 @@ client.single_page_v1alpha1console.publish_single_page(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">fetch_single_page_release_content</a>(...) -> ContentWrapper</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L465-L497">fetch_single_page_release_content</a>(...) -> ContentWrapper</code></summary>
 <dl>
 <dd>
 
@@ -5138,7 +5138,7 @@ client.single_page_v1alpha1console.fetch_single_page_release_content(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">revert_to_specified_snapshot_for_single_page</a>(...) -> SinglePage</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L499-L537">revert_to_specified_snapshot_for_single_page</a>(...) -> SinglePage</code></summary>
 <dl>
 <dd>
 
@@ -5221,7 +5221,7 @@ client.single_page_v1alpha1console.revert_to_specified_snapshot_for_single_page(
 </dl>
 </details>
 
-<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py">list_single_page_snapshots</a>(...) -> typing.List[ListedSnapshotDto]</code></summary>
+<details><summary><code>client.single_page_v1alpha1console.<a href="src/fern/single_page_v1alpha1console/client.py#L539-L571">list_single_page_snapshots</a>(...) -> typing.List[ListedSnapshotDto]</code></summary>
 <dl>
 <dd>
 
@@ -5296,7 +5296,7 @@ client.single_page_v1alpha1console.list_single_page_snapshots(
 </details>
 
 ## SystemV1Alpha1Console
-<details><summary><code>client.system_v1alpha1console.<a href="src/fern/system_v1alpha1console/client.py">get_stats</a>() -> DashboardStats</code></summary>
+<details><summary><code>client.system_v1alpha1console.<a href="src/fern/system_v1alpha1console/client.py#L26-L51">get_stats</a>() -> DashboardStats</code></summary>
 <dl>
 <dd>
 
@@ -5361,7 +5361,7 @@ client.system_v1alpha1console.get_stats()
 </details>
 
 ## TagV1Alpha1Console
-<details><summary><code>client.tag_v1alpha1console.<a href="src/fern/tag_v1alpha1console/client.py">list_post_tags</a>(...) -> TagList</code></summary>
+<details><summary><code>client.tag_v1alpha1console.<a href="src/fern/tag_v1alpha1console/client.py#L26-L87">list_post_tags</a>(...) -> TagList</code></summary>
 <dl>
 <dd>
 
@@ -5474,7 +5474,7 @@ client.tag_v1alpha1console.list_post_tags()
 </details>
 
 ## ThemeV1Alpha1Console
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">list_themes</a>(...) -> ThemeList</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L33-L89">list_themes</a>(...) -> ThemeList</code></summary>
 <dl>
 <dd>
 
@@ -5578,7 +5578,7 @@ client.theme_v1alpha1console.list_themes()
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">fetch_activated_theme</a>() -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L91-L116">fetch_activated_theme</a>() -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -5642,7 +5642,7 @@ client.theme_v1alpha1console.fetch_activated_theme()
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">install_theme_from_uri</a>(...) -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L118-L148">install_theme_from_uri</a>(...) -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -5716,7 +5716,7 @@ client.theme_v1alpha1console.install_theme_from_uri(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">install_theme</a>() -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L150-L175">install_theme</a>() -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -5780,7 +5780,7 @@ client.theme_v1alpha1console.install_theme()
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">activate_theme</a>(...) -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L177-L207">activate_theme</a>(...) -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -5854,7 +5854,7 @@ client.theme_v1alpha1console.activate_theme(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">invalidate_cache</a>(...)</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L209-L238">invalidate_cache</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5928,7 +5928,7 @@ client.theme_v1alpha1console.invalidate_cache(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">fetch_theme_json_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L240-L272">fetch_theme_json_config</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6002,7 +6002,7 @@ client.theme_v1alpha1console.fetch_theme_json_config(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">update_theme_json_config</a>(...)</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L274-L312">update_theme_json_config</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6087,7 +6087,7 @@ client.theme_v1alpha1console.update_theme_json_config(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">reload</a>(...) -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L314-L344">reload</a>(...) -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -6161,7 +6161,7 @@ client.theme_v1alpha1console.reload(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">reset_theme_config</a>(...) -> ConfigMap</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L346-L376">reset_theme_config</a>(...) -> ConfigMap</code></summary>
 <dl>
 <dd>
 
@@ -6235,7 +6235,7 @@ client.theme_v1alpha1console.reset_theme_config(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">fetch_theme_setting</a>(...) -> Setting</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L378-L408">fetch_theme_setting</a>(...) -> Setting</code></summary>
 <dl>
 <dd>
 
@@ -6309,7 +6309,7 @@ client.theme_v1alpha1console.fetch_theme_setting(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">upgrade_theme</a>(...) -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L410-L445">upgrade_theme</a>(...) -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -6392,7 +6392,7 @@ client.theme_v1alpha1console.upgrade_theme(
 </dl>
 </details>
 
-<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py">upgrade_theme_from_uri</a>(...) -> Theme</code></summary>
+<details><summary><code>client.theme_v1alpha1console.<a href="src/fern/theme_v1alpha1console/client.py#L447-L483">upgrade_theme_from_uri</a>(...) -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -6476,7 +6476,7 @@ client.theme_v1alpha1console.upgrade_theme_from_uri(
 </details>
 
 ## UiPluginV1Alpha1Console
-<details><summary><code>client.ui_plugin_v1alpha1console.<a href="src/fern/ui_plugin_v1alpha1console/client.py">fetch_ui_plugin_css_bundle</a>() -> str</code></summary>
+<details><summary><code>client.ui_plugin_v1alpha1console.<a href="src/fern/ui_plugin_v1alpha1console/client.py#L26-L51">fetch_ui_plugin_css_bundle</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -6540,7 +6540,7 @@ client.ui_plugin_v1alpha1console.fetch_ui_plugin_css_bundle()
 </dl>
 </details>
 
-<details><summary><code>client.ui_plugin_v1alpha1console.<a href="src/fern/ui_plugin_v1alpha1console/client.py">fetch_ui_plugin_js_bundle</a>() -> str</code></summary>
+<details><summary><code>client.ui_plugin_v1alpha1console.<a href="src/fern/ui_plugin_v1alpha1console/client.py#L53-L78">fetch_ui_plugin_js_bundle</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -6604,7 +6604,7 @@ client.ui_plugin_v1alpha1console.fetch_ui_plugin_js_bundle()
 </dl>
 </details>
 
-<details><summary><code>client.ui_plugin_v1alpha1console.<a href="src/fern/ui_plugin_v1alpha1console/client.py">fetch_ui_plugin_providers</a>() -> UiPluginProviderDescriptor</code></summary>
+<details><summary><code>client.ui_plugin_v1alpha1console.<a href="src/fern/ui_plugin_v1alpha1console/client.py#L80-L107">fetch_ui_plugin_providers</a>() -> UiPluginProviderDescriptor</code></summary>
 <dl>
 <dd>
 
@@ -6669,7 +6669,7 @@ client.ui_plugin_v1alpha1console.fetch_ui_plugin_providers()
 </details>
 
 ## UserV1Alpha1Console
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">list_users</a>(...) -> UserEndpointListedUserList</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L36-L102">list_users</a>(...) -> UserEndpointListedUserList</code></summary>
 <dl>
 <dd>
 
@@ -6789,7 +6789,7 @@ client.user_v1alpha1console.list_users()
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">create_user</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L104-L183">create_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -6928,7 +6928,7 @@ client.user_v1alpha1console.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">get_current_user_detail</a>() -> DetailedUser</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L185-L210">get_current_user_detail</a>() -> DetailedUser</code></summary>
 <dl>
 <dd>
 
@@ -6992,7 +6992,7 @@ client.user_v1alpha1console.get_current_user_detail()
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">update_current_user</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L212-L272">update_current_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7073,7 +7073,7 @@ client.user_v1alpha1console.update_current_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">change_own_password</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L274-L312">change_own_password</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7156,7 +7156,7 @@ client.user_v1alpha1console.change_own_password(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">send_email_verification_code</a>(...)</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L314-L345">send_email_verification_code</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7230,7 +7230,7 @@ client.user_v1alpha1console.send_email_verification_code(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">verify_email</a>(...)</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L347-L382">verify_email</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7313,7 +7313,7 @@ client.user_v1alpha1console.verify_email(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">get_user_detail</a>(...) -> DetailedUser</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L384-L414">get_user_detail</a>(...) -> DetailedUser</code></summary>
 <dl>
 <dd>
 
@@ -7387,7 +7387,7 @@ client.user_v1alpha1console.get_user_detail(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">upload_user_avatar</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L416-L451">upload_user_avatar</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7470,7 +7470,7 @@ client.user_v1alpha1console.upload_user_avatar(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">delete_user_avatar</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L453-L483">delete_user_avatar</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7544,7 +7544,7 @@ client.user_v1alpha1console.delete_user_avatar(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">change_anyone_password</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L485-L521">change_anyone_password</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7627,7 +7627,7 @@ client.user_v1alpha1console.change_anyone_password(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">get_permissions</a>(...) -> UserPermission</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L523-L553">get_permissions</a>(...) -> UserPermission</code></summary>
 <dl>
 <dd>
 
@@ -7701,7 +7701,7 @@ client.user_v1alpha1console.get_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">grant_permission</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L555-L591">grant_permission</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7786,7 +7786,7 @@ client.user_v1alpha1console.grant_permission(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">disable_user</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L593-L623">disable_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7860,7 +7860,7 @@ client.user_v1alpha1console.disable_user(
 </dl>
 </details>
 
-<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py">enable_user</a>(...) -> User</code></summary>
+<details><summary><code>client.user_v1alpha1console.<a href="src/fern/user_v1alpha1console/client.py#L625-L655">enable_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7935,7 +7935,7 @@ client.user_v1alpha1console.enable_user(
 </details>
 
 ## SystemConfigV1Alpha1Console
-<details><summary><code>client.system_config_v1alpha1console.<a href="src/fern/system_config_v1alpha1console/client.py">get_system_config_by_group</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.system_config_v1alpha1console.<a href="src/fern/system_config_v1alpha1console/client.py#L28-L60">get_system_config_by_group</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8009,7 +8009,7 @@ client.system_config_v1alpha1console.get_system_config_by_group(
 </dl>
 </details>
 
-<details><summary><code>client.system_config_v1alpha1console.<a href="src/fern/system_config_v1alpha1console/client.py">update_system_config_by_group</a>(...)</code></summary>
+<details><summary><code>client.system_config_v1alpha1console.<a href="src/fern/system_config_v1alpha1console/client.py#L62-L102">update_system_config_by_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8095,7 +8095,7 @@ client.system_config_v1alpha1console.update_system_config_by_group(
 </details>
 
 ## MigrationV1Alpha1Console
-<details><summary><code>client.migration_v1alpha1console.<a href="src/fern/migration_v1alpha1console/client.py">get_backup_files</a>() -> typing.List[BackupFile]</code></summary>
+<details><summary><code>client.migration_v1alpha1console.<a href="src/fern/migration_v1alpha1console/client.py#L30-L55">get_backup_files</a>() -> typing.List[BackupFile]</code></summary>
 <dl>
 <dd>
 
@@ -8159,7 +8159,7 @@ client.migration_v1alpha1console.get_backup_files()
 </dl>
 </details>
 
-<details><summary><code>client.migration_v1alpha1console.<a href="src/fern/migration_v1alpha1console/client.py">download_backups</a>(...)</code></summary>
+<details><summary><code>client.migration_v1alpha1console.<a href="src/fern/migration_v1alpha1console/client.py#L57-L92">download_backups</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8242,7 +8242,7 @@ client.migration_v1alpha1console.download_backups(
 </dl>
 </details>
 
-<details><summary><code>client.migration_v1alpha1console.<a href="src/fern/migration_v1alpha1console/client.py">restore_backup</a>(...) -> str</code></summary>
+<details><summary><code>client.migration_v1alpha1console.<a href="src/fern/migration_v1alpha1console/client.py#L94-L145">restore_backup</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8341,7 +8341,7 @@ client.migration_v1alpha1console.restore_backup(
 </details>
 
 ## PolicyAlpha1Console
-<details><summary><code>client.policy_alpha1console.<a href="src/fern/policy_alpha1console/client.py">get_policy_config_by_group</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policy_alpha1console.<a href="src/fern/policy_alpha1console/client.py#L28-L64">get_policy_config_by_group</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8424,7 +8424,7 @@ client.policy_alpha1console.get_policy_config_by_group(
 </dl>
 </details>
 
-<details><summary><code>client.policy_alpha1console.<a href="src/fern/policy_alpha1console/client.py">update_policy_config_by_group</a>(...)</code></summary>
+<details><summary><code>client.policy_alpha1console.<a href="src/fern/policy_alpha1console/client.py#L66-L111">update_policy_config_by_group</a>(...)</code></summary>
 <dl>
 <dd>
 

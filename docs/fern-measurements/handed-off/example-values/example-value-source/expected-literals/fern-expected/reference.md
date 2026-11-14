@@ -1,6 +1,6 @@
 # Reference
 ## Charts
-<details><summary><code>client.charts.<a href="src/fern/charts/client.py">upload_chart</a>(...) -> UploadChartResponse</code></summary>
+<details><summary><code>client.charts.<a href="src/fern/charts/client.py#L32-L74">upload_chart</a>(...) -> UploadChartResponse</code></summary>
 <dl>
 <dd>
 
@@ -88,7 +88,7 @@ client.charts.upload_chart(
 </dl>
 </details>
 
-<details><summary><code>client.charts.<a href="src/fern/charts/client.py">print_chart</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.charts.<a href="src/fern/charts/client.py#L76-L109">print_chart</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -168,7 +168,7 @@ client.charts.print_chart(
 </dl>
 </details>
 
-<details><summary><code>client.charts.<a href="src/fern/charts/client.py">bundle_charts</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.charts.<a href="src/fern/charts/client.py#L111-L130">bundle_charts</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.charts.bundle_charts(...)
 </dl>
 </details>
 
-<details><summary><code>client.charts.<a href="src/fern/charts/client.py">set_chart_layers</a>(...) -> SetChartLayersResponse</code></summary>
+<details><summary><code>client.charts.<a href="src/fern/charts/client.py#L132-L176">set_chart_layers</a>(...) -> SetChartLayersResponse</code></summary>
 <dl>
 <dd>
 
@@ -317,7 +317,7 @@ client.charts.set_chart_layers(
 </details>
 
 ## Mirrors
-<details><summary><code>client.mirrors.<a href="src/fern/mirrors/client.py">add_mirror</a>(...) -> AddMirrorResponse</code></summary>
+<details><summary><code>client.mirrors.<a href="src/fern/mirrors/client.py#L29-L62">add_mirror</a>(...) -> AddMirrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -398,7 +398,7 @@ client.mirrors.add_mirror(
 </details>
 
 ## Harbours
-<details><summary><code>client.harbours.<a href="src/fern/harbours/client.py">get_berth</a>(...) -> GetBerthResponse</code></summary>
+<details><summary><code>client.harbours.<a href="src/fern/harbours/client.py#L26-L59">get_berth</a>(...) -> GetBerthResponse</code></summary>
 <dl>
 <dd>
 
@@ -479,7 +479,7 @@ client.harbours.get_berth(
 </details>
 
 ## Markers
-<details><summary><code>client.markers.<a href="src/fern/markers/client.py">place_marker</a>(...) -> PlaceMarkerResponse</code></summary>
+<details><summary><code>client.markers.<a href="src/fern/markers/client.py#L30-L63">place_marker</a>(...) -> PlaceMarkerResponse</code></summary>
 <dl>
 <dd>
 
@@ -554,7 +554,7 @@ client.markers.place_marker(
 </details>
 
 ## Routes
-<details><summary><code>client.routes.<a href="src/fern/routes/client.py">plan_routes</a>(...) -> PlanRoutesResponse</code></summary>
+<details><summary><code>client.routes.<a href="src/fern/routes/client.py#L29-L59">plan_routes</a>(...) -> PlanRoutesResponse</code></summary>
 <dl>
 <dd>
 
@@ -629,7 +629,7 @@ client.routes.plan_routes(
 </details>
 
 ## Drills
-<details><summary><code>client.drills.<a href="src/fern/drills/client.py">start_drill</a>(...) -> StartDrillResponse</code></summary>
+<details><summary><code>client.drills.<a href="src/fern/drills/client.py#L30-L67">start_drill</a>(...) -> StartDrillResponse</code></summary>
 <dl>
 <dd>
 
@@ -713,7 +713,7 @@ client.drills.start_drill(
 </details>
 
 ## Stations
-<details><summary><code>client.stations.<a href="src/fern/stations/client.py">list_stations</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.stations.<a href="src/fern/stations/client.py#L25-L58">list_stations</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -788,7 +788,7 @@ client.stations.list_stations(
 </details>
 
 ## Passes
-<details><summary><code>client.passes.<a href="src/fern/passes/client.py">issue_pass</a>(...) -> IssuePassResponse</code></summary>
+<details><summary><code>client.passes.<a href="src/fern/passes/client.py#L33-L66">issue_pass</a>(...) -> IssuePassResponse</code></summary>
 <dl>
 <dd>
 
@@ -868,7 +868,7 @@ client.passes.issue_pass(
 </dl>
 </details>
 
-<details><summary><code>client.passes.<a href="src/fern/passes/client.py">issue_form_pass</a>(...) -> IssueFormPassResponse</code></summary>
+<details><summary><code>client.passes.<a href="src/fern/passes/client.py#L68-L111">issue_form_pass</a>(...) -> IssueFormPassResponse</code></summary>
 <dl>
 <dd>
 
@@ -958,7 +958,7 @@ client.passes.issue_form_pass(
 </details>
 
 ## Ledger
-<details><summary><code>client.ledger.<a href="src/fern/ledger/client.py">get_block</a>(...) -> GetBlockResponse</code></summary>
+<details><summary><code>client.ledger.<a href="src/fern/ledger/client.py#L26-L54">get_block</a>(...) -> GetBlockResponse</code></summary>
 <dl>
 <dd>
 
@@ -1030,7 +1030,7 @@ client.ledger.get_block(
 </details>
 
 ## Soundings
-<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py">list_soundings</a>(...) -> typing.List[float]</code></summary>
+<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py#L25-L63">list_soundings</a>(...) -> typing.List[float]</code></summary>
 <dl>
 <dd>
 
@@ -1119,7 +1119,7 @@ client.soundings.list_soundings(
 </dl>
 </details>
 
-<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py">get_sounding_log</a>(...) -> str</code></summary>
+<details><summary><code>client.soundings.<a href="src/fern/soundings/client.py#L65-L103">get_sounding_log</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1209,7 +1209,7 @@ client.soundings.get_sounding_log(
 </details>
 
 ## Rosters
-<details><summary><code>client.rosters.<a href="src/fern/rosters/client.py">add_roster_entry</a>(...)</code></summary>
+<details><summary><code>client.rosters.<a href="src/fern/rosters/client.py#L29-L71">add_roster_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1299,7 +1299,7 @@ client.rosters.add_roster_entry(
 </details>
 
 ## Beacons
-<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py">set_beacon_script</a>(...)</code></summary>
+<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py#L25-L52">set_beacon_script</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1370,7 +1370,7 @@ client.beacons.set_beacon_script(
 </dl>
 </details>
 
-<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py">set_lantern_script</a>(...)</code></summary>
+<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py#L54-L81">set_lantern_script</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ client.beacons.set_lantern_script(
 </dl>
 </details>
 
-<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py">get_lantern_manual</a>(...)</code></summary>
+<details><summary><code>client.beacons.<a href="src/fern/beacons/client.py#L83-L110">get_lantern_manual</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1513,7 +1513,7 @@ client.beacons.get_lantern_manual(
 </details>
 
 ## Galleys
-<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">remove_galley_stores</a>(...) -> str</code></summary>
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py#L29-L66">remove_galley_stores</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1596,7 +1596,7 @@ client.galleys.remove_galley_stores(
 </dl>
 </details>
 
-<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">append_galley_log</a>(...) -> str</code></summary>
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py#L68-L105">append_galley_log</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1678,7 +1678,7 @@ client.galleys.append_galley_log(
 </dl>
 </details>
 
-<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py">amend_galley_log</a>(...) -> str</code></summary>
+<details><summary><code>client.galleys.<a href="src/fern/galleys/client.py#L107-L144">amend_galley_log</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1762,7 +1762,7 @@ client.galleys.amend_galley_log(
 </details>
 
 ## Manifests
-<details><summary><code>client.manifests.<a href="src/fern/manifests/client.py">import_manifest</a>(...) -> ImportManifestResponse</code></summary>
+<details><summary><code>client.manifests.<a href="src/fern/manifests/client.py#L31-L72">import_manifest</a>(...) -> ImportManifestResponse</code></summary>
 <dl>
 <dd>
 
@@ -1846,7 +1846,7 @@ client.manifests.import_manifest(
 </details>
 
 ## Voyages
-<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py">set_voyage_watch</a>(...) -> SetVoyageWatchResponse</code></summary>
+<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py#L32-L68">set_voyage_watch</a>(...) -> SetVoyageWatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1933,7 +1933,7 @@ client.voyages.set_voyage_watch(
 </dl>
 </details>
 
-<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py">plan_voyage_rota</a>(...) -> PlanVoyageRotaResponse</code></summary>
+<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py#L70-L109">plan_voyage_rota</a>(...) -> PlanVoyageRotaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2029,7 +2029,7 @@ client.voyages.plan_voyage_rota(
 </dl>
 </details>
 
-<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py">file_customs_stamps</a>(...)</code></summary>
+<details><summary><code>client.voyages.<a href="src/fern/voyages/client.py#L111-L157">file_customs_stamps</a>(...)</code></summary>
 <dl>
 <dd>
 

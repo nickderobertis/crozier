@@ -1,6 +1,6 @@
 # Reference
 ## Dispatches
-<details><summary><code>client.dispatches.<a href="src/fern/dispatches/client.py">create_dispatch</a>(...)</code></summary>
+<details><summary><code>client.dispatches.<a href="src/fern/dispatches/client.py#L28-L59">create_dispatch</a>(...)</code></summary>
 <dl>
 <dd>
 

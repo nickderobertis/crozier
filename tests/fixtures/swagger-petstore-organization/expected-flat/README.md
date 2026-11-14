@@ -70,7 +70,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from PetStore import AsyncPetstoreApi
+from PetStore import AsyncPetstoreApi, PetStoreApi
 
 client = AsyncPetstoreApi(
     token="<token>",

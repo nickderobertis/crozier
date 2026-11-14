@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">authenticate_with_login_password_optional_totp</a>(...) -> AuthToken</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L31-L71">authenticate_with_login_password_optional_totp</a>(...) -> AuthToken</code></summary>
 <dl>
 <dd>
 
@@ -75,7 +75,7 @@ client.auth.authenticate_with_login_password_optional_totp(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">refresh_an_access_token_using_a_refresh_token</a>(...) -> AuthToken</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L73-L103">refresh_an_access_token_using_a_refresh_token</a>(...) -> AuthToken</code></summary>
 <dl>
 <dd>
 
@@ -134,7 +134,7 @@ client.auth.refresh_an_access_token_using_a_refresh_token(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">invalidate_the_current_session</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L105-L126">invalidate_the_current_session</a>()</code></summary>
 <dl>
 <dd>
 
@@ -183,7 +183,7 @@ client.auth.invalidate_the_current_session()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_the_authenticated_users_own_profile</a>() -> SelfUser</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L128-L152">get_the_authenticated_users_own_profile</a>() -> SelfUser</code></summary>
 <dl>
 <dd>
 
@@ -232,7 +232,7 @@ client.auth.get_the_authenticated_users_own_profile()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">join_a_game_server_identified_by_username</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L154-L194">join_a_game_server_identified_by_username</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.auth.join_a_game_server_identified_by_username(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">join_a_game_server_identified_by_uuid</a>(...)</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L196-L231">join_a_game_server_identified_by_uuid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -386,7 +386,7 @@ client.auth.join_a_game_server_identified_by_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">verify_that_a_player_has_joined_a_server_server_side_validation</a>(...) -> CheckServerResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L233-L273">verify_that_a_player_has_joined_a_server_server_side_validation</a>(...) -> CheckServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -463,7 +463,7 @@ client.auth.verify_that_a_player_has_joined_a_server_server_side_validation(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">look_up_a_user_by_username</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L26-L54">look_up_a_user_by_username</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -522,7 +522,7 @@ client.users.look_up_a_user_by_username(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">look_up_a_user_by_uuid</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L56-L82">look_up_a_user_by_uuid</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -582,7 +582,7 @@ client.users.look_up_a_user_by_uuid(
 </details>
 
 ## Updates
-<details><summary><code>client.updates.<a href="src/fern/updates/client.py">begin_the_launcher_self_update_challenge_response_flow_returns_a_random_blob_the_client_must_sign_with_its_build_private_key</a>() -> UpdatesPrepareResponse</code></summary>
+<details><summary><code>client.updates.<a href="src/fern/updates/client.py#L34-L60">begin_the_launcher_self_update_challenge_response_flow_returns_a_random_blob_the_client_must_sign_with_its_build_private_key</a>() -> UpdatesPrepareResponse</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ client.updates.begin_the_launcher_self_update_challenge_response_flow_returns_a_
 </dl>
 </details>
 
-<details><summary><code>client.updates.<a href="src/fern/updates/client.py">submit_the_signed_challenge_to_verify_the_build_identity_and_receive_update_information</a>(...) -> LauncherUpdateInfo</code></summary>
+<details><summary><code>client.updates.<a href="src/fern/updates/client.py#L62-L119">submit_the_signed_challenge_to_verify_the_build_identity_and_receive_update_information</a>(...) -> LauncherUpdateInfo</code></summary>
 <dl>
 <dd>
 
@@ -718,7 +718,7 @@ client.updates.submit_the_signed_challenge_to_verify_the_build_identity_and_rece
 </dl>
 </details>
 
-<details><summary><code>client.updates.<a href="src/fern/updates/client.py">upload_a_game_asset_update_file_admin_server_side_use</a>(...)</code></summary>
+<details><summary><code>client.updates.<a href="src/fern/updates/client.py#L121-L168">upload_a_game_asset_update_file_admin_server_side_use</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -800,7 +800,7 @@ client.updates.upload_a_game_asset_update_file_admin_server_side_use(
 </details>
 
 ## Profiles
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">list_all_available_client_profiles</a>() -> ListProfilesResponse</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L27-L51">list_all_available_client_profiles</a>() -> ListProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -849,7 +849,7 @@ client.profiles.list_all_available_client_profiles()
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">fetch_hashed_directory_update_info_for_a_named_directory_of_a_profile</a>(...) -> UpdateInfo</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L53-L87">fetch_hashed_directory_update_info_for_a_named_directory_of_a_profile</a>(...) -> UpdateInfo</code></summary>
 <dl>
 <dd>
 
@@ -918,7 +918,7 @@ client.profiles.fetch_hashed_directory_update_info_for_a_named_directory_of_a_pr
 </details>
 
 ## ProfileManagement
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">create_a_new_profile</a>(...) -> UncompletedProfile</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L33-L73">create_a_new_profile</a>(...) -> UncompletedProfile</code></summary>
 <dl>
 <dd>
 
@@ -996,7 +996,7 @@ client.profile_management.create_a_new_profile(
 </dl>
 </details>
 
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">get_a_completed_profile_by_uuid</a>(...) -> CompletedProfile</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L75-L103">get_a_completed_profile_by_uuid</a>(...) -> CompletedProfile</code></summary>
 <dl>
 <dd>
 
@@ -1055,7 +1055,7 @@ client.profile_management.get_a_completed_profile_by_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">delete_a_profile_by_uuid</a>(...)</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L105-L130">delete_a_profile_by_uuid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1114,7 +1114,7 @@ client.profile_management.delete_a_profile_by_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">push_updated_client_profile_client_dir_and_asset_dir_for_a_profile</a>(...) -> CompletedProfile</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L132-L177">push_updated_client_profile_client_dir_and_asset_dir_for_a_profile</a>(...) -> CompletedProfile</code></summary>
 <dl>
 <dd>
 
@@ -1206,7 +1206,7 @@ client.profile_management.push_updated_client_profile_client_dir_and_asset_dir_f
 </dl>
 </details>
 
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">get_a_completed_profile_by_name</a>(...) -> CompletedProfile</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L179-L207">get_a_completed_profile_by_name</a>(...) -> CompletedProfile</code></summary>
 <dl>
 <dd>
 
@@ -1265,7 +1265,7 @@ client.profile_management.get_a_completed_profile_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">fetch_a_hashed_dir_for_a_named_directory_that_is_not_yet_associated_with_any_profile_ega_default_assets_directory</a>(...) -> HashedDir</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L209-L239">fetch_a_hashed_dir_for_a_named_directory_that_is_not_yet_associated_with_any_profile_ega_default_assets_directory</a>(...) -> HashedDir</code></summary>
 <dl>
 <dd>
 
@@ -1324,7 +1324,7 @@ client.profile_management.fetch_a_hashed_dir_for_a_named_directory_that_is_not_y
 </dl>
 </details>
 
-<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py">upload_an_arbitrary_file_and_receive_a_url_reference_back_used_internally_by_push_update_to_stage_individual_files_before_committing_a_profile_update</a>(...) -> FileUploadResponse</code></summary>
+<details><summary><code>client.profile_management.<a href="src/fern/profile_management/client.py#L241-L263">upload_an_arbitrary_file_and_receive_a_url_reference_back_used_internally_by_push_update_to_stage_individual_files_before_committing_a_profile_update</a>(...) -> FileUploadResponse</code></summary>
 <dl>
 <dd>
 

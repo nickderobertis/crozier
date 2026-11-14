@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "ac013c3bd89244a8888a98ae76eac9fda862da333960db64038a495eda2051d7"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "859beec787cac6d3140c8d0eef3a86636e90cfcfe66a16244b5574577e1855a1"
 
 [[covers]]
 key = "example-nested-array-two-items"

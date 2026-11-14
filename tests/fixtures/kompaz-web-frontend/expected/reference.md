@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">redeem</a>(...) -> AuthenticationResource</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L30-L54">redeem</a>(...) -> AuthenticationResource</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.auth.redeem(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">refresh</a>() -> AuthenticationResource</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L56-L80">refresh</a>() -> AuthenticationResource</code></summary>
 <dl>
 <dd>
 
@@ -122,7 +122,7 @@ client.auth.refresh()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">revoke</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L82-L101">revoke</a>()</code></summary>
 <dl>
 <dd>
 
@@ -170,7 +170,7 @@ client.auth.revoke()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">me</a>() -> AuthMeResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L103-L123">me</a>() -> AuthMeResponse</code></summary>
 <dl>
 <dd>
 
@@ -219,7 +219,7 @@ client.auth.me()
 </details>
 
 ## Organization
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">index</a>(...) -> OrganizationIndexResponse</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L30-L65">index</a>(...) -> OrganizationIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.organization.index()
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">store</a>(...) -> OrganizationResource</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L67-L91">store</a>(...) -> OrganizationResource</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.organization.store(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">show</a>(...) -> OrganizationResource</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L93-L120">show</a>(...) -> OrganizationResource</code></summary>
 <dl>
 <dd>
 
@@ -407,7 +407,7 @@ client.organization.show(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">update</a>(...) -> OrganizationResource</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L122-L152">update</a>(...) -> OrganizationResource</code></summary>
 <dl>
 <dd>
 
@@ -474,7 +474,7 @@ client.organization.update(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">destroy</a>(...)</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L154-L178">destroy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -533,7 +533,7 @@ client.organization.destroy(
 </details>
 
 ## Organizationlogo
-<details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">show</a>(...)</code></summary>
+<details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py#L30-L58">show</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -607,7 +607,7 @@ client.organizationlogo.show(
 </dl>
 </details>
 
-<details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">update</a>(...) -> OrganizationResource</code></summary>
+<details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py#L60-L90">update</a>(...) -> OrganizationResource</code></summary>
 <dl>
 <dd>
 
@@ -674,7 +674,7 @@ client.organizationlogo.update(
 </dl>
 </details>
 
-<details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py">destroy</a>(...)</code></summary>
+<details><summary><code>client.organizationlogo.<a href="src/fern/organizationlogo/client.py#L92-L116">destroy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -733,7 +733,7 @@ client.organizationlogo.destroy(
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">index</a>(...) -> UserIndexResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L36-L86">index</a>(...) -> UserIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -829,7 +829,7 @@ client.user.index()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">updateownprofile</a>(...) -> UserUpdateOwnProfileResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L88-L114">updateownprofile</a>(...) -> UserUpdateOwnProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -887,7 +887,7 @@ client.user.updateownprofile(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">show</a>(...) -> UserShowResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L116-L141">show</a>(...) -> UserShowResponse</code></summary>
 <dl>
 <dd>
 
@@ -945,7 +945,7 @@ client.user.show(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">update</a>(...) -> UserUpdateResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L143-L189">update</a>(...) -> UserUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1037,7 +1037,7 @@ client.user.update(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">destroy</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L191-L215">destroy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1095,7 +1095,7 @@ client.user.destroy(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">invite</a>(...) -> UserInviteResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L217-L259">invite</a>(...) -> UserInviteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1179,7 +1179,7 @@ client.user.invite(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">resendinvitation</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L261-L285">resendinvitation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1237,7 +1237,7 @@ client.user.resendinvitation(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">restore</a>(...) -> UserRestoreResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L287-L311">restore</a>(...) -> UserRestoreResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project</a>(...) -> GetProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L38-L102">get_project</a>(...) -> GetProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -119,7 +119,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">post_project</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L104-L148">post_project</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -208,7 +208,7 @@ client.projects.post_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project_id</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L150-L181">get_project_id</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -281,7 +281,7 @@ client.projects.get_project_id(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project_id</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L183-L214">delete_project_id</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -354,7 +354,7 @@ client.projects.delete_project_id(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">patch_project_id</a>(...) -> Project</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L216-L271">patch_project_id</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -460,7 +460,7 @@ client.projects.patch_project_id(
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">post_project_logs_id_insert</a>(...) -> InsertEventsResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L40-L81">post_project_logs_id_insert</a>(...) -> InsertEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -544,7 +544,7 @@ client.logs.post_project_logs_id_insert(
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">get_project_logs_id_fetch</a>(...) -> FetchProjectLogsEventsResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L83-L154">get_project_logs_id_fetch</a>(...) -> FetchProjectLogsEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -671,7 +671,7 @@ The version id is essentially a filter on the latest event transaction id. You c
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">post_project_logs_id_fetch</a>(...) -> FetchProjectLogsEventsResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L156-L213">post_project_logs_id_fetch</a>(...) -> FetchProjectLogsEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -752,7 +752,7 @@ client.logs.post_project_logs_id_fetch(
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">post_project_logs_id_feedback</a>(...) -> FeedbackResponseSchema</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L215-L260">post_project_logs_id_feedback</a>(...) -> FeedbackResponseSchema</code></summary>
 <dl>
 <dd>
 
@@ -839,7 +839,7 @@ client.logs.post_project_logs_id_feedback(
 </details>
 
 ## Experiments
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">get_experiment</a>(...) -> GetExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L54-L128">get_experiment</a>(...) -> GetExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -974,7 +974,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">post_experiment</a>(...) -> Experiment</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L130-L226">post_experiment</a>(...) -> Experiment</code></summary>
 <dl>
 <dd>
 
@@ -1143,7 +1143,7 @@ client.experiments.post_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">get_experiment_id</a>(...) -> Experiment</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L228-L259">get_experiment_id</a>(...) -> Experiment</code></summary>
 <dl>
 <dd>
 
@@ -1216,7 +1216,7 @@ client.experiments.get_experiment_id(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">delete_experiment_id</a>(...) -> Experiment</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L261-L292">delete_experiment_id</a>(...) -> Experiment</code></summary>
 <dl>
 <dd>
 
@@ -1289,7 +1289,7 @@ client.experiments.delete_experiment_id(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">patch_experiment_id</a>(...) -> Experiment</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L294-L385">patch_experiment_id</a>(...) -> Experiment</code></summary>
 <dl>
 <dd>
 
@@ -1450,7 +1450,7 @@ client.experiments.patch_experiment_id(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">post_experiment_id_insert</a>(...) -> InsertEventsResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L387-L428">post_experiment_id_insert</a>(...) -> InsertEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1534,7 +1534,7 @@ client.experiments.post_experiment_id_insert(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">get_experiment_id_fetch</a>(...) -> FetchExperimentEventsResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L430-L501">get_experiment_id_fetch</a>(...) -> FetchExperimentEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1661,7 +1661,7 @@ The version id is essentially a filter on the latest event transaction id. You c
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">post_experiment_id_fetch</a>(...) -> FetchExperimentEventsResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L503-L560">post_experiment_id_fetch</a>(...) -> FetchExperimentEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1742,7 +1742,7 @@ client.experiments.post_experiment_id_fetch(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">post_experiment_id_feedback</a>(...) -> FeedbackResponseSchema</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L562-L607">post_experiment_id_feedback</a>(...) -> FeedbackResponseSchema</code></summary>
 <dl>
 <dd>
 
@@ -1828,7 +1828,7 @@ client.experiments.post_experiment_id_feedback(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">get_experiment_id_summarize</a>(...) -> SummarizeExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L609-L656">get_experiment_id_summarize</a>(...) -> SummarizeExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1918,7 +1918,7 @@ client.experiments.get_experiment_id_summarize(
 </details>
 
 ## Datasets
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_dataset</a>(...) -> GetDatasetResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L52-L126">get_dataset</a>(...) -> GetDatasetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2053,7 +2053,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">post_dataset</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L128-L186">post_dataset</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -2159,7 +2159,7 @@ client.datasets.post_dataset(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_dataset_id</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L188-L219">get_dataset_id</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -2232,7 +2232,7 @@ client.datasets.get_dataset_id(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">delete_dataset_id</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L221-L252">delete_dataset_id</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -2305,7 +2305,7 @@ client.datasets.delete_dataset_id(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">patch_dataset_id</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L254-L311">patch_dataset_id</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -2410,7 +2410,7 @@ client.datasets.patch_dataset_id(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">post_dataset_id_insert</a>(...) -> InsertEventsResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L313-L352">post_dataset_id_insert</a>(...) -> InsertEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2494,7 +2494,7 @@ client.datasets.post_dataset_id_insert(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_dataset_id_fetch</a>(...) -> FetchDatasetEventsResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L354-L425">get_dataset_id_fetch</a>(...) -> FetchDatasetEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2621,7 +2621,7 @@ The version id is essentially a filter on the latest event transaction id. You c
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">post_dataset_id_fetch</a>(...) -> FetchDatasetEventsResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L427-L484">post_dataset_id_fetch</a>(...) -> FetchDatasetEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2702,7 +2702,7 @@ client.datasets.post_dataset_id_fetch(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">post_dataset_id_feedback</a>(...) -> FeedbackResponseSchema</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L486-L531">post_dataset_id_feedback</a>(...) -> FeedbackResponseSchema</code></summary>
 <dl>
 <dd>
 
@@ -2788,7 +2788,7 @@ client.datasets.post_dataset_id_feedback(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get_dataset_id_summarize</a>(...) -> SummarizeDatasetResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L533-L573">get_dataset_id_summarize</a>(...) -> SummarizeDatasetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2870,7 +2870,7 @@ client.datasets.get_dataset_id_summarize(
 </details>
 
 ## Prompts
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">get_prompt</a>(...) -> GetPromptResponse</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L44-L137">get_prompt</a>(...) -> GetPromptResponse</code></summary>
 <dl>
 <dd>
 
@@ -3037,7 +3037,7 @@ For `GET /v1/prompt`, environment resolution currently requires the request to m
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">post_prompt</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L139-L206">post_prompt</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3112,7 +3112,7 @@ client.prompts.post_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">put_prompt</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L208-L275">put_prompt</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3187,7 +3187,7 @@ client.prompts.put_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">get_prompt_id</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L277-L325">get_prompt_id</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3284,7 +3284,7 @@ For `GET /v1/prompt`, environment resolution currently requires the request to m
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">delete_prompt_id</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L327-L358">delete_prompt_id</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3357,7 +3357,7 @@ client.prompts.delete_prompt_id(
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">patch_prompt_id</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L360-L421">patch_prompt_id</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3471,7 +3471,7 @@ client.prompts.patch_prompt_id(
 </details>
 
 ## Roles
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">get_role</a>(...) -> GetRoleResponse</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L40-L104">get_role</a>(...) -> GetRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3590,7 +3590,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">post_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L106-L165">post_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -3663,7 +3663,7 @@ client.roles.post_role(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">put_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L167-L226">put_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -3736,7 +3736,7 @@ client.roles.put_role(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">get_role_id</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L228-L257">get_role_id</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -3809,7 +3809,7 @@ client.roles.get_role_id(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">delete_role_id</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L259-L288">delete_role_id</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -3882,7 +3882,7 @@ client.roles.delete_role_id(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">patch_role_id</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L290-L357">patch_role_id</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -4004,7 +4004,7 @@ client.roles.patch_role_id(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group</a>(...) -> GetGroupResponse</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L37-L101">get_group</a>(...) -> GetGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -4123,7 +4123,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">post_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L103-L162">post_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4196,7 +4196,7 @@ client.groups.post_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">put_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L164-L223">put_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4269,7 +4269,7 @@ client.groups.put_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group_id</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L225-L254">get_group_id</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4342,7 +4342,7 @@ client.groups.get_group_id(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_group_id</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L256-L287">delete_group_id</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4415,7 +4415,7 @@ client.groups.delete_group_id(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">patch_group_id</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L289-L356">patch_group_id</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -4537,7 +4537,7 @@ client.groups.patch_group_id(
 </details>
 
 ## Acls
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">get_acl</a>(...) -> GetAclResponse</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L48-L142">get_acl</a>(...) -> GetAclResponse</code></summary>
 <dl>
 <dd>
 
@@ -4703,7 +4703,7 @@ Permissions can be assigned to to objects on an individual basis, or grouped int
 </dl>
 </details>
 
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">post_acl</a>(...) -> Acl</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L144-L211">post_acl</a>(...) -> Acl</code></summary>
 <dl>
 <dd>
 
@@ -4777,7 +4777,7 @@ client.acls.post_acl(
 </dl>
 </details>
 
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">delete_acl</a>(...) -> Acl</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L213-L280">delete_acl</a>(...) -> Acl</code></summary>
 <dl>
 <dd>
 
@@ -4851,7 +4851,7 @@ client.acls.delete_acl(
 </dl>
 </details>
 
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">get_acl_id</a>(...) -> Acl</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L282-L311">get_acl_id</a>(...) -> Acl</code></summary>
 <dl>
 <dd>
 
@@ -4924,7 +4924,7 @@ client.acls.get_acl_id(
 </dl>
 </details>
 
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">delete_acl_id</a>(...) -> Acl</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L313-L342">delete_acl_id</a>(...) -> Acl</code></summary>
 <dl>
 <dd>
 
@@ -4997,7 +4997,7 @@ client.acls.delete_acl_id(
 </dl>
 </details>
 
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">acl_batch_update</a>(...) -> AclBatchUpdateResponse</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L344-L380">acl_batch_update</a>(...) -> AclBatchUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -5076,7 +5076,7 @@ client.acls.acl_batch_update()
 </dl>
 </details>
 
-<details><summary><code>client.acls.<a href="src/fern/acls/client.py">acl_list_org</a>(...) -> typing.List[Acl]</code></summary>
+<details><summary><code>client.acls.<a href="src/fern/acls/client.py#L382-L478">acl_list_org</a>(...) -> typing.List[Acl]</code></summary>
 <dl>
 <dd>
 
@@ -5248,7 +5248,7 @@ Permissions can be assigned to to objects on an individual basis, or grouped int
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user</a>(...) -> GetUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L36-L110">get_user</a>(...) -> GetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -5383,7 +5383,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user_id</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L112-L141">get_user_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5457,7 +5457,7 @@ client.users.get_user_id(
 </details>
 
 ## ProjectAutomations
-<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py">get_project_automation</a>(...) -> GetProjectAutomationResponse</code></summary>
+<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py#L39-L103">get_project_automation</a>(...) -> GetProjectAutomationResponse</code></summary>
 <dl>
 <dd>
 
@@ -5576,7 +5576,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py">post_project_automation</a>(...) -> ProjectAutomation</code></summary>
+<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py#L105-L165">post_project_automation</a>(...) -> ProjectAutomation</code></summary>
 <dl>
 <dd>
 
@@ -5657,7 +5657,7 @@ client.project_automations.post_project_automation(
 </dl>
 </details>
 
-<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py">put_project_automation</a>(...) -> ProjectAutomation</code></summary>
+<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py#L167-L227">put_project_automation</a>(...) -> ProjectAutomation</code></summary>
 <dl>
 <dd>
 
@@ -5738,7 +5738,7 @@ client.project_automations.put_project_automation(
 </dl>
 </details>
 
-<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py">get_project_automation_id</a>(...) -> ProjectAutomation</code></summary>
+<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py#L229-L263">get_project_automation_id</a>(...) -> ProjectAutomation</code></summary>
 <dl>
 <dd>
 
@@ -5811,7 +5811,7 @@ client.project_automations.get_project_automation_id(
 </dl>
 </details>
 
-<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py">delete_project_automation_id</a>(...) -> ProjectAutomation</code></summary>
+<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py#L265-L301">delete_project_automation_id</a>(...) -> ProjectAutomation</code></summary>
 <dl>
 <dd>
 
@@ -5884,7 +5884,7 @@ client.project_automations.delete_project_automation_id(
 </dl>
 </details>
 
-<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py">patch_project_automation_id</a>(...) -> ProjectAutomation</code></summary>
+<details><summary><code>client.project_automations.<a href="src/fern/project_automations/client.py#L303-L351">patch_project_automation_id</a>(...) -> ProjectAutomation</code></summary>
 <dl>
 <dd>
 
@@ -5982,7 +5982,7 @@ client.project_automations.patch_project_automation_id(
 </details>
 
 ## ProjectScores
-<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py">get_project_score</a>(...) -> GetProjectScoreResponse</code></summary>
+<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py#L43-L121">get_project_score</a>(...) -> GetProjectScoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -6125,7 +6125,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py">post_project_score</a>(...) -> ProjectScore</code></summary>
+<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py#L123-L184">post_project_score</a>(...) -> ProjectScore</code></summary>
 <dl>
 <dd>
 
@@ -6200,7 +6200,7 @@ client.project_scores.post_project_score(
 </dl>
 </details>
 
-<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py">put_project_score</a>(...) -> ProjectScore</code></summary>
+<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py#L186-L247">put_project_score</a>(...) -> ProjectScore</code></summary>
 <dl>
 <dd>
 
@@ -6275,7 +6275,7 @@ client.project_scores.put_project_score(
 </dl>
 </details>
 
-<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py">get_project_score_id</a>(...) -> ProjectScore</code></summary>
+<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py#L249-L280">get_project_score_id</a>(...) -> ProjectScore</code></summary>
 <dl>
 <dd>
 
@@ -6348,7 +6348,7 @@ client.project_scores.get_project_score_id(
 </dl>
 </details>
 
-<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py">delete_project_score_id</a>(...) -> ProjectScore</code></summary>
+<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py#L282-L313">delete_project_score_id</a>(...) -> ProjectScore</code></summary>
 <dl>
 <dd>
 
@@ -6421,7 +6421,7 @@ client.project_scores.delete_project_score_id(
 </dl>
 </details>
 
-<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py">patch_project_score_id</a>(...) -> ProjectScore</code></summary>
+<details><summary><code>client.project_scores.<a href="src/fern/project_scores/client.py#L315-L374">patch_project_score_id</a>(...) -> ProjectScore</code></summary>
 <dl>
 <dd>
 
@@ -6535,7 +6535,7 @@ client.project_scores.patch_project_score_id(
 </details>
 
 ## ProjectTags
-<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py">get_project_tag</a>(...) -> GetProjectTagResponse</code></summary>
+<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py#L39-L113">get_project_tag</a>(...) -> GetProjectTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -6670,7 +6670,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py">post_project_tag</a>(...) -> ProjectTag</code></summary>
+<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py#L115-L164">post_project_tag</a>(...) -> ProjectTag</code></summary>
 <dl>
 <dd>
 
@@ -6744,7 +6744,7 @@ client.project_tags.post_project_tag(
 </dl>
 </details>
 
-<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py">put_project_tag</a>(...) -> ProjectTag</code></summary>
+<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py#L166-L215">put_project_tag</a>(...) -> ProjectTag</code></summary>
 <dl>
 <dd>
 
@@ -6818,7 +6818,7 @@ client.project_tags.put_project_tag(
 </dl>
 </details>
 
-<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py">get_project_tag_id</a>(...) -> ProjectTag</code></summary>
+<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py#L217-L248">get_project_tag_id</a>(...) -> ProjectTag</code></summary>
 <dl>
 <dd>
 
@@ -6891,7 +6891,7 @@ client.project_tags.get_project_tag_id(
 </dl>
 </details>
 
-<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py">delete_project_tag_id</a>(...) -> ProjectTag</code></summary>
+<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py#L250-L281">delete_project_tag_id</a>(...) -> ProjectTag</code></summary>
 <dl>
 <dd>
 
@@ -6964,7 +6964,7 @@ client.project_tags.delete_project_tag_id(
 </dl>
 </details>
 
-<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py">patch_project_tag_id</a>(...) -> ProjectTag</code></summary>
+<details><summary><code>client.project_tags.<a href="src/fern/project_tags/client.py#L283-L331">patch_project_tag_id</a>(...) -> ProjectTag</code></summary>
 <dl>
 <dd>
 
@@ -7062,7 +7062,7 @@ client.project_tags.patch_project_tag_id(
 </details>
 
 ## SpanIframes
-<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py">get_span_iframe</a>(...) -> GetSpanIframeResponse</code></summary>
+<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py#L37-L101">get_span_iframe</a>(...) -> GetSpanIframeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7181,7 +7181,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py">post_span_iframe</a>(...) -> SpanIFrame</code></summary>
+<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py#L103-L162">post_span_iframe</a>(...) -> SpanIFrame</code></summary>
 <dl>
 <dd>
 
@@ -7256,7 +7256,7 @@ client.span_iframes.post_span_iframe(
 </dl>
 </details>
 
-<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py">put_span_iframe</a>(...) -> SpanIFrame</code></summary>
+<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py#L164-L223">put_span_iframe</a>(...) -> SpanIFrame</code></summary>
 <dl>
 <dd>
 
@@ -7331,7 +7331,7 @@ client.span_iframes.put_span_iframe(
 </dl>
 </details>
 
-<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py">get_span_iframe_id</a>(...) -> SpanIFrame</code></summary>
+<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py#L225-L256">get_span_iframe_id</a>(...) -> SpanIFrame</code></summary>
 <dl>
 <dd>
 
@@ -7404,7 +7404,7 @@ client.span_iframes.get_span_iframe_id(
 </dl>
 </details>
 
-<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py">delete_span_iframe_id</a>(...) -> SpanIFrame</code></summary>
+<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py#L258-L289">delete_span_iframe_id</a>(...) -> SpanIFrame</code></summary>
 <dl>
 <dd>
 
@@ -7477,7 +7477,7 @@ client.span_iframes.delete_span_iframe_id(
 </dl>
 </details>
 
-<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py">patch_span_iframe_id</a>(...) -> SpanIFrame</code></summary>
+<details><summary><code>client.span_iframes.<a href="src/fern/span_iframes/client.py#L291-L348">patch_span_iframe_id</a>(...) -> SpanIFrame</code></summary>
 <dl>
 <dd>
 
@@ -7583,7 +7583,7 @@ client.span_iframes.patch_span_iframe_id(
 </details>
 
 ## EvalStatusPages
-<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py">get_eval_status_page</a>(...) -> GetEvalStatusPageResponse</code></summary>
+<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py#L39-L103">get_eval_status_page</a>(...) -> GetEvalStatusPageResponse</code></summary>
 <dl>
 <dd>
 
@@ -7702,7 +7702,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py">post_eval_status_page</a>(...) -> EvalStatusPage</code></summary>
+<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py#L105-L168">post_eval_status_page</a>(...) -> EvalStatusPage</code></summary>
 <dl>
 <dd>
 
@@ -7778,7 +7778,7 @@ client.eval_status_pages.post_eval_status_page(
 </dl>
 </details>
 
-<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py">put_eval_status_page</a>(...) -> EvalStatusPage</code></summary>
+<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py#L170-L233">put_eval_status_page</a>(...) -> EvalStatusPage</code></summary>
 <dl>
 <dd>
 
@@ -7854,7 +7854,7 @@ client.eval_status_pages.put_eval_status_page(
 </dl>
 </details>
 
-<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py">get_eval_status_page_id</a>(...) -> EvalStatusPage</code></summary>
+<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py#L235-L266">get_eval_status_page_id</a>(...) -> EvalStatusPage</code></summary>
 <dl>
 <dd>
 
@@ -7927,7 +7927,7 @@ client.eval_status_pages.get_eval_status_page_id(
 </dl>
 </details>
 
-<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py">delete_eval_status_page_id</a>(...) -> EvalStatusPage</code></summary>
+<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py#L268-L299">delete_eval_status_page_id</a>(...) -> EvalStatusPage</code></summary>
 <dl>
 <dd>
 
@@ -8000,7 +8000,7 @@ client.eval_status_pages.delete_eval_status_page_id(
 </dl>
 </details>
 
-<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py">patch_eval_status_page_id</a>(...) -> EvalStatusPage</code></summary>
+<details><summary><code>client.eval_status_pages.<a href="src/fern/eval_status_pages/client.py#L301-L361">patch_eval_status_page_id</a>(...) -> EvalStatusPage</code></summary>
 <dl>
 <dd>
 
@@ -8114,7 +8114,7 @@ client.eval_status_pages.patch_eval_status_page_id(
 </details>
 
 ## Functions
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_function</a>(...) -> GetFunctionResponse</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L52-L145">get_function</a>(...) -> GetFunctionResponse</code></summary>
 <dl>
 <dd>
 
@@ -8281,7 +8281,7 @@ For `GET /v1/prompt`, environment resolution currently requires the request to m
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">post_function</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L147-L230">post_function</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -8359,7 +8359,7 @@ client.functions.post_function(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">put_function</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L232-L315">put_function</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -8437,7 +8437,7 @@ client.functions.put_function(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_function_id</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L317-L365">get_function_id</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -8534,7 +8534,7 @@ For `GET /v1/prompt`, environment resolution currently requires the request to m
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">delete_function_id</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L367-L398">delete_function_id</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -8607,7 +8607,7 @@ client.functions.delete_function_id(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">patch_function_id</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L400-L460">patch_function_id</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -8720,7 +8720,7 @@ client.functions.patch_function_id(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">post_function_id_invoke</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L462-L557">post_function_id_invoke</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8890,7 +8890,7 @@ client.functions.post_function_id_invoke(
 </details>
 
 ## Views
-<details><summary><code>client.views.<a href="src/fern/views/client.py">get_view</a>(...) -> GetViewResponse</code></summary>
+<details><summary><code>client.views.<a href="src/fern/views/client.py#L44-L121">get_view</a>(...) -> GetViewResponse</code></summary>
 <dl>
 <dd>
 
@@ -9028,7 +9028,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.views.<a href="src/fern/views/client.py">post_view</a>(...) -> View</code></summary>
+<details><summary><code>client.views.<a href="src/fern/views/client.py#L123-L195">post_view</a>(...) -> View</code></summary>
 <dl>
 <dd>
 
@@ -9104,7 +9104,7 @@ client.views.post_view(
 </dl>
 </details>
 
-<details><summary><code>client.views.<a href="src/fern/views/client.py">put_view</a>(...) -> View</code></summary>
+<details><summary><code>client.views.<a href="src/fern/views/client.py#L197-L269">put_view</a>(...) -> View</code></summary>
 <dl>
 <dd>
 
@@ -9180,7 +9180,7 @@ client.views.put_view(
 </dl>
 </details>
 
-<details><summary><code>client.views.<a href="src/fern/views/client.py">get_view_id</a>(...) -> View</code></summary>
+<details><summary><code>client.views.<a href="src/fern/views/client.py#L271-L317">get_view_id</a>(...) -> View</code></summary>
 <dl>
 <dd>
 
@@ -9271,7 +9271,7 @@ client.views.get_view_id(
 </dl>
 </details>
 
-<details><summary><code>client.views.<a href="src/fern/views/client.py">delete_view_id</a>(...) -> View</code></summary>
+<details><summary><code>client.views.<a href="src/fern/views/client.py#L319-L364">delete_view_id</a>(...) -> View</code></summary>
 <dl>
 <dd>
 
@@ -9362,7 +9362,7 @@ client.views.delete_view_id(
 </dl>
 </details>
 
-<details><summary><code>client.views.<a href="src/fern/views/client.py">patch_view_id</a>(...) -> View</code></summary>
+<details><summary><code>client.views.<a href="src/fern/views/client.py#L366-L437">patch_view_id</a>(...) -> View</code></summary>
 <dl>
 <dd>
 
@@ -9494,7 +9494,7 @@ client.views.patch_view_id(
 </details>
 
 ## Organizations
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">get_organization</a>(...) -> GetOrganizationResponse</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L40-L99">get_organization</a>(...) -> GetOrganizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -9605,7 +9605,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">get_organization_id</a>(...) -> Organization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L101-L132">get_organization_id</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -9678,7 +9678,7 @@ client.organizations.get_organization_id(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">patch_organization_id</a>(...) -> Organization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L134-L200">patch_organization_id</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -9807,7 +9807,7 @@ client.organizations.patch_organization_id(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">patch_organization_members</a>(...) -> PatchOrganizationMembersOutput</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L202-L252">patch_organization_members</a>(...) -> PatchOrganizationMembersOutput</code></summary>
 <dl>
 <dd>
 
@@ -9903,7 +9903,7 @@ client.organizations.patch_organization_members()
 </details>
 
 ## ApiKeys
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">get_api_key</a>(...) -> GetApiKeyResponse</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L38-L102">get_api_key</a>(...) -> GetApiKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -10022,7 +10022,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">post_api_key</a>(...) -> CreateApiKeyOutput</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L104-L142">post_api_key</a>(...) -> CreateApiKeyOutput</code></summary>
 <dl>
 <dd>
 
@@ -10103,7 +10103,7 @@ client.api_keys.post_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">get_api_key_id</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L144-L175">get_api_key_id</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -10176,7 +10176,7 @@ client.api_keys.get_api_key_id(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">delete_api_key_id</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L177-L208">delete_api_key_id</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -10250,7 +10250,7 @@ client.api_keys.delete_api_key_id(
 </details>
 
 ## ServiceTokens
-<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py">get_service_token</a>(...) -> GetServiceTokenResponse</code></summary>
+<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py#L38-L102">get_service_token</a>(...) -> GetServiceTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -10369,7 +10369,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py">post_service_token</a>(...) -> CreateServiceTokenOutput</code></summary>
+<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py#L104-L149">post_service_token</a>(...) -> CreateServiceTokenOutput</code></summary>
 <dl>
 <dd>
 
@@ -10459,7 +10459,7 @@ client.service_tokens.post_service_token(
 </dl>
 </details>
 
-<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py">put_service_token</a>(...) -> CreateServiceTokenOutput</code></summary>
+<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py#L151-L196">put_service_token</a>(...) -> CreateServiceTokenOutput</code></summary>
 <dl>
 <dd>
 
@@ -10549,7 +10549,7 @@ client.service_tokens.put_service_token(
 </dl>
 </details>
 
-<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py">delete_service_token</a>(...) -> ServiceToken</code></summary>
+<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py#L198-L227">delete_service_token</a>(...) -> ServiceToken</code></summary>
 <dl>
 <dd>
 
@@ -10622,7 +10622,7 @@ client.service_tokens.delete_service_token(
 </dl>
 </details>
 
-<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py">get_service_token_id</a>(...) -> ServiceToken</code></summary>
+<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py#L229-L260">get_service_token_id</a>(...) -> ServiceToken</code></summary>
 <dl>
 <dd>
 
@@ -10695,7 +10695,7 @@ client.service_tokens.get_service_token_id(
 </dl>
 </details>
 
-<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py">delete_service_token_id</a>(...) -> ServiceToken</code></summary>
+<details><summary><code>client.service_tokens.<a href="src/fern/service_tokens/client.py#L262-L293">delete_service_token_id</a>(...) -> ServiceToken</code></summary>
 <dl>
 <dd>
 
@@ -10769,7 +10769,7 @@ client.service_tokens.delete_service_token_id(
 </details>
 
 ## AiSecrets
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">get_ai_secret</a>(...) -> GetAiSecretResponse</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L38-L106">get_ai_secret</a>(...) -> GetAiSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -10896,7 +10896,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">post_ai_secret</a>(...) -> AiSecret</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L108-L158">post_ai_secret</a>(...) -> AiSecret</code></summary>
 <dl>
 <dd>
 
@@ -10969,7 +10969,7 @@ client.ai_secrets.post_ai_secret(
 </dl>
 </details>
 
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">put_ai_secret</a>(...) -> AiSecret</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L160-L210">put_ai_secret</a>(...) -> AiSecret</code></summary>
 <dl>
 <dd>
 
@@ -11042,7 +11042,7 @@ client.ai_secrets.put_ai_secret(
 </dl>
 </details>
 
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">delete_ai_secret</a>(...) -> AiSecret</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L212-L250">delete_ai_secret</a>(...) -> AiSecret</code></summary>
 <dl>
 <dd>
 
@@ -11123,7 +11123,7 @@ client.ai_secrets.delete_ai_secret(
 </dl>
 </details>
 
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">get_ai_secret_id</a>(...) -> AiSecret</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L252-L283">get_ai_secret_id</a>(...) -> AiSecret</code></summary>
 <dl>
 <dd>
 
@@ -11196,7 +11196,7 @@ client.ai_secrets.get_ai_secret_id(
 </dl>
 </details>
 
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">delete_ai_secret_id</a>(...) -> AiSecret</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L285-L316">delete_ai_secret_id</a>(...) -> AiSecret</code></summary>
 <dl>
 <dd>
 
@@ -11269,7 +11269,7 @@ client.ai_secrets.delete_ai_secret_id(
 </dl>
 </details>
 
-<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py">patch_ai_secret_id</a>(...) -> AiSecret</code></summary>
+<details><summary><code>client.ai_secrets.<a href="src/fern/ai_secrets/client.py#L318-L367">patch_ai_secret_id</a>(...) -> AiSecret</code></summary>
 <dl>
 <dd>
 
@@ -11375,7 +11375,7 @@ client.ai_secrets.patch_ai_secret_id(
 </details>
 
 ## EnvVars
-<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py">get_env_var</a>(...) -> GetEnvVarResponse</code></summary>
+<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py#L38-L93">get_env_var</a>(...) -> GetEnvVarResponse</code></summary>
 <dl>
 <dd>
 
@@ -11478,7 +11478,7 @@ client.env_vars.get_env_var()
 </dl>
 </details>
 
-<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py">post_env_var</a>(...) -> EnvVar</code></summary>
+<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py#L95-L161">post_env_var</a>(...) -> EnvVar</code></summary>
 <dl>
 <dd>
 
@@ -11594,7 +11594,7 @@ client.env_vars.post_env_var(
 </dl>
 </details>
 
-<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py">put_env_var</a>(...) -> EnvVar</code></summary>
+<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py#L163-L229">put_env_var</a>(...) -> EnvVar</code></summary>
 <dl>
 <dd>
 
@@ -11710,7 +11710,7 @@ client.env_vars.put_env_var(
 </dl>
 </details>
 
-<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py">get_env_var_id</a>(...) -> EnvVar</code></summary>
+<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py#L231-L262">get_env_var_id</a>(...) -> EnvVar</code></summary>
 <dl>
 <dd>
 
@@ -11783,7 +11783,7 @@ client.env_vars.get_env_var_id(
 </dl>
 </details>
 
-<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py">delete_env_var_id</a>(...) -> EnvVar</code></summary>
+<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py#L264-L295">delete_env_var_id</a>(...) -> EnvVar</code></summary>
 <dl>
 <dd>
 
@@ -11856,7 +11856,7 @@ client.env_vars.delete_env_var_id(
 </dl>
 </details>
 
-<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py">patch_env_var_id</a>(...) -> EnvVar</code></summary>
+<details><summary><code>client.env_vars.<a href="src/fern/env_vars/client.py#L297-L355">patch_env_var_id</a>(...) -> EnvVar</code></summary>
 <dl>
 <dd>
 
@@ -11963,7 +11963,7 @@ client.env_vars.patch_env_var_id(
 </details>
 
 ## McpServers
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">get_mcp_server</a>(...) -> GetMcpServerResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L37-L101">get_mcp_server</a>(...) -> GetMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -12082,7 +12082,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">post_mcp_server</a>(...) -> McpServer</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L103-L153">post_mcp_server</a>(...) -> McpServer</code></summary>
 <dl>
 <dd>
 
@@ -12157,7 +12157,7 @@ client.mcp_servers.post_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">put_mcp_server</a>(...) -> McpServer</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L155-L205">put_mcp_server</a>(...) -> McpServer</code></summary>
 <dl>
 <dd>
 
@@ -12232,7 +12232,7 @@ client.mcp_servers.put_mcp_server(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">get_mcp_server_id</a>(...) -> McpServer</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L207-L238">get_mcp_server_id</a>(...) -> McpServer</code></summary>
 <dl>
 <dd>
 
@@ -12305,7 +12305,7 @@ client.mcp_servers.get_mcp_server_id(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">delete_mcp_server_id</a>(...) -> McpServer</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L240-L271">delete_mcp_server_id</a>(...) -> McpServer</code></summary>
 <dl>
 <dd>
 
@@ -12378,7 +12378,7 @@ client.mcp_servers.delete_mcp_server_id(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">patch_mcp_server_id</a>(...) -> McpServer</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L273-L321">patch_mcp_server_id</a>(...) -> McpServer</code></summary>
 <dl>
 <dd>
 
@@ -12476,7 +12476,7 @@ client.mcp_servers.patch_mcp_server_id(
 </details>
 
 ## DatasetSnapshots
-<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py">get_dataset_snapshot</a>(...) -> GetDatasetSnapshotResponse</code></summary>
+<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py#L37-L101">get_dataset_snapshot</a>(...) -> GetDatasetSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -12595,7 +12595,7 @@ For example, if the initial item in the last page you fetched had an id of `foo`
 </dl>
 </details>
 
-<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py">post_dataset_snapshot</a>(...) -> DatasetSnapshot</code></summary>
+<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py#L103-L153">post_dataset_snapshot</a>(...) -> DatasetSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -12670,7 +12670,7 @@ client.dataset_snapshots.post_dataset_snapshot(
 </dl>
 </details>
 
-<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py">put_dataset_snapshot</a>(...) -> DatasetSnapshot</code></summary>
+<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py#L155-L205">put_dataset_snapshot</a>(...) -> DatasetSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -12745,7 +12745,7 @@ client.dataset_snapshots.put_dataset_snapshot(
 </dl>
 </details>
 
-<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py">get_dataset_snapshot_id</a>(...) -> DatasetSnapshot</code></summary>
+<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py#L207-L238">get_dataset_snapshot_id</a>(...) -> DatasetSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -12818,7 +12818,7 @@ client.dataset_snapshots.get_dataset_snapshot_id(
 </dl>
 </details>
 
-<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py">delete_dataset_snapshot_id</a>(...) -> DatasetSnapshot</code></summary>
+<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py#L240-L271">delete_dataset_snapshot_id</a>(...) -> DatasetSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -12891,7 +12891,7 @@ client.dataset_snapshots.delete_dataset_snapshot_id(
 </dl>
 </details>
 
-<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py">patch_dataset_snapshot_id</a>(...) -> DatasetSnapshot</code></summary>
+<details><summary><code>client.dataset_snapshots.<a href="src/fern/dataset_snapshots/client.py#L273-L317">patch_dataset_snapshot_id</a>(...) -> DatasetSnapshot</code></summary>
 <dl>
 <dd>
 
@@ -12981,7 +12981,7 @@ client.dataset_snapshots.patch_dataset_snapshot_id(
 </details>
 
 ## Environments
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">list_environments</a>(...) -> ListEnvironmentsResponse</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L31-L72">list_environments</a>(...) -> ListEnvironmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13068,7 +13068,7 @@ client.environments.list_environments()
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">create_environment</a>(...) -> Environment</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L74-L123">create_environment</a>(...) -> Environment</code></summary>
 <dl>
 <dd>
 
@@ -13166,7 +13166,7 @@ client.environments.create_environment(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">get_environment</a>(...) -> Environment</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L125-L153">get_environment</a>(...) -> Environment</code></summary>
 <dl>
 <dd>
 
@@ -13225,7 +13225,7 @@ client.environments.get_environment(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">delete_environment</a>(...) -> Environment</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L155-L183">delete_environment</a>(...) -> Environment</code></summary>
 <dl>
 <dd>
 
@@ -13284,7 +13284,7 @@ client.environments.delete_environment(
 </dl>
 </details>
 
-<details><summary><code>client.environments.<a href="src/fern/environments/client.py">update_environment</a>(...) -> Environment</code></summary>
+<details><summary><code>client.environments.<a href="src/fern/environments/client.py#L185-L230">update_environment</a>(...) -> Environment</code></summary>
 <dl>
 <dd>
 
@@ -13368,7 +13368,7 @@ client.environments.update_environment(
 </details>
 
 ## Other
-<details><summary><code>client.other.<a href="src/fern/other/client.py">get_index</a>() -> str</code></summary>
+<details><summary><code>client.other.<a href="src/fern/other/client.py#L25-L49">get_index</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -13432,7 +13432,7 @@ client.other.get_index()
 </details>
 
 ## CrossObject
-<details><summary><code>client.cross_object.<a href="src/fern/cross_object/client.py">post_cross_object_insert</a>(...) -> CrossObjectInsertResponse</code></summary>
+<details><summary><code>client.cross_object.<a href="src/fern/cross_object/client.py#L32-L76">post_cross_object_insert</a>(...) -> CrossObjectInsertResponse</code></summary>
 <dl>
 <dd>
 
@@ -13520,7 +13520,7 @@ client.cross_object.post_cross_object_insert()
 </details>
 
 ## Proxy
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">proxychat_completions</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L30-L58">proxychat_completions</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13591,7 +13591,7 @@ client.proxy.proxychat_completions()
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">proxycompletions</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L60-L88">proxycompletions</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13662,7 +13662,7 @@ client.proxy.proxycompletions()
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">proxyauto</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L90-L118">proxyauto</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13733,7 +13733,7 @@ client.proxy.proxyauto()
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">proxyembeddings</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L120-L148">proxyembeddings</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13804,7 +13804,7 @@ client.proxy.proxyembeddings()
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">proxycredentials</a>(...) -> ProxycredentialsResponse</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L150-L192">proxycredentials</a>(...) -> ProxycredentialsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13891,7 +13891,7 @@ client.proxy.proxycredentials()
 </dl>
 </details>
 
-<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py">path</a>(...) -> typing.Optional[typing.Any]</code></summary>
+<details><summary><code>client.proxy.<a href="src/fern/proxy/client.py#L194-L231">path</a>(...) -> typing.Optional[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13971,7 +13971,7 @@ client.proxy.path()
 </details>
 
 ## Evals
-<details><summary><code>client.evals.<a href="src/fern/evals/client.py">eval_launch</a>(...) -> SummarizeExperimentResponse</code></summary>
+<details><summary><code>client.evals.<a href="src/fern/evals/client.py#L36-L193">eval_launch</a>(...) -> SummarizeExperimentResponse</code></summary>
 <dl>
 <dd>
 

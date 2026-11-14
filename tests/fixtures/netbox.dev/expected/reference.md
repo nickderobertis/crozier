@@ -1,6 +1,6 @@
 # Reference
 ## Circuits
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_list</a>(...) -> CircuitsCircuitTerminationsListResponse</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L43-L433">circuit_terminations_list</a>(...) -> CircuitsCircuitTerminationsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -639,7 +639,7 @@ client.circuits.circuit_terminations_list()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_create</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L435-L560">circuit_terminations_create</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -713,7 +713,7 @@ client.circuits.circuit_terminations_create(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_bulk_update</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L562-L687">circuit_terminations_bulk_update</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -787,7 +787,7 @@ client.circuits.circuit_terminations_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_bulk_delete</a>()</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L689-L712">circuit_terminations_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -850,7 +850,7 @@ client.circuits.circuit_terminations_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_bulk_partial_update</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L714-L839">circuit_terminations_bulk_partial_update</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -924,7 +924,7 @@ client.circuits.circuit_terminations_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_read</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L841-L872">circuit_terminations_read</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -997,7 +997,7 @@ client.circuits.circuit_terminations_read(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_update</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L874-L1005">circuit_terminations_update</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -1080,7 +1080,7 @@ client.circuits.circuit_terminations_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_delete</a>(...)</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1007-L1035">circuit_terminations_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1153,7 +1153,7 @@ client.circuits.circuit_terminations_delete(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_partial_update</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1037-L1168">circuit_terminations_partial_update</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -1236,7 +1236,7 @@ client.circuits.circuit_terminations_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_terminations_paths</a>(...) -> CircuitTermination</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1170-L1201">circuit_terminations_paths</a>(...) -> CircuitTermination</code></summary>
 <dl>
 <dd>
 
@@ -1309,7 +1309,7 @@ client.circuits.circuit_terminations_paths(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_list</a>(...) -> CircuitsCircuitTypesListResponse</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1203-L1518">circuit_types_list</a>(...) -> CircuitsCircuitTypesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1828,7 +1828,7 @@ client.circuits.circuit_types_list()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_create</a>(...) -> CircuitType</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1520-L1597">circuit_types_create</a>(...) -> CircuitType</code></summary>
 <dl>
 <dd>
 
@@ -1902,7 +1902,7 @@ client.circuits.circuit_types_create(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_bulk_update</a>(...) -> CircuitType</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1599-L1676">circuit_types_bulk_update</a>(...) -> CircuitType</code></summary>
 <dl>
 <dd>
 
@@ -1976,7 +1976,7 @@ client.circuits.circuit_types_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_bulk_delete</a>()</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1678-L1701">circuit_types_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2039,7 +2039,7 @@ client.circuits.circuit_types_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_bulk_partial_update</a>(...) -> CircuitType</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1703-L1780">circuit_types_bulk_partial_update</a>(...) -> CircuitType</code></summary>
 <dl>
 <dd>
 
@@ -2113,7 +2113,7 @@ client.circuits.circuit_types_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_read</a>(...) -> CircuitType</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1782-L1811">circuit_types_read</a>(...) -> CircuitType</code></summary>
 <dl>
 <dd>
 
@@ -2186,7 +2186,7 @@ client.circuits.circuit_types_read(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_update</a>(...) -> CircuitType</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1813-L1896">circuit_types_update</a>(...) -> CircuitType</code></summary>
 <dl>
 <dd>
 
@@ -2269,7 +2269,7 @@ client.circuits.circuit_types_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_delete</a>(...)</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1898-L1926">circuit_types_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2342,7 +2342,7 @@ client.circuits.circuit_types_delete(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuit_types_partial_update</a>(...) -> CircuitType</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L1928-L2011">circuit_types_partial_update</a>(...) -> CircuitType</code></summary>
 <dl>
 <dd>
 
@@ -2425,7 +2425,7 @@ client.circuits.circuit_types_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_list</a>(...) -> CircuitsCircuitsListResponse</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2013-L2553">circuits_list</a>(...) -> CircuitsCircuitsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3304,7 +3304,7 @@ client.circuits.circuits_list()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_create</a>(...) -> Circuit</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2555-L2665">circuits_create</a>(...) -> Circuit</code></summary>
 <dl>
 <dd>
 
@@ -3379,7 +3379,7 @@ client.circuits.circuits_create(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_bulk_update</a>(...) -> Circuit</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2667-L2777">circuits_bulk_update</a>(...) -> Circuit</code></summary>
 <dl>
 <dd>
 
@@ -3454,7 +3454,7 @@ client.circuits.circuits_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_bulk_delete</a>()</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2779-L2802">circuits_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -3517,7 +3517,7 @@ client.circuits.circuits_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_bulk_partial_update</a>(...) -> Circuit</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2804-L2914">circuits_bulk_partial_update</a>(...) -> Circuit</code></summary>
 <dl>
 <dd>
 
@@ -3592,7 +3592,7 @@ client.circuits.circuits_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_read</a>(...) -> Circuit</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2916-L2945">circuits_read</a>(...) -> Circuit</code></summary>
 <dl>
 <dd>
 
@@ -3665,7 +3665,7 @@ client.circuits.circuits_read(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_update</a>(...) -> Circuit</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L2947-L3063">circuits_update</a>(...) -> Circuit</code></summary>
 <dl>
 <dd>
 
@@ -3749,7 +3749,7 @@ client.circuits.circuits_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_delete</a>(...)</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3065-L3093">circuits_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3822,7 +3822,7 @@ client.circuits.circuits_delete(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">circuits_partial_update</a>(...) -> Circuit</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3095-L3211">circuits_partial_update</a>(...) -> Circuit</code></summary>
 <dl>
 <dd>
 
@@ -3906,7 +3906,7 @@ client.circuits.circuits_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_list</a>(...) -> CircuitsProviderNetworksListResponse</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3213-L3548">provider_networks_list</a>(...) -> CircuitsProviderNetworksListResponse</code></summary>
 <dl>
 <dd>
 
@@ -4457,7 +4457,7 @@ client.circuits.provider_networks_list()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_create</a>(...) -> ProviderNetwork</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3550-L3631">provider_networks_create</a>(...) -> ProviderNetwork</code></summary>
 <dl>
 <dd>
 
@@ -4531,7 +4531,7 @@ client.circuits.provider_networks_create(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_bulk_update</a>(...) -> ProviderNetwork</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3633-L3714">provider_networks_bulk_update</a>(...) -> ProviderNetwork</code></summary>
 <dl>
 <dd>
 
@@ -4605,7 +4605,7 @@ client.circuits.provider_networks_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_bulk_delete</a>()</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3716-L3739">provider_networks_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4668,7 +4668,7 @@ client.circuits.provider_networks_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_bulk_partial_update</a>(...) -> ProviderNetwork</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3741-L3822">provider_networks_bulk_partial_update</a>(...) -> ProviderNetwork</code></summary>
 <dl>
 <dd>
 
@@ -4742,7 +4742,7 @@ client.circuits.provider_networks_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_read</a>(...) -> ProviderNetwork</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3824-L3855">provider_networks_read</a>(...) -> ProviderNetwork</code></summary>
 <dl>
 <dd>
 
@@ -4815,7 +4815,7 @@ client.circuits.provider_networks_read(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_update</a>(...) -> ProviderNetwork</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3857-L3944">provider_networks_update</a>(...) -> ProviderNetwork</code></summary>
 <dl>
 <dd>
 
@@ -4898,7 +4898,7 @@ client.circuits.provider_networks_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_delete</a>(...)</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3946-L3974">provider_networks_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4971,7 +4971,7 @@ client.circuits.provider_networks_delete(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">provider_networks_partial_update</a>(...) -> ProviderNetwork</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L3976-L4063">provider_networks_partial_update</a>(...) -> ProviderNetwork</code></summary>
 <dl>
 <dd>
 
@@ -5054,7 +5054,7 @@ client.circuits.provider_networks_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_list</a>(...) -> CircuitsProvidersListResponse</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4065-L4480">providers_list</a>(...) -> CircuitsProvidersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5733,7 +5733,7 @@ client.circuits.providers_list()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_create</a>(...) -> Provider</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4482-L4571">providers_create</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -5807,7 +5807,7 @@ client.circuits.providers_create(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_bulk_update</a>(...) -> Provider</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4573-L4662">providers_bulk_update</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -5881,7 +5881,7 @@ client.circuits.providers_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_bulk_delete</a>()</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4664-L4687">providers_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5944,7 +5944,7 @@ client.circuits.providers_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_bulk_partial_update</a>(...) -> Provider</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4689-L4778">providers_bulk_partial_update</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -6018,7 +6018,7 @@ client.circuits.providers_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_read</a>(...) -> Provider</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4780-L4809">providers_read</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -6091,7 +6091,7 @@ client.circuits.providers_read(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_update</a>(...) -> Provider</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4811-L4906">providers_update</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -6174,7 +6174,7 @@ client.circuits.providers_update(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_delete</a>(...)</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4908-L4936">providers_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6247,7 +6247,7 @@ client.circuits.providers_delete(
 </dl>
 </details>
 
-<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py">providers_partial_update</a>(...) -> Provider</code></summary>
+<details><summary><code>client.circuits.<a href="src/fern/circuits/client.py#L4938-L5033">providers_partial_update</a>(...) -> Provider</code></summary>
 <dl>
 <dd>
 
@@ -6331,7 +6331,7 @@ client.circuits.providers_partial_update(
 </details>
 
 ## Dcim
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_list</a>(...) -> DcimCableTerminationsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L167-L302">cable_terminations_list</a>(...) -> DcimCableTerminationsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -6562,7 +6562,7 @@ client.dcim.cable_terminations_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_create</a>(...) -> CableTermination</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L304-L371">cable_terminations_create</a>(...) -> CableTermination</code></summary>
 <dl>
 <dd>
 
@@ -6638,7 +6638,7 @@ client.dcim.cable_terminations_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_bulk_update</a>(...) -> CableTermination</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L373-L440">cable_terminations_bulk_update</a>(...) -> CableTermination</code></summary>
 <dl>
 <dd>
 
@@ -6714,7 +6714,7 @@ client.dcim.cable_terminations_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L442-L465">cable_terminations_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6777,7 +6777,7 @@ client.dcim.cable_terminations_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_bulk_partial_update</a>(...) -> CableTermination</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L467-L534">cable_terminations_bulk_partial_update</a>(...) -> CableTermination</code></summary>
 <dl>
 <dd>
 
@@ -6853,7 +6853,7 @@ client.dcim.cable_terminations_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_read</a>(...) -> CableTermination</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L536-L567">cable_terminations_read</a>(...) -> CableTermination</code></summary>
 <dl>
 <dd>
 
@@ -6926,7 +6926,7 @@ client.dcim.cable_terminations_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_update</a>(...) -> CableTermination</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L569-L642">cable_terminations_update</a>(...) -> CableTermination</code></summary>
 <dl>
 <dd>
 
@@ -7011,7 +7011,7 @@ client.dcim.cable_terminations_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L644-L672">cable_terminations_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7084,7 +7084,7 @@ client.dcim.cable_terminations_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cable_terminations_partial_update</a>(...) -> CableTermination</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L674-L747">cable_terminations_partial_update</a>(...) -> CableTermination</code></summary>
 <dl>
 <dd>
 
@@ -7169,7 +7169,7 @@ client.dcim.cable_terminations_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_list</a>(...) -> DcimCablesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L749-L1184">cables_list</a>(...) -> DcimCablesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7880,7 +7880,7 @@ client.dcim.cables_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_create</a>(...) -> Cable</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1186-L1288">cables_create</a>(...) -> Cable</code></summary>
 <dl>
 <dd>
 
@@ -7951,7 +7951,7 @@ client.dcim.cables_create()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_bulk_update</a>(...) -> Cable</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1290-L1392">cables_bulk_update</a>(...) -> Cable</code></summary>
 <dl>
 <dd>
 
@@ -8022,7 +8022,7 @@ client.dcim.cables_bulk_update()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1394-L1417">cables_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8085,7 +8085,7 @@ client.dcim.cables_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_bulk_partial_update</a>(...) -> Cable</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1419-L1521">cables_bulk_partial_update</a>(...) -> Cable</code></summary>
 <dl>
 <dd>
 
@@ -8156,7 +8156,7 @@ client.dcim.cables_bulk_partial_update()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_read</a>(...) -> Cable</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1523-L1552">cables_read</a>(...) -> Cable</code></summary>
 <dl>
 <dd>
 
@@ -8229,7 +8229,7 @@ client.dcim.cables_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_update</a>(...) -> Cable</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1554-L1663">cables_update</a>(...) -> Cable</code></summary>
 <dl>
 <dd>
 
@@ -8310,7 +8310,7 @@ client.dcim.cables_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1665-L1693">cables_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8383,7 +8383,7 @@ client.dcim.cables_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">cables_partial_update</a>(...) -> Cable</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1695-L1804">cables_partial_update</a>(...) -> Cable</code></summary>
 <dl>
 <dd>
 
@@ -8464,7 +8464,7 @@ client.dcim.cables_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">connected_device_list</a>(...) -> Device</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1806-L1848">connected_device_list</a>(...) -> Device</code></summary>
 <dl>
 <dd>
 
@@ -8551,7 +8551,7 @@ client.dcim.connected_device_list(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_list</a>(...) -> DcimConsolePortTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L1850-L2075">console_port_templates_list</a>(...) -> DcimConsolePortTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8926,7 +8926,7 @@ client.dcim.console_port_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_create</a>(...) -> ConsolePortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2077-L2156">console_port_templates_create</a>(...) -> ConsolePortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -8999,7 +8999,7 @@ client.dcim.console_port_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_bulk_update</a>(...) -> ConsolePortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2158-L2237">console_port_templates_bulk_update</a>(...) -> ConsolePortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -9072,7 +9072,7 @@ client.dcim.console_port_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2239-L2262">console_port_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9135,7 +9135,7 @@ client.dcim.console_port_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_bulk_partial_update</a>(...) -> ConsolePortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2264-L2343">console_port_templates_bulk_partial_update</a>(...) -> ConsolePortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -9208,7 +9208,7 @@ client.dcim.console_port_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_read</a>(...) -> ConsolePortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2345-L2376">console_port_templates_read</a>(...) -> ConsolePortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -9281,7 +9281,7 @@ client.dcim.console_port_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_update</a>(...) -> ConsolePortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2378-L2463">console_port_templates_update</a>(...) -> ConsolePortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -9363,7 +9363,7 @@ client.dcim.console_port_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2465-L2495">console_port_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9436,7 +9436,7 @@ client.dcim.console_port_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_port_templates_partial_update</a>(...) -> ConsolePortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2497-L2582">console_port_templates_partial_update</a>(...) -> ConsolePortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -9518,7 +9518,7 @@ client.dcim.console_port_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_list</a>(...) -> DcimConsolePortsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L2584-L3084">console_ports_list</a>(...) -> DcimConsolePortsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -10333,7 +10333,7 @@ client.dcim.console_ports_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_create</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3086-L3219">console_ports_create</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -10407,7 +10407,7 @@ client.dcim.console_ports_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_bulk_update</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3221-L3354">console_ports_bulk_update</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -10481,7 +10481,7 @@ client.dcim.console_ports_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3356-L3379">console_ports_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10544,7 +10544,7 @@ client.dcim.console_ports_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_bulk_partial_update</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3381-L3514">console_ports_bulk_partial_update</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -10618,7 +10618,7 @@ client.dcim.console_ports_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_read</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3516-L3545">console_ports_read</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -10691,7 +10691,7 @@ client.dcim.console_ports_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_update</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3547-L3686">console_ports_update</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -10774,7 +10774,7 @@ client.dcim.console_ports_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3688-L3716">console_ports_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10847,7 +10847,7 @@ client.dcim.console_ports_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_partial_update</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3718-L3857">console_ports_partial_update</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -10930,7 +10930,7 @@ client.dcim.console_ports_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_ports_trace</a>(...) -> ConsolePort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3859-L3888">console_ports_trace</a>(...) -> ConsolePort</code></summary>
 <dl>
 <dd>
 
@@ -11003,7 +11003,7 @@ client.dcim.console_ports_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_list</a>(...) -> DcimConsoleServerPortTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L3890-L4115">console_server_port_templates_list</a>(...) -> DcimConsoleServerPortTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -11378,7 +11378,7 @@ client.dcim.console_server_port_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_create</a>(...) -> ConsoleServerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4117-L4196">console_server_port_templates_create</a>(...) -> ConsoleServerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -11451,7 +11451,7 @@ client.dcim.console_server_port_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_bulk_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4198-L4277">console_server_port_templates_bulk_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -11524,7 +11524,7 @@ client.dcim.console_server_port_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4279-L4304">console_server_port_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11587,7 +11587,7 @@ client.dcim.console_server_port_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_bulk_partial_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4306-L4385">console_server_port_templates_bulk_partial_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -11660,7 +11660,7 @@ client.dcim.console_server_port_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_read</a>(...) -> ConsoleServerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4387-L4418">console_server_port_templates_read</a>(...) -> ConsoleServerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -11733,7 +11733,7 @@ client.dcim.console_server_port_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4420-L4505">console_server_port_templates_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -11815,7 +11815,7 @@ client.dcim.console_server_port_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4507-L4537">console_server_port_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11888,7 +11888,7 @@ client.dcim.console_server_port_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_port_templates_partial_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4539-L4624">console_server_port_templates_partial_update</a>(...) -> ConsoleServerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -11970,7 +11970,7 @@ client.dcim.console_server_port_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_list</a>(...) -> DcimConsoleServerPortsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L4626-L5126">console_server_ports_list</a>(...) -> DcimConsoleServerPortsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -12785,7 +12785,7 @@ client.dcim.console_server_ports_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_create</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5128-L5261">console_server_ports_create</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -12859,7 +12859,7 @@ client.dcim.console_server_ports_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_bulk_update</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5263-L5396">console_server_ports_bulk_update</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -12933,7 +12933,7 @@ client.dcim.console_server_ports_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5398-L5421">console_server_ports_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12996,7 +12996,7 @@ client.dcim.console_server_ports_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_bulk_partial_update</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5423-L5556">console_server_ports_bulk_partial_update</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -13070,7 +13070,7 @@ client.dcim.console_server_ports_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_read</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5558-L5589">console_server_ports_read</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -13143,7 +13143,7 @@ client.dcim.console_server_ports_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_update</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5591-L5730">console_server_ports_update</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -13226,7 +13226,7 @@ client.dcim.console_server_ports_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5732-L5760">console_server_ports_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13299,7 +13299,7 @@ client.dcim.console_server_ports_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_partial_update</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5762-L5901">console_server_ports_partial_update</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -13382,7 +13382,7 @@ client.dcim.console_server_ports_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">console_server_ports_trace</a>(...) -> ConsoleServerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5903-L5934">console_server_ports_trace</a>(...) -> ConsoleServerPort</code></summary>
 <dl>
 <dd>
 
@@ -13455,7 +13455,7 @@ client.dcim.console_server_ports_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_list</a>(...) -> DcimDeviceBayTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L5936-L6141">device_bay_templates_list</a>(...) -> DcimDeviceBayTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -13798,7 +13798,7 @@ client.dcim.device_bay_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_create</a>(...) -> DeviceBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6143-L6215">device_bay_templates_create</a>(...) -> DeviceBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -13872,7 +13872,7 @@ client.dcim.device_bay_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_bulk_update</a>(...) -> DeviceBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6217-L6289">device_bay_templates_bulk_update</a>(...) -> DeviceBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -13946,7 +13946,7 @@ client.dcim.device_bay_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6291-L6314">device_bay_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -14009,7 +14009,7 @@ client.dcim.device_bay_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_bulk_partial_update</a>(...) -> DeviceBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6316-L6388">device_bay_templates_bulk_partial_update</a>(...) -> DeviceBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -14083,7 +14083,7 @@ client.dcim.device_bay_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_read</a>(...) -> DeviceBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6390-L6421">device_bay_templates_read</a>(...) -> DeviceBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -14156,7 +14156,7 @@ client.dcim.device_bay_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_update</a>(...) -> DeviceBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6423-L6501">device_bay_templates_update</a>(...) -> DeviceBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -14239,7 +14239,7 @@ client.dcim.device_bay_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6503-L6531">device_bay_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14312,7 +14312,7 @@ client.dcim.device_bay_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bay_templates_partial_update</a>(...) -> DeviceBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6533-L6611">device_bay_templates_partial_update</a>(...) -> DeviceBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -14395,7 +14395,7 @@ client.dcim.device_bay_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_list</a>(...) -> DcimDeviceBaysListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L6613-L7068">device_bays_list</a>(...) -> DcimDeviceBaysListResponse</code></summary>
 <dl>
 <dd>
 
@@ -15138,7 +15138,7 @@ client.dcim.device_bays_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_create</a>(...) -> DeviceBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7070-L7152">device_bays_create</a>(...) -> DeviceBay</code></summary>
 <dl>
 <dd>
 
@@ -15212,7 +15212,7 @@ client.dcim.device_bays_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_bulk_update</a>(...) -> DeviceBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7154-L7236">device_bays_bulk_update</a>(...) -> DeviceBay</code></summary>
 <dl>
 <dd>
 
@@ -15286,7 +15286,7 @@ client.dcim.device_bays_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7238-L7261">device_bays_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15349,7 +15349,7 @@ client.dcim.device_bays_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_bulk_partial_update</a>(...) -> DeviceBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7263-L7345">device_bays_bulk_partial_update</a>(...) -> DeviceBay</code></summary>
 <dl>
 <dd>
 
@@ -15423,7 +15423,7 @@ client.dcim.device_bays_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_read</a>(...) -> DeviceBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7347-L7376">device_bays_read</a>(...) -> DeviceBay</code></summary>
 <dl>
 <dd>
 
@@ -15496,7 +15496,7 @@ client.dcim.device_bays_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_update</a>(...) -> DeviceBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7378-L7466">device_bays_update</a>(...) -> DeviceBay</code></summary>
 <dl>
 <dd>
 
@@ -15579,7 +15579,7 @@ client.dcim.device_bays_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7468-L7496">device_bays_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -15652,7 +15652,7 @@ client.dcim.device_bays_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_bays_partial_update</a>(...) -> DeviceBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7498-L7586">device_bays_partial_update</a>(...) -> DeviceBay</code></summary>
 <dl>
 <dd>
 
@@ -15735,7 +15735,7 @@ client.dcim.device_bays_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_list</a>(...) -> DcimDeviceRolesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7588-L7963">device_roles_list</a>(...) -> DcimDeviceRolesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -16350,7 +16350,7 @@ client.dcim.device_roles_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_create</a>(...) -> DeviceRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L7965-L8055">device_roles_create</a>(...) -> DeviceRole</code></summary>
 <dl>
 <dd>
 
@@ -16424,7 +16424,7 @@ client.dcim.device_roles_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_bulk_update</a>(...) -> DeviceRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8057-L8147">device_roles_bulk_update</a>(...) -> DeviceRole</code></summary>
 <dl>
 <dd>
 
@@ -16498,7 +16498,7 @@ client.dcim.device_roles_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8149-L8172">device_roles_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -16561,7 +16561,7 @@ client.dcim.device_roles_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_bulk_partial_update</a>(...) -> DeviceRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8174-L8264">device_roles_bulk_partial_update</a>(...) -> DeviceRole</code></summary>
 <dl>
 <dd>
 
@@ -16635,7 +16635,7 @@ client.dcim.device_roles_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_read</a>(...) -> DeviceRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8266-L8295">device_roles_read</a>(...) -> DeviceRole</code></summary>
 <dl>
 <dd>
 
@@ -16708,7 +16708,7 @@ client.dcim.device_roles_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_update</a>(...) -> DeviceRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8297-L8393">device_roles_update</a>(...) -> DeviceRole</code></summary>
 <dl>
 <dd>
 
@@ -16791,7 +16791,7 @@ client.dcim.device_roles_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8395-L8423">device_roles_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16864,7 +16864,7 @@ client.dcim.device_roles_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_roles_partial_update</a>(...) -> DeviceRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8425-L8521">device_roles_partial_update</a>(...) -> DeviceRole</code></summary>
 <dl>
 <dd>
 
@@ -16947,7 +16947,7 @@ client.dcim.device_roles_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_list</a>(...) -> DcimDeviceTypesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L8523-L9008">device_types_list</a>(...) -> DcimDeviceTypesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -17738,7 +17738,7 @@ client.dcim.device_types_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_create</a>(...) -> DeviceType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9010-L9135">device_types_create</a>(...) -> DeviceType</code></summary>
 <dl>
 <dd>
 
@@ -17813,7 +17813,7 @@ client.dcim.device_types_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_bulk_update</a>(...) -> DeviceType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9137-L9262">device_types_bulk_update</a>(...) -> DeviceType</code></summary>
 <dl>
 <dd>
 
@@ -17888,7 +17888,7 @@ client.dcim.device_types_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9264-L9287">device_types_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17951,7 +17951,7 @@ client.dcim.device_types_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_bulk_partial_update</a>(...) -> DeviceType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9289-L9414">device_types_bulk_partial_update</a>(...) -> DeviceType</code></summary>
 <dl>
 <dd>
 
@@ -18026,7 +18026,7 @@ client.dcim.device_types_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_read</a>(...) -> DeviceType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9416-L9445">device_types_read</a>(...) -> DeviceType</code></summary>
 <dl>
 <dd>
 
@@ -18099,7 +18099,7 @@ client.dcim.device_types_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_update</a>(...) -> DeviceType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9447-L9578">device_types_update</a>(...) -> DeviceType</code></summary>
 <dl>
 <dd>
 
@@ -18183,7 +18183,7 @@ client.dcim.device_types_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9580-L9608">device_types_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -18256,7 +18256,7 @@ client.dcim.device_types_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">device_types_partial_update</a>(...) -> DeviceType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9610-L9741">device_types_partial_update</a>(...) -> DeviceType</code></summary>
 <dl>
 <dd>
 
@@ -18340,7 +18340,7 @@ client.dcim.device_types_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_list</a>(...) -> DcimDevicesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L9743-L10578">devices_list</a>(...) -> DcimDevicesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -19691,7 +19691,7 @@ client.dcim.devices_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_create</a>(...) -> DeviceWithConfigContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L10580-L10747">devices_create</a>(...) -> DeviceWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -19766,7 +19766,7 @@ client.dcim.devices_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_bulk_update</a>(...) -> DeviceWithConfigContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L10749-L10916">devices_bulk_update</a>(...) -> DeviceWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -19841,7 +19841,7 @@ client.dcim.devices_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L10918-L10941">devices_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -19904,7 +19904,7 @@ client.dcim.devices_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_bulk_partial_update</a>(...) -> DeviceWithConfigContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L10943-L11110">devices_bulk_partial_update</a>(...) -> DeviceWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -19979,7 +19979,7 @@ client.dcim.devices_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_read</a>(...) -> DeviceWithConfigContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11112-L11143">devices_read</a>(...) -> DeviceWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -20052,7 +20052,7 @@ client.dcim.devices_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_update</a>(...) -> DeviceWithConfigContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11145-L11318">devices_update</a>(...) -> DeviceWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -20136,7 +20136,7 @@ client.dcim.devices_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11320-L11348">devices_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -20209,7 +20209,7 @@ client.dcim.devices_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_partial_update</a>(...) -> DeviceWithConfigContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11350-L11523">devices_partial_update</a>(...) -> DeviceWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -20293,7 +20293,7 @@ client.dcim.devices_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">devices_napalm</a>(...) -> DeviceNapalm</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11525-L11559">devices_napalm</a>(...) -> DeviceNapalm</code></summary>
 <dl>
 <dd>
 
@@ -20375,7 +20375,7 @@ client.dcim.devices_napalm(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_list</a>(...) -> DcimFrontPortTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11561-L11841">front_port_templates_list</a>(...) -> DcimFrontPortTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -20838,7 +20838,7 @@ client.dcim.front_port_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_create</a>(...) -> FrontPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11843-L11936">front_port_templates_create</a>(...) -> FrontPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -20913,7 +20913,7 @@ client.dcim.front_port_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_bulk_update</a>(...) -> FrontPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L11938-L12031">front_port_templates_bulk_update</a>(...) -> FrontPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -20988,7 +20988,7 @@ client.dcim.front_port_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12033-L12056">front_port_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -21051,7 +21051,7 @@ client.dcim.front_port_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_bulk_partial_update</a>(...) -> FrontPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12058-L12151">front_port_templates_bulk_partial_update</a>(...) -> FrontPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -21126,7 +21126,7 @@ client.dcim.front_port_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_read</a>(...) -> FrontPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12153-L12184">front_port_templates_read</a>(...) -> FrontPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -21199,7 +21199,7 @@ client.dcim.front_port_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_update</a>(...) -> FrontPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12186-L12285">front_port_templates_update</a>(...) -> FrontPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -21283,7 +21283,7 @@ client.dcim.front_port_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12287-L12315">front_port_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -21356,7 +21356,7 @@ client.dcim.front_port_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_port_templates_partial_update</a>(...) -> FrontPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12317-L12416">front_port_templates_partial_update</a>(...) -> FrontPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -21440,7 +21440,7 @@ client.dcim.front_port_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_list</a>(...) -> DcimFrontPortsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12418-L12968">front_ports_list</a>(...) -> DcimFrontPortsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -22335,7 +22335,7 @@ client.dcim.front_ports_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_create</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L12970-L13097">front_ports_create</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -22411,7 +22411,7 @@ client.dcim.front_ports_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_bulk_update</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13099-L13226">front_ports_bulk_update</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -22487,7 +22487,7 @@ client.dcim.front_ports_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13228-L13251">front_ports_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -22550,7 +22550,7 @@ client.dcim.front_ports_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_bulk_partial_update</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13253-L13380">front_ports_bulk_partial_update</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -22626,7 +22626,7 @@ client.dcim.front_ports_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_read</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13382-L13411">front_ports_read</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -22699,7 +22699,7 @@ client.dcim.front_ports_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_update</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13413-L13546">front_ports_update</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -22784,7 +22784,7 @@ client.dcim.front_ports_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13548-L13576">front_ports_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -22857,7 +22857,7 @@ client.dcim.front_ports_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_partial_update</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13578-L13711">front_ports_partial_update</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -22942,7 +22942,7 @@ client.dcim.front_ports_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">front_ports_paths</a>(...) -> FrontPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13713-L13742">front_ports_paths</a>(...) -> FrontPort</code></summary>
 <dl>
 <dd>
 
@@ -23015,7 +23015,7 @@ client.dcim.front_ports_paths(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_list</a>(...) -> DcimInterfaceTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13744-L13994">interface_templates_list</a>(...) -> DcimInterfaceTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -23430,7 +23430,7 @@ client.dcim.interface_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_create</a>(...) -> InterfaceTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L13996-L14088">interface_templates_create</a>(...) -> InterfaceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -23504,7 +23504,7 @@ client.dcim.interface_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_bulk_update</a>(...) -> InterfaceTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14090-L14182">interface_templates_bulk_update</a>(...) -> InterfaceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -23578,7 +23578,7 @@ client.dcim.interface_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14184-L14207">interface_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -23641,7 +23641,7 @@ client.dcim.interface_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_bulk_partial_update</a>(...) -> InterfaceTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14209-L14301">interface_templates_bulk_partial_update</a>(...) -> InterfaceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -23715,7 +23715,7 @@ client.dcim.interface_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_read</a>(...) -> InterfaceTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14303-L14334">interface_templates_read</a>(...) -> InterfaceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -23788,7 +23788,7 @@ client.dcim.interface_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_update</a>(...) -> InterfaceTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14336-L14434">interface_templates_update</a>(...) -> InterfaceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -23871,7 +23871,7 @@ client.dcim.interface_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14436-L14464">interface_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -23944,7 +23944,7 @@ client.dcim.interface_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interface_templates_partial_update</a>(...) -> InterfaceTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14466-L14564">interface_templates_partial_update</a>(...) -> InterfaceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -24027,7 +24027,7 @@ client.dcim.interface_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_list</a>(...) -> DcimInterfacesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L14566-L15491">interfaces_list</a>(...) -> DcimInterfacesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -25522,7 +25522,7 @@ client.dcim.interfaces_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_create</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L15493-L15732">interfaces_create</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -25600,7 +25600,7 @@ client.dcim.interfaces_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_bulk_update</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L15734-L15973">interfaces_bulk_update</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -25678,7 +25678,7 @@ client.dcim.interfaces_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L15975-L15998">interfaces_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -25741,7 +25741,7 @@ client.dcim.interfaces_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_bulk_partial_update</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16000-L16239">interfaces_bulk_partial_update</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -25819,7 +25819,7 @@ client.dcim.interfaces_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_read</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16241-L16270">interfaces_read</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -25892,7 +25892,7 @@ client.dcim.interfaces_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_update</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16272-L16517">interfaces_update</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -25979,7 +25979,7 @@ client.dcim.interfaces_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16519-L16547">interfaces_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -26052,7 +26052,7 @@ client.dcim.interfaces_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_partial_update</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16549-L16794">interfaces_partial_update</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -26139,7 +26139,7 @@ client.dcim.interfaces_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">interfaces_trace</a>(...) -> Interface</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16796-L16825">interfaces_trace</a>(...) -> Interface</code></summary>
 <dl>
 <dd>
 
@@ -26212,7 +26212,7 @@ client.dcim.interfaces_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_list</a>(...) -> DcimInventoryItemRolesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L16827-L17142">inventory_item_roles_list</a>(...) -> DcimInventoryItemRolesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -26731,7 +26731,7 @@ client.dcim.inventory_item_roles_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_create</a>(...) -> InventoryItemRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17144-L17225">inventory_item_roles_create</a>(...) -> InventoryItemRole</code></summary>
 <dl>
 <dd>
 
@@ -26805,7 +26805,7 @@ client.dcim.inventory_item_roles_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_bulk_update</a>(...) -> InventoryItemRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17227-L17308">inventory_item_roles_bulk_update</a>(...) -> InventoryItemRole</code></summary>
 <dl>
 <dd>
 
@@ -26879,7 +26879,7 @@ client.dcim.inventory_item_roles_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17310-L17333">inventory_item_roles_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -26942,7 +26942,7 @@ client.dcim.inventory_item_roles_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_bulk_partial_update</a>(...) -> InventoryItemRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17335-L17416">inventory_item_roles_bulk_partial_update</a>(...) -> InventoryItemRole</code></summary>
 <dl>
 <dd>
 
@@ -27016,7 +27016,7 @@ client.dcim.inventory_item_roles_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_read</a>(...) -> InventoryItemRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17418-L17449">inventory_item_roles_read</a>(...) -> InventoryItemRole</code></summary>
 <dl>
 <dd>
 
@@ -27089,7 +27089,7 @@ client.dcim.inventory_item_roles_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_update</a>(...) -> InventoryItemRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17451-L17538">inventory_item_roles_update</a>(...) -> InventoryItemRole</code></summary>
 <dl>
 <dd>
 
@@ -27172,7 +27172,7 @@ client.dcim.inventory_item_roles_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17540-L17568">inventory_item_roles_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -27245,7 +27245,7 @@ client.dcim.inventory_item_roles_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_roles_partial_update</a>(...) -> InventoryItemRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17570-L17657">inventory_item_roles_partial_update</a>(...) -> InventoryItemRole</code></summary>
 <dl>
 <dd>
 
@@ -27328,7 +27328,7 @@ client.dcim.inventory_item_roles_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_list</a>(...) -> DcimInventoryItemTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L17659-L18064">inventory_item_templates_list</a>(...) -> DcimInventoryItemTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -27991,7 +27991,7 @@ client.dcim.inventory_item_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_create</a>(...) -> InventoryItemTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18066-L18171">inventory_item_templates_create</a>(...) -> InventoryItemTemplate</code></summary>
 <dl>
 <dd>
 
@@ -28065,7 +28065,7 @@ client.dcim.inventory_item_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_bulk_update</a>(...) -> InventoryItemTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18173-L18278">inventory_item_templates_bulk_update</a>(...) -> InventoryItemTemplate</code></summary>
 <dl>
 <dd>
 
@@ -28139,7 +28139,7 @@ client.dcim.inventory_item_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18280-L18303">inventory_item_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -28202,7 +28202,7 @@ client.dcim.inventory_item_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_bulk_partial_update</a>(...) -> InventoryItemTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18305-L18410">inventory_item_templates_bulk_partial_update</a>(...) -> InventoryItemTemplate</code></summary>
 <dl>
 <dd>
 
@@ -28276,7 +28276,7 @@ client.dcim.inventory_item_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_read</a>(...) -> InventoryItemTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18412-L18443">inventory_item_templates_read</a>(...) -> InventoryItemTemplate</code></summary>
 <dl>
 <dd>
 
@@ -28349,7 +28349,7 @@ client.dcim.inventory_item_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_update</a>(...) -> InventoryItemTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18445-L18556">inventory_item_templates_update</a>(...) -> InventoryItemTemplate</code></summary>
 <dl>
 <dd>
 
@@ -28432,7 +28432,7 @@ client.dcim.inventory_item_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18558-L18588">inventory_item_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -28505,7 +28505,7 @@ client.dcim.inventory_item_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_item_templates_partial_update</a>(...) -> InventoryItemTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18590-L18701">inventory_item_templates_partial_update</a>(...) -> InventoryItemTemplate</code></summary>
 <dl>
 <dd>
 
@@ -28588,7 +28588,7 @@ client.dcim.inventory_item_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_list</a>(...) -> DcimInventoryItemsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L18703-L19363">inventory_items_list</a>(...) -> DcimInventoryItemsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -29659,7 +29659,7 @@ client.dcim.inventory_items_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_create</a>(...) -> InventoryItem</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19365-L19490">inventory_items_create</a>(...) -> InventoryItem</code></summary>
 <dl>
 <dd>
 
@@ -29733,7 +29733,7 @@ client.dcim.inventory_items_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_bulk_update</a>(...) -> InventoryItem</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19492-L19617">inventory_items_bulk_update</a>(...) -> InventoryItem</code></summary>
 <dl>
 <dd>
 
@@ -29807,7 +29807,7 @@ client.dcim.inventory_items_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19619-L19642">inventory_items_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -29870,7 +29870,7 @@ client.dcim.inventory_items_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_bulk_partial_update</a>(...) -> InventoryItem</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19644-L19769">inventory_items_bulk_partial_update</a>(...) -> InventoryItem</code></summary>
 <dl>
 <dd>
 
@@ -29944,7 +29944,7 @@ client.dcim.inventory_items_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_read</a>(...) -> InventoryItem</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19771-L19802">inventory_items_read</a>(...) -> InventoryItem</code></summary>
 <dl>
 <dd>
 
@@ -30017,7 +30017,7 @@ client.dcim.inventory_items_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_update</a>(...) -> InventoryItem</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19804-L19935">inventory_items_update</a>(...) -> InventoryItem</code></summary>
 <dl>
 <dd>
 
@@ -30100,7 +30100,7 @@ client.dcim.inventory_items_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19937-L19965">inventory_items_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -30173,7 +30173,7 @@ client.dcim.inventory_items_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">inventory_items_partial_update</a>(...) -> InventoryItem</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L19967-L20098">inventory_items_partial_update</a>(...) -> InventoryItem</code></summary>
 <dl>
 <dd>
 
@@ -30256,7 +30256,7 @@ client.dcim.inventory_items_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_list</a>(...) -> DcimLocationsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20100-L20575">locations_list</a>(...) -> DcimLocationsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -31031,7 +31031,7 @@ client.dcim.locations_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_create</a>(...) -> Location</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20577-L20679">locations_create</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -31106,7 +31106,7 @@ client.dcim.locations_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_bulk_update</a>(...) -> Location</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20681-L20783">locations_bulk_update</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -31181,7 +31181,7 @@ client.dcim.locations_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20785-L20808">locations_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -31244,7 +31244,7 @@ client.dcim.locations_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_bulk_partial_update</a>(...) -> Location</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20810-L20912">locations_bulk_partial_update</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -31319,7 +31319,7 @@ client.dcim.locations_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_read</a>(...) -> Location</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20914-L20943">locations_read</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -31392,7 +31392,7 @@ client.dcim.locations_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_update</a>(...) -> Location</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L20945-L21053">locations_update</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -31476,7 +31476,7 @@ client.dcim.locations_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21055-L21083">locations_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -31549,7 +31549,7 @@ client.dcim.locations_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">locations_partial_update</a>(...) -> Location</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21085-L21193">locations_partial_update</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -31633,7 +31633,7 @@ client.dcim.locations_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_list</a>(...) -> DcimManufacturersListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21195-L21540">manufacturers_list</a>(...) -> DcimManufacturersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -32200,7 +32200,7 @@ client.dcim.manufacturers_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_create</a>(...) -> Manufacturer</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21542-L21627">manufacturers_create</a>(...) -> Manufacturer</code></summary>
 <dl>
 <dd>
 
@@ -32274,7 +32274,7 @@ client.dcim.manufacturers_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_bulk_update</a>(...) -> Manufacturer</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21629-L21714">manufacturers_bulk_update</a>(...) -> Manufacturer</code></summary>
 <dl>
 <dd>
 
@@ -32348,7 +32348,7 @@ client.dcim.manufacturers_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21716-L21739">manufacturers_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -32411,7 +32411,7 @@ client.dcim.manufacturers_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_bulk_partial_update</a>(...) -> Manufacturer</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21741-L21826">manufacturers_bulk_partial_update</a>(...) -> Manufacturer</code></summary>
 <dl>
 <dd>
 
@@ -32485,7 +32485,7 @@ client.dcim.manufacturers_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_read</a>(...) -> Manufacturer</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21828-L21857">manufacturers_read</a>(...) -> Manufacturer</code></summary>
 <dl>
 <dd>
 
@@ -32558,7 +32558,7 @@ client.dcim.manufacturers_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_update</a>(...) -> Manufacturer</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21859-L21950">manufacturers_update</a>(...) -> Manufacturer</code></summary>
 <dl>
 <dd>
 
@@ -32641,7 +32641,7 @@ client.dcim.manufacturers_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21952-L21980">manufacturers_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -32714,7 +32714,7 @@ client.dcim.manufacturers_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">manufacturers_partial_update</a>(...) -> Manufacturer</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L21982-L22073">manufacturers_partial_update</a>(...) -> Manufacturer</code></summary>
 <dl>
 <dd>
 
@@ -32797,7 +32797,7 @@ client.dcim.manufacturers_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_list</a>(...) -> DcimModuleBayTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22075-L22280">module_bay_templates_list</a>(...) -> DcimModuleBayTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -33140,7 +33140,7 @@ client.dcim.module_bay_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_create</a>(...) -> ModuleBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22282-L22359">module_bay_templates_create</a>(...) -> ModuleBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -33214,7 +33214,7 @@ client.dcim.module_bay_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_bulk_update</a>(...) -> ModuleBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22361-L22438">module_bay_templates_bulk_update</a>(...) -> ModuleBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -33288,7 +33288,7 @@ client.dcim.module_bay_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22440-L22463">module_bay_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -33351,7 +33351,7 @@ client.dcim.module_bay_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_bulk_partial_update</a>(...) -> ModuleBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22465-L22542">module_bay_templates_bulk_partial_update</a>(...) -> ModuleBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -33425,7 +33425,7 @@ client.dcim.module_bay_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_read</a>(...) -> ModuleBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22544-L22575">module_bay_templates_read</a>(...) -> ModuleBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -33498,7 +33498,7 @@ client.dcim.module_bay_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_update</a>(...) -> ModuleBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22577-L22660">module_bay_templates_update</a>(...) -> ModuleBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -33581,7 +33581,7 @@ client.dcim.module_bay_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22662-L22690">module_bay_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -33654,7 +33654,7 @@ client.dcim.module_bay_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bay_templates_partial_update</a>(...) -> ModuleBayTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22692-L22775">module_bay_templates_partial_update</a>(...) -> ModuleBayTemplate</code></summary>
 <dl>
 <dd>
 
@@ -33737,7 +33737,7 @@ client.dcim.module_bay_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_list</a>(...) -> DcimModuleBaysListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L22777-L23232">module_bays_list</a>(...) -> DcimModuleBaysListResponse</code></summary>
 <dl>
 <dd>
 
@@ -34480,7 +34480,7 @@ client.dcim.module_bays_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_create</a>(...) -> ModuleBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23234-L23322">module_bays_create</a>(...) -> ModuleBay</code></summary>
 <dl>
 <dd>
 
@@ -34555,7 +34555,7 @@ client.dcim.module_bays_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_bulk_update</a>(...) -> ModuleBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23324-L23412">module_bays_bulk_update</a>(...) -> ModuleBay</code></summary>
 <dl>
 <dd>
 
@@ -34630,7 +34630,7 @@ client.dcim.module_bays_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23414-L23437">module_bays_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -34693,7 +34693,7 @@ client.dcim.module_bays_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_bulk_partial_update</a>(...) -> ModuleBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23439-L23527">module_bays_bulk_partial_update</a>(...) -> ModuleBay</code></summary>
 <dl>
 <dd>
 
@@ -34768,7 +34768,7 @@ client.dcim.module_bays_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_read</a>(...) -> ModuleBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23529-L23558">module_bays_read</a>(...) -> ModuleBay</code></summary>
 <dl>
 <dd>
 
@@ -34841,7 +34841,7 @@ client.dcim.module_bays_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_update</a>(...) -> ModuleBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23560-L23654">module_bays_update</a>(...) -> ModuleBay</code></summary>
 <dl>
 <dd>
 
@@ -34925,7 +34925,7 @@ client.dcim.module_bays_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23656-L23684">module_bays_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -34998,7 +34998,7 @@ client.dcim.module_bays_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_bays_partial_update</a>(...) -> ModuleBay</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23686-L23780">module_bays_partial_update</a>(...) -> ModuleBay</code></summary>
 <dl>
 <dd>
 
@@ -35082,7 +35082,7 @@ client.dcim.module_bays_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_list</a>(...) -> DcimModuleTypesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L23782-L24132">module_types_list</a>(...) -> DcimModuleTypesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -35657,7 +35657,7 @@ client.dcim.module_types_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_create</a>(...) -> ModuleType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24134-L24224">module_types_create</a>(...) -> ModuleType</code></summary>
 <dl>
 <dd>
 
@@ -35731,7 +35731,7 @@ client.dcim.module_types_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_bulk_update</a>(...) -> ModuleType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24226-L24316">module_types_bulk_update</a>(...) -> ModuleType</code></summary>
 <dl>
 <dd>
 
@@ -35805,7 +35805,7 @@ client.dcim.module_types_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24318-L24341">module_types_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -35868,7 +35868,7 @@ client.dcim.module_types_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_bulk_partial_update</a>(...) -> ModuleType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24343-L24433">module_types_bulk_partial_update</a>(...) -> ModuleType</code></summary>
 <dl>
 <dd>
 
@@ -35942,7 +35942,7 @@ client.dcim.module_types_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_read</a>(...) -> ModuleType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24435-L24464">module_types_read</a>(...) -> ModuleType</code></summary>
 <dl>
 <dd>
 
@@ -36015,7 +36015,7 @@ client.dcim.module_types_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_update</a>(...) -> ModuleType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24466-L24562">module_types_update</a>(...) -> ModuleType</code></summary>
 <dl>
 <dd>
 
@@ -36098,7 +36098,7 @@ client.dcim.module_types_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24564-L24592">module_types_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -36171,7 +36171,7 @@ client.dcim.module_types_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">module_types_partial_update</a>(...) -> ModuleType</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24594-L24690">module_types_partial_update</a>(...) -> ModuleType</code></summary>
 <dl>
 <dd>
 
@@ -36254,7 +36254,7 @@ client.dcim.module_types_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_list</a>(...) -> DcimModulesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L24692-L25022">modules_list</a>(...) -> DcimModulesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -36797,7 +36797,7 @@ client.dcim.modules_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_create</a>(...) -> Module</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25024-L25119">modules_create</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -36872,7 +36872,7 @@ client.dcim.modules_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_bulk_update</a>(...) -> Module</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25121-L25216">modules_bulk_update</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -36947,7 +36947,7 @@ client.dcim.modules_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25218-L25241">modules_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -37010,7 +37010,7 @@ client.dcim.modules_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_bulk_partial_update</a>(...) -> Module</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25243-L25338">modules_bulk_partial_update</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -37085,7 +37085,7 @@ client.dcim.modules_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_read</a>(...) -> Module</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25340-L25369">modules_read</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -37158,7 +37158,7 @@ client.dcim.modules_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_update</a>(...) -> Module</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25371-L25472">modules_update</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -37242,7 +37242,7 @@ client.dcim.modules_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25474-L25502">modules_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -37315,7 +37315,7 @@ client.dcim.modules_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">modules_partial_update</a>(...) -> Module</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25504-L25605">modules_partial_update</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -37399,7 +37399,7 @@ client.dcim.modules_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_list</a>(...) -> DcimPlatformsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25607-L25997">platforms_list</a>(...) -> DcimPlatformsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -38038,7 +38038,7 @@ client.dcim.platforms_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_create</a>(...) -> Platform</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L25999-L26095">platforms_create</a>(...) -> Platform</code></summary>
 <dl>
 <dd>
 
@@ -38112,7 +38112,7 @@ client.dcim.platforms_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_bulk_update</a>(...) -> Platform</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26097-L26193">platforms_bulk_update</a>(...) -> Platform</code></summary>
 <dl>
 <dd>
 
@@ -38186,7 +38186,7 @@ client.dcim.platforms_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26195-L26218">platforms_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -38249,7 +38249,7 @@ client.dcim.platforms_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_bulk_partial_update</a>(...) -> Platform</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26220-L26316">platforms_bulk_partial_update</a>(...) -> Platform</code></summary>
 <dl>
 <dd>
 
@@ -38323,7 +38323,7 @@ client.dcim.platforms_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_read</a>(...) -> Platform</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26318-L26347">platforms_read</a>(...) -> Platform</code></summary>
 <dl>
 <dd>
 
@@ -38396,7 +38396,7 @@ client.dcim.platforms_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_update</a>(...) -> Platform</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26349-L26451">platforms_update</a>(...) -> Platform</code></summary>
 <dl>
 <dd>
 
@@ -38479,7 +38479,7 @@ client.dcim.platforms_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26453-L26481">platforms_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -38552,7 +38552,7 @@ client.dcim.platforms_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">platforms_partial_update</a>(...) -> Platform</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26483-L26585">platforms_partial_update</a>(...) -> Platform</code></summary>
 <dl>
 <dd>
 
@@ -38635,7 +38635,7 @@ client.dcim.platforms_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_list</a>(...) -> DcimPowerFeedsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L26587-L27027">power_feeds_list</a>(...) -> DcimPowerFeedsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -39354,7 +39354,7 @@ client.dcim.power_feeds_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_create</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27029-L27180">power_feeds_create</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -39428,7 +39428,7 @@ client.dcim.power_feeds_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_bulk_update</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27182-L27333">power_feeds_bulk_update</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -39502,7 +39502,7 @@ client.dcim.power_feeds_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27335-L27358">power_feeds_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -39565,7 +39565,7 @@ client.dcim.power_feeds_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_bulk_partial_update</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27360-L27511">power_feeds_bulk_partial_update</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -39639,7 +39639,7 @@ client.dcim.power_feeds_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_read</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27513-L27542">power_feeds_read</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -39712,7 +39712,7 @@ client.dcim.power_feeds_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_update</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27544-L27701">power_feeds_update</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -39795,7 +39795,7 @@ client.dcim.power_feeds_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27703-L27731">power_feeds_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -39868,7 +39868,7 @@ client.dcim.power_feeds_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_partial_update</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27733-L27890">power_feeds_partial_update</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -39951,7 +39951,7 @@ client.dcim.power_feeds_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_feeds_trace</a>(...) -> PowerFeed</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27892-L27921">power_feeds_trace</a>(...) -> PowerFeed</code></summary>
 <dl>
 <dd>
 
@@ -40024,7 +40024,7 @@ client.dcim.power_feeds_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_list</a>(...) -> DcimPowerOutletTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L27923-L28158">power_outlet_templates_list</a>(...) -> DcimPowerOutletTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -40415,7 +40415,7 @@ client.dcim.power_outlet_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_create</a>(...) -> PowerOutletTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28160-L28248">power_outlet_templates_create</a>(...) -> PowerOutletTemplate</code></summary>
 <dl>
 <dd>
 
@@ -40488,7 +40488,7 @@ client.dcim.power_outlet_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_bulk_update</a>(...) -> PowerOutletTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28250-L28338">power_outlet_templates_bulk_update</a>(...) -> PowerOutletTemplate</code></summary>
 <dl>
 <dd>
 
@@ -40561,7 +40561,7 @@ client.dcim.power_outlet_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28340-L28363">power_outlet_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -40624,7 +40624,7 @@ client.dcim.power_outlet_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_bulk_partial_update</a>(...) -> PowerOutletTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28365-L28453">power_outlet_templates_bulk_partial_update</a>(...) -> PowerOutletTemplate</code></summary>
 <dl>
 <dd>
 
@@ -40697,7 +40697,7 @@ client.dcim.power_outlet_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_read</a>(...) -> PowerOutletTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28455-L28486">power_outlet_templates_read</a>(...) -> PowerOutletTemplate</code></summary>
 <dl>
 <dd>
 
@@ -40770,7 +40770,7 @@ client.dcim.power_outlet_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_update</a>(...) -> PowerOutletTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28488-L28582">power_outlet_templates_update</a>(...) -> PowerOutletTemplate</code></summary>
 <dl>
 <dd>
 
@@ -40852,7 +40852,7 @@ client.dcim.power_outlet_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28584-L28614">power_outlet_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -40925,7 +40925,7 @@ client.dcim.power_outlet_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlet_templates_partial_update</a>(...) -> PowerOutletTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28616-L28710">power_outlet_templates_partial_update</a>(...) -> PowerOutletTemplate</code></summary>
 <dl>
 <dd>
 
@@ -41007,7 +41007,7 @@ client.dcim.power_outlet_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_list</a>(...) -> DcimPowerOutletsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L28712-L29222">power_outlets_list</a>(...) -> DcimPowerOutletsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -41838,7 +41838,7 @@ client.dcim.power_outlets_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_create</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29224-L29361">power_outlets_create</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -41912,7 +41912,7 @@ client.dcim.power_outlets_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_bulk_update</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29363-L29500">power_outlets_bulk_update</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -41986,7 +41986,7 @@ client.dcim.power_outlets_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29502-L29525">power_outlets_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -42049,7 +42049,7 @@ client.dcim.power_outlets_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_bulk_partial_update</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29527-L29664">power_outlets_bulk_partial_update</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -42123,7 +42123,7 @@ client.dcim.power_outlets_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_read</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29666-L29695">power_outlets_read</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -42196,7 +42196,7 @@ client.dcim.power_outlets_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_update</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29697-L29840">power_outlets_update</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -42279,7 +42279,7 @@ client.dcim.power_outlets_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29842-L29870">power_outlets_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -42352,7 +42352,7 @@ client.dcim.power_outlets_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_partial_update</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L29872-L30015">power_outlets_partial_update</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -42435,7 +42435,7 @@ client.dcim.power_outlets_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_outlets_trace</a>(...) -> PowerOutlet</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30017-L30046">power_outlets_trace</a>(...) -> PowerOutlet</code></summary>
 <dl>
 <dd>
 
@@ -42508,7 +42508,7 @@ client.dcim.power_outlets_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_list</a>(...) -> DcimPowerPanelsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30048-L30353">power_panels_list</a>(...) -> DcimPowerPanelsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -43011,7 +43011,7 @@ client.dcim.power_panels_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_create</a>(...) -> PowerPanel</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30355-L30440">power_panels_create</a>(...) -> PowerPanel</code></summary>
 <dl>
 <dd>
 
@@ -43085,7 +43085,7 @@ client.dcim.power_panels_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_bulk_update</a>(...) -> PowerPanel</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30442-L30527">power_panels_bulk_update</a>(...) -> PowerPanel</code></summary>
 <dl>
 <dd>
 
@@ -43159,7 +43159,7 @@ client.dcim.power_panels_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30529-L30552">power_panels_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -43222,7 +43222,7 @@ client.dcim.power_panels_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_bulk_partial_update</a>(...) -> PowerPanel</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30554-L30639">power_panels_bulk_partial_update</a>(...) -> PowerPanel</code></summary>
 <dl>
 <dd>
 
@@ -43296,7 +43296,7 @@ client.dcim.power_panels_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_read</a>(...) -> PowerPanel</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30641-L30670">power_panels_read</a>(...) -> PowerPanel</code></summary>
 <dl>
 <dd>
 
@@ -43369,7 +43369,7 @@ client.dcim.power_panels_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_update</a>(...) -> PowerPanel</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30672-L30763">power_panels_update</a>(...) -> PowerPanel</code></summary>
 <dl>
 <dd>
 
@@ -43452,7 +43452,7 @@ client.dcim.power_panels_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30765-L30793">power_panels_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -43525,7 +43525,7 @@ client.dcim.power_panels_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_panels_partial_update</a>(...) -> PowerPanel</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30795-L30886">power_panels_partial_update</a>(...) -> PowerPanel</code></summary>
 <dl>
 <dd>
 
@@ -43608,7 +43608,7 @@ client.dcim.power_panels_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_list</a>(...) -> DcimPowerPortTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L30888-L31173">power_port_templates_list</a>(...) -> DcimPowerPortTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -44079,7 +44079,7 @@ client.dcim.power_port_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_create</a>(...) -> PowerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31175-L31264">power_port_templates_create</a>(...) -> PowerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -44152,7 +44152,7 @@ client.dcim.power_port_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_bulk_update</a>(...) -> PowerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31266-L31355">power_port_templates_bulk_update</a>(...) -> PowerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -44225,7 +44225,7 @@ client.dcim.power_port_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31357-L31380">power_port_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -44288,7 +44288,7 @@ client.dcim.power_port_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_bulk_partial_update</a>(...) -> PowerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31382-L31471">power_port_templates_bulk_partial_update</a>(...) -> PowerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -44361,7 +44361,7 @@ client.dcim.power_port_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_read</a>(...) -> PowerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31473-L31504">power_port_templates_read</a>(...) -> PowerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -44434,7 +44434,7 @@ client.dcim.power_port_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_update</a>(...) -> PowerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31506-L31601">power_port_templates_update</a>(...) -> PowerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -44516,7 +44516,7 @@ client.dcim.power_port_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31603-L31631">power_port_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -44589,7 +44589,7 @@ client.dcim.power_port_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_port_templates_partial_update</a>(...) -> PowerPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31633-L31728">power_port_templates_partial_update</a>(...) -> PowerPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -44671,7 +44671,7 @@ client.dcim.power_port_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_list</a>(...) -> DcimPowerPortsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L31730-L32290">power_ports_list</a>(...) -> DcimPowerPortsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -45582,7 +45582,7 @@ client.dcim.power_ports_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_create</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32292-L32430">power_ports_create</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -45656,7 +45656,7 @@ client.dcim.power_ports_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_bulk_update</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32432-L32570">power_ports_bulk_update</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -45730,7 +45730,7 @@ client.dcim.power_ports_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32572-L32595">power_ports_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -45793,7 +45793,7 @@ client.dcim.power_ports_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_bulk_partial_update</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32597-L32735">power_ports_bulk_partial_update</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -45867,7 +45867,7 @@ client.dcim.power_ports_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_read</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32737-L32766">power_ports_read</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -45940,7 +45940,7 @@ client.dcim.power_ports_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_update</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32768-L32912">power_ports_update</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -46023,7 +46023,7 @@ client.dcim.power_ports_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32914-L32942">power_ports_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -46096,7 +46096,7 @@ client.dcim.power_ports_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_partial_update</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L32944-L33088">power_ports_partial_update</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -46179,7 +46179,7 @@ client.dcim.power_ports_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">power_ports_trace</a>(...) -> PowerPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33090-L33119">power_ports_trace</a>(...) -> PowerPort</code></summary>
 <dl>
 <dd>
 
@@ -46252,7 +46252,7 @@ client.dcim.power_ports_trace(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_list</a>(...) -> DcimRackReservationsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33121-L33476">rack_reservations_list</a>(...) -> DcimRackReservationsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -46835,7 +46835,7 @@ client.dcim.rack_reservations_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_create</a>(...) -> RackReservation</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33478-L33565">rack_reservations_create</a>(...) -> RackReservation</code></summary>
 <dl>
 <dd>
 
@@ -46913,7 +46913,7 @@ client.dcim.rack_reservations_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_bulk_update</a>(...) -> RackReservation</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33567-L33654">rack_reservations_bulk_update</a>(...) -> RackReservation</code></summary>
 <dl>
 <dd>
 
@@ -46991,7 +46991,7 @@ client.dcim.rack_reservations_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33656-L33679">rack_reservations_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -47054,7 +47054,7 @@ client.dcim.rack_reservations_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_bulk_partial_update</a>(...) -> RackReservation</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33681-L33768">rack_reservations_bulk_partial_update</a>(...) -> RackReservation</code></summary>
 <dl>
 <dd>
 
@@ -47132,7 +47132,7 @@ client.dcim.rack_reservations_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_read</a>(...) -> RackReservation</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33770-L33801">rack_reservations_read</a>(...) -> RackReservation</code></summary>
 <dl>
 <dd>
 
@@ -47205,7 +47205,7 @@ client.dcim.rack_reservations_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_update</a>(...) -> RackReservation</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33803-L33896">rack_reservations_update</a>(...) -> RackReservation</code></summary>
 <dl>
 <dd>
 
@@ -47292,7 +47292,7 @@ client.dcim.rack_reservations_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33898-L33926">rack_reservations_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -47365,7 +47365,7 @@ client.dcim.rack_reservations_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_reservations_partial_update</a>(...) -> RackReservation</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L33928-L34021">rack_reservations_partial_update</a>(...) -> RackReservation</code></summary>
 <dl>
 <dd>
 
@@ -47452,7 +47452,7 @@ client.dcim.rack_reservations_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_list</a>(...) -> DcimRackRolesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34023-L34393">rack_roles_list</a>(...) -> DcimRackRolesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -48059,7 +48059,7 @@ client.dcim.rack_roles_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_create</a>(...) -> RackRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34395-L34476">rack_roles_create</a>(...) -> RackRole</code></summary>
 <dl>
 <dd>
 
@@ -48133,7 +48133,7 @@ client.dcim.rack_roles_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_bulk_update</a>(...) -> RackRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34478-L34559">rack_roles_bulk_update</a>(...) -> RackRole</code></summary>
 <dl>
 <dd>
 
@@ -48207,7 +48207,7 @@ client.dcim.rack_roles_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34561-L34584">rack_roles_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -48270,7 +48270,7 @@ client.dcim.rack_roles_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_bulk_partial_update</a>(...) -> RackRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34586-L34667">rack_roles_bulk_partial_update</a>(...) -> RackRole</code></summary>
 <dl>
 <dd>
 
@@ -48344,7 +48344,7 @@ client.dcim.rack_roles_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_read</a>(...) -> RackRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34669-L34698">rack_roles_read</a>(...) -> RackRole</code></summary>
 <dl>
 <dd>
 
@@ -48417,7 +48417,7 @@ client.dcim.rack_roles_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_update</a>(...) -> RackRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34700-L34787">rack_roles_update</a>(...) -> RackRole</code></summary>
 <dl>
 <dd>
 
@@ -48500,7 +48500,7 @@ client.dcim.rack_roles_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34789-L34817">rack_roles_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -48573,7 +48573,7 @@ client.dcim.rack_roles_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rack_roles_partial_update</a>(...) -> RackRole</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34819-L34906">rack_roles_partial_update</a>(...) -> RackRole</code></summary>
 <dl>
 <dd>
 
@@ -48656,7 +48656,7 @@ client.dcim.rack_roles_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_list</a>(...) -> DcimRacksListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L34908-L35683">racks_list</a>(...) -> DcimRacksListResponse</code></summary>
 <dl>
 <dd>
 
@@ -49911,7 +49911,7 @@ client.dcim.racks_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_create</a>(...) -> Rack</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L35685-L35851">racks_create</a>(...) -> Rack</code></summary>
 <dl>
 <dd>
 
@@ -49985,7 +49985,7 @@ client.dcim.racks_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_bulk_update</a>(...) -> Rack</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L35853-L36019">racks_bulk_update</a>(...) -> Rack</code></summary>
 <dl>
 <dd>
 
@@ -50059,7 +50059,7 @@ client.dcim.racks_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36021-L36044">racks_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -50122,7 +50122,7 @@ client.dcim.racks_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_bulk_partial_update</a>(...) -> Rack</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36046-L36212">racks_bulk_partial_update</a>(...) -> Rack</code></summary>
 <dl>
 <dd>
 
@@ -50196,7 +50196,7 @@ client.dcim.racks_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_read</a>(...) -> Rack</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36214-L36243">racks_read</a>(...) -> Rack</code></summary>
 <dl>
 <dd>
 
@@ -50269,7 +50269,7 @@ client.dcim.racks_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_update</a>(...) -> Rack</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36245-L36417">racks_update</a>(...) -> Rack</code></summary>
 <dl>
 <dd>
 
@@ -50352,7 +50352,7 @@ client.dcim.racks_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36419-L36447">racks_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -50425,7 +50425,7 @@ client.dcim.racks_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_partial_update</a>(...) -> Rack</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36449-L36621">racks_partial_update</a>(...) -> Rack</code></summary>
 <dl>
 <dd>
 
@@ -50508,7 +50508,7 @@ client.dcim.racks_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">racks_elevation</a>(...) -> typing.List[RackUnit]</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36623-L36700">racks_elevation</a>(...) -> typing.List[RackUnit]</code></summary>
 <dl>
 <dd>
 
@@ -50661,7 +50661,7 @@ client.dcim.racks_elevation(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_list</a>(...) -> DcimRearPortTemplatesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L36702-L37012">rear_port_templates_list</a>(...) -> DcimRearPortTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -51172,7 +51172,7 @@ client.dcim.rear_port_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_create</a>(...) -> RearPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37014-L37102">rear_port_templates_create</a>(...) -> RearPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -51246,7 +51246,7 @@ client.dcim.rear_port_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_bulk_update</a>(...) -> RearPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37104-L37192">rear_port_templates_bulk_update</a>(...) -> RearPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -51320,7 +51320,7 @@ client.dcim.rear_port_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37194-L37217">rear_port_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -51383,7 +51383,7 @@ client.dcim.rear_port_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_bulk_partial_update</a>(...) -> RearPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37219-L37307">rear_port_templates_bulk_partial_update</a>(...) -> RearPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -51457,7 +51457,7 @@ client.dcim.rear_port_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_read</a>(...) -> RearPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37309-L37340">rear_port_templates_read</a>(...) -> RearPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -51530,7 +51530,7 @@ client.dcim.rear_port_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_update</a>(...) -> RearPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37342-L37436">rear_port_templates_update</a>(...) -> RearPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -51613,7 +51613,7 @@ client.dcim.rear_port_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37438-L37466">rear_port_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -51686,7 +51686,7 @@ client.dcim.rear_port_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_port_templates_partial_update</a>(...) -> RearPortTemplate</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37468-L37562">rear_port_templates_partial_update</a>(...) -> RearPortTemplate</code></summary>
 <dl>
 <dd>
 
@@ -51769,7 +51769,7 @@ client.dcim.rear_port_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_list</a>(...) -> DcimRearPortsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L37564-L38144">rear_ports_list</a>(...) -> DcimRearPortsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -52712,7 +52712,7 @@ client.dcim.rear_ports_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_create</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38146-L38268">rear_ports_create</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -52787,7 +52787,7 @@ client.dcim.rear_ports_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_bulk_update</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38270-L38392">rear_ports_bulk_update</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -52862,7 +52862,7 @@ client.dcim.rear_ports_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38394-L38417">rear_ports_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -52925,7 +52925,7 @@ client.dcim.rear_ports_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_bulk_partial_update</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38419-L38541">rear_ports_bulk_partial_update</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -53000,7 +53000,7 @@ client.dcim.rear_ports_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_read</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38543-L38572">rear_ports_read</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -53073,7 +53073,7 @@ client.dcim.rear_ports_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_update</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38574-L38702">rear_ports_update</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -53157,7 +53157,7 @@ client.dcim.rear_ports_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38704-L38732">rear_ports_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -53230,7 +53230,7 @@ client.dcim.rear_ports_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_partial_update</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38734-L38862">rear_ports_partial_update</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -53314,7 +53314,7 @@ client.dcim.rear_ports_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">rear_ports_paths</a>(...) -> RearPort</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38864-L38893">rear_ports_paths</a>(...) -> RearPort</code></summary>
 <dl>
 <dd>
 
@@ -53387,7 +53387,7 @@ client.dcim.rear_ports_paths(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_list</a>(...) -> DcimRegionsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L38895-L39260">regions_list</a>(...) -> DcimRegionsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -53986,7 +53986,7 @@ client.dcim.regions_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_create</a>(...) -> Region</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39262-L39347">regions_create</a>(...) -> Region</code></summary>
 <dl>
 <dd>
 
@@ -54060,7 +54060,7 @@ client.dcim.regions_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_bulk_update</a>(...) -> Region</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39349-L39434">regions_bulk_update</a>(...) -> Region</code></summary>
 <dl>
 <dd>
 
@@ -54134,7 +54134,7 @@ client.dcim.regions_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39436-L39459">regions_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -54197,7 +54197,7 @@ client.dcim.regions_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_bulk_partial_update</a>(...) -> Region</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39461-L39546">regions_bulk_partial_update</a>(...) -> Region</code></summary>
 <dl>
 <dd>
 
@@ -54271,7 +54271,7 @@ client.dcim.regions_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_read</a>(...) -> Region</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39548-L39577">regions_read</a>(...) -> Region</code></summary>
 <dl>
 <dd>
 
@@ -54344,7 +54344,7 @@ client.dcim.regions_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_update</a>(...) -> Region</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39579-L39670">regions_update</a>(...) -> Region</code></summary>
 <dl>
 <dd>
 
@@ -54427,7 +54427,7 @@ client.dcim.regions_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39672-L39700">regions_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -54500,7 +54500,7 @@ client.dcim.regions_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">regions_partial_update</a>(...) -> Region</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39702-L39793">regions_partial_update</a>(...) -> Region</code></summary>
 <dl>
 <dd>
 
@@ -54583,7 +54583,7 @@ client.dcim.regions_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_list</a>(...) -> DcimSiteGroupsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L39795-L40160">site_groups_list</a>(...) -> DcimSiteGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -55182,7 +55182,7 @@ client.dcim.site_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_create</a>(...) -> SiteGroup</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40162-L40247">site_groups_create</a>(...) -> SiteGroup</code></summary>
 <dl>
 <dd>
 
@@ -55256,7 +55256,7 @@ client.dcim.site_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_bulk_update</a>(...) -> SiteGroup</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40249-L40334">site_groups_bulk_update</a>(...) -> SiteGroup</code></summary>
 <dl>
 <dd>
 
@@ -55330,7 +55330,7 @@ client.dcim.site_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40336-L40359">site_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -55393,7 +55393,7 @@ client.dcim.site_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_bulk_partial_update</a>(...) -> SiteGroup</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40361-L40446">site_groups_bulk_partial_update</a>(...) -> SiteGroup</code></summary>
 <dl>
 <dd>
 
@@ -55467,7 +55467,7 @@ client.dcim.site_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_read</a>(...) -> SiteGroup</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40448-L40477">site_groups_read</a>(...) -> SiteGroup</code></summary>
 <dl>
 <dd>
 
@@ -55540,7 +55540,7 @@ client.dcim.site_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_update</a>(...) -> SiteGroup</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40479-L40570">site_groups_update</a>(...) -> SiteGroup</code></summary>
 <dl>
 <dd>
 
@@ -55623,7 +55623,7 @@ client.dcim.site_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40572-L40600">site_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -55696,7 +55696,7 @@ client.dcim.site_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">site_groups_partial_update</a>(...) -> SiteGroup</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40602-L40693">site_groups_partial_update</a>(...) -> SiteGroup</code></summary>
 <dl>
 <dd>
 
@@ -55779,7 +55779,7 @@ client.dcim.site_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_list</a>(...) -> DcimSitesListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L40695-L41265">sites_list</a>(...) -> DcimSitesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -56706,7 +56706,7 @@ client.dcim.sites_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_create</a>(...) -> Site</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41267-L41415">sites_create</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -56780,7 +56780,7 @@ client.dcim.sites_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_bulk_update</a>(...) -> Site</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41417-L41565">sites_bulk_update</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -56854,7 +56854,7 @@ client.dcim.sites_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41567-L41590">sites_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -56917,7 +56917,7 @@ client.dcim.sites_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_bulk_partial_update</a>(...) -> Site</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41592-L41740">sites_bulk_partial_update</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -56991,7 +56991,7 @@ client.dcim.sites_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_read</a>(...) -> Site</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41742-L41771">sites_read</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -57064,7 +57064,7 @@ client.dcim.sites_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_update</a>(...) -> Site</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41773-L41927">sites_update</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -57147,7 +57147,7 @@ client.dcim.sites_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41929-L41957">sites_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -57220,7 +57220,7 @@ client.dcim.sites_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">sites_partial_update</a>(...) -> Site</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L41959-L42113">sites_partial_update</a>(...) -> Site</code></summary>
 <dl>
 <dd>
 
@@ -57303,7 +57303,7 @@ client.dcim.sites_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_list</a>(...) -> DcimVirtualChassisListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42115-L42475">virtual_chassis_list</a>(...) -> DcimVirtualChassisListResponse</code></summary>
 <dl>
 <dd>
 
@@ -57894,7 +57894,7 @@ client.dcim.virtual_chassis_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_create</a>(...) -> VirtualChassis</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42477-L42561">virtual_chassis_create</a>(...) -> VirtualChassis</code></summary>
 <dl>
 <dd>
 
@@ -57967,7 +57967,7 @@ client.dcim.virtual_chassis_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_bulk_update</a>(...) -> VirtualChassis</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42563-L42647">virtual_chassis_bulk_update</a>(...) -> VirtualChassis</code></summary>
 <dl>
 <dd>
 
@@ -58040,7 +58040,7 @@ client.dcim.virtual_chassis_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42649-L42672">virtual_chassis_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -58103,7 +58103,7 @@ client.dcim.virtual_chassis_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_bulk_partial_update</a>(...) -> VirtualChassis</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42674-L42758">virtual_chassis_bulk_partial_update</a>(...) -> VirtualChassis</code></summary>
 <dl>
 <dd>
 
@@ -58176,7 +58176,7 @@ client.dcim.virtual_chassis_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_read</a>(...) -> VirtualChassis</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42760-L42791">virtual_chassis_read</a>(...) -> VirtualChassis</code></summary>
 <dl>
 <dd>
 
@@ -58249,7 +58249,7 @@ client.dcim.virtual_chassis_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_update</a>(...) -> VirtualChassis</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42793-L42883">virtual_chassis_update</a>(...) -> VirtualChassis</code></summary>
 <dl>
 <dd>
 
@@ -58331,7 +58331,7 @@ client.dcim.virtual_chassis_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42885-L42913">virtual_chassis_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -58404,7 +58404,7 @@ client.dcim.virtual_chassis_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_chassis_partial_update</a>(...) -> VirtualChassis</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L42915-L43005">virtual_chassis_partial_update</a>(...) -> VirtualChassis</code></summary>
 <dl>
 <dd>
 
@@ -58486,7 +58486,7 @@ client.dcim.virtual_chassis_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_list</a>(...) -> DcimVirtualDeviceContextsListResponse</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43007-L43287">virtual_device_contexts_list</a>(...) -> DcimVirtualDeviceContextsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -58949,7 +58949,7 @@ client.dcim.virtual_device_contexts_list()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_create</a>(...) -> VirtualDeviceContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43289-L43395">virtual_device_contexts_create</a>(...) -> VirtualDeviceContext</code></summary>
 <dl>
 <dd>
 
@@ -59023,7 +59023,7 @@ client.dcim.virtual_device_contexts_create(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_bulk_update</a>(...) -> VirtualDeviceContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43397-L43503">virtual_device_contexts_bulk_update</a>(...) -> VirtualDeviceContext</code></summary>
 <dl>
 <dd>
 
@@ -59097,7 +59097,7 @@ client.dcim.virtual_device_contexts_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_bulk_delete</a>()</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43505-L43528">virtual_device_contexts_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -59160,7 +59160,7 @@ client.dcim.virtual_device_contexts_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_bulk_partial_update</a>(...) -> VirtualDeviceContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43530-L43636">virtual_device_contexts_bulk_partial_update</a>(...) -> VirtualDeviceContext</code></summary>
 <dl>
 <dd>
 
@@ -59234,7 +59234,7 @@ client.dcim.virtual_device_contexts_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_read</a>(...) -> VirtualDeviceContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43638-L43669">virtual_device_contexts_read</a>(...) -> VirtualDeviceContext</code></summary>
 <dl>
 <dd>
 
@@ -59307,7 +59307,7 @@ client.dcim.virtual_device_contexts_read(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_update</a>(...) -> VirtualDeviceContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43671-L43783">virtual_device_contexts_update</a>(...) -> VirtualDeviceContext</code></summary>
 <dl>
 <dd>
 
@@ -59390,7 +59390,7 @@ client.dcim.virtual_device_contexts_update(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_delete</a>(...)</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43785-L43815">virtual_device_contexts_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -59463,7 +59463,7 @@ client.dcim.virtual_device_contexts_delete(
 </dl>
 </details>
 
-<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py">virtual_device_contexts_partial_update</a>(...) -> VirtualDeviceContext</code></summary>
+<details><summary><code>client.dcim.<a href="src/fern/dcim/client.py#L43817-L43929">virtual_device_contexts_partial_update</a>(...) -> VirtualDeviceContext</code></summary>
 <dl>
 <dd>
 
@@ -59547,7 +59547,7 @@ client.dcim.virtual_device_contexts_partial_update(
 </details>
 
 ## Extras
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_list</a>(...) -> ExtrasConfigContextsListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L60-L500">config_contexts_list</a>(...) -> ExtrasConfigContextsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -60266,7 +60266,7 @@ client.extras.config_contexts_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_create</a>(...) -> ConfigContext</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L502-L627">config_contexts_create</a>(...) -> ConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -60342,7 +60342,7 @@ client.extras.config_contexts_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_bulk_update</a>(...) -> ConfigContext</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L629-L754">config_contexts_bulk_update</a>(...) -> ConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -60418,7 +60418,7 @@ client.extras.config_contexts_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L756-L779">config_contexts_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -60481,7 +60481,7 @@ client.extras.config_contexts_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_bulk_partial_update</a>(...) -> ConfigContext</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L781-L906">config_contexts_bulk_partial_update</a>(...) -> ConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -60557,7 +60557,7 @@ client.extras.config_contexts_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_read</a>(...) -> ConfigContext</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L908-L939">config_contexts_read</a>(...) -> ConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -60630,7 +60630,7 @@ client.extras.config_contexts_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_update</a>(...) -> ConfigContext</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L941-L1072">config_contexts_update</a>(...) -> ConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -60715,7 +60715,7 @@ client.extras.config_contexts_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1074-L1102">config_contexts_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -60788,7 +60788,7 @@ client.extras.config_contexts_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">config_contexts_partial_update</a>(...) -> ConfigContext</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1104-L1235">config_contexts_partial_update</a>(...) -> ConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -60873,7 +60873,7 @@ client.extras.config_contexts_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">content_types_list</a>(...) -> ExtrasContentTypesListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1237-L1302">content_types_list</a>(...) -> ExtrasContentTypesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -60992,7 +60992,7 @@ client.extras.content_types_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">content_types_read</a>(...) -> ContentType</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1304-L1333">content_types_read</a>(...) -> ContentType</code></summary>
 <dl>
 <dd>
 
@@ -61065,7 +61065,7 @@ client.extras.content_types_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_list</a>(...) -> ExtrasCustomFieldsListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1335-L1755">custom_fields_list</a>(...) -> ExtrasCustomFieldsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -61752,7 +61752,7 @@ client.extras.custom_fields_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_create</a>(...) -> CustomField</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1757-L1896">custom_fields_create</a>(...) -> CustomField</code></summary>
 <dl>
 <dd>
 
@@ -61828,7 +61828,7 @@ client.extras.custom_fields_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_bulk_update</a>(...) -> CustomField</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L1898-L2037">custom_fields_bulk_update</a>(...) -> CustomField</code></summary>
 <dl>
 <dd>
 
@@ -61904,7 +61904,7 @@ client.extras.custom_fields_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2039-L2062">custom_fields_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -61967,7 +61967,7 @@ client.extras.custom_fields_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_bulk_partial_update</a>(...) -> CustomField</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2064-L2203">custom_fields_bulk_partial_update</a>(...) -> CustomField</code></summary>
 <dl>
 <dd>
 
@@ -62043,7 +62043,7 @@ client.extras.custom_fields_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_read</a>(...) -> CustomField</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2205-L2234">custom_fields_read</a>(...) -> CustomField</code></summary>
 <dl>
 <dd>
 
@@ -62116,7 +62116,7 @@ client.extras.custom_fields_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_update</a>(...) -> CustomField</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2236-L2381">custom_fields_update</a>(...) -> CustomField</code></summary>
 <dl>
 <dd>
 
@@ -62201,7 +62201,7 @@ client.extras.custom_fields_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2383-L2411">custom_fields_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -62274,7 +62274,7 @@ client.extras.custom_fields_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_fields_partial_update</a>(...) -> CustomField</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2413-L2558">custom_fields_partial_update</a>(...) -> CustomField</code></summary>
 <dl>
 <dd>
 
@@ -62359,7 +62359,7 @@ client.extras.custom_fields_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_list</a>(...) -> ExtrasCustomLinksListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2560-L2970">custom_links_list</a>(...) -> ExtrasCustomLinksListResponse</code></summary>
 <dl>
 <dd>
 
@@ -63030,7 +63030,7 @@ client.extras.custom_links_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_create</a>(...) -> CustomLink</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L2972-L3068">custom_links_create</a>(...) -> CustomLink</code></summary>
 <dl>
 <dd>
 
@@ -63108,7 +63108,7 @@ client.extras.custom_links_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_bulk_update</a>(...) -> CustomLink</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3070-L3166">custom_links_bulk_update</a>(...) -> CustomLink</code></summary>
 <dl>
 <dd>
 
@@ -63186,7 +63186,7 @@ client.extras.custom_links_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3168-L3191">custom_links_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -63249,7 +63249,7 @@ client.extras.custom_links_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_bulk_partial_update</a>(...) -> CustomLink</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3193-L3289">custom_links_bulk_partial_update</a>(...) -> CustomLink</code></summary>
 <dl>
 <dd>
 
@@ -63327,7 +63327,7 @@ client.extras.custom_links_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_read</a>(...) -> CustomLink</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3291-L3320">custom_links_read</a>(...) -> CustomLink</code></summary>
 <dl>
 <dd>
 
@@ -63400,7 +63400,7 @@ client.extras.custom_links_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_update</a>(...) -> CustomLink</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3322-L3424">custom_links_update</a>(...) -> CustomLink</code></summary>
 <dl>
 <dd>
 
@@ -63487,7 +63487,7 @@ client.extras.custom_links_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3426-L3454">custom_links_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -63560,7 +63560,7 @@ client.extras.custom_links_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">custom_links_partial_update</a>(...) -> CustomLink</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3456-L3558">custom_links_partial_update</a>(...) -> CustomLink</code></summary>
 <dl>
 <dd>
 
@@ -63647,7 +63647,7 @@ client.extras.custom_links_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_list</a>(...) -> ExtrasExportTemplatesListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3560-L3830">export_templates_list</a>(...) -> ExtrasExportTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -64094,7 +64094,7 @@ client.extras.export_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_create</a>(...) -> ExportTemplate</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3832-L3918">export_templates_create</a>(...) -> ExportTemplate</code></summary>
 <dl>
 <dd>
 
@@ -64171,7 +64171,7 @@ client.extras.export_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_bulk_update</a>(...) -> ExportTemplate</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L3920-L4006">export_templates_bulk_update</a>(...) -> ExportTemplate</code></summary>
 <dl>
 <dd>
 
@@ -64248,7 +64248,7 @@ client.extras.export_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4008-L4031">export_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -64311,7 +64311,7 @@ client.extras.export_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_bulk_partial_update</a>(...) -> ExportTemplate</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4033-L4119">export_templates_bulk_partial_update</a>(...) -> ExportTemplate</code></summary>
 <dl>
 <dd>
 
@@ -64388,7 +64388,7 @@ client.extras.export_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_read</a>(...) -> ExportTemplate</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4121-L4152">export_templates_read</a>(...) -> ExportTemplate</code></summary>
 <dl>
 <dd>
 
@@ -64461,7 +64461,7 @@ client.extras.export_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_update</a>(...) -> ExportTemplate</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4154-L4246">export_templates_update</a>(...) -> ExportTemplate</code></summary>
 <dl>
 <dd>
 
@@ -64547,7 +64547,7 @@ client.extras.export_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4248-L4276">export_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -64620,7 +64620,7 @@ client.extras.export_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">export_templates_partial_update</a>(...) -> ExportTemplate</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4278-L4370">export_templates_partial_update</a>(...) -> ExportTemplate</code></summary>
 <dl>
 <dd>
 
@@ -64706,7 +64706,7 @@ client.extras.export_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_list</a>(...) -> ExtrasImageAttachmentsListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4372-L4562">image_attachments_list</a>(...) -> ExtrasImageAttachmentsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -65025,7 +65025,7 @@ client.extras.image_attachments_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_create</a>(...) -> ImageAttachment</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4564-L4647">image_attachments_create</a>(...) -> ImageAttachment</code></summary>
 <dl>
 <dd>
 
@@ -65101,7 +65101,7 @@ client.extras.image_attachments_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_bulk_update</a>(...) -> ImageAttachment</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4649-L4732">image_attachments_bulk_update</a>(...) -> ImageAttachment</code></summary>
 <dl>
 <dd>
 
@@ -65177,7 +65177,7 @@ client.extras.image_attachments_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4734-L4757">image_attachments_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -65240,7 +65240,7 @@ client.extras.image_attachments_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_bulk_partial_update</a>(...) -> ImageAttachment</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4759-L4842">image_attachments_bulk_partial_update</a>(...) -> ImageAttachment</code></summary>
 <dl>
 <dd>
 
@@ -65316,7 +65316,7 @@ client.extras.image_attachments_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_read</a>(...) -> ImageAttachment</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4844-L4875">image_attachments_read</a>(...) -> ImageAttachment</code></summary>
 <dl>
 <dd>
 
@@ -65389,7 +65389,7 @@ client.extras.image_attachments_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_update</a>(...) -> ImageAttachment</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4877-L4966">image_attachments_update</a>(...) -> ImageAttachment</code></summary>
 <dl>
 <dd>
 
@@ -65474,7 +65474,7 @@ client.extras.image_attachments_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4968-L4996">image_attachments_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -65547,7 +65547,7 @@ client.extras.image_attachments_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">image_attachments_partial_update</a>(...) -> ImageAttachment</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L4998-L5087">image_attachments_partial_update</a>(...) -> ImageAttachment</code></summary>
 <dl>
 <dd>
 
@@ -65632,7 +65632,7 @@ client.extras.image_attachments_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">job_results_list</a>(...) -> ExtrasJobResultsListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5089-L5344">job_results_list</a>(...) -> ExtrasJobResultsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -66055,7 +66055,7 @@ client.extras.job_results_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">job_results_read</a>(...) -> JobResult</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5346-L5375">job_results_read</a>(...) -> JobResult</code></summary>
 <dl>
 <dd>
 
@@ -66128,7 +66128,7 @@ client.extras.job_results_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_list</a>(...) -> ExtrasJournalEntriesListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5377-L5582">journal_entries_list</a>(...) -> ExtrasJournalEntriesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -66471,7 +66471,7 @@ client.extras.journal_entries_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_create</a>(...) -> JournalEntry</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5584-L5670">journal_entries_create</a>(...) -> JournalEntry</code></summary>
 <dl>
 <dd>
 
@@ -66546,7 +66546,7 @@ client.extras.journal_entries_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_bulk_update</a>(...) -> JournalEntry</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5672-L5758">journal_entries_bulk_update</a>(...) -> JournalEntry</code></summary>
 <dl>
 <dd>
 
@@ -66621,7 +66621,7 @@ client.extras.journal_entries_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5760-L5783">journal_entries_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -66684,7 +66684,7 @@ client.extras.journal_entries_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_bulk_partial_update</a>(...) -> JournalEntry</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5785-L5871">journal_entries_bulk_partial_update</a>(...) -> JournalEntry</code></summary>
 <dl>
 <dd>
 
@@ -66759,7 +66759,7 @@ client.extras.journal_entries_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_read</a>(...) -> JournalEntry</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5873-L5902">journal_entries_read</a>(...) -> JournalEntry</code></summary>
 <dl>
 <dd>
 
@@ -66832,7 +66832,7 @@ client.extras.journal_entries_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_update</a>(...) -> JournalEntry</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5904-L5996">journal_entries_update</a>(...) -> JournalEntry</code></summary>
 <dl>
 <dd>
 
@@ -66916,7 +66916,7 @@ client.extras.journal_entries_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L5998-L6026">journal_entries_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -66989,7 +66989,7 @@ client.extras.journal_entries_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">journal_entries_partial_update</a>(...) -> JournalEntry</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6028-L6120">journal_entries_partial_update</a>(...) -> JournalEntry</code></summary>
 <dl>
 <dd>
 
@@ -67073,7 +67073,7 @@ client.extras.journal_entries_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">object_changes_list</a>(...) -> ExtrasObjectChangesListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6122-L6402">object_changes_list</a>(...) -> ExtrasObjectChangesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -67536,7 +67536,7 @@ client.extras.object_changes_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">object_changes_read</a>(...) -> ObjectChange</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6404-L6433">object_changes_read</a>(...) -> ObjectChange</code></summary>
 <dl>
 <dd>
 
@@ -67609,7 +67609,7 @@ client.extras.object_changes_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">reports_list</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6435-L6458">reports_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -67672,7 +67672,7 @@ client.extras.reports_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">reports_read</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6460-L6487">reports_read</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -67745,7 +67745,7 @@ client.extras.reports_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">reports_run</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6489-L6516">reports_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -67818,7 +67818,7 @@ client.extras.reports_run(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_list</a>(...) -> ExtrasSavedFiltersListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6518-L6908">saved_filters_list</a>(...) -> ExtrasSavedFiltersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -68457,7 +68457,7 @@ client.extras.saved_filters_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_create</a>(...) -> SavedFilter</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L6910-L7001">saved_filters_create</a>(...) -> SavedFilter</code></summary>
 <dl>
 <dd>
 
@@ -68537,7 +68537,7 @@ client.extras.saved_filters_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_bulk_update</a>(...) -> SavedFilter</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7003-L7094">saved_filters_bulk_update</a>(...) -> SavedFilter</code></summary>
 <dl>
 <dd>
 
@@ -68617,7 +68617,7 @@ client.extras.saved_filters_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7096-L7119">saved_filters_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -68680,7 +68680,7 @@ client.extras.saved_filters_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_bulk_partial_update</a>(...) -> SavedFilter</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7121-L7212">saved_filters_bulk_partial_update</a>(...) -> SavedFilter</code></summary>
 <dl>
 <dd>
 
@@ -68760,7 +68760,7 @@ client.extras.saved_filters_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_read</a>(...) -> SavedFilter</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7214-L7243">saved_filters_read</a>(...) -> SavedFilter</code></summary>
 <dl>
 <dd>
 
@@ -68833,7 +68833,7 @@ client.extras.saved_filters_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_update</a>(...) -> SavedFilter</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7245-L7342">saved_filters_update</a>(...) -> SavedFilter</code></summary>
 <dl>
 <dd>
 
@@ -68922,7 +68922,7 @@ client.extras.saved_filters_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7344-L7372">saved_filters_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -68995,7 +68995,7 @@ client.extras.saved_filters_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">saved_filters_partial_update</a>(...) -> SavedFilter</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7374-L7471">saved_filters_partial_update</a>(...) -> SavedFilter</code></summary>
 <dl>
 <dd>
 
@@ -69084,7 +69084,7 @@ client.extras.saved_filters_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">scripts_list</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7473-L7496">scripts_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -69147,7 +69147,7 @@ client.extras.scripts_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">scripts_read</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7498-L7525">scripts_read</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -69220,7 +69220,7 @@ client.extras.scripts_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_list</a>(...) -> ExtrasTagsListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7527-L7897">tags_list</a>(...) -> ExtrasTagsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -69827,7 +69827,7 @@ client.extras.tags_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_create</a>(...) -> Tag</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7899-L7972">tags_create</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -69901,7 +69901,7 @@ client.extras.tags_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_bulk_update</a>(...) -> Tag</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L7974-L8047">tags_bulk_update</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -69975,7 +69975,7 @@ client.extras.tags_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8049-L8072">tags_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -70038,7 +70038,7 @@ client.extras.tags_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_bulk_partial_update</a>(...) -> Tag</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8074-L8147">tags_bulk_partial_update</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -70112,7 +70112,7 @@ client.extras.tags_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_read</a>(...) -> Tag</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8149-L8178">tags_read</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -70185,7 +70185,7 @@ client.extras.tags_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_update</a>(...) -> Tag</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8180-L8259">tags_update</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -70268,7 +70268,7 @@ client.extras.tags_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8261-L8289">tags_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -70341,7 +70341,7 @@ client.extras.tags_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">tags_partial_update</a>(...) -> Tag</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8291-L8370">tags_partial_update</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -70424,7 +70424,7 @@ client.extras.tags_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_list</a>(...) -> ExtrasWebhooksListResponse</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8372-L8842">webhooks_list</a>(...) -> ExtrasWebhooksListResponse</code></summary>
 <dl>
 <dd>
 
@@ -71191,7 +71191,7 @@ client.extras.webhooks_list()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_create</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8844-L8969">webhooks_create</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -71268,7 +71268,7 @@ client.extras.webhooks_create(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_bulk_update</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L8971-L9096">webhooks_bulk_update</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -71345,7 +71345,7 @@ client.extras.webhooks_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_bulk_delete</a>()</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L9098-L9121">webhooks_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -71408,7 +71408,7 @@ client.extras.webhooks_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_bulk_partial_update</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L9123-L9248">webhooks_bulk_partial_update</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -71485,7 +71485,7 @@ client.extras.webhooks_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_read</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L9250-L9279">webhooks_read</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -71558,7 +71558,7 @@ client.extras.webhooks_read(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_update</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L9281-L9412">webhooks_update</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -71644,7 +71644,7 @@ client.extras.webhooks_update(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_delete</a>(...)</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L9414-L9442">webhooks_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -71717,7 +71717,7 @@ client.extras.webhooks_delete(
 </dl>
 </details>
 
-<details><summary><code>client.extras.<a href="src/fern/extras/client.py">webhooks_partial_update</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.extras.<a href="src/fern/extras/client.py#L9444-L9575">webhooks_partial_update</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -71804,7 +71804,7 @@ client.extras.webhooks_partial_update(
 </details>
 
 ## Ipam
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_list</a>(...) -> IpamAggregatesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L79-L384">aggregates_list</a>(...) -> IpamAggregatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -72307,7 +72307,7 @@ client.ipam.aggregates_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_create</a>(...) -> Aggregate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L386-L475">aggregates_create</a>(...) -> Aggregate</code></summary>
 <dl>
 <dd>
 
@@ -72381,7 +72381,7 @@ client.ipam.aggregates_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_bulk_update</a>(...) -> Aggregate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L477-L566">aggregates_bulk_update</a>(...) -> Aggregate</code></summary>
 <dl>
 <dd>
 
@@ -72455,7 +72455,7 @@ client.ipam.aggregates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L568-L591">aggregates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -72518,7 +72518,7 @@ client.ipam.aggregates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_bulk_partial_update</a>(...) -> Aggregate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L593-L682">aggregates_bulk_partial_update</a>(...) -> Aggregate</code></summary>
 <dl>
 <dd>
 
@@ -72592,7 +72592,7 @@ client.ipam.aggregates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_read</a>(...) -> Aggregate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L684-L713">aggregates_read</a>(...) -> Aggregate</code></summary>
 <dl>
 <dd>
 
@@ -72665,7 +72665,7 @@ client.ipam.aggregates_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_update</a>(...) -> Aggregate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L715-L810">aggregates_update</a>(...) -> Aggregate</code></summary>
 <dl>
 <dd>
 
@@ -72748,7 +72748,7 @@ client.ipam.aggregates_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L812-L840">aggregates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -72821,7 +72821,7 @@ client.ipam.aggregates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">aggregates_partial_update</a>(...) -> Aggregate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L842-L937">aggregates_partial_update</a>(...) -> Aggregate</code></summary>
 <dl>
 <dd>
 
@@ -72904,7 +72904,7 @@ client.ipam.aggregates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_list</a>(...) -> IpamAsnsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L939-L1254">asns_list</a>(...) -> IpamAsnsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -73423,7 +73423,7 @@ client.ipam.asns_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_create</a>(...) -> Asn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1256-L1346">asns_create</a>(...) -> Asn</code></summary>
 <dl>
 <dd>
 
@@ -73497,7 +73497,7 @@ client.ipam.asns_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_bulk_update</a>(...) -> Asn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1348-L1438">asns_bulk_update</a>(...) -> Asn</code></summary>
 <dl>
 <dd>
 
@@ -73571,7 +73571,7 @@ client.ipam.asns_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1440-L1463">asns_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -73634,7 +73634,7 @@ client.ipam.asns_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_bulk_partial_update</a>(...) -> Asn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1465-L1555">asns_bulk_partial_update</a>(...) -> Asn</code></summary>
 <dl>
 <dd>
 
@@ -73708,7 +73708,7 @@ client.ipam.asns_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_read</a>(...) -> Asn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1557-L1586">asns_read</a>(...) -> Asn</code></summary>
 <dl>
 <dd>
 
@@ -73781,7 +73781,7 @@ client.ipam.asns_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_update</a>(...) -> Asn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1588-L1684">asns_update</a>(...) -> Asn</code></summary>
 <dl>
 <dd>
 
@@ -73864,7 +73864,7 @@ client.ipam.asns_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1686-L1714">asns_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -73937,7 +73937,7 @@ client.ipam.asns_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">asns_partial_update</a>(...) -> Asn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1716-L1812">asns_partial_update</a>(...) -> Asn</code></summary>
 <dl>
 <dd>
 
@@ -74020,7 +74020,7 @@ client.ipam.asns_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_list</a>(...) -> IpamFhrpGroupAssignmentsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L1814-L2049">fhrp_group_assignments_list</a>(...) -> IpamFhrpGroupAssignmentsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -74411,7 +74411,7 @@ client.ipam.fhrp_group_assignments_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_create</a>(...) -> FhrpGroupAssignment</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2051-L2126">fhrp_group_assignments_create</a>(...) -> FhrpGroupAssignment</code></summary>
 <dl>
 <dd>
 
@@ -74487,7 +74487,7 @@ client.ipam.fhrp_group_assignments_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_bulk_update</a>(...) -> FhrpGroupAssignment</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2128-L2203">fhrp_group_assignments_bulk_update</a>(...) -> FhrpGroupAssignment</code></summary>
 <dl>
 <dd>
 
@@ -74563,7 +74563,7 @@ client.ipam.fhrp_group_assignments_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2205-L2228">fhrp_group_assignments_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -74626,7 +74626,7 @@ client.ipam.fhrp_group_assignments_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_bulk_partial_update</a>(...) -> FhrpGroupAssignment</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2230-L2305">fhrp_group_assignments_bulk_partial_update</a>(...) -> FhrpGroupAssignment</code></summary>
 <dl>
 <dd>
 
@@ -74702,7 +74702,7 @@ client.ipam.fhrp_group_assignments_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_read</a>(...) -> FhrpGroupAssignment</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2307-L2338">fhrp_group_assignments_read</a>(...) -> FhrpGroupAssignment</code></summary>
 <dl>
 <dd>
 
@@ -74775,7 +74775,7 @@ client.ipam.fhrp_group_assignments_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_update</a>(...) -> FhrpGroupAssignment</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2340-L2421">fhrp_group_assignments_update</a>(...) -> FhrpGroupAssignment</code></summary>
 <dl>
 <dd>
 
@@ -74860,7 +74860,7 @@ client.ipam.fhrp_group_assignments_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2423-L2453">fhrp_group_assignments_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -74933,7 +74933,7 @@ client.ipam.fhrp_group_assignments_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_group_assignments_partial_update</a>(...) -> FhrpGroupAssignment</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2455-L2536">fhrp_group_assignments_partial_update</a>(...) -> FhrpGroupAssignment</code></summary>
 <dl>
 <dd>
 
@@ -75018,7 +75018,7 @@ client.ipam.fhrp_group_assignments_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_list</a>(...) -> IpamFhrpGroupsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2538-L2853">fhrp_groups_list</a>(...) -> IpamFhrpGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -75537,7 +75537,7 @@ client.ipam.fhrp_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_create</a>(...) -> FhrpGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2855-L2948">fhrp_groups_create</a>(...) -> FhrpGroup</code></summary>
 <dl>
 <dd>
 
@@ -75611,7 +75611,7 @@ client.ipam.fhrp_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_bulk_update</a>(...) -> FhrpGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L2950-L3043">fhrp_groups_bulk_update</a>(...) -> FhrpGroup</code></summary>
 <dl>
 <dd>
 
@@ -75685,7 +75685,7 @@ client.ipam.fhrp_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3045-L3068">fhrp_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -75748,7 +75748,7 @@ client.ipam.fhrp_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_bulk_partial_update</a>(...) -> FhrpGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3070-L3163">fhrp_groups_bulk_partial_update</a>(...) -> FhrpGroup</code></summary>
 <dl>
 <dd>
 
@@ -75822,7 +75822,7 @@ client.ipam.fhrp_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_read</a>(...) -> FhrpGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3165-L3194">fhrp_groups_read</a>(...) -> FhrpGroup</code></summary>
 <dl>
 <dd>
 
@@ -75895,7 +75895,7 @@ client.ipam.fhrp_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_update</a>(...) -> FhrpGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3196-L3295">fhrp_groups_update</a>(...) -> FhrpGroup</code></summary>
 <dl>
 <dd>
 
@@ -75978,7 +75978,7 @@ client.ipam.fhrp_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3297-L3325">fhrp_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -76051,7 +76051,7 @@ client.ipam.fhrp_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">fhrp_groups_partial_update</a>(...) -> FhrpGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3327-L3426">fhrp_groups_partial_update</a>(...) -> FhrpGroup</code></summary>
 <dl>
 <dd>
 
@@ -76134,7 +76134,7 @@ client.ipam.fhrp_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_list</a>(...) -> IpamIpAddressesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3428-L3873">ip_addresses_list</a>(...) -> IpamIpAddressesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -76861,7 +76861,7 @@ client.ipam.ip_addresses_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_create</a>(...) -> IpAddress</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3875-L3996">ip_addresses_create</a>(...) -> IpAddress</code></summary>
 <dl>
 <dd>
 
@@ -76934,7 +76934,7 @@ client.ipam.ip_addresses_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_bulk_update</a>(...) -> IpAddress</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L3998-L4119">ip_addresses_bulk_update</a>(...) -> IpAddress</code></summary>
 <dl>
 <dd>
 
@@ -77007,7 +77007,7 @@ client.ipam.ip_addresses_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4121-L4144">ip_addresses_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -77070,7 +77070,7 @@ client.ipam.ip_addresses_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_bulk_partial_update</a>(...) -> IpAddress</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4146-L4267">ip_addresses_bulk_partial_update</a>(...) -> IpAddress</code></summary>
 <dl>
 <dd>
 
@@ -77143,7 +77143,7 @@ client.ipam.ip_addresses_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_read</a>(...) -> IpAddress</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4269-L4298">ip_addresses_read</a>(...) -> IpAddress</code></summary>
 <dl>
 <dd>
 
@@ -77216,7 +77216,7 @@ client.ipam.ip_addresses_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_update</a>(...) -> IpAddress</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4300-L4427">ip_addresses_update</a>(...) -> IpAddress</code></summary>
 <dl>
 <dd>
 
@@ -77298,7 +77298,7 @@ client.ipam.ip_addresses_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4429-L4457">ip_addresses_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -77371,7 +77371,7 @@ client.ipam.ip_addresses_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_addresses_partial_update</a>(...) -> IpAddress</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4459-L4586">ip_addresses_partial_update</a>(...) -> IpAddress</code></summary>
 <dl>
 <dd>
 
@@ -77453,7 +77453,7 @@ client.ipam.ip_addresses_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_list</a>(...) -> IpamIpRangesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4588-L4903">ip_ranges_list</a>(...) -> IpamIpRangesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -77972,7 +77972,7 @@ client.ipam.ip_ranges_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_create</a>(...) -> IpRange</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L4905-L5014">ip_ranges_create</a>(...) -> IpRange</code></summary>
 <dl>
 <dd>
 
@@ -78046,7 +78046,7 @@ client.ipam.ip_ranges_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_bulk_update</a>(...) -> IpRange</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5016-L5125">ip_ranges_bulk_update</a>(...) -> IpRange</code></summary>
 <dl>
 <dd>
 
@@ -78120,7 +78120,7 @@ client.ipam.ip_ranges_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5127-L5150">ip_ranges_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -78183,7 +78183,7 @@ client.ipam.ip_ranges_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_bulk_partial_update</a>(...) -> IpRange</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5152-L5261">ip_ranges_bulk_partial_update</a>(...) -> IpRange</code></summary>
 <dl>
 <dd>
 
@@ -78257,7 +78257,7 @@ client.ipam.ip_ranges_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_read</a>(...) -> IpRange</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5263-L5292">ip_ranges_read</a>(...) -> IpRange</code></summary>
 <dl>
 <dd>
 
@@ -78330,7 +78330,7 @@ client.ipam.ip_ranges_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_update</a>(...) -> IpRange</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5294-L5409">ip_ranges_update</a>(...) -> IpRange</code></summary>
 <dl>
 <dd>
 
@@ -78413,7 +78413,7 @@ client.ipam.ip_ranges_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5411-L5439">ip_ranges_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -78486,7 +78486,7 @@ client.ipam.ip_ranges_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_partial_update</a>(...) -> IpRange</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5441-L5556">ip_ranges_partial_update</a>(...) -> IpRange</code></summary>
 <dl>
 <dd>
 
@@ -78569,7 +78569,7 @@ client.ipam.ip_ranges_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_available_ips_list</a>(...) -> typing.List[AvailableIp]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5558-L5589">ip_ranges_available_ips_list</a>(...) -> typing.List[AvailableIp]</code></summary>
 <dl>
 <dd>
 
@@ -78642,7 +78642,7 @@ client.ipam.ip_ranges_available_ips_list(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">ip_ranges_available_ips_create</a>(...) -> typing.List[IpAddress]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5591-L5633">ip_ranges_available_ips_create</a>(...) -> typing.List[IpAddress]</code></summary>
 <dl>
 <dd>
 
@@ -78723,7 +78723,7 @@ client.ipam.ip_ranges_available_ips_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_list</a>(...) -> IpamL2VpnTerminationsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5635-L5975">l2vpn_terminations_list</a>(...) -> IpamL2VpnTerminationsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -79282,7 +79282,7 @@ client.ipam.l2vpn_terminations_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_create</a>(...) -> L2VpnTermination</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L5977-L6055">l2vpn_terminations_create</a>(...) -> L2VpnTermination</code></summary>
 <dl>
 <dd>
 
@@ -79357,7 +79357,7 @@ client.ipam.l2vpn_terminations_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_bulk_update</a>(...) -> L2VpnTermination</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6057-L6135">l2vpn_terminations_bulk_update</a>(...) -> L2VpnTermination</code></summary>
 <dl>
 <dd>
 
@@ -79432,7 +79432,7 @@ client.ipam.l2vpn_terminations_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6137-L6160">l2vpn_terminations_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -79495,7 +79495,7 @@ client.ipam.l2vpn_terminations_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_bulk_partial_update</a>(...) -> L2VpnTermination</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6162-L6240">l2vpn_terminations_bulk_partial_update</a>(...) -> L2VpnTermination</code></summary>
 <dl>
 <dd>
 
@@ -79570,7 +79570,7 @@ client.ipam.l2vpn_terminations_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_read</a>(...) -> L2VpnTermination</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6242-L6273">l2vpn_terminations_read</a>(...) -> L2VpnTermination</code></summary>
 <dl>
 <dd>
 
@@ -79643,7 +79643,7 @@ client.ipam.l2vpn_terminations_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_update</a>(...) -> L2VpnTermination</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6275-L6359">l2vpn_terminations_update</a>(...) -> L2VpnTermination</code></summary>
 <dl>
 <dd>
 
@@ -79727,7 +79727,7 @@ client.ipam.l2vpn_terminations_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6361-L6389">l2vpn_terminations_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -79800,7 +79800,7 @@ client.ipam.l2vpn_terminations_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpn_terminations_partial_update</a>(...) -> L2VpnTermination</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6391-L6475">l2vpn_terminations_partial_update</a>(...) -> L2VpnTermination</code></summary>
 <dl>
 <dd>
 
@@ -79884,7 +79884,7 @@ client.ipam.l2vpn_terminations_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_list</a>(...) -> IpamL2VpnsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6477-L6912">l2vpns_list</a>(...) -> IpamL2VpnsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -80595,7 +80595,7 @@ client.ipam.l2vpns_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_create</a>(...) -> L2Vpn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L6914-L7012">l2vpns_create</a>(...) -> L2Vpn</code></summary>
 <dl>
 <dd>
 
@@ -80670,7 +80670,7 @@ client.ipam.l2vpns_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_bulk_update</a>(...) -> L2Vpn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7014-L7112">l2vpns_bulk_update</a>(...) -> L2Vpn</code></summary>
 <dl>
 <dd>
 
@@ -80745,7 +80745,7 @@ client.ipam.l2vpns_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7114-L7137">l2vpns_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -80808,7 +80808,7 @@ client.ipam.l2vpns_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_bulk_partial_update</a>(...) -> L2Vpn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7139-L7237">l2vpns_bulk_partial_update</a>(...) -> L2Vpn</code></summary>
 <dl>
 <dd>
 
@@ -80883,7 +80883,7 @@ client.ipam.l2vpns_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_read</a>(...) -> L2Vpn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7239-L7268">l2vpns_read</a>(...) -> L2Vpn</code></summary>
 <dl>
 <dd>
 
@@ -80956,7 +80956,7 @@ client.ipam.l2vpns_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_update</a>(...) -> L2Vpn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7270-L7374">l2vpns_update</a>(...) -> L2Vpn</code></summary>
 <dl>
 <dd>
 
@@ -81040,7 +81040,7 @@ client.ipam.l2vpns_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7376-L7404">l2vpns_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -81113,7 +81113,7 @@ client.ipam.l2vpns_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">l2vpns_partial_update</a>(...) -> L2Vpn</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7406-L7510">l2vpns_partial_update</a>(...) -> L2Vpn</code></summary>
 <dl>
 <dd>
 
@@ -81197,7 +81197,7 @@ client.ipam.l2vpns_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_list</a>(...) -> IpamPrefixesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L7512-L8027">prefixes_list</a>(...) -> IpamPrefixesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -82036,7 +82036,7 @@ client.ipam.prefixes_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_create</a>(...) -> Prefix</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8029-L8150">prefixes_create</a>(...) -> Prefix</code></summary>
 <dl>
 <dd>
 
@@ -82109,7 +82109,7 @@ client.ipam.prefixes_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_bulk_update</a>(...) -> Prefix</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8152-L8273">prefixes_bulk_update</a>(...) -> Prefix</code></summary>
 <dl>
 <dd>
 
@@ -82182,7 +82182,7 @@ client.ipam.prefixes_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8275-L8298">prefixes_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -82245,7 +82245,7 @@ client.ipam.prefixes_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_bulk_partial_update</a>(...) -> Prefix</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8300-L8421">prefixes_bulk_partial_update</a>(...) -> Prefix</code></summary>
 <dl>
 <dd>
 
@@ -82318,7 +82318,7 @@ client.ipam.prefixes_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_read</a>(...) -> Prefix</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8423-L8452">prefixes_read</a>(...) -> Prefix</code></summary>
 <dl>
 <dd>
 
@@ -82391,7 +82391,7 @@ client.ipam.prefixes_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_update</a>(...) -> Prefix</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8454-L8581">prefixes_update</a>(...) -> Prefix</code></summary>
 <dl>
 <dd>
 
@@ -82473,7 +82473,7 @@ client.ipam.prefixes_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8583-L8611">prefixes_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -82546,7 +82546,7 @@ client.ipam.prefixes_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_partial_update</a>(...) -> Prefix</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8613-L8740">prefixes_partial_update</a>(...) -> Prefix</code></summary>
 <dl>
 <dd>
 
@@ -82628,7 +82628,7 @@ client.ipam.prefixes_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_available_ips_list</a>(...) -> typing.List[AvailableIp]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8742-L8773">prefixes_available_ips_list</a>(...) -> typing.List[AvailableIp]</code></summary>
 <dl>
 <dd>
 
@@ -82701,7 +82701,7 @@ client.ipam.prefixes_available_ips_list(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_available_ips_create</a>(...) -> typing.List[IpAddress]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8775-L8817">prefixes_available_ips_create</a>(...) -> typing.List[IpAddress]</code></summary>
 <dl>
 <dd>
 
@@ -82782,7 +82782,7 @@ client.ipam.prefixes_available_ips_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_available_prefixes_list</a>(...) -> typing.List[AvailablePrefix]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8819-L8850">prefixes_available_prefixes_list</a>(...) -> typing.List[AvailablePrefix]</code></summary>
 <dl>
 <dd>
 
@@ -82855,7 +82855,7 @@ client.ipam.prefixes_available_prefixes_list(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">prefixes_available_prefixes_create</a>(...) -> typing.List[Prefix]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8852-L8888">prefixes_available_prefixes_create</a>(...) -> typing.List[Prefix]</code></summary>
 <dl>
 <dd>
 
@@ -82937,7 +82937,7 @@ client.ipam.prefixes_available_prefixes_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_list</a>(...) -> IpamRirsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L8890-L9210">rirs_list</a>(...) -> IpamRirsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -83464,7 +83464,7 @@ client.ipam.rirs_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_create</a>(...) -> Rir</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9212-L9294">rirs_create</a>(...) -> Rir</code></summary>
 <dl>
 <dd>
 
@@ -83538,7 +83538,7 @@ client.ipam.rirs_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_bulk_update</a>(...) -> Rir</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9296-L9378">rirs_bulk_update</a>(...) -> Rir</code></summary>
 <dl>
 <dd>
 
@@ -83612,7 +83612,7 @@ client.ipam.rirs_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9380-L9403">rirs_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -83675,7 +83675,7 @@ client.ipam.rirs_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_bulk_partial_update</a>(...) -> Rir</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9405-L9487">rirs_bulk_partial_update</a>(...) -> Rir</code></summary>
 <dl>
 <dd>
 
@@ -83749,7 +83749,7 @@ client.ipam.rirs_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_read</a>(...) -> Rir</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9489-L9518">rirs_read</a>(...) -> Rir</code></summary>
 <dl>
 <dd>
 
@@ -83822,7 +83822,7 @@ client.ipam.rirs_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_update</a>(...) -> Rir</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9520-L9608">rirs_update</a>(...) -> Rir</code></summary>
 <dl>
 <dd>
 
@@ -83905,7 +83905,7 @@ client.ipam.rirs_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9610-L9638">rirs_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -83978,7 +83978,7 @@ client.ipam.rirs_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">rirs_partial_update</a>(...) -> Rir</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9640-L9728">rirs_partial_update</a>(...) -> Rir</code></summary>
 <dl>
 <dd>
 
@@ -84061,7 +84061,7 @@ client.ipam.rirs_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_list</a>(...) -> IpamRolesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L9730-L10045">roles_list</a>(...) -> IpamRolesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -84580,7 +84580,7 @@ client.ipam.roles_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_create</a>(...) -> Role</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10047-L10132">roles_create</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -84654,7 +84654,7 @@ client.ipam.roles_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_bulk_update</a>(...) -> Role</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10134-L10219">roles_bulk_update</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -84728,7 +84728,7 @@ client.ipam.roles_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10221-L10244">roles_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -84791,7 +84791,7 @@ client.ipam.roles_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_bulk_partial_update</a>(...) -> Role</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10246-L10331">roles_bulk_partial_update</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -84865,7 +84865,7 @@ client.ipam.roles_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_read</a>(...) -> Role</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10333-L10362">roles_read</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -84938,7 +84938,7 @@ client.ipam.roles_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_update</a>(...) -> Role</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10364-L10455">roles_update</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -85021,7 +85021,7 @@ client.ipam.roles_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10457-L10485">roles_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -85094,7 +85094,7 @@ client.ipam.roles_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">roles_partial_update</a>(...) -> Role</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10487-L10578">roles_partial_update</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -85177,7 +85177,7 @@ client.ipam.roles_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_list</a>(...) -> IpamRouteTargetsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10580-L10920">route_targets_list</a>(...) -> IpamRouteTargetsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -85736,7 +85736,7 @@ client.ipam.route_targets_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_create</a>(...) -> RouteTarget</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L10922-L10999">route_targets_create</a>(...) -> RouteTarget</code></summary>
 <dl>
 <dd>
 
@@ -85809,7 +85809,7 @@ client.ipam.route_targets_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_bulk_update</a>(...) -> RouteTarget</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11001-L11078">route_targets_bulk_update</a>(...) -> RouteTarget</code></summary>
 <dl>
 <dd>
 
@@ -85882,7 +85882,7 @@ client.ipam.route_targets_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11080-L11103">route_targets_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -85945,7 +85945,7 @@ client.ipam.route_targets_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_bulk_partial_update</a>(...) -> RouteTarget</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11105-L11182">route_targets_bulk_partial_update</a>(...) -> RouteTarget</code></summary>
 <dl>
 <dd>
 
@@ -86018,7 +86018,7 @@ client.ipam.route_targets_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_read</a>(...) -> RouteTarget</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11184-L11213">route_targets_read</a>(...) -> RouteTarget</code></summary>
 <dl>
 <dd>
 
@@ -86091,7 +86091,7 @@ client.ipam.route_targets_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_update</a>(...) -> RouteTarget</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11215-L11298">route_targets_update</a>(...) -> RouteTarget</code></summary>
 <dl>
 <dd>
 
@@ -86173,7 +86173,7 @@ client.ipam.route_targets_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11300-L11328">route_targets_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -86246,7 +86246,7 @@ client.ipam.route_targets_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">route_targets_partial_update</a>(...) -> RouteTarget</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11330-L11413">route_targets_partial_update</a>(...) -> RouteTarget</code></summary>
 <dl>
 <dd>
 
@@ -86328,7 +86328,7 @@ client.ipam.route_targets_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_list</a>(...) -> IpamServiceTemplatesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11415-L11635">service_templates_list</a>(...) -> IpamServiceTemplatesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -86695,7 +86695,7 @@ client.ipam.service_templates_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_create</a>(...) -> ServiceTemplate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11637-L11719">service_templates_create</a>(...) -> ServiceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -86772,7 +86772,7 @@ client.ipam.service_templates_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_bulk_update</a>(...) -> ServiceTemplate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11721-L11803">service_templates_bulk_update</a>(...) -> ServiceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -86849,7 +86849,7 @@ client.ipam.service_templates_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11805-L11828">service_templates_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -86912,7 +86912,7 @@ client.ipam.service_templates_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_bulk_partial_update</a>(...) -> ServiceTemplate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11830-L11912">service_templates_bulk_partial_update</a>(...) -> ServiceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -86989,7 +86989,7 @@ client.ipam.service_templates_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_read</a>(...) -> ServiceTemplate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11914-L11945">service_templates_read</a>(...) -> ServiceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -87062,7 +87062,7 @@ client.ipam.service_templates_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_update</a>(...) -> ServiceTemplate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L11947-L12035">service_templates_update</a>(...) -> ServiceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -87148,7 +87148,7 @@ client.ipam.service_templates_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12037-L12065">service_templates_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -87221,7 +87221,7 @@ client.ipam.service_templates_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">service_templates_partial_update</a>(...) -> ServiceTemplate</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12067-L12155">service_templates_partial_update</a>(...) -> ServiceTemplate</code></summary>
 <dl>
 <dd>
 
@@ -87307,7 +87307,7 @@ client.ipam.service_templates_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_list</a>(...) -> IpamServicesListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12157-L12492">services_list</a>(...) -> IpamServicesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -87858,7 +87858,7 @@ client.ipam.services_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_create</a>(...) -> Service</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12494-L12588">services_create</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -87935,7 +87935,7 @@ client.ipam.services_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_bulk_update</a>(...) -> Service</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12590-L12684">services_bulk_update</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -88012,7 +88012,7 @@ client.ipam.services_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12686-L12709">services_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -88075,7 +88075,7 @@ client.ipam.services_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_bulk_partial_update</a>(...) -> Service</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12711-L12805">services_bulk_partial_update</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -88152,7 +88152,7 @@ client.ipam.services_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_read</a>(...) -> Service</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12807-L12836">services_read</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -88225,7 +88225,7 @@ client.ipam.services_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_update</a>(...) -> Service</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12838-L12938">services_update</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -88311,7 +88311,7 @@ client.ipam.services_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12940-L12968">services_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -88384,7 +88384,7 @@ client.ipam.services_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">services_partial_update</a>(...) -> Service</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L12970-L13070">services_partial_update</a>(...) -> Service</code></summary>
 <dl>
 <dd>
 
@@ -88470,7 +88470,7 @@ client.ipam.services_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_list</a>(...) -> IpamVlanGroupsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13072-L13522">vlan_groups_list</a>(...) -> IpamVlanGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -89205,7 +89205,7 @@ client.ipam.vlan_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_create</a>(...) -> VlanGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13524-L13623">vlan_groups_create</a>(...) -> VlanGroup</code></summary>
 <dl>
 <dd>
 
@@ -89279,7 +89279,7 @@ client.ipam.vlan_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_bulk_update</a>(...) -> VlanGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13625-L13724">vlan_groups_bulk_update</a>(...) -> VlanGroup</code></summary>
 <dl>
 <dd>
 
@@ -89353,7 +89353,7 @@ client.ipam.vlan_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13726-L13749">vlan_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -89416,7 +89416,7 @@ client.ipam.vlan_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_bulk_partial_update</a>(...) -> VlanGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13751-L13850">vlan_groups_bulk_partial_update</a>(...) -> VlanGroup</code></summary>
 <dl>
 <dd>
 
@@ -89490,7 +89490,7 @@ client.ipam.vlan_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_read</a>(...) -> VlanGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13852-L13881">vlan_groups_read</a>(...) -> VlanGroup</code></summary>
 <dl>
 <dd>
 
@@ -89563,7 +89563,7 @@ client.ipam.vlan_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_update</a>(...) -> VlanGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13883-L13988">vlan_groups_update</a>(...) -> VlanGroup</code></summary>
 <dl>
 <dd>
 
@@ -89646,7 +89646,7 @@ client.ipam.vlan_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L13990-L14018">vlan_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -89719,7 +89719,7 @@ client.ipam.vlan_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_partial_update</a>(...) -> VlanGroup</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14020-L14125">vlan_groups_partial_update</a>(...) -> VlanGroup</code></summary>
 <dl>
 <dd>
 
@@ -89802,7 +89802,7 @@ client.ipam.vlan_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_available_vlans_list</a>(...) -> typing.List[AvailableVlan]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14127-L14158">vlan_groups_available_vlans_list</a>(...) -> typing.List[AvailableVlan]</code></summary>
 <dl>
 <dd>
 
@@ -89875,7 +89875,7 @@ client.ipam.vlan_groups_available_vlans_list(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlan_groups_available_vlans_create</a>(...) -> typing.List[Vlan]</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14160-L14230">vlan_groups_available_vlans_create</a>(...) -> typing.List[Vlan]</code></summary>
 <dl>
 <dd>
 
@@ -90013,7 +90013,7 @@ client.ipam.vlan_groups_available_vlans_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_list</a>(...) -> IpamVlansListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14232-L14702">vlans_list</a>(...) -> IpamVlansListResponse</code></summary>
 <dl>
 <dd>
 
@@ -90780,7 +90780,7 @@ client.ipam.vlans_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_create</a>(...) -> Vlan</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14704-L14809">vlans_create</a>(...) -> Vlan</code></summary>
 <dl>
 <dd>
 
@@ -90854,7 +90854,7 @@ client.ipam.vlans_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_bulk_update</a>(...) -> Vlan</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14811-L14916">vlans_bulk_update</a>(...) -> Vlan</code></summary>
 <dl>
 <dd>
 
@@ -90928,7 +90928,7 @@ client.ipam.vlans_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14918-L14941">vlans_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -90991,7 +90991,7 @@ client.ipam.vlans_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_bulk_partial_update</a>(...) -> Vlan</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L14943-L15048">vlans_bulk_partial_update</a>(...) -> Vlan</code></summary>
 <dl>
 <dd>
 
@@ -91065,7 +91065,7 @@ client.ipam.vlans_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_read</a>(...) -> Vlan</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15050-L15079">vlans_read</a>(...) -> Vlan</code></summary>
 <dl>
 <dd>
 
@@ -91138,7 +91138,7 @@ client.ipam.vlans_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_update</a>(...) -> Vlan</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15081-L15192">vlans_update</a>(...) -> Vlan</code></summary>
 <dl>
 <dd>
 
@@ -91221,7 +91221,7 @@ client.ipam.vlans_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15194-L15222">vlans_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -91294,7 +91294,7 @@ client.ipam.vlans_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vlans_partial_update</a>(...) -> Vlan</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15224-L15335">vlans_partial_update</a>(...) -> Vlan</code></summary>
 <dl>
 <dd>
 
@@ -91377,7 +91377,7 @@ client.ipam.vlans_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_list</a>(...) -> IpamVrfsListResponse</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15337-L15737">vrfs_list</a>(...) -> IpamVrfsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -92032,7 +92032,7 @@ client.ipam.vrfs_list()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_create</a>(...) -> Vrf</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15739-L15841">vrfs_create</a>(...) -> Vrf</code></summary>
 <dl>
 <dd>
 
@@ -92105,7 +92105,7 @@ client.ipam.vrfs_create(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_bulk_update</a>(...) -> Vrf</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15843-L15945">vrfs_bulk_update</a>(...) -> Vrf</code></summary>
 <dl>
 <dd>
 
@@ -92178,7 +92178,7 @@ client.ipam.vrfs_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_bulk_delete</a>()</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15947-L15970">vrfs_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -92241,7 +92241,7 @@ client.ipam.vrfs_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_bulk_partial_update</a>(...) -> Vrf</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L15972-L16074">vrfs_bulk_partial_update</a>(...) -> Vrf</code></summary>
 <dl>
 <dd>
 
@@ -92314,7 +92314,7 @@ client.ipam.vrfs_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_read</a>(...) -> Vrf</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L16076-L16105">vrfs_read</a>(...) -> Vrf</code></summary>
 <dl>
 <dd>
 
@@ -92387,7 +92387,7 @@ client.ipam.vrfs_read(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_update</a>(...) -> Vrf</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L16107-L16215">vrfs_update</a>(...) -> Vrf</code></summary>
 <dl>
 <dd>
 
@@ -92469,7 +92469,7 @@ client.ipam.vrfs_update(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_delete</a>(...)</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L16217-L16245">vrfs_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -92542,7 +92542,7 @@ client.ipam.vrfs_delete(
 </dl>
 </details>
 
-<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py">vrfs_partial_update</a>(...) -> Vrf</code></summary>
+<details><summary><code>client.ipam.<a href="src/fern/ipam/client.py#L16247-L16355">vrfs_partial_update</a>(...) -> Vrf</code></summary>
 <dl>
 <dd>
 
@@ -92625,7 +92625,7 @@ client.ipam.vrfs_partial_update(
 </details>
 
 ## Status
-<details><summary><code>client.status.<a href="src/fern/status/client.py">list</a>()</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L25-L48">list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -92689,7 +92689,7 @@ client.status.list()
 </details>
 
 ## Tenancy
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_list</a>(...) -> TenancyContactAssignmentsListResponse</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L43-L268">contact_assignments_list</a>(...) -> TenancyContactAssignmentsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -93064,7 +93064,7 @@ client.tenancy.contact_assignments_list()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_create</a>(...) -> ContactAssignment</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L270-L349">contact_assignments_create</a>(...) -> ContactAssignment</code></summary>
 <dl>
 <dd>
 
@@ -93140,7 +93140,7 @@ client.tenancy.contact_assignments_create(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_bulk_update</a>(...) -> ContactAssignment</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L351-L430">contact_assignments_bulk_update</a>(...) -> ContactAssignment</code></summary>
 <dl>
 <dd>
 
@@ -93216,7 +93216,7 @@ client.tenancy.contact_assignments_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_bulk_delete</a>()</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L432-L455">contact_assignments_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -93279,7 +93279,7 @@ client.tenancy.contact_assignments_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_bulk_partial_update</a>(...) -> ContactAssignment</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L457-L536">contact_assignments_bulk_partial_update</a>(...) -> ContactAssignment</code></summary>
 <dl>
 <dd>
 
@@ -93355,7 +93355,7 @@ client.tenancy.contact_assignments_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_read</a>(...) -> ContactAssignment</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L538-L569">contact_assignments_read</a>(...) -> ContactAssignment</code></summary>
 <dl>
 <dd>
 
@@ -93428,7 +93428,7 @@ client.tenancy.contact_assignments_read(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_update</a>(...) -> ContactAssignment</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L571-L656">contact_assignments_update</a>(...) -> ContactAssignment</code></summary>
 <dl>
 <dd>
 
@@ -93513,7 +93513,7 @@ client.tenancy.contact_assignments_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_delete</a>(...)</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L658-L686">contact_assignments_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -93586,7 +93586,7 @@ client.tenancy.contact_assignments_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_assignments_partial_update</a>(...) -> ContactAssignment</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L688-L773">contact_assignments_partial_update</a>(...) -> ContactAssignment</code></summary>
 <dl>
 <dd>
 
@@ -93671,7 +93671,7 @@ client.tenancy.contact_assignments_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_list</a>(...) -> TenancyContactGroupsListResponse</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L775-L1110">contact_groups_list</a>(...) -> TenancyContactGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -94222,7 +94222,7 @@ client.tenancy.contact_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_create</a>(...) -> ContactGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1112-L1197">contact_groups_create</a>(...) -> ContactGroup</code></summary>
 <dl>
 <dd>
 
@@ -94296,7 +94296,7 @@ client.tenancy.contact_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_bulk_update</a>(...) -> ContactGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1199-L1284">contact_groups_bulk_update</a>(...) -> ContactGroup</code></summary>
 <dl>
 <dd>
 
@@ -94370,7 +94370,7 @@ client.tenancy.contact_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1286-L1309">contact_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -94433,7 +94433,7 @@ client.tenancy.contact_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_bulk_partial_update</a>(...) -> ContactGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1311-L1396">contact_groups_bulk_partial_update</a>(...) -> ContactGroup</code></summary>
 <dl>
 <dd>
 
@@ -94507,7 +94507,7 @@ client.tenancy.contact_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_read</a>(...) -> ContactGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1398-L1427">contact_groups_read</a>(...) -> ContactGroup</code></summary>
 <dl>
 <dd>
 
@@ -94580,7 +94580,7 @@ client.tenancy.contact_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_update</a>(...) -> ContactGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1429-L1520">contact_groups_update</a>(...) -> ContactGroup</code></summary>
 <dl>
 <dd>
 
@@ -94663,7 +94663,7 @@ client.tenancy.contact_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1522-L1550">contact_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -94736,7 +94736,7 @@ client.tenancy.contact_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_groups_partial_update</a>(...) -> ContactGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1552-L1643">contact_groups_partial_update</a>(...) -> ContactGroup</code></summary>
 <dl>
 <dd>
 
@@ -94819,7 +94819,7 @@ client.tenancy.contact_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_list</a>(...) -> TenancyContactRolesListResponse</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1645-L1960">contact_roles_list</a>(...) -> TenancyContactRolesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -95338,7 +95338,7 @@ client.tenancy.contact_roles_list()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_create</a>(...) -> ContactRole</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L1962-L2035">contact_roles_create</a>(...) -> ContactRole</code></summary>
 <dl>
 <dd>
 
@@ -95412,7 +95412,7 @@ client.tenancy.contact_roles_create(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_bulk_update</a>(...) -> ContactRole</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2037-L2110">contact_roles_bulk_update</a>(...) -> ContactRole</code></summary>
 <dl>
 <dd>
 
@@ -95486,7 +95486,7 @@ client.tenancy.contact_roles_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_bulk_delete</a>()</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2112-L2135">contact_roles_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -95549,7 +95549,7 @@ client.tenancy.contact_roles_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_bulk_partial_update</a>(...) -> ContactRole</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2137-L2210">contact_roles_bulk_partial_update</a>(...) -> ContactRole</code></summary>
 <dl>
 <dd>
 
@@ -95623,7 +95623,7 @@ client.tenancy.contact_roles_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_read</a>(...) -> ContactRole</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2212-L2241">contact_roles_read</a>(...) -> ContactRole</code></summary>
 <dl>
 <dd>
 
@@ -95696,7 +95696,7 @@ client.tenancy.contact_roles_read(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_update</a>(...) -> ContactRole</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2243-L2322">contact_roles_update</a>(...) -> ContactRole</code></summary>
 <dl>
 <dd>
 
@@ -95779,7 +95779,7 @@ client.tenancy.contact_roles_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_delete</a>(...)</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2324-L2352">contact_roles_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -95852,7 +95852,7 @@ client.tenancy.contact_roles_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contact_roles_partial_update</a>(...) -> ContactRole</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2354-L2433">contact_roles_partial_update</a>(...) -> ContactRole</code></summary>
 <dl>
 <dd>
 
@@ -95935,7 +95935,7 @@ client.tenancy.contact_roles_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_list</a>(...) -> TenancyContactsListResponse</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2435-L2935">contacts_list</a>(...) -> TenancyContactsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -96750,7 +96750,7 @@ client.tenancy.contacts_list()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_create</a>(...) -> Contact</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L2937-L3033">contacts_create</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -96823,7 +96823,7 @@ client.tenancy.contacts_create(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_bulk_update</a>(...) -> Contact</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3035-L3131">contacts_bulk_update</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -96896,7 +96896,7 @@ client.tenancy.contacts_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_bulk_delete</a>()</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3133-L3156">contacts_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -96959,7 +96959,7 @@ client.tenancy.contacts_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_bulk_partial_update</a>(...) -> Contact</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3158-L3254">contacts_bulk_partial_update</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -97032,7 +97032,7 @@ client.tenancy.contacts_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_read</a>(...) -> Contact</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3256-L3285">contacts_read</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -97105,7 +97105,7 @@ client.tenancy.contacts_read(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_update</a>(...) -> Contact</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3287-L3389">contacts_update</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -97187,7 +97187,7 @@ client.tenancy.contacts_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_delete</a>(...)</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3391-L3419">contacts_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -97260,7 +97260,7 @@ client.tenancy.contacts_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">contacts_partial_update</a>(...) -> Contact</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3421-L3523">contacts_partial_update</a>(...) -> Contact</code></summary>
 <dl>
 <dd>
 
@@ -97342,7 +97342,7 @@ client.tenancy.contacts_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_list</a>(...) -> TenancyTenantGroupsListResponse</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3525-L3860">tenant_groups_list</a>(...) -> TenancyTenantGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -97893,7 +97893,7 @@ client.tenancy.tenant_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_create</a>(...) -> TenantGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3862-L3947">tenant_groups_create</a>(...) -> TenantGroup</code></summary>
 <dl>
 <dd>
 
@@ -97967,7 +97967,7 @@ client.tenancy.tenant_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_bulk_update</a>(...) -> TenantGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L3949-L4034">tenant_groups_bulk_update</a>(...) -> TenantGroup</code></summary>
 <dl>
 <dd>
 
@@ -98041,7 +98041,7 @@ client.tenancy.tenant_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4036-L4059">tenant_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -98104,7 +98104,7 @@ client.tenancy.tenant_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_bulk_partial_update</a>(...) -> TenantGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4061-L4146">tenant_groups_bulk_partial_update</a>(...) -> TenantGroup</code></summary>
 <dl>
 <dd>
 
@@ -98178,7 +98178,7 @@ client.tenancy.tenant_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_read</a>(...) -> TenantGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4148-L4177">tenant_groups_read</a>(...) -> TenantGroup</code></summary>
 <dl>
 <dd>
 
@@ -98251,7 +98251,7 @@ client.tenancy.tenant_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_update</a>(...) -> TenantGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4179-L4270">tenant_groups_update</a>(...) -> TenantGroup</code></summary>
 <dl>
 <dd>
 
@@ -98334,7 +98334,7 @@ client.tenancy.tenant_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4272-L4300">tenant_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -98407,7 +98407,7 @@ client.tenancy.tenant_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenant_groups_partial_update</a>(...) -> TenantGroup</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4302-L4393">tenant_groups_partial_update</a>(...) -> TenantGroup</code></summary>
 <dl>
 <dd>
 
@@ -98490,7 +98490,7 @@ client.tenancy.tenant_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_list</a>(...) -> TenancyTenantsListResponse</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4395-L4760">tenants_list</a>(...) -> TenancyTenantsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -99089,7 +99089,7 @@ client.tenancy.tenants_list()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_create</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4762-L4883">tenants_create</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -99163,7 +99163,7 @@ client.tenancy.tenants_create(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_bulk_update</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L4885-L5006">tenants_bulk_update</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -99237,7 +99237,7 @@ client.tenancy.tenants_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_bulk_delete</a>()</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L5008-L5031">tenants_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -99300,7 +99300,7 @@ client.tenancy.tenants_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_bulk_partial_update</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L5033-L5154">tenants_bulk_partial_update</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -99374,7 +99374,7 @@ client.tenancy.tenants_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_read</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L5156-L5185">tenants_read</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -99447,7 +99447,7 @@ client.tenancy.tenants_read(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_update</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L5187-L5314">tenants_update</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -99530,7 +99530,7 @@ client.tenancy.tenants_update(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_delete</a>(...)</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L5316-L5344">tenants_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -99603,7 +99603,7 @@ client.tenancy.tenants_delete(
 </dl>
 </details>
 
-<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py">tenants_partial_update</a>(...) -> Tenant</code></summary>
+<details><summary><code>client.tenancy.<a href="src/fern/tenancy/client.py#L5346-L5473">tenants_partial_update</a>(...) -> Tenant</code></summary>
 <dl>
 <dd>
 
@@ -99687,7 +99687,7 @@ client.tenancy.tenants_partial_update(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">config_list</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L38-L61">config_list</a>()</code></summary>
 <dl>
 <dd>
 
@@ -99750,7 +99750,7 @@ client.users.config_list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_list</a>(...) -> UsersGroupsListResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L63-L198">groups_list</a>(...) -> UsersGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -99981,7 +99981,7 @@ client.users.groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_create</a>(...) -> Group</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L200-L247">groups_create</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -100054,7 +100054,7 @@ client.users.groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_bulk_update</a>(...) -> Group</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L249-L296">groups_bulk_update</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -100127,7 +100127,7 @@ client.users.groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L298-L321">groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -100190,7 +100190,7 @@ client.users.groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_bulk_partial_update</a>(...) -> Group</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L323-L370">groups_bulk_partial_update</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -100263,7 +100263,7 @@ client.users.groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_read</a>(...) -> Group</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L372-L401">groups_read</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -100336,7 +100336,7 @@ client.users.groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_update</a>(...) -> Group</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L403-L455">groups_update</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -100418,7 +100418,7 @@ client.users.groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_delete</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L457-L485">groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -100491,7 +100491,7 @@ client.users.groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">groups_partial_update</a>(...) -> Group</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L487-L539">groups_partial_update</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -100573,7 +100573,7 @@ client.users.groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_list</a>(...) -> UsersPermissionsListResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L541-L786">permissions_list</a>(...) -> UsersPermissionsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -100980,7 +100980,7 @@ client.users.permissions_list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_create</a>(...) -> ObjectPermission</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L788-L868">permissions_create</a>(...) -> ObjectPermission</code></summary>
 <dl>
 <dd>
 
@@ -101059,7 +101059,7 @@ client.users.permissions_create(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_bulk_update</a>(...) -> ObjectPermission</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L870-L950">permissions_bulk_update</a>(...) -> ObjectPermission</code></summary>
 <dl>
 <dd>
 
@@ -101138,7 +101138,7 @@ client.users.permissions_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_bulk_delete</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L952-L975">permissions_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -101201,7 +101201,7 @@ client.users.permissions_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_bulk_partial_update</a>(...) -> ObjectPermission</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L977-L1057">permissions_bulk_partial_update</a>(...) -> ObjectPermission</code></summary>
 <dl>
 <dd>
 
@@ -101280,7 +101280,7 @@ client.users.permissions_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_read</a>(...) -> ObjectPermission</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1059-L1088">permissions_read</a>(...) -> ObjectPermission</code></summary>
 <dl>
 <dd>
 
@@ -101353,7 +101353,7 @@ client.users.permissions_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_update</a>(...) -> ObjectPermission</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1090-L1176">permissions_update</a>(...) -> ObjectPermission</code></summary>
 <dl>
 <dd>
 
@@ -101441,7 +101441,7 @@ client.users.permissions_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_delete</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1178-L1206">permissions_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -101514,7 +101514,7 @@ client.users.permissions_delete(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">permissions_partial_update</a>(...) -> ObjectPermission</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1208-L1294">permissions_partial_update</a>(...) -> ObjectPermission</code></summary>
 <dl>
 <dd>
 
@@ -101602,7 +101602,7 @@ client.users.permissions_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_list</a>(...) -> UsersTokensListResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1296-L1541">tokens_list</a>(...) -> UsersTokensListResponse</code></summary>
 <dl>
 <dd>
 
@@ -102009,7 +102009,7 @@ client.users.tokens_list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_create</a>(...) -> Token</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1543-L1620">tokens_create</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -102082,7 +102082,7 @@ client.users.tokens_create(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_bulk_update</a>(...) -> Token</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1622-L1699">tokens_bulk_update</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -102155,7 +102155,7 @@ client.users.tokens_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_bulk_delete</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1701-L1724">tokens_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -102218,7 +102218,7 @@ client.users.tokens_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_bulk_partial_update</a>(...) -> Token</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1726-L1803">tokens_bulk_partial_update</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -102291,7 +102291,7 @@ client.users.tokens_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_provision_create</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1805-L1828">tokens_provision_create</a>()</code></summary>
 <dl>
 <dd>
 
@@ -102354,7 +102354,7 @@ client.users.tokens_provision_create()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_read</a>(...) -> Token</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1830-L1859">tokens_read</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -102427,7 +102427,7 @@ client.users.tokens_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_update</a>(...) -> Token</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1861-L1944">tokens_update</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -102509,7 +102509,7 @@ client.users.tokens_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_delete</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1946-L1974">tokens_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -102582,7 +102582,7 @@ client.users.tokens_delete(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">tokens_partial_update</a>(...) -> Token</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L1976-L2059">tokens_partial_update</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -102664,7 +102664,7 @@ client.users.tokens_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_list</a>(...) -> UsersUsersListResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2061-L2391">users_list</a>(...) -> UsersUsersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -103207,7 +103207,7 @@ client.users.users_list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_create</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2393-L2478">users_create</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -103281,7 +103281,7 @@ client.users.users_create(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_bulk_update</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2480-L2565">users_bulk_update</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -103355,7 +103355,7 @@ client.users.users_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_bulk_delete</a>()</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2567-L2590">users_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -103418,7 +103418,7 @@ client.users.users_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_bulk_partial_update</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2592-L2677">users_bulk_partial_update</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -103492,7 +103492,7 @@ client.users.users_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_read</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2679-L2708">users_read</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -103565,7 +103565,7 @@ client.users.users_read(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_update</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2710-L2801">users_update</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -103648,7 +103648,7 @@ client.users.users_update(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_delete</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2803-L2831">users_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -103721,7 +103721,7 @@ client.users.users_delete(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">users_partial_update</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L2833-L2924">users_partial_update</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -103805,7 +103805,7 @@ client.users.users_partial_update(
 </details>
 
 ## Virtualization
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_list</a>(...) -> VirtualizationClusterGroupsListResponse</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L43-L388">cluster_groups_list</a>(...) -> VirtualizationClusterGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -104372,7 +104372,7 @@ client.virtualization.cluster_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_create</a>(...) -> ClusterGroup</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L390-L467">cluster_groups_create</a>(...) -> ClusterGroup</code></summary>
 <dl>
 <dd>
 
@@ -104446,7 +104446,7 @@ client.virtualization.cluster_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_bulk_update</a>(...) -> ClusterGroup</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L469-L546">cluster_groups_bulk_update</a>(...) -> ClusterGroup</code></summary>
 <dl>
 <dd>
 
@@ -104520,7 +104520,7 @@ client.virtualization.cluster_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L548-L571">cluster_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -104583,7 +104583,7 @@ client.virtualization.cluster_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_bulk_partial_update</a>(...) -> ClusterGroup</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L573-L650">cluster_groups_bulk_partial_update</a>(...) -> ClusterGroup</code></summary>
 <dl>
 <dd>
 
@@ -104657,7 +104657,7 @@ client.virtualization.cluster_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_read</a>(...) -> ClusterGroup</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L652-L681">cluster_groups_read</a>(...) -> ClusterGroup</code></summary>
 <dl>
 <dd>
 
@@ -104730,7 +104730,7 @@ client.virtualization.cluster_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_update</a>(...) -> ClusterGroup</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L683-L766">cluster_groups_update</a>(...) -> ClusterGroup</code></summary>
 <dl>
 <dd>
 
@@ -104813,7 +104813,7 @@ client.virtualization.cluster_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L768-L796">cluster_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -104886,7 +104886,7 @@ client.virtualization.cluster_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_groups_partial_update</a>(...) -> ClusterGroup</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L798-L881">cluster_groups_partial_update</a>(...) -> ClusterGroup</code></summary>
 <dl>
 <dd>
 
@@ -104969,7 +104969,7 @@ client.virtualization.cluster_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_list</a>(...) -> VirtualizationClusterTypesListResponse</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L883-L1198">cluster_types_list</a>(...) -> VirtualizationClusterTypesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -105488,7 +105488,7 @@ client.virtualization.cluster_types_list()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_create</a>(...) -> ClusterType</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1200-L1277">cluster_types_create</a>(...) -> ClusterType</code></summary>
 <dl>
 <dd>
 
@@ -105562,7 +105562,7 @@ client.virtualization.cluster_types_create(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_bulk_update</a>(...) -> ClusterType</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1279-L1356">cluster_types_bulk_update</a>(...) -> ClusterType</code></summary>
 <dl>
 <dd>
 
@@ -105636,7 +105636,7 @@ client.virtualization.cluster_types_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_bulk_delete</a>()</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1358-L1381">cluster_types_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -105699,7 +105699,7 @@ client.virtualization.cluster_types_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_bulk_partial_update</a>(...) -> ClusterType</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1383-L1460">cluster_types_bulk_partial_update</a>(...) -> ClusterType</code></summary>
 <dl>
 <dd>
 
@@ -105773,7 +105773,7 @@ client.virtualization.cluster_types_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_read</a>(...) -> ClusterType</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1462-L1491">cluster_types_read</a>(...) -> ClusterType</code></summary>
 <dl>
 <dd>
 
@@ -105846,7 +105846,7 @@ client.virtualization.cluster_types_read(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_update</a>(...) -> ClusterType</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1493-L1576">cluster_types_update</a>(...) -> ClusterType</code></summary>
 <dl>
 <dd>
 
@@ -105929,7 +105929,7 @@ client.virtualization.cluster_types_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_delete</a>(...)</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1578-L1606">cluster_types_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -106002,7 +106002,7 @@ client.virtualization.cluster_types_delete(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">cluster_types_partial_update</a>(...) -> ClusterType</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1608-L1691">cluster_types_partial_update</a>(...) -> ClusterType</code></summary>
 <dl>
 <dd>
 
@@ -106085,7 +106085,7 @@ client.virtualization.cluster_types_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_list</a>(...) -> VirtualizationClustersListResponse</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L1693-L2078">clusters_list</a>(...) -> VirtualizationClustersListResponse</code></summary>
 <dl>
 <dd>
 
@@ -106716,7 +106716,7 @@ client.virtualization.clusters_list()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_create</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2080-L2181">clusters_create</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -106790,7 +106790,7 @@ client.virtualization.clusters_create(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_bulk_update</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2183-L2284">clusters_bulk_update</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -106864,7 +106864,7 @@ client.virtualization.clusters_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_bulk_delete</a>()</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2286-L2309">clusters_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -106927,7 +106927,7 @@ client.virtualization.clusters_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_bulk_partial_update</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2311-L2412">clusters_bulk_partial_update</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -107001,7 +107001,7 @@ client.virtualization.clusters_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_read</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2414-L2443">clusters_read</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -107074,7 +107074,7 @@ client.virtualization.clusters_read(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_update</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2445-L2552">clusters_update</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -107157,7 +107157,7 @@ client.virtualization.clusters_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_delete</a>(...)</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2554-L2582">clusters_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -107230,7 +107230,7 @@ client.virtualization.clusters_delete(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">clusters_partial_update</a>(...) -> Cluster</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2584-L2691">clusters_partial_update</a>(...) -> Cluster</code></summary>
 <dl>
 <dd>
 
@@ -107313,7 +107313,7 @@ client.virtualization.clusters_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_list</a>(...) -> VirtualizationInterfacesListResponse</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L2693-L3138">interfaces_list</a>(...) -> VirtualizationInterfacesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -108040,7 +108040,7 @@ client.virtualization.interfaces_list()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_create</a>(...) -> VmInterface</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3140-L3261">interfaces_create</a>(...) -> VmInterface</code></summary>
 <dl>
 <dd>
 
@@ -108114,7 +108114,7 @@ client.virtualization.interfaces_create(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_bulk_update</a>(...) -> VmInterface</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3263-L3384">interfaces_bulk_update</a>(...) -> VmInterface</code></summary>
 <dl>
 <dd>
 
@@ -108188,7 +108188,7 @@ client.virtualization.interfaces_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_bulk_delete</a>()</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3386-L3409">interfaces_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -108251,7 +108251,7 @@ client.virtualization.interfaces_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_bulk_partial_update</a>(...) -> VmInterface</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3411-L3532">interfaces_bulk_partial_update</a>(...) -> VmInterface</code></summary>
 <dl>
 <dd>
 
@@ -108325,7 +108325,7 @@ client.virtualization.interfaces_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_read</a>(...) -> VmInterface</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3534-L3563">interfaces_read</a>(...) -> VmInterface</code></summary>
 <dl>
 <dd>
 
@@ -108398,7 +108398,7 @@ client.virtualization.interfaces_read(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_update</a>(...) -> VmInterface</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3565-L3692">interfaces_update</a>(...) -> VmInterface</code></summary>
 <dl>
 <dd>
 
@@ -108481,7 +108481,7 @@ client.virtualization.interfaces_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_delete</a>(...)</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3694-L3722">interfaces_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -108554,7 +108554,7 @@ client.virtualization.interfaces_delete(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">interfaces_partial_update</a>(...) -> VmInterface</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3724-L3851">interfaces_partial_update</a>(...) -> VmInterface</code></summary>
 <dl>
 <dd>
 
@@ -108637,7 +108637,7 @@ client.virtualization.interfaces_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_list</a>(...) -> VirtualizationVirtualMachinesListResponse</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L3853-L4468">virtual_machines_list</a>(...) -> VirtualizationVirtualMachinesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -109636,7 +109636,7 @@ client.virtualization.virtual_machines_list()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_create</a>(...) -> VirtualMachineWithConfigContext</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L4470-L4602">virtual_machines_create</a>(...) -> VirtualMachineWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -109709,7 +109709,7 @@ client.virtualization.virtual_machines_create(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_bulk_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L4604-L4736">virtual_machines_bulk_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -109782,7 +109782,7 @@ client.virtualization.virtual_machines_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_bulk_delete</a>()</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L4738-L4761">virtual_machines_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -109845,7 +109845,7 @@ client.virtualization.virtual_machines_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_bulk_partial_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L4763-L4895">virtual_machines_bulk_partial_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -109918,7 +109918,7 @@ client.virtualization.virtual_machines_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_read</a>(...) -> VirtualMachineWithConfigContext</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L4897-L4928">virtual_machines_read</a>(...) -> VirtualMachineWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -109991,7 +109991,7 @@ client.virtualization.virtual_machines_read(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L4930-L5068">virtual_machines_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -110073,7 +110073,7 @@ client.virtualization.virtual_machines_update(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_delete</a>(...)</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L5070-L5098">virtual_machines_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -110146,7 +110146,7 @@ client.virtualization.virtual_machines_delete(
 </dl>
 </details>
 
-<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py">virtual_machines_partial_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
+<details><summary><code>client.virtualization.<a href="src/fern/virtualization/client.py#L5100-L5238">virtual_machines_partial_update</a>(...) -> VirtualMachineWithConfigContext</code></summary>
 <dl>
 <dd>
 
@@ -110229,7 +110229,7 @@ client.virtualization.virtual_machines_partial_update(
 </details>
 
 ## Wireless
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_list</a>(...) -> WirelessWirelessLanGroupsListResponse</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L42-L377">wireless_lan_groups_list</a>(...) -> WirelessWirelessLanGroupsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -110780,7 +110780,7 @@ client.wireless.wireless_lan_groups_list()
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_create</a>(...) -> WirelessLanGroup</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L379-L464">wireless_lan_groups_create</a>(...) -> WirelessLanGroup</code></summary>
 <dl>
 <dd>
 
@@ -110854,7 +110854,7 @@ client.wireless.wireless_lan_groups_create(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_bulk_update</a>(...) -> WirelessLanGroup</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L466-L551">wireless_lan_groups_bulk_update</a>(...) -> WirelessLanGroup</code></summary>
 <dl>
 <dd>
 
@@ -110928,7 +110928,7 @@ client.wireless.wireless_lan_groups_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_bulk_delete</a>()</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L553-L576">wireless_lan_groups_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -110991,7 +110991,7 @@ client.wireless.wireless_lan_groups_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_bulk_partial_update</a>(...) -> WirelessLanGroup</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L578-L663">wireless_lan_groups_bulk_partial_update</a>(...) -> WirelessLanGroup</code></summary>
 <dl>
 <dd>
 
@@ -111065,7 +111065,7 @@ client.wireless.wireless_lan_groups_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_read</a>(...) -> WirelessLanGroup</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L665-L696">wireless_lan_groups_read</a>(...) -> WirelessLanGroup</code></summary>
 <dl>
 <dd>
 
@@ -111138,7 +111138,7 @@ client.wireless.wireless_lan_groups_read(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_update</a>(...) -> WirelessLanGroup</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L698-L789">wireless_lan_groups_update</a>(...) -> WirelessLanGroup</code></summary>
 <dl>
 <dd>
 
@@ -111221,7 +111221,7 @@ client.wireless.wireless_lan_groups_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_delete</a>(...)</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L791-L819">wireless_lan_groups_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -111294,7 +111294,7 @@ client.wireless.wireless_lan_groups_delete(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lan_groups_partial_update</a>(...) -> WirelessLanGroup</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L821-L912">wireless_lan_groups_partial_update</a>(...) -> WirelessLanGroup</code></summary>
 <dl>
 <dd>
 
@@ -111377,7 +111377,7 @@ client.wireless.wireless_lan_groups_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_list</a>(...) -> WirelessWirelessLansListResponse</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L914-L1329">wireless_lans_list</a>(...) -> WirelessWirelessLansListResponse</code></summary>
 <dl>
 <dd>
 
@@ -112056,7 +112056,7 @@ client.wireless.wireless_lans_list()
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_create</a>(...) -> WirelessLan</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1331-L1431">wireless_lans_create</a>(...) -> WirelessLan</code></summary>
 <dl>
 <dd>
 
@@ -112129,7 +112129,7 @@ client.wireless.wireless_lans_create(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_bulk_update</a>(...) -> WirelessLan</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1433-L1533">wireless_lans_bulk_update</a>(...) -> WirelessLan</code></summary>
 <dl>
 <dd>
 
@@ -112202,7 +112202,7 @@ client.wireless.wireless_lans_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_bulk_delete</a>()</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1535-L1558">wireless_lans_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -112265,7 +112265,7 @@ client.wireless.wireless_lans_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_bulk_partial_update</a>(...) -> WirelessLan</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1560-L1660">wireless_lans_bulk_partial_update</a>(...) -> WirelessLan</code></summary>
 <dl>
 <dd>
 
@@ -112338,7 +112338,7 @@ client.wireless.wireless_lans_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_read</a>(...) -> WirelessLan</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1662-L1691">wireless_lans_read</a>(...) -> WirelessLan</code></summary>
 <dl>
 <dd>
 
@@ -112411,7 +112411,7 @@ client.wireless.wireless_lans_read(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_update</a>(...) -> WirelessLan</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1693-L1799">wireless_lans_update</a>(...) -> WirelessLan</code></summary>
 <dl>
 <dd>
 
@@ -112493,7 +112493,7 @@ client.wireless.wireless_lans_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_delete</a>(...)</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1801-L1829">wireless_lans_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -112566,7 +112566,7 @@ client.wireless.wireless_lans_delete(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_lans_partial_update</a>(...) -> WirelessLan</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1831-L1937">wireless_lans_partial_update</a>(...) -> WirelessLan</code></summary>
 <dl>
 <dd>
 
@@ -112648,7 +112648,7 @@ client.wireless.wireless_lans_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_list</a>(...) -> WirelessWirelessLinksListResponse</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L1939-L2384">wireless_links_list</a>(...) -> WirelessWirelessLinksListResponse</code></summary>
 <dl>
 <dd>
 
@@ -113375,7 +113375,7 @@ client.wireless.wireless_links_list()
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_create</a>(...) -> WirelessLink</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2386-L2487">wireless_links_create</a>(...) -> WirelessLink</code></summary>
 <dl>
 <dd>
 
@@ -113449,7 +113449,7 @@ client.wireless.wireless_links_create(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_bulk_update</a>(...) -> WirelessLink</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2489-L2590">wireless_links_bulk_update</a>(...) -> WirelessLink</code></summary>
 <dl>
 <dd>
 
@@ -113523,7 +113523,7 @@ client.wireless.wireless_links_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_bulk_delete</a>()</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2592-L2615">wireless_links_bulk_delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -113586,7 +113586,7 @@ client.wireless.wireless_links_bulk_delete()
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_bulk_partial_update</a>(...) -> WirelessLink</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2617-L2718">wireless_links_bulk_partial_update</a>(...) -> WirelessLink</code></summary>
 <dl>
 <dd>
 
@@ -113660,7 +113660,7 @@ client.wireless.wireless_links_bulk_partial_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_read</a>(...) -> WirelessLink</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2720-L2749">wireless_links_read</a>(...) -> WirelessLink</code></summary>
 <dl>
 <dd>
 
@@ -113733,7 +113733,7 @@ client.wireless.wireless_links_read(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_update</a>(...) -> WirelessLink</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2751-L2858">wireless_links_update</a>(...) -> WirelessLink</code></summary>
 <dl>
 <dd>
 
@@ -113816,7 +113816,7 @@ client.wireless.wireless_links_update(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_delete</a>(...)</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2860-L2888">wireless_links_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -113889,7 +113889,7 @@ client.wireless.wireless_links_delete(
 </dl>
 </details>
 
-<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py">wireless_links_partial_update</a>(...) -> WirelessLink</code></summary>
+<details><summary><code>client.wireless.<a href="src/fern/wireless/client.py#L2890-L2997">wireless_links_partial_update</a>(...) -> WirelessLink</code></summary>
 <dl>
 <dd>
 

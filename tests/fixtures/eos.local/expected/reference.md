@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">connect</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L110-L137">connect</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -71,7 +71,7 @@ client.connect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">connections</a>() -> typing.List[ConnectionsResponseItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L139-L163">connections</a>() -> typing.List[ConnectionsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -133,7 +133,7 @@ client.connections()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">disconnect</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L165-L192">disconnect</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -205,7 +205,7 @@ client.disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">status</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L194-L221">status</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 

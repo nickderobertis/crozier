@@ -1,6 +1,6 @@
 # Reference
 ## Specimens
-<details><summary><code>client.specimens.<a href="src/fern/specimens/client.py">upload_specimen</a>(...)</code></summary>
+<details><summary><code>client.specimens.<a href="src/fern/specimens/client.py#L30-L71">upload_specimen</a>(...)</code></summary>
 <dl>
 <dd>
 

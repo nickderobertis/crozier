@@ -1,6 +1,6 @@
 # Reference
 ## Charts
-<details><summary><code>client.charts.<a href="src/fern/charts/client.py">fetch_sheet</a>(...)</code></summary>
+<details><summary><code>client.charts.<a href="src/fern/charts/client.py#L25-L50">fetch_sheet</a>(...)</code></summary>
 <dl>
 <dd>
 

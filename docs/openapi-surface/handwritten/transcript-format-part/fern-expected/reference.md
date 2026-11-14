@@ -1,6 +1,6 @@
 # Reference
 ## Transcripts
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">create_transcript</a>(...)</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L31-L68">create_transcript</a>(...)</code></summary>
 <dl>
 <dd>
 

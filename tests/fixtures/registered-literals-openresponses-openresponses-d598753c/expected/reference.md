@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_response</a>(...) -> ResponseResource</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L125-L285">create_response</a>(...) -> ResponseResource</code></summary>
 <dl>
 <dd>
 
@@ -70,7 +70,7 @@ client.create_response()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">compact_response</a>(...) -> CompactResource</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L287-L345">compact_response</a>(...) -> CompactResource</code></summary>
 <dl>
 <dd>
 

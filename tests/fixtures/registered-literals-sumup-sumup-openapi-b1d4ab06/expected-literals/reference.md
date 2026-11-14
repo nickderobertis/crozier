@@ -1,6 +1,6 @@
 # Reference
 ## Checkouts
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">get_payment_methods</a>(...) -> GetPaymentMethodsResponse</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L40-L86">get_payment_methods</a>(...) -> GetPaymentMethodsResponse</code></summary>
 <dl>
 <dd>
 
@@ -91,7 +91,7 @@ client.checkouts.get_payment_methods(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">list_checkouts</a>(...) -> typing.List[CheckoutSuccess]</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L88-L124">list_checkouts</a>(...) -> typing.List[CheckoutSuccess]</code></summary>
 <dl>
 <dd>
 
@@ -164,7 +164,7 @@ client.checkouts.list_checkouts(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">create_checkout</a>(...) -> Checkout</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L126-L226">create_checkout</a>(...) -> Checkout</code></summary>
 <dl>
 <dd>
 
@@ -329,7 +329,7 @@ client.checkouts.create_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">get_checkout</a>(...) -> CheckoutSuccess</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L228-L259">get_checkout</a>(...) -> CheckoutSuccess</code></summary>
 <dl>
 <dd>
 
@@ -402,7 +402,7 @@ client.checkouts.get_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">process_checkout</a>(...) -> ProcessCheckoutResponse</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L261-L362">process_checkout</a>(...) -> ProcessCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -569,7 +569,7 @@ client.checkouts.process_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">deactivate_checkout</a>(...) -> Checkout</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L364-L395">deactivate_checkout</a>(...) -> Checkout</code></summary>
 <dl>
 <dd>
 
@@ -642,7 +642,7 @@ client.checkouts.deactivate_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">update_checkout</a>(...) -> Checkout</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L397-L475">update_checkout</a>(...) -> Checkout</code></summary>
 <dl>
 <dd>
 
@@ -772,7 +772,7 @@ client.checkouts.update_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py">create_apple_pay_session</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.checkouts.<a href="src/fern/checkouts/client.py#L477-L525">create_apple_pay_session</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -869,7 +869,7 @@ client.checkouts.create_apple_pay_session(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer</a>(...) -> Customer</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L31-L70">create_customer</a>(...) -> Customer</code></summary>
 <dl>
 <dd>
 
@@ -942,7 +942,7 @@ client.customers.create_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">get_customer</a>(...) -> Customer</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L72-L101">get_customer</a>(...) -> Customer</code></summary>
 <dl>
 <dd>
 
@@ -1015,7 +1015,7 @@ client.customers.get_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update_customer</a>(...) -> Customer</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L103-L144">update_customer</a>(...) -> Customer</code></summary>
 <dl>
 <dd>
 
@@ -1098,7 +1098,7 @@ client.customers.update_customer(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">list_payment_instruments</a>(...) -> typing.List[PaymentInstrumentResponse]</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L146-L177">list_payment_instruments</a>(...) -> typing.List[PaymentInstrumentResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1171,7 +1171,7 @@ client.customers.list_payment_instruments(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">deactivate_payment_instrument</a>(...)</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L179-L213">deactivate_payment_instrument</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1254,7 +1254,7 @@ client.customers.deactivate_payment_instrument(
 </details>
 
 ## Transactions
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">refund_transaction</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L36-L82">refund_transaction</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1345,7 +1345,7 @@ client.transactions.refund_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">get_transaction_v21</a>(...) -> TransactionFull</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L84-L149">get_transaction_v21</a>(...) -> TransactionFull</code></summary>
 <dl>
 <dd>
 
@@ -1458,7 +1458,7 @@ client.transactions.get_transaction_v21(
 </dl>
 </details>
 
-<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py">list_transactions_v21</a>(...) -> ListTransactionsV21Response</code></summary>
+<details><summary><code>client.transactions.<a href="src/fern/transactions/client.py#L151-L274">list_transactions_v21</a>(...) -> ListTransactionsV21Response</code></summary>
 <dl>
 <dd>
 
@@ -1644,7 +1644,7 @@ client.transactions.list_transactions_v21(
 </details>
 
 ## Payouts
-<details><summary><code>client.payouts.<a href="src/fern/payouts/client.py">list_payouts_v1</a>(...) -> FinancialPayouts</code></summary>
+<details><summary><code>client.payouts.<a href="src/fern/payouts/client.py#L29-L106">list_payouts_v1</a>(...) -> FinancialPayouts</code></summary>
 <dl>
 <dd>
 
@@ -1768,7 +1768,7 @@ client.payouts.list_payouts_v1(
 </details>
 
 ## Receipts
-<details><summary><code>client.receipts.<a href="src/fern/receipts/client.py">get_receipt</a>(...) -> Receipt</code></summary>
+<details><summary><code>client.receipts.<a href="src/fern/receipts/client.py#L26-L72">get_receipt</a>(...) -> Receipt</code></summary>
 <dl>
 <dd>
 
@@ -1860,7 +1860,7 @@ client.receipts.get_receipt(
 </details>
 
 ## Readers
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">create_go_reader_checkout</a>(...) -> ReaderPaymentResponse</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L44-L112">create_go_reader_checkout</a>(...) -> ReaderPaymentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1981,7 +1981,7 @@ client.readers.create_go_reader_checkout(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">list_readers</a>(...) -> ListReadersResponse</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L114-L145">list_readers</a>(...) -> ListReadersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2054,7 +2054,7 @@ client.readers.list_readers(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">create_reader</a>(...) -> Reader</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L147-L194">create_reader</a>(...) -> Reader</code></summary>
 <dl>
 <dd>
 
@@ -2153,7 +2153,7 @@ client.readers.create_reader(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">get_reader</a>(...) -> Reader</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L196-L246">get_reader</a>(...) -> Reader</code></summary>
 <dl>
 <dd>
 
@@ -2250,7 +2250,7 @@ Timestamps are accepted in the following formats:
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">delete_reader</a>(...)</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L248-L282">delete_reader</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2332,7 +2332,7 @@ client.readers.delete_reader(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">update_reader</a>(...) -> Reader</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L284-L333">update_reader</a>(...) -> Reader</code></summary>
 <dl>
 <dd>
 
@@ -2432,7 +2432,7 @@ client.readers.update_reader(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">create_reader_checkout</a>(...) -> CreateReaderCheckoutResponse</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L335-L481">create_reader_checkout</a>(...) -> CreateReaderCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -2661,7 +2661,7 @@ It can only be set if `tip_rates` is provided.
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">get_reader_status</a>(...) -> StatusResponse</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L483-L536">get_reader_status</a>(...) -> StatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -2761,7 +2761,7 @@ client.readers.get_reader_status(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">create_reader_terminate</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L538-L586">create_reader_terminate</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2856,7 +2856,7 @@ client.readers.create_reader_terminate(
 </dl>
 </details>
 
-<details><summary><code>client.readers.<a href="src/fern/readers/client.py">get_reader_checkout</a>(...) -> GetReaderCheckoutResponse</code></summary>
+<details><summary><code>client.readers.<a href="src/fern/readers/client.py#L588-L634">get_reader_checkout</a>(...) -> GetReaderCheckoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -2948,7 +2948,7 @@ client.readers.get_reader_checkout(
 </details>
 
 ## Memberships
-<details><summary><code>client.memberships.<a href="src/fern/memberships/client.py">list_memberships</a>(...) -> ListMembershipsResponse</code></summary>
+<details><summary><code>client.memberships.<a href="src/fern/memberships/client.py#L28-L121">list_memberships</a>(...) -> ListMembershipsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3112,7 +3112,7 @@ Omit both `resource.parent.id` and `resource.parent.type` to skip parent filteri
 </details>
 
 ## Members
-<details><summary><code>client.members.<a href="src/fern/members/client.py">list_merchant_members</a>(...) -> ListMerchantMembersResponse</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L34-L111">list_merchant_members</a>(...) -> ListMerchantMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3246,7 +3246,7 @@ client.members.list_merchant_members(
 </dl>
 </details>
 
-<details><summary><code>client.members.<a href="src/fern/members/client.py">create_merchant_member</a>(...) -> Member</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L113-L188">create_merchant_member</a>(...) -> Member</code></summary>
 <dl>
 <dd>
 
@@ -3382,7 +3382,7 @@ client.members.create_merchant_member(
 </dl>
 </details>
 
-<details><summary><code>client.members.<a href="src/fern/members/client.py">get_merchant_member</a>(...) -> Member</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L190-L225">get_merchant_member</a>(...) -> Member</code></summary>
 <dl>
 <dd>
 
@@ -3464,7 +3464,7 @@ client.members.get_merchant_member(
 </dl>
 </details>
 
-<details><summary><code>client.members.<a href="src/fern/members/client.py">update_merchant_member</a>(...) -> Member</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L227-L290">update_merchant_member</a>(...) -> Member</code></summary>
 <dl>
 <dd>
 
@@ -3581,7 +3581,7 @@ client.members.update_merchant_member(
 </dl>
 </details>
 
-<details><summary><code>client.members.<a href="src/fern/members/client.py">delete_merchant_member</a>(...)</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L292-L326">delete_merchant_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3664,7 +3664,7 @@ client.members.delete_merchant_member(
 </details>
 
 ## Roles
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">list_merchant_roles</a>(...) -> ListMerchantRolesResponse</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L31-L62">list_merchant_roles</a>(...) -> ListMerchantRolesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3737,7 +3737,7 @@ client.roles.list_merchant_roles(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">create_merchant_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L64-L122">create_merchant_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -3848,7 +3848,7 @@ client.roles.create_merchant_role(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">get_merchant_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L124-L159">get_merchant_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -3930,7 +3930,7 @@ client.roles.get_merchant_role(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">delete_merchant_role</a>(...)</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L161-L195">delete_merchant_role</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4012,7 +4012,7 @@ client.roles.delete_merchant_role(
 </dl>
 </details>
 
-<details><summary><code>client.roles.<a href="src/fern/roles/client.py">update_merchant_role</a>(...) -> Role</code></summary>
+<details><summary><code>client.roles.<a href="src/fern/roles/client.py#L197-L259">update_merchant_role</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -4127,7 +4127,7 @@ client.roles.update_merchant_role(
 </details>
 
 ## Merchants
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">get_merchant</a>(...) -> Merchant</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py#L28-L57">get_merchant</a>(...) -> Merchant</code></summary>
 <dl>
 <dd>
 
@@ -4200,7 +4200,7 @@ client.merchants.get_merchant(
 </dl>
 </details>
 
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">list_persons</a>(...) -> ListPersonsResponseBody</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py#L59-L90">list_persons</a>(...) -> ListPersonsResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -4273,7 +4273,7 @@ client.merchants.list_persons(
 </dl>
 </details>
 
-<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py">get_person</a>(...) -> Person</code></summary>
+<details><summary><code>client.merchants.<a href="src/fern/merchants/client.py#L92-L127">get_person</a>(...) -> Person</code></summary>
 <dl>
 <dd>
 

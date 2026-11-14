@@ -1,6 +1,6 @@
 # Reference
 ## Tides
-<details><summary><code>client.tides.<a href="src/fern/tides/client.py">get_tides</a>(...) -> GetTidesResponse</code></summary>
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py#L29-L74">get_tides</a>(...) -> GetTidesResponse</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.tides.get_tides(
 </dl>
 </details>
 
-<details><summary><code>client.tides.<a href="src/fern/tides/client.py">get_surge</a>(...) -> GetSurgeResponse</code></summary>
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py#L76-L114">get_surge</a>(...) -> GetSurgeResponse</code></summary>
 <dl>
 <dd>
 

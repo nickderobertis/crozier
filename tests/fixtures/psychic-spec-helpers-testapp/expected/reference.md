@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_headers_test</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L105-L126">get_headers_test</a>()</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.get_headers_test()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_spec_session_auth_test</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L149">get_spec_session_auth_test</a>()</code></summary>
 <dl>
 <dd>
 
@@ -93,7 +93,7 @@ client.get_spec_session_auth_test()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_spec_session_start_session</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L151-L176">post_spec_session_start_session</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -148,7 +148,7 @@ client.post_spec_session_start_session()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_user</a>() -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L178-L200">get_user</a>() -> User</code></summary>
 <dl>
 <dd>
 
@@ -195,7 +195,7 @@ client.get_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_user</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L202-L228">post_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -250,7 +250,7 @@ client.post_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_user</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L230-L251">delete_user</a>()</code></summary>
 <dl>
 <dd>
 
@@ -297,7 +297,7 @@ client.delete_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_user</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L253-L278">patch_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -352,7 +352,7 @@ client.patch_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_user_update_put</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L280-L305">put_user_update_put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -407,7 +407,7 @@ client.put_user_update_put()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users</a>(...) -> typing.List[User]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L307-L334">get_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -462,7 +462,7 @@ client.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_users</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L336-L372">post_users</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -533,7 +533,7 @@ client.post_users()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users_id</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L374-L400">get_users_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -590,7 +590,7 @@ client.get_users_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_users_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L402-L427">delete_users_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -647,7 +647,7 @@ client.delete_users_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_users_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L429-L458">patch_users_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -712,7 +712,7 @@ client.patch_users_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_users_id_update_put</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L460-L489">put_users_id_update_put</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -777,7 +777,7 @@ client.put_users_id_update_put(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users_user_id_posts</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L491-L516">get_users_user_id_posts</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -834,7 +834,7 @@ client.get_users_user_id_posts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_users_user_id_posts</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L518-L545">post_users_user_id_posts</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -891,7 +891,7 @@ client.post_users_user_id_posts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users_user_id_posts_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L547-L577">get_users_user_id_posts_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -957,7 +957,7 @@ client.get_users_user_id_posts_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_users_user_id_posts_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L579-L609">delete_users_user_id_posts_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1023,7 +1023,7 @@ client.delete_users_user_id_posts_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_users_user_id_posts_id</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L611-L641">patch_users_user_id_posts_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1090,7 +1090,7 @@ client.patch_users_user_id_posts_id(
 </details>
 
 ## Balloons
-<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py">get_users_user_id_balloons</a>(...) -> typing.List[BalloonSummary]</code></summary>
+<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py#L33-L63">get_users_user_id_balloons</a>(...) -> typing.List[BalloonSummary]</code></summary>
 <dl>
 <dd>
 
@@ -1161,7 +1161,7 @@ client.balloons.get_users_user_id_balloons(
 </dl>
 </details>
 
-<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py">post_users_user_id_balloons</a>(...) -> Balloon</code></summary>
+<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py#L65-L101">post_users_user_id_balloons</a>(...) -> Balloon</code></summary>
 <dl>
 <dd>
 
@@ -1240,7 +1240,7 @@ client.balloons.post_users_user_id_balloons(
 </dl>
 </details>
 
-<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py">get_users_user_id_balloons_id</a>(...) -> Balloon</code></summary>
+<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py#L103-L136">get_users_user_id_balloons_id</a>(...) -> Balloon</code></summary>
 <dl>
 <dd>
 
@@ -1320,7 +1320,7 @@ client.balloons.get_users_user_id_balloons_id(
 </dl>
 </details>
 
-<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py">delete_users_user_id_balloons_id</a>(...)</code></summary>
+<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py#L138-L170">delete_users_user_id_balloons_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1400,7 +1400,7 @@ client.balloons.delete_users_user_id_balloons_id(
 </dl>
 </details>
 
-<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py">patch_users_user_id_balloons_id</a>(...)</code></summary>
+<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py#L172-L213">patch_users_user_id_balloons_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1488,7 +1488,7 @@ client.balloons.patch_users_user_id_balloons_id(
 </dl>
 </details>
 
-<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py">put_users_user_id_balloons_id_update_put</a>(...)</code></summary>
+<details><summary><code>client.balloons.<a href="src/fern/balloons/client.py#L215-L256">put_users_user_id_balloons_id_update_put</a>(...)</code></summary>
 <dl>
 <dd>
 

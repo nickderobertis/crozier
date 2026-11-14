@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_buoys</a>() -> typing.List[Buoy]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L122">list_buoys</a>() -> typing.List[Buoy]</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.list_buoys()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">stream_readings</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L124-L152">stream_readings</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -105,7 +105,7 @@ client.stream_readings(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">download_logbook</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L154-L171">download_logbook</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

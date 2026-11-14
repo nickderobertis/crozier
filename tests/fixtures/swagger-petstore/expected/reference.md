@@ -1,6 +1,6 @@
 # Reference
 ## pet
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">add_pet</a>(...) -> Pet</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L34-L93">add_pet</a>(...) -> Pet</code></summary>
 <dl>
 <dd>
 
@@ -77,7 +77,7 @@ client.pet.add_pet(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">update_pet</a>(...) -> Pet</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L95-L154">update_pet</a>(...) -> Pet</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.pet.update_pet(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">find_pets_by_status</a>(...) -> typing.List[Pet]</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L156-L190">find_pets_by_status</a>(...) -> typing.List[Pet]</code></summary>
 <dl>
 <dd>
 
@@ -229,7 +229,7 @@ client.pet.find_pets_by_status(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">find_pets_by_tags</a>(...) -> typing.List[Pet]</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L192-L227">find_pets_by_tags</a>(...) -> typing.List[Pet]</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.pet.find_pets_by_tags(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">get_pet_by_id</a>(...) -> Pet</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L229-L259">get_pet_by_id</a>(...) -> Pet</code></summary>
 <dl>
 <dd>
 
@@ -379,7 +379,7 @@ client.pet.get_pet_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">update_pet_with_form</a>(...) -> Pet</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L261-L306">update_pet_with_form</a>(...) -> Pet</code></summary>
 <dl>
 <dd>
 
@@ -469,7 +469,7 @@ client.pet.update_pet_with_form(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">delete_pet</a>(...)</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L308-L337">delete_pet</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -543,7 +543,7 @@ client.pet.delete_pet(
 </dl>
 </details>
 
-<details><summary><code>client.pet.<a href="src/fern/pet/client.py">upload_file</a>(...) -> ApiResponse</code></summary>
+<details><summary><code>client.pet.<a href="src/fern/pet/client.py#L339-L371">upload_file</a>(...) -> ApiResponse</code></summary>
 <dl>
 <dd>
 
@@ -622,7 +622,7 @@ client.pet.upload_file(...)
 </details>
 
 ## store
-<details><summary><code>client.store.<a href="src/fern/store/client.py">get_inventory</a>() -> typing.Dict[str, int]</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L31-L56">get_inventory</a>() -> typing.Dict[str, int]</code></summary>
 <dl>
 <dd>
 
@@ -686,7 +686,7 @@ client.store.get_inventory()
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">place_order</a>(...) -> Order</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L58-L114">place_order</a>(...) -> Order</code></summary>
 <dl>
 <dd>
 
@@ -758,7 +758,7 @@ client.store.place_order()
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">get_order_by_id</a>(...) -> Order</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L116-L146">get_order_by_id</a>(...) -> Order</code></summary>
 <dl>
 <dd>
 
@@ -832,7 +832,7 @@ client.store.get_order_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.store.<a href="src/fern/store/client.py">delete_order</a>(...)</code></summary>
+<details><summary><code>client.store.<a href="src/fern/store/client.py#L148-L177">delete_order</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -907,7 +907,7 @@ client.store.delete_order(
 </details>
 
 ## user
-<details><summary><code>client.user.<a href="src/fern/user/client.py">create_user</a>(...) -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L29-L93">create_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -979,7 +979,7 @@ client.user.create_user()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">create_users_with_list_input</a>(...) -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L95-L126">create_users_with_list_input</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -1055,7 +1055,7 @@ client.user.create_users_with_list_input(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">login_user</a>(...) -> str</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L128-L165">login_user</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1135,7 @@ client.user.login_user()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">logout_user</a>()</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L167-L191">logout_user</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1199,7 +1199,7 @@ client.user.logout_user()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_user_by_name</a>(...) -> User</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L193-L223">get_user_by_name</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -1273,7 +1273,7 @@ client.user.get_user_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">update_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L225-L295">update_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1355,7 +1355,7 @@ client.user.update_user(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">delete_user</a>(...)</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L297-L326">delete_user</a>(...)</code></summary>
 <dl>
 <dd>
 

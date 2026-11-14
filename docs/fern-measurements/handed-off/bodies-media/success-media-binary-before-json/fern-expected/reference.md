@@ -1,6 +1,6 @@
 # Reference
 ## Specimens
-<details><summary><code>client.specimens.<a href="src/fern/specimens/client.py">render_scan</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.specimens.<a href="src/fern/specimens/client.py#L28-L47">render_scan</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_passes</a>() -> typing.List[Pass]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L106-L126">list_passes</a>() -> typing.List[Pass]</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_profile</a>(...) -> ProfileResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L201">create_profile</a>(...) -> ProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -76,7 +76,7 @@ client.create_profile(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_preferences</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L203-L252">update_preferences</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -172,7 +172,7 @@ client.update_preferences(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">prepare_upload_meta</a>(...) -> UploadMetaResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L254-L309">prepare_upload_meta</a>(...) -> UploadMetaResponse</code></summary>
 <dl>
 <dd>
 
@@ -278,7 +278,7 @@ client.prepare_upload_meta(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">search_profiles</a>(...) -> SearchProfilesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L311-L360">search_profiles</a>(...) -> SearchProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -374,7 +374,7 @@ client.search_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">validate_raw_json</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L362-L390">validate_raw_json</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -445,7 +445,7 @@ client.validate_raw_json(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pattern_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L392-L429">pattern_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -525,7 +525,7 @@ client.pattern_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">multiple_of_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L431-L466">multiple_of_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -605,7 +605,7 @@ client.multiple_of_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">strict_object_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L468-L505">strict_object_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -679,7 +679,7 @@ client.strict_object_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">nullable_any_of_candidate</a>(...) -> MutationNullableResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L507-L535">nullable_any_of_candidate</a>(...) -> MutationNullableResponse</code></summary>
 <dl>
 <dd>
 
@@ -750,7 +750,7 @@ client.nullable_any_of_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">union_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L537-L570">union_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -824,7 +824,7 @@ client.union_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">query_object_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L572-L610">query_object_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -901,7 +901,7 @@ client.query_object_candidate()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">query_array_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L612-L644">query_array_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -970,7 +970,7 @@ client.query_array_candidate()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_file_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L646-L692">upload_file_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1067,7 +1067,7 @@ client.upload_file_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">ref_request_body_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L694-L782">ref_request_body_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1144,7 +1144,7 @@ client.ref_request_body_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">ref_parameter_candidate</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L784-L822">ref_parameter_candidate</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1223,7 +1223,7 @@ client.ref_parameter_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">multi2xx_candidate</a>() -> OkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L824-L848">multi2xx_candidate</a>() -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -1284,7 +1284,7 @@ client.multi2xx_candidate()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">non_json_success_candidate</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L850-L867">non_json_success_candidate</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

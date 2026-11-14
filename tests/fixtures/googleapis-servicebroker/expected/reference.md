@@ -1,6 +1,6 @@
 # Reference
 ## projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_get</a>(...) -> GoogleCloudServicebrokerV1Alpha1ServiceInstance</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L120-L214">servicebroker_projects_brokers_v2service_instances_get</a>(...) -> GoogleCloudServicebrokerV1Alpha1ServiceInstance</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.projects.servicebroker_projects_brokers_v2service_instances_get(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_instances_service_bindings_list</a>(...) -> GoogleCloudServicebrokerV1Alpha1ListBindingsResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L216-L322">servicebroker_projects_brokers_instances_service_bindings_list</a>(...) -> GoogleCloudServicebrokerV1Alpha1ListBindingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -350,7 +350,7 @@ returned by a previous list request to get the next page of results.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_service_instances_list</a>(...) -> GoogleCloudServicebrokerV1Alpha1ListServiceInstancesResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L324-L431">servicebroker_projects_brokers_service_instances_list</a>(...) -> GoogleCloudServicebrokerV1Alpha1ListServiceInstancesResponse</code></summary>
 <dl>
 <dd>
 
@@ -536,7 +536,7 @@ returned by a previous list request to get the next page of results.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2catalog_list</a>(...) -> GoogleCloudServicebrokerV1Alpha1ListCatalogResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L433-L540">servicebroker_projects_brokers_v2catalog_list</a>(...) -> GoogleCloudServicebrokerV1Alpha1ListCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ returned by a previous list request to get the next page of results.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_delete</a>(...) -> GoogleCloudServicebrokerV1Alpha1DeleteServiceInstanceResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L542-L658">servicebroker_projects_brokers_v2service_instances_delete</a>(...) -> GoogleCloudServicebrokerV1Alpha1DeleteServiceInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -919,7 +919,7 @@ client.projects.servicebroker_projects_brokers_v2service_instances_delete(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_get_last_operation</a>(...) -> GoogleCloudServicebrokerV1Alpha1Operation</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L660-L775">servicebroker_projects_brokers_v2service_instances_get_last_operation</a>(...) -> GoogleCloudServicebrokerV1Alpha1Operation</code></summary>
 <dl>
 <dd>
 
@@ -1117,7 +1117,7 @@ populated with the provided value.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_service_bindings_get</a>(...) -> GoogleCloudServicebrokerV1Alpha1GetBindingResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L777-L891">servicebroker_projects_brokers_v2service_instances_service_bindings_get</a>(...) -> GoogleCloudServicebrokerV1Alpha1GetBindingResponse</code></summary>
 <dl>
 <dd>
 
@@ -1312,7 +1312,7 @@ client.projects.servicebroker_projects_brokers_v2service_instances_service_bindi
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_service_bindings_get_last_operation</a>(...) -> GoogleCloudServicebrokerV1Alpha1Operation</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L893-L1020">servicebroker_projects_brokers_v2service_instances_service_bindings_get_last_operation</a>(...) -> GoogleCloudServicebrokerV1Alpha1Operation</code></summary>
 <dl>
 <dd>
 
@@ -1519,7 +1519,7 @@ populated with the provided value.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_service_bindings_create</a>(...) -> GoogleCloudServicebrokerV1Alpha1CreateBindingResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1022-L1174">servicebroker_projects_brokers_v2service_instances_service_bindings_create</a>(...) -> GoogleCloudServicebrokerV1Alpha1CreateBindingResponse</code></summary>
 <dl>
 <dd>
 
@@ -1723,7 +1723,7 @@ Required.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_create</a>(...) -> GoogleCloudServicebrokerV1Alpha1CreateServiceInstanceResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1176-L1370">servicebroker_projects_brokers_v2service_instances_create</a>(...) -> GoogleCloudServicebrokerV1Alpha1CreateServiceInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ asynchronous.
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">servicebroker_projects_brokers_v2service_instances_patch</a>(...) -> GoogleCloudServicebrokerV1Alpha1UpdateServiceInstanceResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L1372-L1550">servicebroker_projects_brokers_v2service_instances_patch</a>(...) -> GoogleCloudServicebrokerV1Alpha1UpdateServiceInstanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2124,7 +2124,7 @@ Required.
 </details>
 
 ## v1alpha1
-<details><summary><code>client.v1alpha1.<a href="src/fern/v1alpha1/client.py">servicebroker_get_iam_policy</a>(...) -> GoogleIamV1Policy</code></summary>
+<details><summary><code>client.v1alpha1.<a href="src/fern/v1alpha1/client.py#L36-L143">servicebroker_get_iam_policy</a>(...) -> GoogleIamV1Policy</code></summary>
 <dl>
 <dd>
 
@@ -2307,7 +2307,7 @@ leave the field unset.
 </dl>
 </details>
 
-<details><summary><code>client.v1alpha1.<a href="src/fern/v1alpha1/client.py">servicebroker_set_iam_policy</a>(...) -> GoogleIamV1Policy</code></summary>
+<details><summary><code>client.v1alpha1.<a href="src/fern/v1alpha1/client.py#L145-L249">servicebroker_set_iam_policy</a>(...) -> GoogleIamV1Policy</code></summary>
 <dl>
 <dd>
 
@@ -2487,7 +2487,7 @@ might reject them.
 </dl>
 </details>
 
-<details><summary><code>client.v1alpha1.<a href="src/fern/v1alpha1/client.py">servicebroker_test_iam_permissions</a>(...) -> GoogleIamV1TestIamPermissionsResponse</code></summary>
+<details><summary><code>client.v1alpha1.<a href="src/fern/v1alpha1/client.py#L251-L358">servicebroker_test_iam_permissions</a>(...) -> GoogleIamV1TestIamPermissionsResponse</code></summary>
 <dl>
 <dd>
 

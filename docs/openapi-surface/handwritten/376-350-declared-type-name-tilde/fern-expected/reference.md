@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_widget</a>(...) -> Holder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L127">create_widget</a>(...) -> Holder</code></summary>
 <dl>
 <dd>
 
@@ -54,7 +54,7 @@ client.create_widget()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_thing</a>() -> Thing</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L129-L151">get_thing</a>() -> Thing</code></summary>
 <dl>
 <dd>
 

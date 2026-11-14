@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">run_task</a>(...) -> TaskRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L192-L389">run_task</a>(...) -> TaskRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -304,7 +304,7 @@ Ids of files uploaded through `POST /v1/upload_file` to attach to this run. Skyv
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_workflow</a>(...) -> WorkflowRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L391-L577">run_workflow</a>(...) -> WorkflowRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -600,7 +600,7 @@ Ids of files uploaded through `POST /v1/upload_file` to attach to this run. Skyv
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run</a>(...) -> GetRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L579-L608">get_run</a>(...) -> GetRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.get_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">cancel_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L610-L639">cancel_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -746,7 +746,7 @@ client.cancel_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">bulk_cancel_runs</a>(...) -> BulkCancelRunsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L641-L672">bulk_cancel_runs</a>(...) -> BulkCancelRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -821,7 +821,7 @@ client.bulk_cancel_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflows</a>(...) -> typing.List[Workflow]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L674-L759">get_workflows</a>(...) -> typing.List[Workflow]</code></summary>
 <dl>
 <dd>
 
@@ -979,7 +979,7 @@ client.get_workflows()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L761-L811">create_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -1066,7 +1066,7 @@ client.create_workflow()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L813-L860">update_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -1147,7 +1147,7 @@ client.update_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_workflow</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L862-L893">delete_workflow</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1220,7 +1220,7 @@ client.delete_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_folders</a>(...) -> typing.List[Folder]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L895-L937">get_folders</a>(...) -> typing.List[Folder]</code></summary>
 <dl>
 <dd>
 
@@ -1307,7 +1307,7 @@ client.get_folders()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L939-L979">create_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -1388,7 +1388,7 @@ client.create_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L981-L1010">get_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -1461,7 +1461,7 @@ client.get_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_folder</a>(...) -> Folder</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1012-L1056">update_folder</a>(...) -> Folder</code></summary>
 <dl>
 <dd>
 
@@ -1550,7 +1550,7 @@ client.update_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_folder</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1058-L1098">delete_folder</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1631,7 +1631,7 @@ client.delete_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_types</a>() -> typing.List[BrowserTypeOption]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1100-L1126">get_browser_types</a>() -> typing.List[BrowserTypeOption]</code></summary>
 <dl>
 <dd>
 
@@ -1694,7 +1694,7 @@ client.get_browser_types()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run_tags</a>(...) -> RunTagsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1128-L1159">get_run_tags</a>(...) -> RunTagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1767,7 +1767,7 @@ client.get_run_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">apply_run_tags</a>(...) -> RunTagsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1161-L1209">apply_run_tags</a>(...) -> RunTagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1848,7 +1848,7 @@ client.apply_run_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_run_tag</a>(...) -> RunTagsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1211-L1246">delete_run_tag</a>(...) -> RunTagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1930,7 +1930,7 @@ client.delete_run_tag(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run_tag_history</a>(...) -> RunTagHistoryResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1248-L1296">get_run_tag_history</a>(...) -> RunTagHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -2027,7 +2027,7 @@ client.get_run_tag_history(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tag_keys</a>() -> typing.List[TagKey]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1298-L1322">list_tag_keys</a>() -> typing.List[TagKey]</code></summary>
 <dl>
 <dd>
 
@@ -2090,7 +2090,7 @@ client.list_tag_keys()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_tag_key</a>(...) -> TagKeyDeleteResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1324-L1355">delete_tag_key</a>(...) -> TagKeyDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2163,7 +2163,7 @@ client.delete_tag_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_tag_key</a>(...) -> TagKey</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1357-L1395">update_tag_key</a>(...) -> TagKey</code></summary>
 <dl>
 <dd>
 
@@ -2244,7 +2244,7 @@ client.update_tag_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_tag_values</a>(...) -> typing.List[TagValue]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1397-L1426">list_tag_values</a>(...) -> typing.List[TagValue]</code></summary>
 <dl>
 <dd>
 
@@ -2315,7 +2315,7 @@ client.list_tag_values()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_tag_value</a>(...) -> TagValue</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1428-L1473">create_tag_value</a>(...) -> TagValue</code></summary>
 <dl>
 <dd>
 
@@ -2405,7 +2405,7 @@ client.create_tag_value(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_tag_value</a>(...) -> TagValueDeleteResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1475-L1510">delete_tag_value</a>(...) -> TagValueDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -2487,7 +2487,7 @@ client.delete_tag_value(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_tag_value</a>(...) -> TagValue</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1512-L1551">update_tag_value</a>(...) -> TagValue</code></summary>
 <dl>
 <dd>
 
@@ -2578,7 +2578,7 @@ client.update_tag_value(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">rename_tag_value</a>(...) -> TagValueRenameResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1553-L1594">rename_tag_value</a>(...) -> TagValueRenameResponse</code></summary>
 <dl>
 <dd>
 
@@ -2669,7 +2669,7 @@ client.rename_tag_value(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">batch_get_workflow_tags</a>(...) -> WorkflowTagsBatchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1596-L1630">batch_get_workflow_tags</a>(...) -> WorkflowTagsBatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2740,7 +2740,7 @@ client.batch_get_workflow_tags()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">batch_get_workflow_tags_post</a>(...) -> WorkflowTagsBatchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1632-L1666">batch_get_workflow_tags_post</a>(...) -> WorkflowTagsBatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2811,7 +2811,7 @@ client.batch_get_workflow_tags_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">batch_get_run_tags</a>(...) -> RunTagsBatchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1668-L1699">batch_get_run_tags</a>(...) -> RunTagsBatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2882,7 +2882,7 @@ client.batch_get_run_tags()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">batch_get_run_tags_post</a>(...) -> RunTagsBatchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1701-L1735">batch_get_run_tags_post</a>(...) -> RunTagsBatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -2953,7 +2953,7 @@ client.batch_get_run_tags_post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run_tag_suggestions</a>() -> RunTagSuggestionsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1737-L1763">get_run_tag_suggestions</a>() -> RunTagSuggestionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3016,7 +3016,7 @@ client.get_run_tag_suggestions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run_artifacts</a>(...) -> typing.List[Artifact]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1765-L1804">get_run_artifacts</a>(...) -> typing.List[Artifact]</code></summary>
 <dl>
 <dd>
 
@@ -3097,7 +3097,7 @@ client.get_run_artifacts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retry_run_webhook</a>(...) -> RunWebhookReplayResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1806-L1844">retry_run_webhook</a>(...) -> RunWebhookReplayResponse</code></summary>
 <dl>
 <dd>
 
@@ -3179,7 +3179,7 @@ client.retry_run_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run_timeline</a>(...) -> typing.List[WorkflowRunTimeline]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1846-L1877">get_run_timeline</a>(...) -> typing.List[WorkflowRunTimeline]</code></summary>
 <dl>
 <dd>
 
@@ -3252,7 +3252,7 @@ client.get_run_timeline(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_version</a>() -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1879-L1903">get_version</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -3315,7 +3315,7 @@ client.get_version()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_runs_v2</a>(...) -> typing.List[TaskRunListItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1905-L1971">get_runs_v2</a>(...) -> typing.List[TaskRunListItem]</code></summary>
 <dl>
 <dd>
 
@@ -3442,7 +3442,7 @@ client.get_runs_v2()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_file</a>(...) -> UploadFileResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1973-L2011">upload_file</a>(...) -> UploadFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -3523,7 +3523,7 @@ client.upload_file(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_file</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2013-L2044">delete_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3600,7 +3600,7 @@ client.delete_file(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_browser_profiles</a>(...) -> typing.List[BrowserProfile]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2046-L2099">list_browser_profiles</a>(...) -> typing.List[BrowserProfile]</code></summary>
 <dl>
 <dd>
 
@@ -3703,7 +3703,7 @@ client.list_browser_profiles()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_browser_profile</a>(...) -> BrowserProfile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2101-L2163">create_browser_profile</a>(...) -> BrowserProfile</code></summary>
 <dl>
 <dd>
 
@@ -3816,7 +3816,7 @@ client.create_browser_profile(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_profile</a>(...) -> BrowserProfile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2165-L2196">get_browser_profile</a>(...) -> BrowserProfile</code></summary>
 <dl>
 <dd>
 
@@ -3889,7 +3889,7 @@ client.get_browser_profile(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_browser_profile</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2198-L2228">delete_browser_profile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3962,7 +3962,7 @@ client.delete_browser_profile(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_browser_profile</a>(...) -> BrowserProfile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2230-L2292">update_browser_profile</a>(...) -> BrowserProfile</code></summary>
 <dl>
 <dd>
 
@@ -4075,7 +4075,7 @@ client.update_browser_profile(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_profile_usage</a>(...) -> BrowserProfileUsage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2294-L2325">get_browser_profile_usage</a>(...) -> BrowserProfileUsage</code></summary>
 <dl>
 <dd>
 
@@ -4148,7 +4148,7 @@ client.get_browser_profile_usage(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_sessions</a>() -> typing.List[BrowserSessionResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2327-L2353">get_browser_sessions</a>() -> typing.List[BrowserSessionResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4211,7 +4211,7 @@ client.get_browser_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2355-L2464">create_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4382,7 +4382,7 @@ For self-hosted deployments, you can pass a custom proxy URL as a dict: {"url": 
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">close_browser_session</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2466-L2497">close_browser_session</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4455,7 +4455,7 @@ client.close_browser_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">extend_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2499-L2540">extend_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4537,7 +4537,7 @@ client.extend_browser_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2542-L2573">get_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4610,7 +4610,7 @@ client.get_browser_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2575-L2616">update_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4692,7 +4692,7 @@ client.update_browser_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">send_totp_code</a>(...) -> TotpCode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2618-L2691">send_totp_code</a>(...) -> TotpCode</code></summary>
 <dl>
 <dd>
 
@@ -4822,7 +4822,7 @@ client.send_totp_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_credentials</a>(...) -> typing.List[CredentialResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2693-L2751">get_credentials</a>(...) -> typing.List[CredentialResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4928,7 +4928,7 @@ client.get_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2753-L2848">create_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -5005,7 +5005,7 @@ client.create_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2850-L2951">update_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -5091,7 +5091,7 @@ client.update_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_credential</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2953-L2981">delete_credential</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5164,7 +5164,7 @@ client.delete_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2983-L3014">get_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -5237,7 +5237,7 @@ client.get_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_custom_llms</a>() -> CustomLlmListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3016-L3040">list_custom_llms</a>() -> CustomLlmListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5300,7 +5300,7 @@ client.list_custom_llms()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_custom_llm</a>(...) -> CustomLlmResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3042-L3076">create_custom_llm</a>(...) -> CustomLlmResponse</code></summary>
 <dl>
 <dd>
 
@@ -5377,7 +5377,7 @@ client.create_custom_llm(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_custom_llm</a>(...) -> CustomLlmResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3078-L3116">update_custom_llm</a>(...) -> CustomLlmResponse</code></summary>
 <dl>
 <dd>
 
@@ -5463,7 +5463,7 @@ client.update_custom_llm(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_custom_llm</a>(...) -> ClearOrganizationAuthTokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3118-L3149">delete_custom_llm</a>(...) -> ClearOrganizationAuthTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -5536,7 +5536,7 @@ client.delete_custom_llm(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">login</a>(...) -> WorkflowRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3151-L3307">login</a>(...) -> WorkflowRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -5801,7 +5801,7 @@ client.login(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">download_files</a>(...) -> WorkflowRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3309-L3425">download_files</a>(...) -> WorkflowRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -6002,7 +6002,7 @@ client.download_files(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_scripts</a>(...) -> typing.List[Script]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3427-L3466">get_scripts</a>(...) -> typing.List[Script]</code></summary>
 <dl>
 <dd>
 
@@ -6084,7 +6084,7 @@ client.get_scripts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_script</a>(...) -> CreateScriptResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3468-L3510">create_script</a>(...) -> CreateScriptResponse</code></summary>
 <dl>
 <dd>
 
@@ -6171,7 +6171,7 @@ client.create_script()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_script</a>(...) -> Script</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3512-L3541">get_script</a>(...) -> Script</code></summary>
 <dl>
 <dd>
 
@@ -6244,7 +6244,7 @@ client.get_script(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">deploy_script</a>(...) -> CreateScriptResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3543-L3587">deploy_script</a>(...) -> CreateScriptResponse</code></summary>
 <dl>
 <dd>
 
@@ -6331,7 +6331,7 @@ client.deploy_script(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_sdk_action</a>(...) -> RunSdkActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3589-L3647">run_sdk_action</a>(...) -> RunSdkActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -6437,7 +6437,7 @@ client.run_sdk_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_workflow_folder</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3649-L3689">update_workflow_folder</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -6518,7 +6518,7 @@ client.update_workflow_folder(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflow_tags</a>(...) -> TagsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3691-L3722">get_workflow_tags</a>(...) -> TagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6591,7 +6591,7 @@ client.get_workflow_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">apply_workflow_tags</a>(...) -> TagsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3724-L3776">apply_workflow_tags</a>(...) -> TagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6672,7 +6672,7 @@ client.apply_workflow_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_workflow_tag</a>(...) -> TagsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3778-L3813">delete_workflow_tag</a>(...) -> TagsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6754,7 +6754,7 @@ client.delete_workflow_tag(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflow_tag_history</a>(...) -> TagHistoryResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3815-L3863">get_workflow_tag_history</a>(...) -> TagHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -6851,7 +6851,7 @@ client.get_workflow_tag_history(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retry_workflow_run</a>(...) -> WorkflowRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3865-L3910">retry_workflow_run</a>(...) -> WorkflowRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -6940,7 +6940,7 @@ client.retry_workflow_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflow_runs</a>(...) -> typing.List[WorkflowRun]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3912-L3994">get_workflow_runs</a>(...) -> typing.List[WorkflowRun]</code></summary>
 <dl>
 <dd>
 
@@ -7070,7 +7070,7 @@ client.get_workflow_runs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflow_runs_by_id</a>(...) -> typing.List[WorkflowRun]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3996-L4091">get_workflow_runs_by_id</a>(...) -> typing.List[WorkflowRun]</code></summary>
 <dl>
 <dd>
 
@@ -7229,7 +7229,7 @@ client.get_workflow_runs_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4093-L4134">get_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -7318,7 +7318,7 @@ client.get_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflow_versions</a>(...) -> typing.List[Workflow]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4136-L4174">get_workflow_versions</a>(...) -> typing.List[Workflow]</code></summary>
 <dl>
 <dd>
 
@@ -7399,7 +7399,7 @@ client.get_workflow_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">extract_job_application</a>(...) -> JobRecipeRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4176-L4206">extract_job_application</a>(...) -> JobRecipeRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -7472,7 +7472,7 @@ client.extract_job_application(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">apply_to_job</a>(...) -> JobRecipeRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4208-L4284">apply_to_job</a>(...) -> JobRecipeRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -7619,7 +7619,7 @@ client.apply_to_job(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_job_recipe_runs</a>(...) -> JobRecipeRunListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4286-L4324">list_job_recipe_runs</a>(...) -> JobRecipeRunListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7699,7 +7699,7 @@ client.list_job_recipe_runs()
 </details>
 
 ## Artifacts
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">get_artifact_content</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L25-L55">get_artifact_content</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -7773,7 +7773,7 @@ client.artifacts.get_artifact_content(
 </details>
 
 ## Scripts
-<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py">run_script</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.scripts.<a href="src/fern/scripts/client.py#L25-L54">run_script</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -7847,7 +7847,7 @@ client.scripts.run_script(
 </details>
 
 ## Schedules
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">list_all</a>(...) -> OrganizationScheduleListResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L34-L78">list_all</a>(...) -> OrganizationScheduleListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7942,7 +7942,7 @@ client.schedules.list_all()
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">list</a>(...) -> WorkflowScheduleListResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L80-L110">list</a>(...) -> WorkflowScheduleListResponse</code></summary>
 <dl>
 <dd>
 
@@ -8015,7 +8015,7 @@ client.schedules.list(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">create</a>(...) -> WorkflowScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L112-L183">create</a>(...) -> WorkflowScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -8097,7 +8097,7 @@ client.schedules.create(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">get</a>(...) -> WorkflowScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L185-L222">get</a>(...) -> WorkflowScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -8179,7 +8179,7 @@ client.schedules.get(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">update</a>(...) -> WorkflowScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L224-L300">update</a>(...) -> WorkflowScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -8270,7 +8270,7 @@ client.schedules.update(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">delete</a>(...) -> DeleteScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L302-L341">delete</a>(...) -> DeleteScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -8352,7 +8352,7 @@ client.schedules.delete(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">enable</a>(...) -> WorkflowScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L343-L382">enable</a>(...) -> WorkflowScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -8434,7 +8434,7 @@ client.schedules.enable(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">disable</a>(...) -> WorkflowScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L384-L423">disable</a>(...) -> WorkflowScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -8517,7 +8517,7 @@ client.schedules.disable(
 </details>
 
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">reset_workflow_browser_profile</a>(...)</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L25-L57">reset_workflow_browser_profile</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">record_map_accepted</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L105-L143">record_map_accepted</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.record_map_accepted(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">record_map_rejected</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L145-L183">record_map_rejected</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -129,7 +129,7 @@ client.record_map_rejected(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">record_closed_accepted</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L185-L226">record_closed_accepted</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -194,7 +194,7 @@ client.record_closed_accepted(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">record_closed_rejected</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L228-L269">record_closed_rejected</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -259,7 +259,7 @@ client.record_closed_rejected(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">record_null_allowed</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L271-L309">record_null_allowed</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -322,7 +322,7 @@ client.record_null_allowed(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">record_null_disallowed</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L311-L349">record_null_disallowed</a>(...)</code></summary>
 <dl>
 <dd>
 

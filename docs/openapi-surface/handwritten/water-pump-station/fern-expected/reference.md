@@ -1,6 +1,6 @@
 # Reference
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">export</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L25-L47">export</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.logs.export()
 </details>
 
 ## Gauges
-<details><summary><code>client.gauges.<a href="src/fern/gauges/client.py">read</a>(...) -> float</code></summary>
+<details><summary><code>client.gauges.<a href="src/fern/gauges/client.py#L25-L51">read</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.gauges.read(
 </details>
 
 ## Pumps Servicing
-<details><summary><code>client.pumps.servicing.<a href="src/fern/pumps/servicing/client.py">flush</a>(...)</code></summary>
+<details><summary><code>client.pumps.servicing.<a href="src/fern/pumps/servicing/client.py#L25-L50">flush</a>(...)</code></summary>
 <dl>
 <dd>
 

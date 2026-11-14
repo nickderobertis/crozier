@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_piece</a>(...) -> Piece</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L125">get_piece</a>(...) -> Piece</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_piece(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_firing</a>(...) -> GetFiringResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L155">get_firing</a>(...) -> GetFiringResponse</code></summary>
 <dl>
 <dd>
 

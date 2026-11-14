@@ -1,6 +1,6 @@
 # Reference
 ## Protocol
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">discovery_document</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L38-L65">discovery_document</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.protocol.discovery_document()
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">public_signing_keys</a>() -> GetJwksResponse</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L67-L92">public_signing_keys</a>() -> GetJwksResponse</code></summary>
 <dl>
 <dd>
 
@@ -128,7 +128,7 @@ client.protocol.public_signing_keys()
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">authorization_endpoint</a>(...)</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L94-L168">authorization_endpoint</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -265,7 +265,7 @@ client.protocol.authorization_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">token_exchange</a>(...) -> PostTokenResponse</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L170-L207">token_exchange</a>(...) -> PostTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -344,7 +344,7 @@ client.protocol.token_exchange(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">userinfo</a>() -> GetMeResponse</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L209-L234">userinfo</a>() -> GetMeResponse</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.protocol.userinfo()
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">dynamic_client_registration_rfc7591</a>(...) -> RegisteredClient</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L236-L281">dynamic_client_registration_rfc7591</a>(...) -> RegisteredClient</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.protocol.dynamic_client_registration_rfc7591(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">read_own_registration</a>(...) -> RegisteredClient</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L283-L312">read_own_registration</a>(...) -> RegisteredClient</code></summary>
 <dl>
 <dd>
 
@@ -560,7 +560,7 @@ client.protocol.read_own_registration(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">update_own_registration</a>(...)</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L314-L378">update_own_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -642,7 +642,7 @@ client.protocol.update_own_registration(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">deregister</a>(...)</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L380-L406">deregister</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -702,7 +702,7 @@ client.protocol.deregister(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">token_revocation</a>(...)</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L408-L444">token_revocation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -770,7 +770,7 @@ client.protocol.token_revocation(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">token_introspection</a>(...) -> PostIntrospectResponse</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L446-L483">token_introspection</a>(...) -> PostIntrospectResponse</code></summary>
 <dl>
 <dd>
 
@@ -838,7 +838,7 @@ client.protocol.token_introspection(
 </dl>
 </details>
 
-<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py">rp_initiated_logout</a>(...)</code></summary>
+<details><summary><code>client.protocol.<a href="src/fern/protocol/client.py#L485-L523">rp_initiated_logout</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -919,7 +919,7 @@ client.protocol.rp_initiated_logout()
 </details>
 
 ## App
-<details><summary><code>client.app.<a href="src/fern/app/client.py">provider_picker_login_page_html</a>(...) -> str</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L30-L61">provider_picker_login_page_html</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -991,7 +991,7 @@ client.app.provider_picker_login_page_html()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">current_session_user</a>() -> ApiEnvelope</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L63-L88">current_session_user</a>() -> ApiEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1055,7 +1055,7 @@ client.app.current_session_user()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">log_out</a>()</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L90-L114">log_out</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1119,7 +1119,7 @@ client.app.log_out()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">start_upstream_o_auth_login</a>(...)</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L116-L157">start_upstream_o_auth_login</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1202,7 +1202,7 @@ client.app.start_upstream_o_auth_login(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">upstream_o_auth_callback</a>(...)</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L159-L197">upstream_o_auth_callback</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1294,7 +1294,7 @@ client.app.upstream_o_auth_callback(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">resolve_login_consent_prompt</a>(...)</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L199-L229">resolve_login_consent_prompt</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1368,7 +1368,7 @@ client.app.resolve_login_consent_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">list_my_applications</a>() -> ApiEnvelope</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L231-L256">list_my_applications</a>() -> ApiEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1432,7 +1432,7 @@ client.app.list_my_applications()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">create_an_o_auth_application</a>(...) -> ApiEnvelope</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L258-L312">create_an_o_auth_application</a>(...) -> ApiEnvelope</code></summary>
 <dl>
 <dd>
 
@@ -1541,7 +1541,7 @@ client.app.create_an_o_auth_application(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_one_application</a>(...)</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L314-L342">get_one_application</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1615,7 +1615,7 @@ client.app.get_one_application(
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">delete_an_application</a>(...)</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L344-L370">delete_an_application</a>(...)</code></summary>
 <dl>
 <dd>
 

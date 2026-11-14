@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">global_health</a>() -> GlobalHealthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L187-L211">global_health</a>() -> GlobalHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.global_health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">global_event</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L213-L239">global_event</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -121,7 +121,7 @@ client.global_event()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">global_config_get</a>() -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L241-L265">global_config_get</a>() -> Config</code></summary>
 <dl>
 <dd>
 
@@ -182,7 +182,7 @@ client.global_config_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">global_config_update</a>(...) -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L267-L448">global_config_update</a>(...) -> Config</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.global_config_update()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">global_dispose</a>() -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L450-L474">global_dispose</a>() -> bool</code></summary>
 <dl>
 <dd>
 
@@ -312,7 +312,7 @@ client.global_dispose()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">auth_set</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L476-L513">auth_set</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -396,7 +396,7 @@ client.auth_set(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">auth_remove</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L515-L543">auth_remove</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -467,7 +467,7 @@ client.auth_remove(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">project_list</a>(...) -> typing.List[Project]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L545-L573">project_list</a>(...) -> typing.List[Project]</code></summary>
 <dl>
 <dd>
 
@@ -536,7 +536,7 @@ client.project_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">project_current</a>(...) -> Project</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L575-L603">project_current</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -605,7 +605,7 @@ client.project_current()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">project_update</a>(...) -> Project</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L605-L652">project_update</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -708,7 +708,7 @@ client.project_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pty_list</a>(...) -> typing.List[Pty]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L654-L682">pty_list</a>(...) -> typing.List[Pty]</code></summary>
 <dl>
 <dd>
 
@@ -777,7 +777,7 @@ client.pty_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pty_create</a>(...) -> Pty</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L684-L738">pty_create</a>(...) -> Pty</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.pty_create()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pty_get</a>(...) -> Pty</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L740-L776">pty_get</a>(...) -> Pty</code></summary>
 <dl>
 <dd>
 
@@ -965,7 +965,7 @@ client.pty_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pty_update</a>(...) -> Pty</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L778-L822">pty_update</a>(...) -> Pty</code></summary>
 <dl>
 <dd>
 
@@ -1060,7 +1060,7 @@ client.pty_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pty_remove</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L824-L860">pty_remove</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -1139,7 +1139,7 @@ client.pty_remove(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pty_connect</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L862-L898">pty_connect</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -1218,7 +1218,7 @@ client.pty_connect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">config_get</a>(...) -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L900-L928">config_get</a>(...) -> Config</code></summary>
 <dl>
 <dd>
 
@@ -1287,7 +1287,7 @@ client.config_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">config_update</a>(...) -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L930-L1115">config_update</a>(...) -> Config</code></summary>
 <dl>
 <dd>
 
@@ -1364,7 +1364,7 @@ client.config_update()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">config_providers</a>(...) -> ConfigProvidersResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1117-L1145">config_providers</a>(...) -> ConfigProvidersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1433,7 +1433,7 @@ client.config_providers()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tool_ids</a>(...) -> ToolIDs</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1147-L1175">tool_ids</a>(...) -> ToolIDs</code></summary>
 <dl>
 <dd>
 
@@ -1502,7 +1502,7 @@ client.tool_ids()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tool_list</a>(...) -> ToolList</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1177-L1219">tool_list</a>(...) -> ToolList</code></summary>
 <dl>
 <dd>
 
@@ -1590,7 +1590,7 @@ client.tool_list(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">worktree_list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1221-L1249">worktree_list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1659,7 +1659,7 @@ client.worktree_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">worktree_create</a>(...) -> Worktree</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1251-L1291">worktree_create</a>(...) -> Worktree</code></summary>
 <dl>
 <dd>
 
@@ -1744,7 +1744,7 @@ client.worktree_create()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">worktree_remove</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1293-L1333">worktree_remove</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -1823,7 +1823,7 @@ client.worktree_remove(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">worktree_reset</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1335-L1375">worktree_reset</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -1902,7 +1902,7 @@ client.worktree_reset(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">experimental_resource_list</a>(...) -> typing.Dict[str, McpResource]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1377-L1405">experimental_resource_list</a>(...) -> typing.Dict[str, McpResource]</code></summary>
 <dl>
 <dd>
 
@@ -1971,7 +1971,7 @@ client.experimental_resource_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_list</a>(...) -> typing.List[Session]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1407-L1457">session_list</a>(...) -> typing.List[Session]</code></summary>
 <dl>
 <dd>
 
@@ -2072,7 +2072,7 @@ client.session_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_create</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1459-L1505">session_create</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -2165,7 +2165,7 @@ client.session_create()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_status</a>(...) -> typing.Dict[str, SessionStatus]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1507-L1535">session_status</a>(...) -> typing.Dict[str, SessionStatus]</code></summary>
 <dl>
 <dd>
 
@@ -2234,7 +2234,7 @@ client.session_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_delete</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1537-L1573">session_delete</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -2313,7 +2313,7 @@ client.session_delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_update</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1575-L1619">session_update</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -2408,7 +2408,7 @@ client.session_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_todo</a>(...) -> typing.List[Todo]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1621-L1658">session_todo</a>(...) -> typing.List[Todo]</code></summary>
 <dl>
 <dd>
 
@@ -2487,7 +2487,7 @@ client.session_todo(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_init</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1660-L1716">session_init</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -2593,7 +2593,7 @@ client.session_init(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_fork</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1718-L1759">session_fork</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -2680,7 +2680,7 @@ client.session_fork(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_abort</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1761-L1797">session_abort</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -2759,7 +2759,7 @@ client.session_abort(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_share</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1799-L1835">session_share</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -2838,7 +2838,7 @@ client.session_share(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_unshare</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1837-L1873">session_unshare</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -2917,7 +2917,7 @@ client.session_unshare(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_diff</a>(...) -> typing.List[FileDiff]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1875-L1916">session_diff</a>(...) -> typing.List[FileDiff]</code></summary>
 <dl>
 <dd>
 
@@ -3004,7 +3004,7 @@ client.session_diff(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_summarize</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1918-L1973">session_summarize</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3109,7 +3109,7 @@ client.session_summarize(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_messages</a>(...) -> typing.List[SessionMessagesResponseItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1975-L2017">session_messages</a>(...) -> typing.List[SessionMessagesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -3196,7 +3196,7 @@ client.session_messages(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_prompt</a>(...) -> SessionPromptResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2019-L2098">session_prompt</a>(...) -> SessionPromptResponse</code></summary>
 <dl>
 <dd>
 
@@ -3344,7 +3344,7 @@ client.session_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_message</a>(...) -> SessionMessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2100-L2144">session_message</a>(...) -> SessionMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3432,7 +3432,7 @@ client.session_message(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">part_delete</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2146-L2195">part_delete</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3529,7 +3529,7 @@ client.part_delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">part_update</a>(...) -> Part</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2197-L2255">part_update</a>(...) -> Part</code></summary>
 <dl>
 <dd>
 
@@ -3640,7 +3640,7 @@ client.part_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_prompt_async</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2257-L2335">session_prompt_async</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3788,7 +3788,7 @@ client.session_prompt_async(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_command</a>(...) -> SessionCommandResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2337-L2408">session_command</a>(...) -> SessionCommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -3925,7 +3925,7 @@ client.session_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_shell</a>(...) -> AssistantMessage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2410-L2460">session_shell</a>(...) -> AssistantMessage</code></summary>
 <dl>
 <dd>
 
@@ -4030,7 +4030,7 @@ client.session_shell(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_revert</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2462-L2507">session_revert</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -4126,7 +4126,7 @@ client.session_revert(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">session_unrevert</a>(...) -> Session</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2509-L2545">session_unrevert</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -4205,7 +4205,7 @@ client.session_unrevert(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">permission_respond</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2547-L2593">permission_respond</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -4302,7 +4302,7 @@ client.permission_respond(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">permission_reply</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2595-L2640">permission_reply</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -4398,7 +4398,7 @@ client.permission_reply(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">permission_list</a>(...) -> typing.List[PermissionRequest]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2642-L2670">permission_list</a>(...) -> typing.List[PermissionRequest]</code></summary>
 <dl>
 <dd>
 
@@ -4467,7 +4467,7 @@ client.permission_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">question_list</a>(...) -> typing.List[QuestionRequest]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2672-L2700">question_list</a>(...) -> typing.List[QuestionRequest]</code></summary>
 <dl>
 <dd>
 
@@ -4536,7 +4536,7 @@ client.question_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">question_reply</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2702-L2745">question_reply</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -4628,7 +4628,7 @@ client.question_reply(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">question_reject</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2747-L2783">question_reject</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -4707,7 +4707,7 @@ client.question_reject(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">provider_list</a>(...) -> ProviderListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2785-L2813">provider_list</a>(...) -> ProviderListResponse</code></summary>
 <dl>
 <dd>
 
@@ -4776,7 +4776,7 @@ client.provider_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">provider_auth</a>(...) -> typing.Dict[str, typing.List[ProviderAuthMethod]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2815-L2843">provider_auth</a>(...) -> typing.Dict[str, typing.List[ProviderAuthMethod]]</code></summary>
 <dl>
 <dd>
 
@@ -4845,7 +4845,7 @@ client.provider_auth()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">provider_oauth_authorize</a>(...) -> ProviderAuthAuthorization</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2845-L2889">provider_oauth_authorize</a>(...) -> ProviderAuthAuthorization</code></summary>
 <dl>
 <dd>
 
@@ -4933,7 +4933,7 @@ client.provider_oauth_authorize(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">provider_oauth_callback</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2891-L2939">provider_oauth_callback</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -5029,7 +5029,7 @@ client.provider_oauth_callback(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_text</a>(...) -> typing.List[FindTextResponseItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2941-L2977">find_text</a>(...) -> typing.List[FindTextResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -5108,7 +5108,7 @@ client.find_text(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_files</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2979-L3026">find_files</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -5211,7 +5211,7 @@ client.find_files(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_symbols</a>(...) -> typing.List[Symbol]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3028-L3064">find_symbols</a>(...) -> typing.List[Symbol]</code></summary>
 <dl>
 <dd>
 
@@ -5290,7 +5290,7 @@ client.find_symbols(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">file_list</a>(...) -> typing.List[FileNode]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3066-L3102">file_list</a>(...) -> typing.List[FileNode]</code></summary>
 <dl>
 <dd>
 
@@ -5369,7 +5369,7 @@ client.file_list(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">file_read</a>(...) -> FileContent</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3104-L3140">file_read</a>(...) -> FileContent</code></summary>
 <dl>
 <dd>
 
@@ -5448,7 +5448,7 @@ client.file_read(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">file_status</a>(...) -> typing.List[File]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3142-L3170">file_status</a>(...) -> typing.List[File]</code></summary>
 <dl>
 <dd>
 
@@ -5517,7 +5517,7 @@ client.file_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_status</a>(...) -> typing.Dict[str, McpStatus]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3172-L3200">mcp_status</a>(...) -> typing.Dict[str, McpStatus]</code></summary>
 <dl>
 <dd>
 
@@ -5586,7 +5586,7 @@ client.mcp_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_add</a>(...) -> typing.Dict[str, McpStatus]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3202-L3246">mcp_add</a>(...) -> typing.Dict[str, McpStatus]</code></summary>
 <dl>
 <dd>
 
@@ -5678,7 +5678,7 @@ client.mcp_add(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_auth_start</a>(...) -> McpAuthStartResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3248-L3284">mcp_auth_start</a>(...) -> McpAuthStartResponse</code></summary>
 <dl>
 <dd>
 
@@ -5757,7 +5757,7 @@ client.mcp_auth_start(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_auth_remove</a>(...) -> McpAuthRemoveResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3286-L3322">mcp_auth_remove</a>(...) -> McpAuthRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -5836,7 +5836,7 @@ client.mcp_auth_remove(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_auth_callback</a>(...) -> McpStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3324-L3367">mcp_auth_callback</a>(...) -> McpStatus</code></summary>
 <dl>
 <dd>
 
@@ -5924,7 +5924,7 @@ client.mcp_auth_callback(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_auth_authenticate</a>(...) -> McpStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3369-L3405">mcp_auth_authenticate</a>(...) -> McpStatus</code></summary>
 <dl>
 <dd>
 
@@ -6003,7 +6003,7 @@ client.mcp_auth_authenticate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_connect</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3407-L3443">mcp_connect</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6082,7 +6082,7 @@ client.mcp_connect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">mcp_disconnect</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3445-L3481">mcp_disconnect</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6161,7 +6161,7 @@ client.mcp_disconnect(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_append_prompt</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3483-L3519">tui_append_prompt</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6240,7 +6240,7 @@ client.tui_append_prompt(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_open_help</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3521-L3549">tui_open_help</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6309,7 +6309,7 @@ client.tui_open_help()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_open_sessions</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3551-L3579">tui_open_sessions</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6378,7 +6378,7 @@ client.tui_open_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_open_themes</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3581-L3609">tui_open_themes</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6447,7 +6447,7 @@ client.tui_open_themes()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_open_models</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3611-L3639">tui_open_models</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6516,7 +6516,7 @@ client.tui_open_models()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_submit_prompt</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3641-L3669">tui_submit_prompt</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6585,7 +6585,7 @@ client.tui_submit_prompt()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_clear_prompt</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3671-L3699">tui_clear_prompt</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6654,7 +6654,7 @@ client.tui_clear_prompt()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_execute_command</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3701-L3739">tui_execute_command</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6733,7 +6733,7 @@ client.tui_execute_command(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_show_toast</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3741-L3795">tui_show_toast</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6837,7 +6837,7 @@ client.tui_show_toast(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_publish</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3797-L3841">tui_publish</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6920,7 +6920,7 @@ client.tui_publish(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_select_session</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3843-L3882">tui_select_session</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -6999,7 +6999,7 @@ client.tui_select_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_control_next</a>(...) -> TuiControlNextResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3884-L3912">tui_control_next</a>(...) -> TuiControlNextResponse</code></summary>
 <dl>
 <dd>
 
@@ -7068,7 +7068,7 @@ client.tui_control_next()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">tui_control_response</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3914-L3952">tui_control_response</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -7147,7 +7147,7 @@ client.tui_control_response(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">instance_dispose</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3954-L3982">instance_dispose</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -7216,7 +7216,7 @@ client.instance_dispose()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">path_get</a>(...) -> Path</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3984-L4012">path_get</a>(...) -> Path</code></summary>
 <dl>
 <dd>
 
@@ -7285,7 +7285,7 @@ client.path_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">vcs_get</a>(...) -> VcsInfo</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4014-L4042">vcs_get</a>(...) -> VcsInfo</code></summary>
 <dl>
 <dd>
 
@@ -7354,7 +7354,7 @@ client.vcs_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">command_list</a>(...) -> typing.List[Command]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4044-L4072">command_list</a>(...) -> typing.List[Command]</code></summary>
 <dl>
 <dd>
 
@@ -7423,7 +7423,7 @@ client.command_list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">app_log</a>(...) -> bool</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4074-L4132">app_log</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -7528,7 +7528,7 @@ client.app_log(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">app_agents</a>(...) -> typing.List[Agent]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4134-L4162">app_agents</a>(...) -> typing.List[Agent]</code></summary>
 <dl>
 <dd>
 
@@ -7597,7 +7597,7 @@ client.app_agents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">app_skills</a>(...) -> typing.List[AppSkillsResponseItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4164-L4192">app_skills</a>(...) -> typing.List[AppSkillsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7666,7 +7666,7 @@ client.app_skills()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">lsp_status</a>(...) -> typing.List[LspStatus]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4194-L4222">lsp_status</a>(...) -> typing.List[LspStatus]</code></summary>
 <dl>
 <dd>
 
@@ -7735,7 +7735,7 @@ client.lsp_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">formatter_status</a>(...) -> typing.List[FormatterStatus]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4224-L4252">formatter_status</a>(...) -> typing.List[FormatterStatus]</code></summary>
 <dl>
 <dd>
 
@@ -7804,7 +7804,7 @@ client.formatter_status()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">event_subscribe</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L4254-L4284">event_subscribe</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7874,7 +7874,7 @@ client.event_subscribe()
 </details>
 
 ## Session
-<details><summary><code>client.session.<a href="src/fern/session/client.py">get</a>(...) -> Session</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py#L26-L62">get</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -7953,7 +7953,7 @@ client.session.get(
 </dl>
 </details>
 
-<details><summary><code>client.session.<a href="src/fern/session/client.py">children</a>(...) -> typing.List[Session]</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py#L64-L100">children</a>(...) -> typing.List[Session]</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">delete_archived_call</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L145-L184">delete_archived_call</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.delete_archived_call(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_byoc_trunk</a>(...) -> ListByocTrunkResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L186-L229">list_byoc_trunk</a>(...) -> ListByocTrunkResponse</code></summary>
 <dl>
 <dd>
 
@@ -171,7 +171,7 @@ client.list_byoc_trunk()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L231-L312">create_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
 <dl>
 <dd>
 
@@ -315,7 +315,7 @@ client.create_byoc_trunk()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L314-L346">fetch_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
 <dl>
 <dd>
 
@@ -389,7 +389,7 @@ client.fetch_byoc_trunk(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L348-L436">update_byoc_trunk</a>(...) -> VoiceV1ByocTrunk</code></summary>
 <dl>
 <dd>
 
@@ -543,7 +543,7 @@ client.update_byoc_trunk(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_byoc_trunk</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L438-L467">delete_byoc_trunk</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -617,7 +617,7 @@ client.delete_byoc_trunk(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_connection_policy</a>(...) -> ListConnectionPolicyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L469-L512">list_connection_policy</a>(...) -> ListConnectionPolicyResponse</code></summary>
 <dl>
 <dd>
 
@@ -705,7 +705,7 @@ client.list_connection_policy()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L514-L546">create_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
 <dl>
 <dd>
 
@@ -777,7 +777,7 @@ client.create_connection_policy()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_connection_policy_target</a>(...) -> ListConnectionPolicyTargetResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L548-L601">list_connection_policy_target</a>(...) -> ListConnectionPolicyTargetResponse</code></summary>
 <dl>
 <dd>
 
@@ -875,7 +875,7 @@ client.list_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L603-L667">create_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
 <dl>
 <dd>
 
@@ -990,7 +990,7 @@ client.create_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L669-L707">fetch_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
 <dl>
 <dd>
 
@@ -1073,7 +1073,7 @@ client.fetch_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L709-L778">update_connection_policy_target</a>(...) -> VoiceV1ConnectionPolicyConnectionPolicyTarget</code></summary>
 <dl>
 <dd>
 
@@ -1196,7 +1196,7 @@ client.update_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_connection_policy_target</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L780-L817">delete_connection_policy_target</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1279,7 +1279,7 @@ client.delete_connection_policy_target(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L819-L851">fetch_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
 <dl>
 <dd>
 
@@ -1353,7 +1353,7 @@ client.fetch_connection_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L853-L894">update_connection_policy</a>(...) -> VoiceV1ConnectionPolicy</code></summary>
 <dl>
 <dd>
 
@@ -1435,7 +1435,7 @@ client.update_connection_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_connection_policy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L896-L925">delete_connection_policy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1509,7 +1509,7 @@ client.delete_connection_policy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_dialing_permissions_country_bulk_update</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsCountryBulkUpdate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L927-L961">create_dialing_permissions_country_bulk_update</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsCountryBulkUpdate</code></summary>
 <dl>
 <dd>
 
@@ -1583,7 +1583,7 @@ client.create_dialing_permissions_country_bulk_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_dialing_permissions_country</a>(...) -> ListDialingPermissionsCountryResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L963-L1039">list_dialing_permissions_country</a>(...) -> ListDialingPermissionsCountryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1719,7 +1719,7 @@ client.list_dialing_permissions_country()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_dialing_permissions_country</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsCountryInstance</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1041-L1073">fetch_dialing_permissions_country</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsCountryInstance</code></summary>
 <dl>
 <dd>
 
@@ -1793,7 +1793,7 @@ client.fetch_dialing_permissions_country(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_dialing_permissions_hrs_prefixes</a>(...) -> ListDialingPermissionsHrsPrefixesResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1075-L1124">list_dialing_permissions_hrs_prefixes</a>(...) -> ListDialingPermissionsHrsPrefixesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1891,7 +1891,7 @@ client.list_dialing_permissions_hrs_prefixes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_ip_record</a>(...) -> ListIpRecordResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1126-L1169">list_ip_record</a>(...) -> ListIpRecordResponse</code></summary>
 <dl>
 <dd>
 
@@ -1979,7 +1979,7 @@ client.list_ip_record()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1171-L1219">create_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
 <dl>
 <dd>
 
@@ -2069,7 +2069,7 @@ client.create_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1221-L1251">fetch_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
 <dl>
 <dd>
 
@@ -2143,7 +2143,7 @@ client.fetch_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1253-L1292">update_ip_record</a>(...) -> VoiceV1IpRecord</code></summary>
 <dl>
 <dd>
 
@@ -2225,7 +2225,7 @@ client.update_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_ip_record</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1294-L1323">delete_ip_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2299,7 +2299,7 @@ client.delete_ip_record(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_dialing_permissions_settings</a>() -> VoiceV1DialingPermissionsDialingPermissionsSettings</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1325-L1352">fetch_dialing_permissions_settings</a>() -> VoiceV1DialingPermissionsDialingPermissionsSettings</code></summary>
 <dl>
 <dd>
 
@@ -2363,7 +2363,7 @@ client.fetch_dialing_permissions_settings()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_dialing_permissions_settings</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsSettings</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1354-L1389">update_dialing_permissions_settings</a>(...) -> VoiceV1DialingPermissionsDialingPermissionsSettings</code></summary>
 <dl>
 <dd>
 
@@ -2435,7 +2435,7 @@ client.update_dialing_permissions_settings()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_source_ip_mapping</a>(...) -> ListSourceIpMappingResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1391-L1434">list_source_ip_mapping</a>(...) -> ListSourceIpMappingResponse</code></summary>
 <dl>
 <dd>
 
@@ -2523,7 +2523,7 @@ client.list_source_ip_mapping()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1436-L1474">create_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
 <dl>
 <dd>
 
@@ -2606,7 +2606,7 @@ client.create_source_ip_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1476-L1508">fetch_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
 <dl>
 <dd>
 
@@ -2680,7 +2680,7 @@ client.fetch_source_ip_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1510-L1548">update_source_ip_mapping</a>(...) -> VoiceV1SourceIpMapping</code></summary>
 <dl>
 <dd>
 
@@ -2763,7 +2763,7 @@ client.update_source_ip_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_source_ip_mapping</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1550-L1579">delete_source_ip_mapping</a>(...)</code></summary>
 <dl>
 <dd>
 

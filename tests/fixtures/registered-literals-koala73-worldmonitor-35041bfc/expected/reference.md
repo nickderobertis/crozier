@@ -1,6 +1,6 @@
 # Reference
 ## ScorecardService
-<details><summary><code>client.scorecard_service.<a href="src/fern/scorecard_service/client.py">get_five_factor_scorecard</a>(...) -> GetFiveFactorScorecardResponse</code></summary>
+<details><summary><code>client.scorecard_service.<a href="src/fern/scorecard_service/client.py#L28-L70">get_five_factor_scorecard</a>(...) -> GetFiveFactorScorecardResponse</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.scorecard_service.get_five_factor_scorecard(
 </dl>
 </details>
 
-<details><summary><code>client.scorecard_service.<a href="src/fern/scorecard_service/client.py">list_five_factor_scorecards</a>(...) -> ListFiveFactorScorecardsResponse</code></summary>
+<details><summary><code>client.scorecard_service.<a href="src/fern/scorecard_service/client.py#L72-L104">list_five_factor_scorecards</a>(...) -> ListFiveFactorScorecardsResponse</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.scorecard_service.list_five_factor_scorecards(
 </dl>
 </details>
 
-<details><summary><code>client.scorecard_service.<a href="src/fern/scorecard_service/client.py">get_bloc_scorecard</a>(...) -> GetBlocScorecardResponse</code></summary>
+<details><summary><code>client.scorecard_service.<a href="src/fern/scorecard_service/client.py#L106-L152">get_bloc_scorecard</a>(...) -> GetBlocScorecardResponse</code></summary>
 <dl>
 <dd>
 

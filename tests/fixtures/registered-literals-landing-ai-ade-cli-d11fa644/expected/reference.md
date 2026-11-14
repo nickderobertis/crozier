@@ -1,6 +1,6 @@
 # Reference
 ## Parse
-<details><summary><code>client.parse.<a href="src/fern/parse/client.py">run_sync</a>(...) -> ParseResponse</code></summary>
+<details><summary><code>client.parse.<a href="src/fern/parse/client.py#L36-L82">run_sync</a>(...) -> ParseResponse</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.parse.run_sync(
 </dl>
 </details>
 
-<details><summary><code>client.parse.<a href="src/fern/parse/client.py">list_jobs</a>(...) -> ParseListJobsResponse</code></summary>
+<details><summary><code>client.parse.<a href="src/fern/parse/client.py#L84-L124">list_jobs</a>(...) -> ParseListJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -166,7 +166,7 @@ client.parse.list_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.parse.<a href="src/fern/parse/client.py">create_job</a>(...) -> ParseCreateJobResponse</code></summary>
+<details><summary><code>client.parse.<a href="src/fern/parse/client.py#L126-L186">create_job</a>(...) -> ParseCreateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -277,7 +277,7 @@ client.parse.create_job(
 </dl>
 </details>
 
-<details><summary><code>client.parse.<a href="src/fern/parse/client.py">get_job</a>(...) -> ParseGetJobResponse</code></summary>
+<details><summary><code>client.parse.<a href="src/fern/parse/client.py#L188-L217">get_job</a>(...) -> ParseGetJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.parse.get_job(
 </details>
 
 ## Extract
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">v2extract_run_sync</a>(...) -> V2ExtractRunSyncResponse</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L34-L97">v2extract_run_sync</a>(...) -> V2ExtractRunSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -455,7 +455,7 @@ client.extract.v2extract_run_sync(
 </dl>
 </details>
 
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">v2extract_list_jobs</a>(...) -> V2ExtractListJobsResponse</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L99-L141">v2extract_list_jobs</a>(...) -> V2ExtractListJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -540,7 +540,7 @@ client.extract.v2extract_list_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">v2extract_create_job</a>(...) -> V2ExtractCreateJobResponse</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L143-L216">v2extract_create_job</a>(...) -> V2ExtractCreateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -662,7 +662,7 @@ client.extract.v2extract_create_job(
 </dl>
 </details>
 
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">v2extract_get_job</a>(...) -> V2ExtractGetJobResponse</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L218-L249">v2extract_get_job</a>(...) -> V2ExtractGetJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -734,7 +734,7 @@ client.extract.v2extract_get_job(
 </details>
 
 ## V2Workflow
-<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py">run_sync</a>(...) -> V2WorkflowRunSyncResponse</code></summary>
+<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py#L35-L108">run_sync</a>(...) -> V2WorkflowRunSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -845,7 +845,7 @@ client.v2workflow.run_sync(
 </dl>
 </details>
 
-<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py">list_jobs</a>(...) -> V2WorkflowListJobsResponse</code></summary>
+<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py#L110-L150">list_jobs</a>(...) -> V2WorkflowListJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -916,7 +916,7 @@ client.v2workflow.list_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py">create_job</a>(...) -> V2WorkflowCreateJobResponse</code></summary>
+<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py#L152-L217">create_job</a>(...) -> V2WorkflowCreateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -1011,7 +1011,7 @@ client.v2workflow.create_job(
 </dl>
 </details>
 
-<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py">get_job</a>(...) -> V2WorkflowGetJobResponse</code></summary>
+<details><summary><code>client.v2workflow.<a href="src/fern/v2workflow/client.py#L219-L255">get_job</a>(...) -> V2WorkflowGetJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -1088,7 +1088,7 @@ client.v2workflow.get_job(
 </details>
 
 ## Ground
-<details><summary><code>client.ground.<a href="src/fern/ground/client.py">v2ground_run_sync</a>(...) -> V2GroundRunSyncResponse</code></summary>
+<details><summary><code>client.ground.<a href="src/fern/ground/client.py#L32-L78">v2ground_run_sync</a>(...) -> V2GroundRunSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -1172,7 +1172,7 @@ client.ground.v2ground_run_sync(
 </dl>
 </details>
 
-<details><summary><code>client.ground.<a href="src/fern/ground/client.py">v2ground_list_jobs</a>(...) -> V2GroundListJobsResponse</code></summary>
+<details><summary><code>client.ground.<a href="src/fern/ground/client.py#L80-L122">v2ground_list_jobs</a>(...) -> V2GroundListJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1257,7 +1257,7 @@ client.ground.v2ground_list_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.ground.<a href="src/fern/ground/client.py">v2ground_create_job</a>(...) -> V2GroundCreateJobResponse</code></summary>
+<details><summary><code>client.ground.<a href="src/fern/ground/client.py#L124-L170">v2ground_create_job</a>(...) -> V2GroundCreateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -1341,7 +1341,7 @@ client.ground.v2ground_create_job(
 </dl>
 </details>
 
-<details><summary><code>client.ground.<a href="src/fern/ground/client.py">v2ground_get_job</a>(...) -> V2GroundGetJobResponse</code></summary>
+<details><summary><code>client.ground.<a href="src/fern/ground/client.py#L172-L203">v2ground_get_job</a>(...) -> V2GroundGetJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -1413,7 +1413,7 @@ client.ground.v2ground_get_job(
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">stage_file</a>(...) -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L29-L59">stage_file</a>(...) -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 

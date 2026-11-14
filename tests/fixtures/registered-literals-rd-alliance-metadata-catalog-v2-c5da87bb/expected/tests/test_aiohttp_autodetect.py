@@ -95,7 +95,7 @@ class TestDefaultClientsWithoutAiohttp(unittest.TestCase):
 
             with self.assertRaises(RuntimeError) as ctx:
                 fern._default_clients.DefaultAioHttpClient()
-            self.assertIn("pip install default_package_name[aiohttp]", str(ctx.exception))
+            self.assertIn("pip install default-package-name[aiohttp]", str(ctx.exception))
 
         importlib.reload(fern._default_clients)
 

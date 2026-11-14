@@ -1,6 +1,6 @@
 # Reference
 ## Connectors (connect/v1)
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">list_connectv1connectors</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L38-L78">list_connectv1connectors</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -85,7 +85,7 @@ client.connectors_connect_v1.list_connectv1connectors(
 </dl>
 </details>
 
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">create_connectv1connector</a>(...) -> ConnectV1ConnectorWithOffsets</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L80-L136">create_connectv1connector</a>(...) -> ConnectV1ConnectorWithOffsets</code></summary>
 <dl>
 <dd>
 
@@ -194,7 +194,7 @@ client.connectors_connect_v1.create_connectv1connector(
 </dl>
 </details>
 
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">list_connectv1connectors_with_expansions</a>(...) -> ConnectV1ConnectorExpansionMap</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L138-L189">list_connectv1connectors_with_expansions</a>(...) -> ConnectV1ConnectorExpansionMap</code></summary>
 <dl>
 <dd>
 
@@ -292,7 +292,7 @@ information, and type of connector.
 </dl>
 </details>
 
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">get_connectv1connector_config</a>(...) -> GetConnectv1ConnectorConfigResponse</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L191-L240">get_connectv1connector_config</a>(...) -> GetConnectv1ConnectorConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -386,7 +386,7 @@ client.connectors_connect_v1.get_connectv1connector_config(
 </dl>
 </details>
 
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">create_or_update_connectv1connector_config</a>(...) -> ConnectV1Connector</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L242-L336">create_or_update_connectv1connector_config</a>(...) -> ConnectV1Connector</code></summary>
 <dl>
 <dd>
 
@@ -546,7 +546,7 @@ client.connectors_connect_v1.create_or_update_connectv1connector_config(
 </dl>
 </details>
 
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">read_connectv1connector</a>(...) -> ConnectV1Connector</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L338-L387">read_connectv1connector</a>(...) -> ConnectV1Connector</code></summary>
 <dl>
 <dd>
 
@@ -640,7 +640,7 @@ client.connectors_connect_v1.read_connectv1connector(
 </dl>
 </details>
 
-<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py">delete_connectv1connector</a>(...) -> InlineResponse200</code></summary>
+<details><summary><code>client.connectors_connect_v1.<a href="src/fern/connectors_connect_v1/client.py#L389-L438">delete_connectv1connector</a>(...) -> InlineResponse200</code></summary>
 <dl>
 <dd>
 
@@ -735,7 +735,7 @@ client.connectors_connect_v1.delete_connectv1connector(
 </details>
 
 ## Lifecycle (connect/v1)
-<details><summary><code>client.lifecycle_connect_v1.<a href="src/fern/lifecycle_connect_v1/client.py">pause_connectv1connector</a>(...)</code></summary>
+<details><summary><code>client.lifecycle_connect_v1.<a href="src/fern/lifecycle_connect_v1/client.py#L25-L73">pause_connectv1connector</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -829,7 +829,7 @@ client.lifecycle_connect_v1.pause_connectv1connector(
 </dl>
 </details>
 
-<details><summary><code>client.lifecycle_connect_v1.<a href="src/fern/lifecycle_connect_v1/client.py">resume_connectv1connector</a>(...)</code></summary>
+<details><summary><code>client.lifecycle_connect_v1.<a href="src/fern/lifecycle_connect_v1/client.py#L75-L123">resume_connectv1connector</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -924,7 +924,7 @@ client.lifecycle_connect_v1.resume_connectv1connector(
 </details>
 
 ## Status (connect/v1)
-<details><summary><code>client.status_connect_v1.<a href="src/fern/status_connect_v1/client.py">read_connectv1connector_status</a>(...) -> InlineResponse2001</code></summary>
+<details><summary><code>client.status_connect_v1.<a href="src/fern/status_connect_v1/client.py#L27-L74">read_connectv1connector_status</a>(...) -> InlineResponse2001</code></summary>
 <dl>
 <dd>
 
@@ -1016,7 +1016,7 @@ client.status_connect_v1.read_connectv1connector_status(
 </dl>
 </details>
 
-<details><summary><code>client.status_connect_v1.<a href="src/fern/status_connect_v1/client.py">list_connectv1connector_tasks</a>(...) -> ConnectV1Connectors</code></summary>
+<details><summary><code>client.status_connect_v1.<a href="src/fern/status_connect_v1/client.py#L76-L125">list_connectv1connector_tasks</a>(...) -> ConnectV1Connectors</code></summary>
 <dl>
 <dd>
 
@@ -1111,7 +1111,7 @@ client.status_connect_v1.list_connectv1connector_tasks(
 </details>
 
 ## Managed Connector Plugins (connect/v1)
-<details><summary><code>client.managed_connector_plugins_connect_v1.<a href="src/fern/managed_connector_plugins_connect_v1/client.py">list_connectv1connector_plugins</a>(...) -> typing.List[InlineResponse2002]</code></summary>
+<details><summary><code>client.managed_connector_plugins_connect_v1.<a href="src/fern/managed_connector_plugins_connect_v1/client.py#L30-L70">list_connectv1connector_plugins</a>(...) -> typing.List[InlineResponse2002]</code></summary>
 <dl>
 <dd>
 
@@ -1196,7 +1196,7 @@ client.managed_connector_plugins_connect_v1.list_connectv1connector_plugins(
 </dl>
 </details>
 
-<details><summary><code>client.managed_connector_plugins_connect_v1.<a href="src/fern/managed_connector_plugins_connect_v1/client.py">validate_connectv1connector_plugin</a>(...) -> InlineResponse2003</code></summary>
+<details><summary><code>client.managed_connector_plugins_connect_v1.<a href="src/fern/managed_connector_plugins_connect_v1/client.py#L72-L141">validate_connectv1connector_plugin</a>(...) -> InlineResponse2003</code></summary>
 <dl>
 <dd>
 
@@ -1316,7 +1316,7 @@ client.managed_connector_plugins_connect_v1.validate_connectv1connector_plugin(
 </details>
 
 ## Offsets (connect/v1)
-<details><summary><code>client.offsets_connect_v1.<a href="src/fern/offsets_connect_v1/client.py">get_connectv1connector_offsets</a>(...) -> ConnectV1ConnectorOffsets</code></summary>
+<details><summary><code>client.offsets_connect_v1.<a href="src/fern/offsets_connect_v1/client.py#L33-L83">get_connectv1connector_offsets</a>(...) -> ConnectV1ConnectorOffsets</code></summary>
 <dl>
 <dd>
 
@@ -1411,7 +1411,7 @@ client.offsets_connect_v1.get_connectv1connector_offsets(
 </dl>
 </details>
 
-<details><summary><code>client.offsets_connect_v1.<a href="src/fern/offsets_connect_v1/client.py">alter_connectv1connector_offsets_request</a>(...) -> ConnectV1AlterOffsetRequestInfo</code></summary>
+<details><summary><code>client.offsets_connect_v1.<a href="src/fern/offsets_connect_v1/client.py#L85-L157">alter_connectv1connector_offsets_request</a>(...) -> ConnectV1AlterOffsetRequestInfo</code></summary>
 <dl>
 <dd>
 
@@ -1536,7 +1536,7 @@ client.offsets_connect_v1.alter_connectv1connector_offsets_request(
 </dl>
 </details>
 
-<details><summary><code>client.offsets_connect_v1.<a href="src/fern/offsets_connect_v1/client.py">get_connectv1connector_offsets_request_status</a>(...) -> ConnectV1AlterOffsetStatus</code></summary>
+<details><summary><code>client.offsets_connect_v1.<a href="src/fern/offsets_connect_v1/client.py#L159-L208">get_connectv1connector_offsets_request_status</a>(...) -> ConnectV1AlterOffsetStatus</code></summary>
 <dl>
 <dd>
 

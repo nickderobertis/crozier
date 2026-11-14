@@ -1,6 +1,6 @@
 # Reference
 ## Tree
-<details><summary><code>client.tree.<a href="src/fern/tree/client.py">put_tree</a>(...)</code></summary>
+<details><summary><code>client.tree.<a href="src/fern/tree/client.py#L29-L60">put_tree</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.tree.put_tree()
 </details>
 
 ## Pred
-<details><summary><code>client.pred.<a href="src/fern/pred/client.py">put_pred</a>(...)</code></summary>
+<details><summary><code>client.pred.<a href="src/fern/pred/client.py#L29-L56">put_pred</a>(...)</code></summary>
 <dl>
 <dd>
 

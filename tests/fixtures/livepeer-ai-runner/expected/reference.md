@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">health</a>() -> HealthCheck</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L141">health</a>() -> HealthCheck</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.health()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">hardware_info</a>() -> HardwareInformation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L143-L165">hardware_info</a>() -> HardwareInformation</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.hardware_info()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">hardware_stats</a>() -> HardwareStats</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L167-L189">hardware_stats</a>() -> HardwareStats</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.hardware_stats()
 </details>
 
 ## Generate
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_text_to_image</a>(...) -> ImageResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L38-L125">gen_text_to_image</a>(...) -> ImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.generate.gen_text_to_image(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_image_to_image</a>(...) -> ImageResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L127-L219">gen_image_to_image</a>(...) -> ImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -462,7 +462,7 @@ client.generate.gen_image_to_image(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_image_to_video</a>(...) -> VideoResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L221-L301">gen_image_to_video</a>(...) -> VideoResponse</code></summary>
 <dl>
 <dd>
 
@@ -607,7 +607,7 @@ client.generate.gen_image_to_video(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_upscale</a>(...) -> ImageResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L303-L365">gen_upscale</a>(...) -> ImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -721,7 +721,7 @@ client.generate.gen_upscale(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_audio_to_text</a>(...) -> TextResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L367-L417">gen_audio_to_text</a>(...) -> TextResponse</code></summary>
 <dl>
 <dd>
 
@@ -818,7 +818,7 @@ client.generate.gen_audio_to_text(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_segment_anything2</a>(...) -> MasksResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L419-L494">gen_segment_anything2</a>(...) -> MasksResponse</code></summary>
 <dl>
 <dd>
 
@@ -955,7 +955,7 @@ client.generate.gen_segment_anything2(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_llm</a>(...) -> LlmResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L496-L561">gen_llm</a>(...) -> LlmResponse</code></summary>
 <dl>
 <dd>
 
@@ -1081,7 +1081,7 @@ client.generate.gen_llm(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_image_to_text</a>(...) -> ImageToTextResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L563-L605">gen_image_to_text</a>(...) -> ImageToTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -1170,7 +1170,7 @@ client.generate.gen_image_to_text(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_live_video_to_video</a>(...) -> LiveVideoToVideoResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L607-L670">gen_live_video_to_video</a>(...) -> LiveVideoToVideoResponse</code></summary>
 <dl>
 <dd>
 
@@ -1284,7 +1284,7 @@ client.generate.gen_live_video_to_video(
 </dl>
 </details>
 
-<details><summary><code>client.generate.<a href="src/fern/generate/client.py">gen_text_to_speech</a>(...) -> AudioResponse</code></summary>
+<details><summary><code>client.generate.<a href="src/fern/generate/client.py#L672-L714">gen_text_to_speech</a>(...) -> AudioResponse</code></summary>
 <dl>
 <dd>
 

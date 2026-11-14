@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "85d3abbfee64fa0b2d8360adaf242faf1e46c0f302ea3d9e7a6817e13541beb9"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "adceccc4b52f2c48701238c910ece5e37b762f71110de136460e479e92ca9287"
 
 [[covers]]
 key = "fern-streaming-terminator"

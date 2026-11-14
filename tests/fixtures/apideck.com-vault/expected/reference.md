@@ -1,6 +1,6 @@
 # Reference
 ## Connections
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">authorize</a>(...) -> UnexpectedErrorResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L42-L109">authorize</a>(...) -> UnexpectedErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.connections.authorize(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">callback</a>(...) -> UnexpectedErrorResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L111-L149">callback</a>(...) -> UnexpectedErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -293,7 +293,7 @@ client.connections.all_(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">one</a>(...) -> GetConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L201-L248">one</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -385,7 +385,7 @@ client.connections.one(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">add</a>(...) -> CreateConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L250-L432">add</a>(...) -> CreateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -485,7 +485,7 @@ client.connections.add(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L434-L480">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -577,7 +577,7 @@ client.connections.delete(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">update</a>(...) -> UpdateConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L482-L664">update</a>(...) -> UpdateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -793,7 +793,7 @@ client.connections.import_(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">token</a>(...) -> GetConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L732-L781">token</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -887,7 +887,7 @@ client.connections.token(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">connection_settings_all</a>(...) -> GetConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L783-L835">connection_settings_all</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -988,7 +988,7 @@ client.connections.connection_settings_all(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">connection_settings_update</a>(...) -> UpdateConnectionResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L837-L1025">connection_settings_update</a>(...) -> UpdateConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1097,7 +1097,7 @@ client.connections.connection_settings_update(
 </dl>
 </details>
 
-<details><summary><code>client.connections.<a href="src/fern/connections/client.py">revoke</a>(...) -> UnexpectedErrorResponse</code></summary>
+<details><summary><code>client.connections.<a href="src/fern/connections/client.py#L1027-L1085">revoke</a>(...) -> UnexpectedErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1285,7 +1285,7 @@ client.consumers.all_()
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">add</a>(...) -> CreateConsumerResponse</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py#L77-L151">add</a>(...) -> CreateConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1359,7 +1359,7 @@ client.consumers.add(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">one</a>(...) -> GetConsumerResponse</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py#L153-L183">one</a>(...) -> GetConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1433,7 +1433,7 @@ client.consumers.one(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">delete</a>(...) -> DeleteConsumerResponse</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py#L185-L217">delete</a>(...) -> DeleteConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1507,7 +1507,7 @@ client.consumers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">update</a>(...) -> UpdateConsumerResponse</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py#L219-L257">update</a>(...) -> UpdateConsumerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1589,7 +1589,7 @@ client.consumers.update(
 </dl>
 </details>
 
-<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py">consumer_request_counts_all</a>(...) -> ConsumerRequestCountsInDateRangeResponse</code></summary>
+<details><summary><code>client.consumers.<a href="src/fern/consumers/client.py#L259-L306">consumer_request_counts_all</a>(...) -> ConsumerRequestCountsInDateRangeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1781,7 +1781,7 @@ client.logs.all_(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create</a>(...) -> CreateSessionResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L32-L97">create</a>(...) -> CreateSessionResponse</code></summary>
 <dl>
 <dd>
 

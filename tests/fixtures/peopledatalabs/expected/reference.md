@@ -1,6 +1,6 @@
 # Reference
 ## PersonEndpoints
-<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py">person_enrich</a>(...) -> Person</code></summary>
+<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py#L31-L206">person_enrich</a>(...) -> Person</code></summary>
 <dl>
 <dd>
 
@@ -271,7 +271,7 @@ client.person_endpoints.person_enrich(
 </dl>
 </details>
 
-<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py">person_identify</a>(...) -> Person</code></summary>
+<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py#L208-L366">person_identify</a>(...) -> Person</code></summary>
 <dl>
 <dd>
 
@@ -516,7 +516,7 @@ client.person_endpoints.person_identify(
 </dl>
 </details>
 
-<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py">person_search</a>(...) -> Person</code></summary>
+<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py#L368-L441">person_search</a>(...) -> Person</code></summary>
 <dl>
 <dd>
 
@@ -637,7 +637,7 @@ client.person_endpoints.person_search()
 </dl>
 </details>
 
-<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py">person_retrieve</a>(...) -> PersonRetrieve</code></summary>
+<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py#L443-L479">person_retrieve</a>(...) -> PersonRetrieve</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ client.person_endpoints.person_retrieve(
 </dl>
 </details>
 
-<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py">person_retrieve_bulk</a>(...) -> PersonRetrieveBulk</code></summary>
+<details><summary><code>client.person_endpoints.<a href="src/fern/person_endpoints/client.py#L481-L517">person_retrieve_bulk</a>(...) -> PersonRetrieveBulk</code></summary>
 <dl>
 <dd>
 
@@ -770,7 +770,7 @@ client.person_endpoints.person_retrieve_bulk()
 </details>
 
 ## CleanerEndpoints
-<details><summary><code>client.cleaner_endpoints.<a href="src/fern/cleaner_endpoints/client.py">company_clean</a>(...) -> Company</code></summary>
+<details><summary><code>client.cleaner_endpoints.<a href="src/fern/cleaner_endpoints/client.py#L31-L75">company_clean</a>(...) -> Company</code></summary>
 <dl>
 <dd>
 
@@ -851,7 +851,7 @@ client.cleaner_endpoints.company_clean()
 </dl>
 </details>
 
-<details><summary><code>client.cleaner_endpoints.<a href="src/fern/cleaner_endpoints/client.py">school_clean</a>(...) -> School</code></summary>
+<details><summary><code>client.cleaner_endpoints.<a href="src/fern/cleaner_endpoints/client.py#L77-L121">school_clean</a>(...) -> School</code></summary>
 <dl>
 <dd>
 
@@ -932,7 +932,7 @@ client.cleaner_endpoints.school_clean()
 </dl>
 </details>
 
-<details><summary><code>client.cleaner_endpoints.<a href="src/fern/cleaner_endpoints/client.py">location_clean</a>(...) -> Location</code></summary>
+<details><summary><code>client.cleaner_endpoints.<a href="src/fern/cleaner_endpoints/client.py#L123-L157">location_clean</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -998,7 +998,7 @@ client.cleaner_endpoints.location_clean()
 </details>
 
 ## CompanyEndpoints
-<details><summary><code>client.company_endpoints.<a href="src/fern/company_endpoints/client.py">company_enrich</a>(...) -> Company</code></summary>
+<details><summary><code>client.company_endpoints.<a href="src/fern/company_endpoints/client.py#L29-L139">company_enrich</a>(...) -> Company</code></summary>
 <dl>
 <dd>
 
@@ -1177,7 +1177,7 @@ client.company_endpoints.company_enrich(
 </dl>
 </details>
 
-<details><summary><code>client.company_endpoints.<a href="src/fern/company_endpoints/client.py">company_search</a>(...) -> Company</code></summary>
+<details><summary><code>client.company_endpoints.<a href="src/fern/company_endpoints/client.py#L141-L204">company_search</a>(...) -> Company</code></summary>
 <dl>
 <dd>
 
@@ -1283,7 +1283,7 @@ client.company_endpoints.company_search()
 </details>
 
 ## Autocomplete
-<details><summary><code>client.autocomplete.<a href="src/fern/autocomplete/client.py">autocomplete</a>(...)</code></summary>
+<details><summary><code>client.autocomplete.<a href="src/fern/autocomplete/client.py#L29-L76">autocomplete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1373,7 +1373,7 @@ client.autocomplete.autocomplete()
 </details>
 
 ## IpEnrichment
-<details><summary><code>client.ip_enrichment.<a href="src/fern/ip_enrichment/client.py">ip_enrich</a>(...) -> Ip</code></summary>
+<details><summary><code>client.ip_enrichment.<a href="src/fern/ip_enrichment/client.py#L26-L91">ip_enrich</a>(...) -> Ip</code></summary>
 <dl>
 <dd>
 
@@ -1481,7 +1481,7 @@ client.ip_enrichment.ip_enrich(
 </details>
 
 ## JobTitleEnrichment
-<details><summary><code>client.job_title_enrichment.<a href="src/fern/job_title_enrichment/client.py">job_title_enrich</a>(...) -> JobTitle</code></summary>
+<details><summary><code>client.job_title_enrichment.<a href="src/fern/job_title_enrichment/client.py#L29-L69">job_title_enrich</a>(...) -> JobTitle</code></summary>
 <dl>
 <dd>
 
@@ -1555,7 +1555,7 @@ client.job_title_enrichment.job_title_enrich()
 </details>
 
 ## SkillEnrichment
-<details><summary><code>client.skill_enrichment.<a href="src/fern/skill_enrichment/client.py">skill_enrich</a>(...) -> Skill</code></summary>
+<details><summary><code>client.skill_enrichment.<a href="src/fern/skill_enrichment/client.py#L26-L68">skill_enrich</a>(...) -> Skill</code></summary>
 <dl>
 <dd>
 

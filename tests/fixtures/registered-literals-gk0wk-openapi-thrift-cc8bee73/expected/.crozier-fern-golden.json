@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.41.3",
+  "fern_python_sdk_version": "5.41.25",
   "corpus_spec_name": "registered-literals-gk0wk-openapi-thrift-cc8bee73",
   "corpus_spec_ref": "5114458f49ab086773073f37864ff2431da495e3",
   "corpus_spec_url": "https://raw.githubusercontent.com/Gk0Wk/openapi-thrift/5114458f49ab086773073f37864ff2431da495e3/tests/fixtures/apifox-boundary-lab.export.openapi.json"

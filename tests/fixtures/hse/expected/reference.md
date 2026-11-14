@@ -1,6 +1,6 @@
 # Reference
 ## global
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">events_get</a>(...) -> Events</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L35-L62">events_get</a>(...) -> Events</code></summary>
 <dl>
 <dd>
 
@@ -70,7 +70,7 @@ client.global_.events_get()
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">events_in_file_get</a>(...) -> Events</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L64-L100">events_in_file_get</a>(...) -> Events</code></summary>
 <dl>
 <dd>
 
@@ -150,7 +150,7 @@ client.global_.events_in_file_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">events_in_file_in_function_get</a>(...) -> Events</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L102-L145">events_in_file_in_function_get</a>(...) -> Events</code></summary>
 <dl>
 <dd>
 
@@ -239,7 +239,7 @@ client.global_.events_in_file_in_function_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">events_in_file_in_function_on_lineno_get</a>(...) -> Events</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L147-L195">events_in_file_in_function_on_lineno_get</a>(...) -> Events</code></summary>
 <dl>
 <dd>
 
@@ -337,7 +337,7 @@ client.global_.events_in_file_in_function_on_lineno_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">kmc_vmstat_get</a>(...) -> typing.List[KmcVmstatGetResponseItem]</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L197-L224">kmc_vmstat_get</a>(...) -> typing.List[KmcVmstatGetResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -407,7 +407,7 @@ client.global_.kmc_vmstat_get()
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">params_get</a>(...) -> ParamsGetResponse</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L226-L253">params_get</a>(...) -> ParamsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -477,7 +477,7 @@ client.global_.params_get()
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">param_get</a>(...) -> ParamGetResponse</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L255-L291">param_get</a>(...) -> ParamGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -557,7 +557,7 @@ client.global_.param_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">param_set</a>(...)</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L293-L324">param_set</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -640,7 +640,7 @@ client.global_.param_set(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">perfc_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L326-L353">perfc_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -710,7 +710,7 @@ client.global_.perfc_get()
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">perfc_in_group_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L355-L391">perfc_in_group_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -790,7 +790,7 @@ client.global_.perfc_in_group_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">perfc_in_group_in_set_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L393-L436">perfc_in_group_in_set_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -879,7 +879,7 @@ client.global_.perfc_in_group_in_set_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">perfc_in_group_in_set_with_name_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L438-L486">perfc_in_group_in_set_with_name_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -977,7 +977,7 @@ client.global_.perfc_in_group_in_set_with_name_get(
 </dl>
 </details>
 
-<details><summary><code>client.global_.<a href="src/fern/global_/client.py">workqueues_get</a>(...) -> typing.List[WorkqueuesGetResponseItem]</code></summary>
+<details><summary><code>client.global_.<a href="src/fern/global_/client.py#L488-L515">workqueues_get</a>(...) -> typing.List[WorkqueuesGetResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1048,7 +1048,7 @@ client.global_.workqueues_get()
 </details>
 
 ## kvdb
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">compact_status_get</a>(...) -> KvdbCompactStatusGetResponse</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L36-L72">compact_status_get</a>(...) -> KvdbCompactStatusGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1128,7 +1128,7 @@ client.kvdb.compact_status_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">compact_request</a>(...)</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L74-L100">compact_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1200,7 +1200,7 @@ client.kvdb.compact_request(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">compact_cancel</a>(...)</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L102-L128">compact_cancel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1272,7 +1272,7 @@ client.kvdb.compact_cancel(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">csched_get</a>(...) -> typing.List[KvdbCschedGetResponseItem]</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L130-L166">csched_get</a>(...) -> typing.List[KvdbCschedGetResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -1352,7 +1352,7 @@ client.kvdb.csched_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">home_get</a>(...) -> str</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L168-L204">home_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1432,7 +1432,7 @@ client.kvdb.home_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">params_get</a>(...) -> KvdbParamsGetResponse</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L206-L242">params_get</a>(...) -> KvdbParamsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1512,7 +1512,7 @@ client.kvdb.params_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">param_get</a>(...) -> KvdbParamGetResponse</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L244-L285">param_get</a>(...) -> KvdbParamGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1601,7 +1601,7 @@ client.kvdb.param_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">param_set</a>(...)</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L287-L327">param_set</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1693,7 +1693,7 @@ client.kvdb.param_set(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">media_classes_get</a>(...) -> typing.List[Mclass]</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L329-L365">media_classes_get</a>(...) -> typing.List[Mclass]</code></summary>
 <dl>
 <dd>
 
@@ -1773,7 +1773,7 @@ client.kvdb.media_classes_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">media_class_get</a>(...) -> KvdbMediaClassGetResponse</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L367-L408">media_class_get</a>(...) -> KvdbMediaClassGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1862,7 +1862,7 @@ client.kvdb.media_class_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">kvs_get</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L410-L446">kvs_get</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1942,7 +1942,7 @@ client.kvdb.kvs_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">perfc_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L448-L484">perfc_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -2022,7 +2022,7 @@ client.kvdb.perfc_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">perfc_in_set_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L486-L527">perfc_in_set_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -2111,7 +2111,7 @@ client.kvdb.perfc_in_set_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py">perfc_in_set_with_name_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.kvdb.<a href="src/fern/kvdb/client.py#L529-L577">perfc_in_set_with_name_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -2210,7 +2210,7 @@ client.kvdb.perfc_in_set_with_name_get(
 </details>
 
 ## kvs
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">cn_tree_get</a>(...) -> KvsCnTreeGetResponse</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L33-L84">cn_tree_get</a>(...) -> KvsCnTreeGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2315,7 +2315,7 @@ client.kvs.cn_tree_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">params_get</a>(...) -> KvsParamsGetResponse</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L86-L127">params_get</a>(...) -> KvsParamsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2404,7 +2404,7 @@ client.kvs.params_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">param_get</a>(...) -> KvsParamGetResponse</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L129-L175">param_get</a>(...) -> KvsParamGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2502,7 +2502,7 @@ client.kvs.param_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">param_set</a>(...)</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L177-L222">param_set</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2603,7 +2603,7 @@ client.kvs.param_set(
 </dl>
 </details>
 
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">perfc_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L224-L265">perfc_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -2692,7 +2692,7 @@ client.kvs.perfc_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">perfc_in_set_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L267-L315">perfc_in_set_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 
@@ -2790,7 +2790,7 @@ client.kvs.perfc_in_set_get(
 </dl>
 </details>
 
-<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py">perfc_in_set_with_name_get</a>(...) -> PerformanceCounters</code></summary>
+<details><summary><code>client.kvs.<a href="src/fern/kvs/client.py#L317-L370">perfc_in_set_with_name_get</a>(...) -> PerformanceCounters</code></summary>
 <dl>
 <dd>
 

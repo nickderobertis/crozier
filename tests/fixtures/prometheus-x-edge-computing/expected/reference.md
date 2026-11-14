@@ -1,6 +1,6 @@
 # Reference
 ## customerAPI
-<details><summary><code>client.customer_api.<a href="src/fern/customer_api/client.py">request_edge_proc</a>(...) -> ExecutionResult</code></summary>
+<details><summary><code>client.customer_api.<a href="src/fern/customer_api/client.py#L35-L81">request_edge_proc</a>(...) -> ExecutionResult</code></summary>
 <dl>
 <dd>
 
@@ -93,7 +93,7 @@ client.customer_api.request_edge_proc()
 </dl>
 </details>
 
-<details><summary><code>client.customer_api.<a href="src/fern/customer_api/client.py">request_privacy_edge_proc</a>(...) -> PrivateExecutionResult</code></summary>
+<details><summary><code>client.customer_api.<a href="src/fern/customer_api/client.py#L83-L137">request_privacy_edge_proc</a>(...) -> PrivateExecutionResult</code></summary>
 <dl>
 <dd>
 
@@ -203,7 +203,7 @@ client.customer_api.request_privacy_edge_proc()
 </details>
 
 ## connectorAPI
-<details><summary><code>client.connector_api.<a href="src/fern/connector_api/client.py">get_pz_data</a>(...) -> PrivacyZoneData</code></summary>
+<details><summary><code>client.connector_api.<a href="src/fern/connector_api/client.py#L36-L72">get_pz_data</a>(...) -> PrivacyZoneData</code></summary>
 <dl>
 <dd>
 
@@ -280,7 +280,7 @@ client.connector_api.get_pz_data()
 </dl>
 </details>
 
-<details><summary><code>client.connector_api.<a href="src/fern/connector_api/client.py">request_function</a>(...) -> Function</code></summary>
+<details><summary><code>client.connector_api.<a href="src/fern/connector_api/client.py#L74-L110">request_function</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -357,7 +357,7 @@ client.connector_api.request_function()
 </dl>
 </details>
 
-<details><summary><code>client.connector_api.<a href="src/fern/connector_api/client.py">request_privacy_preserving_data</a>(...) -> PrivateData</code></summary>
+<details><summary><code>client.connector_api.<a href="src/fern/connector_api/client.py#L112-L151">request_privacy_preserving_data</a>(...) -> PrivateData</code></summary>
 <dl>
 <dd>
 

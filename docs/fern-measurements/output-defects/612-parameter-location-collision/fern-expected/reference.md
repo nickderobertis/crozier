@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_shelf</a>(...) -> Shelf</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L152">get_shelf</a>(...) -> Shelf</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.get_shelf(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_edition_scans</a>(...) -> typing.List[Scan]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L154-L199">list_edition_scans</a>(...) -> typing.List[Scan]</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.list_edition_scans(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_loans</a>(...) -> typing.List[Loan]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L201-L239">list_loans</a>(...) -> typing.List[Loan]</code></summary>
 <dl>
 <dd>
 

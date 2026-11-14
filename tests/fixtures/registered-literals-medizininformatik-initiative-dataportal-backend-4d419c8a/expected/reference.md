@@ -1,6 +1,6 @@
 # Reference
 ## dataquery
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">get_data_query_list</a>(...) -> typing.List[DataQueryListEntry]</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L35-L74">get_data_query_list</a>(...) -> typing.List[DataQueryListEntry]</code></summary>
 <dl>
 <dd>
 
@@ -78,7 +78,7 @@ client.dataquery.get_data_query_list()
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">store_data_query</a>(...)</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L76-L124">store_data_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -150,7 +150,7 @@ client.dataquery.store_data_query(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">find_data_queries_by_user</a>(...) -> typing.List[DataQueryListEntry]</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L126-L172">find_data_queries_by_user</a>(...) -> typing.List[DataQueryListEntry]</code></summary>
 <dl>
 <dd>
 
@@ -224,7 +224,7 @@ client.dataquery.find_data_queries_by_user(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">create_dataquery_for_user</a>(...)</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L174-L232">create_dataquery_for_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -300,7 +300,7 @@ client.dataquery.create_dataquery_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">get_data_query_by_id</a>(...) -> Dataquery</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L234-L275">get_data_query_by_id</a>(...) -> Dataquery</code></summary>
 <dl>
 <dd>
 
@@ -380,7 +380,7 @@ client.dataquery.get_data_query_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">update_data_query</a>(...)</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L277-L330">update_data_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -461,7 +461,7 @@ client.dataquery.update_data_query(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">delete_data_query</a>(...)</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L332-L358">delete_data_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -519,7 +519,7 @@ client.dataquery.delete_data_query(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">get_data_query_crtdl_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L360-L405">get_data_query_crtdl_by_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -607,7 +607,7 @@ client.dataquery.get_data_query_crtdl_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">convert_crtdl_to_csv</a>(...)</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L407-L449">convert_crtdl_to_csv</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -677,7 +677,7 @@ client.dataquery.convert_crtdl_to_csv()
 </dl>
 </details>
 
-<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py">get_data_query_slots</a>() -> DataQuerySlots</code></summary>
+<details><summary><code>client.dataquery.<a href="src/fern/dataquery/client.py#L451-L474">get_data_query_slots</a>() -> DataQuerySlots</code></summary>
 <dl>
 <dd>
 
@@ -726,7 +726,7 @@ client.dataquery.get_data_query_slots()
 </details>
 
 ## feasibility
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">run_query</a>(...)</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L33-L95">run_query</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -811,7 +811,7 @@ client.feasibility.run_query(
 </dl>
 </details>
 
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">get_query_result_summary</a>(...) -> QueryResult</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L97-L129">get_query_result_summary</a>(...) -> QueryResult</code></summary>
 <dl>
 <dd>
 
@@ -883,7 +883,7 @@ client.feasibility.get_query_result_summary(
 </dl>
 </details>
 
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">get_query_result_detailed</a>(...) -> QueryResult</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L131-L163">get_query_result_detailed</a>(...) -> QueryResult</code></summary>
 <dl>
 <dd>
 
@@ -955,7 +955,7 @@ client.feasibility.get_query_result_detailed(
 </dl>
 </details>
 
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">get_query_result_detailed_obfuscated</a>(...) -> QueryResultObfuscated</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L165-L197">get_query_result_detailed_obfuscated</a>(...) -> QueryResultObfuscated</code></summary>
 <dl>
 <dd>
 
@@ -1027,7 +1027,7 @@ client.feasibility.get_query_result_detailed_obfuscated(
 </dl>
 </details>
 
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">get_detailed_obfuscated_result_rate_limit</a>() -> QueryResultRateLimit</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L199-L224">get_detailed_obfuscated_result_rate_limit</a>() -> QueryResultRateLimit</code></summary>
 <dl>
 <dd>
 
@@ -1075,7 +1075,7 @@ client.feasibility.get_detailed_obfuscated_result_rate_limit()
 </dl>
 </details>
 
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">get_quota</a>() -> QueryQuota</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L226-L249">get_quota</a>() -> QueryQuota</code></summary>
 <dl>
 <dd>
 
@@ -1123,7 +1123,7 @@ client.feasibility.get_quota()
 </dl>
 </details>
 
-<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py">sq2cql</a>(...)</code></summary>
+<details><summary><code>client.feasibility.<a href="src/fern/feasibility/client.py#L251-L313">sq2cql</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1209,7 +1209,7 @@ client.feasibility.sq2cql(
 </details>
 
 ## terminology
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">get_filters</a>(...) -> typing.List[Filter]</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L36-L98">get_filters</a>(...) -> typing.List[Filter]</code></summary>
 <dl>
 <dd>
 
@@ -1323,7 +1323,7 @@ client.terminology.get_filters(
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">get_terminology_systems</a>() -> TerminologySystems</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L100-L123">get_terminology_systems</a>() -> TerminologySystems</code></summary>
 <dl>
 <dd>
 
@@ -1371,7 +1371,7 @@ client.terminology.get_terminology_systems()
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">search_entry</a>(...) -> ElasticSearchResult</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L125-L200">search_entry</a>(...) -> ElasticSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -1497,7 +1497,7 @@ client.terminology.search_entry(
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">bulk_search_entry</a>(...) -> ElasticSearchBulkResult</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L202-L244">bulk_search_entry</a>(...) -> ElasticSearchBulkResult</code></summary>
 <dl>
 <dd>
 
@@ -1575,7 +1575,7 @@ client.terminology.bulk_search_entry(
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">get_entry_by_id</a>(...) -> RelationsEntry</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L246-L274">get_entry_by_id</a>(...) -> RelationsEntry</code></summary>
 <dl>
 <dd>
 
@@ -1633,7 +1633,7 @@ client.terminology.get_entry_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">get_entries_by_id</a>(...) -> ElasticSearchResultEntry</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L276-L308">get_entries_by_id</a>(...) -> ElasticSearchResultEntry</code></summary>
 <dl>
 <dd>
 
@@ -1705,7 +1705,7 @@ client.terminology.get_entries_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">get_entries_by_ids_with_detail</a>(...) -> typing.List[CriteriaProfileData]</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L310-L342">get_entries_by_ids_with_detail</a>(...) -> typing.List[CriteriaProfileData]</code></summary>
 <dl>
 <dd>
 
@@ -1777,7 +1777,7 @@ client.terminology.get_entries_by_ids_with_detail(
 </dl>
 </details>
 
-<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py">get_ui_profiles</a>() -> UiProfileList</code></summary>
+<details><summary><code>client.terminology.<a href="src/fern/terminology/client.py#L344-L367">get_ui_profiles</a>() -> UiProfileList</code></summary>
 <dl>
 <dd>
 
@@ -1826,7 +1826,7 @@ client.terminology.get_ui_profiles()
 </details>
 
 ## codeable concepts
-<details><summary><code>client.codeable_concepts.<a href="src/fern/codeable_concepts/client.py">search_codeable_concepts</a>(...) -> CodeableConceptSearchResult</code></summary>
+<details><summary><code>client.codeable_concepts.<a href="src/fern/codeable_concepts/client.py#L31-L83">search_codeable_concepts</a>(...) -> CodeableConceptSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -1911,7 +1911,7 @@ client.codeable_concepts.search_codeable_concepts(
 </dl>
 </details>
 
-<details><summary><code>client.codeable_concepts.<a href="src/fern/codeable_concepts/client.py">bulk_search_codeable_concepts</a>(...) -> CodeableConceptBulkSearchResult</code></summary>
+<details><summary><code>client.codeable_concepts.<a href="src/fern/codeable_concepts/client.py#L85-L123">bulk_search_codeable_concepts</a>(...) -> CodeableConceptBulkSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -1980,7 +1980,7 @@ client.codeable_concepts.bulk_search_codeable_concepts(
 </dl>
 </details>
 
-<details><summary><code>client.codeable_concepts.<a href="src/fern/codeable_concepts/client.py">get_codeable_concepts_by_code</a>(...) -> CodeableConceptEntry</code></summary>
+<details><summary><code>client.codeable_concepts.<a href="src/fern/codeable_concepts/client.py#L125-L155">get_codeable_concepts_by_code</a>(...) -> CodeableConceptEntry</code></summary>
 <dl>
 <dd>
 
@@ -2039,7 +2039,7 @@ client.codeable_concepts.get_codeable_concepts_by_code(
 </details>
 
 ## profile
-<details><summary><code>client.profile.<a href="src/fern/profile/client.py">search_profiles</a>(...) -> ProfileSearchResult</code></summary>
+<details><summary><code>client.profile.<a href="src/fern/profile/client.py#L29-L93">search_profiles</a>(...) -> ProfileSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -2146,7 +2146,7 @@ client.profile.search_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.profile.<a href="src/fern/profile/client.py">get_profile_list_details_by_id</a>(...) -> ProfileEntry</code></summary>
+<details><summary><code>client.profile.<a href="src/fern/profile/client.py#L95-L125">get_profile_list_details_by_id</a>(...) -> ProfileEntry</code></summary>
 <dl>
 <dd>
 
@@ -2204,7 +2204,7 @@ client.profile.get_profile_list_details_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.profile.<a href="src/fern/profile/client.py">get_filter</a>(...) -> typing.List[ProfileFilter]</code></summary>
+<details><summary><code>client.profile.<a href="src/fern/profile/client.py#L127-L188">get_filter</a>(...) -> typing.List[ProfileFilter]</code></summary>
 <dl>
 <dd>
 
@@ -2318,7 +2318,7 @@ client.profile.get_filter(
 </details>
 
 ## dse
-<details><summary><code>client.dse.<a href="src/fern/dse/client.py">get_profile_data</a>(...) -> ProfileDataList</code></summary>
+<details><summary><code>client.dse.<a href="src/fern/dse/client.py#L26-L56">get_profile_data</a>(...) -> ProfileDataList</code></summary>
 <dl>
 <dd>
 
@@ -2391,7 +2391,7 @@ client.dse.get_profile_data(
 </details>
 
 ## validation
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">validate_crtdl</a>(...)</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L32-L74">validate_crtdl</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2461,7 +2461,7 @@ client.validation.validate_crtdl()
 </dl>
 </details>
 
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">validate_ccdl</a>(...)</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L76-L138">validate_ccdl</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2546,7 +2546,7 @@ client.validation.validate_ccdl(
 </dl>
 </details>
 
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">validate_dataquery</a>(...)</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L140-L188">validate_dataquery</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2619,7 +2619,7 @@ client.validation.validate_dataquery(
 </details>
 
 ## upgrade
-<details><summary><code>client.upgrade.<a href="src/fern/upgrade/client.py">crtdl</a>(...) -> UpgradeWrapper</code></summary>
+<details><summary><code>client.upgrade.<a href="src/fern/upgrade/client.py#L31-L74">crtdl</a>(...) -> UpgradeWrapper</code></summary>
 <dl>
 <dd>
 
@@ -2690,7 +2690,7 @@ client.upgrade.crtdl()
 </details>
 
 ## intrinsics
-<details><summary><code>client.intrinsics.<a href="src/fern/intrinsics/client.py">get_health</a>() -> typing.Any</code></summary>
+<details><summary><code>client.intrinsics.<a href="src/fern/intrinsics/client.py#L27-L52">get_health</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2752,7 +2752,7 @@ client.intrinsics.get_health()
 </dl>
 </details>
 
-<details><summary><code>client.intrinsics.<a href="src/fern/intrinsics/client.py">get_info</a>() -> SystemInfo</code></summary>
+<details><summary><code>client.intrinsics.<a href="src/fern/intrinsics/client.py#L54-L79">get_info</a>() -> SystemInfo</code></summary>
 <dl>
 <dd>
 
@@ -2814,7 +2814,7 @@ client.intrinsics.get_info()
 </dl>
 </details>
 
-<details><summary><code>client.intrinsics.<a href="src/fern/intrinsics/client.py">get_settings</a>() -> SettingsInfo</code></summary>
+<details><summary><code>client.intrinsics.<a href="src/fern/intrinsics/client.py#L81-L106">get_settings</a>() -> SettingsInfo</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">preserve_reel</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L134">preserve_reel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.preserve_reel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_docks</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L136-L167">update_docks</a>(...)</code></summary>
 <dl>
 <dd>
 

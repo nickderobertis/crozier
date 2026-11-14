@@ -1,6 +1,6 @@
 # Reference
 ## Management
-<details><summary><code>client.management.<a href="src/fern/management/client.py">post_client</a>(...) -> PostClientResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L43-L127">post_client</a>(...) -> PostClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -120,7 +120,7 @@ client.management.post_client(
 </dl>
 </details>
 
-<details><summary><code>client.management.<a href="src/fern/management/client.py">post_oauth_client</a>(...) -> PostOauthClientResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L129-L222">post_oauth_client</a>(...) -> PostOauthClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -245,7 +245,7 @@ client.management.post_oauth_client(
 </dl>
 </details>
 
-<details><summary><code>client.management.<a href="src/fern/management/client.py">post_client_mgmt_client</a>(...) -> PostClientMgmtClientResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L224-L332">post_client_mgmt_client</a>(...) -> PostClientMgmtClientResponse</code></summary>
 <dl>
 <dd>
 
@@ -387,7 +387,7 @@ client.management.post_client_mgmt_client(
 </dl>
 </details>
 
-<details><summary><code>client.management.<a href="src/fern/management/client.py">put_oidc_client_client_id</a>(...) -> PutOidcClientClientIdResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L334-L416">put_oidc_client_client_id</a>(...) -> PutOidcClientClientIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -507,7 +507,7 @@ client.management.put_oidc_client_client_id(
 </dl>
 </details>
 
-<details><summary><code>client.management.<a href="src/fern/management/client.py">put_oauth_client_client_id</a>(...) -> PutOauthClientClientIdResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L418-L504">put_oauth_client_client_id</a>(...) -> PutOauthClientClientIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ client.management.put_oauth_client_client_id(
 </dl>
 </details>
 
-<details><summary><code>client.management.<a href="src/fern/management/client.py">put_client_client_id</a>(...) -> PutClientClientIdResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L506-L607">put_client_client_id</a>(...) -> PutClientClientIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -772,7 +772,7 @@ client.management.put_client_client_id(
 </dl>
 </details>
 
-<details><summary><code>client.management.<a href="src/fern/management/client.py">patch_client_client_id</a>(...) -> PatchClientClientIdResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L609-L669">patch_client_client_id</a>(...) -> PatchClientClientIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -874,7 +874,7 @@ client.management.patch_client_client_id(
 </details>
 
 ## OIDC
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">get_authorize</a>(...)</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L49-L176">get_authorize</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1085,7 +1085,7 @@ client.oidc.get_authorize(
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">post_token</a>(...) -> PostTokenResponse</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L178-L270">post_token</a>(...) -> PostTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1224,7 +1224,7 @@ client.oidc.post_token(
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">post_token_v2</a>(...) -> PostTokenV2Response</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L272-L376">post_token_v2</a>(...) -> PostTokenV2Response</code></summary>
 <dl>
 <dd>
 
@@ -1383,7 +1383,7 @@ A cryptographically random string that is used to correlate the
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">get_userinfo</a>(...)</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L378-L441">get_userinfo</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1489,7 +1489,7 @@ client.oidc.get_userinfo()
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">get_certs</a>() -> GetCertsResponse</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L443-L467">get_certs</a>() -> GetCertsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1552,7 +1552,7 @@ client.oidc.get_certs()
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">get_well_known_openid_configuration</a>() -> GetWellKnownOpenidConfigurationResponse</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L469-L497">get_well_known_openid_configuration</a>() -> GetWellKnownOpenidConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1617,7 +1617,7 @@ client.oidc.get_well_known_openid_configuration()
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">get_introspect</a>(...) -> GetIntrospectResponse</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L499-L544">get_introspect</a>(...) -> GetIntrospectResponse</code></summary>
 <dl>
 <dd>
 
@@ -1702,7 +1702,7 @@ client.oidc.get_introspect(
 </dl>
 </details>
 
-<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py">post_oauth_par</a>(...) -> PostOauthParResponse</code></summary>
+<details><summary><code>client.oidc.<a href="src/fern/oidc/client.py#L546-L733">post_oauth_par</a>(...) -> PostOauthParResponse</code></summary>
 <dl>
 <dd>
 
@@ -1980,7 +1980,7 @@ If none of the provided acr value is among the registered values, all the regist
 </details>
 
 ## UI
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_oauth_details</a>(...) -> PostOauthDetailsResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L62-L150">post_oauth_details</a>(...) -> PostOauthDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2114,7 +2114,7 @@ client.ui.post_oauth_details(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_oauth_details_v2</a>(...) -> PostOauthDetailsV2Response</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L152-L245">post_oauth_details_v2</a>(...) -> PostOauthDetailsV2Response</code></summary>
 <dl>
 <dd>
 
@@ -2250,7 +2250,7 @@ client.ui.post_oauth_details_v2(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_oauth_details_v3</a>(...) -> PostOauthDetailsV3Response</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L247-L342">post_oauth_details_v3</a>(...) -> PostOauthDetailsV3Response</code></summary>
 <dl>
 <dd>
 
@@ -2388,7 +2388,7 @@ client.ui.post_oauth_details_v3(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_send_otp</a>(...) -> PostSendOtpResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L344-L428">post_send_otp</a>(...) -> PostSendOtpResponse</code></summary>
 <dl>
 <dd>
 
@@ -2515,7 +2515,7 @@ client.ui.post_send_otp(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_send_linked_otp</a>(...) -> PostSendLinkedOtpResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L430-L492">post_send_linked_otp</a>(...) -> PostSendLinkedOtpResponse</code></summary>
 <dl>
 <dd>
 
@@ -2613,7 +2613,7 @@ client.ui.post_send_linked_otp(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_authenticate</a>(...) -> PostAuthenticateResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L494-L585">post_authenticate</a>(...) -> PostAuthenticateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2745,7 +2745,7 @@ client.ui.post_authenticate(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_authenticate_v2</a>(...) -> PostAuthenticateV2Response</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L587-L679">post_authenticate_v2</a>(...) -> PostAuthenticateV2Response</code></summary>
 <dl>
 <dd>
 
@@ -2878,7 +2878,7 @@ client.ui.post_authenticate_v2(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_authenticate_v3</a>(...) -> PostAuthenticateV3Response</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L681-L774">post_authenticate_v3</a>(...) -> PostAuthenticateV3Response</code></summary>
 <dl>
 <dd>
 
@@ -3012,7 +3012,7 @@ client.ui.post_authenticate_v3(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_auth_code</a>(...) -> PostAuthCodeResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L776-L850">post_auth_code</a>(...) -> PostAuthCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3138,7 +3138,7 @@ client.ui.post_auth_code(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">get_authorization_generate_link_code</a>(...) -> GetAuthorizationGenerateLinkCodeResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L852-L923">get_authorization_generate_link_code</a>(...) -> GetAuthorizationGenerateLinkCodeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3258,7 +3258,7 @@ client.ui.get_authorization_generate_link_code(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_authorization_link_status</a>(...) -> PostAuthorizationLinkStatusResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L925-L996">post_authorization_link_status</a>(...) -> PostAuthorizationLinkStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -3378,7 +3378,7 @@ client.ui.post_authorization_link_status(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_authorization_link_auth</a>(...) -> PostAuthorizationLinkAuthResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L998-L1072">post_authorization_link_auth</a>(...) -> PostAuthorizationLinkAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ client.ui.post_authorization_link_auth(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">get_consent_details</a>(...) -> GetConsentDetailsResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L1074-L1135">get_consent_details</a>(...) -> GetConsentDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3604,7 +3604,7 @@ client.ui.get_consent_details(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_authorization_prepare_signup_redirect</a>(...) -> PostAuthorizationPrepareSignupRedirectResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L1137-L1218">post_authorization_prepare_signup_redirect</a>(...) -> PostAuthorizationPrepareSignupRedirectResponse</code></summary>
 <dl>
 <dd>
 
@@ -3733,7 +3733,7 @@ client.ui.post_authorization_prepare_signup_redirect(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_complete_signup_redirect</a>(...) -> PostCompleteSignupRedirectResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L1220-L1284">post_complete_signup_redirect</a>(...) -> PostCompleteSignupRedirectResponse</code></summary>
 <dl>
 <dd>
 
@@ -3845,7 +3845,7 @@ client.ui.post_complete_signup_redirect(
 </dl>
 </details>
 
-<details><summary><code>client.ui.<a href="src/fern/ui/client.py">post_par_oauth_details</a>(...) -> PostParOauthDetailsResponse</code></summary>
+<details><summary><code>client.ui.<a href="src/fern/ui/client.py#L1286-L1347">post_par_oauth_details</a>(...) -> PostParOauthDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3953,7 +3953,7 @@ client.ui.post_par_oauth_details(
 </details>
 
 ## WALLET
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">post_authorization_link_transaction</a>(...) -> PostAuthorizationLinkTransactionResponse</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L43-L93">post_authorization_link_transaction</a>(...) -> PostAuthorizationLinkTransactionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4045,7 +4045,7 @@ client.wallet.post_authorization_link_transaction(
 </dl>
 </details>
 
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">post_authorization_link_transaction_v2</a>(...) -> PostAuthorizationLinkTransactionV2Response</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L95-L145">post_authorization_link_transaction_v2</a>(...) -> PostAuthorizationLinkTransactionV2Response</code></summary>
 <dl>
 <dd>
 
@@ -4137,7 +4137,7 @@ client.wallet.post_authorization_link_transaction_v2(
 </dl>
 </details>
 
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">post_linked_authenticate</a>(...) -> PostLinkedAuthenticateResponse</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L147-L218">post_linked_authenticate</a>(...) -> PostLinkedAuthenticateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4242,7 +4242,7 @@ client.wallet.post_linked_authenticate(
 </dl>
 </details>
 
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">post_linked_authenticate_v2</a>(...) -> PostLinkedAuthenticateV2Response</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L220-L292">post_linked_authenticate_v2</a>(...) -> PostLinkedAuthenticateV2Response</code></summary>
 <dl>
 <dd>
 
@@ -4348,7 +4348,7 @@ client.wallet.post_linked_authenticate_v2(
 </dl>
 </details>
 
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">post_linked_consent</a>(...) -> PostLinkedConsentResponse</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L294-L347">post_linked_consent</a>(...) -> PostLinkedConsentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4447,7 +4447,7 @@ client.wallet.post_linked_consent(
 </dl>
 </details>
 
-<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py">post_linked_consent_v2</a>(...) -> PostLinkedConsentV2Response</code></summary>
+<details><summary><code>client.wallet.<a href="src/fern/wallet/client.py#L349-L403">post_linked_consent_v2</a>(...) -> PostLinkedConsentV2Response</code></summary>
 <dl>
 <dd>
 
@@ -4548,7 +4548,7 @@ client.wallet.post_linked_consent_v2(
 </details>
 
 ## WALLET BACKEND
-<details><summary><code>client.wallet_backend.<a href="src/fern/wallet_backend/client.py">post_binding_otp</a>(...) -> PostBindingOtpResponse</code></summary>
+<details><summary><code>client.wallet_backend.<a href="src/fern/wallet_backend/client.py#L34-L90">post_binding_otp</a>(...) -> PostBindingOtpResponse</code></summary>
 <dl>
 <dd>
 
@@ -4653,7 +4653,7 @@ client.wallet_backend.post_binding_otp(
 </dl>
 </details>
 
-<details><summary><code>client.wallet_backend.<a href="src/fern/wallet_backend/client.py">post_binding_otp_v2</a>(...) -> PostBindingOtpV2Response</code></summary>
+<details><summary><code>client.wallet_backend.<a href="src/fern/wallet_backend/client.py#L92-L149">post_binding_otp_v2</a>(...) -> PostBindingOtpV2Response</code></summary>
 <dl>
 <dd>
 
@@ -4759,7 +4759,7 @@ client.wallet_backend.post_binding_otp_v2(
 </dl>
 </details>
 
-<details><summary><code>client.wallet_backend.<a href="src/fern/wallet_backend/client.py">post_wallet_binding</a>(...) -> PostWalletBindingResponse</code></summary>
+<details><summary><code>client.wallet_backend.<a href="src/fern/wallet_backend/client.py#L151-L234">post_wallet_binding</a>(...) -> PostWalletBindingResponse</code></summary>
 <dl>
 <dd>
 

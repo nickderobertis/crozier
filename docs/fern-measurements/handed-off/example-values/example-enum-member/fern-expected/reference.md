@@ -1,6 +1,6 @@
 # Reference
 ## Alerts
-<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py">subscribe_alerts</a>(...) -> SubscribeAlertsResponse</code></summary>
+<details><summary><code>client.alerts.<a href="src/fern/alerts/client.py#L30-L65">subscribe_alerts</a>(...) -> SubscribeAlertsResponse</code></summary>
 <dl>
 <dd>
 

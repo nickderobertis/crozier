@@ -1,6 +1,6 @@
 # Reference
 ## SortExtension
-<details><summary><code>client.sort_extension.<a href="src/fern/sort_extension/client.py">sortables</a>() -> SortablesSchema</code></summary>
+<details><summary><code>client.sort_extension.<a href="src/fern/sort_extension/client.py#L26-L51">sortables</a>() -> SortablesSchema</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.sort_extension.sortables()
 </dl>
 </details>
 
-<details><summary><code>client.sort_extension.<a href="src/fern/sort_extension/client.py">collection_sortables</a>(...) -> SortablesSchema</code></summary>
+<details><summary><code>client.sort_extension.<a href="src/fern/sort_extension/client.py#L53-L85">collection_sortables</a>(...) -> SortablesSchema</code></summary>
 <dl>
 <dd>
 
@@ -134,7 +134,7 @@ client.sort_extension.collection_sortables(
 </dl>
 </details>
 
-<details><summary><code>client.sort_extension.<a href="src/fern/sort_extension/client.py">collections_catalog_sortables</a>() -> SortablesSchema</code></summary>
+<details><summary><code>client.sort_extension.<a href="src/fern/sort_extension/client.py#L87-L114">collections_catalog_sortables</a>() -> SortablesSchema</code></summary>
 <dl>
 <dd>
 
@@ -197,7 +197,7 @@ client.sort_extension.collections_catalog_sortables()
 </details>
 
 ## AdgsFilterExtension
-<details><summary><code>client.adgs_filter_extension.<a href="src/fern/adgs_filter_extension/client.py">queryables</a>() -> typing.Any</code></summary>
+<details><summary><code>client.adgs_filter_extension.<a href="src/fern/adgs_filter_extension/client.py#L25-L50">queryables</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -259,7 +259,7 @@ client.adgs_filter_extension.queryables()
 </dl>
 </details>
 
-<details><summary><code>client.adgs_filter_extension.<a href="src/fern/adgs_filter_extension/client.py">collection_queryables</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.adgs_filter_extension.<a href="src/fern/adgs_filter_extension/client.py#L52-L84">collection_queryables</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -332,7 +332,7 @@ client.adgs_filter_extension.collection_queryables(
 </details>
 
 ## AdgsStations
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">search</a>(...) -> ItemCollection</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L45-L138">search</a>(...) -> ItemCollection</code></summary>
 <dl>
 <dd>
 
@@ -402,7 +402,7 @@ client.adgs_stations.search()
 </dl>
 </details>
 
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">get_root_catalog</a>() -> typing.Any</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L140-L187">get_root_catalog</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -486,7 +486,7 @@ client.adgs_stations.get_root_catalog()
 </dl>
 </details>
 
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">get_conformance</a>() -> typing.Any</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L189-L214">get_conformance</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -548,7 +548,7 @@ client.adgs_stations.get_conformance()
 </dl>
 </details>
 
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">get_allowed_adgs_collections</a>() -> typing.Any</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L216-L241">get_allowed_adgs_collections</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -610,7 +610,7 @@ client.adgs_stations.get_allowed_adgs_collections()
 </dl>
 </details>
 
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">get_adgs_collection</a>(...) -> GetAdgsCollectionAuxipCollectionsCollectionIdGetResponse</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L243-L275">get_adgs_collection</a>(...) -> GetAdgsCollectionAuxipCollectionsCollectionIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -682,7 +682,7 @@ client.adgs_stations.get_adgs_collection(
 </dl>
 </details>
 
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">get_adgs_collection_items</a>(...) -> GetAdgsCollectionItemsAuxipCollectionsCollectionIdItemsGetResponse</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L277-L378">get_adgs_collection_items</a>(...) -> GetAdgsCollectionItemsAuxipCollectionsCollectionIdItemsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -838,7 +838,7 @@ Supports `CQL2` as defined in https://docs.ogc.org/is/21-065r2/21-065r2.html
 </dl>
 </details>
 
-<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py">get_adgs_collection_specific_item</a>(...) -> GetAdgsCollectionSpecificItemAuxipCollectionsCollectionIdItemsItemIdGetResponse</code></summary>
+<details><summary><code>client.adgs_stations.<a href="src/fern/adgs_stations/client.py#L380-L454">get_adgs_collection_specific_item</a>(...) -> GetAdgsCollectionSpecificItemAuxipCollectionsCollectionIdItemsItemIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -956,7 +956,7 @@ client.adgs_stations.get_adgs_collection_specific_item(
 </details>
 
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">show_my_information</a>() -> typing.Any</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L25-L50">show_my_information</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1019,7 +1019,7 @@ client.authentication.show_my_information()
 </details>
 
 ## CadipFilterExtension
-<details><summary><code>client.cadip_filter_extension.<a href="src/fern/cadip_filter_extension/client.py">queryables</a>() -> typing.Any</code></summary>
+<details><summary><code>client.cadip_filter_extension.<a href="src/fern/cadip_filter_extension/client.py#L25-L50">queryables</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1081,7 +1081,7 @@ client.cadip_filter_extension.queryables()
 </dl>
 </details>
 
-<details><summary><code>client.cadip_filter_extension.<a href="src/fern/cadip_filter_extension/client.py">collection_queryables</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.cadip_filter_extension.<a href="src/fern/cadip_filter_extension/client.py#L52-L84">collection_queryables</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1154,7 +1154,7 @@ client.cadip_filter_extension.collection_queryables(
 </details>
 
 ## CadipStations
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">search</a>(...) -> ItemCollection</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L39-L132">search</a>(...) -> ItemCollection</code></summary>
 <dl>
 <dd>
 
@@ -1224,7 +1224,7 @@ client.cadip_stations.search()
 </dl>
 </details>
 
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">get_root_catalog</a>() -> typing.Any</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L134-L181">get_root_catalog</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1308,7 +1308,7 @@ client.cadip_stations.get_root_catalog()
 </dl>
 </details>
 
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">get_conformance</a>() -> typing.Any</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L183-L208">get_conformance</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1370,7 +1370,7 @@ client.cadip_stations.get_conformance()
 </dl>
 </details>
 
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">get_allowed_cadip_collections</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L210-L259">get_allowed_cadip_collections</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1454,7 +1454,7 @@ client.cadip_stations.get_allowed_cadip_collections()
 </dl>
 </details>
 
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">get_cadip_collection</a>(...) -> GetCadipCollectionCadipCollectionsCollectionIdGetResponse</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L261-L325">get_cadip_collection</a>(...) -> GetCadipCollectionCadipCollectionsCollectionIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1558,7 +1558,7 @@ client.cadip_stations.get_cadip_collection(
 </dl>
 </details>
 
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">get_cadip_collection_items</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L327-L426">get_cadip_collection_items</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1712,7 +1712,7 @@ Supports `CQL2` as defined in https://docs.ogc.org/is/21-065r2/21-065r2.html
 </dl>
 </details>
 
-<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py">get_cadip_collection_item_details</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.cadip_stations.<a href="src/fern/cadip_stations/client.py#L428-L497">get_cadip_collection_item_details</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1825,7 +1825,7 @@ client.cadip_stations.get_cadip_collection_item_details(
 </details>
 
 ## PripFilterExtension
-<details><summary><code>client.prip_filter_extension.<a href="src/fern/prip_filter_extension/client.py">queryables</a>() -> typing.Any</code></summary>
+<details><summary><code>client.prip_filter_extension.<a href="src/fern/prip_filter_extension/client.py#L25-L50">queryables</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1887,7 +1887,7 @@ client.prip_filter_extension.queryables()
 </dl>
 </details>
 
-<details><summary><code>client.prip_filter_extension.<a href="src/fern/prip_filter_extension/client.py">collection_queryables</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.prip_filter_extension.<a href="src/fern/prip_filter_extension/client.py#L52-L84">collection_queryables</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1960,7 +1960,7 @@ client.prip_filter_extension.collection_queryables(
 </details>
 
 ## PripStations
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">search</a>(...) -> ItemCollection</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L45-L138">search</a>(...) -> ItemCollection</code></summary>
 <dl>
 <dd>
 
@@ -2030,7 +2030,7 @@ client.prip_stations.search()
 </dl>
 </details>
 
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">get_root_catalog</a>() -> typing.Any</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L140-L165">get_root_catalog</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2092,7 +2092,7 @@ client.prip_stations.get_root_catalog()
 </dl>
 </details>
 
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">get_conformance</a>() -> typing.Any</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L167-L192">get_conformance</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2154,7 +2154,7 @@ client.prip_stations.get_conformance()
 </dl>
 </details>
 
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">get_allowed_prip_collections</a>() -> typing.Any</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L194-L219">get_allowed_prip_collections</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2216,7 +2216,7 @@ client.prip_stations.get_allowed_prip_collections()
 </dl>
 </details>
 
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">get_prip_collection</a>(...) -> GetPripCollectionPripCollectionsCollectionIdGetResponse</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L221-L252">get_prip_collection</a>(...) -> GetPripCollectionPripCollectionsCollectionIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2288,7 +2288,7 @@ client.prip_stations.get_prip_collection(
 </dl>
 </details>
 
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">get_prip_collection_items</a>(...) -> GetPripCollectionItemsPripCollectionsCollectionIdItemsGetResponse</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L254-L369">get_prip_collection_items</a>(...) -> GetPripCollectionItemsPripCollectionsCollectionIdItemsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2460,7 +2460,7 @@ Supports `CQL2` as defined in https://docs.ogc.org/is/21-065r2/21-065r2.html
 </dl>
 </details>
 
-<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py">get_prip_collection_specific_item</a>(...) -> GetPripCollectionSpecificItemPripCollectionsCollectionIdItemsItemIdGetResponse</code></summary>
+<details><summary><code>client.prip_stations.<a href="src/fern/prip_stations/client.py#L371-L443">get_prip_collection_specific_item</a>(...) -> GetPripCollectionSpecificItemPripCollectionsCollectionIdItemsItemIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2576,7 +2576,7 @@ client.prip_stations.get_prip_collection_specific_item(
 </details>
 
 ## OsamService
-<details><summary><code>client.osam_service.<a href="src/fern/osam_service/client.py">create_and_delete_obs_accounts</a>() -> typing.Any</code></summary>
+<details><summary><code>client.osam_service.<a href="src/fern/osam_service/client.py#L25-L65">create_and_delete_obs_accounts</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2653,7 +2653,7 @@ client.osam_service.create_and_delete_obs_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.osam_service.<a href="src/fern/osam_service/client.py">update_obs_user_rights</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.osam_service.<a href="src/fern/osam_service/client.py#L67-L120">update_obs_user_rights</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2747,7 +2747,7 @@ client.osam_service.update_obs_user_rights(
 </dl>
 </details>
 
-<details><summary><code>client.osam_service.<a href="src/fern/osam_service/client.py">get_your_s3credentials</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.osam_service.<a href="src/fern/osam_service/client.py#L122-L153">get_your_s3credentials</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2814,7 +2814,7 @@ client.osam_service.get_your_s3credentials()
 </details>
 
 ## Catalog
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">landing_page</a>() -> LandingPage</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L44-L69">landing_page</a>() -> LandingPage</code></summary>
 <dl>
 <dd>
 
@@ -2876,7 +2876,7 @@ client.catalog.landing_page()
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">conformance_classes</a>() -> Conformance</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L71-L96">conformance_classes</a>() -> Conformance</code></summary>
 <dl>
 <dd>
 
@@ -2938,7 +2938,7 @@ client.catalog.conformance_classes()
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_item</a>(...) -> StacPydanticApiItemItem</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L98-L134">get_item</a>(...) -> StacPydanticApiItemItem</code></summary>
 <dl>
 <dd>
 
@@ -3019,7 +3019,7 @@ client.catalog.get_item(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">search</a>(...) -> ItemCollectionOutput</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L136-L229">search</a>(...) -> ItemCollectionOutput</code></summary>
 <dl>
 <dd>
 
@@ -3089,7 +3089,7 @@ client.catalog.search()
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_collections</a>(...) -> Collections</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L231-L321">get_collections</a>(...) -> Collections</code></summary>
 <dl>
 <dd>
 
@@ -3248,7 +3248,7 @@ Remember to URL encode the CQL2-JSON if using GET
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_collection</a>(...) -> StacPydanticApiCollectionCollection</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L323-L355">get_collection</a>(...) -> StacPydanticApiCollectionCollection</code></summary>
 <dl>
 <dd>
 
@@ -3320,7 +3320,7 @@ client.catalog.get_collection(
 </dl>
 </details>
 
-<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py">get_item_collection</a>(...) -> ItemCollectionOutput</code></summary>
+<details><summary><code>client.catalog.<a href="src/fern/catalog/client.py#L357-L449">get_item_collection</a>(...) -> ItemCollectionOutput</code></summary>
 <dl>
 <dd>
 
@@ -3482,7 +3482,7 @@ Remember to URL encode the CQL2-JSON if using GET
 </details>
 
 ## CatalogTransactionExtension
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">update_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L48-L146">update_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
 <dl>
 <dd>
 
@@ -3588,7 +3588,7 @@ client.catalog_transaction_extension.update_item(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">delete_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L148-L184">delete_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
 <dl>
 <dd>
 
@@ -3669,7 +3669,7 @@ client.catalog_transaction_extension.delete_item(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">patch_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L186-L232">patch_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
 <dl>
 <dd>
 
@@ -3759,7 +3759,7 @@ client.catalog_transaction_extension.patch_item(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">create_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L234-L336">create_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
 <dl>
 <dd>
 
@@ -3854,7 +3854,7 @@ client.catalog_transaction_extension.create_collection(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">update_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L338-L446">update_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
 <dl>
 <dd>
 
@@ -3958,7 +3958,7 @@ client.catalog_transaction_extension.update_collection(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">delete_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L448-L480">delete_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
 <dl>
 <dd>
 
@@ -4030,7 +4030,7 @@ client.catalog_transaction_extension.delete_collection(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">patch_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L482-L521">patch_collection</a>(...) -> StacPydanticCollectionCollectionOutput</code></summary>
 <dl>
 <dd>
 
@@ -4111,7 +4111,7 @@ client.catalog_transaction_extension.patch_collection(
 </dl>
 </details>
 
-<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py">create_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
+<details><summary><code>client.catalog_transaction_extension.<a href="src/fern/catalog_transaction_extension/client.py#L523-L581">create_item</a>(...) -> StacPydanticItemItemOutput</code></summary>
 <dl>
 <dd>
 
@@ -4212,7 +4212,7 @@ client.catalog_transaction_extension.create_item(
 </details>
 
 ## CatalogFilterExtension
-<details><summary><code>client.catalog_filter_extension.<a href="src/fern/catalog_filter_extension/client.py">queryables</a>() -> typing.Any</code></summary>
+<details><summary><code>client.catalog_filter_extension.<a href="src/fern/catalog_filter_extension/client.py#L25-L50">queryables</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4274,7 +4274,7 @@ client.catalog_filter_extension.queryables()
 </dl>
 </details>
 
-<details><summary><code>client.catalog_filter_extension.<a href="src/fern/catalog_filter_extension/client.py">collection_queryables</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.catalog_filter_extension.<a href="src/fern/catalog_filter_extension/client.py#L52-L84">collection_queryables</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4347,7 +4347,7 @@ client.catalog_filter_extension.collection_queryables(
 </details>
 
 ## CatalogBulkTransactionExtension
-<details><summary><code>client.catalog_bulk_transaction_extension.<a href="src/fern/catalog_bulk_transaction_extension/client.py">bulk_create_item</a>(...) -> BulkTransactionModel</code></summary>
+<details><summary><code>client.catalog_bulk_transaction_extension.<a href="src/fern/catalog_bulk_transaction_extension/client.py#L30-L73">bulk_create_item</a>(...) -> BulkTransactionModel</code></summary>
 <dl>
 <dd>
 
@@ -4439,7 +4439,7 @@ client.catalog_bulk_transaction_extension.bulk_create_item(
 </details>
 
 ## CatalogLivelinessReadiness
-<details><summary><code>client.catalog_liveliness_readiness.<a href="src/fern/catalog_liveliness_readiness/client.py">ping_catalog_mgmt_ping_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.catalog_liveliness_readiness.<a href="src/fern/catalog_liveliness_readiness/client.py#L26-L53">ping_catalog_mgmt_ping_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4501,7 +4501,7 @@ client.catalog_liveliness_readiness.ping_catalog_mgmt_ping_get()
 </dl>
 </details>
 
-<details><summary><code>client.catalog_liveliness_readiness.<a href="src/fern/catalog_liveliness_readiness/client.py">health_catalog_mgmt_health_get</a>() -> HealthCheck</code></summary>
+<details><summary><code>client.catalog_liveliness_readiness.<a href="src/fern/catalog_liveliness_readiness/client.py#L55-L80">health_catalog_mgmt_health_get</a>() -> HealthCheck</code></summary>
 <dl>
 <dd>
 
@@ -4564,7 +4564,7 @@ client.catalog_liveliness_readiness.health_catalog_mgmt_health_get()
 </details>
 
 ## StagingService
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">get_processes</a>() -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L29-L54">get_processes</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4626,7 +4626,7 @@ client.staging_service.get_processes()
 </dl>
 </details>
 
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">get_resource</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L56-L85">get_resource</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4698,7 +4698,7 @@ client.staging_service.get_resource(
 </dl>
 </details>
 
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">execute_process</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L87-L124">execute_process</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4782,7 +4782,7 @@ client.staging_service.execute_process(
 </dl>
 </details>
 
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">get_job_status_endpoint</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L126-L157">get_job_status_endpoint</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4854,7 +4854,7 @@ client.staging_service.get_job_status_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">delete_job_endpoint</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L159-L190">delete_job_endpoint</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4926,7 +4926,7 @@ client.staging_service.delete_job_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">get_jobs_endpoint</a>() -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L192-L217">get_jobs_endpoint</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4988,7 +4988,7 @@ client.staging_service.get_jobs_endpoint()
 </dl>
 </details>
 
-<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py">get_specific_job_result_endpoint</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.staging_service.<a href="src/fern/staging_service/client.py#L219-L250">get_specific_job_result_endpoint</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5061,7 +5061,7 @@ client.staging_service.get_specific_job_result_endpoint(
 </details>
 
 ## ProcessingService
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">get_processes</a>() -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L25-L50">get_processes</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5123,7 +5123,7 @@ client.processing_service.get_processes()
 </dl>
 </details>
 
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">get_resource</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L52-L81">get_resource</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5195,7 +5195,7 @@ client.processing_service.get_resource(
 </dl>
 </details>
 
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">execute_process</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L83-L112">execute_process</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5267,7 +5267,7 @@ client.processing_service.execute_process(
 </dl>
 </details>
 
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">get_job_logs_endpoint</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L114-L145">get_job_logs_endpoint</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5339,7 +5339,7 @@ client.processing_service.get_job_logs_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">get_job_status_endpoint</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L147-L178">get_job_status_endpoint</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5411,7 +5411,7 @@ client.processing_service.get_job_status_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">delete_job_endpoint</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L180-L211">delete_job_endpoint</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5483,7 +5483,7 @@ client.processing_service.delete_job_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py">get_jobs_endpoint</a>() -> typing.Any</code></summary>
+<details><summary><code>client.processing_service.<a href="src/fern/processing_service/client.py#L213-L238">get_jobs_endpoint</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 

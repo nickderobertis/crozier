@@ -1,6 +1,6 @@
 # Reference
 ## Exposures
-<details><summary><code>client.exposures.<a href="src/fern/exposures/client.py">list_exposures</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.exposures.<a href="src/fern/exposures/client.py#L27-L65">list_exposures</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -68,7 +68,7 @@ client.exposures.list_exposures(
 </details>
 
 ## Targets
-<details><summary><code>client.targets.<a href="src/fern/targets/client.py">list_targets</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.targets.<a href="src/fern/targets/client.py#L26-L61">list_targets</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

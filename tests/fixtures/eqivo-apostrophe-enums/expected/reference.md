@@ -1,6 +1,6 @@
 # Reference
 ## Call
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01bulk_call</a>(...) -> BulkCallResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L52-L189">v01bulk_call</a>(...) -> BulkCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -78,7 +78,7 @@ client.call.v01bulk_call(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01call</a>(...) -> CallResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L191-L347">v01call</a>(...) -> CallResponse</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.call.v01call(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01cancel_scheduled_hangup</a>(...) -> CancelScheduledHangupResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L349-L383">v01cancel_scheduled_hangup</a>(...) -> CancelScheduledHangupResponse</code></summary>
 <dl>
 <dd>
 
@@ -229,7 +229,7 @@ client.call.v01cancel_scheduled_hangup(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01cancel_scheduled_play</a>(...) -> CancelScheduledPlayResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L385-L419">v01cancel_scheduled_play</a>(...) -> CancelScheduledPlayResponse</code></summary>
 <dl>
 <dd>
 
@@ -303,7 +303,7 @@ client.call.v01cancel_scheduled_play(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01group_call</a>(...) -> GroupCallResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L421-L558">v01group_call</a>(...) -> GroupCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -381,7 +381,7 @@ client.call.v01group_call(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01hangup_all_calls</a>() -> HangupAllCallsResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L560-L585">v01hangup_all_calls</a>() -> HangupAllCallsResponse</code></summary>
 <dl>
 <dd>
 
@@ -445,7 +445,7 @@ client.call.v01hangup_all_calls()
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01hangup_call</a>(...) -> HangupCallResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L587-L626">v01hangup_call</a>(...) -> HangupCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -517,7 +517,7 @@ client.call.v01hangup_call()
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01play</a>(...) -> PlayResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L628-L692">v01play</a>(...) -> PlayResponse</code></summary>
 <dl>
 <dd>
 
@@ -592,7 +592,7 @@ client.call.v01play(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01play_stop</a>(...) -> PlayStopResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L694-L726">v01play_stop</a>(...) -> PlayStopResponse</code></summary>
 <dl>
 <dd>
 
@@ -666,7 +666,7 @@ client.call.v01play_stop(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01record_start</a>(...) -> RecordStartResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L728-L784">v01record_start</a>(...) -> RecordStartResponse</code></summary>
 <dl>
 <dd>
 
@@ -738,7 +738,7 @@ client.call.v01record_start()
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01record_stop</a>(...) -> RecordStopResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L786-L824">v01record_stop</a>(...) -> RecordStopResponse</code></summary>
 <dl>
 <dd>
 
@@ -813,7 +813,7 @@ client.call.v01record_stop(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01schedule_hangup</a>(...) -> ScheduleHangupResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L826-L862">v01schedule_hangup</a>(...) -> ScheduleHangupResponse</code></summary>
 <dl>
 <dd>
 
@@ -888,7 +888,7 @@ client.call.v01schedule_hangup(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01schedule_play</a>(...) -> SchedulePlayResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L864-L934">v01schedule_play</a>(...) -> SchedulePlayResponse</code></summary>
 <dl>
 <dd>
 
@@ -964,7 +964,7 @@ client.call.v01schedule_play(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01send_digits</a>(...) -> SendDigitsResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L936-L982">v01send_digits</a>(...) -> SendDigitsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1039,7 +1039,7 @@ client.call.v01send_digits(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01sound_touch</a>(...) -> SoundTouchResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L984-L1052">v01sound_touch</a>(...) -> SoundTouchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1113,7 +1113,7 @@ client.call.v01sound_touch(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01sound_touch_stop</a>(...) -> SoundTouchStopResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L1054-L1086">v01sound_touch_stop</a>(...) -> SoundTouchStopResponse</code></summary>
 <dl>
 <dd>
 
@@ -1187,7 +1187,7 @@ client.call.v01sound_touch_stop(
 </dl>
 </details>
 
-<details><summary><code>client.call.<a href="src/fern/call/client.py">v01transfer_call</a>(...) -> TransferCallResponse</code></summary>
+<details><summary><code>client.call.<a href="src/fern/call/client.py#L1088-L1124">v01transfer_call</a>(...) -> TransferCallResponse</code></summary>
 <dl>
 <dd>
 
@@ -1263,7 +1263,7 @@ client.call.v01transfer_call(
 </details>
 
 ## Conference
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_deaf</a>(...) -> ConferenceDeafResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L41-L79">v01conference_deaf</a>(...) -> ConferenceDeafResponse</code></summary>
 <dl>
 <dd>
 
@@ -1338,7 +1338,7 @@ client.conference.v01conference_deaf(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_hangup</a>(...) -> ConferenceHangupResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L81-L119">v01conference_hangup</a>(...) -> ConferenceHangupResponse</code></summary>
 <dl>
 <dd>
 
@@ -1413,7 +1413,7 @@ client.conference.v01conference_hangup(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_kick</a>(...) -> ConferenceKickResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L121-L159">v01conference_kick</a>(...) -> ConferenceKickResponse</code></summary>
 <dl>
 <dd>
 
@@ -1488,7 +1488,7 @@ client.conference.v01conference_kick(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_list</a>(...) -> ConferenceListResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L161-L212">v01conference_list</a>(...) -> ConferenceListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1560,7 +1560,7 @@ client.conference.v01conference_list()
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_list_members</a>(...) -> ConferenceListMembersResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L214-L272">v01conference_list_members</a>(...) -> ConferenceListMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1634,7 +1634,7 @@ client.conference.v01conference_list_members(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_mute</a>(...) -> ConferenceMuteResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L274-L312">v01conference_mute</a>(...) -> ConferenceMuteResponse</code></summary>
 <dl>
 <dd>
 
@@ -1709,7 +1709,7 @@ client.conference.v01conference_mute(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_play</a>(...) -> ConferencePlayResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L314-L361">v01conference_play</a>(...) -> ConferencePlayResponse</code></summary>
 <dl>
 <dd>
 
@@ -1785,7 +1785,7 @@ client.conference.v01conference_play(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_record_start</a>(...) -> ConferenceRecordStartResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L363-L416">v01conference_record_start</a>(...) -> ConferenceRecordStartResponse</code></summary>
 <dl>
 <dd>
 
@@ -1859,7 +1859,7 @@ client.conference.v01conference_record_start(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_record_stop</a>(...) -> ConferenceRecordStopResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L418-L456">v01conference_record_stop</a>(...) -> ConferenceRecordStopResponse</code></summary>
 <dl>
 <dd>
 
@@ -1934,7 +1934,7 @@ client.conference.v01conference_record_stop(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_speak</a>(...) -> ConferenceSpeakResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L458-L505">v01conference_speak</a>(...) -> ConferenceSpeakResponse</code></summary>
 <dl>
 <dd>
 
@@ -2010,7 +2010,7 @@ client.conference.v01conference_speak(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_undeaf</a>(...) -> ConferenceUndeafResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L507-L545">v01conference_undeaf</a>(...) -> ConferenceUndeafResponse</code></summary>
 <dl>
 <dd>
 
@@ -2085,7 +2085,7 @@ client.conference.v01conference_undeaf(
 </dl>
 </details>
 
-<details><summary><code>client.conference.<a href="src/fern/conference/client.py">v01conference_unmute</a>(...) -> ConferenceUnmuteResponse</code></summary>
+<details><summary><code>client.conference.<a href="src/fern/conference/client.py#L547-L585">v01conference_unmute</a>(...) -> ConferenceUnmuteResponse</code></summary>
 <dl>
 <dd>
 

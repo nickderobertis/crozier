@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">token_legacy</a>(...) -> TokenResponseLegacy</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L146">token_legacy</a>(...) -> TokenResponseLegacy</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.token_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">token_sign_legacy</a>(...) -> Token</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L148-L186">token_sign_legacy</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.token_sign_legacy(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">token_sign</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L188-L225">token_sign</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -234,7 +234,7 @@ client.token_sign(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">token_refresh</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L227-L262">token_refresh</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -309,7 +309,7 @@ client.token_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">token_invalidate</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L264-L294">token_invalidate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -382,7 +382,7 @@ client.token_invalidate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">token_invalidate_all</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L296-L321">token_invalidate_all</a>()</code></summary>
 <dl>
 <dd>
 

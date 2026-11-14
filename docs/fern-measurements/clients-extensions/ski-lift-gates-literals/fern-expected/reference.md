@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">scan_pass</a>(...) -> Turnstile</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L150">scan_pass</a>(...) -> Turnstile</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post_graph_ql</a>(...) -> GraphQlResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L153-L198">post_graph_ql</a>(...) -> GraphQlResponse</code></summary>
 <dl>
 <dd>
 
@@ -89,7 +89,7 @@ client.post_graph_ql(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_documentation</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L200-L225">get_documentation</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -140,7 +140,7 @@ client.get_documentation()
 </details>
 
 ## ServiceCredentialType
-<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py">list_service_credential_types</a>(...) -> ServiceCredentialTypesCollection</code></summary>
+<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py#L27-L74">list_service_credential_types</a>(...) -> ServiceCredentialTypesCollection</code></summary>
 <dl>
 <dd>
 
@@ -236,7 +236,7 @@ client.service_credential_type.list_service_credential_types()
 </dl>
 </details>
 
-<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py">show_service_credential_type</a>(...) -> ServiceCredentialType</code></summary>
+<details><summary><code>client.service_credential_type.<a href="src/fern/service_credential_type/client.py#L76-L108">show_service_credential_type</a>(...) -> ServiceCredentialType</code></summary>
 <dl>
 <dd>
 
@@ -311,7 +311,7 @@ client.service_credential_type.show_service_credential_type(
 </details>
 
 ## ServiceCredential
-<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py">list_service_credentials</a>(...) -> ServiceCredentialsCollection</code></summary>
+<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py#L27-L74">list_service_credentials</a>(...) -> ServiceCredentialsCollection</code></summary>
 <dl>
 <dd>
 
@@ -407,7 +407,7 @@ client.service_credential.list_service_credentials()
 </dl>
 </details>
 
-<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py">show_service_credential</a>(...) -> ServiceCredential</code></summary>
+<details><summary><code>client.service_credential.<a href="src/fern/service_credential/client.py#L76-L108">show_service_credential</a>(...) -> ServiceCredential</code></summary>
 <dl>
 <dd>
 
@@ -482,7 +482,7 @@ client.service_credential.show_service_credential(
 </details>
 
 ## ServiceInstance
-<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py">list_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
+<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py#L27-L74">list_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
 <dl>
 <dd>
 
@@ -578,7 +578,7 @@ client.service_instance.list_service_instances()
 </dl>
 </details>
 
-<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py">show_service_instance</a>(...) -> ServiceInstance</code></summary>
+<details><summary><code>client.service_instance.<a href="src/fern/service_instance/client.py#L76-L108">show_service_instance</a>(...) -> ServiceInstance</code></summary>
 <dl>
 <dd>
 
@@ -653,7 +653,7 @@ client.service_instance.show_service_instance(
 </details>
 
 ## ServiceInventory
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">list_service_inventories</a>(...) -> ServiceInventoriesCollection</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py#L32-L79">list_service_inventories</a>(...) -> ServiceInventoriesCollection</code></summary>
 <dl>
 <dd>
 
@@ -749,7 +749,7 @@ client.service_inventory.list_service_inventories()
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">show_service_inventory</a>(...) -> ServiceInventory</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py#L81-L113">show_service_inventory</a>(...) -> ServiceInventory</code></summary>
 <dl>
 <dd>
 
@@ -823,7 +823,7 @@ client.service_inventory.show_service_inventory(
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">tag_service_inventory</a>(...) -> typing.List[Tag]</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py#L115-L150">tag_service_inventory</a>(...) -> typing.List[Tag]</code></summary>
 <dl>
 <dd>
 
@@ -908,7 +908,7 @@ client.service_inventory.tag_service_inventory(
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">list_service_inventory_tags</a>(...) -> TagsCollection</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py#L152-L205">list_service_inventory_tags</a>(...) -> TagsCollection</code></summary>
 <dl>
 <dd>
 
@@ -1014,7 +1014,7 @@ client.service_inventory.list_service_inventory_tags(
 </dl>
 </details>
 
-<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py">untag_service_inventory</a>(...)</code></summary>
+<details><summary><code>client.service_inventory.<a href="src/fern/service_inventory/client.py#L207-L241">untag_service_inventory</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1100,7 +1100,7 @@ client.service_inventory.untag_service_inventory(
 </details>
 
 ## ServiceOfferingNode
-<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py">list_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
+<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py#L27-L74">list_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
 <dl>
 <dd>
 
@@ -1196,7 +1196,7 @@ client.service_offering_node.list_service_offering_nodes()
 </dl>
 </details>
 
-<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py">show_service_offering_node</a>(...) -> ServiceOfferingNode</code></summary>
+<details><summary><code>client.service_offering_node.<a href="src/fern/service_offering_node/client.py#L76-L108">show_service_offering_node</a>(...) -> ServiceOfferingNode</code></summary>
 <dl>
 <dd>
 
@@ -1271,7 +1271,7 @@ client.service_offering_node.show_service_offering_node(
 </details>
 
 ## ServiceOffering
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offerings</a>(...) -> ServiceOfferingsCollection</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L35-L82">list_service_offerings</a>(...) -> ServiceOfferingsCollection</code></summary>
 <dl>
 <dd>
 
@@ -1367,7 +1367,7 @@ client.service_offering.list_service_offerings()
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">show_service_offering</a>(...) -> ServiceOffering</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L84-L116">show_service_offering</a>(...) -> ServiceOffering</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ client.service_offering.show_service_offering(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">applied_inventories_tags_for_service_offering</a>(...) -> typing.List[Tag]</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L118-L159">applied_inventories_tags_for_service_offering</a>(...) -> typing.List[Tag]</code></summary>
 <dl>
 <dd>
 
@@ -1523,7 +1523,7 @@ client.service_offering.applied_inventories_tags_for_service_offering(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">order_service_offering</a>(...) -> OrderServiceOfferingResponse</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L161-L209">order_service_offering</a>(...) -> OrderServiceOfferingResponse</code></summary>
 <dl>
 <dd>
 
@@ -1613,7 +1613,7 @@ client.service_offering.order_service_offering(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L211-L264">list_service_offering_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
 <dl>
 <dd>
 
@@ -1719,7 +1719,7 @@ client.service_offering.list_service_offering_service_instances(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L266-L319">list_service_offering_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
 <dl>
 <dd>
 
@@ -1825,7 +1825,7 @@ client.service_offering.list_service_offering_service_offering_nodes(
 </dl>
 </details>
 
-<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py">list_service_offering_service_plans</a>(...) -> ServicePlansCollection</code></summary>
+<details><summary><code>client.service_offering.<a href="src/fern/service_offering/client.py#L321-L374">list_service_offering_service_plans</a>(...) -> ServicePlansCollection</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.service_offering.list_service_offering_service_plans(
 </details>
 
 ## ServicePlan
-<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py">list_service_plans</a>(...) -> ServicePlansCollection</code></summary>
+<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py#L27-L74">list_service_plans</a>(...) -> ServicePlansCollection</code></summary>
 <dl>
 <dd>
 
@@ -2028,7 +2028,7 @@ client.service_plan.list_service_plans()
 </dl>
 </details>
 
-<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py">show_service_plan</a>(...) -> ServicePlan</code></summary>
+<details><summary><code>client.service_plan.<a href="src/fern/service_plan/client.py#L76-L106">show_service_plan</a>(...) -> ServicePlan</code></summary>
 <dl>
 <dd>
 
@@ -2103,7 +2103,7 @@ client.service_plan.show_service_plan(
 </details>
 
 ## Source
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_sources</a>(...) -> SourcesCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L33-L80">list_sources</a>(...) -> SourcesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2199,7 +2199,7 @@ client.source.list_sources()
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">show_source</a>(...) -> Source</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L82-L112">show_source</a>(...) -> Source</code></summary>
 <dl>
 <dd>
 
@@ -2273,7 +2273,7 @@ client.source.show_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">incremental_refresh_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L114-L143">incremental_refresh_source</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2347,7 +2347,7 @@ client.source.incremental_refresh_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">refresh_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L145-L174">refresh_source</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2421,7 +2421,7 @@ client.source.refresh_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L176-L229">list_source_service_instances</a>(...) -> ServiceInstancesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2527,7 +2527,7 @@ client.source.list_source_service_instances(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_inventories</a>(...) -> ServiceInventoriesCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L231-L284">list_source_service_inventories</a>(...) -> ServiceInventoriesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2633,7 +2633,7 @@ client.source.list_source_service_inventories(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L286-L339">list_source_service_offering_nodes</a>(...) -> ServiceOfferingNodesCollection</code></summary>
 <dl>
 <dd>
 
@@ -2739,7 +2739,7 @@ client.source.list_source_service_offering_nodes(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_offerings</a>(...) -> ServiceOfferingsCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L341-L394">list_source_service_offerings</a>(...) -> ServiceOfferingsCollection</code></summary>
 <dl>
 <dd>
 
@@ -2845,7 +2845,7 @@ client.source.list_source_service_offerings(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_service_plans</a>(...) -> ServicePlansCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L396-L449">list_source_service_plans</a>(...) -> ServicePlansCollection</code></summary>
 <dl>
 <dd>
 
@@ -2951,7 +2951,7 @@ client.source.list_source_service_plans(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_source_tasks</a>(...) -> TasksCollection</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L451-L504">list_source_tasks</a>(...) -> TasksCollection</code></summary>
 <dl>
 <dd>
 
@@ -3058,7 +3058,7 @@ client.source.list_source_tasks(
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">list_tags</a>(...) -> TagsCollection</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L26-L73">list_tags</a>(...) -> TagsCollection</code></summary>
 <dl>
 <dd>
 
@@ -3155,7 +3155,7 @@ client.tags.list_tags()
 </details>
 
 ## Task
-<details><summary><code>client.task.<a href="src/fern/task/client.py">list_tasks</a>(...) -> TasksCollection</code></summary>
+<details><summary><code>client.task.<a href="src/fern/task/client.py#L35-L82">list_tasks</a>(...) -> TasksCollection</code></summary>
 <dl>
 <dd>
 
@@ -3251,7 +3251,7 @@ client.task.list_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.task.<a href="src/fern/task/client.py">show_task</a>(...) -> Task</code></summary>
+<details><summary><code>client.task.<a href="src/fern/task/client.py#L84-L114">show_task</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -3325,7 +3325,7 @@ client.task.show_task(
 </dl>
 </details>
 
-<details><summary><code>client.task.<a href="src/fern/task/client.py">update_task</a>(...)</code></summary>
+<details><summary><code>client.task.<a href="src/fern/task/client.py#L116-L225">update_task</a>(...)</code></summary>
 <dl>
 <dd>
 

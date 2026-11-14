@@ -1,6 +1,6 @@
 # Reference
 ## attempt
-<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">save_stats</a>(...) -> InternalOperationResult</code></summary>
+<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py#L35-L83">save_stats</a>(...) -> InternalOperationResult</code></summary>
 <dl>
 <dd>
 
@@ -85,7 +85,7 @@ client.attempt.save_stats(
 </dl>
 </details>
 
-<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">save_sync_config</a>(...) -> InternalOperationResult</code></summary>
+<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py#L85-L129">save_sync_config</a>(...) -> InternalOperationResult</code></summary>
 <dl>
 <dd>
 
@@ -165,7 +165,7 @@ client.attempt.save_sync_config(
 </dl>
 </details>
 
-<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py">set_workflow_in_attempt</a>(...) -> InternalOperationResult</code></summary>
+<details><summary><code>client.attempt.<a href="src/fern/attempt/client.py#L131-L179">set_workflow_in_attempt</a>(...) -> InternalOperationResult</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.attempt.set_workflow_in_attempt(
 </details>
 
 ## connection
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">create_connection</a>(...) -> ConnectionRead</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L47-L150">create_connection</a>(...) -> ConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -440,7 +440,7 @@ client.connection.create_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">delete_connection</a>(...)</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L152-L179">delete_connection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -499,7 +499,7 @@ client.connection.delete_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">get_connection</a>(...) -> ConnectionRead</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L181-L209">get_connection</a>(...) -> ConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -558,7 +558,7 @@ client.connection.get_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">list_connections_for_workspace</a>(...) -> ConnectionReadList</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L211-L243">list_connections_for_workspace</a>(...) -> ConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ client.connection.list_connections_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">list_all_connections_for_workspace</a>(...) -> ConnectionReadList</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L245-L277">list_all_connections_for_workspace</a>(...) -> ConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ client.connection.list_all_connections_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">reset_connection</a>(...) -> JobInfoRead</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L279-L307">reset_connection</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -763,7 +763,7 @@ client.connection.reset_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">search_connections</a>(...) -> ConnectionReadList</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L309-L391">search_connections</a>(...) -> ConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -916,7 +916,7 @@ client.connection.search_connections()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">sync_connection</a>(...) -> JobInfoRead</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L393-L421">sync_connection</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -975,7 +975,7 @@ client.connection.sync_connection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">update_connection</a>(...) -> ConnectionRead</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L423-L529">update_connection</a>(...) -> ConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -1180,7 +1180,7 @@ client.connection.update_connection(
 </details>
 
 ## destination_definition_specification
-<details><summary><code>client.destination_definition_specification.<a href="src/fern/destination_definition_specification/client.py">get_destination_definition_specification</a>(...) -> DestinationDefinitionSpecificationRead</code></summary>
+<details><summary><code>client.destination_definition_specification.<a href="src/fern/destination_definition_specification/client.py#L31-L70">get_destination_definition_specification</a>(...) -> DestinationDefinitionSpecificationRead</code></summary>
 <dl>
 <dd>
 
@@ -1241,7 +1241,7 @@ client.destination_definition_specification.get_destination_definition_specifica
 </details>
 
 ## destination_definition
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">create_custom_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L36-L78">create_custom_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1314,7 +1314,7 @@ client.destination_definition.create_custom_destination_definition(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">delete_destination_definition</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L80-L112">delete_destination_definition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1373,7 +1373,7 @@ client.destination_definition.delete_destination_definition(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">get_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L114-L147">get_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1432,7 +1432,7 @@ client.destination_definition.get_destination_definition(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">get_destination_definition_for_workspace</a>(...) -> DestinationDefinitionRead</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L149-L188">get_destination_definition_for_workspace</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1492,7 +1492,7 @@ client.destination_definition.get_destination_definition_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">grant_destination_definition_to_workspace</a>(...) -> PrivateDestinationDefinitionRead</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L190-L229">grant_destination_definition_to_workspace</a>(...) -> PrivateDestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1552,7 +1552,7 @@ client.destination_definition.grant_destination_definition_to_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_destination_definitions</a>() -> DestinationDefinitionReadList</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L231-L255">list_destination_definitions</a>() -> DestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1601,7 +1601,7 @@ client.destination_definition.list_destination_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_destination_definitions_for_workspace</a>(...) -> DestinationDefinitionReadList</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L257-L287">list_destination_definitions_for_workspace</a>(...) -> DestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1660,7 +1660,7 @@ client.destination_definition.list_destination_definitions_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_latest_destination_definitions</a>() -> DestinationDefinitionReadList</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L289-L315">list_latest_destination_definitions</a>() -> DestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1723,7 +1723,7 @@ client.destination_definition.list_latest_destination_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">list_private_destination_definitions</a>(...) -> PrivateDestinationDefinitionReadList</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L317-L347">list_private_destination_definitions</a>(...) -> PrivateDestinationDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -1782,7 +1782,7 @@ client.destination_definition.list_private_destination_definitions(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">revoke_destination_definition_from_workspace</a>(...)</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L349-L387">revoke_destination_definition_from_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1842,7 +1842,7 @@ client.destination_definition.revoke_destination_definition_from_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py">update_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
+<details><summary><code>client.destination_definition.<a href="src/fern/destination_definition/client.py#L389-L431">update_destination_definition</a>(...) -> DestinationDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -1918,7 +1918,7 @@ client.destination_definition.update_destination_definition(
 </details>
 
 ## destination_oauth
-<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">complete_destination_o_auth</a>(...) -> CompleteOAuthResponse</code></summary>
+<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py#L34-L91">complete_destination_o_auth</a>(...) -> CompleteOAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -2018,7 +2018,7 @@ client.destination_oauth.complete_destination_o_auth(
 </dl>
 </details>
 
-<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">get_destination_o_auth_consent</a>(...) -> OAuthConsentRead</code></summary>
+<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py#L93-L146">get_destination_o_auth_consent</a>(...) -> OAuthConsentRead</code></summary>
 <dl>
 <dd>
 
@@ -2111,7 +2111,7 @@ client.destination_oauth.get_destination_o_auth_consent(
 </dl>
 </details>
 
-<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py">set_instancewide_destination_oauth_params</a>(...)</code></summary>
+<details><summary><code>client.destination_oauth.<a href="src/fern/destination_oauth/client.py#L148-L184">set_instancewide_destination_oauth_params</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2182,7 +2182,7 @@ client.destination_oauth.set_instancewide_destination_oauth_params(
 </details>
 
 ## destination
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">check_connection_to_destination</a>(...) -> CheckConnectionRead</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L36-L66">check_connection_to_destination</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -2241,7 +2241,7 @@ client.destination.check_connection_to_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">check_connection_to_destination_for_update</a>(...) -> CheckConnectionRead</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L68-L112">check_connection_to_destination_for_update</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -2302,7 +2302,7 @@ client.destination.check_connection_to_destination_for_update(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">clone_destination</a>(...) -> DestinationRead</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L114-L152">clone_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2369,7 +2369,7 @@ client.destination.clone_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">create_destination</a>(...) -> DestinationRead</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L154-L203">create_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2455,7 +2455,7 @@ client.destination.create_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">delete_destination</a>(...)</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L205-L232">delete_destination</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2514,7 +2514,7 @@ client.destination.delete_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">get_destination</a>(...) -> DestinationRead</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L234-L262">get_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2573,7 +2573,7 @@ client.destination.get_destination(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">list_destinations_for_workspace</a>(...) -> DestinationReadList</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L264-L294">list_destinations_for_workspace</a>(...) -> DestinationReadList</code></summary>
 <dl>
 <dd>
 
@@ -2632,7 +2632,7 @@ client.destination.list_destinations_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">search_destinations</a>(...) -> DestinationReadList</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L296-L348">search_destinations</a>(...) -> DestinationReadList</code></summary>
 <dl>
 <dd>
 
@@ -2689,7 +2689,7 @@ client.destination.search_destinations()
 </dl>
 </details>
 
-<details><summary><code>client.destination.<a href="src/fern/destination/client.py">update_destination</a>(...) -> DestinationRead</code></summary>
+<details><summary><code>client.destination.<a href="src/fern/destination/client.py#L350-L394">update_destination</a>(...) -> DestinationRead</code></summary>
 <dl>
 <dd>
 
@@ -2751,7 +2751,7 @@ client.destination.update_destination(
 </details>
 
 ## health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health_check</a>() -> HealthCheckRead</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L48">get_health_check</a>() -> HealthCheckRead</code></summary>
 <dl>
 <dd>
 
@@ -2801,7 +2801,7 @@ client.health.get_health_check()
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel_job</a>(...) -> JobInfoRead</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L38-L64">cancel_job</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -2860,7 +2860,7 @@ client.jobs.cancel_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_info</a>(...) -> JobInfoRead</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L66-L92">get_job_info</a>(...) -> JobInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -2919,7 +2919,7 @@ client.jobs.get_job_info(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_debug_info</a>(...) -> JobDebugInfoRead</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L94-L122">get_job_debug_info</a>(...) -> JobDebugInfoRead</code></summary>
 <dl>
 <dd>
 
@@ -2978,7 +2978,7 @@ client.jobs.get_job_debug_info(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_last_replication_job</a>(...) -> JobOptionalRead</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L124-L154">get_last_replication_job</a>(...) -> JobOptionalRead</code></summary>
 <dl>
 <dd>
 
@@ -3037,7 +3037,7 @@ client.jobs.get_last_replication_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_info_light</a>(...) -> JobInfoLightRead</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L156-L184">get_job_info_light</a>(...) -> JobInfoLightRead</code></summary>
 <dl>
 <dd>
 
@@ -3096,7 +3096,7 @@ client.jobs.get_job_info_light(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_attempt_normalization_statuses_for_job</a>(...) -> AttemptNormalizationStatusReadList</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L186-L214">get_attempt_normalization_statuses_for_job</a>(...) -> AttemptNormalizationStatusReadList</code></summary>
 <dl>
 <dd>
 
@@ -3155,7 +3155,7 @@ client.jobs.get_attempt_normalization_statuses_for_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list_jobs_for</a>(...) -> JobReadList</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L216-L264">list_jobs_for</a>(...) -> JobReadList</code></summary>
 <dl>
 <dd>
 
@@ -3242,7 +3242,7 @@ client.jobs.list_jobs_for(
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">get_logs</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L29-L57">get_logs</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3302,7 +3302,7 @@ client.logs.get_logs(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">try_notification_config</a>(...) -> NotificationRead</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L32-L84">try_notification_config</a>(...) -> NotificationRead</code></summary>
 <dl>
 <dd>
 
@@ -3364,7 +3364,7 @@ client.notifications.try_notification_config(
 </details>
 
 ## Openapi
-<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py">get_open_api_spec</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py#L25-L38">get_open_api_spec</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3405,7 +3405,7 @@ client.openapi.get_open_api_spec()
 </details>
 
 ## Operation
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">check_operation</a>(...) -> CheckOperationRead</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py#L39-L85">check_operation</a>(...) -> CheckOperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3464,7 +3464,7 @@ client.operation.check_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">create_operation</a>(...) -> OperationRead</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py#L87-L133">create_operation</a>(...) -> OperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3527,7 +3527,7 @@ client.operation.create_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">delete_operation</a>(...)</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py#L135-L162">delete_operation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3586,7 +3586,7 @@ client.operation.delete_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">get_operation</a>(...) -> OperationRead</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py#L164-L192">get_operation</a>(...) -> OperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3645,7 +3645,7 @@ client.operation.get_operation(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">list_operations_for_connection</a>(...) -> OperationReadList</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py#L194-L226">list_operations_for_connection</a>(...) -> OperationReadList</code></summary>
 <dl>
 <dd>
 
@@ -3718,7 +3718,7 @@ client.operation.list_operations_for_connection(
 </dl>
 </details>
 
-<details><summary><code>client.operation.<a href="src/fern/operation/client.py">update_operation</a>(...) -> OperationRead</code></summary>
+<details><summary><code>client.operation.<a href="src/fern/operation/client.py#L228-L274">update_operation</a>(...) -> OperationRead</code></summary>
 <dl>
 <dd>
 
@@ -3798,7 +3798,7 @@ client.operation.update_operation(
 </details>
 
 ## Scheduler
-<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_destination_check_connection</a>(...) -> CheckConnectionRead</code></summary>
+<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py#L37-L85">execute_destination_check_connection</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -3883,7 +3883,7 @@ client.scheduler.execute_destination_check_connection(
 </dl>
 </details>
 
-<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_source_check_connection</a>(...) -> CheckConnectionRead</code></summary>
+<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py#L87-L135">execute_source_check_connection</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -3944,7 +3944,7 @@ client.scheduler.execute_source_check_connection(
 </dl>
 </details>
 
-<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py">execute_source_discover_schema</a>(...) -> SourceDiscoverSchemaRead</code></summary>
+<details><summary><code>client.scheduler.<a href="src/fern/scheduler/client.py#L137-L185">execute_source_discover_schema</a>(...) -> SourceDiscoverSchemaRead</code></summary>
 <dl>
 <dd>
 
@@ -4006,7 +4006,7 @@ client.scheduler.execute_source_discover_schema(
 </details>
 
 ## source_definition_specification
-<details><summary><code>client.source_definition_specification.<a href="src/fern/source_definition_specification/client.py">get_source_definition_specification</a>(...) -> SourceDefinitionSpecificationRead</code></summary>
+<details><summary><code>client.source_definition_specification.<a href="src/fern/source_definition_specification/client.py#L31-L68">get_source_definition_specification</a>(...) -> SourceDefinitionSpecificationRead</code></summary>
 <dl>
 <dd>
 
@@ -4067,7 +4067,7 @@ client.source_definition_specification.get_source_definition_specification(
 </details>
 
 ## source_definition
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">create_custom_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L36-L78">create_custom_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4140,7 +4140,7 @@ client.source_definition.create_custom_source_definition(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">delete_source_definition</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L80-L109">delete_source_definition</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4199,7 +4199,7 @@ client.source_definition.delete_source_definition(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">get_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L111-L141">get_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4258,7 +4258,7 @@ client.source_definition.get_source_definition(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">get_source_definition_for_workspace</a>(...) -> SourceDefinitionRead</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L143-L180">get_source_definition_for_workspace</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4318,7 +4318,7 @@ client.source_definition.get_source_definition_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">grant_source_definition_to_workspace</a>(...) -> PrivateSourceDefinitionRead</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L182-L219">grant_source_definition_to_workspace</a>(...) -> PrivateSourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4378,7 +4378,7 @@ client.source_definition.grant_source_definition_to_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_source_definitions</a>() -> SourceDefinitionReadList</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L221-L245">list_source_definitions</a>() -> SourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4427,7 +4427,7 @@ client.source_definition.list_source_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_source_definitions_for_workspace</a>(...) -> SourceDefinitionReadList</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L247-L277">list_source_definitions_for_workspace</a>(...) -> SourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4486,7 +4486,7 @@ client.source_definition.list_source_definitions_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_latest_source_definitions</a>() -> SourceDefinitionReadList</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L279-L305">list_latest_source_definitions</a>() -> SourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4549,7 +4549,7 @@ client.source_definition.list_latest_source_definitions()
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">list_private_source_definitions</a>(...) -> PrivateSourceDefinitionReadList</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L307-L337">list_private_source_definitions</a>(...) -> PrivateSourceDefinitionReadList</code></summary>
 <dl>
 <dd>
 
@@ -4608,7 +4608,7 @@ client.source_definition.list_private_source_definitions(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">revoke_source_definition_from_workspace</a>(...)</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L339-L375">revoke_source_definition_from_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4668,7 +4668,7 @@ client.source_definition.revoke_source_definition_from_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py">update_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
+<details><summary><code>client.source_definition.<a href="src/fern/source_definition/client.py#L377-L420">update_source_definition</a>(...) -> SourceDefinitionRead</code></summary>
 <dl>
 <dd>
 
@@ -4745,7 +4745,7 @@ client.source_definition.update_source_definition(
 </details>
 
 ## source_oauth
-<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">complete_source_o_auth</a>(...) -> CompleteOAuthResponse</code></summary>
+<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py#L34-L91">complete_source_o_auth</a>(...) -> CompleteOAuthResponse</code></summary>
 <dl>
 <dd>
 
@@ -4845,7 +4845,7 @@ client.source_oauth.complete_source_o_auth(
 </dl>
 </details>
 
-<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">get_source_o_auth_consent</a>(...) -> OAuthConsentRead</code></summary>
+<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py#L93-L146">get_source_o_auth_consent</a>(...) -> OAuthConsentRead</code></summary>
 <dl>
 <dd>
 
@@ -4938,7 +4938,7 @@ client.source_oauth.get_source_o_auth_consent(
 </dl>
 </details>
 
-<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py">set_instancewide_source_oauth_params</a>(...)</code></summary>
+<details><summary><code>client.source_oauth.<a href="src/fern/source_oauth/client.py#L148-L184">set_instancewide_source_oauth_params</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5009,7 +5009,7 @@ client.source_oauth.set_instancewide_source_oauth_params(
 </details>
 
 ## source
-<details><summary><code>client.source.<a href="src/fern/source/client.py">check_connection_to_source</a>(...) -> CheckConnectionRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L40-L68">check_connection_to_source</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -5068,7 +5068,7 @@ client.source.check_connection_to_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">check_connection_to_source_for_update</a>(...) -> CheckConnectionRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L70-L114">check_connection_to_source_for_update</a>(...) -> CheckConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -5129,7 +5129,7 @@ client.source.check_connection_to_source_for_update(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">clone_source</a>(...) -> SourceRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L116-L152">clone_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5196,7 +5196,7 @@ client.source.clone_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">create_source</a>(...) -> SourceRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L154-L203">create_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5282,7 +5282,7 @@ client.source.create_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">delete_source</a>(...)</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L205-L230">delete_source</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5341,7 +5341,7 @@ client.source.delete_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">discover_schema_for_source</a>(...) -> SourceDiscoverSchemaRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L232-L278">discover_schema_for_source</a>(...) -> SourceDiscoverSchemaRead</code></summary>
 <dl>
 <dd>
 
@@ -5424,7 +5424,7 @@ client.source.discover_schema_for_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">get_source</a>(...) -> SourceRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L280-L306">get_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5483,7 +5483,7 @@ client.source.get_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">list_sources_for_workspace</a>(...) -> SourceReadList</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L308-L340">list_sources_for_workspace</a>(...) -> SourceReadList</code></summary>
 <dl>
 <dd>
 
@@ -5556,7 +5556,7 @@ client.source.list_sources_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">get_most_recent_source_actor_catalog</a>(...) -> ActorCatalogWithUpdatedAt</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L342-L372">get_most_recent_source_actor_catalog</a>(...) -> ActorCatalogWithUpdatedAt</code></summary>
 <dl>
 <dd>
 
@@ -5615,7 +5615,7 @@ client.source.get_most_recent_source_actor_catalog(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">search_sources</a>(...) -> SourceReadList</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L374-L426">search_sources</a>(...) -> SourceReadList</code></summary>
 <dl>
 <dd>
 
@@ -5672,7 +5672,7 @@ client.source.search_sources()
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">update_source</a>(...) -> SourceRead</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L428-L472">update_source</a>(...) -> SourceRead</code></summary>
 <dl>
 <dd>
 
@@ -5733,7 +5733,7 @@ client.source.update_source(
 </dl>
 </details>
 
-<details><summary><code>client.source.<a href="src/fern/source/client.py">write_discover_catalog_result</a>(...) -> DiscoverCatalogResult</code></summary>
+<details><summary><code>client.source.<a href="src/fern/source/client.py#L474-L522">write_discover_catalog_result</a>(...) -> DiscoverCatalogResult</code></summary>
 <dl>
 <dd>
 
@@ -5821,7 +5821,7 @@ client.source.write_discover_catalog_result(
 </details>
 
 ## state
-<details><summary><code>client.state.<a href="src/fern/state/client.py">create_or_update_state</a>(...) -> ConnectionState</code></summary>
+<details><summary><code>client.state.<a href="src/fern/state/client.py#L30-L70">create_or_update_state</a>(...) -> ConnectionState</code></summary>
 <dl>
 <dd>
 
@@ -5892,7 +5892,7 @@ client.state.create_or_update_state(
 </dl>
 </details>
 
-<details><summary><code>client.state.<a href="src/fern/state/client.py">get_state</a>(...) -> ConnectionState</code></summary>
+<details><summary><code>client.state.<a href="src/fern/state/client.py#L72-L100">get_state</a>(...) -> ConnectionState</code></summary>
 <dl>
 <dd>
 
@@ -5952,7 +5952,7 @@ client.state.get_state(
 </details>
 
 ## web_backend
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">check_updates</a>() -> WebBackendCheckUpdatesRead</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L50-L72">check_updates</a>() -> WebBackendCheckUpdatesRead</code></summary>
 <dl>
 <dd>
 
@@ -6001,7 +6001,7 @@ client.web_backend.check_updates()
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">create_connection</a>(...) -> WebBackendConnectionRead</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L74-L177">create_connection</a>(...) -> WebBackendConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -6190,7 +6190,7 @@ client.web_backend.create_connection(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_connection</a>(...) -> WebBackendConnectionRead</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L179-L215">get_connection</a>(...) -> WebBackendConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -6257,7 +6257,7 @@ client.web_backend.get_connection(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">list_connections_for_workspace</a>(...) -> WebBackendConnectionReadList</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L217-L259">list_connections_for_workspace</a>(...) -> WebBackendConnectionReadList</code></summary>
 <dl>
 <dd>
 
@@ -6332,7 +6332,7 @@ client.web_backend.list_connections_for_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">update_connection</a>(...) -> WebBackendConnectionRead</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L261-L370">update_connection</a>(...) -> WebBackendConnectionRead</code></summary>
 <dl>
 <dd>
 
@@ -6539,7 +6539,7 @@ client.web_backend.update_connection(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">list_geographies</a>() -> WebBackendGeographiesListResult</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L372-L398">list_geographies</a>() -> WebBackendGeographiesListResult</code></summary>
 <dl>
 <dd>
 
@@ -6602,7 +6602,7 @@ client.web_backend.list_geographies()
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_state_type</a>(...) -> ConnectionStateType</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L400-L428">get_state_type</a>(...) -> ConnectionStateType</code></summary>
 <dl>
 <dd>
 
@@ -6661,7 +6661,7 @@ client.web_backend.get_state_type(
 </dl>
 </details>
 
-<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py">get_workspace_state</a>(...) -> WebBackendWorkspaceStateResult</code></summary>
+<details><summary><code>client.web_backend.<a href="src/fern/web_backend/client.py#L430-L458">get_workspace_state</a>(...) -> WebBackendWorkspaceStateResult</code></summary>
 <dl>
 <dd>
 
@@ -6721,7 +6721,7 @@ client.web_backend.get_workspace_state(
 </details>
 
 ## workspace
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">create_workspace</a>(...) -> WorkspaceRead</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L35-L101">create_workspace</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -6844,7 +6844,7 @@ client.workspace.create_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">delete_workspace</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L103-L130">delete_workspace</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6903,7 +6903,7 @@ client.workspace.delete_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace</a>(...) -> WorkspaceRead</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L132-L160">get_workspace</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -6962,7 +6962,7 @@ client.workspace.get_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace_by_connection_id</a>(...) -> WorkspaceRead</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L162-L192">get_workspace_by_connection_id</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -7021,7 +7021,7 @@ client.workspace.get_workspace_by_connection_id(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">get_workspace_by_slug</a>(...) -> WorkspaceRead</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L194-L222">get_workspace_by_slug</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -7080,7 +7080,7 @@ client.workspace.get_workspace_by_slug(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">list_workspaces</a>() -> WorkspaceReadList</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L224-L246">list_workspaces</a>() -> WorkspaceReadList</code></summary>
 <dl>
 <dd>
 
@@ -7129,7 +7129,7 @@ client.workspace.list_workspaces()
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace_feedback</a>(...)</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L248-L277">update_workspace_feedback</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7188,7 +7188,7 @@ client.workspace.update_workspace_feedback(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace</a>(...) -> WorkspaceRead</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L279-L349">update_workspace</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 
@@ -7319,7 +7319,7 @@ client.workspace.update_workspace(
 </dl>
 </details>
 
-<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py">update_workspace_name</a>(...) -> WorkspaceRead</code></summary>
+<details><summary><code>client.workspace.<a href="src/fern/workspace/client.py#L351-L384">update_workspace_name</a>(...) -> WorkspaceRead</code></summary>
 <dl>
 <dd>
 

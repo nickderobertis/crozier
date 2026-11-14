@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">get_auth_session</a>() -> AuthSessionResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L31-L53">get_auth_session</a>() -> AuthSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.auth.get_auth_session()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">update_auth_profile</a>(...) -> UpdateProfileResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L55-L83">update_auth_profile</a>(...) -> UpdateProfileResponse</code></summary>
 <dl>
 <dd>
 
@@ -104,7 +104,7 @@ client.auth.update_auth_profile(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">logout</a>() -> OkResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L85-L107">logout</a>() -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ client.auth.logout()
 </details>
 
 ## Games
-<details><summary><code>client.games.<a href="src/fern/games/client.py">list_games</a>(...) -> ListGamesResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L32-L64">list_games</a>(...) -> ListGamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -215,7 +215,7 @@ client.games.list_games()
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">get_game</a>(...) -> GetGameResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L66-L92">get_game</a>(...) -> GetGameResponse</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.games.get_game(
 </dl>
 </details>
 
-<details><summary><code>client.games.<a href="src/fern/games/client.py">update_game_visibility</a>(...) -> UpdateGameVisibilityResponse</code></summary>
+<details><summary><code>client.games.<a href="src/fern/games/client.py#L94-L127">update_game_visibility</a>(...) -> UpdateGameVisibilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.games.update_game_visibility(
 </details>
 
 ## AnalysisSnapshots
-<details><summary><code>client.analysis_snapshots.<a href="src/fern/analysis_snapshots/client.py">list_analysis_snapshots</a>(...) -> ListAnalysisSnapshotsResponse</code></summary>
+<details><summary><code>client.analysis_snapshots.<a href="src/fern/analysis_snapshots/client.py#L33-L61">list_analysis_snapshots</a>(...) -> ListAnalysisSnapshotsResponse</code></summary>
 <dl>
 <dd>
 
@@ -396,7 +396,7 @@ client.analysis_snapshots.list_analysis_snapshots(
 </dl>
 </details>
 
-<details><summary><code>client.analysis_snapshots.<a href="src/fern/analysis_snapshots/client.py">create_analysis_snapshot</a>(...) -> CreateAnalysisSnapshotResponse</code></summary>
+<details><summary><code>client.analysis_snapshots.<a href="src/fern/analysis_snapshots/client.py#L63-L123">create_analysis_snapshot</a>(...) -> CreateAnalysisSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -507,7 +507,7 @@ client.analysis_snapshots.create_analysis_snapshot(
 </dl>
 </details>
 
-<details><summary><code>client.analysis_snapshots.<a href="src/fern/analysis_snapshots/client.py">get_analysis_snapshot</a>(...) -> GetAnalysisSnapshotResponse</code></summary>
+<details><summary><code>client.analysis_snapshots.<a href="src/fern/analysis_snapshots/client.py#L125-L156">get_analysis_snapshot</a>(...) -> GetAnalysisSnapshotResponse</code></summary>
 <dl>
 <dd>
 
@@ -574,7 +574,7 @@ client.analysis_snapshots.get_analysis_snapshot(
 </details>
 
 ## Nnue
-<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py">list_nnue_files</a>() -> ListNnueFilesResponse</code></summary>
+<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py#L34-L56">list_nnue_files</a>() -> ListNnueFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -621,7 +621,7 @@ client.nnue.list_nnue_files()
 </dl>
 </details>
 
-<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py">initialize_nnue_upload</a>(...) -> InitializeNnueUploadResponse</code></summary>
+<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py#L58-L102">initialize_nnue_upload</a>(...) -> InitializeNnueUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -696,7 +696,7 @@ client.nnue.initialize_nnue_upload(
 </dl>
 </details>
 
-<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py">upload_nnue_part</a>(...) -> UploadNnuePartResponse</code></summary>
+<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py#L104-L140">upload_nnue_part</a>(...) -> UploadNnuePartResponse</code></summary>
 <dl>
 <dd>
 
@@ -771,7 +771,7 @@ client.nnue.upload_nnue_part(
 </dl>
 </details>
 
-<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py">complete_nnue_upload</a>(...) -> CompleteNnueUploadResponse</code></summary>
+<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py#L142-L190">complete_nnue_upload</a>(...) -> CompleteNnueUploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -852,7 +852,7 @@ client.nnue.complete_nnue_upload(
 </dl>
 </details>
 
-<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py">abort_nnue_upload</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py#L192-L223">abort_nnue_upload</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -918,7 +918,7 @@ client.nnue.abort_nnue_upload(
 </dl>
 </details>
 
-<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py">delete_nnue_file</a>(...) -> OkResponse</code></summary>
+<details><summary><code>client.nnue.<a href="src/fern/nnue/client.py#L225-L251">delete_nnue_file</a>(...) -> OkResponse</code></summary>
 <dl>
 <dd>
 
@@ -976,7 +976,7 @@ client.nnue.delete_nnue_file(
 </details>
 
 ## PublicGames
-<details><summary><code>client.public_games.<a href="src/fern/public_games/client.py">list_public_games</a>(...) -> ListPublicGamesResponse</code></summary>
+<details><summary><code>client.public_games.<a href="src/fern/public_games/client.py#L27-L59">list_public_games</a>(...) -> ListPublicGamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1039,7 +1039,7 @@ client.public_games.list_public_games()
 </dl>
 </details>
 
-<details><summary><code>client.public_games.<a href="src/fern/public_games/client.py">get_public_game</a>(...) -> GetPublicGameResponse</code></summary>
+<details><summary><code>client.public_games.<a href="src/fern/public_games/client.py#L61-L89">get_public_game</a>(...) -> GetPublicGameResponse</code></summary>
 <dl>
 <dd>
 
@@ -1097,7 +1097,7 @@ client.public_games.get_public_game(
 </details>
 
 ## UserSettings
-<details><summary><code>client.user_settings.<a href="src/fern/user_settings/client.py">list_user_settings</a>() -> ListUserSettingsResponse</code></summary>
+<details><summary><code>client.user_settings.<a href="src/fern/user_settings/client.py#L33-L57">list_user_settings</a>() -> ListUserSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1144,7 +1144,7 @@ client.user_settings.list_user_settings()
 </dl>
 </details>
 
-<details><summary><code>client.user_settings.<a href="src/fern/user_settings/client.py">get_user_settings</a>(...) -> GetUserSettingsResponse</code></summary>
+<details><summary><code>client.user_settings.<a href="src/fern/user_settings/client.py#L59-L87">get_user_settings</a>(...) -> GetUserSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1201,7 +1201,7 @@ client.user_settings.get_user_settings(
 </dl>
 </details>
 
-<details><summary><code>client.user_settings.<a href="src/fern/user_settings/client.py">put_user_settings</a>(...) -> PutUserSettingsResponse</code></summary>
+<details><summary><code>client.user_settings.<a href="src/fern/user_settings/client.py#L89-L128">put_user_settings</a>(...) -> PutUserSettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1276,7 +1276,7 @@ client.user_settings.put_user_settings(
 </details>
 
 ## Rooms
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">create_room</a>(...) -> CreateRoomResponse</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L31-L65">create_room</a>(...) -> CreateRoomResponse</code></summary>
 <dl>
 <dd>
 
@@ -1341,7 +1341,7 @@ client.rooms.create_room(
 </dl>
 </details>
 
-<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py">get_room</a>(...) -> RoomInfo</code></summary>
+<details><summary><code>client.rooms.<a href="src/fern/rooms/client.py#L67-L93">get_room</a>(...) -> RoomInfo</code></summary>
 <dl>
 <dd>
 
