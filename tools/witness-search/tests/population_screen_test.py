@@ -741,6 +741,12 @@ CASES += [
         {KEY_O: "partial:schema-is-a-reference"},
     ),
     ("query-object-empty", query({"type": "object"}), {KEY_O: "partial:schema-declares-no-properties"}),
+    # `properties` that is no mapping declares none, however non-empty it is.
+    (
+        "query-object-properties-list",
+        query({"type": "object", "properties": ["x"]}),
+        {KEY_O: "partial:schema-declares-no-properties"},
+    ),
     ("no-query", document(paths={"/a": {"get": get()}}), {KEY_Q: "absent", KEY_O: "absent"}),
     (
         "tag-only-id",
@@ -2324,6 +2330,15 @@ class BuildTests(BuildHarness):
                 self.assertIn(message, refused.stderr)
                 self.assertNotIn("Traceback", refused.stderr)
                 path.write_text(before, encoding="utf-8", newline="\n")
+        # An acquisition manifest missing a column it is filtered on would silently record no archive document.
+        archive_manifest = self.root / "docs/openapi-surface/witness-search-apis.guru/acquisition-manifest.tsv"
+        before = archive_manifest.read_text(encoding="utf-8")
+        archive_manifest.write_text(before.replace("walk\t", "walker\t", 1), encoding="utf-8", newline="\n")
+        refused = self.build(*args)
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("its header names no walk, document, revision and sha256 columns", refused.stderr)
+        self.assertNotIn("Traceback", refused.stderr)
+        archive_manifest.write_text(before, encoding="utf-8", newline="\n")
 
     def test_handed_off_bytes_are_recovered_from_the_tree_or_the_preflight_cache_into_an_empty_store(self) -> None:
         plan = self.scratch / "plan.tsv.gz"

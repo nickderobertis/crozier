@@ -839,7 +839,10 @@ def query_inline_object_sites(document: Any) -> Iterator[Site]:
             (
                 ("schema-is-a-reference", lambda s=schema: "$ref" not in s),
                 ("schema-not-primary-type-object", lambda s=schema: primary_type(s) == "object"),
-                ("schema-declares-no-properties", lambda s=schema: bool(s.get("properties"))),
+                (
+                    "schema-declares-no-properties",
+                    lambda s=schema: isinstance(s.get("properties"), dict) and bool(s["properties"]),
+                ),
                 ("parameter-not-required", lambda p=parameter: p.get("required") is True),
             )
         )

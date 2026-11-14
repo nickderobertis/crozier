@@ -535,7 +535,13 @@ def archive_digests(tree: Tree) -> dict[str, str]:
     """Each archive document's SHA-256, as the committed acquisition manifest records it at the pinned revision."""
     recorded: dict[str, str] = {}
     with tree.archive_manifest.open(encoding="utf-8", newline="") as handle:
-        for number, row in enumerate(csv.DictReader(handle, delimiter="\t"), 2):
+        reader = csv.DictReader(handle, delimiter="\t")
+        if not {"walk", "document", "revision", "sha256"} <= set(reader.fieldnames or ()):
+            fail(
+                f"{tree.archive_manifest}: its header names no walk, document, revision and sha256 columns; "
+                "restore it from git"
+            )
+        for number, row in enumerate(reader, 2):
             if row.get("walk") != ARCHIVE_REPOSITORY or row.get("revision") != ARCHIVE_REVISION:
                 continue
             document, digest = row.get("document") or "", row.get("sha256") or ""
