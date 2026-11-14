@@ -18,11 +18,13 @@ them rather than linked, so this file is readable with nothing but this checkout
 **Versions in force for every measurement below:** Fern CLI `5.67.1`
 (`fern.config.json`) and generator `fernapi/fern-python-sdk:5.20.0`
 (`generators.yml`) — the pin the corpus goldens recorded at the time. crozier is
-now certified against Fern CLI `5.163.1` with `fernapi/fern-python-sdk` `5.41.3`
+now certified against Fern CLI `5.200.0` with `fernapi/fern-python-sdk` `5.41.25`
 (declared in `assets/scaffolding/metadata.json`): a record below that cites a
-committed Fern measurement or a golden regenerated at that pair, and was checked
-against it, says so; every other record stands as measured at the old pair and
-has not been re-measured. Runs set
+committed Fern measurement or a golden regenerated at a later pair, and was
+checked against it, names that pair (most name Fern CLI 5.163.1 /
+fern-python-sdk 5.41.3, the pair certified before this one, and are history at
+that pair); every other record stands as measured at the old pair and has not
+been re-measured. Runs set
 `CI=true`/`GITHUB_ACTIONS=true` to match `tools/fern-goldens/generate-fern-fixture.sh`, which
 is why quoted logs carry doubled `::warning::` annotation lines.
 
@@ -303,7 +305,7 @@ specification it holds" problem that tier Q names.
 A `1XX`/`3XX` response key produces **no `errors/` package entry** and
 no `raise` branch; the operation falls through to `ApiError`. `fern check` 0,
 `fern generate` 0. Verdict *discards*. At Fern CLI 5.67.1 / fern-python-sdk
-5.20.0 a `4XX`/`5XX` key did the same; at the certified pair (CLI 5.163.1,
+5.20.0 a `4XX`/`5XX` key did the same; at the pair then certified (CLI 5.163.1,
 fern-python-sdk 5.41.3) it is imported as its own error — `ClientRequestError` for
 `4XX`, `ServerError` for `5XX`, each taking an optional `status_code` and raised
 for the whole range — as the committed

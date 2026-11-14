@@ -24,3 +24,8 @@ repository root with HTTPX and Pydantic installed; it exits 0 and prints:
 certified call client.files.upload(): missing a required keyword-only argument: 'request'
 corrected call client.files.upload(request=b"string"): binds
 ```
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

@@ -170,8 +170,9 @@ A fix node that makes crozier depart from Fern on purpose — correcting a Fern
 defect, say — adds it this way:
 
 1. **Show it.** Generate the smallest crozier-authored document that triggers
-   it with the certified pair (Fern CLI 5.163.1, `fernapi/fern-python-sdk`
-   5.41.3), and record the command and its result in a note under
+   it with the certified pair (Fern CLI 5.200.0, `fernapi/fern-python-sdk`
+   5.41.25, as `assets/scaffolding/metadata.json` declares), and record the
+   command and its result in a note under
    `docs/departures/evidence/<id>.md`. For a `fern-defect`, show why Fern's
    output is wrong under the defect rule — an import that fails, a call that
    does not match the signature. When a test drives the reference tree, commit
@@ -469,8 +470,8 @@ when the two differ.
 
 - **Kind:** `fern-defect`
 - **Trigger:** No `client-class-name` set, and an organization (crozier's package name) with capitals inside it, such as `LanternHarbor`: `README.md`, and the environment snippet of `reference.md`.
-- **Fern writes:** Snippets naming the root client class, its async twin and its environment class with the inner capitals lowered (`LanternharborApi`, `AsyncLanternharborApi`, `LanternharborApiEnvironment`), which the package does not define.
-- **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
+- **Fern writes:** Snippets naming the root client class, its async twin and its environment class with the inner capitals lowered (`LanternharborApi`, `AsyncLanternharborApi`, `LanternharborApiEnvironment`), which the package does not define. The async snippet's import also keeps the correctly cased sync client its own snippet does not use (`from PetStore import AsyncPetstoreApi, PetStoreApi`), because Fern drops only the lowered spelling from the names it imports.
+- **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`), and the async snippet imports only the names it uses.
 - **Why:** An example that imports a class the generated package does not define contradicts the generated code: the import fails, so the snippet cannot run.
 - **Evidence:** [`docs/departures/evidence/readme-client-class-casing.md`](../../docs/departures/evidence/readme-client-class-casing.md)
 

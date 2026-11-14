@@ -72,3 +72,8 @@ measured with the finished detector, were retrieved at their digests and
 refused in both modes: exit 1, no files, one class/element stderr line and the
 strict cause when applicable. Four are refused by this class; the rest by
 another registered class or example-value rule that fires first.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

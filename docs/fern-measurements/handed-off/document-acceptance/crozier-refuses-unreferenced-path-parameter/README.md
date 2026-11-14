@@ -26,3 +26,8 @@ None: the certified pair refuses (`fern generate` exits 1: `Path parameter is un
 ## What holds it
 
 - `crates/crozier-e2e/tests/e2e/document_acceptance.rs`: `each_refused_cause_is_refused_in_both_modes`; the narrowed refusals' controls are `narrowed_refusals_still_fire_on_their_controls`.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

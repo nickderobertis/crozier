@@ -473,3 +473,8 @@ Each cell below is the census site count for the column’s complete conjunction
 | `clencyc/MozillaFestivalBackend:openapi.yaml@e70f0150f414d216743311be79d005d900ab81f1` | `b2264b38f17b99bd722b94f94029916705be39cd6359b1b341bc8696f29e6092` | 0 |
 | `hashicorp/terraform-plugin-codegen-openapi:internal/cmd/testdata/edgecase/openapi_spec.yml@55b2a49774f094d0d8aff834bce5eabe9e8a7345` | `1f6aea4c5e340b482e6441711f83780f2a6026a4755452530094d160747d2427` | 0 |
 | `membrane/api-gateway:core/src/test/resources/openapi/specs/oas31/boolean-schemas.yaml@c24a0204aaa9d07ee5237c44e43e8e9ef4129f2c` | `8340f5da585023194c7154cb6e72a111e5643bb9cd3364cb75e0eacb0b1fcb89` | 0 |
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

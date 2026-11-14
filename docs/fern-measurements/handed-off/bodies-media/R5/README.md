@@ -9,3 +9,8 @@ The handed-off root cause `R5` from the operations-and-extensions record ([`witn
 **The comparison.** Before the repair crozier typed `NotFoundError`'s body `LockFault`. With the repair, `crozier compare` (every catalogued departure applied) reports crozier's tree for this document byte-identical to `fern-expected/`, and `bodies_media.rs` in `crates/crozier-e2e` holds it there, showing that the decisive line written as crozier wrote it before fails the comparison.
 
 **Verdict:** `parity-gap-repaired`. Recorded in [`../../bodies-media.tsv`](../../bodies-media.tsv).
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

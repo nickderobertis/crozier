@@ -81,3 +81,8 @@ in `crates/crozier-e2e/tests/e2e.rs` generates the SDK from RS-Server's document
 drives it against a local HTTP server. A client built with no key calls
 `GET /catalog/_mgmt/ping` and sends no `x-api-key` header. A client built with
 a key sends it on a secured operation.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

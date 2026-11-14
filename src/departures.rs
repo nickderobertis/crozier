@@ -3770,6 +3770,13 @@ fn readme_client_class_casing(pair: &Pair<'_>, fern: &str, crozier: &str) -> boo
     if !DOCS_FILES.contains(&pair.rel) {
         return false;
     }
+    // Fern's async snippet imports the names its sync snippet does, less the
+    // root client under Fern's own lowered spelling; the sync snippet names it
+    // correctly cased, so that import survives beside the async client
+    // (`from PetStore import AsyncPetstoreApi, PetStoreApi`). crozier's imports
+    // only what the snippet uses: the line is judged without it.
+    let leaked = async_import_without_sync_client(pair, fern, crozier);
+    let fern = leaked.as_deref().unwrap_or(fern);
     let (fern, crozier) = (tokens(fern), tokens(crozier));
     if fern.len() != crozier.len() {
         return false;
@@ -3791,6 +3798,30 @@ fn readme_client_class_casing(pair: &Pair<'_>, fern: &str, crozier: &str) -> boo
     renamed > 0
 }
 
+/// Fern's async-snippet import line (`from <pkg> import Async<Client>, <Sync>, …`)
+/// without the sync root client crozier's line does not import: `<Sync>` must be
+/// a class crozier's modules define, follow the first imported name directly,
+/// be absent from crozier's line, and be that first name (crozier's
+/// `Async<Sync>`) without `Async`. `None` for any other line.
+fn async_import_without_sync_client(pair: &Pair<'_>, fern: &str, crozier: &str) -> Option<String> {
+    let (package, names) = fern.strip_prefix("from ")?.split_once(" import ")?;
+    let crozier_names: Vec<&str> = crozier
+        .strip_prefix(&format!("from {package} import "))?
+        .split(", ")
+        .collect();
+    let sync = crozier_names.first()?.strip_prefix("Async")?;
+    let mut fern_names: Vec<&str> = names.split(", ").collect();
+    if fern_names.get(1) != Some(&sync)
+        || !fern_names[0].eq_ignore_ascii_case(crozier_names[0])
+        || !pair.context.crozier_classes().contains(sync)
+        || crozier_names.contains(&sync)
+    {
+        return None;
+    }
+    fern_names.remove(1);
+    Some(format!("from {package} import {}", fern_names.join(", ")))
+}
+
 /// `stream-reference-return-type`: a `reference.md` heading line,
 /// `<details><summary><code>client.….<a href="PATH">NAME</a>(…) -> T</code></summary>`,
 /// equal on both sides but for its return annotation: Fern's
@@ -3803,6 +3834,9 @@ fn stream_reference_return_type(pair: &Pair<'_>, fern: &str, crozier: &str) -> b
     if pair.rel != "reference.md" || !fern.starts_with(OPEN) {
         return false;
     }
+    // A range shifted by the client's other departures is judged apart.
+    let (fern, crozier) = without_verified_ranges(pair, fern, crozier);
+    let (fern, crozier) = (fern.as_ref(), crozier.as_ref());
     let Some(head) = fern
         .strip_suffix(CLOSE)
         .and_then(|line| line.strip_suffix(FERN))
@@ -5417,6 +5451,63 @@ fn empty_namespace_reference_anchor(pair: &Pair<'_>, fern: &str, crozier: &str) 
             .is_some_and(|(start, end)| format!("L{start}-L{end}") == range)
 }
 
+/// A `reference.md` heading split around its link's range: the line with the
+/// range taken out (its frame, which also holds the module and method), the
+/// linked module, the method and the range (`L<start>-L<end>`). `None` for a
+/// line that is no heading or whose link has no range.
+fn anchored_heading(line: &str) -> Option<(String, String, String, String)> {
+    if !line.starts_with("<details><summary><code>client.") {
+        return None;
+    }
+    let (head, rest) = line.split_once("<a href=\"")?;
+    let (href, rest) = rest.split_once("\">")?;
+    let (path, range) = href.split_once('#')?;
+    let (method, tail) = rest.split_once("</a>")?;
+    Some((
+        format!("{head}\u{0}{path}\u{0}{method}\u{0}{tail}"),
+        path.to_string(),
+        method.to_string(),
+        range.to_string(),
+    ))
+}
+
+/// Two `reference.md` heading lines with their ranges taken out, when both link
+/// the same module and method and each range is exactly that method's lines in
+/// its own tree's client: the ranges then differ only because the clients do
+/// (`reference-anchor-follows-corrected-client`), and a heading rule judges the
+/// rest of the line. Otherwise the lines as they are.
+fn without_verified_ranges<'a>(
+    pair: &Pair<'_>,
+    fern: &'a str,
+    crozier: &'a str,
+) -> (std::borrow::Cow<'a, str>, std::borrow::Cow<'a, str>) {
+    use std::borrow::Cow;
+    let (
+        Some((_, path, method, fern_range)),
+        Some((_, crozier_path, crozier_method, crozier_range)),
+    ) = (anchored_heading(fern), anchored_heading(crozier))
+    else {
+        return (Cow::Borrowed(fern), Cow::Borrowed(crozier));
+    };
+    let range = |reference: bool| {
+        pair.context
+            .client_method_lines(reference, &path, &method)
+            .map(|(start, end)| format!("L{start}-L{end}"))
+    };
+    if path != crozier_path
+        || method != crozier_method
+        || range(true).as_deref() != Some(fern_range.as_str())
+        || range(false).as_deref() != Some(crozier_range.as_str())
+    {
+        return (Cow::Borrowed(fern), Cow::Borrowed(crozier));
+    }
+    let strip = |line: &str, range: &str| line.replacen(&format!("#{range}\""), "\"", 1);
+    (
+        Cow::Owned(strip(fern, &fern_range)),
+        Cow::Owned(strip(crozier, &crozier_range)),
+    )
+}
+
 /// `reference-anchor-follows-corrected-client`: a `reference.md` heading whose
 /// only difference is its link's `#L<start>-L<end>` range, where each side's
 /// range is exactly the documented method's lines in its own tree's linked
@@ -5429,21 +5520,7 @@ fn reference_anchor_follows_corrected_client(pair: &Pair<'_>) -> Result<Option<R
     if pair.rel != "reference.md" {
         return Ok(None);
     }
-    let parts = |line: &str| -> Option<(String, String, String, String)> {
-        if !line.starts_with("<details><summary><code>client.") {
-            return None;
-        }
-        let (head, rest) = line.split_once("<a href=\"")?;
-        let (href, rest) = rest.split_once("\">")?;
-        let (path, range) = href.split_once('#')?;
-        let (method, tail) = rest.split_once("</a>")?;
-        Some((
-            format!("{head}\u{0}{path}\u{0}{method}\u{0}{tail}"),
-            path.to_string(),
-            method.to_string(),
-            range.to_string(),
-        ))
-    };
+    let parts = anchored_heading;
     let range =
         |lines: Option<(usize, usize)>| lines.map(|(start, end)| format!("L{start}-L{end}"));
     for (at, crozier) in pair.crozier.iter().enumerate() {
@@ -6187,6 +6264,39 @@ mod tests {
         assert!(!holds(
             &anchored("watch", "typing.Iterator[bytes]"),
             &heading("watch", "typing.Iterator[Tick]")
+        ));
+        // Each side's range its own client's lines for the method, shifted by
+        // the client's other departures: the return type is judged apart.
+        let fern_client = format!(
+            "class FernApi:\n    \"\"\"\n    extra\n    \"\"\"\n{}",
+            &client["class FernApi:\n".len()..]
+        );
+        let shifted = Context::from_sources(
+            [("src/fern/client.py", fern_client.as_str())],
+            [("src/fern/client.py", client)],
+        );
+        let shifted = Pair {
+            context: &shifted,
+            ..pair
+        };
+        let ranged = |method: &str, annotation: &str, range: &str| {
+            heading(method, annotation).replace("client.py\"", &format!("client.py#{range}\""))
+        };
+        assert!(stream_reference_return_type(
+            &shifted,
+            &ranged("watch", "typing.Iterator[bytes]", "L5-L8"),
+            &ranged("watch", "typing.Iterator[Tick]", "L2-L5")
+        ));
+        // A range that is not the method's lines on either side is no departure.
+        assert!(!stream_reference_return_type(
+            &shifted,
+            &ranged("watch", "typing.Iterator[bytes]", "L5-L8"),
+            &ranged("watch", "typing.Iterator[Tick]", "L2-L6")
+        ));
+        assert!(!stream_reference_return_type(
+            &shifted,
+            &ranged("watch", "typing.Iterator[bytes]", "L4-L8"),
+            &ranged("watch", "typing.Iterator[Tick]", "L2-L5")
         ));
         let readme = Pair {
             rel: "README.md",
@@ -8869,6 +8979,56 @@ mod tests {
             &context,
             fern,
             &crozier.replace(">list<", ">get<")
+        ));
+    }
+
+    #[test]
+    fn the_async_import_drops_only_the_sync_client_fern_s_casing_leaks() {
+        let client = "class PetStoreApi:\n    pass\n\n\nclass AsyncPetStoreApi:\n    pass\n\n\nclass Pet:\n    pass\n";
+        let context = Context::from_sources([], [("client.py", client)]);
+        let rule: LineRule = readme_client_class_casing;
+        let crozier = "from PetStore import AsyncPetStoreApi";
+        for (fern, crozier) in [
+            (
+                "from PetStore import AsyncPetstoreApi, PetStoreApi",
+                crozier,
+            ),
+            (
+                "from PetStore import AsyncPetstoreApi, PetStoreApi, Pet",
+                "from PetStore import AsyncPetStoreApi, Pet",
+            ),
+        ] {
+            assert!(
+                line_holds(rule, "README.md", &context, fern, crozier),
+                "{fern}"
+            );
+        }
+        // Another leaked name, the sync client elsewhere in the list, or another
+        // async client.
+        for (fern, crozier) in [
+            ("from PetStore import AsyncPetstoreApi, Pet", crozier),
+            (
+                "from PetStore import AsyncPetstoreApi, Pet, PetStoreApi",
+                "from PetStore import AsyncPetStoreApi, Pet",
+            ),
+            (
+                "from PetStore import AsyncPetstoreApi, PetStoreApi",
+                "from PetStore import AsyncOtherApi",
+            ),
+        ] {
+            assert!(
+                !line_holds(rule, "README.md", &context, fern, crozier),
+                "{fern} / {crozier}"
+            );
+        }
+        let undefined =
+            Context::from_sources([], [("client.py", "class AsyncPetStoreApi:\n    pass\n")]);
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &undefined,
+            "from PetStore import AsyncPetstoreApi, PetStoreApi",
+            crozier
         ));
     }
 

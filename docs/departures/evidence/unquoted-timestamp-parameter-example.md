@@ -60,3 +60,8 @@ timestamp the document writes unquoted for that same parameter;
 *optional* such parameter (one line or a wrapped call's three) and the
 `import datetime` those lines need. A required parameter's line is never one it
 admits as added.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

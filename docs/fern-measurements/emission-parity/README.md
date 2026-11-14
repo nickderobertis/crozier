@@ -442,3 +442,10 @@ The normal-ledger conquery comparison and its literals overlay still byte-match
 the certified pair apart from the catalogued departures, including
 `dangling-mapping-variant-fields`. The unaffected control still matches every
 base-tree file in both modes, including README.md and reference.md.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

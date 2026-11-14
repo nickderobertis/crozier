@@ -276,7 +276,7 @@ under `ruff` isort. The
 **Which parameter examples reach a worked call.** Fern keeps a *parameter-level*
 `example`/`examples` only on a `type: string` parameter, and does so identically
 for query, header and path parameters. Probed directly against Fern 5.20.0 (not
-re-probed at the certified pair; the goldens below hold it at 5.41.3): an
+re-probed since; the goldens below hold it at 5.41.25): an
 integer or boolean example declared on the parameter never reaches the call, nor
 does a string-*valued* example on an `integer` schema — the gate is the declared
 type, not the example's JSON kind — and a required argument whose example was
@@ -1709,8 +1709,11 @@ the **packaged** SDK every `expected/` golden holds. A generator whose `output` 
 no `--preview`, writes a **flat** module tree. crozier writes the second with
 `layout: flat` (`--layout flat`, `CROZIER_LAYOUT=flat`; see
 [`configuration.md`](configuration.md#output-layout)). Everything below was
-measured with real Fern at the certified pair (CLI 5.163.1,
-`fernapi/fern-python-sdk` 5.41.3) and is pinned by the flat goldens.
+measured with real Fern at the pair then certified (CLI 5.163.1,
+`fernapi/fern-python-sdk` 5.41.3) and is pinned by the flat goldens, which the
+Fern goldens workflow regenerated at CLI 5.200.0 / fern-python-sdk 5.41.25,
+where they changed only in the shared `core/` runtime, the XML models and
+their tests, the metadata record and the async README example.
 
 **The tree.** At the output root Fern's flat run writes:
 
@@ -1730,7 +1733,7 @@ and crozier's flat output reproduces each:
    in `tests/test_aiohttp_autodetect.py`, name the **package** (module) name
    where the packaged form names the **project** (distribution) name:
    `pip install fern[aiohttp]` flat against `pip install
-   default_package_name[aiohttp]` packaged, for the default names. Ruff lays the
+   default-package-name[aiohttp]` packaged, for the default names. Ruff lays the
    hint's `raise` out by the name's length: on one line when it fits in 120
    columns (a flat `fern`), split over three lines otherwise, with the string
    itself split when even that overflows. crozier joins the short form only in
@@ -1771,7 +1774,8 @@ README heading apart from the package name, so a Fern setup whose
 `package_name` differs from its organization is outside what crozier
 reproduces, in either layout.
 
-No Fern option at the certified pair sets the **project** (distribution) name
+No Fern option at the pair measured (CLI 5.163.1 / fern-python-sdk 5.41.3)
+sets the **project** (distribution) name
 apart from the package name:
 
 - `package_name: my_pkg` set both (`name = "my_pkg"` in the packaged
@@ -1780,7 +1784,13 @@ apart from the package name:
   distribution `my_pkg` under `--preview`.
 - The flat run refuses a `pypi` output outright without a real `FERN_TOKEN`.
 
-Fern's default distribution name is `default_package_name`. The flat tree has no
+Fern's default distribution name is `default_package_name`, which
+fern-python-sdk 5.41.25 writes with its underscores as hyphens,
+`default-package-name`, in `pyproject.toml`, `version.py`, the aiohttp install
+hint and the SDK-name header (every one of the 749 packaged trees the workflow
+regenerated at CLI 5.200.0). crozier writes its project name the same way,
+configured or derived (`my_api` packages as `my-api`); the import package keeps
+its underscores. The flat tree has no
 distribution at all: its README installs the package name, and nothing else in
 it names the project. So crozier's flat output is identical whatever
 `project-name` says (`flat_output_carries_no_project_name`), and the
@@ -1800,7 +1810,7 @@ flat tree, and the cursor-paginated shape the flat layout once left unpaged:
 
 | Flat golden | Setting it pins |
 | --- | --- |
-| `swagger-petstore` | the default names (`fern`, `default_package_name`) |
+| `swagger-petstore` | the default names (`fern`, `default_package_name`, packaged as `default-package-name`) |
 | `client-class-name` | `client-class-name: AcmeClient` |
 | `audience-filter-strict` | `audiences: [public]` with `audience-strict: true` |
 | `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |

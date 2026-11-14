@@ -13,3 +13,10 @@ A `text/event-stream` union beside a JSON body on the same response is never rea
 The certified pair keeps `type: FiringStartedEventType` (and `FiringCooledEventType`) on both event models; crozier stripped the tag because it read the stream's `oneOf` as a discriminated union (OpenResponses' 24 streaming events, about 50 files). Repaired in `document_discriminant_strips`. crozier now byte-matches `fern-expected/` in both enum modes.
 
 Held by `union_modelling_document_sub_rules_match_the_certified_pair` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`, which byte-compares crozier's SDK for this document with the committed tree (apart from the catalogued departures the ledger records) and requires the pre-repair spelling to fail that comparison, and by the unit test `an_event_stream_union_beside_json_strips_no_tag` in `src/ir.rs`'s `union_modelling_tests`.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

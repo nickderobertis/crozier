@@ -19,3 +19,10 @@ The certified pair writes the unknown body's `request={"key": "value"}` on one l
 ## What holds it
 
 `crates/crozier-e2e/tests/e2e/handed_off_snippet_rendering.rs` runs the real `crozier` binary over `openapi.yml` and compares its whole tree with `fern-expected/`, every catalogued departure held to its `tests/fixtures/departures-ledger.tsv` lines (`handed_off_snippet_rendering_measurements_match_fern`). `src/emit.rs`'s `an_unknown_typed_body_placeholder_stays_on_one_line_in_the_readme` holds both layouts; `snippet_departures_and_repairs_hold_only_their_lines` fails crozier's former three-line README call.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

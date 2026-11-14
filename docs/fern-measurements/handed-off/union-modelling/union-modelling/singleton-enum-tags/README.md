@@ -13,3 +13,10 @@ A union whose members each tag one property with a typed one-member `enum` is di
 The certified pair writes `Author` as the `kind`-discriminated union `Author_Crew`, `Author_Contractor`, `Author_Autopilot`, `Author_Harbour`, and `CrewMember`/`Contractor` without `kind`. crozier wrote the inline members `AuthorTwo`/`AuthorThree` in a plain union and kept `kind` on both models (ironclad's `ActivityAuthorModel`). It also declares `Shipment` as the `mode`-discriminated union of `Lorry`, `Shipment_Rail` and `Shipment_Sea` (tags written `$ref ModeRoad`, …) and `ShipmentsByPort = Dict[str, ShipmentsByPortValue]` over the discriminated `ShipmentsByPortValue_Road`/`_Sea`, with no `mode` on `Barge`; crozier wrote plain unions there (Nussknacker's `NodeData` and `Map_TypingResultInJson`). Repaired in `inferred_discriminant_property` (which `inferred_strip_discriminant_property` now shares), `Builder::discriminated_union`, the component map arm of `Builder::add_named_shape` and `collect_discriminant_strips`. The enum components change in `literals` mode, so `literals/fern-expected/` is committed too. crozier now byte-matches `fern-expected/`.
 
 Held by `union_modelling_sub_rules_match_the_certified_pair` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`, which byte-compares crozier's SDK for this document with `fern-expected/` (apart from the catalogued departures the ledger records) and requires the pre-repair spelling to fail that comparison, and by the unit test `one_member_enum_tags_discriminate_required_or_not` in `src/ir.rs`'s `union_modelling_tests`.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

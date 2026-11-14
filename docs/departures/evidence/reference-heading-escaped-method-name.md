@@ -20,7 +20,7 @@ the name Fern looks up is not defined in the file.
 Calling the documented method on the real generated SDK fails:
 
 ```text
-$ .venv/bin/python docs/departures/evidence/reference-heading-escaped-method-name.py call tests/fixtures/apideck.com-ats/expected/src
+$ .venv/bin/python -B docs/departures/evidence/reference-heading-escaped-method-name.py call tests/fixtures/apideck.com-ats/expected/src
 client.applicants.all_ resolves: True
 client.applicants.all raises AttributeError: 'ApplicantsClient' object has no attribute 'all'
 ```

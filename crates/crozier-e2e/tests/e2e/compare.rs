@@ -577,12 +577,13 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             generator,
             "CROZIER_REFERENCE_LAYOUT=packaged".to_string(),
             "CROZIER_REFERENCE_PACKAGE_NAME=fern".to_string(),
-            "CROZIER_REFERENCE_PROJECT_NAME=default_package_name".to_string(),
+            "CROZIER_REFERENCE_PROJECT_NAME=default-package-name".to_string(),
             spec.clone(),
         ])
     );
     // crozier's defaults are passed resolved: the package from the title
-    // `Widget API`, the project from the package, the client from both.
+    // `Widget API`, the project from the package (hyphenated, as the
+    // generated pyproject.toml names it), the client from both.
     let [config_file, generator] = common("defaults");
     assert_eq!(
         vars("defaults"),
@@ -597,7 +598,7 @@ fn compare_hands_the_config_files_settings_to_the_reference_command() {
             generator,
             "CROZIER_REFERENCE_LAYOUT=packaged".to_string(),
             "CROZIER_REFERENCE_PACKAGE_NAME=widget_api".to_string(),
-            "CROZIER_REFERENCE_PROJECT_NAME=widget_api".to_string(),
+            "CROZIER_REFERENCE_PROJECT_NAME=widget-api".to_string(),
             spec,
         ])
     );
@@ -1949,7 +1950,7 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
     write(root, &format!("refs/released/{wrapper}"), &released);
     let unpackaged = edited_golden(
         wrapper,
-        "            \"X-Fern-SDK-Name\": \"default_package_name\",\n            \"X-Fern-SDK-Version\": \"0.0.0\",\n",
+        "            \"X-Fern-SDK-Name\": \"default-package-name\",\n            \"X-Fern-SDK-Version\": \"0.0.0\",\n",
         "",
     );
     write(root, &format!("refs/unpackaged/{wrapper}"), &unpackaged);

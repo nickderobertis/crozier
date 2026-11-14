@@ -21,3 +21,10 @@ The certified pair passes the entry; crozier fell back to `["waypoints"]` becaus
 ## What holds it
 
 `crates/crozier-e2e/tests/e2e/handed_off_example_values.rs` runs the real `crozier` binary over `openapi.yml` and compares its whole tree with `fern-expected/` and its literals tree with `expected-literals/`, every catalogued departure held to its `tests/fixtures/departures-ledger.tsv` lines (`handed_off_example_value_measurements_match_fern`, `handed_off_example_value_literals_overlays_match_fern`); the `emit` unit tests `an_examples_entry_holding_a_double_quote_is_worked` and `an_examples_entry_naming_no_enum_member_is_worked_as_the_first_member` assert the lines.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

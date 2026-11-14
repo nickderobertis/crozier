@@ -52,3 +52,8 @@ release version reaches other files too — the same run writes `version =
 released under another version still fails `crozier compare` on those files.
 This entry carries forward the header half of what the comparison tolerated
 before the catalog existed; its rule recognises only these two header lines.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

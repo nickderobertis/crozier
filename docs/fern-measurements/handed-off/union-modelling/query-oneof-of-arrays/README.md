@@ -13,3 +13,10 @@ A query parameter whose schema is a `oneOf` of two arrays with plain element sch
 The certified pair types `corners` `typing.Optional[typing.Union[typing.Dict[str, typing.Any], typing.Sequence[typing.Dict[str, typing.Any]]]]`; crozier typed it `typing.Optional[typing.Sequence[typing.Dict[str, typing.Any]]]`. Two arrays of different element types (`zoom`) stay the named `ListTilesRequestZoom` union in both. It now byte-matches; repaired in `one_or_many_query_schema`.
 
 Held by `a_query_one_of_two_like_arrays_is_one_or_many` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`: crozier generates `openapi.yml` and the SDK must byte-match `fern-expected/` (and `literals/fern-expected/` in `literals` mode where committed) apart from the catalogued departures the ledger records for the tree, and the pre-repair spelling written back into crozier's output must fail that comparison. The unit test `query_compositions_read_as_one_or_many_or_name_their_union` in `src/ir.rs`'s `union_modelling_tests` drives the repaired lowering on the same document.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

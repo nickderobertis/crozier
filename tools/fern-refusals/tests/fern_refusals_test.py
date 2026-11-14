@@ -267,6 +267,56 @@ class Drift(unittest.TestCase):
                 self.assert_check_fails_naming(f"docs/fern-refusals/{name}: the header must be exactly")
                 (self.registry / name).write_text(original, encoding="utf-8")
 
+    def edit_unsettled(self, old: str, new: str) -> None:
+        path = self.registry / "heap-exhausted" / "unsettled.txt"
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def unsettled_field(self, name: str) -> str:
+        text = (self.registry / "heap-exhausted" / "unsettled.txt").read_text(encoding="utf-8")
+        return next(line for line in text.splitlines() if line.startswith(f"{name}: "))
+
+    def test_an_unsettled_class_alone_keeps_shape_logs_from_its_earlier_pair(self) -> None:
+        result = run("check", registry=self.registry)
+        self.assertNotIn("heap-exhausted", result.stderr)
+        (self.registry / "heap-exhausted" / "unsettled.txt").unlink()
+        self.assert_check_fails_naming(
+            "heap-exhausted/single-child-probe.yml: its log "
+            "docs/fern-refusals/heap-exhausted/evaluation-logs/fern-single-child.log is not one `shapes` wrote at"
+        )
+
+    def test_an_unsettled_record_without_its_follow_up_or_reason_fails(self) -> None:
+        for name in ("follow_up", "reason"):
+            with self.subTest(field=name):
+                line = self.unsettled_field(name)
+                self.edit_unsettled(line, f"{name}: ")
+                self.assert_check_fails_naming(
+                    f"docs/fern-refusals/heap-exhausted/unsettled.txt: {name} is empty; "
+                    "an unsettled class says why, and names its follow-up"
+                )
+                self.edit_unsettled(f"{name}: \n", line + "\n")
+        line = self.unsettled_field("follow_up")
+        self.edit_unsettled(line + "\n", "")
+        self.assert_check_fails_naming("docs/fern-refusals/heap-exhausted/unsettled.txt carries")
+
+    def test_an_unsettled_record_at_another_pair_or_beside_a_settled_record_fails(self) -> None:
+        line = self.unsettled_field("fern_cli_version")
+        self.edit_unsettled(line, "fern_cli_version: 5.0.0")  # certified-pair: stand-in (a stale record)
+        self.assert_check_fails_naming("heap-exhausted/unsettled.txt names Fern CLI 5.0.0")
+        self.assert_check_fails_naming("is not one `shapes` wrote at")
+        self.edit_unsettled("fern_cli_version: 5.0.0", line)  # certified-pair: stand-in
+        record = self.registry / "heap-exhausted" / "fern-refusal.txt"
+        text = record.read_text(encoding="utf-8").splitlines()
+        text[0] = f"fern_cli_version: {CERTIFIED['cliVersion']}"
+        text[1] = f"fern_python_sdk_version: {CERTIFIED['generatorVersion']}"
+        record.write_text("\n".join(text) + "\n", encoding="utf-8")
+        self.assert_check_fails_naming("its refusal record is at the certified pair, so the class is settled")
+
+    def test_an_unsettled_stage_must_have_run_past_its_bound(self) -> None:
+        self.edit_unsettled("check_exit: timeout", "check_exit: 1")
+        self.assert_check_fails_naming("check_exit must be `timeout` with check_seconds its elapsed seconds")
+
     def test_a_row_short_of_the_header_fails_naming_its_line(self) -> None:
         table = rows(self.registry / "classes.tsv")
         table[2] = table[2][:-1]

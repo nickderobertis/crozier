@@ -55,3 +55,8 @@ respected the canonical ignore accessor; it now preserves this accepted case.
 Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
 
 - [`evaluation-logs/fern-ignored-path.log`](evaluation-logs/fern-ignored-path.log)
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.

@@ -13,3 +13,10 @@ A union member naming a component that admits `null` through a `type: null` memb
 The certified pair declares `ListRecordingsRequestSince = typing.Union[typing.Optional[Moment], str]` and `RecordingStartedAt = typing.Union[typing.Optional[Moment], int]`; crozier dropped the `Optional` (gecko's and numbat's `…EventListRequestAfter`). Repaired in `InlineHoister::hoist_param_composition`, `InlineHoister::hoist_union_variant` and `Builder::field_type_ref`. crozier now byte-matches `fern-expected/`.
 
 Held by `union_modelling_sub_rules_match_the_certified_pair` in `crates/crozier-e2e/tests/e2e/union_modelling.rs`, which byte-compares crozier's SDK for this document with `fern-expected/` (apart from the catalogued departures the ledger records) and requires the pre-repair spelling to fail that comparison, and by the unit test `a_member_naming_a_null_admitting_target_is_optional_in_its_slot` in `src/ir.rs`'s `union_modelling_tests`.
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

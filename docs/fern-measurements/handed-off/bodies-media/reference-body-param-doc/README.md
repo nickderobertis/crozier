@@ -9,3 +9,10 @@ The handed-off root cause `reference-body-param-doc` from the bodies-and-paths r
 **The comparison.** Before the repair crozier counted the bytes body's JSON alternative as an inlined use, so it dropped `ScoreSubmission`'s model and documented `**request:** `ScoreSubmission`` where the certified pair documents the bytes union. The alias half (`**request:** `AddPublisherRequest``, which the method cannot take) is the catalogued `request-alias-reference-parameters` departure, applied by the comparison once nothing else in `reference.md` differed. With the repair, `crozier compare` (every catalogued departure applied) reports crozier's tree for this document byte-identical to `fern-expected/`, and `bodies_media.rs` in `crates/crozier-e2e` holds it there, showing that the decisive line written as crozier wrote it before fails the comparison.
 
 **Verdict:** `parity-gap-repaired`. The departure kept unchanged is `request-alias-reference-parameters`. Recorded in [`../../bodies-media.tsv`](../../bodies-media.tsv).
+
+**Regenerated at the certified pair.** The Fern goldens workflow (run
+43423270787) regenerated every `fern-expected/` tree this record holds at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
+crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
+the pair certified then; a digest, log or exit code they cite is that run's.

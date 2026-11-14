@@ -1,0 +1,9 @@
+fern_cli_version: 5.200.0
+fern_python_sdk_version: 5.41.25
+check_exit: timeout
+check_seconds: 897.7
+generate_exit: timeout
+generate_seconds: 898.8
+bound_seconds: 900
+reason: not compared at Fern CLI 5.200.0 / fern-python-sdk 5.41.25: one serial bounded rerun (`fern-refusals.py probe heap-exhausted --jobs 1 --timeout 900`, NODE_OPTIONS=--max-old-space-size=16384, node v26.8.2, 94 GiB host, load average about 63 on 20 CPUs) ran `fern check` and `fern generate` each to the 900-second bound, printing nothing, as the Fern goldens run 43423270787 did; a run cut short says nothing about whether Fern refuses given more time or memory, so fern-refusal.txt and the class's shape logs stay the Fern CLI 5.163.1 / fern-python-sdk 5.41.3 history and no refusal is certified at this pair
+follow_up: Settle crozier's heap-exhausted refusal class at Fern CLI 5.200.0 / fern-python-sdk 5.41.25

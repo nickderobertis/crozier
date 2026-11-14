@@ -600,10 +600,14 @@
     Snippets naming the root client class, its async twin and its environment
     class with the inner capitals lowered (`LanternharborApi`,
     `AsyncLanternharborApi`, `LanternharborApiEnvironment`), which the package
-    does not define.
+    does not define. The async snippet's import also keeps the correctly cased
+    sync client its own snippet does not use (`from PetStore import
+    AsyncPetstoreApi, PetStoreApi`), because Fern drops only the lowered
+    spelling from the names it imports.
   crozier: >-
     The class names the package defines (`LanternHarborApi`,
-    `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
+    `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`), and the async
+    snippet imports only the names it uses.
   reason: >-
     An example that imports a class the generated package does not define
     contradicts the generated code: the import fails, so the snippet cannot run.

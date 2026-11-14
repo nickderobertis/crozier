@@ -614,7 +614,7 @@ prerequisites as the workflow and writes nothing to a branch.
 Generate selected fixtures and then run the aggregate comparison:
 
 ```sh
-just fern-goldens --version 5.41.3 --fixture anchore.io
+just fern-goldens --version 5.41.25 --fixture anchore.io
 ```
 
 Repeat `--fixture` for an exact multi-fixture selection. Omit `--version` to use
@@ -624,7 +624,7 @@ corpus goldens.
 Keep generation and comparison separate when diagnosing a phase:
 
 ```sh
-just fern-goldens-generate --version 5.41.3 --fixture anchore.io
+just fern-goldens-generate --version 5.41.25 --fixture anchore.io
 just fern-goldens-compare
 ```
 

@@ -285,3 +285,8 @@ follow-ups because no proof here rests on them:
 - an empty `{}` `allOf` member, which Fern ignores;
 - a repeated union member after two `allOf` members collapse to one shape;
 - variant wrappers lost on annotated copies of an inheritance-spelled union.
+
+**Historical.** This record was measured at Fern CLI 5.163.1 /
+`fernapi/fern-python-sdk` 5.41.3, the pair certified when it was taken; where it
+says "the certified pair" it means that pair. It has not been re-measured at
+the current certified pair, Fern CLI 5.200.0 / fern-python-sdk 5.41.25.
