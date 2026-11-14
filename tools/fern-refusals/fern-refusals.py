@@ -2236,23 +2236,17 @@ def shape_problems() -> list[str]:
 # A class whose probe Fern did not settle at the certified pair (each stage ran
 # past its bound) records that in `unsettled.txt`, beside the refusal record
 # kept from the pair it last settled at.
-UNSETTLED_FIELDS = (
-    "fern_cli_version",
-    "fern_python_sdk_version",
-    "check_exit",
-    "check_seconds",
-    "generate_exit",
-    "generate_seconds",
-    "bound_seconds",
-    "reason",
-    "follow_up",
+# The fields of an `unsettled.txt` and the reach a stage cut short by its bound
+# must show (its trace starts a moment after the probe's timer, so it reads a few
+# seconds under the bound, never far under): one declaration the e2e gate reads
+# too, `docs/fern-refusals/unsettled-contract.json`.
+_UNSETTLED_CONTRACT = json.loads(
+    (REPO / "docs" / "fern-refusals" / "unsettled-contract.json").read_text(encoding="utf-8")
 )
+UNSETTLED_FIELDS: tuple[str, ...] = tuple(_UNSETTLED_CONTRACT["fields"])
+UNSETTLED_REACH: float = float(_UNSETTLED_CONTRACT["reach"])
 SECONDS = re.compile(r"(0|[1-9][0-9]*)(\.[0-9]+)?")
 RELEASE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
-# A stage the bound cut short ran to it: its elapsed seconds come from the
-# stage's own trace, which starts a moment after the probe's timer, so they
-# read a few seconds under the bound, never far under it.
-UNSETTLED_REACH = 0.95
 
 
 class Unsettled(NamedTuple):

@@ -996,7 +996,6 @@ crozier-e2e::e2e the_env_layer_filters_audiences_like_the_flags_do
 crozier-e2e::e2e the_env_layer_supplies_the_naming_and_output_settings
 crozier-e2e::e2e the_fixtures_report_script_requires_the_reporters_own_summaries
 crozier-e2e::e2e the_handwritten_contract_states_the_corpus_pin
-crozier-e2e::e2e the_unsettled_record_contract_matches_the_registry_tool
 crozier-e2e::e2e thrivecart_matches_fern_output
 crozier-e2e::e2e timelyapp_entry_matches_fern_output
 crozier-e2e::e2e timelyapp_matches_fern_output

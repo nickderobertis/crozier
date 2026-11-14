@@ -1,0 +1,14 @@
+{
+  "fields": [
+    "fern_cli_version",
+    "fern_python_sdk_version",
+    "check_exit",
+    "check_seconds",
+    "generate_exit",
+    "generate_seconds",
+    "bound_seconds",
+    "reason",
+    "follow_up"
+  ],
+  "reach": 0.95
+}
