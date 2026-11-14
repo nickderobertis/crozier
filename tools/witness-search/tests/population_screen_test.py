@@ -1189,6 +1189,28 @@ class LicenceScreenTests(ScreenHarness):
             got,
         )
 
+    def test_a_forced_candidate_that_is_no_openapi_3_document_is_never_screened_pending(self) -> None:
+        # The exact trigger's paths and an MIT licence, under a Swagger 2.0 version: a census may force a key
+        # onto any document it listed, and only an OpenAPI 3 document is screened for one.
+        exact = {**json.loads(self.EXACT), "info": MIT}
+        swagger = {"swagger": "2.0", **{name: value for name, value in exact.items() if name != "openapi"}}
+        later = {**exact, "openapi": "4.0.0"}
+        rows = [
+            self.entry("swagger", json.dumps(swagger).encode(), [KEY_T]),
+            self.entry("later", json.dumps(later).encode(), [KEY_T]),
+            self.entry("exact", json.dumps(exact).encode(), [KEY_T]),
+        ]
+        done, output = self.screen(rows, "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual(
+            {
+                "exact": "certified-screen-pending",
+                "later": "unfetchable:the exact bytes are no OpenAPI 3 document (openapi '4.0.0')",
+                "swagger": "unfetchable:the exact bytes are no OpenAPI 3 document (no `openapi` version)",
+            },
+            {row.document.split("/")[1]: row.status for row in SCREEN.read_screen(output)},
+        )
+
     def test_a_manifest_naming_bytes_the_store_lacks_is_refused_with_its_remedy(self) -> None:
         row = self.entry("lost", self.EXACT, [KEY_T])
         (self.store / row[3]).unlink()
@@ -2124,6 +2146,51 @@ class BuildTests(BuildHarness):
         self.assertEqual({"crozier-property-name/openapi.yml (" + "2" * 64 + ")": {KEY_O}}, dict(census.authored))
         self.assertEqual([f"screened-nonpublic-input:v2:{'4' * 32}:1"], list(census.nonpublic))
         self.assertFalse([row for row in rows if "crozier-property-name" in row[2] or "nonpublic" in row[2]])
+
+    def test_an_acquisition_record_outside_its_population_or_naming_held_bytes_by_a_pin_is_refused(self) -> None:
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        ledger = self.scratch / "acquisitions.jsonl"
+        good = {
+            "population": "github",
+            "document": "acme/blobbed/openapi.json",
+            "commit": "b" * 40,
+            "pin": f"blob:{'c' * 40}",
+            "how": "raw",
+            "content_sha256": "d" * 64,
+        }
+        for record, accepted in (
+            (good, True),
+            # A refusal keeps the pin it asked for: no bytes were had to name.
+            ({**good, "how": "refused-http-404", "content_sha256": good["pin"]}, True),
+            ({**good, "population": "gitlab"}, False),
+            ({**good, "content_sha256": good["pin"]}, False),
+            ({**good, "how": "store", "content_sha256": f"commit:{'b' * 40}"}, False),
+        ):
+            with self.subTest(record=record):
+                self.write(ledger, [record])
+                done = self.build(
+                    "manifest",
+                    "--identities",
+                    str(plan),
+                    "--archive",
+                    str(self.archive),
+                    "--store",
+                    str(self.store),
+                    "--preflight",
+                    str(self.scratch / "none"),
+                    "--acquisitions",
+                    str(ledger),
+                    "--search-evidence",
+                    str(self.scratch / "no-search"),
+                    "--output",
+                    str(self.scratch / "population.tsv"),
+                )
+                if accepted:
+                    self.assertEqual(0, done.returncode, done.stderr)
+                else:
+                    self.assertEqual(1, done.returncode)
+                    self.assertIn(f"{ledger}:1 is no acquisition record (an acquired population", done.stderr)
 
     def test_an_earlier_combination_census_in_a_form_the_builder_does_not_read_is_refused(self) -> None:
         for rows, message in (

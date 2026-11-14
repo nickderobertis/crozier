@@ -478,15 +478,19 @@ def acquisitions(path: Path) -> list[Acquisition]:
         if (
             not isinstance(row, dict)
             or not all(isinstance(row.get(field), str) for field in ("population", "document", "commit", "how"))
+            or row["population"] not in SCREEN.ACQUIRED
             or not re.fullmatch(r"[0-9a-f]{40}", row["commit"])
             or not isinstance(pin, str)
             or not any(pattern.fullmatch(pin) for pattern in (SCREEN.SHA, SCREEN.BLOB, SCREEN.COMMIT_PIN))
             or not isinstance(digest, str)
             or not any(pattern.fullmatch(digest) for pattern in (SCREEN.SHA, SCREEN.BLOB, SCREEN.COMMIT_PIN))
             or not SCREEN.acquisition_outcome(row["how"])
+            # Bytes had are named by their content's SHA-256; only a refusal keeps the pin it asked for.
+            or (row["how"] in SCREEN.HELD and not SCREEN.SHA.fullmatch(digest))
         ):
             fail(
-                f"{path}:{number} is no acquisition record (population, document, commit, pin, how); "
+                f"{path}:{number} is no acquisition record (an acquired population, document, commit, pin, how, "
+                "and a SHA-256 for bytes had); "
                 "restore it from git"
             )
         out.append(Acquisition(row["population"], row["document"], row["commit"], pin, row["how"], digest))

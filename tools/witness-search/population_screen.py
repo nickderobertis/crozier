@@ -1628,6 +1628,10 @@ def entry_bytes(entry: Entry, root: Path, store_root: Path) -> bytes | None:
     return cached(entry.sha256, store_root) if SHA.fullmatch(entry.sha256) else None
 
 
+class NotOpenApi3(ValueError):
+    """Bytes that parse, but declare no OpenAPI 3.x version, so no key's trigger is read over them."""
+
+
 def screen_entry(
     entry: Entry,
     selectors: Selectors,
@@ -1663,8 +1667,16 @@ def screen_entry(
         )
     try:
         document = parse(data, scratch)
+        version = document.get("openapi") if isinstance(document, dict) else None
+        if not (isinstance(version, str) and version.startswith("3.")):
+            # A key an earlier census forces is screened only over an OpenAPI 3 document, as discovery is.
+            raise NotOpenApi3(f"openapi {version!r}" if isinstance(version, str) else "no `openapi` version")
     except Exception as error:  # the census reader's own refusal, whatever its type
-        reason = cell_text(f"the exact bytes do not parse ({type(error).__name__})")
+        reason = cell_text(
+            f"the exact bytes are no OpenAPI 3 document ({error})"
+            if isinstance(error, NotOpenApi3)
+            else f"the exact bytes do not parse ({type(error).__name__})"
+        )
         return [
             ScreenRow(
                 key,
