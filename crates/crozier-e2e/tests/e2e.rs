@@ -383,6 +383,11 @@ use departures_ledger::{GoldenLedger, Ledger, Observed};
 #[path = "e2e/example_values_inventory.rs"]
 mod example_values_inventory;
 
+/// The documentation audit, held over crozier's tree by every whole-tree golden
+/// comparison beside the inventory.
+#[path = "e2e/documentation_audit.rs"]
+mod documentation_audit;
+
 /// The ledger's contract, driven through the gates' own comparison.
 #[path = "e2e/departures_ledger_gate.rs"]
 mod departures_ledger_gate;
@@ -1619,6 +1624,7 @@ fn assert_generated_tree_matches(
         Ok(rows) => failures.extend(example_values_inventory::check(ledger, &rows, &compared)),
         Err(found) => failures.extend(found),
     }
+    failures.extend(documentation_audit::failures(out));
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     for rel in c.unmatched {
@@ -2232,6 +2238,7 @@ fn golden_tree_failures_in(
     failures.extend(
         inventory
             .into_iter()
+            .chain(documentation_audit::failures(out))
             .map(|failure| format!("{key}: {failure}")),
     );
     failures
@@ -16008,6 +16015,7 @@ fn golden_differences_carving(
             Ok(rows) => failures.extend(example_values_inventory::check(&ledger, &rows, &|_| true)),
             Err(found) => failures.extend(found),
         }
+        failures.extend(documentation_audit::failures(out));
     }
     if failures.is_empty() {
         Ok(compared.differences)

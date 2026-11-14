@@ -22,8 +22,7 @@ three entries:
 <!-- llmlint: ignore[no_redundant_instruction_pointers] The contract fixes that this tree is built the way probes/AGENTS.md prescribes; linking that one procedure keeps a single copy of the pinned Fern workspace recipe, and this folder file is loaded without the index. -->
 - `fern-expected/`: the complete comment-stripped tree Fern generated from it at
   the certified pair (`cliVersion` and `generatorVersion` in
-  [`assets/scaffolding/metadata.json`](../../../assets/scaffolding/metadata.json),
-  today Fern CLI 5.200.0 and `fernapi/fern-python-sdk` 5.41.25), built
+  [`assets/scaffolding/metadata.json`](../../../assets/scaffolding/metadata.json)), built
   the way [`../probes/AGENTS.md`](../probes/AGENTS.md#re-running-one) prescribes.
   A document Fern refuses cannot be a fixture.
 - `evidence.toml`, below.
@@ -38,9 +37,10 @@ tree and its `../probes/` document, so each tree is committed once.
 
 These keys, and nothing else:
 
-- `fern_cli_version` (string, `"5.200.0"`) and `fern_python_sdk_version` (string,
-  `"5.41.25"`): the certified pair. `just fern-references handwritten <fixture>`
-  regenerates the tree and restates these two keys and `digest`.
+- `fern_cli_version` and `fern_python_sdk_version` (strings): the certified
+  pair, as that metadata's `cliVersion` and `generatorVersion` spell it.
+  `just fern-references handwritten <fixture>` regenerates the tree and
+  restates these two keys and `digest`.
 <!-- llmlint: ignore[no_redundant_instruction_pointers] The contract defines the digest as Contract A's tree digest; linking Contract A keeps one definition of the canonical stream instead of restating it, and this folder file is loaded without the index. -->
 - `digest` (string): the lower-case hex SHA-256 of `fern-expected/`'s canonical
   stream, computed exactly as
@@ -84,6 +84,7 @@ These keys, and nothing else:
     The repo-relative path of a renewed-search record with a table line whose
     first cell is the key and one of whose cells reads `none-registrable`.
 
+<!-- llmlint: ignore-block[agents_md_durable_and_terse] The example states the certified pair on purpose: the_handwritten_contract_states_the_corpus_pin requires these two lines to name it, and fails when they drift from assets/scaffolding/metadata.json. -->
 ```toml
 fern_cli_version = "5.200.0"
 fern_python_sdk_version = "5.41.25"
@@ -94,6 +95,7 @@ key = "oneof-bare-object-example-variant"
 search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
 verdict = "exhausted"
 ```
+<!-- llmlint: ignore-end[agents_md_durable_and_terse] -->
 
 ## The feature-level selector
 

@@ -26,14 +26,22 @@ The `list-path-parameter-example` evidence adds one case that inventory does not
 read: a list path parameter documented with a string, which
 `pydantic.TypeAdapter` rejects.
 
-## Population
+## The gate
 
-`documentation-audit.py fern` audits every tree that
-[`tests/fixtures/compared-goldens.json`](../../../../tests/fixtures/compared-goldens.json)
-names. That is 1308 trees, the comparisons the new pair regenerated, with each
-overlay rebuilt over its base as the gate rebuilds it. Together they hold 87,701
-example blocks. [`fern-findings.tsv`](fern-findings.tsv) lists what it finds in
-Fern's output:
+Every whole-tree golden comparison runs the audit over the tree crozier
+generated, beside the example-values inventory
+([`crates/crozier-e2e/tests/e2e/documentation_audit.rs`](../../../../crates/crozier-e2e/tests/e2e/documentation_audit.rs)).
+A finding fails the comparison that reads that golden. Those comparisons are
+the goldens [`tests/fixtures/compared-goldens.json`](../../../../tests/fixtures/compared-goldens.json)
+names, 1308 trees, so crozier's documentation for each of them binds to the
+code beside it. The same file drives each check, and the refusal of a path that is not a
+directory.
+
+## Fern's findings
+
+[`fern-findings.tsv`](fern-findings.tsv) is the audit of Fern's side of the
+same 1308 trees, each overlay rebuilt over its base as the comparison rebuilds
+it. Together they hold 87,701 example blocks.
 
 | Check | Fern findings | of which in a partial tree |
 | --- | ---: | ---: |
@@ -48,14 +56,6 @@ They are measurement trees under `docs/fern-measurements/` that keep
 client-module lookup fails no matter what the example says. Those 188 rows
 measure the snapshot, not Fern. The other 2359 rows are Fern defects, and they
 fall in 342 trees.
-
-`documentation-audit.py crozier TREE...` generates crozier's tree for each
-named golden, with the settings its comparison uses, and audits it the same
-way. It was run over 507 trees: the 351 trees with a Fern finding, joined with
-every tree where the departure ledger has crozier write a documentation line
-that Fern does not. [`crozier-results.tsv`](crozier-results.tsv) records one
-`generated` row per tree, with its block count. A finding would add its own row.
-There are none. The pass audited 62,954 blocks.
 
 ## What closed the gap
 
@@ -87,23 +87,19 @@ the new pair:
 - `readme-client-class-casing` covers 31. These are a client class name that
   Fern's flat layout does not define.
 
-Every Fern finding in a full tree sits on a line that crozier writes
-differently. crozier matches Fern byte for byte everywhere else, so a finding
-crozier does not reproduce must sit on one of those departed lines. The crozier
-pass shows that what crozier writes there binds.
+crozier departs from Fern on every one of those lines; the gate shows that what
+it writes there binds.
 
 ## Rerunning it
 
-From the repository root, after `cargo build -p crozier --bin crozier`:
-
 ```sh
-python3 docs/departures/evidence/documentation-audit/documentation-audit.py fern > fern.tsv
-python3 docs/departures/evidence/documentation-audit/documentation-audit.py crozier TREE... > crozier.tsv
+python3 docs/departures/evidence/documentation-audit/documentation-audit.py TREE...
 ```
 
-`TREE...` is the tree column of `fern.tsv`, joined with every golden of
-`tests/fixtures/departures-ledger.tsv` whose departure writes a documentation
-line.
-
-Neither mode gates anything. The script reports findings and changes nothing.
-A tree it cannot generate is reported as `unverified`, with the reason.
+It prints one row per finding: tree, file, line, check, detail. A summary of
+trees, blocks and findings goes to stderr. It exits 0 when there is no finding,
+1 when there are findings, and 2 when a TREE is not a directory. For a complete
+tree of `compared-goldens.json`, it reproduces that tree's rows of
+`fern-findings.tsv`. An overlay is audited once it has been rebuilt: copy its
+base, delete what its `.crozier-overlay.json` removes, then lay the overlay's
+files over the copy.
