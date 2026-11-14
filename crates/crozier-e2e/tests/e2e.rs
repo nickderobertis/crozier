@@ -2141,6 +2141,22 @@ fn golden_tree_failures(
     expected_root: &Path,
     out: &Path,
 ) -> Vec<String> {
+    golden_tree_failures_in(key, source, ledger, expected_root, out, &|_| true)
+}
+
+/// [`golden_tree_failures`], holding to the golden's ledger rows only the
+/// departures in the files `scope` admits: a tree assembled from the golden
+/// with a file measured apart (a literals run's own `.fern/metadata.json`)
+/// holds that file to no row of the golden's, while any difference in it that
+/// no departure explains still fails.
+fn golden_tree_failures_in(
+    key: &str,
+    source: &str,
+    ledger: &GoldenLedger,
+    expected_root: &Path,
+    out: &Path,
+    scope: &dyn Fn(&str) -> bool,
+) -> Vec<String> {
     let mut failures = Vec::new();
     let expected_files: std::collections::BTreeSet<String> =
         walk_files(expected_root).into_iter().collect();
@@ -2196,9 +2212,10 @@ fn golden_tree_failures(
             ));
         }
     }
+    observed.retain(|(rel, _, _)| scope(rel));
     failures.extend(
         ledger
-            .check(&observed, &|_| true)
+            .check(&observed, scope)
             .into_iter()
             .map(|failure| format!("{key}: {failure}")),
     );
@@ -2208,9 +2225,9 @@ fn golden_tree_failures(
         expected_root,
         out,
         &observed,
-        &|_| true,
+        scope,
     )
-    .map(|rows| example_values_inventory::check(ledger, &rows, &|_| true))
+    .map(|rows| example_values_inventory::check(ledger, &rows, scope))
     .unwrap_or_else(|found| found);
     failures.extend(
         inventory
@@ -7513,12 +7530,18 @@ fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
             let ledger = departure_ledger()
                 .golden(&golden_path(&expected), &[])
                 .unwrap();
-            failures.extend(golden_tree_failures(
+            // The literals tree's `.fern/metadata.json` is the literals run's own
+            // record (generator configuration and all), not the golden's file:
+            // it is held to no row of the golden's, though any difference in it
+            // no departure explains still fails.
+            let literals = mode == "literals";
+            failures.extend(golden_tree_failures_in(
                 case,
                 &format!("{case}, enum-type={mode}"),
                 &ledger,
                 comparison_root,
                 out.path(),
+                &|rel| !literals || rel != ".fern/metadata.json",
             ));
         }
     }
@@ -15924,6 +15947,30 @@ fn golden_differences(
     ledger: Result<GoldenLedger, Vec<String>>,
     source: Option<&Path>,
 ) -> Result<Vec<(String, Difference)>, String> {
+    golden_differences_carving(
+        expected_root,
+        out,
+        file_filter,
+        include_text_diffs,
+        ledger,
+        source,
+        &[],
+    )
+}
+
+/// [`golden_differences`] for a corpus golden with `carved` files, its
+/// `unmatched` residuals: the ledger holds no row in them, so a departure the
+/// engine applies inside one is no ledger entry, as in the corpus gate
+/// ([`assert_generated_tree_matches`]); the file's differences are still reported.
+fn golden_differences_carving(
+    expected_root: &Path,
+    out: &Path,
+    file_filter: Option<&str>,
+    include_text_diffs: bool,
+    ledger: Result<GoldenLedger, Vec<String>>,
+    source: Option<&Path>,
+    carved: &[&str],
+) -> Result<Vec<(String, Difference)>, String> {
     let ledger = ledger.map_err(|failures| failures.join("\n"))?;
     // The parsed source document, as every other golden comparison supplies
     // it, so a departure whose rule reads the specification applies here too.
@@ -15941,6 +15988,7 @@ fn golden_differences(
         .departures
         .into_iter()
         .map(|departure| (departure.file, departure.location.as_number(), departure.id))
+        .filter(|(file, _, _): &Observed| !carved.contains(&file.as_str()))
         .collect();
     let mut failures = ledger.check(&observed, &|rel| {
         file_filter.is_none_or(|filter| rel.contains(filter))
@@ -16432,13 +16480,14 @@ fn report_fixture_diffs() {
             continue;
         }
         let (spec, _staged) = prepare_corpus_source(c);
-        let differences = match golden_differences(
+        let differences = match golden_differences_carving(
             &expected_root,
             out.path(),
             file_filter.as_deref(),
             false,
             corpus_golden_ledger(departure_ledger(), &golden_path(&expected_root), c),
             Some(&spec),
+            c.unmatched,
         ) {
             Ok(differences) => differences,
             Err(error) => {
