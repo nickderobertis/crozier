@@ -167,8 +167,24 @@ class RealPlanTests(unittest.TestCase):
         corpus = [seconds for (family, _item), seconds in table.items() if family == "corpus"]
         self.assertTrue(corpus, "the table is seeded with corpus timings")
         self.assertAlmostEqual(sum(corpus) / len(corpus), default)
-        handwritten = self.plan.families["handwritten"]
-        self.assertAlmostEqual(handwritten.seconds, round(handwritten.items * default, 1), delta=1)
+        # Every planned item is priced at its recorded seconds.
+        for shard in self.plan.shards:
+            for entry in shard.items:
+                with self.subTest(item=entry.key()):
+                    self.assertAlmostEqual(entry.seconds, round(table.get(entry.key(), default), 1))
+        # The real table with one hand-written row dropped: that item, now
+        # untimed, is planned at the corpus rate.
+        lines = (REPO / weekly.TIMINGS).read_text(encoding="utf-8").splitlines(keepends=True)
+        dropped = next(line for line in lines if line.startswith("handwritten\t"))
+        item = dropped.split("\t")[1]
+        self.assertNotAlmostEqual(table[("handwritten", item)], default, places=1)
+        with tempfile.TemporaryDirectory() as scratch:
+            timings = Path(scratch) / "generation-seconds.tsv"
+            timings.write_text("".join(line for line in lines if line is not dropped), encoding="utf-8")
+            with unittest.mock.patch.object(weekly, "TIMINGS", timings):
+                plan = weekly.make_plan(REPO, "", weekly.Pair("1.0.0", "1.0.0"))
+        priced = {entry.key(): entry.seconds for shard in plan.shards for entry in shard.items}
+        self.assertAlmostEqual(priced[("handwritten", item)], round(default, 1))
 
     def test_the_budget_the_planner_sizes_against_is_the_registered_one(self) -> None:
         budgets = (REPO / ".github/budgets.yaml").read_text(encoding="utf-8")
