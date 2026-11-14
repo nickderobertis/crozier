@@ -25939,9 +25939,9 @@ fn fern_refusal_gate_holds_an_unsettled_class_only_to_a_complete_record() {
             earlier.to_string(),
             complete.replacen(
                 &format!("fern_cli_version: {cli_pin}"),
-                "fern_cli_version: 0.0.3",
+                "fern_cli_version: 0.0.3", // certified-pair: stand-in for another pair
                 1,
-            ), // certified-pair: stand-in
+            ),
             Some("unsettled.txt names Fern CLI 0.0.3"),
         ),
         (
