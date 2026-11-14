@@ -4,13 +4,16 @@ Fern and crozier are stand-in executables at the subprocess boundary the script
 drives (as the weekly journeys stand Fern in): each writes a tree derived from
 the document it is given, so two documents with the same `info.title` generate
 the same tree and two that differ do not. A document titled `Broken` makes the
-stand-in Fern exit 1, and one titled `Empty` makes the stand-in crozier write
-nothing.
+stand-in Fern exit 1, one titled `Slow` makes it outlast a short `--timeout`, and
+one titled `Empty` makes the stand-in crozier write nothing. Only the stand-in
+crozier reads `info.summary`, so a document differing there alone moves crozier
+and not Fern. Each stand-in appends one line per run to `<name>.calls` beside it.
 """
 
 from __future__ import annotations
 
 import csv
+import dataclasses
 import importlib.util
 import json
 import os
@@ -21,6 +24,7 @@ import tempfile
 import textwrap
 import unittest
 from pathlib import Path
+from types import ModuleType
 from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
@@ -41,8 +45,13 @@ FERN = textwrap.dedent(
     assert "version: 8.8.8" in pathlib.Path("generators.yml").read_text()
     document = next(pathlib.Path("openapi").iterdir())
     title = yaml.safe_load(document.read_text())["info"]["title"]
+    with pathlib.Path(__file__).with_name("fern.calls").open("a") as calls:
+        calls.write(title + "\\n")
     if title == "Broken":
         sys.exit(1)
+    if title == "Slow":
+        import time
+        time.sleep(30)
     (out / "src" / "fern").mkdir(parents=True)
     (out / "src" / "fern" / "title.py").write_text(title)
     """
@@ -53,18 +62,30 @@ CROZIER = textwrap.dedent(
     import json, pathlib, sys, yaml
     args = sys.argv[1:]
     out = pathlib.Path(args[args.index("--output") + 1])
-    title = yaml.safe_load(pathlib.Path(args[args.index("--spec") + 1]).read_text())["info"]["title"]
+    info = yaml.safe_load(pathlib.Path(args[args.index("--spec") + 1]).read_text())["info"]
+    title = info["title"]
+    with pathlib.Path(__file__).with_name("crozier.calls").open("a") as calls:
+        calls.write(title + "\\n")
     out.mkdir(parents=True)
     if title != "Empty":
         (out / "src" / "fern").mkdir(parents=True)
-        (out / "src" / "fern" / "title.py").write_text(title)
+        (out / "src" / "fern" / "title.py").write_text(title + info.get("summary", ""))
     """
 )
 STALE = '{"stale": true}\n'
 
 
-def document(title: str, **info: str) -> dict[str, Any]:
+def document(title: str, **info: str) -> dict[str, object]:
     return {"openapi": "3.0.3", "info": {"title": title, "version": "1", **info}, "paths": {}}
+
+
+def load(name: str, path: Path) -> ModuleType:
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
 
 
 class RemeasureTests(unittest.TestCase):
@@ -97,12 +118,14 @@ class RemeasureTests(unittest.TestCase):
             handle.write(f"{key}\t-\t{relative}/README.md\t{relative}/{fern}\t{relative}/{crozier}\n")
         return f"{relative}/{fern}"
 
-    def add_feature(self, name: str, before: str, after: str) -> str:
-        """A feature search's attribution: its own folder, `before.json` and `after.json`."""
+    def add_feature(self, name: str, before: str | dict[str, object], after: str | dict[str, object]) -> str:
+        """A feature search's attribution: its own folder, `before.json` and `after.json`
+        (a title, or a whole document)."""
         folder = self.surface / f"witness-search-unproven-features/{name}-attribution"
         folder.mkdir(parents=True)
-        (folder / "before.json").write_text(json.dumps(document(before)), encoding="utf-8")
-        (folder / "after.json").write_text(json.dumps(document(after)), encoding="utf-8")
+        for side, content in (("before", before), ("after", after)):
+            body = document(content) if isinstance(content, str) else content
+            (folder / f"{side}.json").write_text(json.dumps(body), encoding="utf-8")
         return self.add_row(f"{name}-key", folder, "{generator}-comparison.json")
 
     def add_control(self, control: object, *, stem: str = "harbour-combo-lit") -> str:
@@ -138,9 +161,11 @@ class RemeasureTests(unittest.TestCase):
             check=False,
         )
 
+    # A comparison record read back from disk: JSON whose shape is what each test asserts.
     def read(self, record: str) -> dict[str, Any]:
         return json.loads((self.root / record).read_text(encoding="utf-8"))
 
+    # The same JSON record, by its feature's name.
     def feature_record(self, name: str, generator: str) -> dict[str, Any]:
         return self.read(
             f"docs/openapi-surface/witness-search-unproven-features/{name}-attribution/{generator}-comparison.json"
@@ -167,6 +192,59 @@ class RemeasureTests(unittest.TestCase):
         self.assertIn("steady-key", table)
         self.assertNotIn("moving-key", table)
         self.assertEqual(0, self.run_script().returncode)
+        # What it writes is what output-insensitive.py accepts at this pair.
+        reader = load("output_insensitive", REPO / "tools/surface-census/output-insensitive.py")
+        self.assertEqual(
+            ([], {("steady-key", "-")}), (reader.read_records(self.root)[1], reader.read_records(self.root)[0])
+        )
+
+    @POSIX_ONLY
+    def test_a_difference_in_one_generator_alone_removes_the_disposition(self) -> None:
+        self.add_feature("summarised", document("Lanterns", summary="Lit"), document("Lanterns"))
+        result = self.run_script()
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn("summarised-attribution/fern-comparison.json: crozier moves src/fern/title.py", result.stderr)
+        self.assertNotIn("summarised-attribution/fern-comparison.json: fern moves", result.stderr)
+        self.assertIn("removed summarised-key at -", result.stderr)
+        self.assertEqual({"stale": True}, self.feature_record("summarised", "fern"))
+
+    @POSIX_ONLY
+    def test_a_document_two_controls_share_is_generated_once_and_each_ablation_apart(self) -> None:
+        records = [
+            self.add_control(self.edits({"pointer": "/info/description", "edit": "deleted it"})),
+            self.add_control(self.edits({"pointer": "/tags/1", "edit": "deleted it"}), stem="harbour-combo-tags"),
+        ]
+        result = self.run_script(*(argument for record in records for argument in ("--only", record)))
+        self.assertEqual(0, result.returncode, result.stderr)
+        for name in ("fern", "crozier"):
+            self.assertEqual(3, len((self.tools / f"{name}.calls").read_text().splitlines()), name)
+        ablations = self.root / "logs/output-insensitive-remeasure/ablations"
+        self.assertNotEqual(
+            (ablations / "harbour-combo-lit.after.json").read_text(),
+            (ablations / "harbour-combo-tags.after.json").read_text(),
+        )
+
+    @POSIX_ONLY
+    def test_a_generation_past_the_timeout_keeps_that_record_and_measures_the_rest(self) -> None:
+        self.add_feature("slow", "Slow", "Slow")
+        result = self.run_script("--timeout", "2")
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn("slow-attribution/fern-comparison.json: ", result.stderr)
+        self.assertIn("timed out after 2 seconds", result.stderr)
+        self.assertEqual({"stale": True}, self.feature_record("slow", "fern"))
+        self.assertIn("slow-key", (self.surface / "output-insensitive.tsv").read_text(encoding="utf-8"))
+        self.assertEqual("9.9.9", self.feature_record("steady", "fern")["fern_cli_version"])
+
+    def test_a_fern_command_or_timeout_that_cannot_run_is_a_usage_error(self) -> None:
+        for args, reason in (
+            (("--fern", ""), "--fern names no command"),
+            (("--fern", "'unclosed"), "is no command"),
+            (("--timeout", "0"), "--timeout is a positive number of seconds"),
+        ):
+            with self.subTest(args=args):
+                result = self.run_script(*args)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn(reason, result.stderr)
 
     @POSIX_ONLY
     def test_a_generator_failure_keeps_that_record_and_its_row_and_measures_the_rest(self) -> None:
@@ -298,6 +376,13 @@ class RemeasureTests(unittest.TestCase):
         self.assertIn("--only names no record", result.stderr)
 
 
+class RowContractTests(unittest.TestCase):
+    def test_the_row_record_is_the_shared_table_s_columns_in_order(self) -> None:
+        remeasure = load("remeasure_row", SCRIPT)
+        reader = load("output_insensitive_columns", REPO / "tools/surface-census/output-insensitive.py")
+        self.assertEqual(reader.COLUMNS, tuple(field.name for field in dataclasses.fields(remeasure.Row)))
+
+
 class WorkspaceDriftTests(unittest.TestCase):
     """The workspace Fern re-measures in is the packaged python-enums workspace
     `generate-fern-fixture.sh` scaffolds for a golden; this holds the two to one
@@ -316,11 +401,7 @@ class WorkspaceDriftTests(unittest.TestCase):
             .replace("${client_class_name_block}${default_max_retries_block}", "")
             .replace("${pydantic_config_block}", "          pydantic_config:\n            enum_type: python_enums\n")
         )
-        spec = importlib.util.spec_from_file_location("remeasure", SCRIPT)
-        assert spec is not None and spec.loader is not None
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[spec.name] = module
-        spec.loader.exec_module(module)
+        module = load("remeasure", SCRIPT)
         self.assertEqual(rendered + "\n", module.GENERATORS_YML)
         self.assertIn('{ "organization": "${ORGANIZATION:-fern}", "version": "${FERN_CLI_VERSION}" }', recipe)
         self.assertIn('export FERN_TOKEN="${FERN_TOKEN:-preview-only-no-publish}"', recipe)

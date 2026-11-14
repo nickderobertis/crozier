@@ -48,16 +48,15 @@ import shlex
 import subprocess
 import sys
 import tempfile
-from dataclasses import astuple, dataclass
+from dataclasses import astuple, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
-from typing import Any
 
 import yaml
 
 CORPUS_SOURCES = Path("tests/fixtures/corpus-sources")
-FERN_TIMEOUT_SECONDS = 1800
+GENERATION_TIMEOUT_SECONDS = 1800
 LIST_INDEX = re.compile(r"0|[1-9][0-9]*")
 
 
@@ -107,6 +106,18 @@ class Row:
         return self.fern_comparison if generator is Generator.FERN else self.crozier_comparison
 
 
+if tuple(field.name for field in fields(Row)) != COLUMNS:
+    raise ImportError(f"Row's fields are not {REGISTRY}'s columns {COLUMNS}, in order")
+
+
+@dataclass(frozen=True)
+class Pair:
+    """The certified Fern CLI and fern-python-sdk versions."""
+
+    cli: str
+    generator: str
+
+
 @dataclass(frozen=True)
 class Documents:
     before: Path
@@ -128,10 +139,11 @@ class Outcome:
         )
 
 
-def certified_pair(root: Path) -> Any:
+def certified_pair(root: Path) -> Pair:
     """The pair `output-insensitive.py` holds every record to (it validates the declaration)."""
     try:
-        return READER.certified_pair(root)
+        cli, generator = READER.certified_pair(root)
+        return Pair(cli, generator)
     except (OSError, ValueError, KeyError, TypeError) as error:
         raise UsageError(f"assets/scaffolding/metadata.json: {error}") from error
 
@@ -245,7 +257,8 @@ def documents(root: Path, record: str, scratch: Path) -> Documents:
         ablated_path = controls / f"{stem}.json"
         if (controls / f"{doc}.yml").is_file() and ablated_path.is_file():
             before = controls / f"{doc}.yml"
-            if "openapi" in json.loads(ablated_path.read_text(encoding="utf-8")):
+            control = json.loads(ablated_path.read_text(encoding="utf-8"))
+            if isinstance(control, dict) and "openapi" in control:
                 return Documents(before, ablated_path)
             return Documents(before, ablated(before, ablated_path, doc, scratch))
         source = corpus_source(root, doc)
@@ -282,7 +295,9 @@ groups:
 """
 
 
-def fern_tree(fern: list[str], document: Path, pair: Any, scratch: Path, log: Path) -> dict[str, str]:
+def fern_tree(
+    fern: list[str], document: Path, pair: Pair, scratch: Path, log: Path, timeout: int = GENERATION_TIMEOUT_SECONDS
+) -> dict[str, str]:
     """Fern's raw packaged tree for `document`, from the fixture recipe's workspace."""
     workspace = scratch / "fern"
     (workspace / "openapi").mkdir(parents=True)
@@ -310,7 +325,7 @@ def fern_tree(fern: list[str], document: Path, pair: Any, scratch: Path, log: Pa
             env=environment,
             stdout=handle,
             stderr=subprocess.STDOUT,
-            timeout=FERN_TIMEOUT_SECONDS,
+            timeout=timeout,
             check=False,
         )
     tree = preview / "fern-python-sdk"
@@ -319,7 +334,9 @@ def fern_tree(fern: list[str], document: Path, pair: Any, scratch: Path, log: Pa
     return tree_digests(tree)
 
 
-def crozier_tree(crozier: Path, document: Path, scratch: Path) -> dict[str, str]:
+def crozier_tree(
+    crozier: Path, document: Path, scratch: Path, timeout: int = GENERATION_TIMEOUT_SECONDS
+) -> dict[str, str]:
     out = scratch / "crozier"
     result = subprocess.run(
         [
@@ -338,6 +355,7 @@ def crozier_tree(crozier: Path, document: Path, scratch: Path) -> dict[str, str]
         ],
         capture_output=True,
         text=True,
+        timeout=timeout,
         check=False,
     )
     if result.returncode != 0:
@@ -345,7 +363,7 @@ def crozier_tree(crozier: Path, document: Path, scratch: Path) -> dict[str, str]
     return tree_digests(out)
 
 
-def record_text(generator: Generator, pair: Any, before: dict[str, str], after: dict[str, str]) -> str:
+def record_text(generator: Generator, pair: Pair, before: dict[str, str], after: dict[str, str]) -> str:
     record = {
         "schema_version": 1,
         "generator": str(generator),
@@ -363,6 +381,12 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--fern", default="fern", help="the Fern CLI command (default: fern)")
     parser.add_argument("--crozier", type=Path, help="the crozier binary (default: ROOT/target/release/crozier)")
     parser.add_argument("--only", action="append", default=[], help="re-measure only this fern record")
+    parser.add_argument(
+        "--timeout",
+        type=int,
+        default=GENERATION_TIMEOUT_SECONDS,
+        help="seconds one generation may run before its record is left unmeasured (default: 1800)",
+    )
     args = parser.parse_args(argv)
     root = args.root.resolve()
     crozier = args.crozier or root / "target/release/crozier"
@@ -371,6 +395,14 @@ def main(argv: list[str]) -> int:
     )
     logs.mkdir(parents=True, exist_ok=True)
     try:
+        if args.timeout <= 0:
+            raise UsageError("--timeout is a positive number of seconds")
+        try:
+            fern = shlex.split(args.fern)
+        except ValueError as error:
+            raise UsageError(f"--fern {args.fern!r} is no command: {error}") from error
+        if not fern:
+            raise UsageError("--fern names no command")
         if not crozier.is_file():
             raise UsageError(f"{crozier} is not built; run `cargo build --release --locked`")
         pair = certified_pair(root)
@@ -387,7 +419,6 @@ def main(argv: list[str]) -> int:
     except (UsageError, OSError, json.JSONDecodeError, yaml.YAMLError) as error:
         print(f"output-insensitive-remeasure: {error}", file=sys.stderr)
         return 2
-    fern = shlex.split(args.fern)
     measured: dict[tuple[Generator, Path], dict[str, str]] = {}
 
     def measure(generator: Generator, document: Path) -> dict[str, str]:
@@ -396,9 +427,9 @@ def main(argv: list[str]) -> int:
             with tempfile.TemporaryDirectory() as scratch:
                 if generator is Generator.FERN:
                     log = logs / f"{hashlib.sha256(str(document).encode()).hexdigest()[:12]}.fern.log"
-                    measured[key] = fern_tree(fern, document, pair, Path(scratch), log)
+                    measured[key] = fern_tree(fern, document, pair, Path(scratch), log, args.timeout)
                 else:
-                    measured[key] = crozier_tree(crozier, document, Path(scratch))
+                    measured[key] = crozier_tree(crozier, document, Path(scratch), args.timeout)
         return measured[key]
 
     dropped: set[str] = set()
