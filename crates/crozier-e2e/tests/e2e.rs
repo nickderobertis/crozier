@@ -23794,6 +23794,43 @@ const UNSETTLED_FIELDS: [&str; 9] = [
     "follow_up",
 ];
 
+/// A stage the bound cut short ran to it; its trace starts a moment after the
+/// probe's timer, so it reads a few seconds under the bound, never far under.
+const UNSETTLED_REACH: f64 = 0.95;
+
+/// The registry's two validators of `unsettled.txt`, this gate and
+/// `tools/fern-refusals/fern-refusals.py check`, declare the same fields and
+/// the same reach, so neither accepts a record the other refuses.
+#[test]
+fn the_unsettled_record_contract_matches_the_registry_tool() {
+    let tool = std::fs::read_to_string(repo_root().join("tools/fern-refusals/fern-refusals.py"))
+        .expect("the registry tool");
+    let (_, fields) = tool
+        .split_once("UNSETTLED_FIELDS = (")
+        .expect("fern-refusals.py declares UNSETTLED_FIELDS");
+    let (fields, _) = fields.split_once(')').expect("a closed tuple");
+    let declared: Vec<&str> = fields
+        .split(',')
+        .map(|field| field.trim().trim_matches('"'))
+        .filter(|field| !field.is_empty())
+        .collect();
+    assert_eq!(
+        declared, UNSETTLED_FIELDS,
+        "UNSETTLED_FIELDS drifted from fern-refusals.py"
+    );
+    let reach: f64 = tool
+        .lines()
+        .find_map(|line| line.strip_prefix("UNSETTLED_REACH = "))
+        .expect("fern-refusals.py declares UNSETTLED_REACH")
+        .trim()
+        .parse()
+        .expect("a number");
+    assert!(
+        (reach - UNSETTLED_REACH).abs() < f64::EPSILON,
+        "UNSETTLED_REACH drifted: {reach}"
+    );
+}
+
 /// An `unsettled.txt` is never a silent pass: exactly its fields, the pin, both
 /// stages cut short with their seconds, a reason and a follow-up.
 fn unsettled_record_failures(id: &str, text: &str) -> Vec<String> {
@@ -23828,9 +23865,6 @@ fn unsettled_record_failures(id: &str, text: &str) -> Vec<String> {
             value("fern_python_sdk_version")
         ));
     }
-    // A stage the bound cut short ran to it; its trace starts a moment after the
-    // probe's timer, so it reads a few seconds under the bound, never far under.
-    const REACH: f64 = 0.95;
     let seconds = |name: &str| {
         value(name)
             .parse::<f64>()
@@ -23852,7 +23886,7 @@ fn unsettled_record_failures(id: &str, text: &str) -> Vec<String> {
                 "{id}: unsettled.txt's {stage}_exit must be `timeout`, with {stage}_seconds its elapsed seconds"
             ));
         } else if let (Some(elapsed), Some(bound)) = (elapsed, bound) {
-            if elapsed < bound * REACH {
+            if elapsed < bound * UNSETTLED_REACH {
                 failures.push(format!(
                     "{id}: unsettled.txt's {stage}_seconds {elapsed} is short of the {bound}-second bound; \
                      a stage the bound cut short runs to it"
