@@ -135,7 +135,9 @@ def census() -> ModuleType:
     return _load("population_screen_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py")
 
 
+@functools.cache
 def witness_screen() -> ModuleType:
+    # Cached: the reader asks for it twice a row, and building its path each time dominated reading a table.
     return _load("population_screen_witness_screen", REPO / "tools" / "witness-search" / "witness_screen.py")
 
 

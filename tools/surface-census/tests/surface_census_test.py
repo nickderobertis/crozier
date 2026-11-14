@@ -1049,8 +1049,9 @@ def named_gap_features(root: Path) -> dict[str, str]:
 
 
 @functools.cache
+@functools.cache
 def population_screen() -> ModuleType:
-    """`tools/witness-search/population_screen.py`, the one reader of a population screen table."""
+    """`tools/witness-search/population_screen.py`, the one reader of a population screen table, loaded once."""
     path = REPO / "tools" / "witness-search" / "population_screen.py"
     spec = importlib.util.spec_from_file_location("gate_population_screen", path)
     if spec is None or spec.loader is None:
@@ -1059,6 +1060,23 @@ def population_screen() -> ModuleType:
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+_SCREENED_COUNTS: dict[tuple[str, int, int], Counter[str]] = {}
+
+
+def screened_pending_counts(table: Path) -> Counter[str]:
+    """Each key's pending candidates in `table`, read through its reader once per file content.
+
+    The gate asks once per open key, and the table holds tens of thousands of rows; a
+    table edited in place changes its size or modification time, and is read again.
+    """
+    stat = table.stat()
+    identity = (str(table.resolve()), stat.st_mtime_ns, stat.st_size)
+    if identity not in _SCREENED_COUNTS:
+        screen = population_screen()
+        _SCREENED_COUNTS[identity] = screen.pending_counts(screen.read_screen(table))
+    return _SCREENED_COUNTS[identity]
 
 
 def screened_population_search(record: Path, table: Path, key: str, arm: str | None = None) -> bool:
@@ -1071,13 +1089,13 @@ def screened_population_search(record: Path, table: Path, key: str, arm: str | N
     """
     try:
         text = record.read_text(encoding="utf-8")
-        rows = population_screen().read_screen(table)
+        counts = screened_pending_counts(table)
     except (OSError, UnicodeError, ValueError):
         return False
     if arm is not None and f"`{arm}`" not in text:
         return False
     count = re.search(rf"^\| `{re.escape(key)}` \| `search-incomplete` \| (\d+) \|", text, re.M)
-    pending = population_screen().pending_counts(rows)[key]
+    pending = counts[key]
     if count is None or int(count.group(1)) != pending:
         return False
     if pending:
