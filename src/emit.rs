@@ -21,8 +21,8 @@ use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyExample, BodyField, BodySchemaShape, ClientPathParameter,
     Credential, DiscriminantDocumentation, Endpoint, EndpointPagination, ErrorClass, Field,
-    GlobalHeader, HeaderType, Ir, ObjectType, PageAdvance, Prim, QueryParam, RequestBody,
-    StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
+    GlobalHeader, HeaderItem, HeaderType, Ir, ObjectType, PageAdvance, Prim, QueryParam,
+    RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -2753,6 +2753,11 @@ fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
 /// departure, measured in
 /// docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
 fn global_header_example(header: &GlobalHeader) -> String {
+    // A `Literal`-typed header admits its one value, where Fern's `YOUR_*`
+    // string is a value the type rejects (`non-string-client-header-example`).
+    if let Some(value) = header.literal() {
+        return format!("{}=\"{}\"", header.py_name, escape_py_str(value));
+    }
     match header.py_type() {
         HeaderType::Date => format!(
             "{}=datetime.date.fromisoformat(\"2023-01-15\")",
@@ -2765,7 +2770,20 @@ fn global_header_example(header: &GlobalHeader) -> String {
         HeaderType::Bool => format!("{}=True", header.py_name),
         HeaderType::Int => format!("{}=1", header.py_name),
         HeaderType::Float => format!("{}=1.1", header.py_name),
-        HeaderType::Str | HeaderType::List(_) => format!(
+        // An array header takes a list, two copies of its item's placeholder,
+        // as Fern writes a method's array header (`["probeParam",
+        // "probeParam"]`), where its constructor example passes a `YOUR_*`
+        // string (`non-string-client-header-example`).
+        HeaderType::List(item) => {
+            let value = match item {
+                HeaderItem::Str => format!("\"{}\"", escape_py_str(&header.wire_name)),
+                HeaderItem::Int => "1".to_string(),
+                HeaderItem::Float => "1.1".to_string(),
+                HeaderItem::Bool => "True".to_string(),
+            };
+            format!("{}=[{value}, {value}]", header.py_name)
+        }
+        HeaderType::Str => format!(
             "{}=\"YOUR_{}\"",
             header.py_name,
             header.py_name.to_uppercase()
@@ -2991,8 +3009,11 @@ fn readme_streaming_endpoint(ir: &Ir) -> Option<&Endpoint> {
         .find(|e| e.emittable && e.streaming)
 }
 
+/// The README's call of `ep`'s method, by the name the client defines (`all_`;
+/// Fern writes `all`, which it does not: the `readme-escaped-method-call`
+/// departure).
 fn client_call_prefix(ep: &Endpoint) -> String {
-    let method = ep.method_name.trim_end_matches('_');
+    let method = &ep.method_name;
     if ep.module.is_empty() {
         format!("client.{method}")
     } else {
@@ -3001,7 +3022,7 @@ fn client_call_prefix(ep: &Endpoint) -> String {
 }
 
 fn raw_client_call_prefix(ep: &Endpoint) -> String {
-    let method = ep.method_name.trim_end_matches('_');
+    let method = &ep.method_name;
     if ep.module.is_empty() {
         format!("response = client.with_raw_response.{method}")
     } else {
@@ -3035,9 +3056,13 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
     // A header is no argument here: measured at Fern 5.20.0 (not re-measured at
     // the certified pair), Fern writes `client.probe()` for an endpoint whose only
     // parameter is a header, scalar or array, required or not.
+    // A required header is an argument the call needs, though Fern writes
+    // `client.probe()` for it, which raises `TypeError` (the
+    // `readme-abbreviated-call-arguments` departure).
     let has_arguments = !first.path_params.is_empty()
         || !first.query_params.is_empty()
-        || first.request_body.is_some();
+        || first.request_body.is_some()
+        || first.header_params.iter().any(|header| header.required);
     let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
     // A paginated endpoint's raw-response snippet walks its pager, as Fern's
@@ -3211,14 +3236,19 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace(
             "@@ENVIRONMENTS@@\n\n",
             &if ir.environment.is_some() {
-                // A lifted base-path parameter leads the constructor here too,
-                // as in every snippet (the `lifted-base-path-docs-examples`
-                // departure): without a default, Fern's call misses it.
-                let lifted: String = ir
-                    .client_path_parameters
-                    .iter()
-                    .map(|parameter| format!("    {},\n", client_path_parameter_example(parameter)))
-                    .collect();
+                // The constructor takes what the usage snippet passes it: a
+                // lifted base-path parameter (the `lifted-base-path-docs-examples`
+                // departure) and the credentials and required headers (the
+                // `readme-environment-constructor-arguments` departure). Fern
+                // passes the environment alone, which a required argument fails.
+                let lifted: String = documentation_client_example_args(
+                    &ir.auth,
+                    &ir.global_headers,
+                    &ir.client_path_parameters,
+                )
+                .into_iter()
+                .map(|arg| format!("    {arg},\n"))
+                .collect();
                 format!(
                     "## Environments\n\nThis SDK allows you to configure different environments for API requests.\n\n```python\nfrom @@PKG@@ import @@CLIENT@@\nfrom @@PKG@@.environment import @@CLIENT@@Environment\n\nclient = @@CLIENT@@(\n{lifted}    environment=@@ENV_DEFAULT@@,\n)\n```\n\n"
                 )
@@ -11636,9 +11666,21 @@ fn build_example_inner(
                 .filter(|pp| !reference && optional_path(pp)),
         );
     for pp in ordered_path_params {
-        if (reference || documentation) && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
-        {
-            continue;
+        // A list-typed path parameter is required, and every writer passes it
+        // (the `list-path-parameter-example` departure): Fern's Markdown leaves
+        // it out, a call that raises `TypeError`, and its docstring passes its
+        // string placeholder, which only a list of strings admits. A list of
+        // anything else takes a one-item list of its item's example.
+        if let TypeRef::List(inner) | TypeRef::Set(inner) = &pp.type_ref {
+            if !matches!(inner.as_ref(), TypeRef::Primitive(Prim::Str))
+                && !matches!(inner.as_ref(), TypeRef::List(item) | TypeRef::Set(item) if matches!(item.as_ref(), TypeRef::Primitive(Prim::Str)))
+            {
+                args.push((
+                    Some(pp.py_name.clone()),
+                    Example::List(vec![ctx.value(inner, Slot::Named(&pp.wire_name))]),
+                ));
+                continue;
+            }
         }
         let v = if matches!(
             pp.type_ref,
@@ -12242,27 +12284,11 @@ fn build_example_inner(
                         Example::Dict(vec![(f.wire_name.clone(), v)])
                     };
                 }
-                let example_name = if (reference
-                    || ep.request_body_required
-                    || ep.request_body_has_multipart_related)
-                    && f.example.is_some()
-                    && f.wire_name
-                        .starts_with(|character: char| character.is_ascii_digit())
-                {
-                    if reference {
-                        format!(
-                            "f_{}",
-                            naming::model_field_name(&f.wire_name)
-                                .rsplit('_')
-                                .next()
-                                .unwrap_or(&f.py_name)
-                        )
-                    } else {
-                        naming::model_field_name(&f.wire_name)
-                    }
-                } else {
-                    f.py_name.clone()
-                };
+                // The parameter's own name, `_5g_mm_cause_value` for
+                // `5gMmCauseValue`: Fern's examples pass `f_5g_mm_cause_value`
+                // (`f_value` in `reference.md`), which the method does not take
+                // (the `digit-leading-property-example-keyword` departure).
+                let example_name = f.py_name.clone();
                 // An optional field whose example narrows to an empty model is
                 // no argument, as a nested one is (see `example_call_args`).
                 if !f.spec_required && matches!(&v, Example::Call(_, args) if args.is_empty()) {
@@ -12713,14 +12739,17 @@ fn documentation_client_example_args(
                 // string, and the certified pair leaves such a header out of
                 // the construction (measured in
                 // docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/).
-                .filter(|header| {
-                    header.required()
-                        && matches!(
-                            header.py_type(),
-                            HeaderType::Str | HeaderType::Date | HeaderType::DateTime
-                        )
-                })
-                .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
+                // A required boolean, numeric or array header is passed with
+                // the typed example the docstrings give it (the
+                // `readme-constructor-required-header` departure): Fern leaves it
+                // out, a construction that raises `TypeError`.
+                .filter(|header| header.required())
+                .map(|header| match header.py_type() {
+                    HeaderType::Str | HeaderType::Date | HeaderType::DateTime => {
+                        format!("{}=\"<{}>\"", header.py_name, header.wire_name)
+                    }
+                    _ => global_header_example(header),
+                }),
         )
         .fold(Vec::new(), |mut args: Vec<String>, arg| {
             // Each keyword once (the `repeated-credential-example-keyword`
@@ -14858,10 +14887,12 @@ mod tests {
             reference.contains("**probe_param:** `typing.List[str]`"),
             "{reference}"
         );
-        // And the abbreviated README calls take no `...` for it.
+        // The abbreviated README calls elide the required header as any
+        // argument (`readme-abbreviated-call-arguments`): Fern's `client.probe()`
+        // misses it.
         let readme = file(&files, "README.md");
-        assert!(readme.contains("client.probe()"), "{readme}");
-        assert!(!readme.contains("client.probe(...)"), "{readme}");
+        assert!(readme.contains("client.probe(...)"), "{readme}");
+        assert!(!readme.contains("client.probe()"), "{readme}");
     }
 
     #[test]
@@ -18460,7 +18491,8 @@ mod tests {
             .expect("referenced request has an executable example")
             .join("\n");
         assert!(executable.contains("eps_bearer_setup=[\"epsBearerSetup\", \"epsBearerSetup\"]"));
-        assert!(executable.contains("f_5g_mm_cause_value=0"));
+        assert!(executable.contains("_5g_mm_cause_value=0"));
+        assert!(!executable.contains("f_5g_mm_cause_value"));
 
         let mut ctx = example_ctx(&types, &[], &auth);
         let reference = build_documentation_example(
@@ -18468,7 +18500,11 @@ mod tests {
         )
         .expect("referenced request has a reference example")
         .join("\n");
-        assert!(reference.contains("f_value=0"), "{reference}");
+        assert!(
+            reference.contains("    _5g_mm_cause_value=0,"),
+            "{reference}"
+        );
+        assert!(!reference.contains("f_value"), "{reference}");
         assert!(reference.contains("\"epsBearerSetup\""), "{reference}");
 
         ep.request_body_required = false;
@@ -21403,7 +21439,9 @@ mod snippet_rendering_tests {
     }
 
     #[test]
-    fn markdown_constructions_pass_only_the_string_client_headers() {
+    fn markdown_constructions_pass_every_required_client_header_typed() {
+        // Fern's Markdown passes only the string header; the typed ones are
+        // required too (`readme-constructor-required-header`).
         let ir = ir("snippet-rendering");
         assert_eq!(
             super::documentation_client_example_args(
@@ -21411,11 +21449,17 @@ mod snippet_rendering_tests {
                 &ir.global_headers,
                 &ir.client_path_parameters
             ),
-            ["tenant_code=\"<X-Tenant-Code>\""]
+            [
+                "strict_mode=True",
+                "tenant_code=\"<X-Tenant-Code>\"",
+                "shift_number=1",
+                "tide_metres=1.1"
+            ]
         );
         for name in ["README.md", "reference.md"] {
             let text = file(&ir, name);
             assert_contains(&text, "    tenant_code=\"<X-Tenant-Code>\",\n");
+            assert_contains(&text, "    strict_mode=True,\n");
             assert!(!text.contains("strict_mode=\"<"), "{text}");
             assert!(!text.contains("shift_number=\"<"), "{text}");
         }

@@ -66,3 +66,19 @@ indentation, and a missing source document still fail. The unit test
 `non_string_client_header_examples_admit_only_the_declared_type` holds those
 cases; the measurement's crozier-e2e journey compares the whole tree with this
 departure applied and fails an unexplained byte beside it.
+
+## One-value `typing.Literal` headers (Fern CLI 5.200.0 / fern-python-sdk 5.41.25)
+
+A promoted string header with a `default` is typed `typing.Literal["<default>"]`
+by the constructor. The parameter-lowering measurement
+`docs/fern-measurements/parameter-lowering/header-default-literal/fern-expected`
+declares `X-Book` (`default: general`) and `X-Ledger-Mode` (`default: draft`);
+its `src/fern/client.py` types them `book: typing.Optional[typing.Literal["general"]]`
+and `ledger_mode: typing.Optional[typing.Literal["draft"]]` (lines 68 and 70),
+yet every client docstring example passes `book="YOUR_BOOK"` and
+`ledger_mode="YOUR_LEDGER_MODE"` (20 example lines across its root, `entries`
+and `health` clients). Neither string is a value the annotation admits, and the
+client sends it as the header. crozier passes the Literal's value
+(`book="general"`). The rule admits that line only where crozier's own client
+constructor declares exactly that one-value `typing.Literal` for the keyword,
+and its unit test rejects another value and another keyword.

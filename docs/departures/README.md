@@ -197,7 +197,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 34 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 40 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -322,6 +322,15 @@ when the two differ.
 - **Why:** The documented call fails Python compilation with an invalid decimal literal and contradicts the generated SDK method, which imports and binds correctly.
 - **Evidence:** [`docs/departures/evidence/digit-leading-method-reference-identifiers.md`](../../docs/departures/evidence/digit-leading-method-reference-identifiers.md)
 
+### `digit-leading-property-example-keyword`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A request-body property whose name starts with a digit (`5gMmCauseValue`) and that declares an example: the argument passing it in the operation's client docstring examples and its `reference.md` worked call.
+- **Fern writes:** `f_5g_mm_cause_value=0` in the docstring and `f_value=0` in `reference.md`, although the method's parameter is `_5g_mm_cause_value`.
+- **crozier writes:** `_5g_mm_cause_value=0`, the parameter the method declares, with the same value. Every other byte of the line is retained.
+- **Why:** The documented call does not bind: the method takes no `f_5g_mm_cause_value` or `f_value`, so Python raises `TypeError` for the unexpected keyword.
+- **Evidence:** [`docs/departures/evidence/digit-leading-property-example-keyword.md`](../../docs/departures/evidence/digit-leading-property-example-keyword.md)
+
 ### `docstring-literal-dollar-escape`
 
 - **Kind:** `fern-defect`
@@ -403,6 +412,15 @@ when the two differ.
 - **Why:** The examples contradict the generated code: each method call raises `TypeError` for an unexpected keyword argument, a required lifted argument left out of the constructor raises `TypeError` for the missing one, and `reference.md` documents an argument the method does not have.
 - **Evidence:** [`docs/departures/evidence/lifted-base-path-docs-examples.md`](../../docs/departures/evidence/lifted-base-path-docs-examples.md)
 
+### `list-path-parameter-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A path parameter whose schema is an array: the worked calls of the operation in `README.md` and `reference.md`, and, where the array's items are not strings, its client docstring examples.
+- **Fern writes:** The Markdown calls leave the required argument out (`client.probe()`), and the docstring passes the parameter's string placeholder (`id="ID"`) for a `typing.Sequence[int]`.
+- **crozier writes:** Every call passes the argument: the string placeholder where the items are strings (a `str` is a `typing.Sequence[str]`), else a one-item list of the item's example (`id=[1]`). Every other byte of the call is retained.
+- **Why:** The Markdown calls do not bind, the required argument missing (`TypeError`), and the docstring's string is not a value a list of non-strings admits.
+- **Evidence:** [`docs/departures/evidence/list-path-parameter-example.md`](../../docs/departures/evidence/list-path-parameter-example.md)
+
 ### `minimal-worked-call-optional-parameter`
 
 - **Kind:** `usefulness`
@@ -433,9 +451,9 @@ when the two differ.
 ### `non-string-client-header-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A promoted client header the document declares boolean, integer or number, in the client construction of a client.py docstring example.
-- **Fern writes:** The constructor receives the YOUR_<NAME> string placeholder its string headers take, despite the header's bool, int or float annotation.
-- **crozier writes:** The constructor receives the generator's own placeholder for the declared type (True, 1 or 1.1); string headers keep their YOUR_<NAME> placeholder and the README and reference.md constructions stay matched.
+- **Trigger:** A promoted client header the document declares boolean, integer or number, a string header with a default that the constructor types as a one-value typing.Literal, or an array header, in the client construction of a client.py docstring example.
+- **Fern writes:** The constructor receives the YOUR_<NAME> string placeholder its string headers take, despite the header's bool, int, float, Literal or List annotation.
+- **crozier writes:** The constructor receives the generator's own placeholder for the declared type (True, 1 or 1.1), the Literal's one value, or a list of two copies of the item's placeholder (["probeParam", "probeParam"]); other string headers keep their YOUR_<NAME> placeholder and the README and reference.md constructions stay matched.
 - **Why:** A YOUR_* placeholder for a non-string type is a standing Fern defect: the certified constructor's annotations reject the string under strict validation, and the client sends it as the header's value. The typed placeholder validates and is sent as the declared value.
 - **Evidence:** [`docs/departures/evidence/non-string-client-header-example.md`](../../docs/departures/evidence/non-string-client-header-example.md)
 
@@ -475,6 +493,15 @@ when the two differ.
 - **Why:** Validating Fern's generated example value against the property's allOf schema rejects it; the replacement satisfies every constraint of it.
 - **Evidence:** [`docs/departures/evidence/pattern-narrowed-enum-example.md`](../../docs/departures/evidence/pattern-narrowed-enum-example.md)
 
+### `readme-abbreviated-call-arguments`
+
+- **Kind:** `fern-defect`
+- **Trigger:** The README's demonstrated operation takes a required header and no path, query or body argument: the abbreviated calls of its exception-handling, raw-response, retry and timeout snippets in `README.md`.
+- **Fern writes:** `client.probe()` and `client.probe(request_options={...})`, a call with no argument, as Fern writes for an operation taking none.
+- **crozier writes:** `client.probe(...)` and `client.probe(..., request_options={...})`, the elision Fern itself writes for an operation that takes arguments. Every other byte of the line is retained.
+- **Why:** The documented call does not bind: the method's required header argument is missing, so Python raises `TypeError`.
+- **Evidence:** [`docs/departures/evidence/readme-abbreviated-call-arguments.md`](../../docs/departures/evidence/readme-abbreviated-call-arguments.md)
+
 ### `readme-client-class-casing`
 
 - **Kind:** `fern-defect`
@@ -483,6 +510,33 @@ when the two differ.
 - **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`), and the async snippet imports only the names it uses.
 - **Why:** An example that imports a class the generated package does not define contradicts the generated code: the import fails, so the snippet cannot run.
 - **Evidence:** [`docs/departures/evidence/readme-client-class-casing.md`](../../docs/departures/evidence/readme-client-class-casing.md)
+
+### `readme-constructor-required-header`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A header on every operation, promoted to the client constructor, that is required and typed boolean, number or array: the client constructions of `README.md` and `reference.md`.
+- **Fern writes:** The construction leaves the header out (`client = FernApi()`), although the constructor requires it.
+- **crozier writes:** The construction passes it with the typed example the client docstrings give it (`probe_param=["probeParam", "probeParam"]`, `strict_mode=True`). Every other byte of the construction is retained.
+- **Why:** The documented construction does not bind: Python raises `TypeError` for the missing required keyword argument.
+- **Evidence:** [`docs/departures/evidence/readme-constructor-required-header.md`](../../docs/departures/evidence/readme-constructor-required-header.md)
+
+### `readme-environment-constructor-arguments`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A client constructor taking a required argument (a credential, a required header) and a server environment: the Environments snippet of `README.md`.
+- **Fern writes:** `client = FernApi(environment=FernApiEnvironment.DEFAULT,)`, the environment alone, although the constructor requires the credential.
+- **crozier writes:** The same constructor with the arguments the README's usage snippet passes it (`api_key="<value>"`) before the environment. Every other byte of the snippet is retained.
+- **Why:** The documented construction does not bind: Python raises `TypeError` for the missing required keyword argument before the client exists.
+- **Evidence:** [`docs/departures/evidence/readme-environment-constructor-arguments.md`](../../docs/departures/evidence/readme-environment-constructor-arguments.md)
+
+### `readme-escaped-method-call`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation whose generated method name is escaped with a trailing `_` (`all_`, `import_`): the calls of it in `README.md`'s exception-handling, raw-response, retry and timeout snippets.
+- **Fern writes:** `client.apis.all(...)`, the method name without its escape, which the client does not define.
+- **crozier writes:** `client.apis.all_(...)`, the method the client defines (through `with_raw_response` too). Every other byte of the line is retained.
+- **Why:** The documented call raises `AttributeError`: the client has no `all`. The usage snippet in the same README already calls `all_`.
+- **Evidence:** [`docs/departures/evidence/readme-escaped-method-call.md`](../../docs/departures/evidence/readme-escaped-method-call.md)
 
 ### `reference-anchor-follows-corrected-client`
 

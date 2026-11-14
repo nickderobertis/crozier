@@ -2023,7 +2023,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 48] = [
+pub const RULE_IDS: [&str; 54] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -2037,6 +2037,7 @@ pub const RULE_IDS: [&str; 48] = [
     "declared-examples-array-parameter-value",
     "declared-timestamp-property-example",
     "digit-leading-method-reference-identifiers",
+    "digit-leading-property-example-keyword",
     "docstring-literal-dollar-escape",
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
@@ -2046,6 +2047,7 @@ pub const RULE_IDS: [&str; 48] = [
     "init-type-checking-import-order",
     "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
+    "list-path-parameter-example",
     "minimal-worked-call-optional-parameter",
     "multipart-object-required-file-example",
     "nested-discriminator-flat-wire",
@@ -2054,7 +2056,11 @@ pub const RULE_IDS: [&str; 48] = [
     "optional-lowered-required-query-array-example",
     "optional-raw-body-example-argument",
     "pattern-narrowed-enum-example",
+    "readme-abbreviated-call-arguments",
     "readme-client-class-casing",
+    "readme-constructor-required-header",
+    "readme-environment-constructor-arguments",
+    "readme-escaped-method-call",
     "reference-anchor-follows-corrected-client",
     "reference-heading-escaped-method-name",
     "repeated-credential-example-keyword",
@@ -2123,6 +2129,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "digit-leading-method-reference-identifiers" => Rule {
             line: Some(digit_leading_method_reference_identifiers),
+            ..none
+        },
+        "digit-leading-property-example-keyword" => Rule {
+            line: Some(digit_leading_property_example_keyword),
             ..none
         },
         "emoji-tag-reference-identifiers" => Rule {
@@ -2222,6 +2232,27 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "init-type-checking-import-order" => Rule {
             region: Some(init_type_checking_import_order),
+            ..none
+        },
+        "readme-environment-constructor-arguments" => Rule {
+            region: Some(readme_environment_constructor_arguments),
+            ..none
+        },
+        "list-path-parameter-example" => Rule {
+            region: Some(list_path_parameter_call),
+            line: Some(list_path_parameter_docstring_value),
+            ..none
+        },
+        "readme-abbreviated-call-arguments" => Rule {
+            line: Some(readme_abbreviated_call_arguments),
+            ..none
+        },
+        "readme-constructor-required-header" => Rule {
+            region: Some(readme_constructor_required_header),
+            ..none
+        },
+        "readme-escaped-method-call" => Rule {
+            line: Some(readme_escaped_method_call),
             ..none
         },
         "lifted-base-path-docs-examples" => Rule {
@@ -3948,6 +3979,528 @@ fn lifted_argument<'l>(line: &'l str, names: &BTreeSet<String>) -> Option<&'l st
     names.contains(name).then_some(name)
 }
 
+/// The lines of the first `client = <Class>(` constructor after the `README.md`
+/// heading `heading` up to its `environment=` argument, or its closing `)`
+/// where it passes none: `(opener index, argument lines)`.
+fn readme_constructor<'a>(lines: &[&'a str], heading: &str) -> Option<(usize, Vec<&'a str>)> {
+    let start = lines.iter().position(|line| *line == heading)?;
+    let opener = lines[start..]
+        .iter()
+        .position(|line| line.starts_with("client = ") && line.ends_with('('))
+        .map(|offset| start + offset)?;
+    let arguments = lines[opener + 1..]
+        .iter()
+        .take_while(|line| line.starts_with("    ") && !line.starts_with("    environment="))
+        .copied()
+        .collect();
+    Some((opener, arguments))
+}
+
+/// `readme-environment-constructor-arguments`: `README.md`'s Environments
+/// snippet constructs the client with the environment alone, where crozier
+/// passes it the arguments the README's usage snippet passes its constructor
+/// (credentials and required headers) first. The region is crozier's run of
+/// such argument lines (a lifted base-path parameter's line is
+/// `lifted-base-path-docs-examples`'), each the very line the usage snippet's
+/// constructor holds and absent from Fern's snippet; Fern's side is the point
+/// before its `environment=` argument.
+fn readme_environment_constructor_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "README.md" {
+        return Ok(None);
+    }
+    const HEADING: &str = "## Environments";
+    let (Some((opener, arguments)), Some((fern_opener, fern_arguments)), Some((_, usage))) = (
+        readme_constructor(pair.crozier, HEADING),
+        readme_constructor(pair.fern, HEADING),
+        readme_constructor(pair.crozier, "## Usage"),
+    ) else {
+        return Ok(None);
+    };
+    let lifted = pair.context.crozier_lifted_parameters();
+    let Some(first) = arguments
+        .iter()
+        .position(|line| lifted_argument(line, lifted).is_none())
+    else {
+        return Ok(None);
+    };
+    // The usage constructor's arguments, each with its lines joined: it lays a
+    // list over several lines where the Environments snippet writes one.
+    let squeeze = |text: &str| {
+        text.chars()
+            .filter(|c| !c.is_whitespace())
+            .collect::<String>()
+    };
+    let mut usage_arguments: Vec<String> = Vec::new();
+    for line in &usage {
+        if line.starts_with("    ") && !line.starts_with("     ") {
+            usage_arguments.push(squeeze(line));
+        } else if let Some(last) = usage_arguments.last_mut() {
+            last.push_str(&squeeze(line));
+        }
+    }
+    let run: Vec<&str> = arguments[first..]
+        .iter()
+        .take_while(|line| {
+            usage_arguments.contains(&squeeze(line)) && !fern_arguments.contains(line)
+        })
+        .copied()
+        .collect();
+    if run.is_empty() || first + run.len() != arguments.len() {
+        return Ok(None);
+    }
+    let at = opener + 1 + first;
+    let fern_at = fern_opener + 1 + fern_arguments.len();
+    if pair
+        .fern
+        .get(fern_at)
+        .is_none_or(|line| !line.starts_with("    environment="))
+    {
+        return Ok(None);
+    }
+    Ok(Some(Region {
+        fern: fern_at..fern_at,
+        crozier: at..at + run.len(),
+    }))
+}
+
+/// The positional parameters of every method crozier's client modules define
+/// that are typed as lists (`id: typing.Sequence[int]`): its list-typed path
+/// parameters, each with its annotation.
+fn list_path_parameters(context: &Context) -> BTreeMap<String, String> {
+    let mut found = BTreeMap::new();
+    for text in context.client_modules().crozier.values() {
+        let mut rest = text.as_str();
+        while let Some(start) = rest.find("def ") {
+            rest = &rest[start + 4..];
+            let (Some(open), Some(close)) = (
+                rest.find('('),
+                rest.find(") ->").or_else(|| rest.find("):")),
+            ) else {
+                break;
+            };
+            if close < open {
+                continue;
+            }
+            let mut depth = 0usize;
+            let mut parameter = String::new();
+            for character in rest[open + 1..close].chars().chain([',']) {
+                match character {
+                    '[' | '(' => depth += 1,
+                    ']' | ')' => depth = depth.saturating_sub(1),
+                    _ => {}
+                }
+                if character == ',' && depth == 0 {
+                    let trimmed = parameter.trim();
+                    if trimmed == "*" {
+                        break;
+                    }
+                    if let Some((name, annotation)) = trimmed.split_once(": ") {
+                        if ["typing.Sequence[", "typing.List[", "typing.Set["]
+                            .iter()
+                            .any(|list| annotation.starts_with(list))
+                            && !annotation.contains('=')
+                        {
+                            found.insert(name.to_string(), annotation.to_string());
+                        }
+                    }
+                    parameter.clear();
+                } else {
+                    parameter.push(character);
+                }
+            }
+        }
+    }
+    found
+}
+
+/// `list-path-parameter-example` in a client docstring: the line passing a
+/// list-typed path parameter whose items are not strings, where Fern passes
+/// its string placeholder (`id="ID",`) and crozier a list (`id=[1],`).
+fn list_path_parameter_docstring_value(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !pair.rel.ends_with("client.py") || fern == crozier {
+        return false;
+    }
+    let argument = crozier.trim_start();
+    let indent = &crozier[..crozier.len() - argument.len()];
+    let Some((name, value)) = argument
+        .strip_suffix(',')
+        .and_then(|argument| argument.split_once('='))
+    else {
+        return false;
+    };
+    let Some(fern_value) = fern
+        .strip_prefix(&format!("{indent}{name}="))
+        .and_then(|value| value.strip_suffix(','))
+    else {
+        return false;
+    };
+    value.starts_with('[')
+        && value.ends_with(']')
+        && fern_value.starts_with('"')
+        && fern_value.ends_with('"')
+        && list_path_parameters(pair.context)
+            .get(name)
+            .is_some_and(|annotation| !annotation.ends_with("[str]"))
+}
+
+/// `list-path-parameter-example` in `README.md` and `reference.md`: a call that
+/// passes a list-typed path parameter where Fern's passes nothing. Crozier's
+/// call, without that argument's lines (and closed on its opening line when
+/// nothing else is left, `client.probe()`), is Fern's call at the nearest place.
+fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = list_path_parameters(pair.context);
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let lines = pair.crozier;
+    for (at, line) in lines.iter().enumerate() {
+        let argument = line.trim_start();
+        let indent = line.len() - argument.len();
+        let Some((name, value)) = argument.split_once('=') else {
+            continue;
+        };
+        if indent == 0 || !names.contains_key(name) {
+            continue;
+        }
+        let Some(opener) = (0..at).rev().find(|index| lines[*index].ends_with('(')) else {
+            continue;
+        };
+        if !opens_method_call(lines[opener].trim_start()) {
+            continue;
+        }
+        let opener_indent = lines[opener].len() - lines[opener].trim_start().len();
+        if indent != opener_indent + 4 {
+            continue;
+        }
+        // The argument's own lines: one, or a list laid out over several.
+        let argument_end = if value.ends_with(',') {
+            at
+        } else {
+            let Some(offset) = lines[at + 1..]
+                .iter()
+                .position(|line| line.len() - line.trim_start().len() == indent)
+            else {
+                continue;
+            };
+            at + 1 + offset
+        };
+        let Some(close) = lines[argument_end + 1..]
+            .iter()
+            .position(|line| line.len() - line.trim_start().len() == opener_indent)
+            .map(|offset| argument_end + 1 + offset)
+        else {
+            continue;
+        };
+        let mut reduced: Vec<String> = lines[opener..at]
+            .iter()
+            .chain(&lines[argument_end + 1..=close])
+            .map(|line| (*line).to_string())
+            .collect();
+        if reduced.len() == 2 && reduced[1].trim_start() == ")" {
+            reduced = vec![format!("{}){}", reduced[0], &reduced[1].trim_start()[1..])];
+        }
+        let fern_start = pair
+            .fern
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| {
+                pair.fern
+                    .get(*index..*index + reduced.len())
+                    .is_some_and(|window| {
+                        window
+                            .iter()
+                            .zip(&reduced)
+                            .all(|(left, right)| left == right)
+                    })
+            })
+            .map(|(index, _)| index)
+            .min_by_key(|index| index.abs_diff(opener));
+        let Some(fern_start) = fern_start else {
+            continue;
+        };
+        return Ok(Some(Region {
+            fern: fern_start..fern_start + reduced.len(),
+            crozier: opener..close + 1,
+        }));
+    }
+    Ok(None)
+}
+
+/// Whether `method`, as the first `def` of the name in the client module
+/// `text`, declares a parameter besides `self` without a default.
+fn method_requires_argument(text: &str, method: &str) -> bool {
+    let Some(start) = text
+        .find(&format!("    def {method}("))
+        .or_else(|| text.find(&format!("    async def {method}(")))
+    else {
+        return false;
+    };
+    let rest = &text[start..];
+    let Some(open) = rest.find('(') else {
+        return false;
+    };
+    let Some(close) = rest.find(") ->").or_else(|| rest.find("):")) else {
+        return false;
+    };
+    let mut depth = 0usize;
+    let mut parameters = vec![String::new()];
+    for character in rest[open + 1..close].chars() {
+        match character {
+            '[' | '(' => depth += 1,
+            ']' | ')' => depth = depth.saturating_sub(1),
+            ',' if depth == 0 => {
+                parameters.push(String::new());
+                continue;
+            }
+            _ => {}
+        }
+        if let Some(last) = parameters.last_mut() {
+            last.push(character);
+        }
+    }
+    parameters
+        .iter()
+        .map(|parameter| parameter.trim())
+        .any(|parameter| {
+            !parameter.is_empty()
+                && parameter != "self"
+                && parameter != "*"
+                && !parameter.starts_with("**")
+                && !parameter.contains('=')
+        })
+}
+
+/// `readme-abbreviated-call-arguments`: a `README.md` abbreviated call
+/// (exception handling, raw response, retries, timeouts) of a method that
+/// requires an argument Fern does not count, a required header: Fern writes
+/// `client.probe()` (or `client.probe(request_options={`), crozier
+/// `client.probe(...)` (`client.probe(..., request_options={`), its own
+/// elision for a call that takes arguments. crozier's client must define the
+/// method with a parameter that has no default.
+fn readme_abbreviated_call_arguments(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if pair.rel != "README.md" || fern == crozier {
+        return false;
+    }
+    let Some((head, tail)) = crozier
+        .split_once("(...)")
+        .map(|(head, tail)| (head, format!("(){tail}")))
+        .or_else(|| {
+            crozier
+                .split_once("(..., request_options={")
+                .map(|(head, tail)| (head, format!("(request_options={{{tail}")))
+        })
+    else {
+        return false;
+    };
+    if fern != format!("{head}{tail}") {
+        return false;
+    }
+    let Some(start) = head.find("client.") else {
+        return false;
+    };
+    let chain: Vec<&str> = head[start..].split('.').collect();
+    let Some((method, receiver)) = chain.split_last() else {
+        return false;
+    };
+    if !chain.iter().all(|part| python_identifier(part)) {
+        return false;
+    }
+    let groups: Vec<&str> = receiver[1..]
+        .iter()
+        .copied()
+        .filter(|part| *part != "with_raw_response")
+        .collect();
+    let module = if groups.is_empty() {
+        String::new()
+    } else {
+        format!("/{}", groups.join("/"))
+    };
+    pair.context
+        .client_modules()
+        .crozier
+        .iter()
+        .any(|(path, text)| {
+            // The root client is `src/<package>/client.py` (`client.py` flat); a
+            // group's ends in its own directories.
+            let called = if groups.is_empty() {
+                path == "client.py" || path.split('/').count() == 3
+            } else {
+                path.ends_with(&format!("{module}/client.py"))
+            };
+            called && method_requires_argument(text, method)
+        })
+}
+
+/// The keyword-only parameters of crozier's client constructors that take a
+/// boolean, a number or a list and have no default.
+fn required_typed_constructor_parameters(context: &Context) -> BTreeSet<String> {
+    let mut found = BTreeSet::new();
+    for text in context.client_modules().crozier.values() {
+        let mut rest = text.as_str();
+        while let Some(start) = rest.find("    def __init__(") {
+            rest = &rest[start + 17..];
+            let Some(close) = rest.find(") -> None:") else {
+                break;
+            };
+            for line in rest[..close].lines() {
+                let Some((name, annotation)) = line
+                    .trim()
+                    .strip_suffix(',')
+                    .and_then(|line| line.split_once(": "))
+                else {
+                    continue;
+                };
+                if !annotation.contains('=')
+                    && (["bool", "int", "float"].contains(&annotation)
+                        || annotation.starts_with("typing.List["))
+                {
+                    found.insert(name.to_string());
+                }
+            }
+        }
+    }
+    found
+}
+
+/// `readme-constructor-required-header`: a client construction in `README.md`
+/// or `reference.md` passing a required boolean, numeric or array header Fern's
+/// leaves out. crozier's construction, without those arguments' lines (and
+/// closed on its opening line when nothing else is left, `client = FernApi()`),
+/// is Fern's at the nearest place.
+fn readme_constructor_required_header(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let names = required_typed_constructor_parameters(pair.context);
+    if names.is_empty() {
+        return Ok(None);
+    }
+    let lines = pair.crozier;
+    for (opener, line) in lines.iter().enumerate() {
+        if !opens_constructor_call(line.trim_start()) {
+            continue;
+        }
+        let indent = line.len() - line.trim_start().len();
+        let Some(close) = lines[opener + 1..]
+            .iter()
+            .position(|line| line.len() - line.trim_start().len() == indent)
+            .map(|offset| opener + 1 + offset)
+        else {
+            continue;
+        };
+        let mut reduced: Vec<String> = vec![(*line).to_string()];
+        let mut removed = false;
+        let mut skipping = false;
+        for argument in &lines[opener + 1..close] {
+            let depth = argument.len() - argument.trim_start().len();
+            // A list laid over several lines closes at its own indent.
+            let closes = argument.trim_start().starts_with([']', ')', '}']);
+            if depth == indent + 4 && !closes {
+                skipping = argument
+                    .trim_start()
+                    .split_once('=')
+                    .is_some_and(|(name, _)| names.contains(name));
+                removed |= skipping;
+            }
+            if !skipping {
+                reduced.push((*argument).to_string());
+            }
+        }
+        if !removed {
+            continue;
+        }
+        reduced.push(lines[close].to_string());
+        if reduced.len() == 2 && reduced[1].trim_start() == ")" {
+            reduced = vec![format!("{})", reduced[0])];
+        }
+        let fern_start = pair
+            .fern
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| {
+                pair.fern
+                    .get(*index..*index + reduced.len())
+                    .is_some_and(|window| {
+                        window
+                            .iter()
+                            .zip(&reduced)
+                            .all(|(left, right)| left == right)
+                    })
+            })
+            .map(|(index, _)| index)
+            .min_by_key(|index| index.abs_diff(opener));
+        let Some(fern_start) = fern_start else {
+            continue;
+        };
+        if pair.fern[fern_start..fern_start + reduced.len()] == lines[opener..=close] {
+            continue;
+        }
+        return Ok(Some(Region {
+            fern: fern_start..fern_start + reduced.len(),
+            crozier: opener..close + 1,
+        }));
+    }
+    Ok(None)
+}
+
+/// `readme-escaped-method-call`: a `README.md` line calling a method the SDK
+/// escapes with a trailing `_` (`client.apis.all_(`, or through
+/// `with_raw_response`), where Fern's line is the same with the escape dropped
+/// (`client.apis.all(`), a name the client does not define. crozier's tree must
+/// define the escaped method in the called group's client or raw client.
+fn readme_escaped_method_call(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if pair.rel != "README.md" || fern == crozier {
+        return false;
+    }
+    let Some(start) = crozier.find("client.") else {
+        return false;
+    };
+    let call = &crozier[start..];
+    let Some(open) = call.find('(') else {
+        return false;
+    };
+    let chain: Vec<&str> = call[..open].split('.').collect();
+    let Some((method, receiver)) = chain.split_last() else {
+        return false;
+    };
+    let unescaped = method.trim_end_matches('_');
+    if method.len() == unescaped.len()
+        || !python_identifier(unescaped)
+        || !chain.iter().all(|part| python_identifier(part))
+    {
+        return false;
+    }
+    let groups: Vec<&str> = receiver[1..]
+        .iter()
+        .copied()
+        .filter(|part| *part != "with_raw_response")
+        .collect();
+    let module = if groups.is_empty() {
+        String::new()
+    } else {
+        format!("/{}", groups.join("/"))
+    };
+    let defined = pair
+        .context
+        .crozier_method_returns()
+        .keys()
+        .any(|(path, name)| {
+            name == method
+                && (path.ends_with(&format!("{module}/client.py"))
+                    || path.ends_with(&format!("{module}/raw_client.py")))
+        });
+    let renamed = format!(
+        "{}{}.{unescaped}{}",
+        &crozier[..start],
+        receiver.join("."),
+        &call[open..]
+    );
+    defined && fern == renamed
+}
+
 /// `repeated-credential-example-keyword`: in `README.md`, `reference.md` or a
 /// `client.py`, Fern's file is crozier's once every keyword argument line of a
 /// client constructor call (`client = <Class>(`) that repeats a keyword an
@@ -5428,9 +5981,6 @@ fn non_string_client_header_example(pair: &Pair<'_>, fern: &str, crozier: &str) 
     if !pair.rel.ends_with("client.py") || pair.rel.ends_with("raw_client.py") || fern == crozier {
         return false;
     }
-    let Some(source) = pair.context.source_document.as_ref() else {
-        return false;
-    };
     let argument = crozier.trim_start();
     let indent = &crozier[..crozier.len() - argument.len()];
     let Some((name, value)) = argument
@@ -5439,25 +5989,62 @@ fn non_string_client_header_example(pair: &Pair<'_>, fern: &str, crozier: &str) 
     else {
         return false;
     };
+    if fern != format!("{indent}{name}=\"YOUR_{}\",", name.to_uppercase()) {
+        return false;
+    }
+    // A header crozier's constructor types as a one-value `typing.Literal` takes
+    // that value, which the placeholder is not.
+    if let Some(literal) = value
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
+        .filter(|literal| !literal.contains(['"', '\\']))
+    {
+        let annotation = format!("typing.Literal[\"{literal}\"]");
+        return pair
+            .context
+            .client_modules()
+            .crozier
+            .values()
+            .any(|module| {
+                module.contains(&format!("        {name}: {annotation},"))
+                    || module.contains(&format!(
+                        "        {name}: typing.Optional[{annotation}] = None,"
+                    ))
+            });
+    }
+    // An array header crozier's constructor types `typing.List[...]` takes a
+    // list, which the placeholder is not.
+    if value.starts_with('[') && value.ends_with(']') {
+        return pair
+            .context
+            .client_modules()
+            .crozier
+            .values()
+            .any(|module| {
+                module.contains(&format!("        {name}: typing.List["))
+                    || module.contains(&format!("        {name}: typing.Optional[typing.List["))
+            });
+    }
     let declared = match value {
         "True" => "boolean",
         "1" => "integer",
         "1.1" => "number",
         _ => return false,
     };
-    fern == format!("{indent}{name}=\"YOUR_{}\",", name.to_uppercase())
-        && source_operations(source).any(|(_, parameters)| {
-            parameters.iter().any(|parameter| {
-                parameter.location == Some(crate::openapi::ParameterLocation::Header)
-                    && crate::naming::field_name(crate::ir::header_param_stem(&parameter.name))
-                        == name
-                    && parameter
-                        .schema
-                        .as_ref()
-                        .and_then(|schema| schema.ty.as_ref()?.primary())
-                        == Some(declared)
-            })
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    source_operations(source).any(|(_, parameters)| {
+        parameters.iter().any(|parameter| {
+            parameter.location == Some(crate::openapi::ParameterLocation::Header)
+                && crate::naming::field_name(crate::ir::header_param_stem(&parameter.name)) == name
+                && parameter
+                    .schema
+                    .as_ref()
+                    .and_then(|schema| schema.ty.as_ref()?.primary())
+                    == Some(declared)
         })
+    })
 }
 
 /// A `reference.md` heading link's range, `L<start>-L<end>`: the documented
@@ -5737,6 +6324,43 @@ fn reference_heading_escaped_method_name(pair: &Pair<'_>, fern: &str, crozier: &
                 }))
 }
 
+/// `digit-leading-property-example-keyword`: a worked call's argument line for
+/// a body property whose name starts with a digit (`5gMmCauseValue`), which the
+/// method takes as `_5g_mm_cause_value`. Fern's line passes
+/// `f_5g_mm_cause_value` (a client docstring) or `f_value` (`reference.md`,
+/// the name's last word), neither of which the method takes; crozier's passes
+/// the parameter, which crozier's client declares, with the same value.
+fn digit_leading_property_example_keyword(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !(DOCS_FILES.contains(&pair.rel) || pair.rel.ends_with("client.py")) || fern == crozier {
+        return false;
+    }
+    let argument = crozier.trim_start();
+    let indent = &crozier[..crozier.len() - argument.len()];
+    let Some((name, value)) = argument.split_once('=') else {
+        return false;
+    };
+    let Some(stem) = name
+        .strip_prefix('_')
+        .filter(|stem| stem.starts_with(|c: char| c.is_ascii_digit()))
+    else {
+        return false;
+    };
+    if !python_identifier(name) || !value.ends_with(',') {
+        return false;
+    }
+    let last = stem.rsplit('_').next().unwrap_or(stem);
+    let fern_names = [format!("f_{stem}"), format!("f_{last}")];
+    fern_names
+        .iter()
+        .any(|fern_name| fern == format!("{indent}{fern_name}={value}"))
+        && pair
+            .context
+            .client_modules()
+            .crozier
+            .values()
+            .any(|module| module.contains(&format!("        {name}: ")))
+}
+
 /// Only the underscore missing from a declared, generated method's documentation.
 fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
@@ -5831,6 +6455,34 @@ mod tests {
                     "{rel}: {crozier}"
                 );
             }
+        }
+        // A header crozier's constructor types as a one-value Literal takes that
+        // value; another value, or a header typed `str`, is no departure.
+        let literal = Context::from_sources(
+            [],
+            [(
+                "src/fern/client.py",
+                "class FernApi:\n    def __init__(\n        self,\n        *,\n        book: typing.Optional[typing.Literal[\"general\"]] = None,\n    ) -> None:\n        pass\n",
+            )],
+        );
+        assert!(line_holds(
+            rule,
+            "src/fern/client.py",
+            &literal,
+            "        book=\"YOUR_BOOK\",",
+            "        book=\"general\","
+        ));
+        for crozier in ["        book=\"draft\",", "        tenant=\"general\","] {
+            assert!(
+                !line_holds(
+                    rule,
+                    "src/fern/client.py",
+                    &literal,
+                    "        book=\"YOUR_BOOK\",",
+                    crozier
+                ),
+                "{crozier}"
+            );
         }
         // The value must be the declared type's placeholder, the line otherwise
         // unchanged, and the header a declared boolean or numeric one.
@@ -9244,6 +9896,304 @@ mod tests {
             "<details><summary><code>client.applicants.<a href=\"src/fern/applicants/client.py\">all</a>(...)</code></summary>",
             "<details><summary><code>client.applicants.<a href=\"applicants/client.py#L2-L3\">all_</a>(...)</code></summary>"
         ));
+    }
+
+    #[test]
+    fn the_environment_snippet_takes_only_the_usage_constructor_s_arguments() {
+        let readme = |environment_arguments: &str| {
+            format!(
+                "## Usage\n\n```python\nclient = FernApi(\n    api_key=\"<value>\",\n)\n```\n\n\
+                 ## Environments\n\n```python\nclient = FernApi(\n{environment_arguments}    environment=FernApiEnvironment.DEFAULT,\n)\n```\n"
+            )
+        };
+        let rule: RegionRule = readme_environment_constructor_arguments;
+        let fern = readme("");
+        let crozier = readme("    api_key=\"<value>\",\n");
+        let context = Context::default();
+        let region =
+            region_of(rule, "README.md", &fern, &crozier, &context).expect("the usage argument");
+        assert_eq!(region.crozier.len(), 1);
+        assert!(region.fern.is_empty());
+        for mutated in [
+            readme("    api_key=\"other\",\n"),
+            readme("    api_key=\"<value>\",\n    timeout=1,\n"),
+            crozier.replace("## Usage", "## Use"),
+        ] {
+            assert!(
+                region_of(rule, "README.md", &fern, &mutated, &context).is_none(),
+                "{mutated}"
+            );
+        }
+        assert!(region_of(rule, "reference.md", &fern, &crozier, &context).is_none());
+    }
+
+    #[test]
+    fn a_readme_call_departs_only_to_the_escaped_method_the_group_defines() {
+        let client = "class ApisClient:\n    def all_(self) -> None:\n        pass\n";
+        let context = Context::from_sources(
+            [],
+            [
+                ("src/fern/apis/client.py", client),
+                ("src/fern/apis/raw_client.py", client),
+            ],
+        );
+        let rule: LineRule = readme_escaped_method_call;
+        for (fern, crozier) in [
+            ("    client.apis.all(...)", "    client.apis.all_(...)"),
+            (
+                "response = client.apis.with_raw_response.all(...)",
+                "response = client.apis.with_raw_response.all_(...)",
+            ),
+            (
+                "client.apis.all(..., request_options={",
+                "client.apis.all_(..., request_options={",
+            ),
+        ] {
+            assert!(
+                line_holds(rule, "README.md", &context, fern, crozier),
+                "{crozier}"
+            );
+        }
+        let fern = "    client.apis.all(...)";
+        for mutated in [
+            "    client.apis.all_(x)",
+            "    client.apis.al_(...)",
+            "    client.other.all_(...)",
+            "    client.apis.list(...)",
+        ] {
+            assert!(
+                !line_holds(rule, "README.md", &context, fern, mutated),
+                "{mutated}"
+            );
+        }
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            fern,
+            "    client.apis.all_(...)"
+        ));
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &Context::default(),
+            fern,
+            "    client.apis.all_(...)"
+        ));
+    }
+
+    #[test]
+    fn an_abbreviated_call_departs_only_for_a_method_requiring_an_argument() {
+        let required = "class FernApi:\n    def probe(\n        self, *, probe_param: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
+        let optional = required.replace(
+            "probe_param: typing.Sequence[str],",
+            "probe_param: typing.Optional[str] = None,",
+        );
+        let context = Context::from_sources([], [("src/fern/client.py", required)]);
+        let rule: LineRule = readme_abbreviated_call_arguments;
+        for (fern, crozier) in [
+            ("    client.probe()", "    client.probe(...)"),
+            (
+                "response = client.with_raw_response.probe()",
+                "response = client.with_raw_response.probe(...)",
+            ),
+            (
+                "client.probe(request_options={",
+                "client.probe(..., request_options={",
+            ),
+        ] {
+            assert!(
+                line_holds(rule, "README.md", &context, fern, crozier),
+                "{crozier}"
+            );
+        }
+        let fern = "    client.probe()";
+        for mutated in [
+            "    client.probe(x)",
+            "    client.other(...)",
+            "    client.probe(...) ",
+        ] {
+            assert!(
+                !line_holds(rule, "README.md", &context, fern, mutated),
+                "{mutated}"
+            );
+        }
+        let optional = Context::from_sources([], [("src/fern/client.py", optional.as_str())]);
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &optional,
+            fern,
+            "    client.probe(...)"
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            fern,
+            "    client.probe(...)"
+        ));
+    }
+
+    #[test]
+    fn a_list_path_parameter_departs_only_where_crozier_passes_that_parameter() {
+        let client = "class UsersClient:\n    def get_users_id(\n        self, id: typing.Sequence[int], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n    def probe(\n        self, probe_param: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/users/client.py", client)]);
+        let call: RegionRule = list_path_parameter_call;
+        let fern = "# Reference\nclient.users.get_users_id()\nafter";
+        let crozier =
+            "# Reference\nclient.users.get_users_id(\n    id=[\n        1\n    ],\n)\nafter";
+        let region =
+            region_of(call, "reference.md", fern, crozier, &context).expect("the list argument");
+        assert_eq!((region.fern, region.crozier), (1..2, 1..6));
+        let fern = "client.users.probe(\n    other=1,\n)";
+        let crozier = "client.users.probe(\n    probe_param=\"probeParam\",\n    other=1,\n)";
+        assert!(region_of(call, "README.md", fern, crozier, &context).is_some());
+        for (fern, crozier) in [
+            // Not a list-typed path parameter, another change, not a method call.
+            (
+                "client.users.get_users_id()",
+                "client.users.get_users_id(\n    page=1,\n)",
+            ),
+            (
+                "client.users.get_users_id()",
+                "client.users.get_users_id(\n    id=[\n        1\n    ],\n    page=1,\n)",
+            ),
+            ("print()", "print(\n    id=[\n        1\n    ],\n)"),
+        ] {
+            assert!(
+                region_of(call, "README.md", fern, crozier, &context).is_none(),
+                "{crozier}"
+            );
+        }
+        assert!(region_of(
+            call,
+            "src/fern/users/client.py",
+            "client.users.get_users_id()",
+            "client.users.get_users_id(\n    id=[\n        1\n    ],\n)",
+            &context
+        )
+        .is_none());
+
+        let line: LineRule = list_path_parameter_docstring_value;
+        let rel = "src/fern/users/client.py";
+        assert!(line_holds(
+            line,
+            rel,
+            &context,
+            "            id=\"ID\",",
+            "            id=[1],"
+        ));
+        for (fern, crozier) in [
+            // A list of strings keeps Fern's placeholder; another value or name.
+            (
+                "            probe_param=\"probeParam\",",
+                "            probe_param=[\"probeParam\"],",
+            ),
+            ("            id=\"ID\",", "            id=1,"),
+            ("            page=\"ID\",", "            page=[1],"),
+        ] {
+            assert!(!line_holds(line, rel, &context, fern, crozier), "{crozier}");
+        }
+        assert!(!line_holds(
+            line,
+            "README.md",
+            &context,
+            "            id=\"ID\",",
+            "            id=[1],"
+        ));
+    }
+
+    #[test]
+    fn a_digit_leading_property_keyword_departs_only_to_the_declared_parameter() {
+        let client = "class ContextClient:\n    def update_sm_context(\n        self,\n        *,\n        _5g_mm_cause_value: typing.Optional[int] = OMIT,\n    ) -> None:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/context/client.py", client)]);
+        let rule: LineRule = digit_leading_property_example_keyword;
+        for (rel, fern) in [
+            (
+                "src/fern/context/client.py",
+                "            f_5g_mm_cause_value=0,",
+            ),
+            ("reference.md", "            f_value=0,"),
+        ] {
+            assert!(
+                line_holds(
+                    rule,
+                    rel,
+                    &context,
+                    fern,
+                    "            _5g_mm_cause_value=0,"
+                ),
+                "{rel}"
+            );
+        }
+        let fern = "            f_5g_mm_cause_value=0,";
+        for crozier in [
+            "            _5g_mm_cause_value=1,",
+            "            _5g_mm_cause=0,",
+            "        _5g_mm_cause_value=0,",
+            "            mm_cause_value=0,",
+        ] {
+            assert!(
+                !line_holds(rule, "reference.md", &context, fern, crozier),
+                "{crozier}"
+            );
+        }
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &Context::default(),
+            fern,
+            "            _5g_mm_cause_value=0,"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/types/model.py",
+            &context,
+            fern,
+            "            _5g_mm_cause_value=0,"
+        ));
+    }
+
+    #[test]
+    fn a_constructor_departs_only_for_its_required_typed_headers() {
+        let client = "class FernApi:\n    def __init__(\n        self,\n        *,\n        probe_param: typing.List[str],\n        tenant: str,\n        retries: typing.Optional[int] = None,\n    ) -> None:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/client.py", client)]);
+        let rule: RegionRule = readme_constructor_required_header;
+        let fern = "x\nclient = FernApi()\ny";
+        let crozier = "x\nclient = FernApi(\n    probe_param=[\n        \"probeParam\",\n        \"probeParam\"\n    ],\n)\ny";
+        let region = region_of(rule, "README.md", fern, crozier, &context)
+            .expect("the required list header");
+        assert_eq!((region.fern, region.crozier), (1..2, 1..7));
+        let fern = "client = FernApi(\n    tenant=\"<X-Tenant>\",\n)";
+        let crozier = "client = FernApi(\n    tenant=\"<X-Tenant>\",\n    probe_param=[\"probeParam\", \"probeParam\"],\n)";
+        assert!(region_of(rule, "reference.md", fern, crozier, &context).is_some());
+        for (fern, crozier) in [
+            // A string or optional parameter, another change, a method call.
+            (
+                "client = FernApi()",
+                "client = FernApi(\n    tenant=\"<X-Tenant>\",\n)",
+            ),
+            ("client = FernApi()", "client = FernApi(\n    retries=1,\n)"),
+            (
+                "client = FernApi()",
+                "client = FernApi(\n    probe_param=[],\n    retries=1,\n)",
+            ),
+            ("client.probe()", "client.probe(\n    probe_param=[],\n)"),
+        ] {
+            assert!(
+                region_of(rule, "README.md", fern, crozier, &context).is_none(),
+                "{crozier}"
+            );
+        }
+        assert!(region_of(
+            rule,
+            "src/fern/client.py",
+            "client = FernApi()",
+            "client = FernApi(\n    probe_param=[],\n)",
+            &context
+        )
+        .is_none());
     }
 
     #[test]
