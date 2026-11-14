@@ -2247,79 +2247,113 @@ UNSETTLED_FIELDS = (
     "follow_up",
 )
 SECONDS = re.compile(r"(0|[1-9][0-9]*)(\.[0-9]+)?")
+RELEASE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
+# A stage the bound cut short ran to it: its elapsed seconds come from the
+# stage's own trace, which starts a moment after the probe's timer, so they
+# read a few seconds under the bound, never far under it.
+UNSETTLED_REACH = 0.95
 
 
-def unsettled_record(name: str) -> dict[str, str] | None:
-    """The class `name`'s `unsettled.txt` fields in order, or `None` without one."""
-    path = REGISTRY / name / "unsettled.txt"
-    if not path.is_file():
-        return None
-    fields: dict[str, str] = {}
+class Unsettled(NamedTuple):
+    """A validated `unsettled.txt`: the pair the probe ran past its bound at,
+    each stage's elapsed seconds, the bound, why, and the follow-up."""
+
+    cli: str
+    sdk: str
+    check_seconds: float
+    generate_seconds: float
+    bound_seconds: float
+    reason: str
+    follow_up: str
+
+
+def record_fields(path: Path) -> tuple[list[str], dict[str, str]]:
+    """A `key: value` record's field names in order (a repeated one twice) and
+    its values."""
+    names, values = [], {}
     for line in path.read_text(encoding="utf-8").splitlines():
         name, _, value = line.partition(": ")
-        fields[name.removesuffix(":")] = value
-    return fields
+        names.append(name.removesuffix(":"))
+        values[name.removesuffix(":")] = value
+    return names, values
+
+
+def unsettled_record(name: str) -> tuple[Unsettled | None, list[str]]:
+    """The class `name`'s `unsettled.txt`, validated, and its problems. An
+    unsettled record is never a silent pass: one missing or repeating a field,
+    naming another pair, a stage that did not run to its bound, no reason or no
+    follow-up, or beside a refusal record that is at the pair, or that names no
+    release, is a problem and validates nothing."""
+    path = REGISTRY / name / "unsettled.txt"
+    where = f"docs/fern-refusals/{name}/unsettled.txt"
+    names, fields = record_fields(path)
+    if tuple(names) != UNSETTLED_FIELDS:
+        return None, [f"{where} carries {names}; it carries exactly {list(UNSETTLED_FIELDS)}, once each, in order"]
+    problems = []
+    if (fields["fern_cli_version"], fields["fern_python_sdk_version"]) != (FERN_CLI, FERN_PYTHON_SDK):
+        problems.append(
+            f"{where} names Fern CLI {fields['fern_cli_version']} / fern-python-sdk "
+            f"{fields['fern_python_sdk_version']}, not the certified pair {FERN_CLI} / {FERN_PYTHON_SDK}; "
+            "re-run `probe` at the pair and settle the class, or record why it is still unsettled"
+        )
+    bound = float(fields["bound_seconds"]) if SECONDS.fullmatch(fields["bound_seconds"]) else 0.0
+    if bound <= 0:
+        problems.append(f"{where}: bound_seconds must be the probe's positive per-stage bound in seconds")
+    for stage in ("check", "generate"):
+        seconds = fields[f"{stage}_seconds"]
+        if fields[f"{stage}_exit"] != "timeout" or not SECONDS.fullmatch(seconds):
+            problems.append(f"{where}: {stage}_exit must be `timeout` with {stage}_seconds its elapsed seconds")
+        elif bound > 0 and float(seconds) < bound * UNSETTLED_REACH:
+            problems.append(
+                f"{where}: {stage}_seconds {seconds} is short of the {fields['bound_seconds']}-second bound; "
+                "a stage the bound cut short runs to it"
+            )
+    for key in ("reason", "follow_up"):
+        if not fields[key].strip():
+            problems.append(f"{where}: {key} is empty; an unsettled class says why, and names its follow-up")
+    record = REGISTRY / name / "fern-refusal.txt"
+    recorded = record_fields(record)[1] if record.is_file() else {}
+    kept = (recorded.get("fern_cli_version", ""), recorded.get("fern_python_sdk_version", ""))
+    if not all(RELEASE.fullmatch(version) for version in kept):
+        problems.append(f"{where}: the class has no fern-refusal.txt naming the pair it last settled at")
+    elif kept == (FERN_CLI, FERN_PYTHON_SDK):
+        problems.append(f"{where}: its refusal record is at the certified pair, so the class is settled; remove it")
+    if problems:
+        return None, problems
+    return Unsettled(
+        kept[0],
+        kept[1],
+        float(fields["check_seconds"]),
+        float(fields["generate_seconds"]),
+        bound,
+        fields["reason"],
+        fields["follow_up"],
+    ), []
+
+
+def unsettled_classes() -> tuple[dict[str, Unsettled], list[str]]:
+    """Every class validly unsettled at the certified pair (its record naming the
+    pair its kept refusal record was taken at), and every problem found."""
+    valid, problems = {}, []
+    for directory in sorted(path for path in REGISTRY.iterdir() if (path / "unsettled.txt").is_file()):
+        record, found = unsettled_record(directory.name)
+        problems += found
+        if record is not None:
+            valid[directory.name] = record
+    return valid, problems
 
 
 def unsettled_problems() -> list[str]:
-    """Every `unsettled.txt` records a probe the certified pair cut short: exactly
-    its fields, the pair itself, both stages `timeout` with their seconds within
-    the bound's reach, a reason and the follow-up that settles it, beside a
-    refusal record from an earlier pair. An unsettled record is never a silent
-    pass: one missing any of these is a problem."""
-    problems = []
-    for directory in sorted(path for path in REGISTRY.iterdir() if (path / "unsettled.txt").is_file()):
-        name, fields = directory.name, unsettled_record(directory.name) or {}
-        where = f"docs/fern-refusals/{name}/unsettled.txt"
-        if tuple(fields) != UNSETTLED_FIELDS:
-            problems.append(f"{where} carries {list(fields)}; it carries exactly {list(UNSETTLED_FIELDS)}, in order")
-            continue
-        if (fields["fern_cli_version"], fields["fern_python_sdk_version"]) != (FERN_CLI, FERN_PYTHON_SDK):
-            problems.append(
-                f"{where} names Fern CLI {fields['fern_cli_version']} / fern-python-sdk "
-                f"{fields['fern_python_sdk_version']}, not the certified pair {FERN_CLI} / {FERN_PYTHON_SDK}; "
-                "re-run `probe` at the pair and settle the class, or record why it is still unsettled"
-            )
-        for stage in ("check", "generate"):
-            if fields[f"{stage}_exit"] != "timeout" or not SECONDS.fullmatch(fields[f"{stage}_seconds"]):
-                problems.append(f"{where}: {stage}_exit must be `timeout` with {stage}_seconds its elapsed seconds")
-        if not SECONDS.fullmatch(fields["bound_seconds"]):
-            problems.append(f"{where}: bound_seconds must be the probe's per-stage bound in seconds")
-        for key in ("reason", "follow_up"):
-            if not fields[key].strip():
-                problems.append(f"{where}: {key} is empty; an unsettled class says why, and names its follow-up")
-        record = REGISTRY / name / "fern-refusal.txt"
-        if not record.is_file():
-            problems.append(f"{where}: the class has no fern-refusal.txt from the pair it last settled at")
-            continue
-        recorded = (
-            dict(line.split(": ", 1) for line in record.read_text(encoding="utf-8").splitlines() if ": " in line)
-            if record.is_file()
-            else {}
-        )
-        if (recorded.get("fern_cli_version"), recorded.get("fern_python_sdk_version")) == (FERN_CLI, FERN_PYTHON_SDK):
-            problems.append(f"{where}: its refusal record is at the certified pair, so the class is settled; remove it")
-    return problems
+    return unsettled_classes()[1]
 
 
 def unsettled_pair_lines() -> dict[str, str]:
     """Each class validly unsettled at the certified pair, mapped to the first
     line of the logs taken at the pair its refusal record names."""
-    if unsettled_problems():
-        return {}
-    lines = {}
-    for directory in REGISTRY.iterdir():
-        if (directory / "unsettled.txt").is_file():
-            recorded = dict(
-                line.split(": ", 1)
-                for line in (directory / "fern-refusal.txt").read_text(encoding="utf-8").splitlines()
-                if ": " in line
-            )
-            lines[directory.name] = (
-                f"fern-refusals: Fern CLI {recorded['fern_cli_version']}, "
-                f"fernapi/fern-python-sdk {recorded['fern_python_sdk_version']}\n"
-            )
-    return lines
+    return {
+        name: f"fern-refusals: Fern CLI {record.cli}, fernapi/fern-python-sdk {record.sdk}\n"
+        for name, record in unsettled_classes()[0].items()
+    }
 
 
 def dispositions_path() -> Path:

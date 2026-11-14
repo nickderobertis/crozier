@@ -313,9 +313,26 @@ class Drift(unittest.TestCase):
         record.write_text("\n".join(text) + "\n", encoding="utf-8")
         self.assert_check_fails_naming("its refusal record is at the certified pair, so the class is settled")
 
-    def test_an_unsettled_stage_must_have_run_past_its_bound(self) -> None:
+    def test_an_unsettled_stage_must_have_run_to_its_bound(self) -> None:
         self.edit_unsettled("check_exit: timeout", "check_exit: 1")
         self.assert_check_fails_naming("check_exit must be `timeout` with check_seconds its elapsed seconds")
+        self.edit_unsettled("check_exit: 1", "check_exit: timeout")
+        line = self.unsettled_field("generate_seconds")
+        self.edit_unsettled(line, "generate_seconds: 12.5")
+        self.assert_check_fails_naming("generate_seconds 12.5 is short of the 900-second bound")
+        self.edit_unsettled("generate_seconds: 12.5", line)
+        self.edit_unsettled("bound_seconds: 900", "bound_seconds: 0")
+        self.assert_check_fails_naming("bound_seconds must be the probe's positive per-stage bound")
+
+    def test_an_unsettled_record_repeating_a_field_or_beside_an_unversioned_record_fails(self) -> None:
+        line = self.unsettled_field("reason")
+        self.edit_unsettled(line + "\n", line + "\n" + line + "\n")
+        self.assert_check_fails_naming("heap-exhausted/unsettled.txt carries", "once each, in order")
+        self.edit_unsettled(line + "\n" + line + "\n", line + "\n")
+        record = self.registry / "heap-exhausted" / "fern-refusal.txt"
+        text = record.read_text(encoding="utf-8").splitlines()
+        record.write_text("\n".join(text[1:]) + "\n", encoding="utf-8")
+        self.assert_check_fails_naming("the class has no fern-refusal.txt naming the pair it last settled at")
 
     def test_a_row_short_of_the_header_fails_naming_its_line(self) -> None:
         table = rows(self.registry / "classes.tsv")

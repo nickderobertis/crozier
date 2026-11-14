@@ -20,9 +20,15 @@ the name Fern looks up is not defined in the file.
 Calling the documented method on the real generated SDK fails:
 
 ```text
-$ .venv/bin/python -B docs/departures/evidence/reference-heading-escaped-method-name.py call tests/fixtures/apideck.com-ats/expected/src
-client.applicants.all_ resolves: True
-client.applicants.all raises AttributeError: 'ApplicantsClient' object has no attribute 'all'
+$ python -B -c "
+import sys; sys.path.insert(0, 'tests/fixtures/apideck.com-ats/expected/src')
+from fern import FernApi
+client = FernApi(api_key='k', apideck_consumer_id='c', apideck_app_id='a')
+print('all_:', callable(client.applicants.all_))
+client.applicants.all
+"
+all_: True
+AttributeError: 'ApplicantsClient' object has no attribute 'all'. Did you mean: 'all_'?
 ```
 
 The census over every committed reference tree at this pair (1194 trees: the
@@ -32,10 +38,24 @@ an anchor. By name: `all` 59, `import` 3, and `uuid`, `map`, `long`, `int`,
 `float`, `bool` and `async` 2 each, `del` 1. Overlay trees are counted by the
 files they carry; compared whole, as the gate rebuilds them, they hold more.
 
+The census reads each tree's `reference.md` headings and, for each, the methods
+of the first class not named `Async…` in the linked client (by `ast`), and
+counts a heading whose name the client lacks but defines with a trailing `_`:
+
 ```text
-$ python3 docs/departures/evidence/reference-heading-escaped-method-name.py census <every tree holding a reference.md>
-…
-headings naming a method the client defines only with a trailing `_`: 77
+$ find tests/fixtures docs -name reference.md \( -path '*expected*' -o -path '*fern-reference*' \) | python3 -c '
+import ast, re, sys, pathlib
+n = 0
+for ref in map(pathlib.Path, sys.stdin.read().split()):
+    for href, name in re.findall(r"<summary><code>client\.[\w.]*<a href=\"([^\"#]*)[^\"]*\">(\w+)</a>", ref.read_text()):
+        client = ref.parent / href
+        if not client.is_file():
+            continue
+        cls = next((c for c in ast.parse(client.read_text()).body if isinstance(c, ast.ClassDef) and not c.name.startswith("Async")), None)
+        names = {m.name for m in getattr(cls, "body", []) if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))}
+        n += name not in names and name + "_" in names
+print(n)'
+77
 ```
 
 The departures ledger pins 75 occurrences in the trees the gates compare. Seven

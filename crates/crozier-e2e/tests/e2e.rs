@@ -23828,20 +23828,37 @@ fn unsettled_record_failures(id: &str, text: &str) -> Vec<String> {
             value("fern_python_sdk_version")
         ));
     }
-    let seconds = |text: &str| text.parse::<f64>().is_ok_and(|seconds| seconds >= 0.0);
+    // A stage the bound cut short ran to it; its trace starts a moment after the
+    // probe's timer, so it reads a few seconds under the bound, never far under.
+    const REACH: f64 = 0.95;
+    let seconds = |name: &str| {
+        value(name)
+            .parse::<f64>()
+            .ok()
+            .filter(|seconds| seconds.is_finite())
+    };
+    let bound = seconds("bound_seconds").filter(|bound| *bound > 0.0);
+    if bound.is_none() {
+        failures.push(format!(
+            "{id}: unsettled.txt's bound_seconds must be the probe's positive bound in seconds"
+        ));
+    }
     for stage in ["check", "generate"] {
+        let elapsed = seconds(&format!("{stage}_seconds"));
         if value(&format!("{stage}_exit")) != "timeout"
-            || !seconds(value(&format!("{stage}_seconds")))
+            || elapsed.is_none_or(|elapsed| elapsed < 0.0)
         {
             failures.push(format!(
                 "{id}: unsettled.txt's {stage}_exit must be `timeout`, with {stage}_seconds its elapsed seconds"
             ));
+        } else if let (Some(elapsed), Some(bound)) = (elapsed, bound) {
+            if elapsed < bound * REACH {
+                failures.push(format!(
+                    "{id}: unsettled.txt's {stage}_seconds {elapsed} is short of the {bound}-second bound; \
+                     a stage the bound cut short runs to it"
+                ));
+            }
         }
-    }
-    if !seconds(value("bound_seconds")) {
-        failures.push(format!(
-            "{id}: unsettled.txt's bound_seconds must be the probe's bound in seconds"
-        ));
     }
     for name in ["reason", "follow_up"] {
         if value(name).is_empty() {
@@ -25955,6 +25972,27 @@ fn fern_refusal_gate_holds_an_unsettled_class_only_to_a_complete_record() {
             earlier.to_string(),
             complete.replace("check_exit: timeout", "check_exit: 1"),
             Some("unsettled.txt's check_exit must be `timeout`"),
+        ),
+        (
+            "a stage short of the bound",
+            earlier.to_string(),
+            complete.replace("generate_seconds: 898.8", "generate_seconds: 12.5"),
+            Some("unsettled.txt's generate_seconds 12.5 is short of the 900-second bound"),
+        ),
+        (
+            "no bound",
+            earlier.to_string(),
+            complete.replace("bound_seconds: 900", "bound_seconds: 0"),
+            Some("unsettled.txt's bound_seconds must be the probe's positive bound"),
+        ),
+        (
+            "a repeated field",
+            earlier.to_string(),
+            complete.replace(
+                "reason: both stages ran past the bound\n",
+                "reason: both stages ran past the bound\nreason: again\n",
+            ),
+            Some("unsettled.txt carries fields"),
         ),
     ] {
         let scratch = tempfile::tempdir().expect("tempdir");

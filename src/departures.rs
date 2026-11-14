@@ -317,9 +317,44 @@ pub struct Context {
     request_examples: OnceLock<RequestExampleContext>,
     empty_namespace: OnceLock<EmptyNamespace>,
     crozier_paths: OnceLock<BTreeSet<String>>,
-    /// The two trees' files, `(reference, crozier)`, of a context built from
-    /// sources rather than read from roots.
-    sources: Option<(BTreeMap<String, String>, BTreeMap<String, String>)>,
+    client_modules: OnceLock<ClientModules>,
+}
+
+/// One of the two trees a file pair belongs to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Tree {
+    /// The reference (Fern's) tree.
+    Reference,
+    /// crozier's tree.
+    Crozier,
+}
+
+/// Every `client.py` module of the two trees, by path, with its text: what
+/// `reference.md` links and anchors.
+#[derive(Debug, Default)]
+struct ClientModules {
+    reference: BTreeMap<String, String>,
+    crozier: BTreeMap<String, String>,
+}
+
+impl ClientModules {
+    fn of(&self, tree: Tree) -> &BTreeMap<String, String> {
+        match tree {
+            Tree::Reference => &self.reference,
+            Tree::Crozier => &self.crozier,
+        }
+    }
+}
+
+/// The `client.py` modules among `files`, by path.
+fn client_modules<'a>(
+    files: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeMap<String, String> {
+    files
+        .into_iter()
+        .filter(|(path, _)| path.ends_with("client.py"))
+        .map(|(path, text)| (path.to_string(), text.to_string()))
+        .collect()
 }
 
 /// The files of an empty-namespace package (`_`) Fern wrote one level too high,
@@ -374,42 +409,51 @@ impl Context {
                     .map(|(path, _)| (*path).to_string())
                     .collect::<BTreeSet<_>>(),
             ),
-            sources: Some((owned(&reference), owned(&crozier))),
+            client_modules: OnceLock::from(ClientModules {
+                reference: client_modules(reference.iter().copied()),
+                crozier: client_modules(crozier.iter().copied()),
+            }),
         }
     }
 
-    /// Whether the reference tree (`reference`) or crozier's holds the file `rel`.
-    fn tree_holds(&self, reference: bool, rel: &str) -> bool {
-        match (&self.sources, &self.roots) {
-            (Some((fern, crozier)), _) => {
-                (if reference { fern } else { crozier }).contains_key(rel)
+    /// The two trees' `client.py` modules, read from the roots on first use.
+    fn client_modules(&self) -> &ClientModules {
+        self.client_modules.get_or_init(|| {
+            let Some((reference, crozier)) = self.roots.as_ref() else {
+                return ClientModules::default();
+            };
+            let read = |root: &std::path::Path| {
+                let files: Vec<(String, String)> = crate::parity::walk_files(root)
+                    .unwrap_or_default()
+                    .into_iter()
+                    .filter(|rel| rel.ends_with("client.py"))
+                    .filter_map(|rel| {
+                        Some((rel.clone(), std::fs::read_to_string(root.join(&rel)).ok()?))
+                    })
+                    .collect();
+                client_modules(
+                    files
+                        .iter()
+                        .map(|(rel, text)| (rel.as_str(), text.as_str())),
+                )
+            };
+            ClientModules {
+                reference: read(reference),
+                crozier: read(crozier),
             }
-            (None, Some((fern, crozier))) => {
-                (if reference { fern } else { crozier }).join(rel).is_file()
-            }
-            (None, None) => false,
-        }
+        })
     }
 
-    /// The first and last lines of `method` in the sync client of the module
-    /// `rel` of the reference tree (`reference`) or crozier's, as crozier's
-    /// `reference.md` anchors them.
-    fn client_method_lines(
-        &self,
-        reference: bool,
-        rel: &str,
-        method: &str,
-    ) -> Option<(usize, usize)> {
-        let text = match (&self.sources, &self.roots) {
-            (Some((fern, crozier)), _) => {
-                (if reference { fern } else { crozier }).get(rel)?.clone()
-            }
-            (None, Some((fern, crozier))) => {
-                std::fs::read_to_string((if reference { fern } else { crozier }).join(rel)).ok()?
-            }
-            (None, None) => return None,
-        };
-        crate::emit::sync_client_method_lines(&text, method)
+    /// Whether `tree` holds the client module `rel`.
+    fn tree_holds(&self, tree: Tree, rel: &str) -> bool {
+        self.client_modules().of(tree).contains_key(rel)
+    }
+
+    /// The first and last lines of `method` in the sync client of `tree`'s
+    /// module `rel`, as crozier's `reference.md` anchors them.
+    fn client_method_lines(&self, tree: Tree, rel: &str, method: &str) -> Option<(usize, usize)> {
+        let text = self.client_modules().of(tree).get(rel)?;
+        crate::emit::sync_client_method_lines(text, method)
     }
 
     /// The context of the trees at `reference` and `crozier`, read only if a
@@ -1633,13 +1677,6 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
 
 /// Every `.py` file under `root` as `(relative path, text)`; a module that
 /// cannot be read is left out.
-fn owned(files: &[(&str, &str)]) -> BTreeMap<String, String> {
-    files
-        .iter()
-        .map(|(path, text)| ((*path).to_string(), (*text).to_string()))
-        .collect()
-}
-
 fn python_sources(root: &std::path::Path) -> Vec<(String, String)> {
     crate::parity::walk_files(root)
         .unwrap_or_default()
@@ -5464,11 +5501,11 @@ fn empty_namespace_reference_anchor(pair: &Pair<'_>, fern: &str, crozier: &str) 
         && bare == fern
         && pair
             .context
-            .client_method_lines(true, path, method)
+            .client_method_lines(Tree::Reference, path, method)
             .is_none()
         && pair
             .context
-            .client_method_lines(false, path, method)
+            .client_method_lines(Tree::Crozier, path, method)
             .is_some_and(|(start, end)| format!("L{start}-L{end}") == range)
 }
 
@@ -5510,15 +5547,15 @@ fn without_verified_ranges<'a>(
     else {
         return (Cow::Borrowed(fern), Cow::Borrowed(crozier));
     };
-    let range = |reference: bool| {
+    let range = |tree: Tree| {
         pair.context
-            .client_method_lines(reference, &path, &method)
+            .client_method_lines(tree, &path, &method)
             .map(|(start, end)| format!("L{start}-L{end}"))
     };
     if path != crozier_path
         || method != crozier_method
-        || range(true).as_deref() != Some(fern_range.as_str())
-        || range(false).as_deref() != Some(crozier_range.as_str())
+        || range(Tree::Reference).as_deref() != Some(fern_range.as_str())
+        || range(Tree::Crozier).as_deref() != Some(crozier_range.as_str())
     {
         return (Cow::Borrowed(fern), Cow::Borrowed(crozier));
     }
@@ -5549,12 +5586,14 @@ fn flat_link_in_fern_form(pair: &Pair<'_>, fern: &str, crozier: &str) -> Option<
     let (module, range) = crozier_href.split_once('#')?;
     let method = rest.split_once("</a>")?.0;
     let (package, packaged) = fern_href.strip_prefix("src/")?.split_once('/')?;
-    let lines = pair.context.client_method_lines(false, module, method)?;
+    let lines = pair
+        .context
+        .client_method_lines(Tree::Crozier, module, method)?;
     (packaged == module
         && !package.is_empty()
         && !fern_href.contains('#')
-        && !pair.context.tree_holds(true, &fern_href)
-        && pair.context.tree_holds(false, module)
+        && !pair.context.tree_holds(Tree::Reference, &fern_href)
+        && pair.context.tree_holds(Tree::Crozier, module)
         && format!("L{}-L{}", lines.0, lines.1) == range)
         .then(|| format!("{head}<a href=\"{fern_href}\">{rest}"))
 }
@@ -5600,9 +5639,17 @@ fn reference_anchor_follows_corrected_client(pair: &Pair<'_>) -> Result<Option<R
         let (Some((index, (_, _, _, fern_range))), None) = (matches.next(), matches.next()) else {
             continue;
         };
-        if range(pair.context.client_method_lines(true, &path, &method)).as_deref()
+        if range(
+            pair.context
+                .client_method_lines(Tree::Reference, &path, &method),
+        )
+        .as_deref()
             == Some(fern_range.as_str())
-            && range(pair.context.client_method_lines(false, &path, &method)).as_deref()
+            && range(
+                pair.context
+                    .client_method_lines(Tree::Crozier, &path, &method),
+            )
+            .as_deref()
                 == Some(crozier_range.as_str())
         {
             return Ok(Some(Region {
@@ -5650,7 +5697,7 @@ fn reference_heading_escaped_method_name(pair: &Pair<'_>, fern: &str, crozier: &
                 .and_then(|(_, rest)| rest.split_once('/'))
                 .is_some_and(|(package, _)| {
                     let packaged = format!("src/{package}/{path}");
-                    !pair.context.tree_holds(true, &packaged)
+                    !pair.context.tree_holds(Tree::Reference, &packaged)
                         && fern == format!("{head}<a href=\"{packaged}\">{unescaped}</a>{tail}")
                 }))
 }

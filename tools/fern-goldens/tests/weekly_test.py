@@ -596,6 +596,17 @@ class AssemblyTests(unittest.TestCase):
         # Fern ends without a newline: moving the pair keeps that ending.
         self.assertFalse(moved.endswith("\n"), repr(moved[-5:]))
 
+    def test_moving_the_pair_keeps_a_record_s_final_newline_too(self) -> None:
+        stand_in = '{"cliVersion": "1.0.0"}\n'  # certified-pair: stand-in
+        (self.root / "assets/scaffolding/metadata.json").write_text(stand_in, encoding="utf-8")
+        self.shard(0, "a", ["tests/fixtures/a/expected/x.py"])
+        self.shard(1, "b", ["tests/fixtures/b/expected/x.py"])
+        result = self.assemble()
+        self.assertEqual(0, result.returncode, result.stderr)
+        moved = (self.scratch / "bundle" / "files" / weekly.METADATA).read_text(encoding="utf-8")
+        self.assertEqual(("2.0.0", "3.0.0"), (json.loads(moved)["cliVersion"], json.loads(moved)["generatorVersion"]))
+        self.assertTrue(moved.endswith("}\n") and not moved.endswith("\n\n"), repr(moved[-5:]))
+
     def test_two_shards_writing_one_file_is_a_failure(self) -> None:
         self.shard(0, "a", ["docs/shared.tsv"])
         self.shard(1, "b", ["docs/shared.tsv"])
