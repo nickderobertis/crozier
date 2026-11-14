@@ -111,3 +111,15 @@ modes, and `bungie_matches_fern_output` for the four Bungie files the
 correction moves away from the root, the root's `raw_client.py`, `client.py`
 and `__init__.py`, and the files crozier writes under `_/`. A moved file is
 recorded at line 0, standing for the whole file.
+
+## Reference anchors (Fern CLI 5.200.0 / fern-python-sdk 5.41.25)
+
+At this pair Fern anchors each `reference.md` heading at its method's lines in
+the linked client. The handwritten `lamp-room-log` golden links
+`src/fern/_/client.py`, a file its own tree does not hold (the `_` client sits
+at the package root), so its heading has no anchor:
+`client._.<a href="src/fern/_/client.py">list_lamps</a>(...)`. crozier's tree
+holds that file, and its heading links `src/fern/_/client.py#L27-L51`, the
+`list_lamps` method there. The rule admits only that heading shape: a link into
+`src/<package>/_/client.py` that Fern's tree lacks, crozier's range exactly the
+method's lines in its own `_/client.py`, and every other byte Fern's.

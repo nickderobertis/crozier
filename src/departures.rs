@@ -317,6 +317,9 @@ pub struct Context {
     request_examples: OnceLock<RequestExampleContext>,
     empty_namespace: OnceLock<EmptyNamespace>,
     crozier_paths: OnceLock<BTreeSet<String>>,
+    /// The two trees' files, `(reference, crozier)`, of a context built from
+    /// sources rather than read from roots.
+    sources: Option<(BTreeMap<String, String>, BTreeMap<String, String>)>,
 }
 
 /// The files of an empty-namespace package (`_`) Fern wrote one level too high,
@@ -371,7 +374,29 @@ impl Context {
                     .map(|(path, _)| (*path).to_string())
                     .collect::<BTreeSet<_>>(),
             ),
+            sources: Some((owned(&reference), owned(&crozier))),
         }
+    }
+
+    /// The first and last lines of `method` in the sync client of the module
+    /// `rel` of the reference tree (`reference`) or crozier's, as crozier's
+    /// `reference.md` anchors them.
+    fn client_method_lines(
+        &self,
+        reference: bool,
+        rel: &str,
+        method: &str,
+    ) -> Option<(usize, usize)> {
+        let text = match (&self.sources, &self.roots) {
+            (Some((fern, crozier)), _) => {
+                (if reference { fern } else { crozier }).get(rel)?.clone()
+            }
+            (None, Some((fern, crozier))) => {
+                std::fs::read_to_string((if reference { fern } else { crozier }).join(rel)).ok()?
+            }
+            (None, None) => return None,
+        };
+        crate::emit::sync_client_method_lines(&text, method)
     }
 
     /// The context of the trees at `reference` and `crozier`, read only if a
@@ -1215,7 +1240,9 @@ fn binary_json_example_lines(
                     .and_then(|(path, after)| {
                         after.split_once("</a>").map(|(name, _)| (path, name))
                     })
-                    .and_then(|(path, name)| {
+                    .and_then(|(href, name)| {
+                        // The `#L<start>-L<end>` anchor names lines of the module.
+                        let path = href.split_once("#L").map_or(href, |(module, _)| module);
                         path.strip_suffix("client.py").map(|prefix| MethodKey {
                             raw_client_path: format!("{prefix}raw_client.py"),
                             method_name: name.to_string(),
@@ -1366,8 +1393,10 @@ fn binary_json_body_example_line(pair: &Pair<'_>, fern: &str, crozier: &str) -> 
 fn reference_method_key(line: &str) -> Option<MethodKey> {
     let (_, after) = line.split_once("<details><summary><code>client.")?;
     let (_, after) = after.split_once("<a href=\"")?;
-    let (path, after) = after.split_once("\">")?;
+    let (href, after) = after.split_once("\">")?;
     let (name, _) = after.split_once("</a>")?;
+    // The `#L<start>-L<end>` anchor names lines of the module.
+    let path = href.split_once("#L").map_or(href, |(module, _)| module);
     let prefix = path.strip_suffix("client.py")?;
     Some(MethodKey {
         raw_client_path: format!("{prefix}raw_client.py"),
@@ -1591,6 +1620,13 @@ fn alias_reference_parameters(pair: &Pair<'_>) -> Result<Option<Region>, String>
 
 /// Every `.py` file under `root` as `(relative path, text)`; a module that
 /// cannot be read is left out.
+fn owned(files: &[(&str, &str)]) -> BTreeMap<String, String> {
+    files
+        .iter()
+        .map(|(path, text)| ((*path).to_string(), (*text).to_string()))
+        .collect()
+}
+
 fn python_sources(root: &std::path::Path) -> Vec<(String, String)> {
     crate::parity::walk_files(root)
         .unwrap_or_default()
@@ -1936,7 +1972,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 45] = [
+pub const RULE_IDS: [&str; 47] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1967,6 +2003,8 @@ pub const RULE_IDS: [&str; 45] = [
     "optional-raw-body-example-argument",
     "pattern-narrowed-enum-example",
     "readme-client-class-casing",
+    "reference-anchor-follows-corrected-client",
+    "reference-heading-escaped-method-name",
     "repeated-credential-example-keyword",
     "repeated-query-body-example-keyword",
     "request-alias-reference-parameters",
@@ -2017,6 +2055,14 @@ pub fn rule(id: &str) -> Option<Rule> {
         "collapsed-anyof-property-description" => Rule {
             line: Some(collapsed_anyof_property_description),
             added_at: Some(collapsed_anyof_property_description_line),
+            ..none
+        },
+        "reference-anchor-follows-corrected-client" => Rule {
+            region: Some(reference_anchor_follows_corrected_client),
+            ..none
+        },
+        "reference-heading-escaped-method-name" => Rule {
+            line: Some(reference_heading_escaped_method_name),
             ..none
         },
         "digit-leading-method-reference-identifiers" => Rule {
@@ -2083,6 +2129,7 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "empty-namespace-package" => Rule {
             region: Some(empty_namespace_package_root),
+            line: Some(empty_namespace_reference_anchor),
             file: Some(empty_namespace_package_file),
             ..none
         },
@@ -3781,6 +3828,9 @@ fn stream_reference_return_type(pair: &Pair<'_>, fern: &str, crozier: &str) -> b
     let Some((method, _)) = rest.split_once("</a>") else {
         return false;
     };
+    // The link's `#L<start>-L<end>` anchor, which both sides carry, names lines
+    // of the module rather than another module.
+    let path = path.split_once("#L").map_or(path, |(module, _)| module);
     // `reference.md` links the packaged module (`src/<package>/…`) in either
     // layout; a packaged tree holds it at that path, a flat tree at the root.
     let returns = pair.context.crozier_method_returns();
@@ -5229,11 +5279,15 @@ fn emoji_tag_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -
                 .collect::<String>()
                 .trim_matches('_')
                 .to_string();
+            // A heading's link into the raw-spelt module Fern's tree does not
+            // hold anchors nothing; crozier's anchor is part of the correction.
+            let unanchored = reference_heading_without_anchor(crozier);
+            let line = unanchored.as_deref().unwrap_or(crozier);
             raw != identifier
                 && python_identifier(&identifier)
                 && modules.contains(&identifier)
-                && crozier.contains(identifier.as_str())
-                && crozier.replace(identifier.as_str(), &raw) == fern
+                && line.contains(identifier.as_str())
+                && line.replace(identifier.as_str(), &raw) == fern
         })
 }
 
@@ -5313,6 +5367,147 @@ fn non_string_client_header_example(pair: &Pair<'_>, fern: &str, crozier: &str) 
         })
 }
 
+/// A `reference.md` heading line with its link's `#L<start>-L<end>` anchor
+/// removed, when it has one: crozier anchors every heading at the method it
+/// documents, where Fern's lookup of a name its SDK does not define finds no
+/// lines and leaves the bare path. `None` for any other line.
+fn reference_heading_without_anchor(line: &str) -> Option<String> {
+    if !line.starts_with("<details><summary><code>client.") {
+        return None;
+    }
+    let (head, rest) = line.split_once("<a href=\"")?;
+    let (href, tail) = rest.split_once('"')?;
+    let (path, anchor) = href.split_once("#L")?;
+    let (start, end) = anchor.split_once("-L")?;
+    let digits = |text: &str| !text.is_empty() && text.bytes().all(|b| b.is_ascii_digit());
+    (digits(start) && digits(end)).then(|| format!("{head}<a href=\"{path}\"{tail}"))
+}
+
+/// `empty-namespace-package`'s `reference.md` heading: both sides link the `_`
+/// package's `src/<package>/_/client.py`, which only crozier's tree holds, so
+/// only crozier's link carries the `#L<start>-L<end>` range of the documented
+/// method, exactly its lines there. Every other byte of the line is Fern's.
+fn empty_namespace_reference_anchor(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if pair.rel != "reference.md" || fern == crozier {
+        return false;
+    }
+    let Some(bare) = reference_heading_without_anchor(crozier) else {
+        return false;
+    };
+    let Some((path, rest)) = crozier
+        .split_once("<a href=\"")
+        .and_then(|(_, rest)| rest.split_once("\">"))
+    else {
+        return false;
+    };
+    let Some(((path, range), (method, _))) = path.split_once('#').zip(rest.split_once("</a>"))
+    else {
+        return false;
+    };
+    path.ends_with("/_/client.py")
+        && path.starts_with("src/")
+        && bare == fern
+        && pair
+            .context
+            .client_method_lines(true, path, method)
+            .is_none()
+        && pair
+            .context
+            .client_method_lines(false, path, method)
+            .is_some_and(|(start, end)| format!("L{start}-L{end}") == range)
+}
+
+/// `reference-anchor-follows-corrected-client`: a `reference.md` heading whose
+/// only difference is its link's `#L<start>-L<end>` range, where each side's
+/// range is exactly the documented method's lines in its own tree's linked
+/// client. The ranges differ only because the two clients do: a departure
+/// crozier makes in that file adds or removes lines above or inside the method,
+/// so Fern's range would name the wrong lines of crozier's client. A region of
+/// the one heading line, so the file's other departures, which each compare
+/// the rest of the file whole, see Fern's heading there.
+fn reference_anchor_follows_corrected_client(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "reference.md" {
+        return Ok(None);
+    }
+    let parts = |line: &str| -> Option<(String, String, String, String)> {
+        if !line.starts_with("<details><summary><code>client.") {
+            return None;
+        }
+        let (head, rest) = line.split_once("<a href=\"")?;
+        let (href, rest) = rest.split_once("\">")?;
+        let (path, range) = href.split_once('#')?;
+        let (method, tail) = rest.split_once("</a>")?;
+        Some((
+            format!("{head}\u{0}{path}\u{0}{method}\u{0}{tail}"),
+            path.to_string(),
+            method.to_string(),
+            range.to_string(),
+        ))
+    };
+    let range =
+        |lines: Option<(usize, usize)>| lines.map(|(start, end)| format!("L{start}-L{end}"));
+    for (at, crozier) in pair.crozier.iter().enumerate() {
+        if pair.fern.contains(crozier) {
+            continue;
+        }
+        let Some((frame, path, method, crozier_range)) = parts(crozier) else {
+            continue;
+        };
+        let mut matches = pair
+            .fern
+            .iter()
+            .enumerate()
+            .filter_map(|(index, fern)| Some((index, parts(fern)?)))
+            .filter(|(_, (fern_frame, _, _, _))| *fern_frame == frame);
+        let (Some((index, (_, _, _, fern_range))), None) = (matches.next(), matches.next()) else {
+            continue;
+        };
+        if range(pair.context.client_method_lines(true, &path, &method)).as_deref()
+            == Some(fern_range.as_str())
+            && range(pair.context.client_method_lines(false, &path, &method)).as_deref()
+                == Some(crozier_range.as_str())
+        {
+            return Ok(Some(Region {
+                fern: index..index + 1,
+                crozier: at..at + 1,
+            }));
+        }
+    }
+    Ok(None)
+}
+
+/// `reference-heading-escaped-method-name`: a `reference.md` heading whose
+/// method the SDK escapes with a trailing `_` (`all_`, `import_`). Fern's
+/// heading names the method without it (`all`), which the client does not
+/// define, so its link has no anchor; crozier's names the method the linked
+/// file defines and anchors the link at its lines. Every other byte of the
+/// line is the same.
+fn reference_heading_escaped_method_name(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if pair.rel != "reference.md" || fern == crozier {
+        return false;
+    }
+    let Some(bare) = reference_heading_without_anchor(crozier) else {
+        return false;
+    };
+    let Some((head, rest)) = bare.split_once("<a href=\"") else {
+        return false;
+    };
+    let Some((path, rest)) = rest.split_once("\">") else {
+        return false;
+    };
+    let Some((method, tail)) = rest.split_once("</a>") else {
+        return false;
+    };
+    let unescaped = method.trim_end_matches('_');
+    method.len() > unescaped.len()
+        && python_identifier(unescaped)
+        && pair
+            .context
+            .crozier_method_returns()
+            .contains_key(&(path.to_string(), method.to_string()))
+        && fern == format!("{head}<a href=\"{path}\">{unescaped}</a>{tail}")
+}
+
 /// Only the underscore missing from a declared, generated method's documentation.
 fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
@@ -5353,8 +5548,12 @@ fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozi
                                 .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '.')
                             && format!("{head}.{raw}({tail}") == fern
                     });
-            let heading = crozier.starts_with("<details><summary><code>client.")
-                && crozier
+            // Fern's misspelt name anchors nothing; crozier's anchor is part
+            // of the same correction.
+            let unanchored = reference_heading_without_anchor(crozier);
+            let heading_line = unanchored.as_deref().unwrap_or(crozier);
+            let heading = heading_line.starts_with("<details><summary><code>client.")
+                && heading_line
                     .split_once(&format!(">{identifier}</a>"))
                     .is_some_and(|(head, tail)| {
                         head.contains("<a href=\"")
@@ -5970,6 +6169,23 @@ mod tests {
         assert!(!holds(&fern, &heading("other", "typing.Iterator[Tick]")));
         assert!(!holds(
             &heading("watch", "Tick"),
+            &heading("watch", "typing.Iterator[Tick]")
+        ));
+        // Both sides anchor the link at the method's lines (fern-python-sdk
+        // 5.41.25): the anchor names lines of the module, not another module.
+        let anchored = |method: &str, annotation: &str| {
+            heading(method, annotation).replace("client.py\"", "client.py#L2-L5\"")
+        };
+        assert!(holds(
+            &anchored("watch", "typing.Iterator[bytes]"),
+            &anchored("watch", "typing.Iterator[Tick]")
+        ));
+        assert!(!holds(
+            &anchored("watch", "typing.Iterator[bytes]"),
+            &anchored("watch", "typing.Iterator[Other]")
+        ));
+        assert!(!holds(
+            &anchored("watch", "typing.Iterator[bytes]"),
             &heading("watch", "typing.Iterator[Tick]")
         ));
         let readme = Pair {
@@ -8459,6 +8675,200 @@ mod tests {
             &context,
             crozier,
             crozier
+        ));
+    }
+
+    #[test]
+    fn reference_heading_escaped_method_names_admit_only_the_method_the_client_defines() {
+        let client = "class ApplicantsClient:\n    def all_(self) -> None:\n        pass\n";
+        let context = Context::from_sources([], [("src/fern/applicants/client.py", client)]);
+        let rule: LineRule = reference_heading_escaped_method_name;
+        let fern = "<details><summary><code>client.applicants.<a href=\"src/fern/applicants/client.py\">all</a>(...) -> GetApplicantsResponse</code></summary>";
+        let crozier = "<details><summary><code>client.applicants.<a href=\"src/fern/applicants/client.py#L2-L3\">all_</a>(...) -> GetApplicantsResponse</code></summary>";
+        assert!(line_holds(rule, "reference.md", &context, fern, crozier));
+        // Only reference.md, and only when the client defines the escaped method.
+        for rel in ["README.md", "src/fern/applicants/client.py"] {
+            assert!(!line_holds(rule, rel, &context, fern, crozier), "{rel}");
+        }
+        let elsewhere = Context::from_sources([], [("src/fern/jobs/client.py", client)]);
+        assert!(!line_holds(rule, "reference.md", &elsewhere, fern, crozier));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &Context::default(),
+            fern,
+            crozier
+        ));
+        // An unrelated change on the same line, a name that is not the escape
+        // of Fern's, an anchor that is not a line range, or no anchor at all.
+        for mutated in [
+            crozier.replace("GetApplicantsResponse", "GetJobsResponse"),
+            crozier.replace(">all_<", ">al_<"),
+            crozier.replace("#L2-L3", "#Lx-L3"),
+            crozier.replace("#L2-L3", ""),
+            crozier.replace("client.applicants.", "client.jobs."),
+        ] {
+            assert!(
+                !line_holds(rule, "reference.md", &context, fern, &mutated),
+                "{mutated}"
+            );
+        }
+        // A name that needs no escape is no departure: crozier writes Fern's.
+        let plain = Context::from_sources(
+            [],
+            [(
+                "src/fern/applicants/client.py",
+                "class ApplicantsClient:\n    def list(self) -> None:\n        pass\n",
+            )],
+        );
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &plain,
+            &fern.replace(">all<", ">list<"),
+            &crozier.replace(">all_<", ">list<")
+        ));
+    }
+
+    #[test]
+    fn a_reference_anchor_departs_only_where_each_side_names_its_own_method() {
+        let fern_client = "class FernApi:\n    def __init__(self):\n        \"\"\"\n        api_key=\"k\",\n        api_key=\"k\",\n        \"\"\"\n\n    def relay(self) -> None:\n        pass\n";
+        let crozier_client = "class FernApi:\n    def __init__(self):\n        \"\"\"\n        api_key=\"k\",\n        \"\"\"\n\n    def relay(self) -> None:\n        pass\n";
+        let context = Context::from_sources(
+            [("src/fern/client.py", fern_client)],
+            [("src/fern/client.py", crozier_client)],
+        );
+        let rule: RegionRule = reference_anchor_follows_corrected_client;
+        let heading = |range: &str| {
+            format!("# Reference\n<details><summary><code>client.<a href=\"src/fern/client.py#{range}\">relay</a>(...)</code></summary>\n<dl>\n")
+        };
+        let region = region_of(
+            rule,
+            "reference.md",
+            &heading("L8-L9"),
+            &heading("L7-L8"),
+            &context,
+        )
+        .expect("each side's range is its own method's lines");
+        assert_eq!((region.fern, region.crozier), (1..2, 1..2));
+        // A range that is not the method's lines on either side, an unrelated
+        // change beside the range, another file, or one side without a range.
+        for (fern, crozier) in [
+            (heading("L8-L9"), heading("L7-L9")),
+            (heading("L7-L8"), heading("L7-L9")),
+            (heading("L8-L9"), heading("L7-L8").replace("(...)", "()")),
+            (heading("L8-L9").replace("#L8-L9", ""), heading("L7-L8")),
+        ] {
+            assert!(
+                region_of(rule, "reference.md", &fern, &crozier, &context).is_none(),
+                "{crozier}"
+            );
+        }
+        assert!(region_of(
+            rule,
+            "README.md",
+            &heading("L8-L9"),
+            &heading("L7-L8"),
+            &context
+        )
+        .is_none());
+        assert!(region_of(
+            rule,
+            "reference.md",
+            &heading("L8-L9"),
+            &heading("L7-L8"),
+            &Context::default()
+        )
+        .is_none());
+    }
+
+    #[test]
+    fn an_empty_namespace_heading_takes_only_the_anchor_of_crozier_s_own_module() {
+        let client = "class UnderscoreClient:\n    def list_lamps(self) -> None:\n        pass\n";
+        let context = Context::from_sources(
+            [("src/fern/client.py", client)],
+            [("src/fern/_/client.py", client)],
+        );
+        let rule: LineRule = empty_namespace_reference_anchor;
+        let fern = "<details><summary><code>client._.<a href=\"src/fern/_/client.py\">list_lamps</a>(...) -> typing.List[Lamp]</code></summary>";
+        let crozier = fern.replace("_/client.py\"", "_/client.py#L2-L3\"");
+        assert!(line_holds(rule, "reference.md", &context, fern, &crozier));
+        for mutated in [
+            crozier.replace("#L2-L3", "#L2-L4"),
+            crozier.replace("typing.List[Lamp]", "Lamp"),
+            crozier.replace(">list_lamps<", ">get_lamp<"),
+        ] {
+            assert!(
+                !line_holds(rule, "reference.md", &context, fern, &mutated),
+                "{mutated}"
+            );
+        }
+        assert!(!line_holds(rule, "README.md", &context, fern, &crozier));
+        // Another module, or a `_` module Fern's tree holds too, anchors on both sides.
+        let elsewhere = crozier.replace("/_/", "/lamps/");
+        let fern_elsewhere = fern.replace("/_/", "/lamps/");
+        let lamps = Context::from_sources([], [("src/fern/lamps/client.py", client)]);
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &lamps,
+            &fern_elsewhere,
+            &elsewhere
+        ));
+        let both = Context::from_sources(
+            [("src/fern/_/client.py", client)],
+            [("src/fern/_/client.py", client)],
+        );
+        assert!(!line_holds(rule, "reference.md", &both, fern, &crozier));
+    }
+
+    #[test]
+    fn misspelt_reference_headings_admit_crozier_s_anchor_only_with_their_correction() {
+        let document = serde_json::json!({"paths": {"/readings": {"get": {
+            "operationId": "7readings", "responses": {}
+        }}}});
+        let context = source_context(
+            document,
+            &[(
+                "src/fern/client.py",
+                "class FernApi:\n    def _7readings(self) -> None:\n        pass\n",
+            )],
+        );
+        let rule: LineRule = digit_leading_method_reference_identifiers;
+        let fern = "<details><summary><code>client.<a href=\"src/fern/client.py\">7readings</a>()</code></summary>";
+        let crozier = "<details><summary><code>client.<a href=\"src/fern/client.py#L2-L3\">_7readings</a>()</code></summary>";
+        assert!(line_holds(rule, "reference.md", &context, fern, crozier));
+        // The anchor alone, without the corrected name, is no departure.
+        let anchored_only = crozier.replace(">_7readings<", ">7readings<");
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            fern,
+            &anchored_only
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            fern,
+            &crozier.replace("()</code>", "(...)</code>")
+        ));
+
+        let document = serde_json::json!({"openapi": "3.0.3", "paths": {"/legacy": {"get": {
+            "tags": ["🚧 Legacy endpoints"], "responses": {}
+        }}}});
+        let context = source_context(document, &[("src/fern/legacy_endpoints/client.py", "")]);
+        let rule: LineRule = emoji_tag_reference_identifiers;
+        let crozier = "<details><summary><code>client.legacy_endpoints.<a href=\"src/fern/legacy_endpoints/client.py#L26-L40\">list</a>(...)</code></summary>";
+        let fern = "<details><summary><code>client.🚧_legacy_endpoints.<a href=\"src/fern/🚧_legacy_endpoints/client.py\">list</a>(...)</code></summary>";
+        assert!(line_holds(rule, "reference.md", &context, fern, crozier));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            fern,
+            &crozier.replace(">list<", ">get<")
         ));
     }
 

@@ -196,7 +196,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 31 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 33 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -344,7 +344,7 @@ when the two differ.
 - **Kind:** `fern-defect`
 - **Trigger:** Operations Fern groups under the empty namespace it calls `_`: tagged only with the empty string, or an `operationId` with an empty dotted prefix (`.GetThing`).
 - **Fern writes:** The `_` package's files written at the package root rather than under `_/`: the root `client.py`, `raw_client.py` and `__init__.py` are the `_` sub-client's and its package marker (importing `..core` from above the package), its hoisted types sit in the root `types/`, the root client is lost, and docstring examples call `client..method()`; `README.md` and `reference.md` call `client._.method()` and link `src/<package>/_/client.py`.
-- **crozier writes:** The same `_` package under `_/` (its `client.py` but for its examples, `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the root `client.py` and `__init__.py` the root client and package exporting it with a `_` property, and examples calling `client._.method()`.
+- **crozier writes:** The same `_` package under `_/` (its `client.py` but for its examples, `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the root `client.py` and `__init__.py` the root client and package exporting it with a `_` property, and examples calling `client._.method()`; `reference.md`'s links into `_/client.py`, which only crozier's tree holds, carry the `#L<start>-L<end>` range of each documented method there.
 - **Why:** The tree cannot be imported: the root package exports no client and its `client.py` imports from above the top-level package, so the documented `from <package> import <Client>` and `client._.method()` raise `ImportError`.
 - **Evidence:** [`docs/departures/evidence/empty-namespace-package.md`](../../docs/departures/evidence/empty-namespace-package.md)
 
@@ -473,6 +473,24 @@ when the two differ.
 - **crozier writes:** The class names the package defines (`LanternHarborApi`, `AsyncLanternHarborApi`, `LanternHarborApiEnvironment`).
 - **Why:** An example that imports a class the generated package does not define contradicts the generated code: the import fails, so the snippet cannot run.
 - **Evidence:** [`docs/departures/evidence/readme-client-class-casing.md`](../../docs/departures/evidence/readme-client-class-casing.md)
+
+### `reference-anchor-follows-corrected-client`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A `reference.md` heading whose linked `client.py` carries another departure that adds or removes lines above or inside the documented method (a credential keyword Fern repeats in a docstring example, for instance).
+- **Fern writes:** The link's `#L<start>-L<end>` range counts the lines of Fern's own client, with its defect in place.
+- **crozier writes:** The range of the same method in crozier's client. Each side's range is exactly that method's `def` line through its last line in its own file, and every other byte of the heading is retained.
+- **Why:** Fern's range, applied to crozier's corrected client, links lines that are not the documented method: it starts or ends inside a neighbouring statement. The heading must link the method it documents.
+- **Evidence:** [`docs/departures/evidence/reference-anchor-follows-corrected-client.md`](../../docs/departures/evidence/reference-anchor-follows-corrected-client.md)
+
+### `reference-heading-escaped-method-name`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operation whose generated method name is escaped with a trailing `_` because it would shadow a Python keyword or builtin (`all_`, `import_`, `async_`): its heading in `reference.md`.
+- **Fern writes:** The heading names the method without its escape (`client.applicants.<a href="src/fern/applicants/client.py">all</a>(...)`), and the link has no `#L<start>-L<end>` anchor, because the linked client defines no method of that name.
+- **crozier writes:** The heading names the method the client defines (`all_`) and anchors the link at its lines, as every other heading is anchored. Every other byte of the line is retained.
+- **Why:** The heading documents a method the generated client does not have: `client.applicants.all(...)` raises `AttributeError`, and the usage example under the same heading already calls `all_`.
+- **Evidence:** [`docs/departures/evidence/reference-heading-escaped-method-name.md`](../../docs/departures/evidence/reference-heading-escaped-method-name.md)
 
 ### `repeated-credential-example-keyword`
 

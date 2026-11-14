@@ -589,8 +589,12 @@ class AssemblyTests(unittest.TestCase):
         timings = (bundle / "files" / weekly.TIMINGS).read_text(encoding="utf-8")
         self.assertTrue(timings.startswith("# Seconds each Fern reference"))
         self.assertIn("family\titem\tseconds\ncorpus\ta\t4.2\ncorpus\tb\t4.2\n", timings)
-        metadata = json.loads((bundle / "files" / weekly.METADATA).read_text(encoding="utf-8"))
+        moved = (bundle / "files" / weekly.METADATA).read_text(encoding="utf-8")
+        metadata = json.loads(moved)
         self.assertEqual(("2.0.0", "3.0.0"), (metadata["cliVersion"], metadata["generatorVersion"]))
+        # crozier writes the record as every SDK's `.fern/metadata.json`, which
+        # Fern ends without a newline: moving the pair keeps that ending.
+        self.assertFalse(moved.endswith("\n"), repr(moved[-5:]))
 
     def test_two_shards_writing_one_file_is_a_failure(self) -> None:
         self.shard(0, "a", ["docs/shared.tsv"])

@@ -323,7 +323,9 @@
     The same `_` package under `_/` (its `client.py` but for its examples,
     `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the
     root `client.py` and `__init__.py` the root client and package exporting
-    it with a `_` property, and examples calling `client._.method()`.
+    it with a `_` property, and examples calling `client._.method()`;
+    `reference.md`'s links into `_/client.py`, which only crozier's tree holds,
+    carry the `#L<start>-L<end>` range of each documented method there.
   reason: >-
     The tree cannot be imported: the root package exports no client and its
     `client.py` imports from above the top-level package, so the documented
@@ -606,6 +608,46 @@
     An example that imports a class the generated package does not define
     contradicts the generated code: the import fails, so the snippet cannot run.
   evidence: docs/departures/evidence/readme-client-class-casing.md
+
+- id: reference-anchor-follows-corrected-client
+  kind: fern-defect
+  trigger: >-
+    A `reference.md` heading whose linked `client.py` carries another departure
+    that adds or removes lines above or inside the documented method (a
+    credential keyword Fern repeats in a docstring example, for instance).
+  fern: >-
+    The link's `#L<start>-L<end>` range counts the lines of Fern's own client,
+    with its defect in place.
+  crozier: >-
+    The range of the same method in crozier's client. Each side's range is
+    exactly that method's `def` line through its last line in its own file, and
+    every other byte of the heading is retained.
+  reason: >-
+    Fern's range, applied to crozier's corrected client, links lines that are
+    not the documented method: it starts or ends inside a neighbouring
+    statement. The heading must link the method it documents.
+  evidence: docs/departures/evidence/reference-anchor-follows-corrected-client.md
+
+- id: reference-heading-escaped-method-name
+  kind: fern-defect
+  trigger: >-
+    An operation whose generated method name is escaped with a trailing `_`
+    because it would shadow a Python keyword or builtin (`all_`, `import_`,
+    `async_`): its heading in `reference.md`.
+  fern: >-
+    The heading names the method without its escape
+    (`client.applicants.<a href="src/fern/applicants/client.py">all</a>(...)`),
+    and the link has no `#L<start>-L<end>` anchor, because the linked client
+    defines no method of that name.
+  crozier: >-
+    The heading names the method the client defines (`all_`) and anchors the
+    link at its lines, as every other heading is anchored. Every other byte of
+    the line is retained.
+  reason: >-
+    The heading documents a method the generated client does not have:
+    `client.applicants.all(...)` raises `AttributeError`, and the usage example
+    under the same heading already calls `all_`.
+  evidence: docs/departures/evidence/reference-heading-escaped-method-name.md
 
 - id: repeated-credential-example-keyword
   kind: fern-defect

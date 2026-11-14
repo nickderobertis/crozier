@@ -12,7 +12,7 @@ mod example_repair;
 
 use std::cmp::Ordering;
 use std::collections::{BTreeMap, BTreeSet};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use minijinja::{context, Environment};
 use serde::Serialize;
@@ -2081,8 +2081,102 @@ fn generate_files(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if ir.layout == Layout::Flat {
         flatten_package_paths(pkg, &mut files);
     }
+    resolve_reference_ranges(&mut files);
 
     Ok(files)
+}
+
+/// Where a `reference.md` heading's link takes its `#L<start>-L<end>` anchor,
+/// filled in by [`resolve_reference_ranges`] once the client files are in
+/// their final, formatted form.
+const REFERENCE_RANGE_MARKER: &str = "#@@CROZIER_REFERENCE_RANGE@@";
+
+/// Anchor each `reference.md` heading link at the lines of the method it
+/// documents, as Fern 5.41.25 does: `src/fern/pet/client.py#L34-L68` runs from
+/// the method's `def` line to its last line in the generated file, so the
+/// ranges are read from the final, formatted source rather than predicted. A
+/// link whose file the tree does not hold (a flat tree has no `src/`), or
+/// whose method the file's sync client does not define, keeps the bare path,
+/// as Fern's does.
+fn resolve_reference_ranges(files: &mut [GeneratedFile]) {
+    let Some(index) = files
+        .iter()
+        .position(|f| f.path == Path::new("reference.md"))
+    else {
+        return;
+    };
+    let mut out = String::with_capacity(files[index].contents.len());
+    let mut rest = files[index].contents.as_str();
+    while let Some(at) = rest.find(REFERENCE_RANGE_MARKER) {
+        let (head, tail) = rest.split_at(at);
+        let tail = &tail[REFERENCE_RANGE_MARKER.len()..];
+        let href = head.rsplit_once("href=\"").map_or("", |(_, href)| href);
+        let method = tail
+            .strip_prefix("\">")
+            .and_then(|link| link.split_once("</a>"))
+            .map_or("", |(method, _)| method);
+        out.push_str(head);
+        let range = files
+            .iter()
+            .find(|f| f.path == Path::new(href))
+            .and_then(|f| sync_client_method_lines(&f.contents, method));
+        if let Some((start, end)) = range {
+            out.push_str(&format!("#L{start}-L{end}"));
+        }
+        rest = tail;
+    }
+    out.push_str(rest);
+    files[index].contents = out;
+}
+
+/// The 1-based first and last lines of `method` in `source`'s sync client
+/// class: its `def` line through the last non-blank line of its body, which
+/// ends before the next member of the class (a `def`, decorator or class at
+/// the method's indent) or the first line indented less. The sync client is
+/// the first class whose name does not begin with `Async`; Fern skips every
+/// such class, so a sync client named `Async…` (an `asyncapi` tag's
+/// `AsyncapiClient`) anchors nothing.
+pub(crate) fn sync_client_method_lines(source: &str, method: &str) -> Option<(usize, usize)> {
+    if method.is_empty() {
+        return None;
+    }
+    let lines: Vec<&str> = source.lines().collect();
+    let class = lines.iter().position(|line| {
+        line.strip_prefix("class ")
+            .is_some_and(|name| !name.starts_with("Async"))
+    })?;
+    let def = format!("def {method}(");
+    let async_def = format!("async def {method}(");
+    let mut start = None;
+    for (i, line) in lines.iter().enumerate().skip(class + 1) {
+        if line.starts_with("class ") || line.starts_with("def ") {
+            return None;
+        }
+        if let Some(member) = line.strip_prefix("    ") {
+            if member.starts_with(&def) || member.starts_with(&async_def) {
+                start = Some(i);
+                break;
+            }
+        }
+    }
+    let start = start?;
+    let mut end = start;
+    for (i, line) in lines.iter().enumerate().skip(start + 1) {
+        let text = line.trim_start();
+        if text.is_empty() {
+            continue;
+        }
+        let indent = line.len() - text.len();
+        let sibling = indent == 4
+            && ["def ", "async def ", "@", "class "]
+                .iter()
+                .any(|opener| text.starts_with(opener));
+        if indent < 4 || sibling {
+            break;
+        }
+        end = i;
+    }
+    Some((start + 1, end + 1))
 }
 
 /// Move the package's modules from `src/<pkg>/` to the output root, which is
@@ -3541,12 +3635,15 @@ fn reference_entry(
             format!("client.{}.", module_path(module))
         },
         href: if module.is_empty() {
-            format!("src/{pkg}/client.py")
+            format!("src/{pkg}/client.py{REFERENCE_RANGE_MARKER}")
         } else {
-            format!("src/{pkg}/{module}/client.py")
+            format!("src/{pkg}/{module}/client.py{REFERENCE_RANGE_MARKER}")
         },
         pkg: pkg.to_string(),
-        method: ep.method_name.trim_end_matches('_').to_string(),
+        // The method the SDK defines, escape included (`all_`): Fern writes the
+        // name without its trailing `_`, which names no method the client has
+        // (the `reference-heading-escaped-method-name` departure).
+        method: ep.method_name.clone(),
         // A documented parameter the method does not take — a propertyless model
         // documented as `request` — still earns the dots.
         dots: if has_args || params.len() > 1 {
@@ -12387,9 +12484,10 @@ fn build_example_inner(
     // `from <pkg> import <client + referenced types>`, alphabetical, wrapped at
     // the snippet's import width (80). Fern's examples are laid out by hand
     // (not `ruff format`) — see `Example::render` for why.
-    let mut names: Vec<String> = if documentation && is_async {
-        Vec::new()
-    } else if documentation {
+    // The async README form imports the types its body uses as the sync one
+    // does (fern-python-sdk 5.41.25; at 5.41.3 it imported the client alone,
+    // leaving its `Amount(...)` argument unimportable).
+    let mut names: Vec<String> = if documentation {
         ctx.referenced_doc_order.clone()
     } else {
         ctx.referenced.iter().cloned().collect()
@@ -12405,11 +12503,7 @@ fn build_example_inner(
         names.sort_by(|left, right| example_import_cmp(left, right));
     }
     let import_flat = format!("from {pkg} import {}", names.join(", "));
-    let import_width = if documentation && !is_async {
-        usize::MAX
-    } else {
-        80
-    };
+    let import_width = if documentation { usize::MAX } else { 80 };
     let import_lines: Vec<String> = if import_flat.len() <= import_width {
         vec![import_flat]
     } else {
