@@ -2254,9 +2254,11 @@ def unsettled_record(name: str) -> dict[str, str] | None:
     path = REGISTRY / name / "unsettled.txt"
     if not path.is_file():
         return None
-    return dict(
-        line.split(": ", 1) if ": " in line else (line, "") for line in path.read_text(encoding="utf-8").splitlines()
-    )
+    fields: dict[str, str] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        name, _, value = line.partition(": ")
+        fields[name.removesuffix(":")] = value
+    return fields
 
 
 def unsettled_problems() -> list[str]:
