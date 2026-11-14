@@ -52,8 +52,10 @@ pub struct GenerateConfig {
     pub output: PathBuf,
     /// The Python import package name (the directory under `src/`), e.g. `seed`.
     pub package_name: PackageName,
-    /// The distribution (PyPI) name recorded in `version.py`, e.g.
-    /// `fern_my-api`. Defaults to the package name when unset.
+    /// The distribution (PyPI) name `pyproject.toml`, `version.py`, the aiohttp
+    /// install hint and the SDK-name header carry: the configured project name,
+    /// or the package name when unset, with every `_` written `-` as Fern
+    /// writes its distribution name (see [`distribution_name`]).
     pub project_name: String,
     /// Override for the generated root client class name (Fern's
     /// `client_class_name`). `None` derives it from the package name as
@@ -95,7 +97,8 @@ impl GenerateConfig {
             Some(name) => PackageName::new(name)?,
             None => PackageName::new(default_package_name(title))?,
         };
-        let project_name = project_name.unwrap_or_else(|| package_name.as_str().to_string());
+        let project_name =
+            distribution_name(&project_name.unwrap_or_else(|| package_name.as_str().to_string()));
         Ok(Self {
             spec,
             output,
@@ -115,6 +118,15 @@ impl GenerateConfig {
 #[must_use]
 pub fn default_client_class_name(package_name: &str) -> String {
     format!("{}Api", crate::naming::to_pascal_case(package_name))
+}
+
+/// The distribution name Fern writes for `name`: every `_` becomes `-`
+/// (`default_package_name` packages as `default-package-name`), which pip
+/// already treats as the same project. Only the distribution is renamed; the
+/// import package keeps its underscores.
+#[must_use]
+pub fn distribution_name(name: &str) -> String {
+    name.replace('_', "-")
 }
 
 /// Derive a fallback package name from the API title.

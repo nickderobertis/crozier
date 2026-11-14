@@ -49,7 +49,9 @@ CLI flag  >  CROZIER_* env var  >  generators.<name>.<field>  >  top-level <fiel
   **Python-generator-specific**: they live only under a generator, never at the
   shared top level (a top-level one is a parse error).
 - **Built-in defaults** — `package-name` defaults to a `snake_case` of the API
-  title; `project-name` defaults to the package name; `client-class-name`
+  title; `project-name` defaults to the package name, and is written with every
+  `_` as `-`, as Fern writes its distribution name (`my_api` installs as
+  `my-api`; the import package keeps its underscores); `client-class-name`
   defaults to `{PascalCase(package-name)}Api`; audiences default to empty (the
   whole API); `fern-strict` defaults to `false`; `extra-fields` defaults to `allow`;
   `enum-type` defaults to `python-enums`; `default-max-retries` defaults to `2`,

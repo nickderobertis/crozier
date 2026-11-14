@@ -217,6 +217,7 @@ pub struct GeneratorSettings {
     /// Python package (import) name; defaults to a snake_case of the API title.
     pub package_name: Option<String>,
     /// Distribution name recorded in `version.py`; defaults to the package name.
+    /// Written with every `_` as `-`, as Fern writes its distribution name.
     pub project_name: Option<String>,
     /// Root client class name (Fern's `client_class_name`); defaults to
     /// `{PascalCase(package_name)}Api`.

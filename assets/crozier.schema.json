@@ -161,7 +161,7 @@
           ]
         },
         "project-name": {
-          "description": "Distribution name recorded in `version.py`; defaults to the package name.",
+          "description": "Distribution name recorded in `version.py`; defaults to the package name.\nWritten with every `_` as `-`, as Fern writes its distribution name.",
           "type": [
             "string",
             "null"
