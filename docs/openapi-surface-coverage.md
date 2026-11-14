@@ -142,7 +142,7 @@ split five ways:
 
 **Feature combinations are counted apart.** 107 combinations are selected
 ([the list](openapi-surface/combinations.md)): 29 are `gap`, 74 are `golden` and 4 are `handwritten`.
-12 of the `gap` ones are decided output-insensitive in
+11 of the `gap` ones are decided output-insensitive in
 [the shared table](openapi-surface/output-insensitive.tsv), neither proven nor unproven.
 **Combinations by proof.** A combination is proven only where its handling is checked against the certified pair,
 at an interaction branch or with source-checked independent feature controls. `finished_state_failures` in
@@ -152,8 +152,8 @@ at an interaction branch or with source-checked independent feature controls. `f
 interaction branch, **0** have independent handling, checked against the source,
 instrumented feature-only controls and fresh certified trees
 ([the audit](openapi-surface/combination-cooccurrence.tsv)), **0** are compared against a committed measurement of
-non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **57** remain
-open (unproven) (0 left unproven by the user's ruling), and **12** are decided output-insensitive: 38 + 0 + 0 + 0 + 57 + 12 = 107.
+non-generation, **0** rest on a hand-written fixture (0 of them witness-blocked, 0 of them co-occurrences proven on the fixture), **58** remain
+open (unproven) (0 left unproven by the user's ruling), and **11** are decided output-insensitive: 38 + 0 + 0 + 0 + 58 + 11 = 107.
 None is among the 726 features above, and each other `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -2139,12 +2139,12 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 51 rows are the 27 generator categories and the 24 scenarios later
+These 60 rows are the 27 generator categories and the 33 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
-scenarios are not proof claims here. Each path is committed output from Fern CLI **5.163.1** with
-`fernapi/fern-python-sdk` **5.41.3** (the pair
+scenarios are not proof claims here. Each path is committed output from Fern CLI **5.200.0** with
+`fernapi/fern-python-sdk` **5.41.25** (the pair
 [`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)
 declares), compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
@@ -2211,6 +2211,15 @@ corrections the shared comparison engine applies. All other bytes must match.
 | schema-valid-example-values | Worked-example values their own schema rejects — a string's name, Fern's fixed placeholders, a length-sized sample, a fixed number, a list's item count — replaced by the declared example, the default or a constructed value the schema accepts | Fern defect | `schema-valid-example-values` | tests/fixtures/discord-com/expected; tests/fixtures/audiobookshelf/expected; tests/fixtures/amazonaws.com-cloudformation/expected | `discord_com_matches_fern_output; audiobookshelf_matches_fern_output; amazonaws_com_cloudformation_matches_fern_output` | `schema-rejected-array-length-example, schema-rejected-name-example, schema-rejected-number-example, schema-rejected-placeholder-string-example, schema-rejected-sized-string-example` |
 | snippet-call-keyword-and-header-placeholder | Worked calls and client constructions: a `[]` query parameter's call keyword and a non-string promoted header's constructor placeholder corrected | Fern defect | `snippet-rendering` | docs/fern-measurements/handed-off/snippet-rendering/snippet-rendering/fern-expected | `handed_off_snippet_rendering_measurements_match_fern; handed_off_snippet_rendering::catalogued_snippet_defects_are_what_crozier_writes` | `bracket-query-parameter-call-keyword, non-string-client-header-example` |
 | reused-body-query-keyword-clash | Required query parameter sharing a property name with a `$ref` body reused by a response: the body stays a named model and its argument is renamed; the README and reference.md worked calls' repeated query keyword corrected | Fern behaviour + Fern defect | `client-structure` | docs/fern-measurements/handed-off/client-structure/reused-body-keyword-example/fern-expected | `client_structure::a_query_clash_on_a_reused_body_keeps_the_renamed_keyword` | `repeated-query-body-example-keyword` |
+| readme-environment-constructor-arguments | README Environments construction passing the usage constructor's credentials and required headers | Fern defect | `certify-new-pair` | tests/fixtures/zulip/expected | `zulip_matches_fern_output` | `readme-environment-constructor-arguments` |
+| readme-escaped-method-call | README calls of a method the SDK escapes with a trailing underscore | Fern defect | `certify-new-pair` | tests/fixtures/apideck.com-connector/expected | `apideck_connector_matches_fern_output` | `readme-escaped-method-call` |
+| readme-abbreviated-call-arguments | README abbreviated calls of a method requiring only a header | Fern defect | `certify-new-pair` | docs/openapi-surface/authored-probes/353-method-required-array/fern-expected | `authored_probe_measurements_match_fern` | `readme-abbreviated-call-arguments` |
+| list-path-parameter-example | List-typed path parameters documented with a list of their item type | Fern defect | `certify-new-pair` | tests/fixtures/daniweb-connect/expected | `daniweb_connect_matches_fern_output` | `list-path-parameter-example` |
+| digit-leading-property-example-keyword | Digit-leading body properties passed by their declared keyword in examples | Fern defect | `certify-new-pair` | tests/fixtures/free5gc-pdu-session/expected | `free5gc_pdu_session_matches_fern_output` | `digit-leading-property-example-keyword` |
+| readme-constructor-required-header | Client constructions passing a required boolean, numeric or array header | Fern defect | `certify-new-pair` | tests/fixtures/remeasured-arawa-workspace-0c8259f6/expected | `remeasured_arawa_workspace_0c8259f6_matches_fern_output` | `readme-constructor-required-header` |
+| reference-heading-escaped-method-name | Reference headings naming a method the SDK escapes | Fern defect | `certify-new-pair` | tests/fixtures/apideck.com-accounting/expected | `apideck_accounting_matches_fern_output` | `reference-heading-escaped-method-name` |
+| reference-anchor-follows-corrected-client | Reference line anchors following the client lines crozier corrects | Fern defect | `certify-new-pair` | tests/fixtures/letta/expected | `letta_matches_fern_output` | `reference-anchor-follows-corrected-client` |
+| flat-reference-link-target | Flat-layout reference links to the client file the SDK writes | Fern defect | `certify-new-pair` | tests/fixtures/swagger-petstore/expected-flat | `compare::compare_holds_each_reference_link_departure_to_its_own_shape` | `flat-reference-link-target` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -3504,6 +3513,7 @@ unproven.
 | `combo-header-string-default` | `parameters` | `search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv) |
 | `combo-map-unresolved-nested-pointer` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv) |
 | `combo-nullable-allof-parent-own-property` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv) |
+| `combo-path-param-ref-pattern` | `parameters` | `search incomplete` — [bounded search](openapi-surface/witness-search-operation-combinations-parameters/README.md#the-pattern-crozier-reads); outstanding candidates: [named census](openapi-surface/witness-search-operation-combinations-parameters/census.tsv) |
 | `combo-property-anyof-composed-sibling` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv) |
 | `combo-property-defs-pointer` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv) |
 | `combo-property-unresolved-nested-pointer` | `schemas` | `search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv) |
