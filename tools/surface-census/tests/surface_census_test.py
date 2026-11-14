@@ -1048,6 +1048,63 @@ def named_gap_features(root: Path) -> dict[str, str]:
     }
 
 
+@functools.cache
+@functools.cache
+def population_screen() -> ModuleType:
+    """`tools/witness-search/population_screen.py`, the one reader of a population screen table, loaded once."""
+    path = REPO / "tools" / "witness-search" / "population_screen.py"
+    spec = importlib.util.spec_from_file_location("gate_population_screen", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+_SCREENED_COUNTS: dict[tuple[str, int, int], Counter[str]] = {}
+
+
+def screened_pending_counts(table: Path) -> Counter[str]:
+    """Each key's pending candidates in `table`, read through its reader once per file content.
+
+    The gate asks once per open key, and the table holds tens of thousands of rows; a
+    table edited in place changes its size or modification time, and is read again.
+    """
+    stat = table.stat()
+    identity = (str(table.resolve()), stat.st_mtime_ns, stat.st_size)
+    if identity not in _SCREENED_COUNTS:
+        screen = population_screen()
+        _SCREENED_COUNTS[identity] = screen.pending_counts(screen.read_screen(table))
+    return _SCREENED_COUNTS[identity]
+
+
+def screened_population_search(record: Path, table: Path, key: str, arm: str | None = None) -> bool:
+    """A population screen record whose named census is its `screen.tsv`.
+
+    The README's count for `key` must be the table's `certified-screen-pending`
+    candidates for it, read through the table's own reader (which refuses a
+    malformed, duplicate or self-contradicting row); a count of zero must name a
+    population whose inputs were not retained.
+    """
+    try:
+        text = record.read_text(encoding="utf-8")
+        counts = screened_pending_counts(table)
+    except (OSError, UnicodeError, ValueError):
+        return False
+    if arm is not None and f"`{arm}`" not in text:
+        return False
+    count = re.search(rf"^\| `{re.escape(key)}` \| `search-incomplete` \| (\d+) \|", text, re.M)
+    pending = counts[key]
+    if count is None or int(count.group(1)) != pending:
+        return False
+    if pending:
+        return True
+    section = text.partition("\n## Missing populations\n")[2].partition("\n## ")[0]
+    missing = re.findall(rf"^\| `{re.escape(key)}` \| ([^|]+) \| ([^|]+) \|$", section, re.M)
+    return any(population.strip() and "not retained" in why.lower() for population, why in missing)
+
+
 def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None = None) -> bool:
     """Admit an unfinished bounded search only with its counted, named declarers."""
     match = re.fullmatch(
@@ -1062,6 +1119,8 @@ def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None
     if any(path.is_absolute() or ".." in path.parts or pathlib.PureWindowsPath(path).drive for path in paths):
         return False
     record, census_path = [root / "docs" / path for path in paths]
+    if record.name == "README.md" and census_path == record.with_name("screen.tsv"):
+        return screened_population_search(record, census_path, key, arm)
     if record.name != "README.md" or census_path != record.with_name("census.tsv"):
         return False
     try:
@@ -13812,11 +13871,16 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
         copies += [surface / "witness-search-unproven-features" / name for name in ("README.md", "census.tsv")]
-        # A `witness blocked` combination links its search record and census.
+        # A `witness blocked` combination links its search record and census; a
+        # population screen record's named census is its `screen.tsv`.
         copies += [
             path.relative_to(REPO)
             for record in (REPO / surface).glob("witness-search-*/README.md")
-            for census in (record.with_name("census.tsv"), record.with_name("census.tsv.gz"))
+            for census in (
+                record.with_name("census.tsv"),
+                record.with_name("census.tsv.gz"),
+                record.with_name("screen.tsv"),
+            )
             if census.is_file()
             for path in (record, census)
             if path.parent.name != "witness-search-unproven-features"
@@ -24394,6 +24458,79 @@ class CountedOpenCombinationTests(unittest.TestCase):
             self.assertTrue(counted_combination_search(root, "combo-sample", reason))
             census_path.write_text("key\tsource\tdocument\ncombo-sample\tregistered\t\n", encoding="utf-8")
             self.assertFalse(counted_combination_search(root, "combo-sample", reason))
+
+    POPULATION_REASON = (
+        "`search incomplete` — [bounded search](openapi-surface/combination-populations/README.md#verdicts); "
+        "outstanding candidates: [named census](openapi-surface/combination-populations/screen.tsv)"
+    )
+    PENDING_ROW = (
+        "combo-tag-only-operation-id\tregistered\tbbci.co.uk\t-\t"
+        + "c" * 64
+        + "\tadmissible:MIT (info.license 'MIT')\texact\tcertified-screen-pending\n"
+    )
+    REJECTED_ROW = (
+        "combo-tag-only-operation-id\tapis-guru\tbbci.co.uk/1.0\t"
+        "https://raw.githubusercontent.com/APIs-guru/openapi-directory/"
+        + "f" * 40
+        + "/APIs/bbci.co.uk/1.0/openapi.yaml\t"
+        + "d" * 64
+        + "\tinadmissible:grants nothing\texact\trejected-licence\n"
+    )
+
+    def population_record(self, root: Path, readme: str, *rows: str) -> None:
+        record = root / "docs/openapi-surface/combination-populations"
+        record.mkdir(parents=True, exist_ok=True)
+        (record / "README.md").write_text(readme, encoding="utf-8", newline="\n")
+        header = "\t".join(population_screen().COLUMNS) + "\n"
+        (record / "screen.tsv").write_text(header + "".join(rows), encoding="utf-8", newline="\n")
+
+    def test_a_population_screen_record_counts_its_pending_candidates_through_the_reader(self) -> None:
+        key = "combo-tag-only-operation-id"
+        verdict = f"## Verdicts\n\n| `{key}` | `search-incomplete` | 1 | screened |\n"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.population_record(root, verdict, self.PENDING_ROW, self.REJECTED_ROW)
+            self.assertTrue(counted_combination_search(root, key, self.POPULATION_REASON))
+            # The README's count must be the table's certified-screen-pending count.
+            self.population_record(root, verdict.replace("| 1 |", "| 2 |"), self.PENDING_ROW, self.REJECTED_ROW)
+            self.assertFalse(counted_combination_search(root, key, self.POPULATION_REASON))
+            # A table the reader refuses (a duplicate, a status its licence and trigger do not give) counts nothing.
+            self.population_record(root, verdict, self.PENDING_ROW, self.PENDING_ROW)
+            self.assertFalse(counted_combination_search(root, key, self.POPULATION_REASON))
+            self.population_record(
+                root, verdict, self.PENDING_ROW.replace("certified-screen-pending", "rejected-licence")
+            )
+            self.assertFalse(counted_combination_search(root, key, self.POPULATION_REASON))
+            # Zero pending candidates stands only beside a population whose inputs were not retained.
+            zero = verdict.replace("| 1 |", "| 0 |")
+            self.population_record(root, zero, self.REJECTED_ROW)
+            self.assertFalse(counted_combination_search(root, key, self.POPULATION_REASON))
+            missing = f"\n## Missing populations\n\n| `{key}` | github | Bytes not retained on this host. |\n"
+            self.population_record(root, zero + missing, self.REJECTED_ROW)
+            self.assertTrue(counted_combination_search(root, key, self.POPULATION_REASON))
+
+    def test_restate_cites_the_population_record_and_refuses_a_count_the_table_does_not_hold(self) -> None:
+        restate = load_script("tools/surface-census/restate-coverage.py")
+        key = "combo-tag-only-operation-id"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertEqual(restate.LEDGER_REMAINDERS_REASON, restate.open_combination_search(root, {key}))
+            record = root / restate.POPULATION_RECORD
+            record.mkdir(parents=True)
+            header = "\t".join(population_screen().COLUMNS) + "\n"
+            (record / "screen.tsv").write_text(header + self.PENDING_ROW, encoding="utf-8", newline="\n")
+            (record / "README.md").write_text(
+                f"| `{key}` | `search-incomplete` | 1 | screened |\n", encoding="utf-8", newline="\n"
+            )
+            self.assertEqual(restate.POPULATION_REASON, restate.open_combination_search(root, {key}))
+            (record / "README.md").write_text(
+                f"| `{key}` | `search-incomplete` | 3 | screened |\n", encoding="utf-8", newline="\n"
+            )
+            with self.assertRaisesRegex(ValueError, "states 3 candidates, and screen.tsv holds 1"):
+                restate.open_combination_search(root, {key})
+            (record / "screen.tsv").write_text(header + self.PENDING_ROW * 2, encoding="utf-8", newline="\n")
+            with self.assertRaisesRegex(ValueError, "duplicates line 2"):
+                restate.open_combination_search(root, {key})
 
 
 class CompletePointerTraversalTests(unittest.TestCase):

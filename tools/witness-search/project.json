@@ -118,6 +118,37 @@
         "{workspaceRoot}/.coverage-data/witness-search/test-screen"
       ]
     },
+    "test-population-screen": {
+      "metadata": {
+        "description": "llmlint: ignore[new_command_or_client_gets_its_own_project] The task that added these commands fixes their reader at tools/witness-search/population_screen.py and requires the test that validates the committed table through it to live in the witness-search project; the commands reuse this project's guarded acquirer, rate-limit guard and screening stage by path, so a separate project would only re-declare those as cross-project edges."
+      },
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search/tests/population_screen_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search/test-population-screen/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/src/ir.rs",
+        "{workspaceRoot}/docs/openapi-surface/**/*",
+        "{workspaceRoot}/docs/openapi-surface-coverage.md",
+        "{workspaceRoot}/docs/corpus-licensing.md",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "censusScripts",
+        "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
+        "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search/test-population-screen"
+      ]
+    },
     "test-rate-limit-guard": {
       "executor": "nx:run-commands",
       "options": {
@@ -145,6 +176,7 @@
         "test-acquisition",
         "test-github",
         "test-screen",
+        "test-population-screen",
         "test-rate-limit-guard"
       ]
     },

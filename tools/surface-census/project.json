@@ -41,6 +41,7 @@
         "{workspaceRoot}/tools/witness-search/witness-search-redo.py",
         "{workspaceRoot}/tools/witness-search/rate_limit_guard.py",
         "{workspaceRoot}/tools/witness-search/witness-search-registries-index.py",
+        "{workspaceRoot}/tools/witness-search/population_screen.py",
         "{workspaceRoot}/scripts/census-python.sh",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/justfile",
