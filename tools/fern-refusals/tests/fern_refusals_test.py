@@ -47,6 +47,8 @@ SCRIPT_LOADS = (
     "tools/fern-refusals/sdk_evaluation.py",
     "tools/fern-refusals/sdk_evaluation_runtime.py",
     "assets/scaffolding/metadata.json",
+    # Read at import: the unsettled-record contract both gates share.
+    "docs/fern-refusals/unsettled-contract.json",
 )
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
@@ -326,6 +328,33 @@ class Drift(unittest.TestCase):
         # A decimal too long for a float is no bound, not an infinite one.
         self.edit_unsettled("bound_seconds: 0", "bound_seconds: " + "9" * 400)
         self.assert_check_fails_naming("bound_seconds must be the probe's positive per-stage bound")
+        self.edit_unsettled("bound_seconds: " + "9" * 400, "bound_seconds: 900")
+        # A timed-out stage whose elapsed seconds are no number, or no finite one,
+        # did not run to its bound either.
+        for elapsed in ("soon", "9" * 400):
+            with self.subTest(check_seconds=elapsed):
+                line = self.unsettled_field("check_seconds")
+                self.edit_unsettled(line, f"check_seconds: {elapsed}")
+                self.assert_check_fails_naming("check_exit must be `timeout` with check_seconds its elapsed seconds")
+                self.edit_unsettled(f"check_seconds: {elapsed}", line)
+
+    def test_an_unsettled_class_keeps_only_the_logs_of_its_refusal_record_s_pair(self) -> None:
+        # The history an unsettled class keeps is its refusal record's pair, and
+        # no other: once that record names a third pair, the retained logs fail
+        # even beside a valid unsettled record.
+        record = self.registry / "heap-exhausted" / "fern-refusal.txt"
+        text = record.read_text(encoding="utf-8").splitlines()
+        self.assertTrue(text[0].startswith("fern_cli_version: "), text[0])
+        text[0] = "fern_cli_version: 5.0.0"  # certified-pair: stand-in (a third pair)
+        record.write_text("\n".join(text) + "\n", encoding="utf-8")
+        result = run("check", registry=self.registry)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(
+            "heap-exhausted/single-child-probe.yml: its log "
+            "docs/fern-refusals/heap-exhausted/evaluation-logs/fern-single-child.log is not one `shapes` wrote at",
+            result.stderr,
+        )
+        self.assertNotIn("unsettled.txt", result.stderr)
 
     def test_an_unsettled_record_repeating_a_field_or_beside_an_unversioned_record_fails(self) -> None:
         line = self.unsettled_field("reason")
@@ -1598,7 +1627,7 @@ class MeasuredAtThePair(unittest.TestCase):
             (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
             (surface / "golden-reach-witnesses" / source / "candidates.jsonl").write_text("", encoding="utf-8")
         registry = root / "docs" / "fern-refusals"
-        registry.mkdir()
+        registry.mkdir(exist_ok=True)  # the script's loads put its contract there
         classes = rows(REGISTRY / "classes.tsv")
         self.class_row = next(row for row in classes[1:] if row[0] == self.CLASS)
         write_rows(registry / "classes.tsv", [classes[0], self.class_row])

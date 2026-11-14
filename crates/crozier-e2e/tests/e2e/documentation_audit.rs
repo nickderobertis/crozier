@@ -131,7 +131,8 @@ fn the_audit_reports_each_defect_class_on_its_line_and_nothing_in_crozier_s_tree
 
 /// A docstring example is read as the file writes it: an escaped `\n` inside
 /// one of its string literals is not a line break, and a call it documents is
-/// checked against the method it documents.
+/// checked against the method it documents. A module that does not parse is
+/// reported, not skipped.
 #[test]
 fn a_docstring_example_is_audited_as_the_client_module_writes_it() {
     let scratch = tempfile::tempdir().unwrap();
@@ -151,6 +152,17 @@ fn a_docstring_example_is_audited_as_the_client_module_writes_it() {
     assert_eq!(found.status, Some(1), "{}{}", found.stdout, found.stderr);
     assert_eq!(
         rows(&found, "call", "keyword `vehicles` is not a parameter").len(),
+        1,
+        "{}",
+        found.stdout
+    );
+    // A client module that does not parse has docstrings nobody can read: the
+    // module itself is the finding, never a silently skipped file.
+    std::fs::write(&client, format!("{text}\ndef broken(:\n")).unwrap();
+    let found = audit(&[&generated]);
+    assert_eq!(found.status, Some(1), "{}{}", found.stdout, found.stderr);
+    assert_eq!(
+        rows(&found, "syntax", "the module does not parse").len(),
         1,
         "{}",
         found.stdout
