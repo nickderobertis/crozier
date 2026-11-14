@@ -19707,7 +19707,7 @@ fn default_naming_derives_package_from_title() {
 }
 
 /// Every place a packaged SDK names its distribution names `distribution`, the
-/// import package `package` keeps its own spelling, and the tree still imports.
+/// import package `package` keeps its own spelling, and the tree still compiles.
 fn assert_distribution_name(out: &Path, package: &str, distribution: &str) {
     let read = |rel: &str| {
         std::fs::read_to_string(out.join(rel)).unwrap_or_else(|e| panic!("read {rel}: {e}"))
@@ -19782,7 +19782,6 @@ fn a_configured_project_name_is_written_as_fern_writes_a_distribution() {
             .assert()
             .success();
         assert_distribution_name(&out, "acme_billing", distribution);
-        // The import name is the module the README's snippets import.
         let readme = std::fs::read_to_string(out.join("README.md")).unwrap();
         assert!(readme.contains("from acme_billing import"), "{readme}");
         assert!(!readme.contains("from acme-billing"), "{readme}");
