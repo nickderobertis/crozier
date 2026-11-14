@@ -26021,11 +26021,6 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
     );
 }
 
-/// A class whose probe `findings.tsv` records Fern generating from is retiring:
-/// over the real binary, one whose probe crozier generates in both modes holds
-/// even though its last refusal record predates the pin, one whose probe crozier
-/// still refuses fails naming that, and a `refuse` class no finding names is
-/// held to refusing exactly as before — its stale record still fails.
 /// A class whose probe the pin ran past its bound keeps its earlier pair's
 /// refusal record only beside a complete `unsettled.txt` naming the pin, and is
 /// still held to crozier refusing its probe in both modes; an unsettled record
@@ -26181,6 +26176,11 @@ fn fern_refusal_gate_holds_an_unsettled_class_only_to_a_complete_record() {
     );
 }
 
+/// A class whose probe `findings.tsv` records Fern generating from is retiring:
+/// over the real binary, one whose probe crozier generates in both modes holds
+/// even though its last refusal record predates the pin, one whose probe crozier
+/// still refuses fails naming that, and a `refuse` class no finding names is
+/// held to refusing exactly as before — its stale record still fails.
 #[test]
 fn fern_refusal_gate_holds_a_retiring_class_to_generating() {
     let scratch = tempfile::tempdir().expect("tempdir");
