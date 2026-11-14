@@ -58,6 +58,7 @@ import yaml
 CORPUS_SOURCES = Path("tests/fixtures/corpus-sources")
 GENERATION_TIMEOUT_SECONDS = 1800
 LIST_INDEX = re.compile(r"0|[1-9][0-9]*")
+BAD_ESCAPE = re.compile(r"~(?![01])")
 
 
 def load_reader() -> ModuleType:
@@ -185,9 +186,10 @@ def corpus_source(root: Path, name: str) -> Path | None:
 
 
 def pointer_parts(pointer: object) -> list[str] | None:
-    """The unescaped tokens of a JSON pointer, or None when it is not one."""
+    """The unescaped tokens of a JSON pointer, or None when it is not one: RFC
+    6901 allows `~` only as `~0` or `~1`."""
     match pointer:
-        case str() if pointer.startswith("/"):
+        case str() if pointer.startswith("/") and not BAD_ESCAPE.search(pointer):
             return [part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/")]
         case _:
             return None

@@ -327,6 +327,12 @@ class RemeasureTests(unittest.TestCase):
             ),
             ("scalar", self.edits("deleted everything"), "is not a deletion at a JSON pointer"),
             ("absent", self.edits({**deletion, "pointer": "/info/summary"}), "/info/summary names nothing"),
+            ("bad-escape", self.edits({**deletion, "pointer": "/info/a~2b"}), "is not a deletion at a JSON pointer"),
+            (
+                "trailing-tilde",
+                self.edits({**deletion, "pointer": "/info/description~"}),
+                "is not a deletion at a JSON pointer",
+            ),
             ("negative", self.edits({**deletion, "pointer": "/tags/-1"}), "/tags/-1 names nothing"),
             ("past-the-end", self.edits({**deletion, "pointer": "/tags/2/name"}), "/tags/2/name names nothing"),
             ("other-fixture", self.edits(deletion, fixture="quay"), "names its fixture 'harbour'"),
