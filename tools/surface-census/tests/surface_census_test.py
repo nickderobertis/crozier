@@ -24480,9 +24480,9 @@ class CountedOpenCombinationTests(unittest.TestCase):
     def population_record(self, root: Path, readme: str, *rows: str) -> None:
         record = root / "docs/openapi-surface/combination-populations"
         record.mkdir(parents=True, exist_ok=True)
-        (record / "README.md").write_text(readme, encoding="utf-8")
+        (record / "README.md").write_text(readme, encoding="utf-8", newline="\n")
         header = "\t".join(population_screen().COLUMNS) + "\n"
-        (record / "screen.tsv").write_text(header + "".join(rows), encoding="utf-8")
+        (record / "screen.tsv").write_text(header + "".join(rows), encoding="utf-8", newline="\n")
 
     def test_a_population_screen_record_counts_its_pending_candidates_through_the_reader(self) -> None:
         key = "combo-tag-only-operation-id"
@@ -24518,13 +24518,17 @@ class CountedOpenCombinationTests(unittest.TestCase):
             record = root / restate.POPULATION_RECORD
             record.mkdir(parents=True)
             header = "\t".join(population_screen().COLUMNS) + "\n"
-            (record / "screen.tsv").write_text(header + self.PENDING_ROW, encoding="utf-8")
-            (record / "README.md").write_text(f"| `{key}` | `search-incomplete` | 1 | screened |\n", encoding="utf-8")
+            (record / "screen.tsv").write_text(header + self.PENDING_ROW, encoding="utf-8", newline="\n")
+            (record / "README.md").write_text(
+                f"| `{key}` | `search-incomplete` | 1 | screened |\n", encoding="utf-8", newline="\n"
+            )
             self.assertEqual(restate.POPULATION_REASON, restate.open_combination_search(root, {key}))
-            (record / "README.md").write_text(f"| `{key}` | `search-incomplete` | 3 | screened |\n", encoding="utf-8")
+            (record / "README.md").write_text(
+                f"| `{key}` | `search-incomplete` | 3 | screened |\n", encoding="utf-8", newline="\n"
+            )
             with self.assertRaisesRegex(ValueError, "states 3 candidates, and screen.tsv holds 1"):
                 restate.open_combination_search(root, {key})
-            (record / "screen.tsv").write_text(header + self.PENDING_ROW * 2, encoding="utf-8")
+            (record / "screen.tsv").write_text(header + self.PENDING_ROW * 2, encoding="utf-8", newline="\n")
             with self.assertRaisesRegex(ValueError, "duplicates line 2"):
                 restate.open_combination_search(root, {key})
 

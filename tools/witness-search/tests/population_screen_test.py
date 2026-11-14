@@ -945,7 +945,9 @@ class ScreenHarness(unittest.TestCase):
     def manifest(self, rows: list[list[str]]) -> Path:
         path = self.scratch / "population.tsv"
         path.write_text(
-            "\t".join(SCREEN.MANIFEST_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows), encoding="utf-8"
+            "\t".join(SCREEN.MANIFEST_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows),
+            encoding="utf-8",
+            newline="\n",
         )
         return path
 
@@ -1235,7 +1237,7 @@ class ManifestTests(ScreenHarness):
                 path = self.manifest(rows)
                 if header is not None:
                     lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
-                    path.write_text("\t".join(header) + "\n" + "".join(lines[1:]), encoding="utf-8")
+                    path.write_text("\t".join(header) + "\n" + "".join(lines[1:]), encoding="utf-8", newline="\n")
                 output = self.scratch / "screen.tsv"
                 done = self.run_cli(
                     "screen", "--manifest", str(path), "--output", str(output), "--store", str(self.store)
@@ -1290,7 +1292,9 @@ GOOD = (
 class ReaderTests(ScreenHarness):
     def table(self, *rows: tuple[str, ...], header: tuple[str, ...] = SCREEN.COLUMNS) -> Path:
         path = self.scratch / "table.tsv"
-        path.write_text("\t".join(header) + "\n" + "".join("\t".join(row) + "\n" for row in rows), encoding="utf-8")
+        path.write_text(
+            "\t".join(header) + "\n" + "".join("\t".join(row) + "\n" for row in rows), encoding="utf-8", newline="\n"
+        )
         return path
 
     def test_a_whole_table_is_read_and_counted(self) -> None:
@@ -1408,7 +1412,9 @@ class AcquisitionTests(ScreenHarness):
     def identities(self, rows: list[tuple[str, ...]]) -> Path:
         path = self.scratch / "identities.tsv"
         path.write_text(
-            "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows), encoding="utf-8"
+            "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in rows),
+            encoding="utf-8",
+            newline="\n",
         )
         return path
 
@@ -1543,6 +1549,7 @@ class AcquisitionRecoveryTests(ScreenHarness):
             )
             + "\n",
             encoding="utf-8",
+            newline="\n",
         )
         evidence = self.scratch / "evidence"
         self.env["CROZIER_RAW_GITHUB_URL"] = f"http://127.0.0.1:{closed}"
@@ -1579,7 +1586,9 @@ class AcquisitionRecoveryTests(ScreenHarness):
         self.server.files[f"/acme/kept/{COMMIT}/openapi.yaml"] = document
         plan = self.scratch / "plan.tsv"
         identity = ("github", "acme/kept/openapi.yaml", "acme/kept", COMMIT, "openapi.yaml", digest, "", "1")
-        plan.write_text("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(identity) + "\n", encoding="utf-8")
+        plan.write_text(
+            "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(identity) + "\n", encoding="utf-8", newline="\n"
+        )
         done = self.run_cli(
             "acquire",
             "--identities",
@@ -1610,7 +1619,7 @@ class AcquisitionRecoveryTests(ScreenHarness):
             ),
         ):
             with self.subTest(message=message):
-                plan.write_text(header + "\t".join(row) + "\n", encoding="utf-8")
+                plan.write_text(header + "\t".join(row) + "\n", encoding="utf-8", newline="\n")
                 done = self.run_cli("acquire", "--identities", str(plan), "--evidence", str(self.scratch / "e"))
                 self.assertEqual(1, done.returncode)
                 self.assertIn(message, done.stderr)
@@ -1640,6 +1649,7 @@ class ContractDriftTests(unittest.TestCase):
             path.write_text(
                 text.replace("operation.operationId:tag-only&", "operation.operationId:no-such-predicate&", 1),
                 encoding="utf-8",
+                newline="\n",
             )
             with self.assertRaisesRegex(
                 SCREEN.ScreenError, "combo-tag-only-operation-id's selector is none the census reads"
@@ -1795,6 +1805,7 @@ class BuildHarness(ScreenHarness):
             f"acme/lost:openapi.json@{'9' * 40}\t{'a' * 64}\t-\t-\tdiffers\t-\t-\n"
             f"(bytes only, no recorded provenance) —\t{'0' * 64}\t-\t-\trefused-by-ruling\t-\t-\n",
             encoding="utf-8",
+            newline="\n",
         )
         fixtures = self.root / "tests" / "fixtures"
         (fixtures / "corpus-sources" / "sample-api").mkdir(parents=True)
@@ -1804,6 +1815,7 @@ class BuildHarness(ScreenHarness):
             "# header\nsample-api\ttests/fixtures/corpus-sources/sample-api/openapi.json\t"
             "https://raw.githubusercontent.com/acme/sample/" + "a" * 40 + "/openapi.json\t-\n",
             encoding="utf-8",
+            newline="\n",
         )
         (fixtures / "CORPUS.md").write_text(
             "| # | name | method | source | pinned ref | license | decision | shapes |\n|---:|---|---|---|---|---|---|---|\n"
@@ -1811,6 +1823,7 @@ class BuildHarness(ScreenHarness):
             + "a" * 40
             + "/openapi.json | `aaaa` | MIT (repository LICENSE at the pinned revision) | committed | sample |\n",
             encoding="utf-8",
+            newline="\n",
         )
         self.archive = self.scratch / "archive"
         archived = self.archive / "APIs" / "acme.local" / "1.0" / "openapi.json"
@@ -1822,6 +1835,7 @@ class BuildHarness(ScreenHarness):
             "walk\tdocument\trevision\tsha256\nAPIs-guru/openapi-directory\tAPIs/acme.local/1.0/openapi.json\t"
             f"{BUILD.ARCHIVE_REVISION}\t{hashlib.sha256(self.registered).hexdigest()}\n",
             encoding="utf-8",
+            newline="\n",
         )
         census = surface / "witness-search-ledger-remainders" / "census.tsv"
         census.parent.mkdir(parents=True)
@@ -1831,6 +1845,7 @@ class BuildHarness(ScreenHarness):
             f"combo-map-beside-oneof\tapis-guru\tAPIs/acme.local/1.0/openapi.yaml\t-\t1\tunscreened\t-\n"
             f"combo-header-string-default\thanded-off\tacme/lost:openapi.json@{'9' * 40}\t-\t1\tunscreened\t-\n",
             encoding="utf-8",
+            newline="\n",
         )
         for relative in BUILD.COMBINATION_CENSUSES:
             self.combination_census(relative, [])
@@ -1849,11 +1864,11 @@ class BuildHarness(ScreenHarness):
         else:
             header = ("key", "source", "document", "sites", "sha256", "screening")
             text = "\t".join(header) + "\n" + "".join("\t".join((*row[:3], "1", row[3], "-")) + "\n" for row in rows)
-            path.write_text(text, encoding="utf-8")
+            path.write_text(text, encoding="utf-8", newline="\n")
 
     def write(self, path: Path, rows: list[dict[str, Any]]) -> None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+        path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8", newline="\n")
 
     def build(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -1917,6 +1932,7 @@ class BuildTests(BuildHarness):
         hits.write_text(
             "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n" + "\t".join(mirror) + "\n",
             encoding="utf-8",
+            newline="\n",
         )
         ledger = self.scratch / "acquisitions.jsonl"
         self.write(
@@ -2116,7 +2132,7 @@ class BuildTests(BuildHarness):
             fetch_file=lambda *_args: None,
             discover=False,
         )
-        table.write_text(SCREEN.render(screened), encoding="utf-8")
+        table.write_text(SCREEN.render(screened), encoding="utf-8", newline="\n")
         rows = {(row.key, row.population, row.document): row for row in SCREEN.read_screen(table)}
         far = rows[(KEY_M, "sourcegraph", "acme/far/spec/openapi.yaml")]
         self.assertEqual(
@@ -2252,6 +2268,7 @@ class BuildTests(BuildHarness):
             census.read_text(encoding="utf-8")
             + "combo-tag-only-operation-id\tregistered\tno-such-row\t-\t1\tunscreened\t-\n",
             encoding="utf-8",
+            newline="\n",
         )
         unmatched = self.build(*args)
         self.assertEqual(1, unmatched.returncode)
@@ -2260,11 +2277,12 @@ class BuildTests(BuildHarness):
         handed.write_text(
             handed.read_text(encoding="utf-8") + f"acme/x:openapi.json@main\t{'1' * 64}\t-\t-\tdiffers\t-\t-\n",
             encoding="utf-8",
+            newline="\n",
         )
         malformed = self.build("identities", "--output", str(plan))
         self.assertEqual(1, malformed.returncode)
         self.assertIn("'acme/x:openapi.json@main' is no repository:path@commit", malformed.stderr)
-        handed.write_text(handed.read_text(encoding="utf-8").rsplit("\n", 2)[0] + "\n", encoding="utf-8")
+        handed.write_text(handed.read_text(encoding="utf-8").rsplit("\n", 2)[0] + "\n", encoding="utf-8", newline="\n")
         for path, line, message in (
             (handed, f"\t{'1' * 64}\t-\t-\tdiffers\t-\t-\n", "names no document and SHA-256 of its bytes"),
             (census, "combo-nope\tregistered\tsample-api\t-\t1\tunscreened\t-\n", "key 'combo-nope' is none of"),
@@ -2282,12 +2300,12 @@ class BuildTests(BuildHarness):
         ):
             with self.subTest(message=message):
                 before = path.read_text(encoding="utf-8")
-                path.write_text(before + line, encoding="utf-8")
+                path.write_text(before + line, encoding="utf-8", newline="\n")
                 refused = self.build(*args)
                 self.assertEqual(1, refused.returncode)
                 self.assertIn(message, refused.stderr)
                 self.assertNotIn("Traceback", refused.stderr)
-                path.write_text(before, encoding="utf-8")
+                path.write_text(before, encoding="utf-8", newline="\n")
 
     def test_handed_off_bytes_are_recovered_from_the_tree_or_the_preflight_cache_into_an_empty_store(self) -> None:
         plan = self.scratch / "plan.tsv.gz"
@@ -2296,7 +2314,9 @@ class BuildTests(BuildHarness):
         handed = self.root / "docs/fern-measurements/handed-off/documents.tsv"
         lost = json.dumps(CASES[4][1]).encode()
         handed.write_text(
-            handed.read_text(encoding="utf-8").replace("a" * 64, hashlib.sha256(lost).hexdigest()), encoding="utf-8"
+            handed.read_text(encoding="utf-8").replace("a" * 64, hashlib.sha256(lost).hexdigest()),
+            encoding="utf-8",
+            newline="\n",
         )
         committed = self.root / "tests/fixtures/corpus-sources/sample-api/handed.json"
         committed.write_bytes(self.handed_bytes)
@@ -2416,7 +2436,9 @@ class BuildTests(BuildHarness):
         blob = f"blob:{SCREEN.blob_sha(fetched)}"
         hits = self.scratch / "hits.tsv"
         hit = ("github", "acme/moved/openapi.json", "acme/moved", "b" * 40, "openapi.json", blob, "", "3")
-        hits.write_text("\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n", encoding="utf-8")
+        hits.write_text(
+            "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n", encoding="utf-8", newline="\n"
+        )
         ledger = self.scratch / "acquisitions.jsonl"
         output = self.scratch / "population.tsv"
         args = (
@@ -2695,16 +2717,18 @@ class RecordTests(unittest.TestCase):
         for key, count in SCREEN.pending_counts(rows).items():
             self.assertIn(f"| `{key}` | `search-incomplete` | {count} |", readme)
         self.assertEqual(0, self.record_cli("--check").returncode)
-        (self.record / "README.md").write_text(readme.replace("search-incomplete", "exhausted", 1), encoding="utf-8")
+        (self.record / "README.md").write_text(
+            readme.replace("search-incomplete", "exhausted", 1), encoding="utf-8", newline="\n"
+        )
         stale = self.record_cli("--check")
         self.assertEqual(1, stale.returncode)
         self.assertIn("is not what its evidence gives", stale.stderr)
         calls = self.record / "acquisition" / "raw-github-calls.jsonl"
-        calls.write_text(calls.read_text(encoding="utf-8") + '{"at": "x"}\n', encoding="utf-8")
+        calls.write_text(calls.read_text(encoding="utf-8") + '{"at": "x"}\n', encoding="utf-8", newline="\n")
         malformed = self.record_cli("--check")
         self.assertEqual(1, malformed.returncode)
         self.assertRegex(malformed.stderr, r"raw-github-calls\.jsonl:\d+ is no record carrying at, status, url")
-        calls.write_text(calls.read_text(encoding="utf-8").rsplit("\n", 2)[0] + "\n", encoding="utf-8")
+        calls.write_text(calls.read_text(encoding="utf-8").rsplit("\n", 2)[0] + "\n", encoding="utf-8", newline="\n")
         for log, line, message in (
             (
                 self.record / "search" / "rate-limit-calls.jsonl",
@@ -2719,14 +2743,14 @@ class RecordTests(unittest.TestCase):
         ):
             with self.subTest(log=log.name):
                 before = log.read_text(encoding="utf-8") if log.is_file() else None
-                log.write_text((before or "") + line + "\n", encoding="utf-8")
+                log.write_text((before or "") + line + "\n", encoding="utf-8", newline="\n")
                 refused = self.record_cli("--check")
                 self.assertEqual(1, refused.returncode)
                 self.assertRegex(refused.stderr, message)
                 if before is None:
                     log.unlink()
                 else:
-                    log.write_text(before, encoding="utf-8")
+                    log.write_text(before, encoding="utf-8", newline="\n")
         (self.record / "acquisition" / "acquisitions.jsonl").unlink()
         missing = self.record_cli()
         self.assertEqual(1, missing.returncode)
