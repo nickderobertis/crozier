@@ -1,6 +1,6 @@
 # Reference
 ## Case Docket API
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_attorney_by_id</a>(...) -> typing.Optional[Attorney]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L42-L73">get_attorney_by_id</a>(...) -> typing.Optional[Attorney]</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.case_docket_api.get_attorney_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_attorney_associated_parties</a>(...) -> typing.Optional[PartyAttorneyAssociations]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L75-L115">get_attorney_associated_parties</a>(...) -> typing.Optional[PartyAttorneyAssociations]</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.case_docket_api.get_attorney_associated_parties(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case</a>(...) -> typing.Optional[Case]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L117-L148">get_case</a>(...) -> typing.Optional[Case]</code></summary>
 <dl>
 <dd>
 
@@ -227,7 +227,7 @@ client.case_docket_api.get_case(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case_attorneys</a>(...) -> typing.Optional[Attorneys]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L150-L194">get_case_attorneys</a>(...) -> typing.Optional[Attorneys]</code></summary>
 <dl>
 <dd>
 
@@ -316,7 +316,7 @@ client.case_docket_api.get_case_attorneys(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case_docket_entries</a>(...) -> typing.Optional[DocketEntries]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L196-L248">get_case_docket_entries</a>(...) -> typing.Optional[DocketEntries]</code></summary>
 <dl>
 <dd>
 
@@ -413,7 +413,7 @@ client.case_docket_api.get_case_docket_entries(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_primary_documents_for_docket_entries</a>(...) -> typing.Optional[DocketEntryPrimaryDocuments]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L250-L321">get_primary_documents_for_docket_entries</a>(...) -> typing.Optional[DocketEntryPrimaryDocuments]</code></summary>
 <dl>
 <dd>
 
@@ -530,7 +530,7 @@ client.case_docket_api.get_primary_documents_for_docket_entries(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_secondary_documents_for_docket_entries</a>(...) -> typing.Optional[DocketEntrySecondaryDocuments]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L323-L394">get_secondary_documents_for_docket_entries</a>(...) -> typing.Optional[DocketEntrySecondaryDocuments]</code></summary>
 <dl>
 <dd>
 
@@ -647,7 +647,7 @@ client.case_docket_api.get_secondary_documents_for_docket_entries(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case_hearings</a>(...) -> typing.Optional[Hearings]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L396-L441">get_case_hearings</a>(...) -> typing.Optional[Hearings]</code></summary>
 <dl>
 <dd>
 
@@ -737,7 +737,7 @@ client.case_docket_api.get_case_hearings(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case_judges</a>(...) -> typing.Optional[Judges]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L443-L487">get_case_judges</a>(...) -> typing.Optional[Judges]</code></summary>
 <dl>
 <dd>
 
@@ -826,7 +826,7 @@ client.case_docket_api.get_case_judges(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case_parties</a>(...) -> typing.Optional[Parties]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L489-L559">get_case_parties</a>(...) -> typing.Optional[Parties]</code></summary>
 <dl>
 <dd>
 
@@ -950,7 +950,7 @@ client.case_docket_api.get_case_parties(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_case_related_cases</a>(...) -> typing.Optional[RelatedCases]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L561-L601">get_case_related_cases</a>(...) -> typing.Optional[RelatedCases]</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.case_docket_api.get_case_related_cases(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_judge_by_id</a>(...) -> typing.Optional[Judge]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L603-L634">get_judge_by_id</a>(...) -> typing.Optional[Judge]</code></summary>
 <dl>
 <dd>
 
@@ -1104,7 +1104,7 @@ client.case_docket_api.get_judge_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_party_by_id</a>(...) -> typing.Optional[Party]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L636-L667">get_party_by_id</a>(...) -> typing.Optional[Party]</code></summary>
 <dl>
 <dd>
 
@@ -1177,7 +1177,7 @@ client.case_docket_api.get_party_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py">get_party_associated_attorneys</a>(...) -> typing.Optional[PartyAttorneyAssociations]</code></summary>
+<details><summary><code>client.case_docket_api.<a href="src/fern/case_docket_api/client.py#L669-L709">get_party_associated_attorneys</a>(...) -> typing.Optional[PartyAttorneyAssociations]</code></summary>
 <dl>
 <dd>
 
@@ -1259,7 +1259,7 @@ client.case_docket_api.get_party_associated_attorneys(
 </details>
 
 ## Usage API
-<details><summary><code>client.usage_api.<a href="src/fern/usage_api/client.py">get_billing_usage_by_billing_cycle</a>(...) -> BillingCycleUsageResponse</code></summary>
+<details><summary><code>client.usage_api.<a href="src/fern/usage_api/client.py#L29-L60">get_billing_usage_by_billing_cycle</a>(...) -> BillingCycleUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1332,7 +1332,7 @@ client.usage_api.get_billing_usage_by_billing_cycle(
 </dl>
 </details>
 
-<details><summary><code>client.usage_api.<a href="src/fern/usage_api/client.py">get_billing_cycles</a>() -> BillingCyclesResponse</code></summary>
+<details><summary><code>client.usage_api.<a href="src/fern/usage_api/client.py#L62-L86">get_billing_cycles</a>() -> BillingCyclesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1395,7 +1395,7 @@ client.usage_api.get_billing_cycles()
 </dl>
 </details>
 
-<details><summary><code>client.usage_api.<a href="src/fern/usage_api/client.py">get_daily_usage_by_date</a>(...) -> DailyUsageResponse</code></summary>
+<details><summary><code>client.usage_api.<a href="src/fern/usage_api/client.py#L88-L123">get_daily_usage_by_date</a>(...) -> DailyUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1470,7 +1470,7 @@ client.usage_api.get_daily_usage_by_date(
 </details>
 
 ## CallbackApi
-<details><summary><code>client.callback_api.<a href="src/fern/callback_api/client.py">get_callbacks</a>(...) -> CallbackListResponse</code></summary>
+<details><summary><code>client.callback_api.<a href="src/fern/callback_api/client.py#L28-L64">get_callbacks</a>(...) -> CallbackListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1550,7 +1550,7 @@ client.callback_api.get_callbacks()
 </details>
 
 ## Case Documents API
-<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py">get_case_documents</a>(...) -> typing.Optional[CaseDocuments]</code></summary>
+<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py#L37-L115">get_case_documents</a>(...) -> typing.Optional[CaseDocuments]</code></summary>
 <dl>
 <dd>
 
@@ -1675,7 +1675,7 @@ client.case_documents_api.get_case_documents(
 </dl>
 </details>
 
-<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py">get_document_by_id</a>(...) -> typing.Optional[CaseDocument]</code></summary>
+<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py#L117-L148">get_document_by_id</a>(...) -> typing.Optional[CaseDocument]</code></summary>
 <dl>
 <dd>
 
@@ -1748,7 +1748,7 @@ client.case_documents_api.get_document_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py">get_case_document_download_by_id</a>(...) -> GetCaseDocumentDownloadByIdResponse</code></summary>
+<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py#L150-L190">get_case_document_download_by_id</a>(...) -> GetCaseDocumentDownloadByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -1829,7 +1829,7 @@ client.case_documents_api.get_case_document_download_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py">order_case_document</a>(...) -> CaseDocumentOrderCallback</code></summary>
+<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py#L192-L239">order_case_document</a>(...) -> CaseDocumentOrderCallback</code></summary>
 <dl>
 <dd>
 
@@ -1919,7 +1919,7 @@ client.case_documents_api.order_case_document(
 </dl>
 </details>
 
-<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py">get_case_document_order_callbacks</a>(...) -> CaseDocumentOrderCallbackListResponse</code></summary>
+<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py#L241-L284">get_case_document_order_callbacks</a>(...) -> CaseDocumentOrderCallbackListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2009,7 +2009,7 @@ Page to fetch the Case Document Order Callback list.<br>
 </dl>
 </details>
 
-<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py">get_case_document_order_callback_by_id</a>(...) -> CaseDocumentOrderCallback</code></summary>
+<details><summary><code>client.case_documents_api.<a href="src/fern/case_documents_api/client.py#L286-L319">get_case_document_order_callback_by_id</a>(...) -> CaseDocumentOrderCallback</code></summary>
 <dl>
 <dd>
 
@@ -2083,7 +2083,7 @@ client.case_documents_api.get_case_document_order_callback_by_id(
 </details>
 
 ## Case Analytics API
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_area_of_law</a>(...) -> CaseCountAnalyticsByAreaOfLawResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L44-L114">get_case_count_analytics_by_area_of_law</a>(...) -> CaseCountAnalyticsByAreaOfLawResponse</code></summary>
 <dl>
 <dd>
 
@@ -2196,7 +2196,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_case_class</a>(...) -> CaseCountAnalyticsByCaseClassResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L116-L186">get_case_count_analytics_by_case_class</a>(...) -> CaseCountAnalyticsByCaseClassResponse</code></summary>
 <dl>
 <dd>
 
@@ -2309,7 +2309,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_case_filed_date</a>(...) -> CaseCountAnalyticsByCaseFiledDateResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L188-L263">get_case_count_analytics_by_case_filed_date</a>(...) -> CaseCountAnalyticsByCaseFiledDateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2431,7 +2431,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_case_type</a>(...) -> CaseCountAnalyticsByCaseTypeResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L265-L335">get_case_count_analytics_by_case_type</a>(...) -> CaseCountAnalyticsByCaseTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2544,7 +2544,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_case_type_group</a>(...) -> CaseCountAnalyticsByCaseTypeGroupResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L337-L407">get_case_count_analytics_by_case_type_group</a>(...) -> CaseCountAnalyticsByCaseTypeGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -2657,7 +2657,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_court</a>(...) -> CaseCountAnalyticsByCourtResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L409-L479">get_case_count_analytics_by_court</a>(...) -> CaseCountAnalyticsByCourtResponse</code></summary>
 <dl>
 <dd>
 
@@ -2770,7 +2770,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_court_location</a>(...) -> CaseCountAnalyticsByCourtLocationResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L481-L551">get_case_count_analytics_by_court_location</a>(...) -> CaseCountAnalyticsByCourtLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2883,7 +2883,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_court_system</a>(...) -> CaseCountAnalyticsByCourtSystemResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L553-L623">get_case_count_analytics_by_court_system</a>(...) -> CaseCountAnalyticsByCourtSystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -2996,7 +2996,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_court_type</a>(...) -> CaseCountAnalyticsByCourtTypeResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L625-L695">get_case_count_analytics_by_court_type</a>(...) -> CaseCountAnalyticsByCourtTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3109,7 +3109,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_jurisdiction_geo</a>(...) -> CaseCountAnalyticsByJurisdictionGeoResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L697-L767">get_case_count_analytics_by_jurisdiction_geo</a>(...) -> CaseCountAnalyticsByJurisdictionGeoResponse</code></summary>
 <dl>
 <dd>
 
@@ -3222,7 +3222,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_norm_attorney</a>(...) -> CaseCountAnalyticsByNormAttorneyResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L769-L839">get_case_count_analytics_by_norm_attorney</a>(...) -> CaseCountAnalyticsByNormAttorneyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3335,7 +3335,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_norm_judge</a>(...) -> CaseCountAnalyticsByNormJudgeResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L841-L907">get_case_count_analytics_by_norm_judge</a>(...) -> CaseCountAnalyticsByNormJudgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3444,7 +3444,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_norm_law_firm</a>(...) -> CaseCountAnalyticsByNormLawFirmResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L909-L979">get_case_count_analytics_by_norm_law_firm</a>(...) -> CaseCountAnalyticsByNormLawFirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -3557,7 +3557,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_norm_party</a>(...) -> CaseCountAnalyticsByNormPartyResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L981-L1051">get_case_count_analytics_by_norm_party</a>(...) -> CaseCountAnalyticsByNormPartyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3670,7 +3670,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_party_role</a>(...) -> CaseCountAnalyticsByPartyRoleResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L1053-L1120">get_case_count_analytics_by_party_role</a>(...) -> CaseCountAnalyticsByPartyRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -3780,7 +3780,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_party_role_group</a>(...) -> CaseCountAnalyticsByPartyRoleGroupResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L1122-L1189">get_case_count_analytics_by_party_role_group</a>(...) -> CaseCountAnalyticsByPartyRoleGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -3890,7 +3890,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_opposing_norm_attorney_for_a_norm_attorney</a>(...) -> CaseCountAnalyticsByNormAttorneyResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L1191-L1267">get_case_count_analytics_by_opposing_norm_attorney_for_a_norm_attorney</a>(...) -> CaseCountAnalyticsByNormAttorneyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4015,7 +4015,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_opposing_norm_law_firm_for_a_norm_law_firm</a>(...) -> CaseCountAnalyticsByNormLawFirmResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L1269-L1345">get_case_count_analytics_by_opposing_norm_law_firm_for_a_norm_law_firm</a>(...) -> CaseCountAnalyticsByNormLawFirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -4140,7 +4140,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py">get_case_count_analytics_by_opposing_norm_party_for_a_norm_party</a>(...) -> CaseCountAnalyticsByNormPartyResponse</code></summary>
+<details><summary><code>client.case_analytics_api.<a href="src/fern/case_analytics_api/client.py#L1347-L1423">get_case_count_analytics_by_opposing_norm_party_for_a_norm_party</a>(...) -> CaseCountAnalyticsByNormPartyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4266,7 +4266,7 @@ Page number.
 </details>
 
 ## Case Export API
-<details><summary><code>client.case_export_api.<a href="src/fern/case_export_api/client.py">get_case_export_callbacks</a>(...) -> CaseExportCallbackListResponse</code></summary>
+<details><summary><code>client.case_export_api.<a href="src/fern/case_export_api/client.py#L29-L74">get_case_export_callbacks</a>(...) -> CaseExportCallbackListResponse</code></summary>
 <dl>
 <dd>
 
@@ -4358,7 +4358,7 @@ The page number of the callbacks to be retrieved.<br>
 </dl>
 </details>
 
-<details><summary><code>client.case_export_api.<a href="src/fern/case_export_api/client.py">get_case_export_callback_by_id</a>(...) -> CaseExportCallback</code></summary>
+<details><summary><code>client.case_export_api.<a href="src/fern/case_export_api/client.py#L76-L109">get_case_export_callback_by_id</a>(...) -> CaseExportCallback</code></summary>
 <dl>
 <dd>
 
@@ -4431,7 +4431,7 @@ client.case_export_api.get_case_export_callback_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_export_api.<a href="src/fern/case_export_api/client.py">export_case</a>(...) -> CaseExportCallback</code></summary>
+<details><summary><code>client.case_export_api.<a href="src/fern/case_export_api/client.py#L111-L142">export_case</a>(...) -> CaseExportCallback</code></summary>
 <dl>
 <dd>
 
@@ -4505,7 +4505,7 @@ client.case_export_api.export_case(
 </details>
 
 ## Case Search API
-<details><summary><code>client.case_search_api.<a href="src/fern/case_search_api/client.py">search_cases</a>(...) -> CaseSearchResponse</code></summary>
+<details><summary><code>client.case_search_api.<a href="src/fern/case_search_api/client.py#L28-L139">search_cases</a>(...) -> CaseSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -4667,7 +4667,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </dl>
 </details>
 
-<details><summary><code>client.case_search_api.<a href="src/fern/case_search_api/client.py">search_cases_by_id</a>(...) -> CaseSearchResponse</code></summary>
+<details><summary><code>client.case_search_api.<a href="src/fern/case_search_api/client.py#L141-L184">search_cases_by_id</a>(...) -> CaseSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -4754,7 +4754,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </details>
 
 ## Case Tracking API
-<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py">track_case</a>(...) -> Success</code></summary>
+<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py#L34-L78">track_case</a>(...) -> Success</code></summary>
 <dl>
 <dd>
 
@@ -4845,7 +4845,7 @@ client.case_tracking_api.track_case(
 </dl>
 </details>
 
-<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py">get_case_track_by_id</a>(...) -> CaseTrack</code></summary>
+<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py#L80-L111">get_case_track_by_id</a>(...) -> CaseTrack</code></summary>
 <dl>
 <dd>
 
@@ -4918,7 +4918,7 @@ client.case_tracking_api.get_case_track_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py">remove_case_track_by_id</a>(...) -> Success</code></summary>
+<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py#L113-L144">remove_case_track_by_id</a>(...) -> Success</code></summary>
 <dl>
 <dd>
 
@@ -4991,7 +4991,7 @@ client.case_tracking_api.remove_case_track_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py">get_case_tracks</a>(...) -> CaseTrackListResponse</code></summary>
+<details><summary><code>client.case_tracking_api.<a href="src/fern/case_tracking_api/client.py#L146-L194">get_case_tracks</a>(...) -> CaseTrackListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5084,7 +5084,7 @@ The page number of the results to be retrieved.<br>
 </details>
 
 ## Case Update API
-<details><summary><code>client.case_update_api.<a href="src/fern/case_update_api/client.py">update_case</a>(...) -> CaseUpdate</code></summary>
+<details><summary><code>client.case_update_api.<a href="src/fern/case_update_api/client.py#L33-L72">update_case</a>(...) -> CaseUpdate</code></summary>
 <dl>
 <dd>
 
@@ -5157,7 +5157,7 @@ client.case_update_api.update_case(
 </dl>
 </details>
 
-<details><summary><code>client.case_update_api.<a href="src/fern/case_update_api/client.py">get_case_update_by_case_id</a>(...) -> CaseUpdate</code></summary>
+<details><summary><code>client.case_update_api.<a href="src/fern/case_update_api/client.py#L74-L105">get_case_update_by_case_id</a>(...) -> CaseUpdate</code></summary>
 <dl>
 <dd>
 
@@ -5230,7 +5230,7 @@ client.case_update_api.get_case_update_by_case_id(
 </dl>
 </details>
 
-<details><summary><code>client.case_update_api.<a href="src/fern/case_update_api/client.py">get_case_updates</a>(...) -> CaseUpdateListResponse</code></summary>
+<details><summary><code>client.case_update_api.<a href="src/fern/case_update_api/client.py#L107-L161">get_case_updates</a>(...) -> CaseUpdateListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5332,7 +5332,7 @@ The page number of the callbacks to be retrieved.<br>
 </details>
 
 ## Court Availability API
-<details><summary><code>client.court_availability_api.<a href="src/fern/court_availability_api/client.py">get_court_coverage</a>(...) -> typing.Optional[CourtCoverage]</code></summary>
+<details><summary><code>client.court_availability_api.<a href="src/fern/court_availability_api/client.py#L26-L57">get_court_coverage</a>(...) -> typing.Optional[CourtCoverage]</code></summary>
 <dl>
 <dd>
 
@@ -5406,7 +5406,7 @@ client.court_availability_api.get_court_coverage(
 </details>
 
 ## Authentication API
-<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py">generate_new_token</a>(...) -> AccessTokenResponse</code></summary>
+<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py#L31-L68">generate_new_token</a>(...) -> AccessTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -5480,7 +5480,7 @@ client.authentication_api.generate_new_token(
 </dl>
 </details>
 
-<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py">invalidate_all_tokens</a>(...) -> Success</code></summary>
+<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py#L70-L107">invalidate_all_tokens</a>(...) -> Success</code></summary>
 <dl>
 <dd>
 
@@ -5554,7 +5554,7 @@ client.authentication_api.invalidate_all_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py">invalidate_token</a>(...) -> Success</code></summary>
+<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py#L109-L155">invalidate_token</a>(...) -> Success</code></summary>
 <dl>
 <dd>
 
@@ -5645,7 +5645,7 @@ client.authentication_api.invalidate_token(
 </dl>
 </details>
 
-<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py">list_all_token_ids</a>(...) -> AccessTokenIdListResponse</code></summary>
+<details><summary><code>client.authentication_api.<a href="src/fern/authentication_api/client.py#L157-L194">list_all_token_ids</a>(...) -> AccessTokenIdListResponse</code></summary>
 <dl>
 <dd>
 
@@ -5720,7 +5720,7 @@ client.authentication_api.list_all_token_ids(
 </details>
 
 ## Court Standards API
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_areas_of_law</a>(...) -> AreaOfLawResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L139-L201">get_areas_of_law</a>(...) -> AreaOfLawResponse</code></summary>
 <dl>
 <dd>
 
@@ -5833,7 +5833,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_area_of_law</a>(...) -> AreaOfLaw</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L203-L234">get_area_of_law</a>(...) -> AreaOfLaw</code></summary>
 <dl>
 <dd>
 
@@ -5906,7 +5906,7 @@ client.court_standards_api.get_area_of_law(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_attorney_representation_types</a>(...) -> AttorneyRepresentationTypeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L236-L297">get_attorney_representation_types</a>(...) -> AttorneyRepresentationTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -6018,7 +6018,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_attorney_representation_type</a>(...) -> typing.Optional[AttorneyRepresentationType]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L299-L332">get_attorney_representation_type</a>(...) -> typing.Optional[AttorneyRepresentationType]</code></summary>
 <dl>
 <dd>
 
@@ -6091,7 +6091,7 @@ client.court_standards_api.get_attorney_representation_type(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_attorney_types</a>(...) -> AttorneyTypeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L334-L396">get_attorney_types</a>(...) -> AttorneyTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -6204,7 +6204,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_attorney_type</a>(...) -> typing.Optional[AttorneyType]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L398-L429">get_attorney_type</a>(...) -> typing.Optional[AttorneyType]</code></summary>
 <dl>
 <dd>
 
@@ -6277,7 +6277,7 @@ client.court_standards_api.get_attorney_type(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_cases_class</a>(...) -> CaseClassResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L431-L493">get_cases_class</a>(...) -> CaseClassResponse</code></summary>
 <dl>
 <dd>
 
@@ -6390,7 +6390,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_class</a>(...) -> CaseClass</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L495-L526">get_case_class</a>(...) -> CaseClass</code></summary>
 <dl>
 <dd>
 
@@ -6463,7 +6463,7 @@ client.court_standards_api.get_case_class(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_relationship_types</a>(...) -> CaseRelationshipTypeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L528-L590">get_case_relationship_types</a>(...) -> CaseRelationshipTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -6576,7 +6576,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_relationship_type</a>(...) -> typing.Optional[CaseRelationshipType]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L592-L625">get_case_relationship_type</a>(...) -> typing.Optional[CaseRelationshipType]</code></summary>
 <dl>
 <dd>
 
@@ -6649,7 +6649,7 @@ client.court_standards_api.get_case_relationship_type(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_cases_status</a>(...) -> CaseStatusResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L627-L689">get_cases_status</a>(...) -> CaseStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -6762,7 +6762,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_status</a>(...) -> typing.Optional[CaseStatus]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L691-L722">get_case_status</a>(...) -> typing.Optional[CaseStatus]</code></summary>
 <dl>
 <dd>
 
@@ -6835,7 +6835,7 @@ client.court_standards_api.get_case_status(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_status_groups</a>(...) -> CaseStatusGroupResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L724-L786">get_case_status_groups</a>(...) -> CaseStatusGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -6948,7 +6948,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_status_group</a>(...) -> CaseStatusGroup</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L788-L819">get_case_status_group</a>(...) -> CaseStatusGroup</code></summary>
 <dl>
 <dd>
 
@@ -7021,7 +7021,7 @@ client.court_standards_api.get_case_status_group(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_types</a>(...) -> CaseTypeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L821-L883">get_case_types</a>(...) -> CaseTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -7134,7 +7134,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_type</a>(...) -> typing.Optional[CaseType]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L885-L916">get_case_type</a>(...) -> typing.Optional[CaseType]</code></summary>
 <dl>
 <dd>
 
@@ -7207,7 +7207,7 @@ client.court_standards_api.get_case_type(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_type_groups</a>(...) -> CaseTypeGroupResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L918-L980">get_case_type_groups</a>(...) -> CaseTypeGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7320,7 +7320,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_case_type_group</a>(...) -> CaseTypeGroup</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L982-L1013">get_case_type_group</a>(...) -> CaseTypeGroup</code></summary>
 <dl>
 <dd>
 
@@ -7393,7 +7393,7 @@ client.court_standards_api.get_case_type_group(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_causes_of_action</a>(...) -> CauseOfActionResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1015-L1077">get_causes_of_action</a>(...) -> CauseOfActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -7506,7 +7506,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_cause_of_action</a>(...) -> typing.Optional[CauseOfAction]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1079-L1110">get_cause_of_action</a>(...) -> typing.Optional[CauseOfAction]</code></summary>
 <dl>
 <dd>
 
@@ -7579,7 +7579,7 @@ client.court_standards_api.get_cause_of_action(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_causes_of_action_additional_data</a>(...) -> CauseOfActionAdditionalDataResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1112-L1174">get_causes_of_action_additional_data</a>(...) -> CauseOfActionAdditionalDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -7692,7 +7692,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_cause_of_action_additional_data</a>(...) -> CauseOfActionAdditionalData</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1176-L1209">get_cause_of_action_additional_data</a>(...) -> CauseOfActionAdditionalData</code></summary>
 <dl>
 <dd>
 
@@ -7765,7 +7765,7 @@ client.court_standards_api.get_cause_of_action_additional_data(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_causes_of_action_group</a>(...) -> CauseOfActionGroupResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1211-L1273">get_causes_of_action_group</a>(...) -> CauseOfActionGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -7878,7 +7878,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_cause_of_action_group</a>(...) -> CauseOfActionGroup</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1275-L1308">get_cause_of_action_group</a>(...) -> CauseOfActionGroup</code></summary>
 <dl>
 <dd>
 
@@ -7951,7 +7951,7 @@ client.court_standards_api.get_cause_of_action_group(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charges</a>(...) -> ChargeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1310-L1372">get_charges</a>(...) -> ChargeResponse</code></summary>
 <dl>
 <dd>
 
@@ -8064,7 +8064,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charge</a>(...) -> typing.Optional[Charge]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1374-L1405">get_charge</a>(...) -> typing.Optional[Charge]</code></summary>
 <dl>
 <dd>
 
@@ -8137,7 +8137,7 @@ client.court_standards_api.get_charge(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charges_additional_data</a>(...) -> ChargeAdditionalDataResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1407-L1469">get_charges_additional_data</a>(...) -> ChargeAdditionalDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -8250,7 +8250,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charge_additional_data</a>(...) -> ChargeAdditionalData</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1471-L1504">get_charge_additional_data</a>(...) -> ChargeAdditionalData</code></summary>
 <dl>
 <dd>
 
@@ -8323,7 +8323,7 @@ client.court_standards_api.get_charge_additional_data(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charges_degree</a>(...) -> ChargeDegreeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1506-L1568">get_charges_degree</a>(...) -> ChargeDegreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -8436,7 +8436,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charge_degree</a>(...) -> typing.Optional[ChargeDegree]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1570-L1601">get_charge_degree</a>(...) -> typing.Optional[ChargeDegree]</code></summary>
 <dl>
 <dd>
 
@@ -8509,7 +8509,7 @@ client.court_standards_api.get_charge_degree(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charge_groups</a>(...) -> ChargeGroupResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1603-L1665">get_charge_groups</a>(...) -> ChargeGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -8622,7 +8622,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charge_group</a>(...) -> ChargeGroup</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1667-L1698">get_charge_group</a>(...) -> ChargeGroup</code></summary>
 <dl>
 <dd>
 
@@ -8695,7 +8695,7 @@ client.court_standards_api.get_charge_group(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charges_severity</a>(...) -> ChargeSeverityResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1700-L1762">get_charges_severity</a>(...) -> ChargeSeverityResponse</code></summary>
 <dl>
 <dd>
 
@@ -8808,7 +8808,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_charge_severity</a>(...) -> typing.Optional[ChargeSeverity]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1764-L1795">get_charge_severity</a>(...) -> typing.Optional[ChargeSeverity]</code></summary>
 <dl>
 <dd>
 
@@ -8881,7 +8881,7 @@ client.court_standards_api.get_charge_severity(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_courts</a>(...) -> CourtResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1797-L1859">get_courts</a>(...) -> CourtResponse</code></summary>
 <dl>
 <dd>
 
@@ -8994,7 +8994,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court</a>(...) -> typing.Optional[Court]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1861-L1892">get_court</a>(...) -> typing.Optional[Court]</code></summary>
 <dl>
 <dd>
 
@@ -9067,7 +9067,7 @@ client.court_standards_api.get_court(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_appeal_courts_for_court</a>(...) -> CourtResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1894-L1945">get_appeal_courts_for_court</a>(...) -> CourtResponse</code></summary>
 <dl>
 <dd>
 
@@ -9169,7 +9169,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_locations_for_court</a>(...) -> CourtLocationResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L1947-L1998">get_court_locations_for_court</a>(...) -> CourtLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -9271,7 +9271,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_jurisdiction_geo_for_court</a>(...) -> JurisdictionGeoResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2000-L2051">get_jurisdiction_geo_for_court</a>(...) -> JurisdictionGeoResponse</code></summary>
 <dl>
 <dd>
 
@@ -9373,7 +9373,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_locations</a>(...) -> CourtLocationResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2053-L2115">get_court_locations</a>(...) -> CourtLocationResponse</code></summary>
 <dl>
 <dd>
 
@@ -9486,7 +9486,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_location</a>(...) -> typing.Optional[CourtLocation]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2117-L2148">get_court_location</a>(...) -> typing.Optional[CourtLocation]</code></summary>
 <dl>
 <dd>
 
@@ -9559,7 +9559,7 @@ client.court_standards_api.get_court_location(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_courts_for_court_location</a>(...) -> CourtResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2150-L2201">get_courts_for_court_location</a>(...) -> CourtResponse</code></summary>
 <dl>
 <dd>
 
@@ -9661,7 +9661,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_courts_service_status</a>(...) -> CourtServiceStatusResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2203-L2265">get_courts_service_status</a>(...) -> CourtServiceStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -9774,7 +9774,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_service_status</a>(...) -> typing.Optional[CourtServiceStatus]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2267-L2298">get_court_service_status</a>(...) -> typing.Optional[CourtServiceStatus]</code></summary>
 <dl>
 <dd>
 
@@ -9847,7 +9847,7 @@ client.court_standards_api.get_court_service_status(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_systems</a>(...) -> CourtSystemResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2300-L2362">get_court_systems</a>(...) -> CourtSystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -9960,7 +9960,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_system</a>(...) -> CourtSystem</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2364-L2395">get_court_system</a>(...) -> CourtSystem</code></summary>
 <dl>
 <dd>
 
@@ -10033,7 +10033,7 @@ client.court_standards_api.get_court_system(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_types</a>(...) -> CourtTypeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2397-L2459">get_court_types</a>(...) -> CourtTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -10146,7 +10146,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_court_type</a>(...) -> CourtType</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2461-L2492">get_court_type</a>(...) -> CourtType</code></summary>
 <dl>
 <dd>
 
@@ -10219,7 +10219,7 @@ client.court_standards_api.get_court_type(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_judge_types</a>(...) -> JudgeTypeResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2494-L2556">get_judge_types</a>(...) -> JudgeTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -10332,7 +10332,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_judge_type</a>(...) -> typing.Optional[JudgeType]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2558-L2589">get_judge_type</a>(...) -> typing.Optional[JudgeType]</code></summary>
 <dl>
 <dd>
 
@@ -10405,7 +10405,7 @@ client.court_standards_api.get_judge_type(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_jurisdictions_geo</a>(...) -> JurisdictionGeoResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2591-L2653">get_jurisdictions_geo</a>(...) -> JurisdictionGeoResponse</code></summary>
 <dl>
 <dd>
 
@@ -10518,7 +10518,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_jurisdiction_geo</a>(...) -> JurisdictionGeo</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2655-L2686">get_jurisdiction_geo</a>(...) -> JurisdictionGeo</code></summary>
 <dl>
 <dd>
 
@@ -10591,7 +10591,7 @@ client.court_standards_api.get_jurisdiction_geo(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_courts_for_jurisdiction_geo</a>(...) -> CourtResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2688-L2739">get_courts_for_jurisdiction_geo</a>(...) -> CourtResponse</code></summary>
 <dl>
 <dd>
 
@@ -10693,7 +10693,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_party_roles</a>(...) -> PartyRoleResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2741-L2803">get_party_roles</a>(...) -> PartyRoleResponse</code></summary>
 <dl>
 <dd>
 
@@ -10806,7 +10806,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_party_role</a>(...) -> typing.Optional[PartyRole]</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2805-L2836">get_party_role</a>(...) -> typing.Optional[PartyRole]</code></summary>
 <dl>
 <dd>
 
@@ -10879,7 +10879,7 @@ client.court_standards_api.get_party_role(
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_party_role_groups</a>(...) -> PartyRoleGroupResponse</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2838-L2900">get_party_role_groups</a>(...) -> PartyRoleGroupResponse</code></summary>
 <dl>
 <dd>
 
@@ -10992,7 +10992,7 @@ The page number of the results to be retrieved.
 </dl>
 </details>
 
-<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py">get_party_role_group</a>(...) -> PartyRoleGroup</code></summary>
+<details><summary><code>client.court_standards_api.<a href="src/fern/court_standards_api/client.py#L2902-L2933">get_party_role_group</a>(...) -> PartyRoleGroup</code></summary>
 <dl>
 <dd>
 
@@ -11066,7 +11066,7 @@ client.court_standards_api.get_party_role_group(
 </details>
 
 ## Attorney Analytics API
-<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py">get_norm_attorney_by_id</a>(...) -> NormAttorney</code></summary>
+<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py#L30-L63">get_norm_attorney_by_id</a>(...) -> NormAttorney</code></summary>
 <dl>
 <dd>
 
@@ -11143,7 +11143,7 @@ Norm ID of Attorney.
 </dl>
 </details>
 
-<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py">get_norm_judges_associated_with_norm_attorney</a>(...) -> AssociatedNormJudgeResponse</code></summary>
+<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py#L65-L135">get_norm_judges_associated_with_norm_attorney</a>(...) -> AssociatedNormJudgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -11262,7 +11262,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py">get_norm_law_firms_associated_with_norm_attorney</a>(...) -> AssociatedNormLawFirmResponse</code></summary>
+<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py#L137-L211">get_norm_law_firms_associated_with_norm_attorney</a>(...) -> AssociatedNormLawFirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -11385,7 +11385,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py">get_norm_parties_associated_with_norm_attorney</a>(...) -> AssociatedNormPartyResponse</code></summary>
+<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py#L213-L288">get_norm_parties_associated_with_norm_attorney</a>(...) -> AssociatedNormPartyResponse</code></summary>
 <dl>
 <dd>
 
@@ -11509,7 +11509,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py">search_normalized_attorneys</a>(...) -> NormAttorneySearchResponse</code></summary>
+<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py#L290-L334">search_normalized_attorneys</a>(...) -> NormAttorneySearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -11598,7 +11598,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </dl>
 </details>
 
-<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py">search_normalized_attorneys_by_id</a>(...) -> NormAttorneySearchResponse</code></summary>
+<details><summary><code>client.attorney_analytics_api.<a href="src/fern/attorney_analytics_api/client.py#L336-L379">search_normalized_attorneys_by_id</a>(...) -> NormAttorneySearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -11685,7 +11685,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </details>
 
 ## Judge Analytics API
-<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py">get_norm_judge_by_id</a>(...) -> NormJudge</code></summary>
+<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py#L30-L63">get_norm_judge_by_id</a>(...) -> NormJudge</code></summary>
 <dl>
 <dd>
 
@@ -11762,7 +11762,7 @@ Norm  ID of the Judge.
 </dl>
 </details>
 
-<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py">get_norm_attorneys_associated_with_norm_judge</a>(...) -> AssociatedNormAttorneyResponse</code></summary>
+<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py#L65-L135">get_norm_attorneys_associated_with_norm_judge</a>(...) -> AssociatedNormAttorneyResponse</code></summary>
 <dl>
 <dd>
 
@@ -11881,7 +11881,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py">get_norm_law_firms_associated_with_norm_judge</a>(...) -> AssociatedNormLawFirmResponse</code></summary>
+<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py#L137-L207">get_norm_law_firms_associated_with_norm_judge</a>(...) -> AssociatedNormLawFirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -12000,7 +12000,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py">get_norm_parties_associated_with_norm_judge</a>(...) -> AssociatedNormPartyResponse</code></summary>
+<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py#L209-L279">get_norm_parties_associated_with_norm_judge</a>(...) -> AssociatedNormPartyResponse</code></summary>
 <dl>
 <dd>
 
@@ -12119,7 +12119,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py">search_normalized_judges</a>(...) -> NormJudgeSearchResponse</code></summary>
+<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py#L281-L325">search_normalized_judges</a>(...) -> NormJudgeSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -12208,7 +12208,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </dl>
 </details>
 
-<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py">search_normalized_judges_by_id</a>(...) -> NormJudgeSearchResponse</code></summary>
+<details><summary><code>client.judge_analytics_api.<a href="src/fern/judge_analytics_api/client.py#L327-L370">search_normalized_judges_by_id</a>(...) -> NormJudgeSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -12295,7 +12295,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </details>
 
 ## Law Firm Analytics API
-<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py">get_norm_law_firm_by_id</a>(...) -> NormLawFirm</code></summary>
+<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py#L30-L63">get_norm_law_firm_by_id</a>(...) -> NormLawFirm</code></summary>
 <dl>
 <dd>
 
@@ -12372,7 +12372,7 @@ Norm  ID of the Law Firm.
 </dl>
 </details>
 
-<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py">get_norm_attorneys_associated_with_norm_law_firm</a>(...) -> AssociatedNormAttorneyResponse</code></summary>
+<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py#L65-L139">get_norm_attorneys_associated_with_norm_law_firm</a>(...) -> AssociatedNormAttorneyResponse</code></summary>
 <dl>
 <dd>
 
@@ -12495,7 +12495,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py">get_norm_judges_associated_with_norm_law_firm</a>(...) -> AssociatedNormJudgeResponse</code></summary>
+<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py#L141-L212">get_norm_judges_associated_with_norm_law_firm</a>(...) -> AssociatedNormJudgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -12615,7 +12615,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py">get_norm_parties_associated_with_norm_law_firm</a>(...) -> AssociatedNormPartyResponse</code></summary>
+<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py#L214-L288">get_norm_parties_associated_with_norm_law_firm</a>(...) -> AssociatedNormPartyResponse</code></summary>
 <dl>
 <dd>
 
@@ -12738,7 +12738,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py">search_normalized_law_firms</a>(...) -> NormLawFirmSearchResponse</code></summary>
+<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py#L290-L334">search_normalized_law_firms</a>(...) -> NormLawFirmSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -12827,7 +12827,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </dl>
 </details>
 
-<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py">search_normalized_law_firms_by_id</a>(...) -> NormLawFirmSearchResponse</code></summary>
+<details><summary><code>client.law_firm_analytics_api.<a href="src/fern/law_firm_analytics_api/client.py#L336-L379">search_normalized_law_firms_by_id</a>(...) -> NormLawFirmSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -12914,7 +12914,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </details>
 
 ## Party Analytics API
-<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py">get_norm_party_by_id</a>(...) -> NormParty</code></summary>
+<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py#L30-L63">get_norm_party_by_id</a>(...) -> NormParty</code></summary>
 <dl>
 <dd>
 
@@ -12991,7 +12991,7 @@ Norm ID of the Party.
 </dl>
 </details>
 
-<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py">get_norm_attorneys_associated_with_norm_party</a>(...) -> AssociatedNormAttorneyResponse</code></summary>
+<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py#L65-L139">get_norm_attorneys_associated_with_norm_party</a>(...) -> AssociatedNormAttorneyResponse</code></summary>
 <dl>
 <dd>
 
@@ -13114,7 +13114,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py">get_norm_judges_associated_with_norm_party</a>(...) -> AssociatedNormJudgeResponse</code></summary>
+<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py#L141-L212">get_norm_judges_associated_with_norm_party</a>(...) -> AssociatedNormJudgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -13234,7 +13234,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py">get_norm_law_firms_associated_with_norm_party</a>(...) -> AssociatedNormLawFirmResponse</code></summary>
+<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py#L214-L287">get_norm_law_firms_associated_with_norm_party</a>(...) -> AssociatedNormLawFirmResponse</code></summary>
 <dl>
 <dd>
 
@@ -13356,7 +13356,7 @@ Page number.
 </dl>
 </details>
 
-<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py">search_normalized_parties</a>(...) -> NormPartySearchResponse</code></summary>
+<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py#L289-L333">search_normalized_parties</a>(...) -> NormPartySearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -13445,7 +13445,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </dl>
 </details>
 
-<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py">search_normalized_parties_by_id</a>(...) -> NormPartySearchResponse</code></summary>
+<details><summary><code>client.party_analytics_api.<a href="src/fern/party_analytics_api/client.py#L335-L378">search_normalized_parties_by_id</a>(...) -> NormPartySearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -13532,7 +13532,7 @@ Query parameter specifying the page number of the search results to be retrieved
 </details>
 
 ## PACER API
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">import_pacer_case_by_court_using_case_number</a>(...) -> PacerImportCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L65-L132">import_pacer_case_by_court_using_case_number</a>(...) -> PacerImportCase</code></summary>
 <dl>
 <dd>
 
@@ -13644,7 +13644,7 @@ client.pacer_api.import_pacer_case_by_court_using_case_number(
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">all_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L134-L305">all_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
 <dl>
 <dd>
 
@@ -13909,7 +13909,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">appeal_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L307-L472">appeal_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
 <dl>
 <dd>
 
@@ -14173,7 +14173,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">bankruptcy_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L474-L682">bankruptcy_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
 <dl>
 <dd>
 
@@ -14498,7 +14498,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">civil_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L684-L866">civil_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
 <dl>
 <dd>
 
@@ -14779,7 +14779,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">criminal_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L868-L1039">criminal_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
 <dl>
 <dd>
 
@@ -15044,7 +15044,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">multi_district_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L1041-L1217">multi_district_courts_pacer_case_locator_case_search</a>(...) -> PclCase</code></summary>
 <dl>
 <dd>
 
@@ -15317,7 +15317,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">all_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L1219-L1447">all_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
 <dl>
 <dd>
 
@@ -15668,7 +15668,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">appeal_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L1449-L1677">appeal_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
 <dl>
 <dd>
 
@@ -16019,7 +16019,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">bankruptcy_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L1679-L1946">bankruptcy_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
 <dl>
 <dd>
 
@@ -16435,7 +16435,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">civil_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L1948-L2176">civil_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
 <dl>
 <dd>
 
@@ -16786,7 +16786,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">criminal_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L2178-L2406">criminal_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
 <dl>
 <dd>
 
@@ -17137,7 +17137,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </dl>
 </details>
 
-<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py">multi_district_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
+<details><summary><code>client.pacer_api.<a href="src/fern/pacer_api/client.py#L2408-L2641">multi_district_courts_pacer_case_locator_party_search</a>(...) -> PclParty</code></summary>
 <dl>
 <dd>
 
@@ -17497,7 +17497,7 @@ How search results from PACER are to be sorted. Please see Appendix C for valid 
 </details>
 
 ## PACER Credential API
-<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py">get_pacer_credential</a>(...) -> PacerCredentialListResponse</code></summary>
+<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py#L31-L63">get_pacer_credential</a>(...) -> PacerCredentialListResponse</code></summary>
 <dl>
 <dd>
 
@@ -17573,7 +17573,7 @@ The page number of the PACER credentials to be retrieved.<br>
 </dl>
 </details>
 
-<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py">add_pacer_credential</a>(...) -> Success</code></summary>
+<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py#L65-L114">add_pacer_credential</a>(...) -> Success</code></summary>
 <dl>
 <dd>
 
@@ -17664,7 +17664,7 @@ client.pacer_credential_api.add_pacer_credential(
 </dl>
 </details>
 
-<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py">get_pacer_credential_by_id</a>(...) -> PacerCredential</code></summary>
+<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py#L116-L147">get_pacer_credential_by_id</a>(...) -> PacerCredential</code></summary>
 <dl>
 <dd>
 
@@ -17737,7 +17737,7 @@ client.pacer_credential_api.get_pacer_credential_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py">remove_pacer_credential_by_id</a>(...) -> Success</code></summary>
+<details><summary><code>client.pacer_credential_api.<a href="src/fern/pacer_credential_api/client.py#L149-L180">remove_pacer_credential_by_id</a>(...) -> Success</code></summary>
 <dl>
 <dd>
 

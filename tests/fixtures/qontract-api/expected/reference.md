@@ -1,6 +1,6 @@
 # Reference
 ## External
-<details><summary><code>client.external.<a href="src/fern/external/client.py">github_org_members</a>(...) -> GithubOrgMembersResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L41-L105">github_org_members</a>(...) -> GithubOrgMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -110,7 +110,7 @@ client.external.github_org_members(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">ldap_github_usernames</a>(...) -> LdapGithubUsernamesResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L107-L167">ldap_github_usernames</a>(...) -> LdapGithubUsernamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -211,7 +211,7 @@ client.external.ldap_github_usernames(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">ldap_users_check</a>(...) -> LdapUsersCheckResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L169-L227">ldap_users_check</a>(...) -> LdapUsersCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -310,7 +310,7 @@ client.external.ldap_users_check(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">ocm_clusters</a>(...) -> OcmClustersResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L229-L317">ocm_clusters</a>(...) -> OcmClustersResponse</code></summary>
 <dl>
 <dd>
 
@@ -456,7 +456,7 @@ client.external.ocm_clusters(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">pagerduty_escalation_policy_users</a>(...) -> EscalationPolicyUsersResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L319-L402">pagerduty_escalation_policy_users</a>(...) -> EscalationPolicyUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -586,7 +586,7 @@ client.external.pagerduty_escalation_policy_users(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">pagerduty_schedule_users</a>(...) -> ScheduleUsersResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L404-L487">pagerduty_schedule_users</a>(...) -> ScheduleUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -716,7 +716,7 @@ client.external.pagerduty_schedule_users(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">slack_chat_post_message</a>(...) -> ChatResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L489-L587">slack_chat_post_message</a>(...) -> ChatResponse</code></summary>
 <dl>
 <dd>
 
@@ -872,7 +872,7 @@ client.external.slack_chat_post_message(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">vcs_file_sync</a>(...) -> FileSyncResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L589-L681">vcs_file_sync</a>(...) -> FileSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -1018,7 +1018,7 @@ client.external.vcs_file_sync(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">vcs_get_file</a>(...) -> GetFileResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L683-L755">vcs_get_file</a>(...) -> GetFileResponse</code></summary>
 <dl>
 <dd>
 
@@ -1142,7 +1142,7 @@ client.external.vcs_get_file(
 </dl>
 </details>
 
-<details><summary><code>client.external.<a href="src/fern/external/client.py">vcs_repo_owners</a>(...) -> RepoOwnersResponse</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L757-L831">vcs_repo_owners</a>(...) -> RepoOwnersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1269,7 +1269,7 @@ client.external.vcs_repo_owners(
 </details>
 
 ## Integrations
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">github_owners</a>(...) -> GithubOwnersTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L65-L126">github_owners</a>(...) -> GithubOwnersTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -1371,7 +1371,7 @@ client.integrations.github_owners(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">github_owners_task_status</a>(...) -> GithubOwnersTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L128-L184">github_owners_task_status</a>(...) -> GithubOwnersTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -1467,7 +1467,7 @@ client.integrations.github_owners_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">glitchtip_project_alerts</a>(...) -> GlitchtipProjectAlertsTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L186-L247">glitchtip_project_alerts</a>(...) -> GlitchtipProjectAlertsTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -1567,7 +1567,7 @@ client.integrations.glitchtip_project_alerts(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">glitchtip_project_alerts_task_status</a>(...) -> GlitchtipProjectAlertsTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L249-L305">glitchtip_project_alerts_task_status</a>(...) -> GlitchtipProjectAlertsTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -1663,7 +1663,7 @@ client.integrations.glitchtip_project_alerts_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">glitchtip</a>(...) -> GlitchtipTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L307-L370">glitchtip</a>(...) -> GlitchtipTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -1767,7 +1767,7 @@ client.integrations.glitchtip(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">glitchtip_task_status</a>(...) -> GlitchtipTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L372-L421">glitchtip_task_status</a>(...) -> GlitchtipTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -1858,7 +1858,7 @@ client.integrations.glitchtip_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">managed_sso_client</a>(...) -> ManagedSsoClientTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L423-L480">managed_sso_client</a>(...) -> ManagedSsoClientTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -1949,7 +1949,7 @@ client.integrations.managed_sso_client(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">managed_sso_client_task_status</a>(...) -> ManagedSsoClientTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L482-L522">managed_sso_client_task_status</a>(...) -> ManagedSsoClientTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -2029,7 +2029,7 @@ client.integrations.managed_sso_client_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">ocm_groups</a>(...) -> OcmGroupsTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L524-L605">ocm_groups</a>(...) -> OcmGroupsTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2156,7 +2156,7 @@ client.integrations.ocm_groups(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">ocm_groups_task_status</a>(...) -> OcmGroupsTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L607-L645">ocm_groups_task_status</a>(...) -> OcmGroupsTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -2236,7 +2236,7 @@ client.integrations.ocm_groups_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">ocm_oidc_idp</a>(...) -> OcmOidcIdpTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L647-L738">ocm_oidc_idp</a>(...) -> OcmOidcIdpTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2367,7 +2367,7 @@ client.integrations.ocm_oidc_idp(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">ocm_oidc_idp_task_status</a>(...) -> OcmOidcIdpTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L740-L778">ocm_oidc_idp_task_status</a>(...) -> OcmOidcIdpTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -2447,7 +2447,7 @@ client.integrations.ocm_oidc_idp_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">openshift_namespaces</a>(...) -> OpenShiftNamespacesTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L780-L830">openshift_namespaces</a>(...) -> OpenShiftNamespacesTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2536,7 +2536,7 @@ client.integrations.openshift_namespaces(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">openshift_namespaces_task_status</a>(...) -> OpenShiftNamespacesTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L832-L872">openshift_namespaces_task_status</a>(...) -> OpenShiftNamespacesTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -2616,7 +2616,7 @@ client.integrations.openshift_namespaces_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">quay_repos</a>(...) -> QuayReposTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L874-L927">quay_repos</a>(...) -> QuayReposTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2710,7 +2710,7 @@ client.integrations.quay_repos(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">quay_repos_task_status</a>(...) -> QuayReposTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L929-L971">quay_repos_task_status</a>(...) -> QuayReposTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -2794,7 +2794,7 @@ client.integrations.quay_repos_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">quay_robot_accounts</a>(...) -> QuayRobotAccountsTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L973-L1024">quay_robot_accounts</a>(...) -> QuayRobotAccountsTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -2884,7 +2884,7 @@ client.integrations.quay_robot_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">quay_robot_accounts_task_status</a>(...) -> QuayRobotAccountsTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L1026-L1066">quay_robot_accounts_task_status</a>(...) -> QuayRobotAccountsTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -2964,7 +2964,7 @@ client.integrations.quay_robot_accounts_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">slack_usergroups</a>(...) -> SlackUsergroupsTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L1068-L1141">slack_usergroups</a>(...) -> SlackUsergroupsTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -3072,7 +3072,7 @@ client.integrations.slack_usergroups(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">slack_usergroups_task_status</a>(...) -> SlackUsergroupsTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L1143-L1199">slack_usergroups_task_status</a>(...) -> SlackUsergroupsTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -3168,7 +3168,7 @@ client.integrations.slack_usergroups_task_status(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">sso_client</a>(...) -> SsoClientTaskResponse</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L1201-L1292">sso_client</a>(...) -> SsoClientTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -3299,7 +3299,7 @@ client.integrations.sso_client(
 </dl>
 </details>
 
-<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py">sso_client_task_status</a>(...) -> SsoClientTaskResult</code></summary>
+<details><summary><code>client.integrations.<a href="src/fern/integrations/client.py#L1294-L1332">sso_client_task_status</a>(...) -> SsoClientTaskResult</code></summary>
 <dl>
 <dd>
 
@@ -3380,7 +3380,7 @@ client.integrations.sso_client_task_status(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">liveness</a>() -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L51">liveness</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -3442,7 +3442,7 @@ client.health.liveness()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">readiness</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L53-L78">readiness</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">user_registration</a>(...) -> TokensResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L34-L73">user_registration</a>(...) -> TokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -90,7 +90,7 @@ client.auth.user_registration(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">user_login</a>(...) -> TokensResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L75-L108">user_login</a>(...) -> TokensResponse</code></summary>
 <dl>
 <dd>
 
@@ -171,7 +171,7 @@ client.auth.user_login(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">token_verify</a>(...) -> VerifyStatus</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L110-L139">token_verify</a>(...) -> VerifyStatus</code></summary>
 <dl>
 <dd>
 
@@ -243,7 +243,7 @@ client.auth.token_verify(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">token_refresh</a>(...) -> RefreshTokenResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L141-L170">token_refresh</a>(...) -> RefreshTokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -315,7 +315,7 @@ client.auth.token_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">update_user_data_auth_users_update_user_patch</a>(...) -> UpdateLoginUserResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L172-L212">update_user_data_auth_users_update_user_patch</a>(...) -> UpdateLoginUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -404,7 +404,7 @@ client.auth.update_user_data_auth_users_update_user_patch(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_user</a>(...) -> UserDataResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L36-L62">get_user</a>(...) -> UserDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -476,7 +476,7 @@ client.users.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_user</a>(...) -> UserDataResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L64-L127">create_user</a>(...) -> UserDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -585,7 +585,7 @@ client.users.create_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_user_info</a>(...) -> UserDataResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L129-L184">update_user_info</a>(...) -> UserDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -689,7 +689,7 @@ client.users.update_user_info(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_user</a>(...) -> DeletedUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L186-L215">delete_user</a>(...) -> DeletedUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -762,7 +762,7 @@ client.users.delete_user(
 </details>
 
 ## Avatars
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">set_avatar</a>(...) -> SetAvatarResponse</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L31-L65">set_avatar</a>(...) -> SetAvatarResponse</code></summary>
 <dl>
 <dd>
 
@@ -843,7 +843,7 @@ client.avatars.set_avatar(
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">delete_avatar</a>(...) -> DeletedAvatarResponse</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L67-L96">delete_avatar</a>(...) -> DeletedAvatarResponse</code></summary>
 <dl>
 <dd>
 
@@ -916,7 +916,7 @@ client.avatars.delete_avatar(
 </details>
 
 ## Subscription
-<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py">subscribe</a>(...) -> SubscribeResponse</code></summary>
+<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py#L45-L80">subscribe</a>(...) -> SubscribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -997,7 +997,7 @@ client.subscription.subscribe(
 </dl>
 </details>
 
-<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py">unsubscribe</a>(...) -> UnsubscribeResponse</code></summary>
+<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py#L82-L117">unsubscribe</a>(...) -> UnsubscribeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1078,7 +1078,7 @@ client.subscription.unsubscribe(
 </dl>
 </details>
 
-<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py">get_subscriptions</a>(...) -> SubscriptionsResponse</code></summary>
+<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py#L119-L161">get_subscriptions</a>(...) -> SubscriptionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.subscription.get_subscriptions(
 </dl>
 </details>
 
-<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py">get_subscribers</a>(...) -> SubscribersResponse</code></summary>
+<details><summary><code>client.subscription.<a href="src/fern/subscription/client.py#L163-L205">get_subscribers</a>(...) -> SubscribersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1271,7 +1271,7 @@ client.subscription.get_subscribers(
 </details>
 
 ## Posts
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">get_user_posts</a>(...) -> PostsResponse</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L40-L82">get_user_posts</a>(...) -> PostsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1367,7 +1367,7 @@ client.posts.get_user_posts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">full_text_posts_search</a>(...) -> PostsResponse</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L84-L126">full_text_posts_search</a>(...) -> PostsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1463,7 +1463,7 @@ client.posts.full_text_posts_search(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">create_post</a>(...) -> PostResponse</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L128-L162">create_post</a>(...) -> PostResponse</code></summary>
 <dl>
 <dd>
 
@@ -1544,7 +1544,7 @@ client.posts.create_post(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">delete_post</a>(...) -> DeletedPostResponse</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L164-L198">delete_post</a>(...) -> DeletedPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -1625,7 +1625,7 @@ client.posts.delete_post(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">update_post</a>(...) -> PostResponse</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L200-L242">update_post</a>(...) -> PostResponse</code></summary>
 <dl>
 <dd>
 

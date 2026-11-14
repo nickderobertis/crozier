@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_api_v1health_ping</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L118-L140">get_api_v1health_ping</a>()</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.get_api_v1health_ping()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">head_api_v1health_ping</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L142-L166">head_api_v1health_ping</a>()</code></summary>
 <dl>
 <dd>
 
@@ -96,7 +96,7 @@ client.head_api_v1health_ping()
 </details>
 
 ## Application
-<details><summary><code>client.application.<a href="src/fern/application/client.py">v1application_list</a>(...) -> ListResponseApplicationOut</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L31-L76">v1application_list</a>(...) -> ListResponseApplicationOut</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.application.v1application_list(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">v1application_create</a>(...) -> ApplicationOut</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L78-L141">v1application_create</a>(...) -> ApplicationOut</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.application.v1application_create(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">v1application_get</a>(...) -> ApplicationOut</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L143-L174">v1application_get</a>(...) -> ApplicationOut</code></summary>
 <dl>
 <dd>
 
@@ -344,7 +344,7 @@ client.application.v1application_get(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">v1application_update</a>(...) -> ApplicationOut</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L176-L229">v1application_update</a>(...) -> ApplicationOut</code></summary>
 <dl>
 <dd>
 
@@ -425,7 +425,7 @@ client.application.v1application_update(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">v1application_delete</a>(...)</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L231-L259">v1application_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -497,7 +497,7 @@ client.application.v1application_delete(
 </dl>
 </details>
 
-<details><summary><code>client.application.<a href="src/fern/application/client.py">patch_application</a>(...) -> ApplicationOut</code></summary>
+<details><summary><code>client.application.<a href="src/fern/application/client.py#L261-L312">patch_application</a>(...) -> ApplicationOut</code></summary>
 <dl>
 <dd>
 
@@ -606,7 +606,7 @@ Outgoing messages will be throttled to this rate.
 </details>
 
 ## Message Attempt
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_list_by_endpoint</a>(...) -> ListResponseMessageAttemptOut</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L33-L123">v1message_attempt_list_by_endpoint</a>(...) -> ListResponseMessageAttemptOut</code></summary>
 <dl>
 <dd>
 
@@ -764,7 +764,7 @@ client.message_attempt.v1message_attempt_list_by_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_list_by_msg</a>(...) -> ListResponseMessageAttemptOut</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L125-L221">v1message_attempt_list_by_msg</a>(...) -> ListResponseMessageAttemptOut</code></summary>
 <dl>
 <dd>
 
@@ -931,7 +931,7 @@ client.message_attempt.v1message_attempt_list_by_msg(
 </dl>
 </details>
 
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_list_attempted_messages</a>(...) -> ListResponseEndpointMessageOut</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L223-L310">v1message_attempt_list_attempted_messages</a>(...) -> ListResponseEndpointMessageOut</code></summary>
 <dl>
 <dd>
 
@@ -1083,7 +1083,7 @@ client.message_attempt.v1message_attempt_list_attempted_messages(
 </dl>
 </details>
 
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_get</a>(...) -> MessageAttemptOut</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L312-L349">v1message_attempt_get</a>(...) -> MessageAttemptOut</code></summary>
 <dl>
 <dd>
 
@@ -1173,7 +1173,7 @@ client.message_attempt.v1message_attempt_get(
 </dl>
 </details>
 
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_expunge_content</a>(...)</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L351-L389">v1message_attempt_expunge_content</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1263,7 +1263,7 @@ client.message_attempt.v1message_attempt_expunge_content(
 </dl>
 </details>
 
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_list_attempted_destinations</a>(...) -> ListResponseMessageEndpointOut</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L391-L440">v1message_attempt_list_attempted_destinations</a>(...) -> ListResponseMessageEndpointOut</code></summary>
 <dl>
 <dd>
 
@@ -1361,7 +1361,7 @@ client.message_attempt.v1message_attempt_list_attempted_destinations(
 </dl>
 </details>
 
-<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py">v1message_attempt_resend</a>(...) -> EmptyResponse</code></summary>
+<details><summary><code>client.message_attempt.<a href="src/fern/message_attempt/client.py#L442-L490">v1message_attempt_resend</a>(...) -> EmptyResponse</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1460,7 @@ client.message_attempt.v1message_attempt_resend(
 </details>
 
 ## Endpoint
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_list</a>(...) -> ListResponseEndpointOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L37-L86">v1endpoint_list</a>(...) -> ListResponseEndpointOut</code></summary>
 <dl>
 <dd>
 
@@ -1557,7 +1557,7 @@ client.endpoint.v1endpoint_list(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_create</a>(...) -> EndpointOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L88-L175">v1endpoint_create</a>(...) -> EndpointOut</code></summary>
 <dl>
 <dd>
 
@@ -1716,7 +1716,7 @@ Outgoing messages will be throttled to this rate.
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_get</a>(...) -> EndpointOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L177-L211">v1endpoint_get</a>(...) -> EndpointOut</code></summary>
 <dl>
 <dd>
 
@@ -1797,7 +1797,7 @@ client.endpoint.v1endpoint_get(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_update</a>(...) -> EndpointOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L213-L293">v1endpoint_update</a>(...) -> EndpointOut</code></summary>
 <dl>
 <dd>
 
@@ -1947,7 +1947,7 @@ Outgoing messages will be throttled to this rate.
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_delete</a>(...)</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L295-L328">v1endpoint_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2028,7 +2028,7 @@ client.endpoint.v1endpoint_delete(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">patch_endpoint</a>(...) -> EndpointOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L330-L407">patch_endpoint</a>(...) -> EndpointOut</code></summary>
 <dl>
 <dd>
 
@@ -2177,7 +2177,7 @@ Outgoing messages will be throttled to this rate.
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_get_headers</a>(...) -> EndpointHeadersOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L409-L445">v1endpoint_get_headers</a>(...) -> EndpointHeadersOut</code></summary>
 <dl>
 <dd>
 
@@ -2258,7 +2258,7 @@ client.endpoint.v1endpoint_get_headers(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_update_headers</a>(...)</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L447-L490">v1endpoint_update_headers</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2351,7 +2351,7 @@ client.endpoint.v1endpoint_update_headers(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_patch_headers</a>(...)</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L492-L535">v1endpoint_patch_headers</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2444,7 +2444,7 @@ client.endpoint.v1endpoint_patch_headers(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_recover</a>(...) -> RecoverOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L537-L597">v1endpoint_recover</a>(...) -> RecoverOut</code></summary>
 <dl>
 <dd>
 
@@ -2551,7 +2551,7 @@ client.endpoint.v1endpoint_recover(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_get_secret</a>(...) -> EndpointSecretOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L599-L636">v1endpoint_get_secret</a>(...) -> EndpointSecretOut</code></summary>
 <dl>
 <dd>
 
@@ -2635,7 +2635,7 @@ client.endpoint.v1endpoint_get_secret(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_rotate_secret</a>(...)</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L638-L696">v1endpoint_rotate_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2744,7 +2744,7 @@ Valid values are between 0 (immediate expiry) and 7 days. The default is 24 hour
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_send_example</a>(...) -> MessageOut</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L698-L746">v1endpoint_send_example</a>(...) -> MessageOut</code></summary>
 <dl>
 <dd>
 
@@ -2842,7 +2842,7 @@ client.endpoint.v1endpoint_send_example(
 </dl>
 </details>
 
-<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py">v1endpoint_get_stats</a>(...) -> EndpointStats</code></summary>
+<details><summary><code>client.endpoint.<a href="src/fern/endpoint/client.py#L748-L794">v1endpoint_get_stats</a>(...) -> EndpointStats</code></summary>
 <dl>
 <dd>
 
@@ -2940,7 +2940,7 @@ client.endpoint.v1endpoint_get_stats(
 </details>
 
 ## Message
-<details><summary><code>client.message.<a href="src/fern/message/client.py">v1message_list</a>(...) -> ListResponseMessageOut</code></summary>
+<details><summary><code>client.message.<a href="src/fern/message/client.py#L33-L112">v1message_list</a>(...) -> ListResponseMessageOut</code></summary>
 <dl>
 <dd>
 
@@ -3077,7 +3077,7 @@ client.message.v1message_list(
 </dl>
 </details>
 
-<details><summary><code>client.message.<a href="src/fern/message/client.py">v1message_create</a>(...) -> MessageOut</code></summary>
+<details><summary><code>client.message.<a href="src/fern/message/client.py#L114-L200">v1message_create</a>(...) -> MessageOut</code></summary>
 <dl>
 <dd>
 
@@ -3230,7 +3230,7 @@ If the application id or uid that is used in the path already exists, this argum
 </dl>
 </details>
 
-<details><summary><code>client.message.<a href="src/fern/message/client.py">v1message_bulk_expunge_content</a>(...) -> BulkExpungeContentsOut</code></summary>
+<details><summary><code>client.message.<a href="src/fern/message/client.py#L202-L250">v1message_bulk_expunge_content</a>(...) -> BulkExpungeContentsOut</code></summary>
 <dl>
 <dd>
 
@@ -3322,7 +3322,7 @@ client.message.v1message_bulk_expunge_content(
 </dl>
 </details>
 
-<details><summary><code>client.message.<a href="src/fern/message/client.py">v1message_get</a>(...) -> MessageOut</code></summary>
+<details><summary><code>client.message.<a href="src/fern/message/client.py#L252-L296">v1message_get</a>(...) -> MessageOut</code></summary>
 <dl>
 <dd>
 
@@ -3411,7 +3411,7 @@ client.message.v1message_get(
 </dl>
 </details>
 
-<details><summary><code>client.message.<a href="src/fern/message/client.py">v1message_expunge_content</a>(...)</code></summary>
+<details><summary><code>client.message.<a href="src/fern/message/client.py#L298-L333">v1message_expunge_content</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3495,7 +3495,7 @@ client.message.v1message_expunge_content(
 </details>
 
 ## Authentication
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">v1authentication_app_portal_access</a>(...) -> AppPortalAccessOut</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L30-L84">v1authentication_app_portal_access</a>(...) -> AppPortalAccessOut</code></summary>
 <dl>
 <dd>
 
@@ -3595,7 +3595,7 @@ If the application id or uid that is used in the path already exists, this argum
 </dl>
 </details>
 
-<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py">logout_api_v1auth_logout_post</a>(...)</code></summary>
+<details><summary><code>client.authentication.<a href="src/fern/authentication/client.py#L86-L120">logout_api_v1auth_logout_post</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3669,7 +3669,7 @@ client.authentication.logout_api_v1auth_logout_post()
 </details>
 
 ## Event Type
-<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py">v1event_type_list</a>(...) -> ListResponseEventTypeOut</code></summary>
+<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py#L31-L89">v1event_type_list</a>(...) -> ListResponseEventTypeOut</code></summary>
 <dl>
 <dd>
 
@@ -3773,7 +3773,7 @@ client.event_type.v1event_type_list(
 </dl>
 </details>
 
-<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py">v1event_type_create</a>(...) -> EventTypeOut</code></summary>
+<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py#L91-L159">v1event_type_create</a>(...) -> EventTypeOut</code></summary>
 <dl>
 <dd>
 
@@ -3898,7 +3898,7 @@ client.event_type.v1event_type_create(
 </dl>
 </details>
 
-<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py">v1event_type_get</a>(...) -> EventTypeOut</code></summary>
+<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py#L161-L192">v1event_type_get</a>(...) -> EventTypeOut</code></summary>
 <dl>
 <dd>
 
@@ -3970,7 +3970,7 @@ client.event_type.v1event_type_get(
 </dl>
 </details>
 
-<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py">v1event_type_update</a>(...) -> EventTypeOut</code></summary>
+<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py#L194-L253">v1event_type_update</a>(...) -> EventTypeOut</code></summary>
 <dl>
 <dd>
 
@@ -4083,7 +4083,7 @@ client.event_type.v1event_type_update(
 </dl>
 </details>
 
-<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py">v1event_type_delete</a>(...)</code></summary>
+<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py#L255-L299">v1event_type_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4168,7 +4168,7 @@ client.event_type.v1event_type_delete(
 </dl>
 </details>
 
-<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py">patch_event_type</a>(...) -> EventTypeOut</code></summary>
+<details><summary><code>client.event_type.<a href="src/fern/event_type/client.py#L301-L358">patch_event_type</a>(...) -> EventTypeOut</code></summary>
 <dl>
 <dd>
 
@@ -4281,7 +4281,7 @@ client.event_type.patch_event_type(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">v1health_get</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L49">v1health_get</a>()</code></summary>
 <dl>
 <dd>
 

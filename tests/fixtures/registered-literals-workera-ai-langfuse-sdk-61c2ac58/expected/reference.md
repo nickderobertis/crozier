@@ -1,6 +1,6 @@
 # Reference
 ## Annotationqueues
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">listqueues</a>(...) -> PaginatedAnnotationQueues</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L35-L73">listqueues</a>(...) -> PaginatedAnnotationQueues</code></summary>
 <dl>
 <dd>
 
@@ -79,7 +79,7 @@ client.annotationqueues.listqueues()
 </dl>
 </details>
 
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">getqueue</a>(...) -> AnnotationQueue</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L75-L106">getqueue</a>(...) -> AnnotationQueue</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ client.annotationqueues.getqueue(
 </dl>
 </details>
 
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">listqueueitems</a>(...) -> PaginatedAnnotationQueueItems</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L108-L158">listqueueitems</a>(...) -> PaginatedAnnotationQueueItems</code></summary>
 <dl>
 <dd>
 
@@ -249,7 +249,7 @@ client.annotationqueues.listqueueitems(
 </dl>
 </details>
 
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">createqueueitem</a>(...) -> AnnotationQueueItem</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L160-L210">createqueueitem</a>(...) -> AnnotationQueueItem</code></summary>
 <dl>
 <dd>
 
@@ -348,7 +348,7 @@ client.annotationqueues.createqueueitem(
 </dl>
 </details>
 
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">getqueueitem</a>(...) -> AnnotationQueueItem</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L212-L249">getqueueitem</a>(...) -> AnnotationQueueItem</code></summary>
 <dl>
 <dd>
 
@@ -430,7 +430,7 @@ client.annotationqueues.getqueueitem(
 </dl>
 </details>
 
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">deletequeueitem</a>(...) -> DeleteAnnotationQueueItemResponse</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L251-L288">deletequeueitem</a>(...) -> DeleteAnnotationQueueItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -512,7 +512,7 @@ client.annotationqueues.deletequeueitem(
 </dl>
 </details>
 
-<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py">updatequeueitem</a>(...) -> AnnotationQueueItem</code></summary>
+<details><summary><code>client.annotationqueues.<a href="src/fern/annotationqueues/client.py#L290-L334">updatequeueitem</a>(...) -> AnnotationQueueItem</code></summary>
 <dl>
 <dd>
 
@@ -603,7 +603,7 @@ client.annotationqueues.updatequeueitem(
 </details>
 
 ## Comments
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">get</a>(...) -> GetCommentsResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L31-L88">get</a>(...) -> GetCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -706,7 +706,7 @@ client.comments.get()
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">create</a>(...) -> CreateCommentResponse</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L90-L152">create</a>(...) -> CreateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -814,7 +814,7 @@ client.comments.create(
 </dl>
 </details>
 
-<details><summary><code>client.comments.<a href="src/fern/comments/client.py">get_by_id</a>(...) -> Comment</code></summary>
+<details><summary><code>client.comments.<a href="src/fern/comments/client.py#L154-L185">get_by_id</a>(...) -> Comment</code></summary>
 <dl>
 <dd>
 
@@ -888,7 +888,7 @@ client.comments.get_by_id(
 </details>
 
 ## Datasetitems
-<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py">list</a>(...) -> PaginatedDatasetItems</code></summary>
+<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py#L32-L86">list</a>(...) -> PaginatedDatasetItems</code></summary>
 <dl>
 <dd>
 
@@ -991,7 +991,7 @@ client.datasetitems.list()
 </dl>
 </details>
 
-<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py">create</a>(...) -> DatasetItem</code></summary>
+<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py#L88-L156">create</a>(...) -> DatasetItem</code></summary>
 <dl>
 <dd>
 
@@ -1120,7 +1120,7 @@ client.datasetitems.create(
 </dl>
 </details>
 
-<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py">get</a>(...) -> DatasetItem</code></summary>
+<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py#L158-L188">get</a>(...) -> DatasetItem</code></summary>
 <dl>
 <dd>
 
@@ -1193,7 +1193,7 @@ client.datasetitems.get(
 </dl>
 </details>
 
-<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py">delete</a>(...) -> DeleteDatasetItemResponse</code></summary>
+<details><summary><code>client.datasetitems.<a href="src/fern/datasetitems/client.py#L190-L220">delete</a>(...) -> DeleteDatasetItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -1267,7 +1267,7 @@ client.datasetitems.delete(
 </details>
 
 ## Datasetrunitems
-<details><summary><code>client.datasetrunitems.<a href="src/fern/datasetrunitems/client.py">create</a>(...) -> DatasetRunItem</code></summary>
+<details><summary><code>client.datasetrunitems.<a href="src/fern/datasetrunitems/client.py#L29-L91">create</a>(...) -> DatasetRunItem</code></summary>
 <dl>
 <dd>
 
@@ -1382,7 +1382,7 @@ client.datasetrunitems.create(
 </details>
 
 ## Datasets
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">list</a>(...) -> PaginatedDatasets</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L33-L71">list</a>(...) -> PaginatedDatasets</code></summary>
 <dl>
 <dd>
 
@@ -1461,7 +1461,7 @@ client.datasets.list()
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">create</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L73-L116">create</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -1550,7 +1550,7 @@ client.datasets.create(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">get</a>(...) -> Dataset</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L118-L148">get</a>(...) -> Dataset</code></summary>
 <dl>
 <dd>
 
@@ -1623,7 +1623,7 @@ client.datasets.get(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">getrun</a>(...) -> DatasetRunWithItems</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L150-L185">getrun</a>(...) -> DatasetRunWithItems</code></summary>
 <dl>
 <dd>
 
@@ -1705,7 +1705,7 @@ client.datasets.getrun(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">deleterun</a>(...) -> DeleteDatasetRunResponse</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L187-L222">deleterun</a>(...) -> DeleteDatasetRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -1787,7 +1787,7 @@ client.datasets.deleterun(
 </dl>
 </details>
 
-<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py">getruns</a>(...) -> PaginatedDatasetRuns</code></summary>
+<details><summary><code>client.datasets.<a href="src/fern/datasets/client.py#L224-L267">getruns</a>(...) -> PaginatedDatasetRuns</code></summary>
 <dl>
 <dd>
 
@@ -1877,7 +1877,7 @@ client.datasets.getruns(
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L52">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -1941,7 +1941,7 @@ client.health.health()
 </details>
 
 ## Ingestion
-<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py">batch</a>(...)</code></summary>
+<details><summary><code>client.ingestion.<a href="src/fern/ingestion/client.py#L29-L106">batch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2061,7 +2061,7 @@ client.ingestion.batch(
 </details>
 
 ## Media
-<details><summary><code>client.media.<a href="src/fern/media/client.py">get</a>(...) -> GetMediaResponse</code></summary>
+<details><summary><code>client.media.<a href="src/fern/media/client.py#L32-L63">get</a>(...) -> GetMediaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2134,7 +2134,7 @@ client.media.get(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/fern/media/client.py">patch</a>(...)</code></summary>
+<details><summary><code>client.media.<a href="src/fern/media/client.py#L65-L129">patch</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2242,7 +2242,7 @@ client.media.patch(
 </dl>
 </details>
 
-<details><summary><code>client.media.<a href="src/fern/media/client.py">getuploadurl</a>(...) -> GetMediaUploadUrlResponse</code></summary>
+<details><summary><code>client.media.<a href="src/fern/media/client.py#L131-L198">getuploadurl</a>(...) -> GetMediaUploadUrlResponse</code></summary>
 <dl>
 <dd>
 
@@ -2360,7 +2360,7 @@ client.media.getuploadurl(
 </details>
 
 ## Metrics
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">daily</a>(...) -> DailyMetrics</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L27-L99">daily</a>(...) -> DailyMetrics</code></summary>
 <dl>
 <dd>
 
@@ -2488,7 +2488,7 @@ client.metrics.daily()
 </details>
 
 ## Models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list</a>(...) -> PaginatedModels</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L32-L70">list</a>(...) -> PaginatedModels</code></summary>
 <dl>
 <dd>
 
@@ -2567,7 +2567,7 @@ client.models.list()
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">create</a>(...) -> Model</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L72-L152">create</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -2705,7 +2705,7 @@ client.models.create(
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">get</a>(...) -> Model</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L154-L184">get</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -2778,7 +2778,7 @@ client.models.get(
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L186-L215">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2852,7 +2852,7 @@ client.models.delete(
 </details>
 
 ## Observations
-<details><summary><code>client.observations.<a href="src/fern/observations/client.py">get</a>(...) -> ObservationsView</code></summary>
+<details><summary><code>client.observations.<a href="src/fern/observations/client.py#L28-L59">get</a>(...) -> ObservationsView</code></summary>
 <dl>
 <dd>
 
@@ -2925,7 +2925,7 @@ client.observations.get(
 </dl>
 </details>
 
-<details><summary><code>client.observations.<a href="src/fern/observations/client.py">getmany</a>(...) -> ObservationsViews</code></summary>
+<details><summary><code>client.observations.<a href="src/fern/observations/client.py#L61-L143">getmany</a>(...) -> ObservationsViews</code></summary>
 <dl>
 <dd>
 
@@ -3077,7 +3077,7 @@ client.observations.getmany()
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get</a>() -> Projects</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L26-L52">get</a>() -> Projects</code></summary>
 <dl>
 <dd>
 
@@ -3141,7 +3141,7 @@ client.projects.get()
 </details>
 
 ## Promptversion
-<details><summary><code>client.promptversion.<a href="src/fern/promptversion/client.py">update</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.promptversion.<a href="src/fern/promptversion/client.py#L29-L75">update</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3235,7 +3235,7 @@ client.promptversion.update(
 </details>
 
 ## Prompts
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">get</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L32-L76">get</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3324,7 +3324,7 @@ client.prompts.get(
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">list</a>(...) -> PromptMetaListResponse</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L78-L142">list</a>(...) -> PromptMetaListResponse</code></summary>
 <dl>
 <dd>
 
@@ -3443,7 +3443,7 @@ client.prompts.list()
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">create</a>(...) -> Prompt</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L144-L190">create</a>(...) -> Prompt</code></summary>
 <dl>
 <dd>
 
@@ -3526,7 +3526,7 @@ client.prompts.create(
 </details>
 
 ## Scoreconfigs
-<details><summary><code>client.scoreconfigs.<a href="src/fern/scoreconfigs/client.py">get</a>(...) -> ScoreConfigs</code></summary>
+<details><summary><code>client.scoreconfigs.<a href="src/fern/scoreconfigs/client.py#L32-L70">get</a>(...) -> ScoreConfigs</code></summary>
 <dl>
 <dd>
 
@@ -3605,7 +3605,7 @@ client.scoreconfigs.get()
 </dl>
 </details>
 
-<details><summary><code>client.scoreconfigs.<a href="src/fern/scoreconfigs/client.py">create</a>(...) -> ScoreConfig</code></summary>
+<details><summary><code>client.scoreconfigs.<a href="src/fern/scoreconfigs/client.py#L72-L135">create</a>(...) -> ScoreConfig</code></summary>
 <dl>
 <dd>
 
@@ -3719,7 +3719,7 @@ client.scoreconfigs.create(
 </dl>
 </details>
 
-<details><summary><code>client.scoreconfigs.<a href="src/fern/scoreconfigs/client.py">get_by_id</a>(...) -> ScoreConfig</code></summary>
+<details><summary><code>client.scoreconfigs.<a href="src/fern/scoreconfigs/client.py#L137-L168">get_by_id</a>(...) -> ScoreConfig</code></summary>
 <dl>
 <dd>
 
@@ -3793,7 +3793,7 @@ client.scoreconfigs.get_by_id(
 </details>
 
 ## Score
-<details><summary><code>client.score.<a href="src/fern/score/client.py">get</a>(...) -> GetScoresResponse</code></summary>
+<details><summary><code>client.score.<a href="src/fern/score/client.py#L35-L142">get</a>(...) -> GetScoresResponse</code></summary>
 <dl>
 <dd>
 
@@ -3976,7 +3976,7 @@ client.score.get()
 </dl>
 </details>
 
-<details><summary><code>client.score.<a href="src/fern/score/client.py">create</a>(...) -> CreateScoreResponse</code></summary>
+<details><summary><code>client.score.<a href="src/fern/score/client.py#L144-L220">create</a>(...) -> CreateScoreResponse</code></summary>
 <dl>
 <dd>
 
@@ -4115,7 +4115,7 @@ client.score.create(
 </dl>
 </details>
 
-<details><summary><code>client.score.<a href="src/fern/score/client.py">get_by_id</a>(...) -> Score</code></summary>
+<details><summary><code>client.score.<a href="src/fern/score/client.py#L222-L253">get_by_id</a>(...) -> Score</code></summary>
 <dl>
 <dd>
 
@@ -4188,7 +4188,7 @@ client.score.get_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.score.<a href="src/fern/score/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.score.<a href="src/fern/score/client.py#L255-L285">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4262,7 +4262,7 @@ client.score.delete(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list</a>(...) -> PaginatedSessions</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L28-L85">list</a>(...) -> PaginatedSessions</code></summary>
 <dl>
 <dd>
 
@@ -4365,7 +4365,7 @@ client.sessions.list()
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">get</a>(...) -> SessionWithTraces</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L87-L118">get</a>(...) -> SessionWithTraces</code></summary>
 <dl>
 <dd>
 
@@ -4439,7 +4439,7 @@ client.sessions.get(
 </details>
 
 ## Trace
-<details><summary><code>client.trace.<a href="src/fern/trace/client.py">get</a>(...) -> TraceWithFullDetails</code></summary>
+<details><summary><code>client.trace.<a href="src/fern/trace/client.py#L32-L63">get</a>(...) -> TraceWithFullDetails</code></summary>
 <dl>
 <dd>
 
@@ -4512,7 +4512,7 @@ client.trace.get(
 </dl>
 </details>
 
-<details><summary><code>client.trace.<a href="src/fern/trace/client.py">delete</a>(...) -> DeleteTraceResponse</code></summary>
+<details><summary><code>client.trace.<a href="src/fern/trace/client.py#L65-L96">delete</a>(...) -> DeleteTraceResponse</code></summary>
 <dl>
 <dd>
 
@@ -4585,7 +4585,7 @@ client.trace.delete(
 </dl>
 </details>
 
-<details><summary><code>client.trace.<a href="src/fern/trace/client.py">list</a>(...) -> Traces</code></summary>
+<details><summary><code>client.trace.<a href="src/fern/trace/client.py#L98-L187">list</a>(...) -> Traces</code></summary>
 <dl>
 <dd>
 
@@ -4744,7 +4744,7 @@ client.trace.list()
 </dl>
 </details>
 
-<details><summary><code>client.trace.<a href="src/fern/trace/client.py">deletemultiple</a>(...) -> DeleteTraceResponse</code></summary>
+<details><summary><code>client.trace.<a href="src/fern/trace/client.py#L189-L222">deletemultiple</a>(...) -> DeleteTraceResponse</code></summary>
 <dl>
 <dd>
 

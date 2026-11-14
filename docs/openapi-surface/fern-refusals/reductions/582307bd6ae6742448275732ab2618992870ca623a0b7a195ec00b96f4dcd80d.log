@@ -1,5 +1,5 @@
 fern-refusals: reduction of 074048fe12ed07ed40e24d6ff027c480745d1ffe51bd07e86e5d24491b5031e2: /paths/*-;/components/schemas/*-Kibana_HTTP_APIs__zod_v4_3___schema0;/components/examples;/components/parameters
-fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -13,7 +13,7 @@ Warnings for generators.yml:
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.25
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           
@@ -82,7 +82,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 210, in run
+                                            File "/src/fern_python/generators/sdk/sdk_generator.py", line 243, in run
                                               PydanticModelGenerator().generate_types(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   generator_exec_wrapper=generator_exec_wrapper,
@@ -105,7 +105,7 @@ Warnings for generators.yml:
                                             File "/src/fern_python/generators/pydantic_model/pydantic_model_generator.py", line 187, in _generate_type
                                               project.write_source_file(source_file=source_file, filepath=filepath)
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                            File "/src/fern_python/codegen/project.py", line 231, in write_source_file
+                                            File "/src/fern_python/codegen/project.py", line 254, in write_source_file
                                               source_file.write_to_file(
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~^
                                                   filepath=self.get_source_file_filepath(

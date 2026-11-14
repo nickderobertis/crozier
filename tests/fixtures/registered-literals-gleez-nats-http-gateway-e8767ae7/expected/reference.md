@@ -1,6 +1,6 @@
 # Reference
 ## KvApi
-<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py">simple_kv_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py#L25-L66">simple_kv_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -76,7 +76,7 @@ client.kv_api.simple_kv_get(
 </dl>
 </details>
 
-<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py">simple_kv_create_entry</a>(...) -> int</code></summary>
+<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py#L68-L101">simple_kv_create_entry</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -144,7 +144,7 @@ client.kv_api.simple_kv_create_entry(
 </dl>
 </details>
 
-<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py">simple_kv_put_entry</a>(...) -> int</code></summary>
+<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py#L103-L146">simple_kv_put_entry</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -220,7 +220,7 @@ client.kv_api.simple_kv_put_entry(
 </dl>
 </details>
 
-<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py">simple_kv_delete_entry</a>(...)</code></summary>
+<details><summary><code>client.kv_api.<a href="src/fern/kv_api/client.py#L148-L188">simple_kv_delete_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -297,7 +297,7 @@ client.kv_api.simple_kv_delete_entry(
 </details>
 
 ## KvManagementApi
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">list_kv_stores</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L33-L55">list_kv_stores</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -346,7 +346,7 @@ client.kv_management_api.list_kv_stores()
 </dl>
 </details>
 
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">kv_store_info</a>(...) -> KvStoreInfoResponse</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L57-L86">kv_store_info</a>(...) -> KvStoreInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -405,7 +405,7 @@ client.kv_management_api.kv_store_info(
 </dl>
 </details>
 
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">add_kv_store</a>(...)</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L88-L193">add_kv_store</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -592,7 +592,7 @@ client.kv_management_api.add_kv_store(
 </dl>
 </details>
 
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">kv_store_destroy</a>(...)</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L195-L221">kv_store_destroy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -651,7 +651,7 @@ client.kv_management_api.kv_store_destroy(
 </dl>
 </details>
 
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">kv_store_purge</a>(...)</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L223-L249">kv_store_purge</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -710,7 +710,7 @@ client.kv_management_api.kv_store_purge(
 </dl>
 </details>
 
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">kv_store_keys</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L251-L286">kv_store_keys</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -777,7 +777,7 @@ client.kv_management_api.kv_store_keys(
 </dl>
 </details>
 
-<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py">kv_store_watch</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.kv_management_api.<a href="src/fern/kv_management_api/client.py#L288-L345">kv_store_watch</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -877,7 +877,7 @@ client.kv_management_api.kv_store_watch(
 </details>
 
 ## ExtendedKvEntryOperations
-<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py">kv_get_entry</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py#L25-L66">kv_get_entry</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -953,7 +953,7 @@ client.extended_kv_entry_operations.kv_get_entry(
 </dl>
 </details>
 
-<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py">kv_create_entry</a>(...) -> int</code></summary>
+<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py#L68-L99">kv_create_entry</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1021,7 +1021,7 @@ client.extended_kv_entry_operations.kv_create_entry(
 </dl>
 </details>
 
-<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py">kv_put_entry</a>(...) -> int</code></summary>
+<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py#L101-L144">kv_put_entry</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -1097,7 +1097,7 @@ client.extended_kv_entry_operations.kv_put_entry(
 </dl>
 </details>
 
-<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py">kv_delete_entry</a>(...)</code></summary>
+<details><summary><code>client.extended_kv_entry_operations.<a href="src/fern/extended_kv_entry_operations/client.py#L146-L186">kv_delete_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.extended_kv_entry_operations.kv_delete_entry(
 </details>
 
 ## ObjectStoreApi
-<details><summary><code>client.object_store_api.<a href="src/fern/object_store_api/client.py">simple_obj_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.object_store_api.<a href="src/fern/object_store_api/client.py#L25-L66">simple_obj_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1250,7 +1250,7 @@ client.object_store_api.simple_obj_get(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_api.<a href="src/fern/object_store_api/client.py">simple_obj_put_entry</a>(...)</code></summary>
+<details><summary><code>client.object_store_api.<a href="src/fern/object_store_api/client.py#L68-L114">simple_obj_put_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1334,7 +1334,7 @@ client.object_store_api.simple_obj_put_entry(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_api.<a href="src/fern/object_store_api/client.py">simple_obj_delete_entry</a>(...)</code></summary>
+<details><summary><code>client.object_store_api.<a href="src/fern/object_store_api/client.py#L116-L158">simple_obj_delete_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1411,7 +1411,7 @@ client.object_store_api.simple_obj_delete_entry(
 </details>
 
 ## ObjectStoreManagementApi
-<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py">objm_list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py#L32-L54">objm_list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1460,7 @@ client.object_store_management_api.objm_list()
 </dl>
 </details>
 
-<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py">objm_store_info</a>(...) -> ObjmStoreInfoResponse</code></summary>
+<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py#L56-L85">objm_store_info</a>(...) -> ObjmStoreInfoResponse</code></summary>
 <dl>
 <dd>
 
@@ -1519,7 +1519,7 @@ client.object_store_management_api.objm_store_info(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py">objm_store_add</a>(...)</code></summary>
+<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py#L87-L157">objm_store_add</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1650,7 +1650,7 @@ client.object_store_management_api.objm_store_add(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py">objm_store_destroy</a>(...)</code></summary>
+<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py#L159-L185">objm_store_destroy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1709,7 +1709,7 @@ client.object_store_management_api.objm_store_destroy(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py">obj_store_keys</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py#L187-L216">obj_store_keys</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1768,7 +1768,7 @@ client.object_store_management_api.obj_store_keys(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py">obj_store_watch</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.object_store_management_api.<a href="src/fern/object_store_management_api/client.py#L218-L271">obj_store_watch</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1860,7 +1860,7 @@ client.object_store_management_api.obj_store_watch(
 </details>
 
 ## ObjectStoreEntryOperations
-<details><summary><code>client.object_store_entry_operations.<a href="src/fern/object_store_entry_operations/client.py">obj_get_entry</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.object_store_entry_operations.<a href="src/fern/object_store_entry_operations/client.py#L29-L62">obj_get_entry</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1928,7 +1928,7 @@ client.object_store_entry_operations.obj_get_entry(
 </dl>
 </details>
 
-<details><summary><code>client.object_store_entry_operations.<a href="src/fern/object_store_entry_operations/client.py">obj_create_entry</a>(...) -> ObjCreateEntryResponse</code></summary>
+<details><summary><code>client.object_store_entry_operations.<a href="src/fern/object_store_entry_operations/client.py#L64-L92">obj_create_entry</a>(...) -> ObjCreateEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1992,7 +1992,7 @@ client.object_store_entry_operations.obj_create_entry(...)
 </dl>
 </details>
 
-<details><summary><code>client.object_store_entry_operations.<a href="src/fern/object_store_entry_operations/client.py">obj_delete_entry</a>(...)</code></summary>
+<details><summary><code>client.object_store_entry_operations.<a href="src/fern/object_store_entry_operations/client.py#L94-L134">obj_delete_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2069,7 +2069,7 @@ client.object_store_entry_operations.obj_delete_entry(
 </details>
 
 ## NatsCoreMessagingExperimental
-<details><summary><code>client.nats_core_messaging_experimental.<a href="src/fern/nats_core_messaging_experimental/client.py">subscribe</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.nats_core_messaging_experimental.<a href="src/fern/nats_core_messaging_experimental/client.py#L30-L78">subscribe</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2152,7 +2152,7 @@ client.nats_core_messaging_experimental.subscribe(
 </dl>
 </details>
 
-<details><summary><code>client.nats_core_messaging_experimental.<a href="src/fern/nats_core_messaging_experimental/client.py">request</a>(...) -> RequestResponse</code></summary>
+<details><summary><code>client.nats_core_messaging_experimental.<a href="src/fern/nats_core_messaging_experimental/client.py#L80-L108">request</a>(...) -> RequestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2216,7 +2216,7 @@ client.nats_core_messaging_experimental.request(...)
 </dl>
 </details>
 
-<details><summary><code>client.nats_core_messaging_experimental.<a href="src/fern/nats_core_messaging_experimental/client.py">publish</a>(...)</code></summary>
+<details><summary><code>client.nats_core_messaging_experimental.<a href="src/fern/nats_core_messaging_experimental/client.py#L110-L147">publish</a>(...)</code></summary>
 <dl>
 <dd>
 

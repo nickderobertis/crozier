@@ -1,6 +1,6 @@
 # Reference
 ## plaid
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">accounts_balance_get</a>(...) -> AccountsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L410-L465">accounts_balance_get</a>(...) -> AccountsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.plaid.accounts_balance_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">accounts_get</a>(...) -> AccountsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L467-L525">accounts_get</a>(...) -> AccountsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -215,7 +215,7 @@ client.plaid.accounts_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">application_get</a>(...) -> ApplicationGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L527-L572">application_get</a>(...) -> ApplicationGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -308,7 +308,7 @@ client.plaid.application_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_audit_copy_create</a>(...) -> AssetReportAuditCopyCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L574-L627">asset_report_audit_copy_create</a>(...) -> AssetReportAuditCopyCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ client.plaid.asset_report_audit_copy_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_audit_copy_get</a>(...) -> AssetReportGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L629-L673">asset_report_audit_copy_get</a>(...) -> AssetReportGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.plaid.asset_report_audit_copy_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_audit_copy_remove</a>(...) -> AssetReportAuditCopyRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L675-L719">asset_report_audit_copy_remove</a>(...) -> AssetReportAuditCopyRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -591,7 +591,7 @@ client.plaid.asset_report_audit_copy_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_create</a>(...) -> AssetReportCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L721-L788">asset_report_create</a>(...) -> AssetReportCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -714,7 +714,7 @@ An Asset Report requested with "Additional History" (that is, with more than 61 
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_filter</a>(...) -> AssetReportFilterResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L790-L848">asset_report_filter</a>(...) -> AssetReportFilterResponse</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.plaid.asset_report_filter(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_get</a>(...) -> AssetReportGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L850-L916">asset_report_get</a>(...) -> AssetReportGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -943,7 +943,7 @@ client.plaid.asset_report_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_pdf_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L918-L961">asset_report_pdf_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1035,7 +1035,7 @@ client.plaid.asset_report_pdf_get(...)
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_refresh</a>(...) -> AssetReportRefreshResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L963-L1020">asset_report_refresh</a>(...) -> AssetReportRefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -1144,7 +1144,7 @@ client.plaid.asset_report_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">asset_report_remove</a>(...) -> AssetReportRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1022-L1067">asset_report_remove</a>(...) -> AssetReportRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -1237,7 +1237,7 @@ client.plaid.asset_report_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">auth_get</a>(...) -> AuthGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1069-L1123">auth_get</a>(...) -> AuthGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1340,7 +1340,7 @@ client.plaid.auth_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_balance_get</a>(...) -> BankTransferBalanceGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1125-L1174">bank_transfer_balance_get</a>(...) -> BankTransferBalanceGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1433,7 +1433,7 @@ client.plaid.bank_transfer_balance_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_cancel</a>(...) -> BankTransferCancelResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1176-L1219">bank_transfer_cancel</a>(...) -> BankTransferCancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -1524,7 +1524,7 @@ client.plaid.bank_transfer_cancel(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_create</a>(...) -> BankTransferCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1221-L1330">bank_transfer_create</a>(...) -> BankTransferCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1721,7 +1721,7 @@ client.plaid.bank_transfer_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_event_list</a>(...) -> BankTransferEventListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1332-L1420">bank_transfer_event_list</a>(...) -> BankTransferEventListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1882,7 +1882,7 @@ client.plaid.bank_transfer_event_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_event_sync</a>(...) -> BankTransferEventSyncResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1422-L1470">bank_transfer_event_sync</a>(...) -> BankTransferEventSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -1981,7 +1981,7 @@ client.plaid.bank_transfer_event_sync(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_get</a>(...) -> BankTransferGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1472-L1515">bank_transfer_get</a>(...) -> BankTransferGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2072,7 +2072,7 @@ client.plaid.bank_transfer_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_list</a>(...) -> BankTransferListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1517-L1586">bank_transfer_list</a>(...) -> BankTransferListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2201,7 +2201,7 @@ client.plaid.bank_transfer_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_migrate_account</a>(...) -> BankTransferMigrateAccountResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1588-L1652">bank_transfer_migrate_account</a>(...) -> BankTransferMigrateAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -2318,7 +2318,7 @@ client.plaid.bank_transfer_migrate_account(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_sweep_get</a>(...) -> BankTransferSweepGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1654-L1698">bank_transfer_sweep_get</a>(...) -> BankTransferSweepGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2409,7 +2409,7 @@ client.plaid.bank_transfer_sweep_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">bank_transfer_sweep_list</a>(...) -> BankTransferSweepListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1700-L1760">bank_transfer_sweep_list</a>(...) -> BankTransferSweepListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2522,7 +2522,7 @@ client.plaid.bank_transfer_sweep_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_bank_employment_get</a>(...) -> CreditBankEmploymentGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1762-L1805">credit_bank_employment_get</a>(...) -> CreditBankEmploymentGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2613,7 +2613,7 @@ client.plaid.credit_bank_employment_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_rules_create</a>(...) -> TransactionsRulesCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1807-L1876">transactions_rules_create</a>(...) -> TransactionsRulesCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2736,7 +2736,7 @@ See the [`taxonomy csv file`](https://plaid.com/documents/transactions-personal-
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_rules_list</a>(...) -> TransactionsRulesListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1878-L1923">transactions_rules_list</a>(...) -> TransactionsRulesListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2829,7 +2829,7 @@ client.plaid.transactions_rules_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_rules_remove</a>(...) -> TransactionsRulesRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1925-L1979">transactions_rules_remove</a>(...) -> TransactionsRulesRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -2931,7 +2931,7 @@ client.plaid.transactions_rules_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_enhance</a>(...) -> TransactionsEnhanceGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L1981-L2043">transactions_enhance</a>(...) -> TransactionsEnhanceGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3040,7 +3040,7 @@ client.plaid.transactions_enhance(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">categories_get</a>(...) -> CategoriesGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2045-L2077">categories_get</a>(...) -> CategoriesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3117,7 +3117,7 @@ client.plaid.categories_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_asset_report_freddie_mac_get</a>(...) -> AssetReportFreddieGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2079-L2123">credit_asset_report_freddie_mac_get</a>(...) -> AssetReportFreddieGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3208,7 +3208,7 @@ client.plaid.credit_asset_report_freddie_mac_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_audit_copy_token_create</a>(...) -> CreditAuditCopyTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2125-L2171">credit_audit_copy_token_create</a>(...) -> CreditAuditCopyTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -3303,7 +3303,7 @@ client.plaid.credit_audit_copy_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_report_audit_copy_remove</a>(...) -> CreditAuditCopyTokenRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2173-L2217">credit_report_audit_copy_remove</a>(...) -> CreditAuditCopyTokenRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -3394,7 +3394,7 @@ client.plaid.credit_report_audit_copy_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_audit_copy_token_update</a>(...) -> CreditAuditCopyTokenUpdateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2219-L2272">credit_audit_copy_token_update</a>(...) -> CreditAuditCopyTokenUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -3496,7 +3496,7 @@ client.plaid.credit_audit_copy_token_update(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_bank_income_get</a>(...) -> CreditBankIncomeGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2274-L2318">credit_bank_income_get</a>(...) -> CreditBankIncomeGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3593,7 +3593,7 @@ client.plaid.credit_bank_income_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_bank_income_pdf_get</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2320-L2350">credit_bank_income_pdf_get</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3671,7 +3671,7 @@ client.plaid.credit_bank_income_pdf_get(...)
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_bank_income_refresh</a>(...) -> CreditBankIncomeRefreshResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2352-L2398">credit_bank_income_refresh</a>(...) -> CreditBankIncomeRefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -3770,7 +3770,7 @@ client.plaid.credit_bank_income_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_employment_get</a>(...) -> CreditEmploymentGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2400-L2443">credit_employment_get</a>(...) -> CreditEmploymentGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3861,7 +3861,7 @@ client.plaid.credit_employment_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_freddie_mac_reports_get</a>(...) -> CreditFreddieMacReportsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2445-L2489">credit_freddie_mac_reports_get</a>(...) -> CreditFreddieMacReportsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3952,7 +3952,7 @@ client.plaid.credit_freddie_mac_reports_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_payroll_income_get</a>(...) -> CreditPayrollIncomeGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2491-L2532">credit_payroll_income_get</a>(...) -> CreditPayrollIncomeGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -4041,7 +4041,7 @@ client.plaid.credit_payroll_income_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_payroll_income_precheck</a>(...) -> CreditPayrollIncomePrecheckResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2534-L2599">credit_payroll_income_precheck</a>(...) -> CreditPayrollIncomePrecheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -4166,7 +4166,7 @@ client.plaid.credit_payroll_income_precheck()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_payroll_income_refresh</a>(...) -> CreditPayrollIncomeRefreshResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2601-L2647">credit_payroll_income_refresh</a>(...) -> CreditPayrollIncomeRefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -4265,7 +4265,7 @@ client.plaid.credit_payroll_income_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_relay_create</a>(...) -> CreditRelayCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2649-L2709">credit_relay_create</a>(...) -> CreditRelayCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -4377,7 +4377,7 @@ client.plaid.credit_relay_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_relay_get</a>(...) -> AssetReportGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2711-L2763">credit_relay_get</a>(...) -> AssetReportGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -4477,7 +4477,7 @@ client.plaid.credit_relay_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_relay_refresh</a>(...) -> CreditRelayRefreshResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2765-L2822">credit_relay_refresh</a>(...) -> CreditRelayRefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -4585,7 +4585,7 @@ client.plaid.credit_relay_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_relay_remove</a>(...) -> CreditRelayRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2824-L2868">credit_relay_remove</a>(...) -> CreditRelayRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -4676,7 +4676,7 @@ client.plaid.credit_relay_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">credit_sessions_get</a>(...) -> CreditSessionsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2870-L2915">credit_sessions_get</a>(...) -> CreditSessionsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -4769,7 +4769,7 @@ client.plaid.credit_sessions_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">dashboard_user_get</a>(...) -> DashboardUserGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2917-L2960">dashboard_user_get</a>(...) -> DashboardUserGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -4860,7 +4860,7 @@ client.plaid.dashboard_user_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">dashboard_user_list</a>(...) -> DashboardUserListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L2962-L3003">dashboard_user_list</a>(...) -> DashboardUserListResponse</code></summary>
 <dl>
 <dd>
 
@@ -4949,7 +4949,7 @@ client.plaid.dashboard_user_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">deposit_switch_alt_create</a>(...) -> DepositSwitchAltCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3005-L3075">deposit_switch_alt_create</a>(...) -> DepositSwitchAltCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -5075,7 +5075,7 @@ client.plaid.deposit_switch_alt_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">deposit_switch_create</a>(...) -> DepositSwitchCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3077-L3139">deposit_switch_create</a>(...) -> DepositSwitchCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -5191,7 +5191,7 @@ client.plaid.deposit_switch_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">deposit_switch_get</a>(...) -> DepositSwitchGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3141-L3185">deposit_switch_get</a>(...) -> DepositSwitchGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -5282,7 +5282,7 @@ client.plaid.deposit_switch_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">deposit_switch_token_create</a>(...) -> DepositSwitchTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3187-L3231">deposit_switch_token_create</a>(...) -> DepositSwitchTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -5373,7 +5373,7 @@ client.plaid.deposit_switch_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">employers_search</a>(...) -> EmployersSearchResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3233-L3284">employers_search</a>(...) -> EmployersSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -5477,7 +5477,7 @@ client.plaid.employers_search(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">employment_verification_get</a>(...) -> EmploymentVerificationGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3286-L3331">employment_verification_get</a>(...) -> EmploymentVerificationGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -5570,7 +5570,7 @@ client.plaid.employment_verification_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">fdx_notifications</a>(...)</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3333-L3419">fdx_notifications</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5726,7 +5726,7 @@ client.plaid.fdx_notifications(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">identity_get</a>(...) -> IdentityGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3421-L3475">identity_get</a>(...) -> IdentityGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -5829,7 +5829,7 @@ client.plaid.identity_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">identity_match</a>(...) -> IdentityMatchResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3477-L3537">identity_match</a>(...) -> IdentityMatchResponse</code></summary>
 <dl>
 <dd>
 
@@ -5946,7 +5946,7 @@ client.plaid.identity_match(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">identity_verification_create</a>(...) -> IdentityVerificationCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3539-L3608">identity_verification_create</a>(...) -> IdentityVerificationCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -6075,7 +6075,7 @@ client.plaid.identity_verification_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">identity_verification_get</a>(...) -> IdentityVerificationGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3610-L3656">identity_verification_get</a>(...) -> IdentityVerificationGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -6166,7 +6166,7 @@ client.plaid.identity_verification_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">identity_verification_list</a>(...) -> IdentityVerificationListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3658-L3713">identity_verification_list</a>(...) -> IdentityVerificationListResponse</code></summary>
 <dl>
 <dd>
 
@@ -6274,7 +6274,7 @@ client.plaid.identity_verification_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">identity_verification_retry</a>(...) -> IdentityVerificationRetryResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3715-L3775">identity_verification_retry</a>(...) -> IdentityVerificationRetryResponse</code></summary>
 <dl>
 <dd>
 
@@ -6391,7 +6391,7 @@ client.plaid.identity_verification_retry(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">income_verification_create</a>(...) -> IncomeVerificationCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3777-L3833">income_verification_create</a>(...) -> IncomeVerificationCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -6498,7 +6498,7 @@ client.plaid.income_verification_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">income_verification_documents_download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3835-L3886">income_verification_documents_download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -6600,7 +6600,7 @@ client.plaid.income_verification_documents_download(...)
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">income_verification_paystubs_get</a>(...) -> IncomeVerificationPaystubsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3888-L3939">income_verification_paystubs_get</a>(...) -> IncomeVerificationPaystubsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -6699,7 +6699,7 @@ client.plaid.income_verification_paystubs_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">income_verification_precheck</a>(...) -> IncomeVerificationPrecheckResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L3941-L4010">income_verification_precheck</a>(...) -> IncomeVerificationPrecheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -6832,7 +6832,7 @@ client.plaid.income_verification_precheck()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">income_verification_taxforms_get</a>(...) -> IncomeVerificationTaxformsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4012-L4063">income_verification_taxforms_get</a>(...) -> IncomeVerificationTaxformsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -6931,7 +6931,7 @@ client.plaid.income_verification_taxforms_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">institutions_get</a>(...) -> InstitutionsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4065-L4132">institutions_get</a>(...) -> InstitutionsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7056,7 +7056,7 @@ In API versions 2019-05-29 and earlier, the `country_codes` parameter is an opti
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">institutions_get_by_id</a>(...) -> InstitutionsGetByIdResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4134-L4193">institutions_get_by_id</a>(...) -> InstitutionsGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -7168,7 +7168,7 @@ client.plaid.institutions_get_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">institutions_search</a>(...) -> InstitutionsSearchResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4195-L4259">institutions_search</a>(...) -> InstitutionsSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -7289,7 +7289,7 @@ client.plaid.institutions_search(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">investments_holdings_get</a>(...) -> InvestmentsHoldingsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4261-L4311">investments_holdings_get</a>(...) -> InvestmentsHoldingsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7388,7 +7388,7 @@ client.plaid.investments_holdings_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">investments_transactions_get</a>(...) -> InvestmentsTransactionsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4313-L4387">investments_transactions_get</a>(...) -> InvestmentsTransactionsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7512,7 +7512,7 @@ client.plaid.investments_transactions_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_access_token_invalidate</a>(...) -> ItemAccessTokenInvalidateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4389-L4434">item_access_token_invalidate</a>(...) -> ItemAccessTokenInvalidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -7605,7 +7605,7 @@ client.plaid.item_access_token_invalidate(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_activity_list</a>(...) -> ItemActivityListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4436-L4489">item_activity_list</a>(...) -> ItemActivityListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7710,7 +7710,7 @@ client.plaid.item_activity_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_application_list</a>(...) -> ItemApplicationListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4491-L4532">item_application_list</a>(...) -> ItemApplicationListResponse</code></summary>
 <dl>
 <dd>
 
@@ -7799,7 +7799,7 @@ client.plaid.item_application_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_application_scopes_update</a>(...) -> ItemApplicationScopesUpdateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4534-L4599">item_application_scopes_update</a>(...) -> ItemApplicationScopesUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -7925,7 +7925,7 @@ client.plaid.item_application_scopes_update(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_get</a>(...) -> ItemGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4601-L4644">item_get</a>(...) -> ItemGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -8016,7 +8016,7 @@ client.plaid.item_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_import</a>(...) -> ItemImportResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4646-L4707">item_import</a>(...) -> ItemImportResponse</code></summary>
 <dl>
 <dd>
 
@@ -8131,7 +8131,7 @@ client.plaid.item_import(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_create_public_token</a>(...) -> ItemPublicTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4709-L4758">item_create_public_token</a>(...) -> ItemPublicTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -8228,7 +8228,7 @@ client.plaid.item_create_public_token(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_public_token_exchange</a>(...) -> ItemPublicTokenExchangeResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4760-L4806">item_public_token_exchange</a>(...) -> ItemPublicTokenExchangeResponse</code></summary>
 <dl>
 <dd>
 
@@ -8321,7 +8321,7 @@ client.plaid.item_public_token_exchange(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_remove</a>(...) -> ItemRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4808-L4857">item_remove</a>(...) -> ItemRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -8418,7 +8418,7 @@ client.plaid.item_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">item_webhook_update</a>(...) -> ItemWebhookUpdateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4859-L4910">item_webhook_update</a>(...) -> ItemWebhookUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -8517,7 +8517,7 @@ client.plaid.item_webhook_update(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">liabilities_get</a>(...) -> LiabilitiesGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4912-L4966">liabilities_get</a>(...) -> LiabilitiesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -8620,7 +8620,7 @@ client.plaid.liabilities_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">link_oauth_correlation_id_exchange</a>(...) -> LinkOAuthCorrelationIdExchangeResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L4968-L5013">link_oauth_correlation_id_exchange</a>(...) -> LinkOAuthCorrelationIdExchangeResponse</code></summary>
 <dl>
 <dd>
 
@@ -8712,7 +8712,7 @@ client.plaid.link_oauth_correlation_id_exchange(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">link_token_create</a>(...) -> LinkTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5015-L5214">link_token_create</a>(...) -> LinkTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -9050,7 +9050,7 @@ In Production, you will be billed for each product that you specify when initial
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">link_token_get</a>(...) -> LinkTokenGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5216-L5261">link_token_get</a>(...) -> LinkTokenGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -9142,7 +9142,7 @@ client.plaid.link_token_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">link_delivery_create</a>(...) -> LinkDeliveryCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5263-L5310">link_delivery_create</a>(...) -> LinkDeliveryCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -9241,7 +9241,7 @@ client.plaid.link_delivery_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">link_delivery_get</a>(...) -> LinkDeliveryGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5312-L5359">link_delivery_get</a>(...) -> LinkDeliveryGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -9332,7 +9332,7 @@ client.plaid.link_delivery_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">partner_customer_create</a>(...) -> PartnerCustomerCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5361-L5516">partner_customer_create</a>(...) -> PartnerCustomerCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -9575,7 +9575,7 @@ client.plaid.partner_customer_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">partner_customer_enable</a>(...) -> PartnerCustomerEnableResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5518-L5566">partner_customer_enable</a>(...) -> PartnerCustomerEnableResponse</code></summary>
 <dl>
 <dd>
 
@@ -9668,7 +9668,7 @@ client.plaid.partner_customer_enable(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">partner_customer_get</a>(...) -> PartnerCustomerGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5568-L5616">partner_customer_get</a>(...) -> PartnerCustomerGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -9761,7 +9761,7 @@ client.plaid.partner_customer_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">partner_customer_oauth_institutions_get</a>(...) -> PartnerCustomerOAuthInstitutionsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5618-L5666">partner_customer_oauth_institutions_get</a>(...) -> PartnerCustomerOAuthInstitutionsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -9854,7 +9854,7 @@ client.plaid.partner_customer_oauth_institutions_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">partner_customer_remove</a>(...) -> PartnerCustomerRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5668-L5716">partner_customer_remove</a>(...) -> PartnerCustomerRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -9947,7 +9947,7 @@ client.plaid.partner_customer_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_consent_create</a>(...) -> PaymentInitiationConsentCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5718-L5808">payment_initiation_consent_create</a>(...) -> PaymentInitiationConsentCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -10092,7 +10092,7 @@ client.plaid.payment_initiation_consent_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_consent_get</a>(...) -> PaymentInitiationConsentGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5810-L5854">payment_initiation_consent_get</a>(...) -> PaymentInitiationConsentGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -10183,7 +10183,7 @@ client.plaid.payment_initiation_consent_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_consent_payment_execute</a>(...) -> PaymentInitiationConsentPaymentExecuteResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5856-L5916">payment_initiation_consent_payment_execute</a>(...) -> PaymentInitiationConsentPaymentExecuteResponse</code></summary>
 <dl>
 <dd>
 
@@ -10295,7 +10295,7 @@ client.plaid.payment_initiation_consent_payment_execute(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_consent_revoke</a>(...) -> PaymentInitiationConsentRevokeResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5918-L5962">payment_initiation_consent_revoke</a>(...) -> PaymentInitiationConsentRevokeResponse</code></summary>
 <dl>
 <dd>
 
@@ -10386,7 +10386,7 @@ client.plaid.payment_initiation_consent_revoke(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_payment_create</a>(...) -> PaymentInitiationPaymentCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L5964-L6039">payment_initiation_payment_create</a>(...) -> PaymentInitiationPaymentCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -10522,7 +10522,7 @@ Both the originally provided and automatically adjusted references (if any) can 
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_payment_get</a>(...) -> PaymentInitiationPaymentGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6041-L6085">payment_initiation_payment_get</a>(...) -> PaymentInitiationPaymentGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -10613,7 +10613,7 @@ client.plaid.payment_initiation_payment_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_payment_list</a>(...) -> PaymentInitiationPaymentListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6087-L6142">payment_initiation_payment_list</a>(...) -> PaymentInitiationPaymentListResponse</code></summary>
 <dl>
 <dd>
 
@@ -10718,7 +10718,7 @@ client.plaid.payment_initiation_payment_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_payment_reverse</a>(...) -> PaymentInitiationPaymentReverseResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6144-L6215">payment_initiation_payment_reverse</a>(...) -> PaymentInitiationPaymentReverseResponse</code></summary>
 <dl>
 <dd>
 
@@ -10844,7 +10844,7 @@ client.plaid.payment_initiation_payment_reverse(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">create_payment_token</a>(...) -> PaymentInitiationPaymentTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6217-L6263">create_payment_token</a>(...) -> PaymentInitiationPaymentTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -10937,7 +10937,7 @@ client.plaid.create_payment_token(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_recipient_create</a>(...) -> PaymentInitiationRecipientCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6265-L6329">payment_initiation_recipient_create</a>(...) -> PaymentInitiationRecipientCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11056,7 +11056,7 @@ client.plaid.payment_initiation_recipient_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_recipient_get</a>(...) -> PaymentInitiationRecipientGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6331-L6375">payment_initiation_recipient_get</a>(...) -> PaymentInitiationRecipientGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -11147,7 +11147,7 @@ client.plaid.payment_initiation_recipient_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_initiation_recipient_list</a>(...) -> PaymentInitiationRecipientListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6377-L6415">payment_initiation_recipient_list</a>(...) -> PaymentInitiationRecipientListResponse</code></summary>
 <dl>
 <dd>
 
@@ -11228,7 +11228,7 @@ client.plaid.payment_initiation_recipient_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_profile_create</a>(...) -> PaymentProfileCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6417-L6457">payment_profile_create</a>(...) -> PaymentProfileCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11311,7 +11311,7 @@ client.plaid.payment_profile_create()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_profile_get</a>(...) -> PaymentProfileGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6459-L6505">payment_profile_get</a>(...) -> PaymentProfileGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -11402,7 +11402,7 @@ client.plaid.payment_profile_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">payment_profile_remove</a>(...) -> PaymentProfileRemoveResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6507-L6553">payment_profile_remove</a>(...) -> PaymentProfileRemoveResponse</code></summary>
 <dl>
 <dd>
 
@@ -11493,7 +11493,7 @@ client.plaid.payment_profile_remove(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_apex_processor_token_create</a>(...) -> ProcessorTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6555-L6607">processor_apex_processor_token_create</a>(...) -> ProcessorTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11593,7 +11593,7 @@ client.plaid.processor_apex_processor_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_auth_get</a>(...) -> ProcessorAuthGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6609-L6654">processor_auth_get</a>(...) -> ProcessorAuthGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -11686,7 +11686,7 @@ client.plaid.processor_auth_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_balance_get</a>(...) -> ProcessorBalanceGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6656-L6706">processor_balance_get</a>(...) -> ProcessorBalanceGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -11785,7 +11785,7 @@ client.plaid.processor_balance_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_bank_transfer_create</a>(...) -> ProcessorBankTransferCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6708-L6811">processor_bank_transfer_create</a>(...) -> ProcessorBankTransferCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -11973,7 +11973,7 @@ client.plaid.processor_bank_transfer_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_identity_get</a>(...) -> ProcessorIdentityGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6813-L6856">processor_identity_get</a>(...) -> ProcessorIdentityGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -12064,7 +12064,7 @@ client.plaid.processor_identity_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_signal_decision_report</a>(...) -> ProcessorSignalDecisionReportResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6858-L6938">processor_signal_decision_report</a>(...) -> ProcessorSignalDecisionReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -12213,7 +12213,7 @@ For example, use 0 if you make funds available to your customers instantly or th
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_signal_evaluate</a>(...) -> ProcessorSignalEvaluateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L6940-L7037">processor_signal_evaluate</a>(...) -> ProcessorSignalEvaluateResponse</code></summary>
 <dl>
 <dd>
 
@@ -12383,7 +12383,7 @@ Possible values:  `SAME_DAY_ACH`, `NEXT_DAY_ACH`, `STANDARD_ACH`, `REAL_TIME_PAY
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_signal_return_report</a>(...) -> ProcessorSignalReturnReportResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7039-L7104">processor_signal_return_report</a>(...) -> ProcessorSignalReturnReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -12504,7 +12504,7 @@ If formatted incorrectly, this will result in an [`INVALID_FIELD`](/docs/errors/
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_stripe_bank_account_token_create</a>(...) -> ProcessorStripeBankAccountTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7106-L7163">processor_stripe_bank_account_token_create</a>(...) -> ProcessorStripeBankAccountTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -12609,7 +12609,7 @@ client.plaid.processor_stripe_bank_account_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">processor_token_create</a>(...) -> ProcessorTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7165-L7223">processor_token_create</a>(...) -> ProcessorTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -12718,7 +12718,7 @@ client.plaid.processor_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_bank_transfer_fire_webhook</a>(...) -> SandboxBankTransferFireWebhookResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7225-L7269">sandbox_bank_transfer_fire_webhook</a>(...) -> SandboxBankTransferFireWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -12809,7 +12809,7 @@ client.plaid.sandbox_bank_transfer_fire_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_bank_transfer_simulate</a>(...) -> SandboxBankTransferSimulateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7271-L7335">sandbox_bank_transfer_simulate</a>(...) -> SandboxBankTransferSimulateResponse</code></summary>
 <dl>
 <dd>
 
@@ -12927,7 +12927,7 @@ An error will be returned if the event type is incompatible with the current tra
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_income_fire_webhook</a>(...) -> SandboxIncomeFireWebhookResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7337-L7404">sandbox_income_fire_webhook</a>(...) -> SandboxIncomeFireWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -13050,7 +13050,7 @@ client.plaid.sandbox_income_fire_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_item_fire_webhook</a>(...) -> SandboxItemFireWebhookResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7406-L7474">sandbox_item_fire_webhook</a>(...) -> SandboxItemFireWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -13170,7 +13170,7 @@ client.plaid.sandbox_item_fire_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_item_reset_login</a>(...) -> SandboxItemResetLoginResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7476-L7522">sandbox_item_reset_login</a>(...) -> SandboxItemResetLoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -13264,7 +13264,7 @@ client.plaid.sandbox_item_reset_login(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_item_set_verification_status</a>(...) -> SandboxItemSetVerificationStatusResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7524-L7586">sandbox_item_set_verification_status</a>(...) -> SandboxItemSetVerificationStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -13377,7 +13377,7 @@ client.plaid.sandbox_item_set_verification_status(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_oauth_select_accounts</a>(...) -> SandboxOauthSelectAccountsResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7588-L7629">sandbox_oauth_select_accounts</a>(...) -> SandboxOauthSelectAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -13463,7 +13463,7 @@ client.plaid.sandbox_oauth_select_accounts(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_payment_profile_reset_login</a>(...) -> SandboxPaymentProfileResetLoginResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7631-L7681">sandbox_payment_profile_reset_login</a>(...) -> SandboxPaymentProfileResetLoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -13558,7 +13558,7 @@ client.plaid.sandbox_payment_profile_reset_login(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_processor_token_create</a>(...) -> SandboxProcessorTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7683-L7734">sandbox_processor_token_create</a>(...) -> SandboxProcessorTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -13657,7 +13657,7 @@ client.plaid.sandbox_processor_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_public_token_create</a>(...) -> SandboxPublicTokenCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7736-L7797">sandbox_public_token_create</a>(...) -> SandboxPublicTokenCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -13775,7 +13775,7 @@ client.plaid.sandbox_public_token_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_fire_webhook</a>(...) -> SandboxTransferFireWebhookResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7799-L7843">sandbox_transfer_fire_webhook</a>(...) -> SandboxTransferFireWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -13866,7 +13866,7 @@ client.plaid.sandbox_transfer_fire_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_repayment_simulate</a>(...) -> SandboxTransferRepaymentSimulateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7845-L7883">sandbox_transfer_repayment_simulate</a>(...) -> SandboxTransferRepaymentSimulateResponse</code></summary>
 <dl>
 <dd>
 
@@ -13947,7 +13947,7 @@ client.plaid.sandbox_transfer_repayment_simulate()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_simulate</a>(...) -> SandboxTransferSimulateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7885-L7951">sandbox_transfer_simulate</a>(...) -> SandboxTransferSimulateResponse</code></summary>
 <dl>
 <dd>
 
@@ -14067,7 +14067,7 @@ An error will be returned if the event type is incompatible with the current tra
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_sweep_simulate</a>(...) -> SandboxTransferSweepSimulateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7953-L7991">sandbox_transfer_sweep_simulate</a>(...) -> SandboxTransferSweepSimulateResponse</code></summary>
 <dl>
 <dd>
 
@@ -14148,7 +14148,7 @@ client.plaid.sandbox_transfer_sweep_simulate()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_test_clock_advance</a>(...) -> SandboxTransferTestClockAdvanceResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L7993-L8056">sandbox_transfer_test_clock_advance</a>(...) -> SandboxTransferTestClockAdvanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -14257,7 +14257,7 @@ client.plaid.sandbox_transfer_test_clock_advance(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_test_clock_create</a>(...) -> SandboxTransferTestClockCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8058-L8109">sandbox_transfer_test_clock_create</a>(...) -> SandboxTransferTestClockCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -14353,7 +14353,7 @@ client.plaid.sandbox_transfer_test_clock_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_test_clock_get</a>(...) -> SandboxTransferTestClockGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8111-L8154">sandbox_transfer_test_clock_get</a>(...) -> SandboxTransferTestClockGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -14444,7 +14444,7 @@ client.plaid.sandbox_transfer_test_clock_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">sandbox_transfer_test_clock_list</a>(...) -> SandboxTransferTestClockListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8156-L8216">sandbox_transfer_test_clock_list</a>(...) -> SandboxTransferTestClockListResponse</code></summary>
 <dl>
 <dd>
 
@@ -14557,7 +14557,7 @@ client.plaid.sandbox_transfer_test_clock_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">signal_decision_report</a>(...) -> SignalDecisionReportResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8218-L8293">signal_decision_report</a>(...) -> SignalDecisionReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -14697,7 +14697,7 @@ For example, use 0 if you make funds available to your customers instantly or th
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">signal_evaluate</a>(...) -> SignalEvaluateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8295-L8400">signal_evaluate</a>(...) -> SignalEvaluateResponse</code></summary>
 <dl>
 <dd>
 
@@ -14880,7 +14880,7 @@ Possible values:  `SAME_DAY_ACH`, `NEXT_DAY_ACH`, `STANDARD_ACH`, `REAL_TIME_PAY
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">signal_prepare</a>(...) -> SignalPrepareResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8402-L8449">signal_prepare</a>(...) -> SignalPrepareResponse</code></summary>
 <dl>
 <dd>
 
@@ -14975,7 +14975,7 @@ client.plaid.signal_prepare(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">signal_return_report</a>(...) -> SignalReturnReportResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8451-L8511">signal_return_report</a>(...) -> SignalReturnReportResponse</code></summary>
 <dl>
 <dd>
 
@@ -15087,7 +15087,7 @@ If formatted incorrectly, this will result in an [`INVALID_FIELD`](/docs/errors/
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_enrich</a>(...) -> TransactionsEnrichGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8513-L8580">transactions_enrich</a>(...) -> TransactionsEnrichGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -15205,7 +15205,7 @@ client.plaid.transactions_enrich(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_get</a>(...) -> TransactionsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8582-L8658">transactions_get</a>(...) -> TransactionsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -15331,7 +15331,7 @@ client.plaid.transactions_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_recurring_get</a>(...) -> TransactionsRecurringGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8660-L8724">transactions_recurring_get</a>(...) -> TransactionsRecurringGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -15451,7 +15451,7 @@ Note: An error will be returned if a provided `account_id` is not associated wit
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_refresh</a>(...) -> TransactionsRefreshResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8726-L8771">transactions_refresh</a>(...) -> TransactionsRefreshResponse</code></summary>
 <dl>
 <dd>
 
@@ -15544,7 +15544,7 @@ client.plaid.transactions_refresh(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transactions_sync</a>(...) -> TransactionsSyncResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8773-L8853">transactions_sync</a>(...) -> TransactionsSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -15681,7 +15681,7 @@ Note: The upper-bound length of this cursor is 256 characters of base64.
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_authorization_create</a>(...) -> TransferAuthorizationCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8855-L8992">transfer_authorization_create</a>(...) -> TransferAuthorizationCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -15921,7 +15921,7 @@ client.plaid.transfer_authorization_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_cancel</a>(...) -> TransferCancelResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L8994-L9045">transfer_cancel</a>(...) -> TransferCancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -16020,7 +16020,7 @@ client.plaid.transfer_cancel(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_capabilities_get</a>(...) -> TransferCapabilitiesGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9047-L9099">transfer_capabilities_get</a>(...) -> TransferCapabilitiesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -16125,7 +16125,7 @@ client.plaid.transfer_capabilities_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_configuration_get</a>(...) -> TransferConfigurationGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9101-L9146">transfer_configuration_get</a>(...) -> TransferConfigurationGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -16214,7 +16214,7 @@ client.plaid.transfer_configuration_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_create</a>(...) -> TransferCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9148-L9251">transfer_create</a>(...) -> TransferCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -16410,7 +16410,7 @@ client.plaid.transfer_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_event_list</a>(...) -> TransferEventListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9253-L9352">transfer_event_list</a>(...) -> TransferEventListResponse</code></summary>
 <dl>
 <dd>
 
@@ -16587,7 +16587,7 @@ client.plaid.transfer_event_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_event_sync</a>(...) -> TransferEventSyncResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9354-L9402">transfer_event_sync</a>(...) -> TransferEventSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -16686,7 +16686,7 @@ client.plaid.transfer_event_sync(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_get</a>(...) -> TransferGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9404-L9455">transfer_get</a>(...) -> TransferGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -16785,7 +16785,7 @@ client.plaid.transfer_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_intent_create</a>(...) -> TransferIntentCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9457-L9557">transfer_intent_create</a>(...) -> TransferIntentCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -16969,7 +16969,7 @@ client.plaid.transfer_intent_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_intent_get</a>(...) -> TransferIntentGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9559-L9603">transfer_intent_get</a>(...) -> TransferIntentGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17060,7 +17060,7 @@ client.plaid.transfer_intent_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_list</a>(...) -> TransferListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9605-L9680">transfer_list</a>(...) -> TransferListResponse</code></summary>
 <dl>
 <dd>
 
@@ -17197,7 +17197,7 @@ client.plaid.transfer_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_metrics_get</a>(...) -> TransferMetricsGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9682-L9727">transfer_metrics_get</a>(...) -> TransferMetricsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17286,7 +17286,7 @@ client.plaid.transfer_metrics_get()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_migrate_account</a>(...) -> TransferMigrateAccountResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9729-L9793">transfer_migrate_account</a>(...) -> TransferMigrateAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -17403,7 +17403,7 @@ client.plaid.transfer_migrate_account(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_originator_create</a>(...) -> TransferOriginatorCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9795-L9839">transfer_originator_create</a>(...) -> TransferOriginatorCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -17494,7 +17494,7 @@ client.plaid.transfer_originator_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_originator_get</a>(...) -> TransferOriginatorGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9841-L9888">transfer_originator_get</a>(...) -> TransferOriginatorGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -17585,7 +17585,7 @@ client.plaid.transfer_originator_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_originator_list</a>(...) -> TransferOriginatorListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9890-L9936">transfer_originator_list</a>(...) -> TransferOriginatorListResponse</code></summary>
 <dl>
 <dd>
 
@@ -17682,7 +17682,7 @@ client.plaid.transfer_originator_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_questionnaire_create</a>(...) -> TransferQuestionnaireCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9938-L9991">transfer_questionnaire_create</a>(...) -> TransferQuestionnaireCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -17782,7 +17782,7 @@ client.plaid.transfer_questionnaire_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_recurring_cancel</a>(...) -> TransferRecurringCancelResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L9993-L10039">transfer_recurring_cancel</a>(...) -> TransferRecurringCancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -17873,7 +17873,7 @@ client.plaid.transfer_recurring_cancel(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_recurring_create</a>(...) -> TransferRecurringCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10041-L10175">transfer_recurring_create</a>(...) -> TransferRecurringCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -18097,7 +18097,7 @@ client.plaid.transfer_recurring_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_recurring_get</a>(...) -> TransferRecurringGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10177-L10223">transfer_recurring_get</a>(...) -> TransferRecurringGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -18188,7 +18188,7 @@ client.plaid.transfer_recurring_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_recurring_list</a>(...) -> TransferRecurringListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10225-L10290">transfer_recurring_list</a>(...) -> TransferRecurringListResponse</code></summary>
 <dl>
 <dd>
 
@@ -18309,7 +18309,7 @@ client.plaid.transfer_recurring_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_refund_cancel</a>(...) -> TransferRefundCancelResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10292-L10335">transfer_refund_cancel</a>(...) -> TransferRefundCancelResponse</code></summary>
 <dl>
 <dd>
 
@@ -18400,7 +18400,7 @@ client.plaid.transfer_refund_cancel(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_refund_create</a>(...) -> TransferRefundCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10337-L10395">transfer_refund_create</a>(...) -> TransferRefundCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -18511,7 +18511,7 @@ client.plaid.transfer_refund_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_refund_get</a>(...) -> TransferRefundGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10397-L10440">transfer_refund_get</a>(...) -> TransferRefundGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -18602,7 +18602,7 @@ client.plaid.transfer_refund_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_repayment_list</a>(...) -> TransferRepaymentListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10442-L10504">transfer_repayment_list</a>(...) -> TransferRepaymentListResponse</code></summary>
 <dl>
 <dd>
 
@@ -18717,7 +18717,7 @@ client.plaid.transfer_repayment_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_repayment_return_list</a>(...) -> TransferRepaymentReturnListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10506-L10564">transfer_repayment_return_list</a>(...) -> TransferRepaymentReturnListResponse</code></summary>
 <dl>
 <dd>
 
@@ -18825,7 +18825,7 @@ client.plaid.transfer_repayment_return_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_sweep_get</a>(...) -> TransferSweepGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10566-L10610">transfer_sweep_get</a>(...) -> TransferSweepGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -18916,7 +18916,7 @@ client.plaid.transfer_sweep_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">transfer_sweep_list</a>(...) -> TransferSweepListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10612-L10682">transfer_sweep_list</a>(...) -> TransferSweepListResponse</code></summary>
 <dl>
 <dd>
 
@@ -19045,7 +19045,7 @@ client.plaid.transfer_sweep_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">user_create</a>(...) -> UserCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10684-L10732">user_create</a>(...) -> UserCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -19140,7 +19140,7 @@ client.plaid.user_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">wallet_create</a>(...) -> WalletCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10734-L10777">wallet_create</a>(...) -> WalletCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -19231,7 +19231,7 @@ client.plaid.wallet_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">wallet_get</a>(...) -> WalletGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10779-L10823">wallet_get</a>(...) -> WalletGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -19322,7 +19322,7 @@ client.plaid.wallet_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">wallet_list</a>(...) -> WalletListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10825-L10879">wallet_list</a>(...) -> WalletListResponse</code></summary>
 <dl>
 <dd>
 
@@ -19427,7 +19427,7 @@ client.plaid.wallet_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">wallet_transaction_execute</a>(...) -> WalletTransactionExecuteResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10881-L10963">wallet_transaction_execute</a>(...) -> WalletTransactionExecuteResponse</code></summary>
 <dl>
 <dd>
 
@@ -19565,7 +19565,7 @@ Ensure that the `reference` field is unique for each transaction.
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">wallet_transaction_get</a>(...) -> WalletTransactionGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L10965-L11009">wallet_transaction_get</a>(...) -> WalletTransactionGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -19656,7 +19656,7 @@ client.plaid.wallet_transaction_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">wallet_transaction_list</a>(...) -> WalletTransactionListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11011-L11072">wallet_transaction_list</a>(...) -> WalletTransactionListResponse</code></summary>
 <dl>
 <dd>
 
@@ -19771,7 +19771,7 @@ client.plaid.wallet_transaction_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_create</a>(...) -> WatchlistScreeningEntityCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11074-L11127">watchlist_screening_entity_create</a>(...) -> WatchlistScreeningEntityCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -19873,7 +19873,7 @@ client.plaid.watchlist_screening_entity_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_get</a>(...) -> WatchlistScreeningEntityGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11129-L11175">watchlist_screening_entity_get</a>(...) -> WatchlistScreeningEntityGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -19964,7 +19964,7 @@ client.plaid.watchlist_screening_entity_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_history_list</a>(...) -> WatchlistScreeningEntityHistoryListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11177-L11227">watchlist_screening_entity_history_list</a>(...) -> WatchlistScreeningEntityHistoryListResponse</code></summary>
 <dl>
 <dd>
 
@@ -20063,7 +20063,7 @@ client.plaid.watchlist_screening_entity_history_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_hit_list</a>(...) -> WatchlistScreeningEntityHitListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11229-L11279">watchlist_screening_entity_hit_list</a>(...) -> WatchlistScreeningEntityHitListResponse</code></summary>
 <dl>
 <dd>
 
@@ -20162,7 +20162,7 @@ client.plaid.watchlist_screening_entity_hit_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_list</a>(...) -> WatchlistScreeningEntityListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11281-L11343">watchlist_screening_entity_list</a>(...) -> WatchlistScreeningEntityListResponse</code></summary>
 <dl>
 <dd>
 
@@ -20285,7 +20285,7 @@ client.plaid.watchlist_screening_entity_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_program_get</a>(...) -> WatchlistScreeningEntityProgramGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11345-L11391">watchlist_screening_entity_program_get</a>(...) -> WatchlistScreeningEntityProgramGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -20376,7 +20376,7 @@ client.plaid.watchlist_screening_entity_program_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_program_list</a>(...) -> WatchlistScreeningEntityProgramListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11393-L11434">watchlist_screening_entity_program_list</a>(...) -> WatchlistScreeningEntityProgramListResponse</code></summary>
 <dl>
 <dd>
 
@@ -20465,7 +20465,7 @@ client.plaid.watchlist_screening_entity_program_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_review_create</a>(...) -> WatchlistScreeningEntityReviewCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11436-L11498">watchlist_screening_entity_review_create</a>(...) -> WatchlistScreeningEntityReviewCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -20586,7 +20586,7 @@ client.plaid.watchlist_screening_entity_review_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_review_list</a>(...) -> WatchlistScreeningEntityReviewListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11500-L11550">watchlist_screening_entity_review_list</a>(...) -> WatchlistScreeningEntityReviewListResponse</code></summary>
 <dl>
 <dd>
 
@@ -20685,7 +20685,7 @@ client.plaid.watchlist_screening_entity_review_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_entity_update</a>(...) -> WatchlistScreeningEntityUpdateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11552-L11618">watchlist_screening_entity_update</a>(...) -> WatchlistScreeningEntityUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -20816,7 +20816,7 @@ client.plaid.watchlist_screening_entity_update(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_create</a>(...) -> WatchlistScreeningIndividualCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11620-L11673">watchlist_screening_individual_create</a>(...) -> WatchlistScreeningIndividualCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -20918,7 +20918,7 @@ client.plaid.watchlist_screening_individual_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_get</a>(...) -> WatchlistScreeningIndividualGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11675-L11721">watchlist_screening_individual_get</a>(...) -> WatchlistScreeningIndividualGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -21009,7 +21009,7 @@ client.plaid.watchlist_screening_individual_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_history_list</a>(...) -> WatchlistScreeningIndividualHistoryListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11723-L11773">watchlist_screening_individual_history_list</a>(...) -> WatchlistScreeningIndividualHistoryListResponse</code></summary>
 <dl>
 <dd>
 
@@ -21108,7 +21108,7 @@ client.plaid.watchlist_screening_individual_history_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_hit_list</a>(...) -> WatchlistScreeningIndividualHitListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11775-L11825">watchlist_screening_individual_hit_list</a>(...) -> WatchlistScreeningIndividualHitListResponse</code></summary>
 <dl>
 <dd>
 
@@ -21207,7 +21207,7 @@ client.plaid.watchlist_screening_individual_hit_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_list</a>(...) -> WatchlistScreeningIndividualListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11827-L11889">watchlist_screening_individual_list</a>(...) -> WatchlistScreeningIndividualListResponse</code></summary>
 <dl>
 <dd>
 
@@ -21330,7 +21330,7 @@ client.plaid.watchlist_screening_individual_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_program_get</a>(...) -> WatchlistScreeningIndividualProgramGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11891-L11937">watchlist_screening_individual_program_get</a>(...) -> WatchlistScreeningIndividualProgramGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -21421,7 +21421,7 @@ client.plaid.watchlist_screening_individual_program_get(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_program_list</a>(...) -> WatchlistScreeningIndividualProgramListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11939-L11980">watchlist_screening_individual_program_list</a>(...) -> WatchlistScreeningIndividualProgramListResponse</code></summary>
 <dl>
 <dd>
 
@@ -21510,7 +21510,7 @@ client.plaid.watchlist_screening_individual_program_list()
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_review_create</a>(...) -> WatchlistScreeningIndividualReviewCreateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L11982-L12044">watchlist_screening_individual_review_create</a>(...) -> WatchlistScreeningIndividualReviewCreateResponse</code></summary>
 <dl>
 <dd>
 
@@ -21631,7 +21631,7 @@ client.plaid.watchlist_screening_individual_review_create(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_review_list</a>(...) -> WatchlistScreeningIndividualReviewListResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L12046-L12096">watchlist_screening_individual_review_list</a>(...) -> WatchlistScreeningIndividualReviewListResponse</code></summary>
 <dl>
 <dd>
 
@@ -21730,7 +21730,7 @@ client.plaid.watchlist_screening_individual_review_list(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">watchlist_screening_individual_update</a>(...) -> WatchlistScreeningIndividualUpdateResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L12098-L12164">watchlist_screening_individual_update</a>(...) -> WatchlistScreeningIndividualUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -21861,7 +21861,7 @@ client.plaid.watchlist_screening_individual_update(
 </dl>
 </details>
 
-<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py">webhook_verification_key_get</a>(...) -> WebhookVerificationKeyGetResponse</code></summary>
+<details><summary><code>client.plaid.<a href="src/fern/plaid/client.py#L12166-L12212">webhook_verification_key_get</a>(...) -> WebhookVerificationKeyGetResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_config_files</a>() -> FileList</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L35-L59">list_config_files</a>() -> FileList</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.files.list_config_files()
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_config_file</a>(...) -> Config</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L61-L90">get_config_file</a>(...) -> Config</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.files.get_config_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">replace_config_file</a>(...) -> WriteResult</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L92-L154">replace_config_file</a>(...) -> WriteResult</code></summary>
 <dl>
 <dd>
 
@@ -227,7 +227,7 @@ client.files.replace_config_file(
 </details>
 
 ## Keys
-<details><summary><code>client.keys.<a href="src/fern/keys/client.py">get_config_key</a>(...) -> KeyValue</code></summary>
+<details><summary><code>client.keys.<a href="src/fern/keys/client.py#L32-L69">get_config_key</a>(...) -> KeyValue</code></summary>
 <dl>
 <dd>
 
@@ -310,7 +310,7 @@ client.keys.get_config_key(
 </dl>
 </details>
 
-<details><summary><code>client.keys.<a href="src/fern/keys/client.py">replace_config_key</a>(...) -> WriteResult</code></summary>
+<details><summary><code>client.keys.<a href="src/fern/keys/client.py#L71-L119">replace_config_key</a>(...) -> WriteResult</code></summary>
 <dl>
 <dd>
 
@@ -406,7 +406,7 @@ client.keys.replace_config_key(
 </details>
 
 ## Sections
-<details><summary><code>client.sections.<a href="src/fern/sections/client.py">add_section</a>(...) -> SectionResult</code></summary>
+<details><summary><code>client.sections.<a href="src/fern/sections/client.py#L33-L107">add_section</a>(...) -> SectionResult</code></summary>
 <dl>
 <dd>
 
@@ -494,7 +494,7 @@ client.sections.add_section(
 </dl>
 </details>
 
-<details><summary><code>client.sections.<a href="src/fern/sections/client.py">get_section</a>(...) -> Section</code></summary>
+<details><summary><code>client.sections.<a href="src/fern/sections/client.py#L109-L142">get_section</a>(...) -> Section</code></summary>
 <dl>
 <dd>
 
@@ -562,7 +562,7 @@ client.sections.get_section(
 </dl>
 </details>
 
-<details><summary><code>client.sections.<a href="src/fern/sections/client.py">delete_section</a>(...) -> WriteResult</code></summary>
+<details><summary><code>client.sections.<a href="src/fern/sections/client.py#L144-L177">delete_section</a>(...) -> WriteResult</code></summary>
 <dl>
 <dd>
 
@@ -630,7 +630,7 @@ client.sections.delete_section(
 </dl>
 </details>
 
-<details><summary><code>client.sections.<a href="src/fern/sections/client.py">update_section</a>(...) -> UpdateSectionResponse</code></summary>
+<details><summary><code>client.sections.<a href="src/fern/sections/client.py#L179-L253">update_section</a>(...) -> UpdateSectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ client.sections.update_section(
 </details>
 
 ## Items
-<details><summary><code>client.items.<a href="src/fern/items/client.py">list_items</a>(...) -> typing.List[Item]</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L33-L66">list_items</a>(...) -> typing.List[Item]</code></summary>
 <dl>
 <dd>
 
@@ -790,7 +790,7 @@ client.items.list_items(
 </dl>
 </details>
 
-<details><summary><code>client.items.<a href="src/fern/items/client.py">add_item</a>(...) -> ItemResult</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L68-L239">add_item</a>(...) -> ItemResult</code></summary>
 <dl>
 <dd>
 
@@ -883,7 +883,7 @@ client.items.add_item(
 </dl>
 </details>
 
-<details><summary><code>client.items.<a href="src/fern/items/client.py">get_item</a>(...) -> Item</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L241-L278">get_item</a>(...) -> Item</code></summary>
 <dl>
 <dd>
 
@@ -960,7 +960,7 @@ client.items.get_item(
 </dl>
 </details>
 
-<details><summary><code>client.items.<a href="src/fern/items/client.py">delete_item</a>(...) -> WriteResult</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L280-L317">delete_item</a>(...) -> WriteResult</code></summary>
 <dl>
 <dd>
 
@@ -1037,7 +1037,7 @@ client.items.delete_item(
 </dl>
 </details>
 
-<details><summary><code>client.items.<a href="src/fern/items/client.py">update_item</a>(...) -> UpdateItemResponse</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L319-L494">update_item</a>(...) -> UpdateItemResponse</code></summary>
 <dl>
 <dd>
 

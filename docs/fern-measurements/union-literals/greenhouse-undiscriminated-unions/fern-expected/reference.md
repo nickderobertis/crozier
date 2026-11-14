@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">schedule_planting</a>(...) -> Propagation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L133">schedule_planting</a>(...) -> Propagation</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.schedule_planting(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_origin</a>(...) -> Origin</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L135-L161">get_origin</a>(...) -> Origin</code></summary>
 <dl>
 <dd>
 

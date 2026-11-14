@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_features</a>(...) -> FeaturePage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L154-L207">list_features</a>(...) -> FeaturePage</code></summary>
 <dl>
 <dd>
 
@@ -89,7 +89,7 @@ client.list_features()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_feature</a>(...) -> Feature</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L209-L247">get_feature</a>(...) -> Feature</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.get_feature(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_feature_metadata</a>(...) -> FeatureMetadata</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L249-L279">get_feature_metadata</a>(...) -> FeatureMetadata</code></summary>
 <dl>
 <dd>
 
@@ -217,7 +217,7 @@ client.get_feature_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_feature_wpt_metrics</a>(...) -> WptRunMetricsPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L281-L363">list_feature_wpt_metrics</a>(...) -> WptRunMetricsPage</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.list_feature_wpt_metrics(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_chrome_daily_usage_stats</a>(...) -> ChromeDailyStatsPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L365-L429">list_chrome_daily_usage_stats</a>(...) -> ChromeDailyStatsPage</code></summary>
 <dl>
 <dd>
 
@@ -434,7 +434,7 @@ client.list_chrome_daily_usage_stats(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_global_saved_searches</a>(...) -> GlobalSavedSearchPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L431-L468">list_global_saved_searches</a>(...) -> GlobalSavedSearchPage</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.list_global_saved_searches()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_aggregated_feature_support</a>(...) -> BrowserReleaseFeatureMetricsPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L470-L539">list_aggregated_feature_support</a>(...) -> BrowserReleaseFeatureMetricsPage</code></summary>
 <dl>
 <dd>
 
@@ -603,7 +603,7 @@ client.list_aggregated_feature_support(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_missing_one_implementation_counts</a>(...) -> BrowserReleaseFeatureMetricsPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L541-L616">list_missing_one_implementation_counts</a>(...) -> BrowserReleaseFeatureMetricsPage</code></summary>
 <dl>
 <dd>
 
@@ -717,7 +717,7 @@ client.list_missing_one_implementation_counts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_missing_one_implementation_features</a>(...) -> MissingOneImplFeaturesPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L618-L685">list_missing_one_implementation_features</a>(...) -> MissingOneImplFeaturesPage</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.list_missing_one_implementation_features(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_aggregated_wpt_metrics</a>(...) -> WptRunMetricsPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L687-L768">list_aggregated_wpt_metrics</a>(...) -> WptRunMetricsPage</code></summary>
 <dl>
 <dd>
 
@@ -943,7 +943,7 @@ client.list_aggregated_wpt_metrics(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_aggregated_baseline_status_counts</a>(...) -> BaselineStatusMetricsPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L770-L828">list_aggregated_baseline_status_counts</a>(...) -> BaselineStatusMetricsPage</code></summary>
 <dl>
 <dd>
 
@@ -1029,7 +1029,7 @@ client.list_aggregated_baseline_status_counts(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">ping_user</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L830-L863">ping_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1105,7 +1105,7 @@ client.ping_user()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_notification_channels</a>(...) -> NotificationChannelPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L865-L902">list_notification_channels</a>(...) -> NotificationChannelPage</code></summary>
 <dl>
 <dd>
 
@@ -1171,7 +1171,7 @@ client.list_notification_channels()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L904-L946">create_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -1242,7 +1242,7 @@ client.create_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L948-L978">get_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -1302,7 +1302,7 @@ client.get_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_notification_channel</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L980-L1009">delete_notification_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1362,7 +1362,7 @@ client.delete_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1011-L1058">update_notification_channel</a>(...) -> NotificationChannelResponse</code></summary>
 <dl>
 <dd>
 
@@ -1449,7 +1449,7 @@ client.update_notification_channel(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_user_saved_searches</a>(...) -> UserSavedSearchPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1060-L1097">list_user_saved_searches</a>(...) -> UserSavedSearchPage</code></summary>
 <dl>
 <dd>
 
@@ -1515,7 +1515,7 @@ client.list_user_saved_searches()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_user_saved_search_bookmark</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1099-L1128">put_user_saved_search_bookmark</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1575,7 +1575,7 @@ client.put_user_saved_search_bookmark(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">remove_user_saved_search_bookmark</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1130-L1159">remove_user_saved_search_bookmark</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1635,7 +1635,7 @@ client.remove_user_saved_search_bookmark(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_saved_search</a>(...) -> SavedSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1161-L1202">create_saved_search</a>(...) -> SavedSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1696,7 +1696,7 @@ client.create_saved_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_saved_search</a>(...) -> SavedSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1204-L1234">get_saved_search</a>(...) -> SavedSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1756,7 +1756,7 @@ client.get_saved_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">remove_saved_search</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1236-L1263">remove_saved_search</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1816,7 +1816,7 @@ client.remove_saved_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_saved_search</a>(...) -> SavedSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1265-L1319">update_saved_search</a>(...) -> SavedSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1911,7 +1911,7 @@ client.update_saved_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_subscriptions</a>(...) -> SubscriptionPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1321-L1358">list_subscriptions</a>(...) -> SubscriptionPage</code></summary>
 <dl>
 <dd>
 
@@ -1977,7 +1977,7 @@ client.list_subscriptions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_subscription</a>(...) -> SubscriptionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1360-L1415">create_subscription</a>(...) -> SubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2073,7 +2073,7 @@ client.create_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_subscription</a>(...) -> SubscriptionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1417-L1447">get_subscription</a>(...) -> SubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2133,7 +2133,7 @@ client.get_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_subscription</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1449-L1478">delete_subscription</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2193,7 +2193,7 @@ client.delete_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_subscription</a>(...) -> SubscriptionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1480-L1530">update_subscription</a>(...) -> SubscriptionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2280,7 +2280,7 @@ client.update_subscription(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_subscription_rss</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1532-L1574">get_subscription_rss</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2356,7 +2356,7 @@ client.get_subscription_rss(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_code_subscriptions</a>(...) -> CodeSubscriptionPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1576-L1622">list_code_subscriptions</a>(...) -> CodeSubscriptionPage</code></summary>
 <dl>
 <dd>
 
@@ -2441,7 +2441,7 @@ client.list_code_subscriptions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">handle_vcs_webhook</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1624-L1675">handle_vcs_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2535,7 +2535,7 @@ client.handle_vcs_webhook(
 </details>
 
 ## Healthchecks
-<details><summary><code>client.healthchecks.<a href="src/fern/healthchecks/client.py">get_healthcheck_liveness</a>() -> HealthcheckResponse</code></summary>
+<details><summary><code>client.healthchecks.<a href="src/fern/healthchecks/client.py#L26-L53">get_healthcheck_liveness</a>() -> HealthcheckResponse</code></summary>
 <dl>
 <dd>
 

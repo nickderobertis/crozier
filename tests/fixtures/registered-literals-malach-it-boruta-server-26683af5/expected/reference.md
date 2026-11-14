@@ -1,6 +1,6 @@
 # Reference
 ## Discovery
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">get_o_auth_authorization_server_metadata</a>() -> AuthorizationServerMetadata</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L27-L51">get_o_auth_authorization_server_metadata</a>() -> AuthorizationServerMetadata</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.discovery.get_o_auth_authorization_server_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">get_open_id_provider_metadata</a>() -> AuthorizationServerMetadata</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L53-L77">get_open_id_provider_metadata</a>() -> AuthorizationServerMetadata</code></summary>
 <dl>
 <dd>
 
@@ -98,7 +98,7 @@ client.discovery.get_open_id_provider_metadata()
 </dl>
 </details>
 
-<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py">get_open_id_credential_issuer_metadata</a>() -> CredentialIssuerMetadata</code></summary>
+<details><summary><code>client.discovery.<a href="src/fern/discovery/client.py#L79-L103">get_open_id_credential_issuer_metadata</a>() -> CredentialIssuerMetadata</code></summary>
 <dl>
 <dd>
 
@@ -148,7 +148,7 @@ client.discovery.get_open_id_credential_issuer_metadata()
 </details>
 
 ## Infrastructure
-<details><summary><code>client.infrastructure.<a href="src/fern/infrastructure/client.py">retrieve_an_acme_http01challenge_response</a>(...) -> str</code></summary>
+<details><summary><code>client.infrastructure.<a href="src/fern/infrastructure/client.py#L25-L54">retrieve_an_acme_http01challenge_response</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -207,7 +207,7 @@ client.infrastructure.retrieve_an_acme_http01challenge_response(
 </dl>
 </details>
 
-<details><summary><code>client.infrastructure.<a href="src/fern/infrastructure/client.py">check_service_health</a>()</code></summary>
+<details><summary><code>client.infrastructure.<a href="src/fern/infrastructure/client.py#L56-L77">check_service_health</a>()</code></summary>
 <dl>
 <dd>
 
@@ -257,7 +257,7 @@ client.infrastructure.check_service_health()
 </details>
 
 ## Assets
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_the_boruta_favicon</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L25-L49">serve_the_boruta_favicon</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -306,7 +306,7 @@ client.assets.serve_the_boruta_favicon()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_robots_txt</a>() -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L51-L73">serve_robots_txt</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -355,7 +355,7 @@ client.assets.serve_robots_txt()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_authorization_server_stylesheet</a>(...) -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L75-L104">serve_an_authorization_server_stylesheet</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -414,7 +414,7 @@ client.assets.serve_an_authorization_server_stylesheet(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_authorization_server_font</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L106-L135">serve_an_authorization_server_font</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -473,7 +473,7 @@ client.assets.serve_an_authorization_server_font(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_authorization_server_image</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L137-L166">serve_an_authorization_server_image</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -532,7 +532,7 @@ client.assets.serve_an_authorization_server_image(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_authorization_server_java_script_asset</a>(...)</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L168-L198">serve_an_authorization_server_java_script_asset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -591,7 +591,7 @@ client.assets.serve_an_authorization_server_java_script_asset(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_authorization_server_admin_asset</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L200-L229">serve_an_authorization_server_admin_asset</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -650,7 +650,7 @@ client.assets.serve_an_authorization_server_admin_asset(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_a_top_level_identity_asset</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L231-L260">serve_a_top_level_identity_asset</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -709,7 +709,7 @@ client.assets.serve_a_top_level_identity_asset(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_identity_stylesheet</a>(...) -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L262-L291">serve_an_identity_stylesheet</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -768,7 +768,7 @@ client.assets.serve_an_identity_stylesheet(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_identity_java_script_asset</a>(...)</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L293-L321">serve_an_identity_java_script_asset</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -827,7 +827,7 @@ client.assets.serve_an_identity_java_script_asset(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_an_identity_image</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L323-L352">serve_an_identity_image</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -886,7 +886,7 @@ client.assets.serve_an_identity_image(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_the_identity_web_app_manifest</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L354-L378">serve_the_identity_web_app_manifest</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -935,7 +935,7 @@ client.assets.serve_the_identity_web_app_manifest()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_the_identity_favicon</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L380-L404">serve_the_identity_favicon</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -984,7 +984,7 @@ client.assets.serve_the_identity_favicon()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_the_identity_robots_txt</a>() -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L406-L428">serve_the_identity_robots_txt</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1033,7 +1033,7 @@ client.assets.serve_the_identity_robots_txt()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">serve_the_identity_semantic_ui_stylesheet</a>() -> str</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L430-L454">serve_the_identity_semantic_ui_stylesheet</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -1083,7 +1083,7 @@ client.assets.serve_the_identity_semantic_ui_stylesheet()
 </details>
 
 ## OAuth20
-<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py">start_an_authorization_request</a>(...) -> str</code></summary>
+<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py#L38-L118">start_an_authorization_request</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1231,7 +1231,7 @@ client.o_auth20.start_an_authorization_request(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py">issue_or_refresh_tokens</a>(...) -> TokenResponse</code></summary>
+<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py#L120-L198">issue_or_refresh_tokens</a>(...) -> TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -1290,7 +1290,7 @@ client.o_auth20.issue_or_refresh_tokens(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py">introspect_a_token</a>(...) -> IntrospectionResponse</code></summary>
+<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py#L200-L246">introspect_a_token</a>(...) -> IntrospectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1373,7 +1373,7 @@ client.o_auth20.introspect_a_token(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py">create_a_pushed_authorization_request</a>(...) -> PushedAuthorizationResponse</code></summary>
+<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py#L248-L319">create_a_pushed_authorization_request</a>(...) -> PushedAuthorizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1505,7 +1505,7 @@ client.o_auth20.create_a_pushed_authorization_request(
 </dl>
 </details>
 
-<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py">revoke_a_token</a>(...)</code></summary>
+<details><summary><code>client.o_auth20.<a href="src/fern/o_auth20/client.py#L321-L366">revoke_a_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1589,7 +1589,7 @@ client.o_auth20.revoke_a_token(
 </details>
 
 ## OpenIdConnect
-<details><summary><code>client.open_id_connect.<a href="src/fern/open_id_connect/client.py">get_claims_for_the_authenticated_subject</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.open_id_connect.<a href="src/fern/open_id_connect/client.py#L26-L50">get_claims_for_the_authenticated_subject</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1638,7 +1638,7 @@ client.open_id_connect.get_claims_for_the_authenticated_subject()
 </dl>
 </details>
 
-<details><summary><code>client.open_id_connect.<a href="src/fern/open_id_connect/client.py">list_json_web_keys</a>() -> JsonWebKeySet</code></summary>
+<details><summary><code>client.open_id_connect.<a href="src/fern/open_id_connect/client.py#L52-L74">list_json_web_keys</a>() -> JsonWebKeySet</code></summary>
 <dl>
 <dd>
 
@@ -1687,7 +1687,7 @@ client.open_id_connect.list_json_web_keys()
 </dl>
 </details>
 
-<details><summary><code>client.open_id_connect.<a href="src/fern/open_id_connect/client.py">get_json_web_keys_for_a_client</a>(...) -> JsonWebKeySet</code></summary>
+<details><summary><code>client.open_id_connect.<a href="src/fern/open_id_connect/client.py#L76-L104">get_json_web_keys_for_a_client</a>(...) -> JsonWebKeySet</code></summary>
 <dl>
 <dd>
 
@@ -1747,7 +1747,7 @@ client.open_id_connect.get_json_web_keys_for_a_client(
 </details>
 
 ## OpenIdForVerifiableCredentials
-<details><summary><code>client.open_id_for_verifiable_credentials.<a href="src/fern/open_id_for_verifiable_credentials/client.py">issue_a_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.open_id_for_verifiable_credentials.<a href="src/fern/open_id_for_verifiable_credentials/client.py#L29-L73">issue_a_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -1828,7 +1828,7 @@ client.open_id_for_verifiable_credentials.issue_a_credential()
 </dl>
 </details>
 
-<details><summary><code>client.open_id_for_verifiable_credentials.<a href="src/fern/open_id_for_verifiable_credentials/client.py">retrieve_a_deferred_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.open_id_for_verifiable_credentials.<a href="src/fern/open_id_for_verifiable_credentials/client.py#L75-L107">retrieve_a_deferred_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -1902,7 +1902,7 @@ client.open_id_for_verifiable_credentials.retrieve_a_deferred_credential(
 </details>
 
 ## OpenIdForVerifiablePresentations
-<details><summary><code>client.open_id_for_verifiable_presentations.<a href="src/fern/open_id_for_verifiable_presentations/client.py">submit_a_direct_post_authorization_response</a>(...)</code></summary>
+<details><summary><code>client.open_id_for_verifiable_presentations.<a href="src/fern/open_id_for_verifiable_presentations/client.py#L28-L64">submit_a_direct_post_authorization_response</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1972,7 +1972,7 @@ client.open_id_for_verifiable_presentations.submit_a_direct_post_authorization_r
 </dl>
 </details>
 
-<details><summary><code>client.open_id_for_verifiable_presentations.<a href="src/fern/open_id_for_verifiable_presentations/client.py">stream_presentation_authentication_status</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.open_id_for_verifiable_presentations.<a href="src/fern/open_id_for_verifiable_presentations/client.py#L66-L98">stream_presentation_authentication_status</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2032,7 +2032,7 @@ client.open_id_for_verifiable_presentations.stream_presentation_authentication_s
 </details>
 
 ## DidAndVerifiableCredentials
-<details><summary><code>client.did_and_verifiable_credentials.<a href="src/fern/did_and_verifiable_credentials/client.py">resolve_a_verifiable_credential_status</a>(...) -> str</code></summary>
+<details><summary><code>client.did_and_verifiable_credentials.<a href="src/fern/did_and_verifiable_credentials/client.py#L25-L53">resolve_a_verifiable_credential_status</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2092,7 +2092,7 @@ client.did_and_verifiable_credentials.resolve_a_verifiable_credential_status(
 </details>
 
 ## IdentityRegistration
-<details><summary><code>client.identity_registration.<a href="src/fern/identity_registration/client.py">display_the_registration_form</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_registration.<a href="src/fern/identity_registration/client.py#L28-L55">display_the_registration_form</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2149,7 +2149,7 @@ client.identity_registration.display_the_registration_form()
 </dl>
 </details>
 
-<details><summary><code>client.identity_registration.<a href="src/fern/identity_registration/client.py">register_a_user</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_registration.<a href="src/fern/identity_registration/client.py#L57-L105">register_a_user</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2234,7 +2234,7 @@ client.identity_registration.register_a_user(
 </details>
 
 ## IdentitySessions
-<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py">display_the_login_form</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py#L28-L55">display_the_login_form</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2291,7 +2291,7 @@ client.identity_sessions.display_the_login_form()
 </dl>
 </details>
 
-<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py">authenticate_a_user</a>(...)</code></summary>
+<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py#L57-L104">authenticate_a_user</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2375,7 +2375,7 @@ client.identity_sessions.authenticate_a_user(
 </dl>
 </details>
 
-<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py">log_out_the_current_user</a>()</code></summary>
+<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py#L106-L127">log_out_the_current_user</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2424,7 +2424,7 @@ client.identity_sessions.log_out_the_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py">choose_an_active_user_session</a>() -> str</code></summary>
+<details><summary><code>client.identity_sessions.<a href="src/fern/identity_sessions/client.py#L129-L151">choose_an_active_user_session</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2474,7 +2474,7 @@ client.identity_sessions.choose_an_active_user_session()
 </details>
 
 ## IdentityPasswordRecovery
-<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py">display_the_password_reset_request_form</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py#L28-L57">display_the_password_reset_request_form</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2531,7 +2531,7 @@ client.identity_password_recovery.display_the_password_reset_request_form()
 </dl>
 </details>
 
-<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py">request_password_reset_instructions</a>(...)</code></summary>
+<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py#L59-L95">request_password_reset_instructions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2598,7 +2598,7 @@ client.identity_password_recovery.request_password_reset_instructions(
 </dl>
 </details>
 
-<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py">display_the_password_reset_form</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py#L97-L134">display_the_password_reset_form</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2665,7 +2665,7 @@ client.identity_password_recovery.display_the_password_reset_form(
 </dl>
 </details>
 
-<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py">reset_a_password</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_password_recovery.<a href="src/fern/identity_password_recovery/client.py#L136-L185">reset_a_password</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -2751,7 +2751,7 @@ client.identity_password_recovery.reset_a_password(
 </details>
 
 ## IdentityConfirmation
-<details><summary><code>client.identity_confirmation.<a href="src/fern/identity_confirmation/client.py">display_the_confirmation_instructions_form</a>() -> str</code></summary>
+<details><summary><code>client.identity_confirmation.<a href="src/fern/identity_confirmation/client.py#L28-L52">display_the_confirmation_instructions_form</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2800,7 +2800,7 @@ client.identity_confirmation.display_the_confirmation_instructions_form()
 </dl>
 </details>
 
-<details><summary><code>client.identity_confirmation.<a href="src/fern/identity_confirmation/client.py">resend_account_confirmation_instructions</a>(...)</code></summary>
+<details><summary><code>client.identity_confirmation.<a href="src/fern/identity_confirmation/client.py#L54-L83">resend_account_confirmation_instructions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2859,7 +2859,7 @@ client.identity_confirmation.resend_account_confirmation_instructions(
 </dl>
 </details>
 
-<details><summary><code>client.identity_confirmation.<a href="src/fern/identity_confirmation/client.py">confirm_an_account</a>(...)</code></summary>
+<details><summary><code>client.identity_confirmation.<a href="src/fern/identity_confirmation/client.py#L85-L119">confirm_an_account</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2927,7 +2927,7 @@ client.identity_confirmation.confirm_an_account(
 </details>
 
 ## IdentityMfa
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">display_totp_registration</a>() -> str</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L28-L50">display_totp_registration</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -2976,7 +2976,7 @@ client.identity_mfa.display_totp_registration()
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">register_a_totp_authenticator</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L52-L80">register_a_totp_authenticator</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3035,7 +3035,7 @@ client.identity_mfa.register_a_totp_authenticator(
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">display_web_authn_registration</a>() -> str</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L82-L104">display_web_authn_registration</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3084,7 +3084,7 @@ client.identity_mfa.display_web_authn_registration()
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">register_a_web_authn_credential</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L106-L134">register_a_web_authn_credential</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3145,7 +3145,7 @@ client.identity_mfa.register_a_web_authn_credential(
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">display_totp_authentication</a>() -> str</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L136-L158">display_totp_authentication</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3194,7 +3194,7 @@ client.identity_mfa.display_totp_authentication()
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">authenticate_with_totp</a>(...)</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L160-L187">authenticate_with_totp</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3253,7 +3253,7 @@ client.identity_mfa.authenticate_with_totp(
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">display_web_authn_authentication</a>() -> str</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L189-L211">display_web_authn_authentication</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3302,7 +3302,7 @@ client.identity_mfa.display_web_authn_authentication()
 </dl>
 </details>
 
-<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py">authenticate_with_web_authn</a>(...)</code></summary>
+<details><summary><code>client.identity_mfa.<a href="src/fern/identity_mfa/client.py#L213-L240">authenticate_with_web_authn</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3364,7 +3364,7 @@ client.identity_mfa.authenticate_with_web_authn(
 </details>
 
 ## IdentityConsent
-<details><summary><code>client.identity_consent.<a href="src/fern/identity_consent/client.py">display_the_consent_page</a>() -> str</code></summary>
+<details><summary><code>client.identity_consent.<a href="src/fern/identity_consent/client.py#L28-L50">display_the_consent_page</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3413,7 +3413,7 @@ client.identity_consent.display_the_consent_page()
 </dl>
 </details>
 
-<details><summary><code>client.identity_consent.<a href="src/fern/identity_consent/client.py">record_user_consent</a>(...)</code></summary>
+<details><summary><code>client.identity_consent.<a href="src/fern/identity_consent/client.py#L52-L80">record_user_consent</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3471,7 +3471,7 @@ client.identity_consent.record_user_consent()
 </details>
 
 ## IdentitySettings
-<details><summary><code>client.identity_settings.<a href="src/fern/identity_settings/client.py">display_account_settings</a>() -> str</code></summary>
+<details><summary><code>client.identity_settings.<a href="src/fern/identity_settings/client.py#L28-L50">display_account_settings</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3520,7 +3520,7 @@ client.identity_settings.display_account_settings()
 </dl>
 </details>
 
-<details><summary><code>client.identity_settings.<a href="src/fern/identity_settings/client.py">update_account_settings</a>(...) -> str</code></summary>
+<details><summary><code>client.identity_settings.<a href="src/fern/identity_settings/client.py#L52-L100">update_account_settings</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3609,7 +3609,7 @@ client.identity_settings.update_account_settings()
 </dl>
 </details>
 
-<details><summary><code>client.identity_settings.<a href="src/fern/identity_settings/client.py">delete_the_current_account</a>()</code></summary>
+<details><summary><code>client.identity_settings.<a href="src/fern/identity_settings/client.py#L102-L123">delete_the_current_account</a>()</code></summary>
 <dl>
 <dd>
 
@@ -3659,7 +3659,7 @@ client.identity_settings.delete_the_current_account()
 </details>
 
 ## FederatedIdentity
-<details><summary><code>client.federated_identity.<a href="src/fern/federated_identity/client.py">start_federated_authentication</a>(...)</code></summary>
+<details><summary><code>client.federated_identity.<a href="src/fern/federated_identity/client.py#L25-L65">start_federated_authentication</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3735,7 +3735,7 @@ client.federated_identity.start_federated_authentication(
 </dl>
 </details>
 
-<details><summary><code>client.federated_identity.<a href="src/fern/federated_identity/client.py">complete_federated_authentication</a>(...)</code></summary>
+<details><summary><code>client.federated_identity.<a href="src/fern/federated_identity/client.py#L67-L112">complete_federated_authentication</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3828,7 +3828,7 @@ client.federated_identity.complete_federated_authentication(
 </details>
 
 ## IdentityWallet
-<details><summary><code>client.identity_wallet.<a href="src/fern/identity_wallet/client.py">serve_the_wallet_application</a>() -> str</code></summary>
+<details><summary><code>client.identity_wallet.<a href="src/fern/identity_wallet/client.py#L25-L47">serve_the_wallet_application</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -3877,7 +3877,7 @@ client.identity_wallet.serve_the_wallet_application()
 </dl>
 </details>
 
-<details><summary><code>client.identity_wallet.<a href="src/fern/identity_wallet/client.py">serve_a_wallet_asset_or_client_side_route</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.identity_wallet.<a href="src/fern/identity_wallet/client.py#L49-L78">serve_a_wallet_asset_or_client_side_route</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

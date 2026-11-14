@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">root_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L104-L126">root_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.root_get()
 </details>
 
 ## Mock
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">list_contributors</a>() -> typing.List[ContributorBasicOut]</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L32-L58">list_contributors</a>() -> typing.List[ContributorBasicOut]</code></summary>
 <dl>
 <dd>
 
@@ -108,7 +108,7 @@ client.mock.list_contributors()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">get_contributor</a>(...) -> ContributorBasicOut</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L60-L90">get_contributor</a>(...) -> ContributorBasicOut</code></summary>
 <dl>
 <dd>
 
@@ -179,7 +179,7 @@ client.mock.get_contributor(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">list_stories</a>() -> typing.List[StoryOut]</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L92-L116">list_stories</a>() -> typing.List[StoryOut]</code></summary>
 <dl>
 <dd>
 
@@ -240,7 +240,7 @@ client.mock.list_stories()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">create_story</a>(...) -> StoryOut</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L118-L169">create_story</a>(...) -> StoryOut</code></summary>
 <dl>
 <dd>
 
@@ -347,7 +347,7 @@ client.mock.create_story(
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">list_tile_gradients</a>() -> typing.List[TileGradientOut]</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L171-L197">list_tile_gradients</a>() -> typing.List[TileGradientOut]</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.mock.list_tile_gradients()
 </dl>
 </details>
 
-<details><summary><code>client.mock.<a href="src/fern/mock/client.py">create_tile_gradient</a>(...) -> TileGradientOut</code></summary>
+<details><summary><code>client.mock.<a href="src/fern/mock/client.py#L199-L240">create_tile_gradient</a>(...) -> TileGradientOut</code></summary>
 <dl>
 <dd>
 
@@ -507,7 +507,7 @@ client.mock.create_tile_gradient(
 </details>
 
 ## Contributors
-<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py">create_contributor</a>(...) -> ContributorOut</code></summary>
+<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py#L30-L83">create_contributor</a>(...) -> ContributorOut</code></summary>
 <dl>
 <dd>
 
@@ -599,7 +599,7 @@ client.contributors.create_contributor(
 </dl>
 </details>
 
-<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py">get_contributor</a>(...) -> ContributorOut</code></summary>
+<details><summary><code>client.contributors.<a href="src/fern/contributors/client.py#L85-L113">get_contributor</a>(...) -> ContributorOut</code></summary>
 <dl>
 <dd>
 

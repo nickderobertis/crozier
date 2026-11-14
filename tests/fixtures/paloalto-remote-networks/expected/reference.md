@@ -1,6 +1,6 @@
 # Reference
 ## BandwidthAllocations
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">get_v1bandwidth_allocations</a>(...) -> BandwidthAllocationSet</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L33-L64">get_v1bandwidth_allocations</a>(...) -> BandwidthAllocationSet</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.bandwidth_allocations.get_v1bandwidth_allocations(
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">post_v1bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L66-L110">post_v1bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ client.bandwidth_allocations.post_v1bandwidth_allocations()
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">put_v1bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L112-L156">put_v1bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -231,7 +231,7 @@ client.bandwidth_allocations.put_v1bandwidth_allocations()
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">delete_v1bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L158-L203">delete_v1bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -321,7 +321,7 @@ client.bandwidth_allocations.delete_v1bandwidth_allocations(
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">get_v1bandwidth_allocations_read</a>(...) -> BandwidthAllocationSet</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L205-L236">get_v1bandwidth_allocations_read</a>(...) -> BandwidthAllocationSet</code></summary>
 <dl>
 <dd>
 
@@ -394,7 +394,7 @@ client.bandwidth_allocations.get_v1bandwidth_allocations_read(
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">post_v1bandwidth_allocations_read</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L238-L277">post_v1bandwidth_allocations_read</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -473,7 +473,7 @@ client.bandwidth_allocations.post_v1bandwidth_allocations_read()
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">get_v2bandwidth_allocations</a>(...) -> BandwidthAllocationSetV2</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L279-L310">get_v2bandwidth_allocations</a>(...) -> BandwidthAllocationSetV2</code></summary>
 <dl>
 <dd>
 
@@ -546,7 +546,7 @@ client.bandwidth_allocations.get_v2bandwidth_allocations(
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">post_v2bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L312-L356">post_v2bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.bandwidth_allocations.post_v2bandwidth_allocations()
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">put_v2bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L358-L402">put_v2bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ client.bandwidth_allocations.put_v2bandwidth_allocations()
 </dl>
 </details>
 
-<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py">delete_v2bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.bandwidth_allocations.<a href="src/fern/bandwidth_allocations/client.py#L404-L449">delete_v2bandwidth_allocations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -795,7 +795,7 @@ client.bandwidth_allocations.delete_v2bandwidth_allocations(
 </details>
 
 ## IkeCryptoProfiles
-<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py">get_v1ike_crypto_profiles</a>(...) -> IkeCryptoProfilesResponse</code></summary>
+<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py#L35-L66">get_v1ike_crypto_profiles</a>(...) -> IkeCryptoProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -868,7 +868,7 @@ client.ike_crypto_profiles.get_v1ike_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py">post_v1ike_crypto_profiles</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py#L68-L145">post_v1ike_crypto_profiles</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -958,7 +958,7 @@ client.ike_crypto_profiles.post_v1ike_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py">put_v1ike_crypto_profiles</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py#L147-L224">put_v1ike_crypto_profiles</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1048,7 +1048,7 @@ client.ike_crypto_profiles.put_v1ike_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py">delete_v1ike_crypto_profiles</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py#L226-L266">delete_v1ike_crypto_profiles</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1129,7 +1129,7 @@ client.ike_crypto_profiles.delete_v1ike_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py">get_v1ike_crypto_profiles_read</a>(...) -> GetV1IkeCryptoProfilesReadResponse</code></summary>
+<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py#L268-L299">get_v1ike_crypto_profiles_read</a>(...) -> GetV1IkeCryptoProfilesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1202,7 +1202,7 @@ client.ike_crypto_profiles.get_v1ike_crypto_profiles_read(
 </dl>
 </details>
 
-<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py">post_v1ike_crypto_profiles_read</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ike_crypto_profiles.<a href="src/fern/ike_crypto_profiles/client.py#L301-L340">post_v1ike_crypto_profiles_read</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1282,7 +1282,7 @@ client.ike_crypto_profiles.post_v1ike_crypto_profiles_read()
 </details>
 
 ## IkeGateway
-<details><summary><code>client.ike_gateway.<a href="src/fern/ike_gateway/client.py">get_v1ike_gateways_read</a>(...) -> GetV1IkeGatewaysReadResponse</code></summary>
+<details><summary><code>client.ike_gateway.<a href="src/fern/ike_gateway/client.py#L30-L61">get_v1ike_gateways_read</a>(...) -> GetV1IkeGatewaysReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1355,7 +1355,7 @@ client.ike_gateway.get_v1ike_gateways_read(
 </dl>
 </details>
 
-<details><summary><code>client.ike_gateway.<a href="src/fern/ike_gateway/client.py">post_v1ike_gateways_read</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ike_gateway.<a href="src/fern/ike_gateway/client.py#L63-L100">post_v1ike_gateways_read</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1435,7 +1435,7 @@ client.ike_gateway.post_v1ike_gateways_read()
 </details>
 
 ## IpSecCryptoProfiles
-<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py">get_v1ipsec_crypto_profiles</a>(...) -> IpsecCryptoProfilesResponse</code></summary>
+<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py#L36-L68">get_v1ipsec_crypto_profiles</a>(...) -> IpsecCryptoProfilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1509,7 +1509,7 @@ client.ip_sec_crypto_profiles.get_v1ipsec_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py">post_v1ipsec_crypto_profiles</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py#L70-L134">post_v1ipsec_crypto_profiles</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1591,7 +1591,7 @@ client.ip_sec_crypto_profiles.post_v1ipsec_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py">put_v1ipsec_crypto_profiles</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py#L136-L200">put_v1ipsec_crypto_profiles</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1673,7 +1673,7 @@ client.ip_sec_crypto_profiles.put_v1ipsec_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py">delete_v1ipsec_crypto_profiles</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py#L202-L242">delete_v1ipsec_crypto_profiles</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1754,7 +1754,7 @@ client.ip_sec_crypto_profiles.delete_v1ipsec_crypto_profiles(
 </dl>
 </details>
 
-<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py">get_v1ipsec_crypto_profiles_read</a>(...) -> GetV1IpsecCryptoProfilesReadResponse</code></summary>
+<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py#L244-L275">get_v1ipsec_crypto_profiles_read</a>(...) -> GetV1IpsecCryptoProfilesReadResponse</code></summary>
 <dl>
 <dd>
 
@@ -1827,7 +1827,7 @@ client.ip_sec_crypto_profiles.get_v1ipsec_crypto_profiles_read(
 </dl>
 </details>
 
-<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py">post_v1ipsec_crypto_profiles_read</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.ip_sec_crypto_profiles.<a href="src/fern/ip_sec_crypto_profiles/client.py#L277-L316">post_v1ipsec_crypto_profiles_read</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1907,7 +1907,7 @@ client.ip_sec_crypto_profiles.post_v1ipsec_crypto_profiles_read()
 </details>
 
 ## Location Information
-<details><summary><code>client.location_information.<a href="src/fern/location_information/client.py">get_v1location_informations</a>(...) -> LocationInformationResponse</code></summary>
+<details><summary><code>client.location_information.<a href="src/fern/location_information/client.py#L31-L62">get_v1location_informations</a>(...) -> LocationInformationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1980,7 +1980,7 @@ client.location_information.get_v1location_informations(
 </dl>
 </details>
 
-<details><summary><code>client.location_information.<a href="src/fern/location_information/client.py">post_v1location_informations</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.location_information.<a href="src/fern/location_information/client.py#L64-L114">post_v1location_informations</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -2076,7 +2076,7 @@ client.location_information.post_v1location_informations()
 </details>
 
 ## RemoteNetworks
-<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py">get_v1remote_networks</a>(...) -> RemoteNetworksResponse</code></summary>
+<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py#L32-L63">get_v1remote_networks</a>(...) -> RemoteNetworksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2149,7 +2149,7 @@ client.remote_networks.get_v1remote_networks(
 </dl>
 </details>
 
-<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py">post_v1remote_networks</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py#L65-L111">post_v1remote_networks</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -2230,7 +2230,7 @@ client.remote_networks.post_v1remote_networks(
 </dl>
 </details>
 
-<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py">put_v1remote_networks</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py#L113-L159">put_v1remote_networks</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -2311,7 +2311,7 @@ client.remote_networks.put_v1remote_networks(
 </dl>
 </details>
 
-<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py">delete_v1remote_networks</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py#L161-L208">delete_v1remote_networks</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -2400,7 +2400,7 @@ client.remote_networks.delete_v1remote_networks(
 </dl>
 </details>
 
-<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py">get_v1remote_networks_read</a>(...) -> RemoteNetworksReadResult</code></summary>
+<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py#L210-L241">get_v1remote_networks_read</a>(...) -> RemoteNetworksReadResult</code></summary>
 <dl>
 <dd>
 
@@ -2473,7 +2473,7 @@ client.remote_networks.get_v1remote_networks_read(
 </dl>
 </details>
 
-<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py">post_v1remote_networks_read</a>(...) -> UuidResponse</code></summary>
+<details><summary><code>client.remote_networks.<a href="src/fern/remote_networks/client.py#L243-L282">post_v1remote_networks_read</a>(...) -> UuidResponse</code></summary>
 <dl>
 <dd>
 

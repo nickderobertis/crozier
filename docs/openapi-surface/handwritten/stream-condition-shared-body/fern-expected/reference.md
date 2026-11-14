@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">plan_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L134">plan_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -70,7 +70,7 @@ client.plan_stream()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">plan</a>(...) -> Itinerary</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L136-L168">plan</a>(...) -> Itinerary</code></summary>
 <dl>
 <dd>
 
@@ -141,7 +141,7 @@ client.plan_stream()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">estimate_route</a>(...) -> Itinerary</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L170-L207">estimate_route</a>(...) -> Itinerary</code></summary>
 <dl>
 <dd>
 

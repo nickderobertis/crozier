@@ -1,6 +1,6 @@
 # Reference
 ## core/avatar
-<details><summary><code>client.core_avatar.<a href="src/fern/core_avatar/client.py">get_avatar_dark</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_avatar.<a href="src/fern/core_avatar/client.py#L25-L46">get_avatar_dark</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.core_avatar.get_avatar_dark(...)
 </dl>
 </details>
 
-<details><summary><code>client.core_avatar.<a href="src/fern/core_avatar/client.py">get_avatar</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_avatar.<a href="src/fern/core_avatar/client.py#L48-L69">get_avatar</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -113,7 +113,7 @@ client.core_avatar.get_avatar(...)
 </details>
 
 ## core/guest_avatar
-<details><summary><code>client.core_guest_avatar.<a href="src/fern/core_guest_avatar/client.py">get_avatar_dark</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_guest_avatar.<a href="src/fern/core_guest_avatar/client.py#L25-L46">get_avatar_dark</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.core_guest_avatar.get_avatar_dark(...)
 </dl>
 </details>
 
-<details><summary><code>client.core_guest_avatar.<a href="src/fern/core_guest_avatar/client.py">get_avatar</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_guest_avatar.<a href="src/fern/core_guest_avatar/client.py#L48-L77">get_avatar</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -234,7 +234,7 @@ client.core_guest_avatar.get_avatar(...)
 </details>
 
 ## CoreClientFlowLoginV2
-<details><summary><code>client.core_client_flow_login_v2.<a href="src/fern/core_client_flow_login_v2/client.py">poll</a>(...) -> CoreLoginFlowV2Credentials</code></summary>
+<details><summary><code>client.core_client_flow_login_v2.<a href="src/fern/core_client_flow_login_v2/client.py#L27-L58">poll</a>(...) -> CoreLoginFlowV2Credentials</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.core_client_flow_login_v2.poll(
 </dl>
 </details>
 
-<details><summary><code>client.core_client_flow_login_v2.<a href="src/fern/core_client_flow_login_v2/client.py">init</a>() -> CoreLoginFlowV2</code></summary>
+<details><summary><code>client.core_client_flow_login_v2.<a href="src/fern/core_client_flow_login_v2/client.py#L60-L84">init</a>() -> CoreLoginFlowV2</code></summary>
 <dl>
 <dd>
 
@@ -345,7 +345,7 @@ client.core_client_flow_login_v2.init()
 </details>
 
 ## CorePreview
-<details><summary><code>client.core_preview.<a href="src/fern/core_preview/client.py">get_preview_by_file_id</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_preview.<a href="src/fern/core_preview/client.py#L25-L68">get_preview_by_file_id</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -433,7 +433,7 @@ client.core_preview.get_preview_by_file_id(...)
 </dl>
 </details>
 
-<details><summary><code>client.core_preview.<a href="src/fern/core_preview/client.py">get_preview</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_preview.<a href="src/fern/core_preview/client.py#L70-L113">get_preview</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -522,7 +522,7 @@ client.core_preview.get_preview(...)
 </details>
 
 ## CoreReference
-<details><summary><code>client.core_reference.<a href="src/fern/core_reference/client.py">preview</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.core_reference.<a href="src/fern/core_reference/client.py#L25-L43">preview</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -571,7 +571,7 @@ client.core_reference.preview(...)
 </details>
 
 ## CoreWipe
-<details><summary><code>client.core_wipe.<a href="src/fern/core_wipe/client.py">check_wipe</a>(...) -> CoreWipeCheckWipe200Response</code></summary>
+<details><summary><code>client.core_wipe.<a href="src/fern/core_wipe/client.py#L26-L57">check_wipe</a>(...) -> CoreWipeCheckWipe200Response</code></summary>
 <dl>
 <dd>
 
@@ -631,7 +631,7 @@ client.core_wipe.check_wipe(
 </dl>
 </details>
 
-<details><summary><code>client.core_wipe.<a href="src/fern/core_wipe/client.py">wipe_done</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.core_wipe.<a href="src/fern/core_wipe/client.py#L59-L90">wipe_done</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -692,7 +692,7 @@ client.core_wipe.wipe_done(
 </details>
 
 ## CoreOcs
-<details><summary><code>client.core_ocs.<a href="src/fern/core_ocs/client.py">get_capabilities</a>() -> CoreOcsGetCapabilities200Response</code></summary>
+<details><summary><code>client.core_ocs.<a href="src/fern/core_ocs/client.py#L26-L52">get_capabilities</a>() -> CoreOcsGetCapabilities200Response</code></summary>
 <dl>
 <dd>
 
@@ -743,7 +743,7 @@ client.core_ocs.get_capabilities()
 </details>
 
 ## CoreNavigation
-<details><summary><code>client.core_navigation.<a href="src/fern/core_navigation/client.py">get_apps_navigation</a>(...) -> CoreNavigationGetAppsNavigation200Response</code></summary>
+<details><summary><code>client.core_navigation.<a href="src/fern/core_navigation/client.py#L26-L55">get_apps_navigation</a>(...) -> CoreNavigationGetAppsNavigation200Response</code></summary>
 <dl>
 <dd>
 
@@ -801,7 +801,7 @@ client.core_navigation.get_apps_navigation()
 </dl>
 </details>
 
-<details><summary><code>client.core_navigation.<a href="src/fern/core_navigation/client.py">get_settings_navigation</a>(...) -> CoreNavigationGetAppsNavigation200Response</code></summary>
+<details><summary><code>client.core_navigation.<a href="src/fern/core_navigation/client.py#L57-L86">get_settings_navigation</a>(...) -> CoreNavigationGetAppsNavigation200Response</code></summary>
 <dl>
 <dd>
 
@@ -860,7 +860,7 @@ client.core_navigation.get_settings_navigation()
 </details>
 
 ## CoreAutoComplete
-<details><summary><code>client.core_auto_complete.<a href="src/fern/core_auto_complete/client.py">get</a>(...) -> CoreAutoCompleteGet200Response</code></summary>
+<details><summary><code>client.core_auto_complete.<a href="src/fern/core_auto_complete/client.py#L26-L88">get</a>(...) -> CoreAutoCompleteGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -961,7 +961,7 @@ client.core_auto_complete.get(
 </details>
 
 ## CoreWhatsNew
-<details><summary><code>client.core_whats_new.<a href="src/fern/core_whats_new/client.py">get</a>() -> CoreWhatsNewGet200Response</code></summary>
+<details><summary><code>client.core_whats_new.<a href="src/fern/core_whats_new/client.py#L27-L51">get</a>() -> CoreWhatsNewGet200Response</code></summary>
 <dl>
 <dd>
 
@@ -1011,7 +1011,7 @@ client.core_whats_new.get()
 </dl>
 </details>
 
-<details><summary><code>client.core_whats_new.<a href="src/fern/core_whats_new/client.py">dismiss</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.core_whats_new.<a href="src/fern/core_whats_new/client.py#L53-L84">dismiss</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -1072,7 +1072,7 @@ client.core_whats_new.dismiss(
 </details>
 
 ## CoreAppPassword
-<details><summary><code>client.core_app_password.<a href="src/fern/core_app_password/client.py">get_app_password</a>() -> CoreAppPasswordGetAppPassword200Response</code></summary>
+<details><summary><code>client.core_app_password.<a href="src/fern/core_app_password/client.py#L27-L53">get_app_password</a>() -> CoreAppPasswordGetAppPassword200Response</code></summary>
 <dl>
 <dd>
 
@@ -1122,7 +1122,7 @@ client.core_app_password.get_app_password()
 </dl>
 </details>
 
-<details><summary><code>client.core_app_password.<a href="src/fern/core_app_password/client.py">rotate_app_password</a>() -> CoreAppPasswordGetAppPassword200Response</code></summary>
+<details><summary><code>client.core_app_password.<a href="src/fern/core_app_password/client.py#L55-L81">rotate_app_password</a>() -> CoreAppPasswordGetAppPassword200Response</code></summary>
 <dl>
 <dd>
 
@@ -1172,7 +1172,7 @@ client.core_app_password.rotate_app_password()
 </dl>
 </details>
 
-<details><summary><code>client.core_app_password.<a href="src/fern/core_app_password/client.py">delete_app_password</a>() -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.core_app_password.<a href="src/fern/core_app_password/client.py#L83-L109">delete_app_password</a>() -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -1223,7 +1223,7 @@ client.core_app_password.delete_app_password()
 </details>
 
 ## CoreHoverCard
-<details><summary><code>client.core_hover_card.<a href="src/fern/core_hover_card/client.py">get_user</a>(...) -> CoreHoverCardGetUser200Response</code></summary>
+<details><summary><code>client.core_hover_card.<a href="src/fern/core_hover_card/client.py#L26-L57">get_user</a>(...) -> CoreHoverCardGetUser200Response</code></summary>
 <dl>
 <dd>
 
@@ -1284,7 +1284,7 @@ client.core_hover_card.get_user(
 </details>
 
 ## CoreCollaborationResources
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">search_collections</a>(...) -> CoreCollaborationResourcesSearchCollections200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L31-L62">search_collections</a>(...) -> CoreCollaborationResourcesSearchCollections200Response</code></summary>
 <dl>
 <dd>
 
@@ -1344,7 +1344,7 @@ client.core_collaboration_resources.search_collections(
 </dl>
 </details>
 
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">list_collection</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L64-L95">list_collection</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
 <dl>
 <dd>
 
@@ -1404,7 +1404,7 @@ client.core_collaboration_resources.list_collection(
 </dl>
 </details>
 
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">add_resource</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L97-L143">add_resource</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
 <dl>
 <dd>
 
@@ -1482,7 +1482,7 @@ client.core_collaboration_resources.add_resource(
 </dl>
 </details>
 
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">rename_collection</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L145-L182">rename_collection</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
 <dl>
 <dd>
 
@@ -1551,7 +1551,7 @@ client.core_collaboration_resources.rename_collection(
 </dl>
 </details>
 
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">remove_resource</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L184-L230">remove_resource</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
 <dl>
 <dd>
 
@@ -1629,7 +1629,7 @@ client.core_collaboration_resources.remove_resource(
 </dl>
 </details>
 
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">get_collections_by_resource</a>(...) -> CoreCollaborationResourcesSearchCollections200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L232-L269">get_collections_by_resource</a>(...) -> CoreCollaborationResourcesSearchCollections200Response</code></summary>
 <dl>
 <dd>
 
@@ -1698,7 +1698,7 @@ client.core_collaboration_resources.get_collections_by_resource(
 </dl>
 </details>
 
-<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py">create_collection_on_resource</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
+<details><summary><code>client.core_collaboration_resources.<a href="src/fern/core_collaboration_resources/client.py#L271-L317">create_collection_on_resource</a>(...) -> CoreCollaborationResourcesListCollection200Response</code></summary>
 <dl>
 <dd>
 
@@ -1777,7 +1777,7 @@ client.core_collaboration_resources.create_collection_on_resource(
 </details>
 
 ## CoreReferenceApi
-<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py">resolve_one</a>(...) -> CoreReferenceApiResolveOne200Response</code></summary>
+<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py#L28-L59">resolve_one</a>(...) -> CoreReferenceApiResolveOne200Response</code></summary>
 <dl>
 <dd>
 
@@ -1837,7 +1837,7 @@ client.core_reference_api.resolve_one(
 </dl>
 </details>
 
-<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py">resolve</a>(...) -> CoreReferenceApiResolveOne200Response</code></summary>
+<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py#L61-L99">resolve</a>(...) -> CoreReferenceApiResolveOne200Response</code></summary>
 <dl>
 <dd>
 
@@ -1905,7 +1905,7 @@ client.core_reference_api.resolve(
 </dl>
 </details>
 
-<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py">extract</a>(...) -> CoreReferenceApiResolveOne200Response</code></summary>
+<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py#L101-L143">extract</a>(...) -> CoreReferenceApiResolveOne200Response</code></summary>
 <dl>
 <dd>
 
@@ -1981,7 +1981,7 @@ client.core_reference_api.extract(
 </dl>
 </details>
 
-<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py">get_providers_info</a>() -> CoreReferenceApiGetProvidersInfo200Response</code></summary>
+<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py#L145-L171">get_providers_info</a>() -> CoreReferenceApiGetProvidersInfo200Response</code></summary>
 <dl>
 <dd>
 
@@ -2031,7 +2031,7 @@ client.core_reference_api.get_providers_info()
 </dl>
 </details>
 
-<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py">touch_provider</a>(...) -> CoreReferenceApiTouchProvider200Response</code></summary>
+<details><summary><code>client.core_reference_api.<a href="src/fern/core_reference_api/client.py#L173-L211">touch_provider</a>(...) -> CoreReferenceApiTouchProvider200Response</code></summary>
 <dl>
 <dd>
 
@@ -2100,7 +2100,7 @@ client.core_reference_api.touch_provider(
 </details>
 
 ## CoreProfileApi
-<details><summary><code>client.core_profile_api.<a href="src/fern/core_profile_api/client.py">set_visibility</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.core_profile_api.<a href="src/fern/core_profile_api/client.py#L26-L72">set_visibility</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -2179,7 +2179,7 @@ client.core_profile_api.set_visibility(
 </details>
 
 ## CoreUnifiedSearch
-<details><summary><code>client.core_unified_search.<a href="src/fern/core_unified_search/client.py">get_providers</a>(...) -> CoreUnifiedSearchGetProviders200Response</code></summary>
+<details><summary><code>client.core_unified_search.<a href="src/fern/core_unified_search/client.py#L27-L56">get_providers</a>(...) -> CoreUnifiedSearchGetProviders200Response</code></summary>
 <dl>
 <dd>
 
@@ -2237,7 +2237,7 @@ client.core_unified_search.get_providers()
 </dl>
 </details>
 
-<details><summary><code>client.core_unified_search.<a href="src/fern/core_unified_search/client.py">search</a>(...) -> CoreUnifiedSearchSearch200Response</code></summary>
+<details><summary><code>client.core_unified_search.<a href="src/fern/core_unified_search/client.py#L58-L120">search</a>(...) -> CoreUnifiedSearchSearch200Response</code></summary>
 <dl>
 <dd>
 
@@ -2338,7 +2338,7 @@ client.core_unified_search.search(
 </details>
 
 ## CoreTranslationApi
-<details><summary><code>client.core_translation_api.<a href="src/fern/core_translation_api/client.py">languages</a>() -> CoreTranslationApiLanguages200Response</code></summary>
+<details><summary><code>client.core_translation_api.<a href="src/fern/core_translation_api/client.py#L27-L53">languages</a>() -> CoreTranslationApiLanguages200Response</code></summary>
 <dl>
 <dd>
 
@@ -2388,7 +2388,7 @@ client.core_translation_api.languages()
 </dl>
 </details>
 
-<details><summary><code>client.core_translation_api.<a href="src/fern/core_translation_api/client.py">translate</a>(...) -> CoreTranslationApiTranslate200Response</code></summary>
+<details><summary><code>client.core_translation_api.<a href="src/fern/core_translation_api/client.py#L55-L100">translate</a>(...) -> CoreTranslationApiTranslate200Response</code></summary>
 <dl>
 <dd>
 
@@ -2466,7 +2466,7 @@ client.core_translation_api.translate(
 </details>
 
 ## Core
-<details><summary><code>client.core.<a href="src/fern/core/client.py">get_status</a>() -> CoreStatus</code></summary>
+<details><summary><code>client.core.<a href="src/fern/core/client.py#L26-L50">get_status</a>() -> CoreStatus</code></summary>
 <dl>
 <dd>
 
@@ -2517,7 +2517,7 @@ client.core.get_status()
 </details>
 
 ## cloud_federation_api/request_handler
-<details><summary><code>client.cloud_federation_api_request_handler.<a href="src/fern/cloud_federation_api_request_handler/client.py">add_share</a>(...) -> CloudFederationApiAddShare</code></summary>
+<details><summary><code>client.cloud_federation_api_request_handler.<a href="src/fern/cloud_federation_api_request_handler/client.py#L26-L119">add_share</a>(...) -> CloudFederationApiAddShare</code></summary>
 <dl>
 <dd>
 
@@ -2663,7 +2663,7 @@ client.cloud_federation_api_request_handler.add_share(
 </dl>
 </details>
 
-<details><summary><code>client.cloud_federation_api_request_handler.<a href="src/fern/cloud_federation_api_request_handler/client.py">receive_notification</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.cloud_federation_api_request_handler.<a href="src/fern/cloud_federation_api_request_handler/client.py#L121-L174">receive_notification</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -2749,7 +2749,7 @@ client.cloud_federation_api_request_handler.receive_notification(
 </details>
 
 ## DashboardDashboardApi
-<details><summary><code>client.dashboard_dashboard_api.<a href="src/fern/dashboard_dashboard_api/client.py">get_widgets</a>() -> DashboardDashboardApiGetWidgets200Response</code></summary>
+<details><summary><code>client.dashboard_dashboard_api.<a href="src/fern/dashboard_dashboard_api/client.py#L27-L53">get_widgets</a>() -> DashboardDashboardApiGetWidgets200Response</code></summary>
 <dl>
 <dd>
 
@@ -2799,7 +2799,7 @@ client.dashboard_dashboard_api.get_widgets()
 </dl>
 </details>
 
-<details><summary><code>client.dashboard_dashboard_api.<a href="src/fern/dashboard_dashboard_api/client.py">get_widget_items</a>(...) -> DashboardDashboardApiGetWidgetItems200Response</code></summary>
+<details><summary><code>client.dashboard_dashboard_api.<a href="src/fern/dashboard_dashboard_api/client.py#L55-L97">get_widget_items</a>(...) -> DashboardDashboardApiGetWidgetItems200Response</code></summary>
 <dl>
 <dd>
 
@@ -2874,7 +2874,7 @@ client.dashboard_dashboard_api.get_widget_items()
 </details>
 
 ## DavDirect
-<details><summary><code>client.dav_direct.<a href="src/fern/dav_direct/client.py">get_url</a>(...) -> DavDirectGetUrl200Response</code></summary>
+<details><summary><code>client.dav_direct.<a href="src/fern/dav_direct/client.py#L26-L66">get_url</a>(...) -> DavDirectGetUrl200Response</code></summary>
 <dl>
 <dd>
 
@@ -2943,7 +2943,7 @@ client.dav_direct.get_url(
 </details>
 
 ## FilesSharingShareInfo
-<details><summary><code>client.files_sharing_share_info.<a href="src/fern/files_sharing_share_info/client.py">info</a>(...) -> FilesSharingShareInfo</code></summary>
+<details><summary><code>client.files_sharing_share_info.<a href="src/fern/files_sharing_share_info/client.py#L26-L72">info</a>(...) -> FilesSharingShareInfo</code></summary>
 <dl>
 <dd>
 
@@ -3028,7 +3028,7 @@ client.files_sharing_share_info.info(
 </details>
 
 ## FilesSharingShareapi
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">get_shares</a>(...) -> FilesSharingShareapiGetShares200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L28-L83">get_shares</a>(...) -> FilesSharingShareapiGetShares200Response</code></summary>
 <dl>
 <dd>
 
@@ -3118,7 +3118,7 @@ client.files_sharing_shareapi.get_shares()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">create_share</a>(...) -> FilesSharingShareapiCreateShare200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L85-L170">create_share</a>(...) -> FilesSharingShareapiCreateShare200Response</code></summary>
 <dl>
 <dd>
 
@@ -3256,7 +3256,7 @@ client.files_sharing_shareapi.create_share()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">get_inherited_shares</a>(...) -> FilesSharingShareapiGetShares200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L172-L203">get_inherited_shares</a>(...) -> FilesSharingShareapiGetShares200Response</code></summary>
 <dl>
 <dd>
 
@@ -3316,7 +3316,7 @@ client.files_sharing_shareapi.get_inherited_shares(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">pending_shares</a>() -> FilesSharingShareapiGetShares200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L205-L231">pending_shares</a>() -> FilesSharingShareapiGetShares200Response</code></summary>
 <dl>
 <dd>
 
@@ -3366,7 +3366,7 @@ client.files_sharing_shareapi.pending_shares()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">get_share</a>(...) -> FilesSharingShareapiCreateShare200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L233-L271">get_share</a>(...) -> FilesSharingShareapiCreateShare200Response</code></summary>
 <dl>
 <dd>
 
@@ -3434,7 +3434,7 @@ client.files_sharing_shareapi.get_share(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">update_share</a>(...) -> FilesSharingShareapiCreateShare200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L273-L355">update_share</a>(...) -> FilesSharingShareapiCreateShare200Response</code></summary>
 <dl>
 <dd>
 
@@ -3566,7 +3566,7 @@ client.files_sharing_shareapi.update_share(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">delete_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L357-L388">delete_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -3626,7 +3626,7 @@ client.files_sharing_shareapi.delete_share(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py">accept_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.files_sharing_shareapi.<a href="src/fern/files_sharing_shareapi/client.py#L390-L421">accept_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -3687,7 +3687,7 @@ client.files_sharing_shareapi.accept_share(
 </details>
 
 ## FilesSharingDeletedShareapi
-<details><summary><code>client.files_sharing_deleted_shareapi.<a href="src/fern/files_sharing_deleted_shareapi/client.py">list</a>() -> FilesSharingDeletedShareapiList200Response</code></summary>
+<details><summary><code>client.files_sharing_deleted_shareapi.<a href="src/fern/files_sharing_deleted_shareapi/client.py#L27-L53">list</a>() -> FilesSharingDeletedShareapiList200Response</code></summary>
 <dl>
 <dd>
 
@@ -3737,7 +3737,7 @@ client.files_sharing_deleted_shareapi.list()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_deleted_shareapi.<a href="src/fern/files_sharing_deleted_shareapi/client.py">undelete</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.files_sharing_deleted_shareapi.<a href="src/fern/files_sharing_deleted_shareapi/client.py#L55-L86">undelete</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -3798,7 +3798,7 @@ client.files_sharing_deleted_shareapi.undelete(
 </details>
 
 ## FilesSharingShareesapi
-<details><summary><code>client.files_sharing_shareesapi.<a href="src/fern/files_sharing_shareesapi/client.py">search</a>(...) -> FilesSharingShareesapiSearch200Response</code></summary>
+<details><summary><code>client.files_sharing_shareesapi.<a href="src/fern/files_sharing_shareesapi/client.py#L29-L89">search</a>(...) -> FilesSharingShareesapiSearch200Response</code></summary>
 <dl>
 <dd>
 
@@ -3896,7 +3896,7 @@ client.files_sharing_shareesapi.search()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_shareesapi.<a href="src/fern/files_sharing_shareesapi/client.py">find_recommended</a>(...) -> FilesSharingShareesapiFindRecommended200Response</code></summary>
+<details><summary><code>client.files_sharing_shareesapi.<a href="src/fern/files_sharing_shareesapi/client.py#L91-L131">find_recommended</a>(...) -> FilesSharingShareesapiFindRecommended200Response</code></summary>
 <dl>
 <dd>
 
@@ -3965,7 +3965,7 @@ client.files_sharing_shareesapi.find_recommended(
 </details>
 
 ## FilesSharingRemote
-<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py">get_shares</a>() -> FilesSharingRemoteGetShares200Response</code></summary>
+<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py#L28-L54">get_shares</a>() -> FilesSharingRemoteGetShares200Response</code></summary>
 <dl>
 <dd>
 
@@ -4015,7 +4015,7 @@ client.files_sharing_remote.get_shares()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py">get_open_shares</a>() -> FilesSharingRemoteGetShares200Response</code></summary>
+<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py#L56-L82">get_open_shares</a>() -> FilesSharingRemoteGetShares200Response</code></summary>
 <dl>
 <dd>
 
@@ -4065,7 +4065,7 @@ client.files_sharing_remote.get_open_shares()
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py">accept_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py#L84-L115">accept_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -4125,7 +4125,7 @@ client.files_sharing_remote.accept_share(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py">decline_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py#L117-L148">decline_share</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -4185,7 +4185,7 @@ client.files_sharing_remote.decline_share(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py">get_share</a>(...) -> FilesSharingRemoteGetShare200Response</code></summary>
+<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py#L150-L181">get_share</a>(...) -> FilesSharingRemoteGetShare200Response</code></summary>
 <dl>
 <dd>
 
@@ -4245,7 +4245,7 @@ client.files_sharing_remote.get_share(
 </dl>
 </details>
 
-<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py">unshare</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.files_sharing_remote.<a href="src/fern/files_sharing_remote/client.py#L183-L214">unshare</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -4306,7 +4306,7 @@ client.files_sharing_remote.unshare(
 </details>
 
 ## Oauth2LoginRedirector
-<details><summary><code>client.oauth2login_redirector.<a href="src/fern/oauth2login_redirector/client.py">authorize</a>(...) -> str</code></summary>
+<details><summary><code>client.oauth2login_redirector.<a href="src/fern/oauth2login_redirector/client.py#L25-L66">authorize</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -4385,7 +4385,7 @@ client.oauth2login_redirector.authorize(
 </details>
 
 ## Oauth2OauthApi
-<details><summary><code>client.oauth2oauth_api.<a href="src/fern/oauth2oauth_api/client.py">get_token</a>(...) -> Oauth2OauthApiGetToken200Response</code></summary>
+<details><summary><code>client.oauth2oauth_api.<a href="src/fern/oauth2oauth_api/client.py#L26-L87">get_token</a>(...) -> Oauth2OauthApiGetToken200Response</code></summary>
 <dl>
 <dd>
 
@@ -4482,7 +4482,7 @@ client.oauth2oauth_api.get_token(
 </details>
 
 ## ProvisioningApiApps
-<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py">get_apps</a>(...) -> ProvisioningApiAppsGetApps200Response</code></summary>
+<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py#L28-L59">get_apps</a>(...) -> ProvisioningApiAppsGetApps200Response</code></summary>
 <dl>
 <dd>
 
@@ -4554,7 +4554,7 @@ client.provisioning_api_apps.get_apps()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py">get_app_info</a>(...) -> ProvisioningApiAppsGetAppInfo200Response</code></summary>
+<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py#L61-L94">get_app_info</a>(...) -> ProvisioningApiAppsGetAppInfo200Response</code></summary>
 <dl>
 <dd>
 
@@ -4628,7 +4628,7 @@ client.provisioning_api_apps.get_app_info(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py">enable</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py#L96-L129">enable</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -4702,7 +4702,7 @@ client.provisioning_api_apps.enable(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py">disable</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_apps.<a href="src/fern/provisioning_api_apps/client.py#L131-L164">disable</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -4777,7 +4777,7 @@ client.provisioning_api_apps.disable(
 </details>
 
 ## ProvisioningApiGroups
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">get_groups</a>(...) -> ProvisioningApiGroupsGetGroups200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L37-L79">get_groups</a>(...) -> ProvisioningApiGroupsGetGroups200Response</code></summary>
 <dl>
 <dd>
 
@@ -4851,7 +4851,7 @@ client.provisioning_api_groups.get_groups()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">add_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L81-L123">add_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -4933,7 +4933,7 @@ client.provisioning_api_groups.add_group(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">get_groups_details</a>(...) -> ProvisioningApiGroupsGetGroupsDetails200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L125-L167">get_groups_details</a>(...) -> ProvisioningApiGroupsGetGroupsDetails200Response</code></summary>
 <dl>
 <dd>
 
@@ -5007,7 +5007,7 @@ client.provisioning_api_groups.get_groups_details()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">get_group_users</a>(...) -> ProvisioningApiGroupsGetGroupUsers200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L169-L200">get_group_users</a>(...) -> ProvisioningApiGroupsGetGroupUsers200Response</code></summary>
 <dl>
 <dd>
 
@@ -5067,7 +5067,7 @@ client.provisioning_api_groups.get_group_users(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">get_group_users_details</a>(...) -> ProvisioningApiGroupsGetGroupUsersDetails200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L202-L250">get_group_users_details</a>(...) -> ProvisioningApiGroupsGetGroupUsersDetails200Response</code></summary>
 <dl>
 <dd>
 
@@ -5151,7 +5151,7 @@ client.provisioning_api_groups.get_group_users_details(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">get_sub_admins_of_group</a>(...) -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L252-L285">get_sub_admins_of_group</a>(...) -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
 <dl>
 <dd>
 
@@ -5225,7 +5225,7 @@ client.provisioning_api_groups.get_sub_admins_of_group(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">get_group</a>(...) -> ProvisioningApiGroupsGetGroupUsers200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L287-L318">get_group</a>(...) -> ProvisioningApiGroupsGetGroupUsers200Response</code></summary>
 <dl>
 <dd>
 
@@ -5285,7 +5285,7 @@ client.provisioning_api_groups.get_group(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">update_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L320-L361">update_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -5377,7 +5377,7 @@ client.provisioning_api_groups.update_group(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py">delete_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_groups.<a href="src/fern/provisioning_api_groups/client.py#L363-L396">delete_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -5452,7 +5452,7 @@ client.provisioning_api_groups.delete_group(
 </details>
 
 ## ProvisioningApiUsers
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_users</a>(...) -> ProvisioningApiGroupsGetGroupUsers200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L39-L81">get_users</a>(...) -> ProvisioningApiGroupsGetGroupUsers200Response</code></summary>
 <dl>
 <dd>
 
@@ -5526,7 +5526,7 @@ client.provisioning_api_users.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">add_user</a>(...) -> ProvisioningApiUsersAddUser200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L83-L160">add_user</a>(...) -> ProvisioningApiUsersAddUser200Response</code></summary>
 <dl>
 <dd>
 
@@ -5650,7 +5650,7 @@ client.provisioning_api_users.add_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_users_details</a>(...) -> ProvisioningApiGroupsGetGroupUsersDetails200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L162-L204">get_users_details</a>(...) -> ProvisioningApiGroupsGetGroupUsersDetails200Response</code></summary>
 <dl>
 <dd>
 
@@ -5724,7 +5724,7 @@ client.provisioning_api_users.get_users_details()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">search_by_phone_numbers</a>(...) -> ProvisioningApiUsersSearchByPhoneNumbers200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L206-L243">search_by_phone_numbers</a>(...) -> ProvisioningApiUsersSearchByPhoneNumbers200Response</code></summary>
 <dl>
 <dd>
 
@@ -5793,7 +5793,7 @@ client.provisioning_api_users.search_by_phone_numbers(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_user</a>(...) -> ProvisioningApiUsersGetUser200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L245-L276">get_user</a>(...) -> ProvisioningApiUsersGetUser200Response</code></summary>
 <dl>
 <dd>
 
@@ -5853,7 +5853,7 @@ client.provisioning_api_users.get_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">edit_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L278-L317">edit_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -5931,7 +5931,7 @@ client.provisioning_api_users.edit_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">delete_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L319-L350">delete_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -5991,7 +5991,7 @@ client.provisioning_api_users.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_current_user</a>() -> ProvisioningApiUsersGetUser200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L352-L378">get_current_user</a>() -> ProvisioningApiUsersGetUser200Response</code></summary>
 <dl>
 <dd>
 
@@ -6041,7 +6041,7 @@ client.provisioning_api_users.get_current_user()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_editable_fields</a>() -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L380-L406">get_editable_fields</a>() -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
 <dl>
 <dd>
 
@@ -6091,7 +6091,7 @@ client.provisioning_api_users.get_editable_fields()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_editable_fields_for_user</a>(...) -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L408-L439">get_editable_fields_for_user</a>(...) -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
 <dl>
 <dd>
 
@@ -6151,7 +6151,7 @@ client.provisioning_api_users.get_editable_fields_for_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">edit_user_multi_value</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L441-L492">edit_user_multi_value</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6238,7 +6238,7 @@ client.provisioning_api_users.edit_user_multi_value(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">wipe_user_devices</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L494-L525">wipe_user_devices</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6298,7 +6298,7 @@ client.provisioning_api_users.wipe_user_devices(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">enable_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L527-L558">enable_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6358,7 +6358,7 @@ client.provisioning_api_users.enable_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">disable_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L560-L591">disable_user</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6418,7 +6418,7 @@ client.provisioning_api_users.disable_user(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_users_groups</a>(...) -> ProvisioningApiGroupsGetGroups200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L593-L624">get_users_groups</a>(...) -> ProvisioningApiGroupsGetGroups200Response</code></summary>
 <dl>
 <dd>
 
@@ -6478,7 +6478,7 @@ client.provisioning_api_users.get_users_groups(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">add_to_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L626-L664">add_to_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6546,7 +6546,7 @@ client.provisioning_api_users.add_to_group(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">remove_from_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L666-L701">remove_from_group</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6615,7 +6615,7 @@ client.provisioning_api_users.remove_from_group(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">get_user_sub_admin_groups</a>(...) -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L703-L736">get_user_sub_admin_groups</a>(...) -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
 <dl>
 <dd>
 
@@ -6689,7 +6689,7 @@ client.provisioning_api_users.get_user_sub_admin_groups(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">add_sub_admin</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L738-L775">add_sub_admin</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6772,7 +6772,7 @@ client.provisioning_api_users.add_sub_admin(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">remove_sub_admin</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L777-L814">remove_sub_admin</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6855,7 +6855,7 @@ client.provisioning_api_users.remove_sub_admin(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py">resend_welcome_message</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_users.<a href="src/fern/provisioning_api_users/client.py#L816-L847">resend_welcome_message</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -6916,7 +6916,7 @@ client.provisioning_api_users.resend_welcome_message(
 </details>
 
 ## ProvisioningApiAppConfig
-<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py">get_apps</a>() -> ProvisioningApiAppConfigGetApps200Response</code></summary>
+<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py#L28-L56">get_apps</a>() -> ProvisioningApiAppConfigGetApps200Response</code></summary>
 <dl>
 <dd>
 
@@ -6980,7 +6980,7 @@ client.provisioning_api_app_config.get_apps()
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py">get_keys</a>(...) -> ProvisioningApiAppConfigGetApps200Response</code></summary>
+<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py#L58-L91">get_keys</a>(...) -> ProvisioningApiAppConfigGetApps200Response</code></summary>
 <dl>
 <dd>
 
@@ -7054,7 +7054,7 @@ client.provisioning_api_app_config.get_keys(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py">get_value</a>(...) -> ProvisioningApiAppConfigGetValue200Response</code></summary>
+<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py#L93-L138">get_value</a>(...) -> ProvisioningApiAppConfigGetValue200Response</code></summary>
 <dl>
 <dd>
 
@@ -7145,7 +7145,7 @@ client.provisioning_api_app_config.get_value(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py">set_value</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py#L140-L179">set_value</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -7223,7 +7223,7 @@ client.provisioning_api_app_config.set_value(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py">delete_key</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_app_config.<a href="src/fern/provisioning_api_app_config/client.py#L181-L218">delete_key</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -7307,7 +7307,7 @@ client.provisioning_api_app_config.delete_key(
 </details>
 
 ## ProvisioningApiPreferences
-<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py">set_preference</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py#L26-L72">set_preference</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -7385,7 +7385,7 @@ client.provisioning_api_preferences.set_preference(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py">delete_preference</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py#L74-L109">delete_preference</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -7454,7 +7454,7 @@ client.provisioning_api_preferences.delete_preference(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py">set_multiple_preferences</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py#L111-L146">set_multiple_preferences</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -7523,7 +7523,7 @@ client.provisioning_api_preferences.set_multiple_preferences(
 </dl>
 </details>
 
-<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py">delete_multiple_preference</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.provisioning_api_preferences.<a href="src/fern/provisioning_api_preferences/client.py#L148-L185">delete_multiple_preference</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -7593,7 +7593,7 @@ client.provisioning_api_preferences.delete_multiple_preference(
 </details>
 
 ## SettingsLogSettings
-<details><summary><code>client.settings_log_settings.<a href="src/fern/settings_log_settings/client.py">download</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.settings_log_settings.<a href="src/fern/settings_log_settings/client.py#L25-L40">download</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7648,7 +7648,7 @@ client.settings_log_settings.download()
 </details>
 
 ## theming/theming
-<details><summary><code>client.theming_theming.<a href="src/fern/theming_theming/client.py">get_theme_stylesheet</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.theming_theming.<a href="src/fern/theming_theming/client.py#L26-L57">get_theme_stylesheet</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7712,7 +7712,7 @@ client.theming_theming.get_theme_stylesheet(...)
 </dl>
 </details>
 
-<details><summary><code>client.theming_theming.<a href="src/fern/theming_theming/client.py">get_image</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.theming_theming.<a href="src/fern/theming_theming/client.py#L59-L80">get_image</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7768,7 +7768,7 @@ client.theming_theming.get_image(...)
 </dl>
 </details>
 
-<details><summary><code>client.theming_theming.<a href="src/fern/theming_theming/client.py">get_manifest</a>(...) -> ThemingThemingGetManifest200Response</code></summary>
+<details><summary><code>client.theming_theming.<a href="src/fern/theming_theming/client.py#L82-L113">get_manifest</a>(...) -> ThemingThemingGetManifest200Response</code></summary>
 <dl>
 <dd>
 
@@ -7829,7 +7829,7 @@ client.theming_theming.get_manifest(
 </details>
 
 ## ThemingIcon
-<details><summary><code>client.theming_icon.<a href="src/fern/theming_icon/client.py">get_favicon</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.theming_icon.<a href="src/fern/theming_icon/client.py#L25-L43">get_favicon</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7877,7 +7877,7 @@ client.theming_icon.get_favicon(...)
 </dl>
 </details>
 
-<details><summary><code>client.theming_icon.<a href="src/fern/theming_icon/client.py">get_touch_icon</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.theming_icon.<a href="src/fern/theming_icon/client.py#L45-L63">get_touch_icon</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7925,7 +7925,7 @@ client.theming_icon.get_touch_icon(...)
 </dl>
 </details>
 
-<details><summary><code>client.theming_icon.<a href="src/fern/theming_icon/client.py">get_themed_icon</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.theming_icon.<a href="src/fern/theming_icon/client.py#L65-L86">get_themed_icon</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7982,7 +7982,7 @@ client.theming_icon.get_themed_icon(...)
 </details>
 
 ## ThemingUserTheme
-<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py">get_background</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py#L27-L40">get_background</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -8022,7 +8022,7 @@ client.theming_user_theme.get_background()
 </dl>
 </details>
 
-<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py">set_background</a>(...) -> ThemingBackground</code></summary>
+<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py#L42-L84">set_background</a>(...) -> ThemingBackground</code></summary>
 <dl>
 <dd>
 
@@ -8098,7 +8098,7 @@ client.theming_user_theme.set_background(
 </dl>
 </details>
 
-<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py">delete_background</a>() -> ThemingBackground</code></summary>
+<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py#L86-L110">delete_background</a>() -> ThemingBackground</code></summary>
 <dl>
 <dd>
 
@@ -8148,7 +8148,7 @@ client.theming_user_theme.delete_background()
 </dl>
 </details>
 
-<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py">enable_theme</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py#L112-L143">enable_theme</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -8208,7 +8208,7 @@ client.theming_user_theme.enable_theme(
 </dl>
 </details>
 
-<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py">disable_theme</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.theming_user_theme.<a href="src/fern/theming_user_theme/client.py#L145-L176">disable_theme</a>(...) -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -8269,7 +8269,7 @@ client.theming_user_theme.disable_theme(
 </details>
 
 ## UserStatusStatuses
-<details><summary><code>client.user_status_statuses.<a href="src/fern/user_status_statuses/client.py">find_all</a>(...) -> UserStatusStatusesFindAll200Response</code></summary>
+<details><summary><code>client.user_status_statuses.<a href="src/fern/user_status_statuses/client.py#L27-L63">find_all</a>(...) -> UserStatusStatusesFindAll200Response</code></summary>
 <dl>
 <dd>
 
@@ -8335,7 +8335,7 @@ client.user_status_statuses.find_all()
 </dl>
 </details>
 
-<details><summary><code>client.user_status_statuses.<a href="src/fern/user_status_statuses/client.py">find</a>(...) -> UserStatusStatusesFind200Response</code></summary>
+<details><summary><code>client.user_status_statuses.<a href="src/fern/user_status_statuses/client.py#L65-L96">find</a>(...) -> UserStatusStatusesFind200Response</code></summary>
 <dl>
 <dd>
 
@@ -8396,7 +8396,7 @@ client.user_status_statuses.find(
 </details>
 
 ## UserStatusUserStatus
-<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py">get_status</a>() -> UserStatusUserStatusGetStatus200Response</code></summary>
+<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py#L27-L53">get_status</a>() -> UserStatusUserStatusGetStatus200Response</code></summary>
 <dl>
 <dd>
 
@@ -8446,7 +8446,7 @@ client.user_status_user_status.get_status()
 </dl>
 </details>
 
-<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py">set_status</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
+<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py#L55-L86">set_status</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
 <dl>
 <dd>
 
@@ -8506,7 +8506,7 @@ client.user_status_user_status.set_status(
 </dl>
 </details>
 
-<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py">set_predefined_message</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
+<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py#L88-L128">set_predefined_message</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
 <dl>
 <dd>
 
@@ -8574,7 +8574,7 @@ client.user_status_user_status.set_predefined_message(
 </dl>
 </details>
 
-<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py">set_custom_message</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
+<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py#L130-L172">set_custom_message</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
 <dl>
 <dd>
 
@@ -8648,7 +8648,7 @@ client.user_status_user_status.set_custom_message()
 </dl>
 </details>
 
-<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py">clear_message</a>() -> CoreWhatsNewDismiss200Response</code></summary>
+<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py#L174-L200">clear_message</a>() -> CoreWhatsNewDismiss200Response</code></summary>
 <dl>
 <dd>
 
@@ -8698,7 +8698,7 @@ client.user_status_user_status.clear_message()
 </dl>
 </details>
 
-<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py">revert_status</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
+<details><summary><code>client.user_status_user_status.<a href="src/fern/user_status_user_status/client.py#L202-L233">revert_status</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
 <dl>
 <dd>
 
@@ -8759,7 +8759,7 @@ client.user_status_user_status.revert_status(
 </details>
 
 ## UserStatusPredefinedStatus
-<details><summary><code>client.user_status_predefined_status.<a href="src/fern/user_status_predefined_status/client.py">find_all</a>() -> UserStatusPredefinedStatusFindAll200Response</code></summary>
+<details><summary><code>client.user_status_predefined_status.<a href="src/fern/user_status_predefined_status/client.py#L26-L52">find_all</a>() -> UserStatusPredefinedStatusFindAll200Response</code></summary>
 <dl>
 <dd>
 
@@ -8810,7 +8810,7 @@ client.user_status_predefined_status.find_all()
 </details>
 
 ## UserStatusHeartbeat
-<details><summary><code>client.user_status_heartbeat.<a href="src/fern/user_status_heartbeat/client.py">heartbeat</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
+<details><summary><code>client.user_status_heartbeat.<a href="src/fern/user_status_heartbeat/client.py#L26-L57">heartbeat</a>(...) -> UserStatusUserStatusGetStatus200Response</code></summary>
 <dl>
 <dd>
 
@@ -8871,7 +8871,7 @@ client.user_status_heartbeat.heartbeat(
 </details>
 
 ## WeatherStatusWeatherStatus
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">set_mode</a>(...) -> CoreReferenceApiTouchProvider200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L38-L69">set_mode</a>(...) -> CoreReferenceApiTouchProvider200Response</code></summary>
 <dl>
 <dd>
 
@@ -8931,7 +8931,7 @@ client.weather_status_weather_status.set_mode(
 </dl>
 </details>
 
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">use_personal_address</a>() -> WeatherStatusWeatherStatusUsePersonalAddress200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L71-L97">use_personal_address</a>() -> WeatherStatusWeatherStatusUsePersonalAddress200Response</code></summary>
 <dl>
 <dd>
 
@@ -8981,7 +8981,7 @@ client.weather_status_weather_status.use_personal_address()
 </dl>
 </details>
 
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">get_location</a>() -> WeatherStatusWeatherStatusGetLocation200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L99-L125">get_location</a>() -> WeatherStatusWeatherStatusGetLocation200Response</code></summary>
 <dl>
 <dd>
 
@@ -9031,7 +9031,7 @@ client.weather_status_weather_status.get_location()
 </dl>
 </details>
 
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">set_location</a>(...) -> WeatherStatusWeatherStatusUsePersonalAddress200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L127-L167">set_location</a>(...) -> WeatherStatusWeatherStatusUsePersonalAddress200Response</code></summary>
 <dl>
 <dd>
 
@@ -9105,7 +9105,7 @@ client.weather_status_weather_status.set_location()
 </dl>
 </details>
 
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">get_forecast</a>() -> WeatherStatusWeatherStatusGetForecast200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L169-L195">get_forecast</a>() -> WeatherStatusWeatherStatusGetForecast200Response</code></summary>
 <dl>
 <dd>
 
@@ -9155,7 +9155,7 @@ client.weather_status_weather_status.get_forecast()
 </dl>
 </details>
 
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">get_favorites</a>() -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L197-L223">get_favorites</a>() -> ProvisioningApiGroupsGetSubAdminsOfGroup200Response</code></summary>
 <dl>
 <dd>
 
@@ -9205,7 +9205,7 @@ client.weather_status_weather_status.get_favorites()
 </dl>
 </details>
 
-<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py">set_favorites</a>(...) -> CoreReferenceApiTouchProvider200Response</code></summary>
+<details><summary><code>client.weather_status_weather_status.<a href="src/fern/weather_status_weather_status/client.py#L225-L256">set_favorites</a>(...) -> CoreReferenceApiTouchProvider200Response</code></summary>
 <dl>
 <dd>
 

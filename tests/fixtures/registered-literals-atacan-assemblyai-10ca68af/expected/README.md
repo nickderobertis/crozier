@@ -124,7 +124,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 import asyncio
 from fern.transcripts import TranscriptCustomSpelling, RedactPiiAudioQuality, PiiPolicy, SubstitutionPolicy, TranscriptOptionalParamsSpeechUnderstanding, SummaryModel, SummaryType
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, TranslationRequestBody, TranslationRequestBodyTranslation
 
 client = AsyncFernApi(
     api_key="<value>",

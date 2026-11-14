@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_rates</a>(...) -> typing.List[Rate]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L196">get_rates</a>(...) -> typing.List[Rate]</code></summary>
 <dl>
 <dd>
 
@@ -133,7 +133,7 @@ client.get_rates(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_rate</a>(...) -> Rate</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L198-L249">get_rate</a>(...) -> Rate</code></summary>
 <dl>
 <dd>
 
@@ -233,7 +233,7 @@ client.get_rate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_currency</a>(...) -> CurrencyDetail</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L251-L277">get_currency</a>(...) -> CurrencyDetail</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.get_currency(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_currencies</a>(...) -> typing.List[Currency]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L279-L315">get_currencies</a>(...) -> typing.List[Currency]</code></summary>
 <dl>
 <dd>
 
@@ -385,7 +385,7 @@ client.get_currencies(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_providers</a>() -> typing.List[Provider]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L317-L339">get_providers</a>() -> typing.List[Provider]</code></summary>
 <dl>
 <dd>
 

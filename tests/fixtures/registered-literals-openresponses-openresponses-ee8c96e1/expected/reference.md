@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">createresponse</a>(...) -> ResponseResource</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L123-L283">createresponse</a>(...) -> ResponseResource</code></summary>
 <dl>
 <dd>
 

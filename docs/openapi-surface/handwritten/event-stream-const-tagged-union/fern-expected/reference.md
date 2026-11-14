@@ -1,6 +1,6 @@
 # Reference
 ## Stations
-<details><summary><code>client.stations.<a href="src/fern/stations/client.py">follow_levels</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.stations.<a href="src/fern/stations/client.py#L26-L56">follow_levels</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

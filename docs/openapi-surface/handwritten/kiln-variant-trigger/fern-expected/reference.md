@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_actions</a>() -> typing.List[ListActionsResponseItem]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L125">list_actions</a>() -> typing.List[ListActionsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.list_actions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_action</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L152">create_action</a>(...)</code></summary>
 <dl>
 <dd>
 

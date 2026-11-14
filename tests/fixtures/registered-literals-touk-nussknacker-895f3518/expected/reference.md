@@ -1,6 +1,6 @@
 # Reference
 ## Components
-<details><summary><code>client.components.<a href="src/fern/components/client.py">get_api_components_id_usages</a>(...) -> typing.List[ComponentUsagesInScenario]</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L27-L58">get_api_components_id_usages</a>(...) -> typing.List[ComponentUsagesInScenario]</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.components.get_api_components_id_usages(
 </dl>
 </details>
 
-<details><summary><code>client.components.<a href="src/fern/components/client.py">get_api_components</a>(...) -> typing.List[ComponentListElement]</code></summary>
+<details><summary><code>client.components.<a href="src/fern/components/client.py#L60-L97">get_api_components</a>(...) -> typing.List[ComponentListElement]</code></summary>
 <dl>
 <dd>
 
@@ -125,7 +125,7 @@ client.components.get_api_components()
 </details>
 
 ## Deployments
-<details><summary><code>client.deployments.<a href="src/fern/deployments/client.py">get_api_actioninfo_scenarioname_parameters</a>(...) -> UiActionParametersDto</code></summary>
+<details><summary><code>client.deployments.<a href="src/fern/deployments/client.py#L31-L64">get_api_actioninfo_scenarioname_parameters</a>(...) -> UiActionParametersDto</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.deployments.get_api_actioninfo_scenarioname_parameters(
 </dl>
 </details>
 
-<details><summary><code>client.deployments.<a href="src/fern/deployments/client.py">get_api_deployments_deploymentid_status</a>(...) -> GetDeploymentStatusResponse</code></summary>
+<details><summary><code>client.deployments.<a href="src/fern/deployments/client.py#L66-L100">get_api_deployments_deploymentid_status</a>(...) -> GetDeploymentStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -243,7 +243,7 @@ client.deployments.get_api_deployments_deploymentid_status(
 </dl>
 </details>
 
-<details><summary><code>client.deployments.<a href="src/fern/deployments/client.py">put_api_deployments_deploymentid</a>(...)</code></summary>
+<details><summary><code>client.deployments.<a href="src/fern/deployments/client.py#L102-L153">put_api_deployments_deploymentid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -331,7 +331,7 @@ client.deployments.put_api_deployments_deploymentid(
 </details>
 
 ## App
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_healthcheck</a>() -> HealthCheckProcessSuccessResponseDto</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L30-L57">get_api_app_healthcheck</a>() -> HealthCheckProcessSuccessResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -380,7 +380,7 @@ client.app.get_api_app_healthcheck()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_leader</a>() -> LeaderResponseDto</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L59-L84">get_api_app_leader</a>() -> LeaderResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -429,7 +429,7 @@ client.app.get_api_app_leader()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_buildinfo</a>() -> BuildInfoDto</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L86-L111">get_api_app_buildinfo</a>() -> BuildInfoDto</code></summary>
 <dl>
 <dd>
 
@@ -478,7 +478,7 @@ client.app.get_api_app_buildinfo()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">post_api_app_processingtype_reload</a>()</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L113-L137">post_api_app_processingtype_reload</a>()</code></summary>
 <dl>
 <dd>
 
@@ -527,7 +527,7 @@ client.app.post_api_app_processingtype_reload()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">post_api_app_model_reload</a>()</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L139-L163">post_api_app_model_reload</a>()</code></summary>
 <dl>
 <dd>
 
@@ -576,7 +576,7 @@ client.app.post_api_app_model_reload()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_healthcheck_process_deployment</a>() -> HealthCheckProcessSuccessResponseDto</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L165-L192">get_api_app_healthcheck_process_deployment</a>() -> HealthCheckProcessSuccessResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -625,7 +625,7 @@ client.app.get_api_app_healthcheck_process_deployment()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_healthcheck_process_validation</a>() -> HealthCheckProcessSuccessResponseDto</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L194-L221">get_api_app_healthcheck_process_validation</a>() -> HealthCheckProcessSuccessResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -674,7 +674,7 @@ client.app.get_api_app_healthcheck_process_validation()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_config</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L223-L250">get_api_app_config</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -723,7 +723,7 @@ client.app.get_api_app_config()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_app_config_categorieswithprocessingtype</a>() -> MapString</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L252-L279">get_api_app_config_categorieswithprocessingtype</a>() -> MapString</code></summary>
 <dl>
 <dd>
 
@@ -772,7 +772,7 @@ client.app.get_api_app_config_categorieswithprocessingtype()
 </dl>
 </details>
 
-<details><summary><code>client.app.<a href="src/fern/app/client.py">get_api_scenarioparameterscombinations</a>() -> ScenarioParametersCombinationWithEngineErrors</code></summary>
+<details><summary><code>client.app.<a href="src/fern/app/client.py#L281-L308">get_api_scenarioparameterscombinations</a>() -> ScenarioParametersCombinationWithEngineErrors</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.app.get_api_scenarioparameterscombinations()
 </details>
 
 ## Dictionary
-<details><summary><code>client.dictionary.<a href="src/fern/dictionary/client.py">get_api_processdefinitiondata_processingtype_dicts_dictid_entrybykey</a>(...) -> DictEntry</code></summary>
+<details><summary><code>client.dictionary.<a href="src/fern/dictionary/client.py#L30-L69">get_api_processdefinitiondata_processingtype_dicts_dictid_entrybykey</a>(...) -> DictEntry</code></summary>
 <dl>
 <dd>
 
@@ -899,7 +899,7 @@ client.dictionary.get_api_processdefinitiondata_processingtype_dicts_dictid_entr
 </dl>
 </details>
 
-<details><summary><code>client.dictionary.<a href="src/fern/dictionary/client.py">get_api_processdefinitiondata_processingtype_dicts_dictid_entry</a>(...) -> typing.List[DictEntry]</code></summary>
+<details><summary><code>client.dictionary.<a href="src/fern/dictionary/client.py#L71-L110">get_api_processdefinitiondata_processingtype_dicts_dictid_entry</a>(...) -> typing.List[DictEntry]</code></summary>
 <dl>
 <dd>
 
@@ -976,7 +976,7 @@ client.dictionary.get_api_processdefinitiondata_processingtype_dicts_dictid_entr
 </dl>
 </details>
 
-<details><summary><code>client.dictionary.<a href="src/fern/dictionary/client.py">post_api_processdefinitiondata_processingtype_dicts</a>(...) -> typing.List[DictDto]</code></summary>
+<details><summary><code>client.dictionary.<a href="src/fern/dictionary/client.py#L112-L152">post_api_processdefinitiondata_processingtype_dicts</a>(...) -> typing.List[DictDto]</code></summary>
 <dl>
 <dd>
 
@@ -1045,7 +1045,7 @@ client.dictionary.post_api_processdefinitiondata_processingtype_dicts(
 </details>
 
 ## Migrations
-<details><summary><code>client.migrations.<a href="src/fern/migrations/client.py">post_api_migrate</a>(...)</code></summary>
+<details><summary><code>client.migrations.<a href="src/fern/migrations/client.py#L30-L60">post_api_migrate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1104,7 +1104,7 @@ client.migrations.post_api_migrate(
 </dl>
 </details>
 
-<details><summary><code>client.migrations.<a href="src/fern/migrations/client.py">get_api_migration_scenario_description_version</a>() -> ApiVersion</code></summary>
+<details><summary><code>client.migrations.<a href="src/fern/migrations/client.py#L62-L89">get_api_migration_scenario_description_version</a>() -> ApiVersion</code></summary>
 <dl>
 <dd>
 
@@ -1154,7 +1154,7 @@ client.migrations.get_api_migration_scenario_description_version()
 </details>
 
 ## Nodes
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_nodes_scenarioname_additionalinfo</a>(...) -> typing.Optional[AdditionalInfo]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L44-L95">post_api_nodes_scenarioname_additionalinfo</a>(...) -> typing.Optional[AdditionalInfo]</code></summary>
 <dl>
 <dd>
 
@@ -1237,7 +1237,7 @@ client.nodes.post_api_nodes_scenarioname_additionalinfo(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_nodes_scenarioname_validation</a>(...) -> NodeValidationResultDto</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L97-L174">post_api_nodes_scenarioname_validation</a>(...) -> NodeValidationResultDto</code></summary>
 <dl>
 <dd>
 
@@ -1351,7 +1351,7 @@ client.nodes.post_api_nodes_scenarioname_validation(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_parameters_processingtype_suggestions</a>(...) -> typing.List[ExpressionSuggestionDto]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L176-L249">post_api_parameters_processingtype_suggestions</a>(...) -> typing.List[ExpressionSuggestionDto]</code></summary>
 <dl>
 <dd>
 
@@ -1452,7 +1452,7 @@ client.nodes.post_api_parameters_processingtype_suggestions(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_parameters_processingtype_validate</a>(...) -> ParametersValidationResultDto</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L251-L322">post_api_parameters_processingtype_validate</a>(...) -> ParametersValidationResultDto</code></summary>
 <dl>
 <dd>
 
@@ -1549,7 +1549,7 @@ client.nodes.post_api_parameters_processingtype_validate(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_properties_scenarioname_additionalinfo</a>(...) -> typing.Optional[AdditionalInfo]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L324-L357">post_api_properties_scenarioname_additionalinfo</a>(...) -> typing.Optional[AdditionalInfo]</code></summary>
 <dl>
 <dd>
 
@@ -1608,7 +1608,7 @@ client.nodes.post_api_properties_scenarioname_additionalinfo(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_properties_scenarioname_validation</a>(...) -> NodeValidationResultDto</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L359-L414">post_api_properties_scenarioname_validation</a>(...) -> NodeValidationResultDto</code></summary>
 <dl>
 <dd>
 
@@ -1696,7 +1696,7 @@ client.nodes.post_api_properties_scenarioname_validation(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_nodes_scenarioname_records</a>(...) -> str</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L416-L473">post_api_nodes_scenarioname_records</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1780,7 +1780,7 @@ client.nodes.post_api_nodes_scenarioname_records(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_parameters_processingtype_testcase_additionalvariables</a>(...) -> TestCaseAdditionalVariablesResponseDto</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L475-L522">post_api_parameters_processingtype_testcase_additionalvariables</a>(...) -> TestCaseAdditionalVariablesResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -1855,7 +1855,7 @@ client.nodes.post_api_parameters_processingtype_testcase_additionalvariables(
 </dl>
 </details>
 
-<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py">post_api_nodes_scenarioname_testcase_enrichermock</a>(...) -> typing.Optional[GenerateEnricherMockResponseDto]</code></summary>
+<details><summary><code>client.nodes.<a href="src/fern/nodes/client.py#L524-L600">post_api_nodes_scenarioname_testcase_enrichermock</a>(...) -> typing.Optional[GenerateEnricherMockResponseDto]</code></summary>
 <dl>
 <dd>
 
@@ -1957,7 +1957,7 @@ client.nodes.post_api_nodes_scenarioname_testcase_enrichermock(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">get_api_notifications</a>(...) -> typing.List[Notification]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L26-L55">get_api_notifications</a>(...) -> typing.List[Notification]</code></summary>
 <dl>
 <dd>
 
@@ -2015,7 +2015,7 @@ client.notifications.get_api_notifications()
 </details>
 
 ## ScenarioLabels
-<details><summary><code>client.scenario_labels.<a href="src/fern/scenario_labels/client.py">get_api_scenariolabels</a>() -> ScenarioLabels</code></summary>
+<details><summary><code>client.scenario_labels.<a href="src/fern/scenario_labels/client.py#L30-L55">get_api_scenariolabels</a>() -> ScenarioLabels</code></summary>
 <dl>
 <dd>
 
@@ -2064,7 +2064,7 @@ client.scenario_labels.get_api_scenariolabels()
 </dl>
 </details>
 
-<details><summary><code>client.scenario_labels.<a href="src/fern/scenario_labels/client.py">post_api_scenariolabels_validation</a>(...) -> ScenarioLabelsValidationResponseDto</code></summary>
+<details><summary><code>client.scenario_labels.<a href="src/fern/scenario_labels/client.py#L57-L91">post_api_scenariolabels_validation</a>(...) -> ScenarioLabelsValidationResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -2127,7 +2127,7 @@ client.scenario_labels.post_api_scenariolabels_validation(
 </details>
 
 ## Statistics
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">post_api_statistic</a>(...)</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py#L30-L61">post_api_statistic</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2184,7 +2184,7 @@ client.statistics.post_api_statistic()
 </dl>
 </details>
 
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">get_api_statistic_usage</a>() -> StatisticUrlResponseDto</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py#L63-L90">get_api_statistic_usage</a>() -> StatisticUrlResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -2234,7 +2234,7 @@ client.statistics.get_api_statistic_usage()
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">get_api_user</a>() -> DisplayableUser</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L26-L51">get_api_user</a>() -> DisplayableUser</code></summary>
 <dl>
 <dd>
 
@@ -2284,7 +2284,7 @@ client.user.get_api_user()
 </details>
 
 ## VersionControl
-<details><summary><code>client.version_control.<a href="src/fern/version_control/client.py">post_api_versioncontrol_scenarioname_versionvalidation</a>(...) -> ProcessVersionValidationResponseDto</code></summary>
+<details><summary><code>client.version_control.<a href="src/fern/version_control/client.py#L29-L65">post_api_versioncontrol_scenarioname_versionvalidation</a>(...) -> ProcessVersionValidationResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -2353,7 +2353,7 @@ client.version_control.post_api_versioncontrol_scenarioname_versionvalidation(
 </details>
 
 ## Activities
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">post_api_processes_scenarioname_versionid_activity_attachments</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L32-L59">post_api_processes_scenarioname_versionid_activity_attachments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2417,7 +2417,7 @@ client.activities.post_api_processes_scenarioname_versionid_activity_attachments
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">post_api_processes_scenarioname_versionid_activity_comment</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L61-L96">post_api_processes_scenarioname_versionid_activity_comment</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2485,7 +2485,7 @@ client.activities.post_api_processes_scenarioname_versionid_activity_comment(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">get_api_processes_scenarioname_activity_attachments</a>(...) -> ScenarioAttachments</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L98-L131">get_api_processes_scenarioname_activity_attachments</a>(...) -> ScenarioAttachments</code></summary>
 <dl>
 <dd>
 
@@ -2544,7 +2544,7 @@ client.activities.get_api_processes_scenarioname_activity_attachments(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">get_api_processes_scenarioname_activity_attachments_attachmentid</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L133-L169">get_api_processes_scenarioname_activity_attachments_attachmentid</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2612,7 +2612,7 @@ client.activities.get_api_processes_scenarioname_activity_attachments_attachment
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">delete_api_processes_scenarioname_activity_attachments_attachmentid</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L171-L206">delete_api_processes_scenarioname_activity_attachments_attachmentid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2680,7 +2680,7 @@ client.activities.delete_api_processes_scenarioname_activity_attachments_attachm
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">put_api_processes_scenarioname_activity_comment_scenarioactivityid</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L208-L243">put_api_processes_scenarioname_activity_comment_scenarioactivityid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2748,7 +2748,7 @@ client.activities.put_api_processes_scenarioname_activity_comment_scenarioactivi
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">delete_api_processes_scenarioname_activity_comment_scenarioactivityid</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L245-L280">delete_api_processes_scenarioname_activity_comment_scenarioactivityid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2816,7 +2816,7 @@ client.activities.delete_api_processes_scenarioname_activity_comment_scenarioact
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">post_api_processes_scenarioname_versionid_activity_comments</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L282-L317">post_api_processes_scenarioname_versionid_activity_comments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2884,7 +2884,7 @@ client.activities.post_api_processes_scenarioname_versionid_activity_comments(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">delete_api_processes_scenarioname_activity_comments_commentid</a>(...)</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L319-L354">delete_api_processes_scenarioname_activity_comments_commentid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2952,7 +2952,7 @@ client.activities.delete_api_processes_scenarioname_activity_comments_commentid(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">get_api_processes_scenarioname_activity</a>(...) -> ProcessActivity</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L356-L389">get_api_processes_scenarioname_activity</a>(...) -> ProcessActivity</code></summary>
 <dl>
 <dd>
 
@@ -3011,7 +3011,7 @@ client.activities.get_api_processes_scenarioname_activity(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">get_api_processes_scenarioname_activity_activities</a>(...) -> ScenarioActivities</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L391-L424">get_api_processes_scenarioname_activity_activities</a>(...) -> ScenarioActivities</code></summary>
 <dl>
 <dd>
 
@@ -3070,7 +3070,7 @@ client.activities.get_api_processes_scenarioname_activity_activities(
 </dl>
 </details>
 
-<details><summary><code>client.activities.<a href="src/fern/activities/client.py">get_api_processes_scenarioname_activity_activities_metadata</a>(...) -> ScenarioActivitiesMetadata</code></summary>
+<details><summary><code>client.activities.<a href="src/fern/activities/client.py#L426-L459">get_api_processes_scenarioname_activity_activities_metadata</a>(...) -> ScenarioActivitiesMetadata</code></summary>
 <dl>
 <dd>
 
@@ -3130,7 +3130,7 @@ client.activities.get_api_processes_scenarioname_activity_activities_metadata(
 </details>
 
 ## LiveData
-<details><summary><code>client.live_data.<a href="src/fern/live_data/client.py">get_api_livedata_scenarioname</a>(...) -> typing.Optional[ResultsWithCountsDto]</code></summary>
+<details><summary><code>client.live_data.<a href="src/fern/live_data/client.py#L26-L57">get_api_livedata_scenarioname</a>(...) -> typing.Optional[ResultsWithCountsDto]</code></summary>
 <dl>
 <dd>
 
@@ -3190,7 +3190,7 @@ client.live_data.get_api_livedata_scenarioname(
 </details>
 
 ## Testing
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_performmultipletestcases</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L37-L125">post_api_scenariotesting_scenarioname_performmultipletestcases</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3310,7 +3310,7 @@ client.testing.post_api_scenariotesting_scenarioname_performmultipletestcases(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_capabilities</a>(...) -> ScenarioTestCapabilities</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L127-L180">post_api_scenariotesting_scenarioname_capabilities</a>(...) -> ScenarioTestCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -3380,7 +3380,7 @@ client.testing.post_api_scenariotesting_scenarioname_capabilities(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_performtestcase</a>(...) -> ResultsWithCountsDto</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L182-L266">post_api_scenariotesting_scenarioname_performtestcase</a>(...) -> ResultsWithCountsDto</code></summary>
 <dl>
 <dd>
 
@@ -3498,7 +3498,7 @@ client.testing.post_api_scenariotesting_scenarioname_performtestcase(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_performtest</a>(...) -> ResultsWithCountsDto</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L268-L325">post_api_scenariotesting_scenarioname_performtest</a>(...) -> ResultsWithCountsDto</code></summary>
 <dl>
 <dd>
 
@@ -3595,7 +3595,7 @@ client.testing.post_api_scenariotesting_scenarioname_performtest(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_generatedtestdata</a>(...) -> str</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L327-L374">post_api_scenariotesting_scenarioname_generatedtestdata</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3674,7 +3674,7 @@ client.testing.post_api_scenariotesting_scenarioname_generatedtestdata(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_validate</a>(...) -> ParametersValidationResultDto</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L376-L443">post_api_scenariotesting_scenarioname_validate</a>(...) -> ParametersValidationResultDto</code></summary>
 <dl>
 <dd>
 
@@ -3763,7 +3763,7 @@ client.testing.post_api_scenariotesting_scenarioname_validate(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_sourcecapabilities</a>(...) -> SourceTestCapabilities</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L445-L494">post_api_scenariotesting_scenarioname_sourcecapabilities</a>(...) -> SourceTestCapabilities</code></summary>
 <dl>
 <dd>
 
@@ -3839,7 +3839,7 @@ client.testing.post_api_scenariotesting_scenarioname_sourcecapabilities(
 </dl>
 </details>
 
-<details><summary><code>client.testing.<a href="src/fern/testing/client.py">post_api_scenariotesting_scenarioname_sourcevalidate</a>(...) -> ParametersValidationResultDto</code></summary>
+<details><summary><code>client.testing.<a href="src/fern/testing/client.py#L496-L562">post_api_scenariotesting_scenarioname_sourcevalidate</a>(...) -> ParametersValidationResultDto</code></summary>
 <dl>
 <dd>
 

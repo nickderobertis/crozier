@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">book_crossing</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L132">book_crossing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.book_crossing(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">book_charter</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L134-L165">book_charter</a>(...)</code></summary>
 <dl>
 <dd>
 

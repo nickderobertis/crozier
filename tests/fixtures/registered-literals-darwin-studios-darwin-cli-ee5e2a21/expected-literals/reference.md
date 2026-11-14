@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">search</a>(...) -> SearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L150-L192">search</a>(...) -> SearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -88,7 +88,7 @@ client.search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_account</a>(...) -> CreatedAccount</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L194-L255">create_account</a>(...) -> CreatedAccount</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.create_account(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_account</a>(...) -> AccountSummary</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L257-L286">get_account</a>(...) -> AccountSummary</code></summary>
 <dl>
 <dd>
 
@@ -275,7 +275,7 @@ client.get_account()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_application</a>(...) -> ApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L288-L340">create_application</a>(...) -> ApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -380,7 +380,7 @@ client.create_application(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_application</a>(...) -> ApplicationResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L342-L372">get_application</a>(...) -> ApplicationResponse</code></summary>
 <dl>
 <dd>
 
@@ -453,7 +453,7 @@ client.get_application(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_actions</a>(...) -> ActListResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L374-L424">list_actions</a>(...) -> ActListResponse</code></summary>
 <dl>
 <dd>
 
@@ -556,7 +556,7 @@ client.list_actions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">start_action</a>(...) -> ActStartActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L426-L496">start_action</a>(...) -> ActStartActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -695,7 +695,7 @@ client.start_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_action</a>(...) -> ActGetActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L498-L529">get_action</a>(...) -> ActGetActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -768,7 +768,7 @@ client.get_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">continue_action</a>(...) -> ActUpdateActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L531-L567">continue_action</a>(...) -> ActUpdateActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -852,7 +852,7 @@ client.continue_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">authenticate_session</a>(...) -> AuthenticateSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L569-L627">authenticate_session</a>(...) -> AuthenticateSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -961,7 +961,7 @@ client.authenticate_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pay_action</a>(...) -> ActPayActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L629-L697">pay_action</a>(...) -> ActPayActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1088,7 +1088,7 @@ client.pay_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">approve_action</a>(...) -> ActApproveActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L699-L769">approve_action</a>(...) -> ActApproveActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1215,7 +1215,7 @@ client.approve_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">stop_action</a>(...) -> ActStopActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L771-L805">stop_action</a>(...) -> ActStopActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1297,7 +1297,7 @@ client.stop_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">end_action</a>(...) -> ActEndActionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L807-L859">end_action</a>(...) -> ActEndActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1397,7 +1397,7 @@ client.end_action(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_api_keys</a>() -> ApiKeyList</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L861-L885">list_api_keys</a>() -> ApiKeyList</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1460,7 @@ client.list_api_keys()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_api_key</a>(...) -> CreatedApiKey</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L887-L940">create_api_key</a>(...) -> CreatedApiKey</code></summary>
 <dl>
 <dd>
 
@@ -1558,7 +1558,7 @@ client.create_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_api_usage</a>() -> ApiKeyUsageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L942-L966">get_api_usage</a>() -> ApiKeyUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1621,7 +1621,7 @@ client.get_api_usage()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_api_key</a>(...) -> ApiKey</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L968-L997">delete_api_key</a>(...) -> ApiKey</code></summary>
 <dl>
 <dd>
 
@@ -1694,7 +1694,7 @@ client.delete_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_search_history</a>(...) -> SearchHistoryPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L999-L1033">list_search_history</a>(...) -> SearchHistoryPage</code></summary>
 <dl>
 <dd>
 

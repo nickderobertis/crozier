@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_readings</a>(...) -> typing.List[Reading]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L156">list_readings</a>(...) -> typing.List[Reading]</code></summary>
 <dl>
 <dd>
 
@@ -100,7 +100,7 @@ client.list_readings(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">write_logbook</a>(...) -> LogbookEntry</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L158-L217">write_logbook</a>(...) -> LogbookEntry</code></summary>
 <dl>
 <dd>
 
@@ -202,7 +202,7 @@ client.write_logbook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_photo</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L219-L267">upload_photo</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -295,7 +295,7 @@ client.upload_photo(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_lamps</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L269-L300">list_lamps</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_probe</a>() -> int</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L124">get_probe</a>() -> int</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.get_probe()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_empty</a>() -> typing.Optional[AllNull]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L148">get_empty</a>() -> typing.Optional[AllNull]</code></summary>
 <dl>
 <dd>
 
@@ -93,7 +93,7 @@ client.get_empty()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_stream</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L150-L174">get_stream</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -140,7 +140,7 @@ client.get_stream()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_wrong_content_type_stream</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L176-L202">get_wrong_content_type_stream</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -187,7 +187,7 @@ client.get_wrong_content_type_stream()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_error</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L204-L225">get_error</a>()</code></summary>
 <dl>
 <dd>
 
@@ -234,7 +234,7 @@ client.get_error()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_stream_error</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L227-L253">get_stream_error</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -281,7 +281,7 @@ client.get_stream_error()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_conditional_stream</a>(...) -> Simple</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L255-L281">create_conditional_stream</a>(...) -> Simple</code></summary>
 <dl>
 <dd>
 

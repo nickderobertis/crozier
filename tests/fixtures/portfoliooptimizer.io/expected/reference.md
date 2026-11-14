@@ -1,6 +1,6 @@
 # Reference
 ## AssetsAnalysis
-<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py">absorption_ratio</a>(...) -> PostAssetsAnalysisAbsorptionRatioResponse</code></summary>
+<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py#L33-L85">absorption_ratio</a>(...) -> PostAssetsAnalysisAbsorptionRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -102,7 +102,7 @@ client.assets_analysis.absorption_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py">turbulence_index</a>(...) -> PostAssetsAnalysisTurbulenceIndexResponse</code></summary>
+<details><summary><code>client.assets_analysis.<a href="src/fern/assets_analysis/client.py#L87-L146">turbulence_index</a>(...) -> PostAssetsAnalysisTurbulenceIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -222,7 +222,7 @@ client.assets_analysis.turbulence_index(
 </details>
 
 ## AssetsCorrelationMatrix
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L62-L104">correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixResponse</code></summary>
 <dl>
 <dd>
 
@@ -313,7 +313,7 @@ client.assets_correlation_matrix.correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_bounds</a>(...) -> PostAssetsCorrelationMatrixBoundsResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L106-L162">correlation_matrix_bounds</a>(...) -> PostAssetsCorrelationMatrixBoundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -436,7 +436,7 @@ client.assets_correlation_matrix.correlation_matrix_bounds(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">denoised_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixDenoisedResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L164-L225">denoised_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixDenoisedResponse</code></summary>
 <dl>
 <dd>
 
@@ -555,7 +555,7 @@ client.assets_correlation_matrix.denoised_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_distance</a>(...) -> PostAssetsCorrelationMatrixDistanceResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L227-L300">correlation_matrix_distance</a>(...) -> PostAssetsCorrelationMatrixDistanceResponse</code></summary>
 <dl>
 <dd>
 
@@ -695,7 +695,7 @@ client.assets_correlation_matrix.correlation_matrix_distance(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_effective_rank</a>(...) -> PostAssetsCorrelationMatrixEffectiveRankResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L302-L346">correlation_matrix_effective_rank</a>(...) -> PostAssetsCorrelationMatrixEffectiveRankResponse</code></summary>
 <dl>
 <dd>
 
@@ -789,7 +789,7 @@ client.assets_correlation_matrix.correlation_matrix_effective_rank(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_informativeness</a>(...) -> PostAssetsCorrelationMatrixInformativenessResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L348-L412">correlation_matrix_informativeness</a>(...) -> PostAssetsCorrelationMatrixInformativenessResponse</code></summary>
 <dl>
 <dd>
 
@@ -905,7 +905,7 @@ client.assets_correlation_matrix.correlation_matrix_informativeness(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">nearest_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixNearestResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L414-L469">nearest_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixNearestResponse</code></summary>
 <dl>
 <dd>
 
@@ -1014,7 +1014,7 @@ client.assets_correlation_matrix.nearest_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">random_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixRandomResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L471-L505">random_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixRandomResponse</code></summary>
 <dl>
 <dd>
 
@@ -1090,7 +1090,7 @@ client.assets_correlation_matrix.random_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_shrinkage</a>(...) -> PostAssetsCorrelationMatrixShrinkageResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L507-L564">correlation_matrix_shrinkage</a>(...) -> PostAssetsCorrelationMatrixShrinkageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1208,7 +1208,7 @@ client.assets_correlation_matrix.correlation_matrix_shrinkage(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">theory_implied_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixTheoryImpliedResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L566-L629">theory_implied_correlation_matrix</a>(...) -> PostAssetsCorrelationMatrixTheoryImpliedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1330,7 +1330,7 @@ client.assets_correlation_matrix.theory_implied_correlation_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py">correlation_matrix_validation</a>(...) -> PostAssetsCorrelationMatrixValidationResponse</code></summary>
+<details><summary><code>client.assets_correlation_matrix.<a href="src/fern/assets_correlation_matrix/client.py#L631-L675">correlation_matrix_validation</a>(...) -> PostAssetsCorrelationMatrixValidationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1425,7 +1425,7 @@ client.assets_correlation_matrix.correlation_matrix_validation(
 </details>
 
 ## AssetsCovarianceMatrix
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix</a>(...) -> PostAssetsCovarianceMatrixResponse</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py#L38-L82">covariance_matrix</a>(...) -> PostAssetsCovarianceMatrixResponse</code></summary>
 <dl>
 <dd>
 
@@ -1521,7 +1521,7 @@ client.assets_covariance_matrix.covariance_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix_effective_rank</a>(...) -> PostAssetsCovarianceMatrixEffectiveRankResponse</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py#L84-L128">covariance_matrix_effective_rank</a>(...) -> PostAssetsCovarianceMatrixEffectiveRankResponse</code></summary>
 <dl>
 <dd>
 
@@ -1615,7 +1615,7 @@ client.assets_covariance_matrix.covariance_matrix_effective_rank(
 </dl>
 </details>
 
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">exponentially_weighted_covariance_matrix</a>(...) -> PostAssetsCovarianceMatrixExponentiallyWeightedResponse</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py#L130-L184">exponentially_weighted_covariance_matrix</a>(...) -> PostAssetsCovarianceMatrixExponentiallyWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1718,7 +1718,7 @@ client.assets_covariance_matrix.exponentially_weighted_covariance_matrix(
 </dl>
 </details>
 
-<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py">covariance_matrix_validation</a>(...) -> PostAssetsCovarianceMatrixValidationResponse</code></summary>
+<details><summary><code>client.assets_covariance_matrix.<a href="src/fern/assets_covariance_matrix/client.py#L186-L230">covariance_matrix_validation</a>(...) -> PostAssetsCovarianceMatrixValidationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1813,7 +1813,7 @@ client.assets_covariance_matrix.covariance_matrix_validation(
 </details>
 
 ## AssetsKurtosis
-<details><summary><code>client.assets_kurtosis.<a href="src/fern/assets_kurtosis/client.py">kurtosis</a>(...) -> PostAssetsKurtosisResponse</code></summary>
+<details><summary><code>client.assets_kurtosis.<a href="src/fern/assets_kurtosis/client.py#L30-L72">kurtosis</a>(...) -> PostAssetsKurtosisResponse</code></summary>
 <dl>
 <dd>
 
@@ -1900,7 +1900,7 @@ client.assets_kurtosis.kurtosis(
 </details>
 
 ## AssetsPrices
-<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py">adjusted_prices</a>(...) -> PostAssetsPricesAdjustedResponse</code></summary>
+<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py#L34-L106">adjusted_prices</a>(...) -> PostAssetsPricesAdjustedResponse</code></summary>
 <dl>
 <dd>
 
@@ -2007,7 +2007,7 @@ client.assets_prices.adjusted_prices(
 </dl>
 </details>
 
-<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py">forward_adjusted_prices</a>(...) -> PostAssetsPricesAdjustedForwardResponse</code></summary>
+<details><summary><code>client.assets_prices.<a href="src/fern/assets_prices/client.py#L108-L180">forward_adjusted_prices</a>(...) -> PostAssetsPricesAdjustedForwardResponse</code></summary>
 <dl>
 <dd>
 
@@ -2115,7 +2115,7 @@ client.assets_prices.forward_adjusted_prices(
 </details>
 
 ## AssetsReturns
-<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py">arithmetic_returns</a>(...) -> PostAssetsReturnsResponse</code></summary>
+<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py#L32-L77">arithmetic_returns</a>(...) -> PostAssetsReturnsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2206,7 +2206,7 @@ client.assets_returns.arithmetic_returns(
 </dl>
 </details>
 
-<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py">arithmetic_average_return</a>(...) -> PostAssetsReturnsAverageResponse</code></summary>
+<details><summary><code>client.assets_returns.<a href="src/fern/assets_returns/client.py#L79-L124">arithmetic_average_return</a>(...) -> PostAssetsReturnsAverageResponse</code></summary>
 <dl>
 <dd>
 
@@ -2298,7 +2298,7 @@ client.assets_returns.arithmetic_average_return(
 </details>
 
 ## AssetsReturnsSimulation
-<details><summary><code>client.assets_returns_simulation.<a href="src/fern/assets_returns_simulation/client.py">bootstrap</a>(...) -> PostAssetsReturnsSimulationBootstrapResponse</code></summary>
+<details><summary><code>client.assets_returns_simulation.<a href="src/fern/assets_returns_simulation/client.py#L35-L117">bootstrap</a>(...) -> PostAssetsReturnsSimulationBootstrapResponse</code></summary>
 <dl>
 <dd>
 
@@ -2441,7 +2441,7 @@ client.assets_returns_simulation.bootstrap(
 </details>
 
 ## AssetsSkewness
-<details><summary><code>client.assets_skewness.<a href="src/fern/assets_skewness/client.py">skewness</a>(...) -> PostAssetsSkewnessResponse</code></summary>
+<details><summary><code>client.assets_skewness.<a href="src/fern/assets_skewness/client.py#L30-L72">skewness</a>(...) -> PostAssetsSkewnessResponse</code></summary>
 <dl>
 <dd>
 
@@ -2528,7 +2528,7 @@ client.assets_skewness.skewness(
 </details>
 
 ## AssetsVariance
-<details><summary><code>client.assets_variance.<a href="src/fern/assets_variance/client.py">variance</a>(...) -> PostAssetsVarianceResponse</code></summary>
+<details><summary><code>client.assets_variance.<a href="src/fern/assets_variance/client.py#L30-L71">variance</a>(...) -> PostAssetsVarianceResponse</code></summary>
 <dl>
 <dd>
 
@@ -2621,7 +2621,7 @@ client.assets_variance.variance(
 </details>
 
 ## AssetsVolatility
-<details><summary><code>client.assets_volatility.<a href="src/fern/assets_volatility/client.py">volatility</a>(...) -> PostAssetsVolatilityResponse</code></summary>
+<details><summary><code>client.assets_volatility.<a href="src/fern/assets_volatility/client.py#L30-L73">volatility</a>(...) -> PostAssetsVolatilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -2714,7 +2714,7 @@ client.assets_volatility.volatility(
 </details>
 
 ## Factors
-<details><summary><code>client.factors.<a href="src/fern/factors/client.py">residualization</a>(...) -> PostFactorsResidualizationResponse</code></summary>
+<details><summary><code>client.factors.<a href="src/fern/factors/client.py#L30-L83">residualization</a>(...) -> PostFactorsResidualizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2817,7 +2817,7 @@ client.factors.residualization(
 </details>
 
 ## PortfolioAnalysis
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">alpha</a>(...) -> PostPortfolioAnalysisAlphaResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L116-L162">alpha</a>(...) -> PostPortfolioAnalysisAlphaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2914,7 +2914,7 @@ client.portfolio_analysis.alpha(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">beta</a>(...) -> PostPortfolioAnalysisBetaResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L164-L210">beta</a>(...) -> PostPortfolioAnalysisBetaResponse</code></summary>
 <dl>
 <dd>
 
@@ -3011,7 +3011,7 @@ client.portfolio_analysis.beta(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">conditional_value_at_risk</a>(...) -> PostPortfolioAnalysisConditionalValueAtRiskResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L212-L264">conditional_value_at_risk</a>(...) -> PostPortfolioAnalysisConditionalValueAtRiskResponse</code></summary>
 <dl>
 <dd>
 
@@ -3109,7 +3109,7 @@ client.portfolio_analysis.conditional_value_at_risk(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">return_contributions</a>(...) -> PostPortfolioAnalysisContributionsReturnResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L266-L330">return_contributions</a>(...) -> PostPortfolioAnalysisContributionsReturnResponse</code></summary>
 <dl>
 <dd>
 
@@ -3230,7 +3230,7 @@ client.portfolio_analysis.return_contributions(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">risk_contributions</a>(...) -> PostPortfolioAnalysisContributionsRiskResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L332-L399">risk_contributions</a>(...) -> PostPortfolioAnalysisContributionsRiskResponse</code></summary>
 <dl>
 <dd>
 
@@ -3357,7 +3357,7 @@ client.portfolio_analysis.risk_contributions(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">correlation_spectrum</a>(...) -> PostPortfolioAnalysisCorrelationSpectrumResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L401-L450">correlation_spectrum</a>(...) -> PostPortfolioAnalysisCorrelationSpectrumResponse</code></summary>
 <dl>
 <dd>
 
@@ -3454,7 +3454,7 @@ client.portfolio_analysis.correlation_spectrum(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">diversification_ratio</a>(...) -> PostPortfolioAnalysisDiversificationRatioResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L452-L502">diversification_ratio</a>(...) -> PostPortfolioAnalysisDiversificationRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -3552,7 +3552,7 @@ client.portfolio_analysis.diversification_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">drawdowns</a>(...) -> PostPortfolioAnalysisDrawdownsResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L504-L548">drawdowns</a>(...) -> PostPortfolioAnalysisDrawdownsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3640,7 +3640,7 @@ client.portfolio_analysis.drawdowns(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">effective_number_of_bets</a>(...) -> PostPortfolioAnalysisEffectiveNumberOfBetsResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L550-L620">effective_number_of_bets</a>(...) -> PostPortfolioAnalysisEffectiveNumberOfBetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3767,7 +3767,7 @@ client.portfolio_analysis.effective_number_of_bets(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">factor_exposures</a>(...) -> PostPortfolioAnalysisFactorsExposuresResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L622-L680">factor_exposures</a>(...) -> PostPortfolioAnalysisFactorsExposuresResponse</code></summary>
 <dl>
 <dd>
 
@@ -3876,7 +3876,7 @@ client.portfolio_analysis.factor_exposures(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">mean_variance_efficient_frontier</a>(...) -> PostPortfolioAnalysisMeanVarianceEfficientFrontierResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L682-L754">mean_variance_efficient_frontier</a>(...) -> PostPortfolioAnalysisMeanVarianceEfficientFrontierResponse</code></summary>
 <dl>
 <dd>
 
@@ -4009,7 +4009,7 @@ client.portfolio_analysis.mean_variance_efficient_frontier(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">mean_variance_minimum_variance_frontier</a>(...) -> PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L756-L830">mean_variance_minimum_variance_frontier</a>(...) -> PostPortfolioAnalysisMeanVarianceMinimumVarianceFrontierResponse</code></summary>
 <dl>
 <dd>
 
@@ -4144,7 +4144,7 @@ client.portfolio_analysis.mean_variance_minimum_variance_frontier(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">arithmetic_return</a>(...) -> PostPortfolioAnalysisReturnResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L832-L884">arithmetic_return</a>(...) -> PostPortfolioAnalysisReturnResponse</code></summary>
 <dl>
 <dd>
 
@@ -4244,7 +4244,7 @@ client.portfolio_analysis.arithmetic_return(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">arithmetic_average_return</a>(...) -> PostPortfolioAnalysisReturnsAverageResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L886-L930">arithmetic_average_return</a>(...) -> PostPortfolioAnalysisReturnsAverageResponse</code></summary>
 <dl>
 <dd>
 
@@ -4332,7 +4332,7 @@ client.portfolio_analysis.arithmetic_average_return(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">tracking_error</a>(...) -> PostPortfolioAnalysisTrackingErrorResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L932-L1034">tracking_error</a>(...) -> PostPortfolioAnalysisTrackingErrorResponse</code></summary>
 <dl>
 <dd>
 
@@ -4473,7 +4473,7 @@ client.portfolio_analysis.tracking_error(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">ulcer_index</a>(...) -> PostPortfolioAnalysisUlcerIndexResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L1036-L1088">ulcer_index</a>(...) -> PostPortfolioAnalysisUlcerIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -4571,7 +4571,7 @@ client.portfolio_analysis.ulcer_index(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">ulcer_performance_index</a>(...) -> PostPortfolioAnalysisUlcerPerformanceIndexResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L1090-L1142">ulcer_performance_index</a>(...) -> PostPortfolioAnalysisUlcerPerformanceIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -4669,7 +4669,7 @@ client.portfolio_analysis.ulcer_performance_index(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">value_at_risk</a>(...) -> PostPortfolioAnalysisValueAtRiskResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L1144-L1194">value_at_risk</a>(...) -> PostPortfolioAnalysisValueAtRiskResponse</code></summary>
 <dl>
 <dd>
 
@@ -4767,7 +4767,7 @@ client.portfolio_analysis.value_at_risk(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py">volatility</a>(...) -> PostPortfolioAnalysisVolatilityResponse</code></summary>
+<details><summary><code>client.portfolio_analysis.<a href="src/fern/portfolio_analysis/client.py#L1196-L1252">volatility</a>(...) -> PostPortfolioAnalysisVolatilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -4875,7 +4875,7 @@ client.portfolio_analysis.volatility(
 </details>
 
 ## PortfolioAnalysisSharpeRatio
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioResponse</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py#L57-L114">sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -4986,7 +4986,7 @@ client.portfolio_analysis_sharpe_ratio.sharpe_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">bias_adjusted_sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioBiasAdjustedResponse</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py#L116-L167">bias_adjusted_sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioBiasAdjustedResponse</code></summary>
 <dl>
 <dd>
 
@@ -5083,7 +5083,7 @@ client.portfolio_analysis_sharpe_ratio.bias_adjusted_sharpe_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">sharpe_ratio_confidence_interval</a>(...) -> PostPortfolioAnalysisSharpeRatioConfidenceIntervalResponse</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py#L169-L237">sharpe_ratio_confidence_interval</a>(...) -> PostPortfolioAnalysisSharpeRatioConfidenceIntervalResponse</code></summary>
 <dl>
 <dd>
 
@@ -5198,7 +5198,7 @@ client.portfolio_analysis_sharpe_ratio.sharpe_ratio_confidence_interval(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">probabilistic_sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioProbabilisticResponse</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py#L239-L289">probabilistic_sharpe_ratio</a>(...) -> PostPortfolioAnalysisSharpeRatioProbabilisticResponse</code></summary>
 <dl>
 <dd>
 
@@ -5298,7 +5298,7 @@ client.portfolio_analysis_sharpe_ratio.probabilistic_sharpe_ratio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py">minimum_track_record_length</a>(...) -> PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthResponse</code></summary>
+<details><summary><code>client.portfolio_analysis_sharpe_ratio.<a href="src/fern/portfolio_analysis_sharpe_ratio/client.py#L291-L340">minimum_track_record_length</a>(...) -> PostPortfolioAnalysisSharpeRatioProbabilisticMinimumTrackRecordLengthResponse</code></summary>
 <dl>
 <dd>
 
@@ -5398,7 +5398,7 @@ client.portfolio_analysis_sharpe_ratio.minimum_track_record_length(
 </details>
 
 ## PortfolioConstruction
-<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">investable_portfolio</a>(...) -> PostPortfolioConstructionInvestableResponse</code></summary>
+<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py#L40-L137">investable_portfolio</a>(...) -> PostPortfolioConstructionInvestableResponse</code></summary>
 <dl>
 <dd>
 
@@ -5581,7 +5581,7 @@ client.portfolio_construction.investable_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">mimicking_portfolio</a>(...) -> PostPortfolioConstructionMimickingResponse</code></summary>
+<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py#L139-L199">mimicking_portfolio</a>(...) -> PostPortfolioConstructionMimickingResponse</code></summary>
 <dl>
 <dd>
 
@@ -5697,7 +5697,7 @@ client.portfolio_construction.mimicking_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py">random_portfolio</a>(...) -> PostPortfolioConstructionRandomResponse</code></summary>
+<details><summary><code>client.portfolio_construction.<a href="src/fern/portfolio_construction/client.py#L201-L252">random_portfolio</a>(...) -> PostPortfolioConstructionRandomResponse</code></summary>
 <dl>
 <dd>
 
@@ -5795,7 +5795,7 @@ client.portfolio_construction.random_portfolio(
 </details>
 
 ## PortfolioOptimization
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_risk_contributions_portfolio</a>(...) -> PostPortfolioOptimizationEqualRiskContributionsResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L113-L171">equal_risk_contributions_portfolio</a>(...) -> PostPortfolioOptimizationEqualRiskContributionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5905,7 +5905,7 @@ client.portfolio_optimization.equal_risk_contributions_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_sharpe_ratio_contributions_portfolio</a>(...) -> PostPortfolioOptimizationEqualSharpeRatioContributionsResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L173-L231">equal_sharpe_ratio_contributions_portfolio</a>(...) -> PostPortfolioOptimizationEqualSharpeRatioContributionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6020,7 +6020,7 @@ client.portfolio_optimization.equal_sharpe_ratio_contributions_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_volatility_weighted_portfolio</a>(...) -> PostPortfolioOptimizationEqualVolatilityWeightedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L233-L277">equal_volatility_weighted_portfolio</a>(...) -> PostPortfolioOptimizationEqualVolatilityWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6108,7 +6108,7 @@ client.portfolio_optimization.equal_volatility_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">equal_weighted_portfolio</a>(...) -> PostPortfolioOptimizationEqualWeightedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L279-L313">equal_weighted_portfolio</a>(...) -> PostPortfolioOptimizationEqualWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6184,7 +6184,7 @@ client.portfolio_optimization.equal_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">hierarchical_risk_parity_portfolio</a>(...) -> PostPortfolioOptimizationHierarchicalRiskParityResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L315-L391">hierarchical_risk_parity_portfolio</a>(...) -> PostPortfolioOptimizationHierarchicalRiskParityResponse</code></summary>
 <dl>
 <dd>
 
@@ -6314,7 +6314,7 @@ client.portfolio_optimization.hierarchical_risk_parity_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">hierarchical_clustering_based_risk_parity_portfolio</a>(...) -> PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L393-L492">hierarchical_clustering_based_risk_parity_portfolio</a>(...) -> PostPortfolioOptimizationHierarchicalRiskParityClusteringBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6470,7 +6470,7 @@ client.portfolio_optimization.hierarchical_clustering_based_risk_parity_portfoli
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">inverse_variance_weighted_portfolio</a>(...) -> PostPortfolioOptimizationInverseVarianceWeightedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L494-L538">inverse_variance_weighted_portfolio</a>(...) -> PostPortfolioOptimizationInverseVarianceWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6558,7 +6558,7 @@ client.portfolio_optimization.inverse_variance_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">inverse_volatility_weighted_portfolio</a>(...) -> PostPortfolioOptimizationInverseVolatilityWeightedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L540-L584">inverse_volatility_weighted_portfolio</a>(...) -> PostPortfolioOptimizationInverseVolatilityWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6646,7 +6646,7 @@ client.portfolio_optimization.inverse_volatility_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">market_capitalization_weighted_portfolio</a>(...) -> PostPortfolioOptimizationMarketCapitalizationWeightedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L586-L630">market_capitalization_weighted_portfolio</a>(...) -> PostPortfolioOptimizationMarketCapitalizationWeightedResponse</code></summary>
 <dl>
 <dd>
 
@@ -6734,7 +6734,7 @@ client.portfolio_optimization.market_capitalization_weighted_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">maximum_decorrelation_portfolio</a>(...) -> PostPortfolioOptimizationMaximumDecorrelationResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L632-L694">maximum_decorrelation_portfolio</a>(...) -> PostPortfolioOptimizationMaximumDecorrelationResponse</code></summary>
 <dl>
 <dd>
 
@@ -6854,7 +6854,7 @@ client.portfolio_optimization.maximum_decorrelation_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">maximum_ulcer_performance_index_portfolio</a>(...) -> PostPortfolioOptimizationMaximumUlcerPerformanceIndexResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L696-L761">maximum_ulcer_performance_index_portfolio</a>(...) -> PostPortfolioOptimizationMaximumUlcerPerformanceIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -6971,7 +6971,7 @@ client.portfolio_optimization.maximum_ulcer_performance_index_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">minimum_correlation_portfolio</a>(...) -> PostPortfolioOptimizationMinimumCorrelationResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L763-L818">minimum_correlation_portfolio</a>(...) -> PostPortfolioOptimizationMinimumCorrelationResponse</code></summary>
 <dl>
 <dd>
 
@@ -7085,7 +7085,7 @@ client.portfolio_optimization.minimum_correlation_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">minimum_ulcer_index_portfolio</a>(...) -> PostPortfolioOptimizationMinimumUlcerIndexResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L820-L877">minimum_ulcer_index_portfolio</a>(...) -> PostPortfolioOptimizationMinimumUlcerIndexResponse</code></summary>
 <dl>
 <dd>
 
@@ -7190,7 +7190,7 @@ client.portfolio_optimization.minimum_ulcer_index_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py">most_diversified_portfolio</a>(...) -> PostPortfolioOptimizationMostDiversifiedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization.<a href="src/fern/portfolio_optimization/client.py#L879-L932">most_diversified_portfolio</a>(...) -> PostPortfolioOptimizationMostDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7296,7 +7296,7 @@ client.portfolio_optimization.most_diversified_portfolio(
 </details>
 
 ## PortfolioOptimizationMeanVariance
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L122-L187">maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnResponse</code></summary>
 <dl>
 <dd>
 
@@ -7410,7 +7410,7 @@ client.portfolio_optimization_mean_variance.maximum_return_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnDiversifiedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L189-L258">diversified_maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7528,7 +7528,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_return_portfolio
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L260-L351">subset_resampling_based_maximum_return_portfolio</a>(...) -> PostPortfolioOptimizationMaximumReturnSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7672,7 +7672,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_retu
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L353-L418">maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioResponse</code></summary>
 <dl>
 <dd>
 
@@ -7798,7 +7798,7 @@ client.portfolio_optimization_mean_variance.maximum_sharpe_ratio_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioDiversifiedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L420-L489">diversified_maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -7928,7 +7928,7 @@ client.portfolio_optimization_mean_variance.diversified_maximum_sharpe_ratio_por
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L491-L588">subset_resampling_based_maximum_sharpe_ratio_portfolio</a>(...) -> PostPortfolioOptimizationMaximumSharpeRatioSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -8096,7 +8096,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_maximum_shar
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L590-L658">mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientResponse</code></summary>
 <dl>
 <dd>
 
@@ -8219,7 +8219,7 @@ client.portfolio_optimization_mean_variance.mean_variance_efficient_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientDiversifiedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L660-L734">diversified_mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -8348,7 +8348,7 @@ client.portfolio_optimization_mean_variance.diversified_mean_variance_efficient_
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L736-L832">subset_resampling_based_mean_variance_efficient_portfolio</a>(...) -> PostPortfolioOptimizationMeanVarianceEfficientSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -8511,7 +8511,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_mean_varianc
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L834-L901">minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceResponse</code></summary>
 <dl>
 <dd>
 
@@ -8633,7 +8633,7 @@ client.portfolio_optimization_mean_variance.minimum_variance_portfolio(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">diversified_minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceDiversifiedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L903-L974">diversified_minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceDiversifiedResponse</code></summary>
 <dl>
 <dd>
 
@@ -8759,7 +8759,7 @@ client.portfolio_optimization_mean_variance.diversified_minimum_variance_portfol
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py">subset_resampling_based_minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedResponse</code></summary>
+<details><summary><code>client.portfolio_optimization_mean_variance.<a href="src/fern/portfolio_optimization_mean_variance/client.py#L976-L1072">subset_resampling_based_minimum_variance_portfolio</a>(...) -> PostPortfolioOptimizationMinimumVarianceSubsetResamplingBasedResponse</code></summary>
 <dl>
 <dd>
 
@@ -8917,7 +8917,7 @@ client.portfolio_optimization_mean_variance.subset_resampling_based_minimum_vari
 </details>
 
 ## PortfolioSimulation
-<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">drift_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingDriftWeightResponse</code></summary>
+<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py#L52-L119">drift_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingDriftWeightResponse</code></summary>
 <dl>
 <dd>
 
@@ -9047,7 +9047,7 @@ client.portfolio_simulation.drift_weight_portfolio_rebalancing(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">fixed_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingFixedWeightResponse</code></summary>
+<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py#L121-L188">fixed_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingFixedWeightResponse</code></summary>
 <dl>
 <dd>
 
@@ -9177,7 +9177,7 @@ client.portfolio_simulation.fixed_weight_portfolio_rebalancing(
 </dl>
 </details>
 
-<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py">random_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingRandomWeightResponse</code></summary>
+<details><summary><code>client.portfolio_simulation.<a href="src/fern/portfolio_simulation/client.py#L190-L247">random_weight_portfolio_rebalancing</a>(...) -> PostPortfolioSimulationRebalancingRandomWeightResponse</code></summary>
 <dl>
 <dd>
 

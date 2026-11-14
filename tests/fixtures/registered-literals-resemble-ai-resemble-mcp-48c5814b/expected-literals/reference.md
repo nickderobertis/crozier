@@ -1,6 +1,6 @@
 # Reference
 ## Text-to-Speech
-<details><summary><code>client.text_to_speech.<a href="src/fern/text_to_speech/client.py">synthesize</a>(...) -> SynthesizeResponse</code></summary>
+<details><summary><code>client.text_to_speech.<a href="src/fern/text_to_speech/client.py#L32-L115">synthesize</a>(...) -> SynthesizeResponse</code></summary>
 <dl>
 <dd>
 
@@ -146,7 +146,7 @@ client.text_to_speech.synthesize(
 </dl>
 </details>
 
-<details><summary><code>client.text_to_speech.<a href="src/fern/text_to_speech/client.py">stream_synthesize</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.text_to_speech.<a href="src/fern/text_to_speech/client.py#L117-L190">stream_synthesize</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -277,7 +277,7 @@ client.text_to_speech.stream_synthesize(
 </details>
 
 ## Speech-to-Text
-<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py">list_transcripts</a>(...) -> ListTranscriptsResponse</code></summary>
+<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py#L34-L70">list_transcripts</a>(...) -> ListTranscriptsResponse</code></summary>
 <dl>
 <dd>
 
@@ -358,7 +358,7 @@ client.speech_to_text.list_transcripts(
 </dl>
 </details>
 
-<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py">create_transcript</a>(...) -> CreateTranscriptResponse</code></summary>
+<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py#L72-L114">create_transcript</a>(...) -> CreateTranscriptResponse</code></summary>
 <dl>
 <dd>
 
@@ -445,7 +445,7 @@ client.speech_to_text.create_transcript()
 </dl>
 </details>
 
-<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py">get_transcript</a>(...) -> GetTranscriptResponse</code></summary>
+<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py#L116-L146">get_transcript</a>(...) -> GetTranscriptResponse</code></summary>
 <dl>
 <dd>
 
@@ -518,7 +518,7 @@ client.speech_to_text.get_transcript(
 </dl>
 </details>
 
-<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py">ask_transcript_question</a>(...) -> AskTranscriptQuestionResponse</code></summary>
+<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py#L148-L182">ask_transcript_question</a>(...) -> AskTranscriptQuestionResponse</code></summary>
 <dl>
 <dd>
 
@@ -600,7 +600,7 @@ client.speech_to_text.ask_transcript_question(
 </dl>
 </details>
 
-<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py">list_transcript_questions</a>(...) -> ListTranscriptQuestionsResponse</code></summary>
+<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py#L184-L226">list_transcript_questions</a>(...) -> ListTranscriptQuestionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -690,7 +690,7 @@ client.speech_to_text.list_transcript_questions(
 </dl>
 </details>
 
-<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py">get_transcript_question</a>(...) -> GetTranscriptQuestionResponse</code></summary>
+<details><summary><code>client.speech_to_text.<a href="src/fern/speech_to_text/client.py#L228-L261">get_transcript_question</a>(...) -> GetTranscriptQuestionResponse</code></summary>
 <dl>
 <dd>
 
@@ -773,7 +773,7 @@ client.speech_to_text.get_transcript_question(
 </details>
 
 ## Audio Edit
-<details><summary><code>client.audio_edit.<a href="src/fern/audio_edit/client.py">list_audio_edits</a>(...) -> ListAudioEditsResponse</code></summary>
+<details><summary><code>client.audio_edit.<a href="src/fern/audio_edit/client.py#L32-L62">list_audio_edits</a>(...) -> ListAudioEditsResponse</code></summary>
 <dl>
 <dd>
 
@@ -846,7 +846,7 @@ client.audio_edit.list_audio_edits(
 </dl>
 </details>
 
-<details><summary><code>client.audio_edit.<a href="src/fern/audio_edit/client.py">create_audio_edit</a>(...) -> CreateAudioEditResponse</code></summary>
+<details><summary><code>client.audio_edit.<a href="src/fern/audio_edit/client.py#L64-L118">create_audio_edit</a>(...) -> CreateAudioEditResponse</code></summary>
 <dl>
 <dd>
 
@@ -946,7 +946,7 @@ client.audio_edit.create_audio_edit(
 </dl>
 </details>
 
-<details><summary><code>client.audio_edit.<a href="src/fern/audio_edit/client.py">get_audio_edit</a>(...) -> GetAudioEditResponse</code></summary>
+<details><summary><code>client.audio_edit.<a href="src/fern/audio_edit/client.py#L120-L150">get_audio_edit</a>(...) -> GetAudioEditResponse</code></summary>
 <dl>
 <dd>
 
@@ -1020,7 +1020,7 @@ client.audio_edit.get_audio_edit(
 </details>
 
 ## Audio Enhancement
-<details><summary><code>client.audio_enhancement.<a href="src/fern/audio_enhancement/client.py">list_audio_enhancements</a>(...) -> ListAudioEnhancementsResponse</code></summary>
+<details><summary><code>client.audio_enhancement.<a href="src/fern/audio_enhancement/client.py#L33-L73">list_audio_enhancements</a>(...) -> ListAudioEnhancementsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1101,7 +1101,7 @@ client.audio_enhancement.list_audio_enhancements(
 </dl>
 </details>
 
-<details><summary><code>client.audio_enhancement.<a href="src/fern/audio_enhancement/client.py">create_audio_enhancement</a>(...) -> CreateAudioEnhancementResponse</code></summary>
+<details><summary><code>client.audio_enhancement.<a href="src/fern/audio_enhancement/client.py#L75-L146">create_audio_enhancement</a>(...) -> CreateAudioEnhancementResponse</code></summary>
 <dl>
 <dd>
 
@@ -1231,7 +1231,7 @@ client.audio_enhancement.create_audio_enhancement(
 </dl>
 </details>
 
-<details><summary><code>client.audio_enhancement.<a href="src/fern/audio_enhancement/client.py">get_audio_enhancement</a>(...) -> GetAudioEnhancementResponse</code></summary>
+<details><summary><code>client.audio_enhancement.<a href="src/fern/audio_enhancement/client.py#L148-L179">get_audio_enhancement</a>(...) -> GetAudioEnhancementResponse</code></summary>
 <dl>
 <dd>
 
@@ -1305,7 +1305,7 @@ client.audio_enhancement.get_audio_enhancement(
 </details>
 
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list_agents</a>(...) -> ListAgentsResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L42-L80">list_agents</a>(...) -> ListAgentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1384,7 +1384,7 @@ client.agents.list_agents()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">create_agent</a>(...) -> CreateAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L82-L165">create_agent</a>(...) -> CreateAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1546,7 +1546,7 @@ client.agents.create_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get_agent</a>(...) -> GetAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L167-L203">get_agent</a>(...) -> GetAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1627,7 +1627,7 @@ client.agents.get_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">delete_agent</a>(...) -> DeleteAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L205-L235">delete_agent</a>(...) -> DeleteAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1700,7 +1700,7 @@ client.agents.delete_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">update_agent</a>(...) -> UpdateAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L237-L323">update_agent</a>(...) -> UpdateAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1869,7 +1869,7 @@ client.agents.update_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">dispatch_agent</a>(...) -> DispatchAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L325-L369">dispatch_agent</a>(...) -> DispatchAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1959,7 +1959,7 @@ client.agents.dispatch_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get_agent_capabilities</a>() -> GetAgentCapabilitiesResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L371-L397">get_agent_capabilities</a>() -> GetAgentCapabilitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2022,7 +2022,7 @@ client.agents.get_agent_capabilities()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get_system_tools</a>() -> GetSystemToolsResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L399-L423">get_system_tools</a>() -> GetSystemToolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2086,7 +2086,7 @@ client.agents.get_system_tools()
 </details>
 
 ## Agent Tools
-<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py">list_agent_tools</a>(...) -> ListAgentToolsResponse</code></summary>
+<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py#L34-L64">list_agent_tools</a>(...) -> ListAgentToolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2159,7 +2159,7 @@ client.agent_tools.list_agent_tools(
 </dl>
 </details>
 
-<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py">create_agent_tool</a>(...) -> CreateAgentToolResponse</code></summary>
+<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py#L66-L122">create_agent_tool</a>(...) -> CreateAgentToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -2270,7 +2270,7 @@ client.agent_tools.create_agent_tool(
 </dl>
 </details>
 
-<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py">get_agent_tool</a>(...) -> GetAgentToolResponse</code></summary>
+<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py#L124-L157">get_agent_tool</a>(...) -> GetAgentToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -2352,7 +2352,7 @@ client.agent_tools.get_agent_tool(
 </dl>
 </details>
 
-<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py">delete_agent_tool</a>(...) -> DeleteAgentToolResponse</code></summary>
+<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py#L159-L192">delete_agent_tool</a>(...) -> DeleteAgentToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -2434,7 +2434,7 @@ client.agent_tools.delete_agent_tool(
 </dl>
 </details>
 
-<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py">update_agent_tool</a>(...) -> UpdateAgentToolResponse</code></summary>
+<details><summary><code>client.agent_tools.<a href="src/fern/agent_tools/client.py#L194-L247">update_agent_tool</a>(...) -> UpdateAgentToolResponse</code></summary>
 <dl>
 <dd>
 
@@ -2541,7 +2541,7 @@ client.agent_tools.update_agent_tool(
 </details>
 
 ## Agent Webhooks
-<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py">list_agent_webhooks</a>(...) -> ListAgentWebhooksResponse</code></summary>
+<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py#L34-L64">list_agent_webhooks</a>(...) -> ListAgentWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2614,7 +2614,7 @@ client.agent_webhooks.list_agent_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py">create_agent_webhook</a>(...) -> CreateAgentWebhookResponse</code></summary>
+<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py#L66-L109">create_agent_webhook</a>(...) -> CreateAgentWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2707,7 +2707,7 @@ client.agent_webhooks.create_agent_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py">get_agent_webhook</a>(...) -> GetAgentWebhookResponse</code></summary>
+<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py#L111-L144">get_agent_webhook</a>(...) -> GetAgentWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2789,7 +2789,7 @@ client.agent_webhooks.get_agent_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py">delete_agent_webhook</a>(...) -> DeleteAgentWebhookResponse</code></summary>
+<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py#L146-L179">delete_agent_webhook</a>(...) -> DeleteAgentWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2871,7 +2871,7 @@ client.agent_webhooks.delete_agent_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py">update_agent_webhook</a>(...) -> UpdateAgentWebhookResponse</code></summary>
+<details><summary><code>client.agent_webhooks.<a href="src/fern/agent_webhooks/client.py#L181-L223">update_agent_webhook</a>(...) -> UpdateAgentWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -2962,7 +2962,7 @@ client.agent_webhooks.update_agent_webhook(
 </details>
 
 ## Agent Phone Numbers
-<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py">list_phone_numbers</a>() -> ListPhoneNumbersResponse</code></summary>
+<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py#L34-L60">list_phone_numbers</a>() -> ListPhoneNumbersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3025,7 +3025,7 @@ client.agent_phone_numbers.list_phone_numbers()
 </dl>
 </details>
 
-<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py">create_phone_number</a>(...) -> CreatePhoneNumberResponse</code></summary>
+<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py#L62-L132">create_phone_number</a>(...) -> CreatePhoneNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -3163,7 +3163,7 @@ client.agent_phone_numbers.create_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py">get_phone_number</a>(...) -> GetPhoneNumberResponse</code></summary>
+<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py#L134-L164">get_phone_number</a>(...) -> GetPhoneNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -3236,7 +3236,7 @@ client.agent_phone_numbers.get_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py">delete_phone_number</a>(...) -> DeletePhoneNumberResponse</code></summary>
+<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py#L166-L196">delete_phone_number</a>(...) -> DeletePhoneNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -3309,7 +3309,7 @@ client.agent_phone_numbers.delete_phone_number(
 </dl>
 </details>
 
-<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py">force_delete_phone_number</a>(...) -> ForceDeletePhoneNumberResponse</code></summary>
+<details><summary><code>client.agent_phone_numbers.<a href="src/fern/agent_phone_numbers/client.py#L198-L228">force_delete_phone_number</a>(...) -> ForceDeletePhoneNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -3383,7 +3383,7 @@ client.agent_phone_numbers.force_delete_phone_number(
 </details>
 
 ## Agent Knowledge Base
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">list_knowledge_items</a>(...) -> ListKnowledgeItemsResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L39-L85">list_knowledge_items</a>(...) -> ListKnowledgeItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3478,7 +3478,7 @@ client.agent_knowledge_base.list_knowledge_items()
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">create_knowledge_item</a>(...) -> CreateKnowledgeItemResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L87-L146">create_knowledge_item</a>(...) -> CreateKnowledgeItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -3585,7 +3585,7 @@ client.agent_knowledge_base.create_knowledge_item(
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">get_knowledge_item</a>(...) -> GetKnowledgeItemResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L148-L179">get_knowledge_item</a>(...) -> GetKnowledgeItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -3658,7 +3658,7 @@ client.agent_knowledge_base.get_knowledge_item(
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">delete_knowledge_item</a>(...) -> DeleteKnowledgeItemResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L181-L212">delete_knowledge_item</a>(...) -> DeleteKnowledgeItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -3731,7 +3731,7 @@ client.agent_knowledge_base.delete_knowledge_item(
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">reingest_knowledge_item</a>(...) -> ReingestKnowledgeItemResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L214-L245">reingest_knowledge_item</a>(...) -> ReingestKnowledgeItemResponse</code></summary>
 <dl>
 <dd>
 
@@ -3804,7 +3804,7 @@ client.agent_knowledge_base.reingest_knowledge_item(
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">list_agent_knowledge_items</a>(...) -> ListAgentKnowledgeItemsResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L247-L278">list_agent_knowledge_items</a>(...) -> ListAgentKnowledgeItemsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3877,7 +3877,7 @@ client.agent_knowledge_base.list_agent_knowledge_items(
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">attach_knowledge_item_to_agent</a>(...) -> AttachKnowledgeItemToAgentResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L280-L317">attach_knowledge_item_to_agent</a>(...) -> AttachKnowledgeItemToAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -3959,7 +3959,7 @@ client.agent_knowledge_base.attach_knowledge_item_to_agent(
 </dl>
 </details>
 
-<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py">detach_knowledge_item_from_agent</a>(...) -> DetachKnowledgeItemFromAgentResponse</code></summary>
+<details><summary><code>client.agent_knowledge_base.<a href="src/fern/agent_knowledge_base/client.py#L319-L356">detach_knowledge_item_from_agent</a>(...) -> DetachKnowledgeItemFromAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -4042,7 +4042,7 @@ client.agent_knowledge_base.detach_knowledge_item_from_agent(
 </details>
 
 ## Deepfake Detection
-<details><summary><code>client.deepfake_detection.<a href="src/fern/deepfake_detection/client.py">list_detections</a>(...) -> ListDetectionsResponse</code></summary>
+<details><summary><code>client.deepfake_detection.<a href="src/fern/deepfake_detection/client.py#L32-L70">list_detections</a>(...) -> ListDetectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4123,7 +4123,7 @@ client.deepfake_detection.list_detections(
 </dl>
 </details>
 
-<details><summary><code>client.deepfake_detection.<a href="src/fern/deepfake_detection/client.py">create_detection</a>(...) -> CreateDetectionResponse</code></summary>
+<details><summary><code>client.deepfake_detection.<a href="src/fern/deepfake_detection/client.py#L72-L174">create_detection</a>(...) -> CreateDetectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4300,7 +4300,7 @@ client.deepfake_detection.create_detection(
 </dl>
 </details>
 
-<details><summary><code>client.deepfake_detection.<a href="src/fern/deepfake_detection/client.py">get_detection</a>(...) -> GetDetectionResponse</code></summary>
+<details><summary><code>client.deepfake_detection.<a href="src/fern/deepfake_detection/client.py#L176-L207">get_detection</a>(...) -> GetDetectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4374,7 +4374,7 @@ client.deepfake_detection.get_detection(
 </details>
 
 ## Intelligence
-<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py">run_intelligence</a>(...) -> RunIntelligenceResponse</code></summary>
+<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py#L32-L92">run_intelligence</a>(...) -> RunIntelligenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -4485,7 +4485,7 @@ client.intelligence.run_intelligence()
 </dl>
 </details>
 
-<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py">list_intelligences</a>(...) -> ListIntelligencesResponse</code></summary>
+<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py#L94-L132">list_intelligences</a>(...) -> ListIntelligencesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4566,7 +4566,7 @@ client.intelligence.list_intelligences(
 </dl>
 </details>
 
-<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py">get_intelligence</a>(...) -> GetIntelligenceResponse</code></summary>
+<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py#L134-L165">get_intelligence</a>(...) -> GetIntelligenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -4640,7 +4640,7 @@ client.intelligence.get_intelligence(
 </details>
 
 ## Detect Intelligence
-<details><summary><code>client.detect_intelligence.<a href="src/fern/detect_intelligence/client.py">ask_detect_intelligence_question</a>(...) -> AskDetectIntelligenceQuestionResponse</code></summary>
+<details><summary><code>client.detect_intelligence.<a href="src/fern/detect_intelligence/client.py#L30-L67">ask_detect_intelligence_question</a>(...) -> AskDetectIntelligenceQuestionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4722,7 +4722,7 @@ client.detect_intelligence.ask_detect_intelligence_question(
 </dl>
 </details>
 
-<details><summary><code>client.detect_intelligence.<a href="src/fern/detect_intelligence/client.py">get_detect_intelligence_question</a>(...) -> GetDetectIntelligenceQuestionResponse</code></summary>
+<details><summary><code>client.detect_intelligence.<a href="src/fern/detect_intelligence/client.py#L69-L106">get_detect_intelligence_question</a>(...) -> GetDetectIntelligenceQuestionResponse</code></summary>
 <dl>
 <dd>
 
@@ -4805,7 +4805,7 @@ client.detect_intelligence.get_detect_intelligence_question(
 </details>
 
 ## Audio Source Tracing
-<details><summary><code>client.audio_source_tracing.<a href="src/fern/audio_source_tracing/client.py">list_audio_source_tracings</a>(...) -> ListAudioSourceTracingsResponse</code></summary>
+<details><summary><code>client.audio_source_tracing.<a href="src/fern/audio_source_tracing/client.py#L27-L67">list_audio_source_tracings</a>(...) -> ListAudioSourceTracingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4886,7 +4886,7 @@ client.audio_source_tracing.list_audio_source_tracings(
 </dl>
 </details>
 
-<details><summary><code>client.audio_source_tracing.<a href="src/fern/audio_source_tracing/client.py">get_audio_source_tracing</a>(...) -> GetAudioSourceTracingResponse</code></summary>
+<details><summary><code>client.audio_source_tracing.<a href="src/fern/audio_source_tracing/client.py#L69-L100">get_audio_source_tracing</a>(...) -> GetAudioSourceTracingResponse</code></summary>
 <dl>
 <dd>
 
@@ -4960,7 +4960,7 @@ client.audio_source_tracing.get_audio_source_tracing(
 </details>
 
 ## Identity
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">list_identities</a>() -> ListIdentitiesResponse</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L31-L55">list_identities</a>() -> ListIdentitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5023,7 +5023,7 @@ client.identity.list_identities()
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">create_identity</a>(...) -> CreateIdentityResponse</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L57-L93">create_identity</a>(...) -> CreateIdentityResponse</code></summary>
 <dl>
 <dd>
 
@@ -5104,7 +5104,7 @@ client.identity.create_identity(
 </dl>
 </details>
 
-<details><summary><code>client.identity.<a href="src/fern/identity/client.py">search_identities</a>(...) -> SearchIdentitiesResponse</code></summary>
+<details><summary><code>client.identity.<a href="src/fern/identity/client.py#L95-L125">search_identities</a>(...) -> SearchIdentitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5178,7 +5178,7 @@ client.identity.search_identities(
 </details>
 
 ## Watermark
-<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py">apply_watermark</a>(...) -> ApplyWatermarkResponse</code></summary>
+<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py#L34-L82">apply_watermark</a>(...) -> ApplyWatermarkResponse</code></summary>
 <dl>
 <dd>
 
@@ -5275,7 +5275,7 @@ client.watermark.apply_watermark(
 </dl>
 </details>
 
-<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py">get_watermark_apply_result</a>(...) -> GetWatermarkApplyResultResponse</code></summary>
+<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py#L84-L114">get_watermark_apply_result</a>(...) -> GetWatermarkApplyResultResponse</code></summary>
 <dl>
 <dd>
 
@@ -5348,7 +5348,7 @@ client.watermark.get_watermark_apply_result(
 </dl>
 </details>
 
-<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py">detect_watermark</a>(...) -> DetectWatermarkResponse</code></summary>
+<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py#L116-L160">detect_watermark</a>(...) -> DetectWatermarkResponse</code></summary>
 <dl>
 <dd>
 
@@ -5437,7 +5437,7 @@ client.watermark.detect_watermark(
 </dl>
 </details>
 
-<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py">get_watermark_detection_result</a>(...) -> GetWatermarkDetectionResultResponse</code></summary>
+<details><summary><code>client.watermark.<a href="src/fern/watermark/client.py#L162-L192">get_watermark_detection_result</a>(...) -> GetWatermarkDetectionResultResponse</code></summary>
 <dl>
 <dd>
 
@@ -5511,7 +5511,7 @@ client.watermark.get_watermark_detection_result(
 </details>
 
 ## Voices
-<details><summary><code>client.voices.<a href="src/fern/voices/client.py">list_voices</a>(...) -> ListVoicesResponse</code></summary>
+<details><summary><code>client.voices.<a href="src/fern/voices/client.py#L34-L75">list_voices</a>(...) -> ListVoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -5600,7 +5600,7 @@ client.voices.list_voices(
 </dl>
 </details>
 
-<details><summary><code>client.voices.<a href="src/fern/voices/client.py">create_voice</a>(...) -> CreateVoiceResponse</code></summary>
+<details><summary><code>client.voices.<a href="src/fern/voices/client.py#L77-L129">create_voice</a>(...) -> CreateVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -5705,7 +5705,7 @@ client.voices.create_voice(
 </dl>
 </details>
 
-<details><summary><code>client.voices.<a href="src/fern/voices/client.py">get_voice</a>(...) -> GetVoiceResponse</code></summary>
+<details><summary><code>client.voices.<a href="src/fern/voices/client.py#L131-L161">get_voice</a>(...) -> GetVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -5778,7 +5778,7 @@ client.voices.get_voice(
 </dl>
 </details>
 
-<details><summary><code>client.voices.<a href="src/fern/voices/client.py">delete_voice</a>(...) -> DeleteVoiceResponse</code></summary>
+<details><summary><code>client.voices.<a href="src/fern/voices/client.py#L163-L193">delete_voice</a>(...) -> DeleteVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -5851,7 +5851,7 @@ client.voices.delete_voice(
 </dl>
 </details>
 
-<details><summary><code>client.voices.<a href="src/fern/voices/client.py">build_voice</a>(...) -> BuildVoiceResponse</code></summary>
+<details><summary><code>client.voices.<a href="src/fern/voices/client.py#L195-L231">build_voice</a>(...) -> BuildVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -5933,7 +5933,7 @@ client.voices.build_voice(
 </details>
 
 ## Voice Design
-<details><summary><code>client.voice_design.<a href="src/fern/voice_design/client.py">generate_voice_design</a>(...) -> GenerateVoiceDesignResponse</code></summary>
+<details><summary><code>client.voice_design.<a href="src/fern/voice_design/client.py#L30-L61">generate_voice_design</a>(...) -> GenerateVoiceDesignResponse</code></summary>
 <dl>
 <dd>
 
@@ -6006,7 +6006,7 @@ client.voice_design.generate_voice_design(
 </dl>
 </details>
 
-<details><summary><code>client.voice_design.<a href="src/fern/voice_design/client.py">create_voice_from_candidate</a>(...) -> CreateVoiceFromCandidateResponse</code></summary>
+<details><summary><code>client.voice_design.<a href="src/fern/voice_design/client.py#L63-L101">create_voice_from_candidate</a>(...) -> CreateVoiceFromCandidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -6098,7 +6098,7 @@ client.voice_design.create_voice_from_candidate(
 </details>
 
 ## Recordings
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">list_recordings</a>(...) -> ListRecordingsResponse</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L34-L76">list_recordings</a>(...) -> ListRecordingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6188,7 +6188,7 @@ client.recordings.list_recordings(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">create_recording</a>(...) -> CreateRecordingResponse</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L78-L148">create_recording</a>(...) -> CreateRecordingResponse</code></summary>
 <dl>
 <dd>
 
@@ -6314,7 +6314,7 @@ client.recordings.create_recording(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">get_recording</a>(...) -> GetRecordingResponse</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L150-L183">get_recording</a>(...) -> GetRecordingResponse</code></summary>
 <dl>
 <dd>
 
@@ -6396,7 +6396,7 @@ client.recordings.get_recording(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">delete_recording</a>(...) -> DeleteRecordingResponse</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L185-L218">delete_recording</a>(...) -> DeleteRecordingResponse</code></summary>
 <dl>
 <dd>
 
@@ -6478,7 +6478,7 @@ client.recordings.delete_recording(
 </dl>
 </details>
 
-<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py">update_recording</a>(...) -> UpdateRecordingResponse</code></summary>
+<details><summary><code>client.recordings.<a href="src/fern/recordings/client.py#L220-L277">update_recording</a>(...) -> UpdateRecordingResponse</code></summary>
 <dl>
 <dd>
 
@@ -6593,7 +6593,7 @@ client.recordings.update_recording(
 </details>
 
 ## Term Substitutions
-<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py">list_term_substitutions</a>(...) -> ListTermSubstitutionsResponse</code></summary>
+<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py#L32-L70">list_term_substitutions</a>(...) -> ListTermSubstitutionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6674,7 +6674,7 @@ client.term_substitutions.list_term_substitutions(
 </dl>
 </details>
 
-<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py">create_term_substitution</a>(...) -> CreateTermSubstitutionResponse</code></summary>
+<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py#L72-L109">create_term_substitution</a>(...) -> CreateTermSubstitutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -6756,7 +6756,7 @@ client.term_substitutions.create_term_substitution(
 </dl>
 </details>
 
-<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py">get_term_substitution</a>(...) -> GetTermSubstitutionResponse</code></summary>
+<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py#L111-L141">get_term_substitution</a>(...) -> GetTermSubstitutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -6829,7 +6829,7 @@ client.term_substitutions.get_term_substitution(
 </dl>
 </details>
 
-<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py">delete_term_substitution</a>(...) -> DeleteTermSubstitutionResponse</code></summary>
+<details><summary><code>client.term_substitutions.<a href="src/fern/term_substitutions/client.py#L143-L173">delete_term_substitution</a>(...) -> DeleteTermSubstitutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -6903,7 +6903,7 @@ client.term_substitutions.delete_term_substitution(
 </details>
 
 ## Custom Pronunciations
-<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py">list_pronunciations</a>(...) -> ListPronunciationsResponse</code></summary>
+<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py#L36-L82">list_pronunciations</a>(...) -> ListPronunciationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6998,7 +6998,7 @@ client.custom_pronunciations.list_pronunciations()
 </dl>
 </details>
 
-<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py">create_pronunciation</a>(...) -> CreatePronunciationResponse</code></summary>
+<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py#L84-L118">create_pronunciation</a>(...) -> CreatePronunciationResponse</code></summary>
 <dl>
 <dd>
 
@@ -7080,7 +7080,7 @@ client.custom_pronunciations.create_pronunciation(
 </dl>
 </details>
 
-<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py">bulk_create_pronunciations</a>(...) -> BulkCreatePronunciationsResponse</code></summary>
+<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py#L120-L149">bulk_create_pronunciations</a>(...) -> BulkCreatePronunciationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7153,7 +7153,7 @@ client.custom_pronunciations.bulk_create_pronunciations(
 </dl>
 </details>
 
-<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py">get_pronunciation</a>(...) -> GetPronunciationResponse</code></summary>
+<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py#L151-L181">get_pronunciation</a>(...) -> GetPronunciationResponse</code></summary>
 <dl>
 <dd>
 
@@ -7226,7 +7226,7 @@ client.custom_pronunciations.get_pronunciation(
 </dl>
 </details>
 
-<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py">delete_pronunciation</a>(...) -> DeletePronunciationResponse</code></summary>
+<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py#L183-L213">delete_pronunciation</a>(...) -> DeletePronunciationResponse</code></summary>
 <dl>
 <dd>
 
@@ -7299,7 +7299,7 @@ client.custom_pronunciations.delete_pronunciation(
 </dl>
 </details>
 
-<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py">update_pronunciation</a>(...) -> UpdatePronunciationResponse</code></summary>
+<details><summary><code>client.custom_pronunciations.<a href="src/fern/custom_pronunciations/client.py#L215-L249">update_pronunciation</a>(...) -> UpdatePronunciationResponse</code></summary>
 <dl>
 <dd>
 
@@ -7382,7 +7382,7 @@ client.custom_pronunciations.update_pronunciation(
 </details>
 
 ## Voice Settings Presets
-<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py">list_voice_settings_presets</a>() -> ListVoiceSettingsPresetsResponse</code></summary>
+<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py#L33-L59">list_voice_settings_presets</a>() -> ListVoiceSettingsPresetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7445,7 +7445,7 @@ client.voice_settings_presets.list_voice_settings_presets()
 </dl>
 </details>
 
-<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py">create_voice_settings_preset</a>(...) -> CreateVoiceSettingsPresetResponse</code></summary>
+<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py#L61-L128">create_voice_settings_preset</a>(...) -> CreateVoiceSettingsPresetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7566,7 +7566,7 @@ client.voice_settings_presets.create_voice_settings_preset(
 </dl>
 </details>
 
-<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py">get_voice_settings_preset</a>(...) -> GetVoiceSettingsPresetResponse</code></summary>
+<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py#L130-L160">get_voice_settings_preset</a>(...) -> GetVoiceSettingsPresetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7639,7 +7639,7 @@ client.voice_settings_presets.get_voice_settings_preset(
 </dl>
 </details>
 
-<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py">delete_voice_settings_preset</a>(...) -> DeleteVoiceSettingsPresetResponse</code></summary>
+<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py#L162-L192">delete_voice_settings_preset</a>(...) -> DeleteVoiceSettingsPresetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7712,7 +7712,7 @@ client.voice_settings_presets.delete_voice_settings_preset(
 </dl>
 </details>
 
-<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py">update_voice_settings_preset</a>(...) -> UpdateVoiceSettingsPresetResponse</code></summary>
+<details><summary><code>client.voice_settings_presets.<a href="src/fern/voice_settings_presets/client.py#L194-L258">update_voice_settings_preset</a>(...) -> UpdateVoiceSettingsPresetResponse</code></summary>
 <dl>
 <dd>
 
@@ -7842,7 +7842,7 @@ client.voice_settings_presets.update_voice_settings_preset(
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">list_projects</a>(...) -> ListProjectsResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L33-L69">list_projects</a>(...) -> ListProjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7923,7 +7923,7 @@ client.projects.list_projects(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">create_project</a>(...) -> CreateProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L71-L122">create_project</a>(...) -> CreateProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -8023,7 +8023,7 @@ client.projects.create_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">get_project</a>(...) -> GetProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L124-L154">get_project</a>(...) -> GetProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -8096,7 +8096,7 @@ client.projects.get_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">update_project</a>(...) -> UpdateProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L156-L208">update_project</a>(...) -> UpdateProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -8201,7 +8201,7 @@ client.projects.update_project(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">delete_project</a>(...) -> DeleteProjectResponse</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L210-L240">delete_project</a>(...) -> DeleteProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -8275,7 +8275,7 @@ client.projects.delete_project(
 </details>
 
 ## Clips
-<details><summary><code>client.clips.<a href="src/fern/clips/client.py">list_clips</a>(...) -> ListClipsResponse</code></summary>
+<details><summary><code>client.clips.<a href="src/fern/clips/client.py#L32-L74">list_clips</a>(...) -> ListClipsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8365,7 +8365,7 @@ client.clips.list_clips(
 </dl>
 </details>
 
-<details><summary><code>client.clips.<a href="src/fern/clips/client.py">get_clip</a>(...) -> GetClipResponse</code></summary>
+<details><summary><code>client.clips.<a href="src/fern/clips/client.py#L76-L109">get_clip</a>(...) -> GetClipResponse</code></summary>
 <dl>
 <dd>
 
@@ -8447,7 +8447,7 @@ client.clips.get_clip(
 </dl>
 </details>
 
-<details><summary><code>client.clips.<a href="src/fern/clips/client.py">delete_clip</a>(...) -> DeleteClipResponse</code></summary>
+<details><summary><code>client.clips.<a href="src/fern/clips/client.py#L111-L144">delete_clip</a>(...) -> DeleteClipResponse</code></summary>
 <dl>
 <dd>
 
@@ -8529,7 +8529,7 @@ client.clips.delete_clip(
 </dl>
 </details>
 
-<details><summary><code>client.clips.<a href="src/fern/clips/client.py">update_clip</a>(...) -> UpdateClipResponse</code></summary>
+<details><summary><code>client.clips.<a href="src/fern/clips/client.py#L146-L194">update_clip</a>(...) -> UpdateClipResponse</code></summary>
 <dl>
 <dd>
 
@@ -8636,7 +8636,7 @@ client.clips.update_clip(
 </details>
 
 ## Account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_account</a>() -> GetAccountResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L29-L53">get_account</a>() -> GetAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -8699,7 +8699,7 @@ client.account.get_account()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_teams</a>() -> GetTeamsResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L55-L79">get_teams</a>() -> GetTeamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8762,7 +8762,7 @@ client.account.get_teams()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_team</a>(...) -> GetTeamResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L81-L109">get_team</a>(...) -> GetTeamResponse</code></summary>
 <dl>
 <dd>
 
@@ -8835,7 +8835,7 @@ client.account.get_team(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_billing_usage</a>() -> GetBillingUsageResponse</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L111-L135">get_billing_usage</a>() -> GetBillingUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -8899,7 +8899,7 @@ client.account.get_billing_usage()
 </details>
 
 ## Duets
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">list_duet_voices</a>() -> ListDuetVoicesResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L37-L61">list_duet_voices</a>() -> ListDuetVoicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -8962,7 +8962,7 @@ client.duets.list_duet_voices()
 </dl>
 </details>
 
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">create_duet_voice</a>(...) -> CreateDuetVoiceResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L63-L107">create_duet_voice</a>(...) -> CreateDuetVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -9052,7 +9052,7 @@ client.duets.create_duet_voice(
 </dl>
 </details>
 
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">update_duet_voice</a>(...) -> UpdateDuetVoiceResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L109-L150">update_duet_voice</a>(...) -> UpdateDuetVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -9141,7 +9141,7 @@ client.duets.update_duet_voice(
 </dl>
 </details>
 
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">delete_duet_voice</a>(...) -> DeleteDuetVoiceResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L152-L182">delete_duet_voice</a>(...) -> DeleteDuetVoiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -9214,7 +9214,7 @@ client.duets.delete_duet_voice(
 </dl>
 </details>
 
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">list_duet_voice_pairs</a>() -> ListDuetVoicePairsResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L184-L210">list_duet_voice_pairs</a>() -> ListDuetVoicePairsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9277,7 +9277,7 @@ client.duets.list_duet_voice_pairs()
 </dl>
 </details>
 
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">create_duet_voice_pair</a>(...) -> CreateDuetVoicePairResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L212-L257">create_duet_voice_pair</a>(...) -> CreateDuetVoicePairResponse</code></summary>
 <dl>
 <dd>
 
@@ -9367,7 +9367,7 @@ client.duets.create_duet_voice_pair(
 </dl>
 </details>
 
-<details><summary><code>client.duets.<a href="src/fern/duets/client.py">generate_duet</a>(...) -> GenerateDuetResponse</code></summary>
+<details><summary><code>client.duets.<a href="src/fern/duets/client.py#L259-L318">generate_duet</a>(...) -> GenerateDuetResponse</code></summary>
 <dl>
 <dd>
 

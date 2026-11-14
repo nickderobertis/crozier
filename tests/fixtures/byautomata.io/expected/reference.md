@@ -1,6 +1,6 @@
 # Reference
 ## ContentproSearch
-<details><summary><code>client.contentpro_search.<a href="src/fern/contentpro_search/client.py">send_search_terms_to_receive_the_most_relevant_articles_and_companies</a>(...) -> GetContentproSearchResponse</code></summary>
+<details><summary><code>client.contentpro_search.<a href="src/fern/contentpro_search/client.py#L26-L57">send_search_terms_to_receive_the_most_relevant_articles_and_companies</a>(...) -> GetContentproSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.contentpro_search.send_search_terms_to_receive_the_most_relevant_articles
 </details>
 
 ## ContentproSimilarText
-<details><summary><code>client.contentpro_similar_text.<a href="src/fern/contentpro_similar_text/client.py">the_contentpro_similar_text_endpoint_accepts_and_arbitrary_piece_of_text_and_returns_similar_articles_and_blogs_written_by_companies</a>(...) -> PostContentproSimilarTextResponse</code></summary>
+<details><summary><code>client.contentpro_similar_text.<a href="src/fern/contentpro_similar_text/client.py#L29-L60">the_contentpro_similar_text_endpoint_accepts_and_arbitrary_piece_of_text_and_returns_similar_articles_and_blogs_written_by_companies</a>(...) -> PostContentproSimilarTextResponse</code></summary>
 <dl>
 <dd>
 
@@ -120,7 +120,7 @@ client.contentpro_similar_text.the_contentpro_similar_text_endpoint_accepts_and_
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">send_search_terms_to_receive_the_most_relevant_companies_along_with_text_snippets</a>(...) -> GetSearchResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L26-L60">send_search_terms_to_receive_the_most_relevant_companies_along_with_text_snippets</a>(...) -> GetSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -188,7 +188,7 @@ client.search.send_search_terms_to_receive_the_most_relevant_companies_along_wit
 </details>
 
 ## Similar
-<details><summary><code>client.similar.<a href="src/fern/similar/client.py">send_a_company_website_to_receive_a_list_of_companies_related_to_them</a>(...) -> GetSimilarResponse</code></summary>
+<details><summary><code>client.similar.<a href="src/fern/similar/client.py#L26-L60">send_a_company_website_to_receive_a_list_of_companies_related_to_them</a>(...) -> GetSimilarResponse</code></summary>
 <dl>
 <dd>
 

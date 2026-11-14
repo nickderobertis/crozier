@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">metrics_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L126">metrics_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.metrics_get()
 </details>
 
 ## PidDigitization
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">detect_symbols</a>(...) -> SymbolDetectionInferenceResponse</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L41-L90">detect_symbols</a>(...) -> SymbolDetectionInferenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.pid_digitization.detect_symbols(
 </dl>
 </details>
 
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">detect_text</a>(...) -> TextDetectionInferenceResponse</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L92-L165">detect_text</a>(...) -> TextDetectionInferenceResponse</code></summary>
 <dl>
 <dd>
 
@@ -254,7 +254,7 @@ client.pid_digitization.detect_text(
 </dl>
 </details>
 
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">detect_lines_and_construct_graph</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L167-L273">detect_lines_and_construct_graph</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -438,7 +438,7 @@ client.pid_digitization.detect_lines_and_construct_graph(
 </dl>
 </details>
 
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">persist_graph</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L275-L371">persist_graph</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -557,7 +557,7 @@ client.pid_digitization.persist_graph(
 </dl>
 </details>
 
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">get_inference_results</a>(...) -> GetInferenceResultsApiPidDigitizationInferenceResultTypePidIdGetResponse</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L373-L417">get_inference_results</a>(...) -> GetInferenceResultsApiPidDigitizationInferenceResultTypePidIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -642,7 +642,7 @@ client.pid_digitization.get_inference_results(
 </dl>
 </details>
 
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">get_job_status</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L419-L450">get_job_status</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -716,7 +716,7 @@ client.pid_digitization.get_job_status(
 </dl>
 </details>
 
-<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py">get_output_inference_images</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.pid_digitization.<a href="src/fern/pid_digitization/client.py#L452-L496">get_output_inference_images</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

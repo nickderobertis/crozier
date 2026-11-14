@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">create_dispatch</a>(...) -> Dispatch</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L136">create_dispatch</a>(...) -> Dispatch</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.create_dispatch(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_dispatch_history</a>(...) -> DispatchHistory</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L138-L166">get_dispatch_history</a>(...) -> DispatchHistory</code></summary>
 <dl>
 <dd>
 

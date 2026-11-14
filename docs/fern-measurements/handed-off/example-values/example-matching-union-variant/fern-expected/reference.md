@@ -1,6 +1,6 @@
 # Reference
 ## Seals
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">verify_seal</a>(...) -> VerifySealResponse</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L37-L69">verify_seal</a>(...) -> VerifySealResponse</code></summary>
 <dl>
 <dd>
 
@@ -60,7 +60,7 @@ client.seals.verify_seal(
 </dl>
 </details>
 
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">verify_logbook</a>(...) -> VerifyLogbookResponse</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L71-L104">verify_logbook</a>(...) -> VerifyLogbookResponse</code></summary>
 <dl>
 <dd>
 
@@ -122,7 +122,7 @@ client.seals.verify_logbook(
 </dl>
 </details>
 
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">stock_shelf</a>(...)</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L106-L142">stock_shelf</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -184,7 +184,7 @@ client.seals.stock_shelf(
 </dl>
 </details>
 
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">verify_badge</a>(...)</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L144-L175">verify_badge</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -244,7 +244,7 @@ client.seals.verify_badge(
 </dl>
 </details>
 
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">register_seal</a>(...)</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L177-L208">register_seal</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -304,7 +304,7 @@ client.seals.register_seal(
 </dl>
 </details>
 
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">verify_charm</a>(...)</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L210-L241">verify_charm</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -364,7 +364,7 @@ client.seals.verify_charm(
 </dl>
 </details>
 
-<details><summary><code>client.seals.<a href="src/fern/seals/client.py">inspect_charm</a>(...)</code></summary>
+<details><summary><code>client.seals.<a href="src/fern/seals/client.py#L243-L274">inspect_charm</a>(...)</code></summary>
 <dl>
 <dd>
 

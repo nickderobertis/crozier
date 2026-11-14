@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_recordings</a>(...) -> typing.List[Recording]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L128">list_recordings</a>(...) -> typing.List[Recording]</code></summary>
 <dl>
 <dd>
 

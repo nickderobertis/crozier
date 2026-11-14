@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">test_for_objects_that_have_no_types</a>() -> GetObjNoTypeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L131">test_for_objects_that_have_no_types</a>() -> GetObjNoTypeResponse</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.test_for_objects_that_have_no_types()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_for_nested_collections_list_within_a_list_set_within_a_list_map_within_a_list</a>() -> GetNestedCollectionsResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L133-L159">test_for_nested_collections_list_within_a_list_set_within_a_list_map_within_a_list</a>() -> GetNestedCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -93,7 +93,7 @@ client.test_for_nested_collections_list_within_a_list_set_within_a_list_map_with
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_for_map_nested_attributes_and_map_attributes_in_a_data_source</a>() -> GetMapTestResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L161-L187">test_for_map_nested_attributes_and_map_attributes_in_a_data_source</a>() -> GetMapTestResponse</code></summary>
 <dl>
 <dd>
 
@@ -140,7 +140,7 @@ client.test_for_map_nested_attributes_and_map_attributes_in_a_data_source()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_for_map_nested_attributes_and_map_attributes_in_a_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L189-L235">test_for_map_nested_attributes_and_map_attributes_in_a_resource</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -223,7 +223,7 @@ client.test_for_map_nested_attributes_and_map_attributes_in_a_resource(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_for_set_nested_attributes_and_set_attributes_in_a_data_source</a>() -> GetSetTestResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L237-L263">test_for_set_nested_attributes_and_set_attributes_in_a_data_source</a>() -> GetSetTestResponse</code></summary>
 <dl>
 <dd>
 
@@ -270,7 +270,7 @@ client.test_for_set_nested_attributes_and_set_attributes_in_a_data_source()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_for_set_nested_attributes_and_set_attributes_in_a_resource</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L265-L301">test_for_set_nested_attributes_and_set_attributes_in_a_resource</a>(...)</code></summary>
 <dl>
 <dd>
 

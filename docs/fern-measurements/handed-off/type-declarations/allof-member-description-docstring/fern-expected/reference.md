@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">register_hive</a>(...) -> RegisterHiveResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L127">register_hive</a>(...) -> RegisterHiveResponse</code></summary>
 <dl>
 <dd>
 
@@ -54,7 +54,7 @@ client.register_hive()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_hive</a>(...) -> GetHiveResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L129-L155">get_hive</a>(...) -> GetHiveResponse</code></summary>
 <dl>
 <dd>
 

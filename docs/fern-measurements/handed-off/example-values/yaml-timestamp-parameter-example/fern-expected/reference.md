@@ -1,6 +1,6 @@
 # Reference
 ## Tides
-<details><summary><code>client.tides.<a href="src/fern/tides/client.py">list_tides</a>(...) -> typing.List[float]</code></summary>
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py#L31-L87">list_tides</a>(...) -> typing.List[float]</code></summary>
 <dl>
 <dd>
 
@@ -92,7 +92,7 @@ client.tides.list_tides(
 </dl>
 </details>
 
-<details><summary><code>client.tides.<a href="src/fern/tides/client.py">get_gauge</a>(...) -> GetGaugeResponse</code></summary>
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py#L89-L123">get_gauge</a>(...) -> GetGaugeResponse</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.tides.get_gauge(
 </dl>
 </details>
 
-<details><summary><code>client.tides.<a href="src/fern/tides/client.py">log_reading</a>(...)</code></summary>
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py#L125-L188">log_reading</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -241,7 +241,7 @@ client.tides.log_reading(
 </dl>
 </details>
 
-<details><summary><code>client.tides.<a href="src/fern/tides/client.py">log_readings</a>(...)</code></summary>
+<details><summary><code>client.tides.<a href="src/fern/tides/client.py#L190-L241">log_readings</a>(...)</code></summary>
 <dl>
 <dd>
 

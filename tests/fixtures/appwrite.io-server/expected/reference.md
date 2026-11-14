@@ -1,6 +1,6 @@
 # Reference
 ## account
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get</a>() -> User</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L34-L61">get</a>() -> User</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.account.get()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">delete</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L63-L89">delete</a>()</code></summary>
 <dl>
 <dd>
 
@@ -132,7 +132,7 @@ client.account.delete()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_email</a>(...) -> User</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L91-L130">update_email</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -218,7 +218,7 @@ client.account.update_email(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_logs</a>() -> LogList</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L132-L159">get_logs</a>() -> LogList</code></summary>
 <dl>
 <dd>
 
@@ -284,7 +284,7 @@ client.account.get_logs()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_name</a>(...) -> User</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L161-L193">update_name</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -360,7 +360,7 @@ client.account.update_name(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_password</a>(...) -> User</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L195-L238">update_password</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -444,7 +444,7 @@ client.account.update_password(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_prefs</a>() -> Preferences</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L240-L267">get_prefs</a>() -> Preferences</code></summary>
 <dl>
 <dd>
 
@@ -510,7 +510,7 @@ client.account.get_prefs()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_prefs</a>(...) -> User</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L269-L303">update_prefs</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +588,7 @@ client.account.update_prefs(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create_recovery</a>(...) -> Token</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L305-L343">create_recovery</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.account.create_recovery(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_recovery</a>(...) -> Token</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L345-L405">update_recovery</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -778,7 +778,7 @@ client.account.update_recovery(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_sessions</a>() -> SessionList</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L407-L434">get_sessions</a>() -> SessionList</code></summary>
 <dl>
 <dd>
 
@@ -844,7 +844,7 @@ client.account.get_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">delete_sessions</a>()</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L436-L462">delete_sessions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -910,7 +910,7 @@ client.account.delete_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">get_session</a>(...) -> Session</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L464-L496">get_session</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -986,7 +986,7 @@ client.account.get_session(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">delete_session</a>(...)</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L498-L529">delete_session</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1062,7 +1062,7 @@ client.account.delete_session(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">create_verification</a>(...) -> Token</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L531-L565">create_verification</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -1140,7 +1140,7 @@ client.account.create_verification(
 </dl>
 </details>
 
-<details><summary><code>client.account.<a href="src/fern/account/client.py">update_verification</a>(...) -> Token</code></summary>
+<details><summary><code>client.account.<a href="src/fern/account/client.py#L567-L607">update_verification</a>(...) -> Token</code></summary>
 <dl>
 <dd>
 
@@ -1226,7 +1226,7 @@ client.account.update_verification(
 </details>
 
 ## avatars
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">get_browser</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L25-L75">get_browser</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1326,7 +1326,7 @@ client.avatars.get_browser(
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">get_credit_card</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L77-L127">get_credit_card</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1426,7 +1426,7 @@ client.avatars.get_credit_card(
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">get_favicon</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L129-L160">get_favicon</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1502,7 +1502,7 @@ client.avatars.get_favicon(
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">get_flag</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L162-L212">get_flag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1602,7 +1602,7 @@ client.avatars.get_flag(
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">get_image</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L214-L258">get_image</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1694,7 +1694,7 @@ client.avatars.get_image(
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">get_initials</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L260-L314">get_initials</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1802,7 +1802,7 @@ client.avatars.get_initials()
 </dl>
 </details>
 
-<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py">avatars_get_qr</a>(...)</code></summary>
+<details><summary><code>client.avatars.<a href="src/fern/avatars/client.py#L316-L366">avatars_get_qr</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1903,7 +1903,7 @@ client.avatars.avatars_get_qr(
 </details>
 
 ## database
-<details><summary><code>client.database.<a href="src/fern/database/client.py">list_collections</a>(...) -> CollectionList</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L32-L81">list_collections</a>(...) -> CollectionList</code></summary>
 <dl>
 <dd>
 
@@ -2001,7 +2001,7 @@ client.database.list_collections()
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">create_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L83-L137">create_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -2110,7 +2110,7 @@ client.database.create_collection(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">get_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L139-L173">get_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -2186,7 +2186,7 @@ client.database.get_collection(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">update_collection</a>(...) -> Collection</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L175-L231">update_collection</a>(...) -> Collection</code></summary>
 <dl>
 <dd>
 
@@ -2295,7 +2295,7 @@ client.database.update_collection(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">delete_collection</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L233-L264">delete_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2371,7 +2371,7 @@ client.database.delete_collection(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">list_documents</a>(...) -> DocumentList</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L266-L341">list_documents</a>(...) -> DocumentList</code></summary>
 <dl>
 <dd>
 
@@ -2503,7 +2503,7 @@ client.database.list_documents(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">create_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L343-L414">create_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2630,7 +2630,7 @@ client.database.create_document(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">get_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L416-L454">get_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2715,7 +2715,7 @@ client.database.get_document(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">delete_document</a>(...)</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L456-L493">delete_document</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2800,7 +2800,7 @@ client.database.delete_document(
 </dl>
 </details>
 
-<details><summary><code>client.database.<a href="src/fern/database/client.py">update_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.database.<a href="src/fern/database/client.py#L495-L552">update_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2913,7 +2913,7 @@ client.database.update_document(
 </details>
 
 ## functions
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">list</a>(...) -> FunctionList</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L34-L83">list</a>(...) -> FunctionList</code></summary>
 <dl>
 <dd>
 
@@ -3011,7 +3011,7 @@ client.functions.list()
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">create</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L85-L157">create</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -3139,7 +3139,7 @@ client.functions.create(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L159-L191">get</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -3215,7 +3215,7 @@ client.functions.get(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">update</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L193-L265">update</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -3343,7 +3343,7 @@ client.functions.update(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L267-L298">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3419,7 +3419,7 @@ client.functions.delete(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">list_executions</a>(...) -> ExecutionList</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L300-L360">list_executions</a>(...) -> ExecutionList</code></summary>
 <dl>
 <dd>
 
@@ -3527,7 +3527,7 @@ client.functions.list_executions(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">create_execution</a>(...) -> Execution</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L362-L403">create_execution</a>(...) -> Execution</code></summary>
 <dl>
 <dd>
 
@@ -3611,7 +3611,7 @@ client.functions.create_execution(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_execution</a>(...) -> Execution</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L405-L443">get_execution</a>(...) -> Execution</code></summary>
 <dl>
 <dd>
 
@@ -3696,7 +3696,7 @@ client.functions.get_execution(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">update_tag</a>(...) -> Function</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L445-L483">update_tag</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -3781,7 +3781,7 @@ client.functions.update_tag(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">list_tags</a>(...) -> TagList</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L485-L545">list_tags</a>(...) -> TagList</code></summary>
 <dl>
 <dd>
 
@@ -3889,7 +3889,7 @@ client.functions.list_tags(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">create_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L547-L595">create_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -3987,7 +3987,7 @@ client.functions.create_tag(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">get_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L597-L633">get_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -4072,7 +4072,7 @@ client.functions.get_tag(
 </dl>
 </details>
 
-<details><summary><code>client.functions.<a href="src/fern/functions/client.py">delete_tag</a>(...)</code></summary>
+<details><summary><code>client.functions.<a href="src/fern/functions/client.py#L635-L672">delete_tag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4158,7 +4158,7 @@ client.functions.delete_tag(
 </details>
 
 ## health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L25-L51">get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4224,7 +4224,7 @@ client.health.get()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_anti_virus</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L53-L79">get_anti_virus</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4290,7 +4290,7 @@ client.health.get_anti_virus()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_cache</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L81-L107">get_cache</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4356,7 +4356,7 @@ client.health.get_cache()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">health_get_db</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L109-L135">health_get_db</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4422,7 +4422,7 @@ client.health.health_get_db()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_queue_certificates</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L137-L163">get_queue_certificates</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4488,7 +4488,7 @@ client.health.get_queue_certificates()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_queue_functions</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L165-L191">get_queue_functions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4554,7 +4554,7 @@ client.health.get_queue_functions()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_queue_logs</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L193-L219">get_queue_logs</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4620,7 +4620,7 @@ client.health.get_queue_logs()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_queue_tasks</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L221-L247">get_queue_tasks</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4686,7 +4686,7 @@ client.health.get_queue_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_queue_usage</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L249-L275">get_queue_usage</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4752,7 +4752,7 @@ client.health.get_queue_usage()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_queue_webhooks</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L277-L303">get_queue_webhooks</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4818,7 +4818,7 @@ client.health.get_queue_webhooks()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_storage_local</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L305-L331">get_storage_local</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4884,7 +4884,7 @@ client.health.get_storage_local()
 </dl>
 </details>
 
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_time</a>()</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L333-L359">get_time</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4951,7 +4951,7 @@ client.health.get_time()
 </details>
 
 ## locale
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get</a>() -> Locale</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L31-L60">get</a>() -> Locale</code></summary>
 <dl>
 <dd>
 
@@ -5019,7 +5019,7 @@ client.locale.get()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_continents</a>() -> ContinentList</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L62-L89">get_continents</a>() -> ContinentList</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.locale.get_continents()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_countries</a>() -> CountryList</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L91-L118">get_countries</a>() -> CountryList</code></summary>
 <dl>
 <dd>
 
@@ -5151,7 +5151,7 @@ client.locale.get_countries()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">locale_get_countries_eu</a>() -> CountryList</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L120-L147">locale_get_countries_eu</a>() -> CountryList</code></summary>
 <dl>
 <dd>
 
@@ -5217,7 +5217,7 @@ client.locale.locale_get_countries_eu()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_countries_phones</a>() -> PhoneList</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L149-L176">get_countries_phones</a>() -> PhoneList</code></summary>
 <dl>
 <dd>
 
@@ -5283,7 +5283,7 @@ client.locale.get_countries_phones()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_currencies</a>() -> CurrencyList</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L178-L205">get_currencies</a>() -> CurrencyList</code></summary>
 <dl>
 <dd>
 
@@ -5349,7 +5349,7 @@ client.locale.get_currencies()
 </dl>
 </details>
 
-<details><summary><code>client.locale.<a href="src/fern/locale/client.py">get_languages</a>() -> LanguageList</code></summary>
+<details><summary><code>client.locale.<a href="src/fern/locale/client.py#L207-L234">get_languages</a>() -> LanguageList</code></summary>
 <dl>
 <dd>
 
@@ -5416,7 +5416,7 @@ client.locale.get_languages()
 </details>
 
 ## storage
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_files</a>(...) -> FileList</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L30-L79">list_files</a>(...) -> FileList</code></summary>
 <dl>
 <dd>
 
@@ -5514,7 +5514,7 @@ client.storage.list_files()
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">create_file</a>(...) -> File</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L81-L126">create_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -5606,7 +5606,7 @@ client.storage.create_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file</a>(...) -> File</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L128-L160">get_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -5682,7 +5682,7 @@ client.storage.get_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">update_file</a>(...) -> File</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L162-L209">update_file</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -5780,7 +5780,7 @@ client.storage.update_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">delete_file</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L211-L242">delete_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5856,7 +5856,7 @@ client.storage.delete_file(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file_download</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L244-L275">get_file_download</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5932,7 +5932,7 @@ client.storage.get_file_download(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file_preview</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L277-L371">get_file_preview</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6096,7 +6096,7 @@ client.storage.get_file_preview(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_file_view</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L373-L404">get_file_view</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6173,7 +6173,7 @@ client.storage.get_file_view(
 </details>
 
 ## teams
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list</a>(...) -> TeamList</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L32-L81">list</a>(...) -> TeamList</code></summary>
 <dl>
 <dd>
 
@@ -6271,7 +6271,7 @@ client.teams.list()
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L83-L124">create</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -6355,7 +6355,7 @@ client.teams.create(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L126-L158">get</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -6431,7 +6431,7 @@ client.teams.get(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L160-L196">update</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -6516,7 +6516,7 @@ client.teams.update(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L198-L229">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6592,7 +6592,7 @@ client.teams.delete(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get_memberships</a>(...) -> MembershipList</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L231-L286">get_memberships</a>(...) -> MembershipList</code></summary>
 <dl>
 <dd>
 
@@ -6700,7 +6700,7 @@ client.teams.get_memberships(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create_membership</a>(...) -> Membership</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L288-L350">create_membership</a>(...) -> Membership</code></summary>
 <dl>
 <dd>
 
@@ -6817,7 +6817,7 @@ client.teams.create_membership(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">delete_membership</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L352-L389">delete_membership</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6902,7 +6902,7 @@ client.teams.delete_membership(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_membership_roles</a>(...) -> Membership</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L391-L440">update_membership_roles</a>(...) -> Membership</code></summary>
 <dl>
 <dd>
 
@@ -6998,7 +6998,7 @@ client.teams.update_membership_roles(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_membership_status</a>(...) -> Membership</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L442-L496">update_membership_status</a>(...) -> Membership</code></summary>
 <dl>
 <dd>
 
@@ -7102,7 +7102,7 @@ client.teams.update_membership_status(
 </details>
 
 ## users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list</a>(...) -> UserList</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L33-L82">list</a>(...) -> UserList</code></summary>
 <dl>
 <dd>
 
@@ -7200,7 +7200,7 @@ client.users.list()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L84-L130">create</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7293,7 +7293,7 @@ client.users.create(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L132-L164">get</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -7369,7 +7369,7 @@ client.users.get(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L166-L197">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7445,7 +7445,7 @@ client.users.delete(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_logs</a>(...) -> LogList</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L199-L231">get_logs</a>(...) -> LogList</code></summary>
 <dl>
 <dd>
 
@@ -7521,7 +7521,7 @@ client.users.get_logs(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_prefs</a>(...) -> Preferences</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L233-L265">get_prefs</a>(...) -> Preferences</code></summary>
 <dl>
 <dd>
 
@@ -7597,7 +7597,7 @@ client.users.get_prefs(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_prefs</a>(...) -> Preferences</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L267-L309">update_prefs</a>(...) -> Preferences</code></summary>
 <dl>
 <dd>
 
@@ -7684,7 +7684,7 @@ client.users.update_prefs(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_sessions</a>(...) -> SessionList</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L311-L343">get_sessions</a>(...) -> SessionList</code></summary>
 <dl>
 <dd>
 
@@ -7760,7 +7760,7 @@ client.users.get_sessions(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_sessions</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L345-L376">delete_sessions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7836,7 +7836,7 @@ client.users.delete_sessions(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_session</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L378-L415">delete_session</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7921,7 +7921,7 @@ client.users.delete_session(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_status</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L417-L455">update_status</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -8006,7 +8006,7 @@ client.users.update_status(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_verification</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L457-L497">update_verification</a>(...) -> User</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Stoves
-<details><summary><code>client.stoves.<a href="src/fern/stoves/client.py">fetch_stove</a>(...) -> Stove</code></summary>
+<details><summary><code>client.stoves.<a href="src/fern/stoves/client.py#L26-L52">fetch_stove</a>(...) -> Stove</code></summary>
 <dl>
 <dd>
 

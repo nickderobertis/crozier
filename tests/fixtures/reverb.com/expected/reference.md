@@ -1,6 +1,6 @@
 # Reference
 ## Articles
-<details><summary><code>client.articles.<a href="src/fern/articles/client.py">get_articles</a>(...)</code></summary>
+<details><summary><code>client.articles.<a href="src/fern/articles/client.py#L25-L74">get_articles</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -89,7 +89,7 @@ client.articles.get_articles()
 </dl>
 </details>
 
-<details><summary><code>client.articles.<a href="src/fern/articles/client.py">list_of_all_article_categories</a>()</code></summary>
+<details><summary><code>client.articles.<a href="src/fern/articles/client.py#L76-L99">list_of_all_article_categories</a>()</code></summary>
 <dl>
 <dd>
 
@@ -153,7 +153,7 @@ client.articles.list_of_all_article_categories()
 </details>
 
 ## Categories
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">list_of_supported_product_categories</a>()</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py#L25-L48">list_of_supported_product_categories</a>()</code></summary>
 <dl>
 <dd>
 
@@ -216,7 +216,7 @@ client.categories.list_of_supported_product_categories()
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">get_categories_flat</a>()</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py#L50-L71">get_categories_flat</a>()</code></summary>
 <dl>
 <dd>
 
@@ -265,7 +265,7 @@ client.categories.get_categories_flat()
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">full_taxonomy_tree_of_categories_including_middle_categories</a>()</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py#L73-L100">full_taxonomy_tree_of_categories_including_middle_categories</a>()</code></summary>
 <dl>
 <dd>
 
@@ -328,7 +328,7 @@ client.categories.full_taxonomy_tree_of_categories_including_middle_categories()
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">get_subcategory_details</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py#L102-L134">get_subcategory_details</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -410,7 +410,7 @@ client.categories.get_subcategory_details(
 </dl>
 </details>
 
-<details><summary><code>client.categories.<a href="src/fern/categories/client.py">get_category_details</a>(...)</code></summary>
+<details><summary><code>client.categories.<a href="src/fern/categories/client.py#L136-L163">get_category_details</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.categories.get_category_details(
 </details>
 
 ## ComparisonShoppingPages
-<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py">returns_a_set_of_comparison_shopping_pages_based_on_the_current_params</a>()</code></summary>
+<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py#L25-L52">returns_a_set_of_comparison_shopping_pages_based_on_the_current_params</a>()</code></summary>
 <dl>
 <dd>
 
@@ -547,7 +547,7 @@ client.comparison_shopping_pages.returns_a_set_of_comparison_shopping_pages_base
 </dl>
 </details>
 
-<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py">show_comparison_shopping_page</a>(...)</code></summary>
+<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py#L54-L89">show_comparison_shopping_page</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -626,7 +626,7 @@ client.comparison_shopping_pages.show_comparison_shopping_page()
 </dl>
 </details>
 
-<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py">get_comparison_shopping_pages_id</a>(...)</code></summary>
+<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py#L91-L118">get_comparison_shopping_pages_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -685,7 +685,7 @@ client.comparison_shopping_pages.get_comparison_shopping_pages_id(
 </dl>
 </details>
 
-<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py">return_new_or_used_listings_for_a_comparison_shopping_page</a>(...)</code></summary>
+<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py#L120-L168">return_new_or_used_listings_for_a_comparison_shopping_page</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -791,7 +791,7 @@ client.comparison_shopping_pages.return_new_or_used_listings_for_a_comparison_sh
 </dl>
 </details>
 
-<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py">view_reviews_of_a_comparison_shopping_page</a>(...)</code></summary>
+<details><summary><code>client.comparison_shopping_pages.<a href="src/fern/comparison_shopping_pages/client.py#L170-L199">view_reviews_of_a_comparison_shopping_page</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -865,7 +865,7 @@ client.comparison_shopping_pages.view_reviews_of_a_comparison_shopping_page(
 </details>
 
 ## Conversations
-<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py">make_an_offer_to_the_other_participant_in_the_conversation</a>(...)</code></summary>
+<details><summary><code>client.conversations.<a href="src/fern/conversations/client.py#L28-L75">make_an_offer_to_the_other_participant_in_the_conversation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -964,7 +964,7 @@ client.conversations.make_an_offer_to_the_other_participant_in_the_conversation(
 </details>
 
 ## Countries
-<details><summary><code>client.countries.<a href="src/fern/countries/client.py">retrieve_a_list_of_country_codes_with_corresponding_subregions</a>()</code></summary>
+<details><summary><code>client.countries.<a href="src/fern/countries/client.py#L25-L52">retrieve_a_list_of_country_codes_with_corresponding_subregions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1028,7 +1028,7 @@ client.countries.retrieve_a_list_of_country_codes_with_corresponding_subregions(
 </details>
 
 ## Csps
-<details><summary><code>client.csps.<a href="src/fern/csps/client.py">returns_a_set_of_comparison_shopping_pages_based_on_the_current_params</a>()</code></summary>
+<details><summary><code>client.csps.<a href="src/fern/csps/client.py#L25-L52">returns_a_set_of_comparison_shopping_pages_based_on_the_current_params</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1091,7 +1091,7 @@ client.csps.returns_a_set_of_comparison_shopping_pages_based_on_the_current_para
 </dl>
 </details>
 
-<details><summary><code>client.csps.<a href="src/fern/csps/client.py">get_csps_categories</a>()</code></summary>
+<details><summary><code>client.csps.<a href="src/fern/csps/client.py#L54-L75">get_csps_categories</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1140,7 +1140,7 @@ client.csps.get_csps_categories()
 </dl>
 </details>
 
-<details><summary><code>client.csps.<a href="src/fern/csps/client.py">show_comparison_shopping_page</a>(...)</code></summary>
+<details><summary><code>client.csps.<a href="src/fern/csps/client.py#L77-L112">show_comparison_shopping_page</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1219,7 +1219,7 @@ client.csps.show_comparison_shopping_page()
 </dl>
 </details>
 
-<details><summary><code>client.csps.<a href="src/fern/csps/client.py">get_csps_id</a>(...)</code></summary>
+<details><summary><code>client.csps.<a href="src/fern/csps/client.py#L114-L139">get_csps_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1279,7 +1279,7 @@ client.csps.get_csps_id(
 </details>
 
 ## CuratedSets
-<details><summary><code>client.curated_sets.<a href="src/fern/curated_sets/client.py">get_curated_sets_slug</a>(...)</code></summary>
+<details><summary><code>client.curated_sets.<a href="src/fern/curated_sets/client.py#L25-L50">get_curated_sets_slug</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1339,7 +1339,7 @@ client.curated_sets.get_curated_sets_slug(
 </details>
 
 ## Currencies
-<details><summary><code>client.currencies.<a href="src/fern/currencies/client.py">list_of_supported_display_currencies_for_browsing_listings</a>()</code></summary>
+<details><summary><code>client.currencies.<a href="src/fern/currencies/client.py#L25-L52">list_of_supported_display_currencies_for_browsing_listings</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1402,7 +1402,7 @@ client.currencies.list_of_supported_display_currencies_for_browsing_listings()
 </dl>
 </details>
 
-<details><summary><code>client.currencies.<a href="src/fern/currencies/client.py">list_of_supported_listing_currencies_for_shops</a>()</code></summary>
+<details><summary><code>client.currencies.<a href="src/fern/currencies/client.py#L54-L79">list_of_supported_listing_currencies_for_shops</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1466,7 +1466,7 @@ client.currencies.list_of_supported_listing_currencies_for_shops()
 </details>
 
 ## Feedback
-<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py">feedback_details</a>(...)</code></summary>
+<details><summary><code>client.feedback.<a href="src/fern/feedback/client.py#L25-L52">feedback_details</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1540,7 +1540,7 @@ client.feedback.feedback_details(
 </details>
 
 ## Handpicked
-<details><summary><code>client.handpicked.<a href="src/fern/handpicked/client.py">get_results_from_a_handpicked_collection</a>(...)</code></summary>
+<details><summary><code>client.handpicked.<a href="src/fern/handpicked/client.py#L25-L227">get_results_from_a_handpicked_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1886,7 +1886,7 @@ client.handpicked.get_results_from_a_handpicked_collection(
 </details>
 
 ## ListingConditions
-<details><summary><code>client.listing_conditions.<a href="src/fern/listing_conditions/client.py">list_of_supported_product_conditions</a>()</code></summary>
+<details><summary><code>client.listing_conditions.<a href="src/fern/listing_conditions/client.py#L25-L48">list_of_supported_product_conditions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1950,7 +1950,7 @@ client.listing_conditions.list_of_supported_product_conditions()
 </details>
 
 ## Listings
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">default_search_of_listings_includes_only_used_handmade_add_a_filter_to_view_all_listings_or_use_the_listings_all_endpoint</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L46-L242">default_search_of_listings_includes_only_used_handmade_add_a_filter_to_view_all_listings_or_use_the_listings_all_endpoint</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2285,7 +2285,7 @@ client.listings.default_search_of_listings_includes_only_used_handmade_add_a_fil
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">create_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L244-L428">create_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2604,7 +2604,7 @@ client.listings.create_a_listing()
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">all_listings_including_used_handmade_and_brand_new</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L430-L626">all_listings_including_used_handmade_and_brand_new</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2939,7 +2939,7 @@ client.listings.all_listings_including_used_handmade_and_brand_new()
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">individual_facets</a>()</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L628-L651">individual_facets</a>()</code></summary>
 <dl>
 <dd>
 
@@ -3002,7 +3002,7 @@ client.listings.individual_facets()
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">returns_the_latest_negotiation_for_the_requesting_user_given_a_listing_id</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L653-L684">returns_the_latest_negotiation_for_the_requesting_user_given_a_listing_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3075,7 +3075,7 @@ client.listings.returns_the_latest_negotiation_for_the_requesting_user_given_a_l
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">make_an_offer_to_the_seller_of_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L686-L733">make_an_offer_to_the_seller_of_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3173,7 +3173,7 @@ client.listings.make_an_offer_to_the_seller_of_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">view_available_bump_tiers_and_stats_for_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L735-L766">view_available_bump_tiers_and_stats_for_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3246,7 +3246,7 @@ client.listings.view_available_bump_tiers_and_stats_for_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">bump_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L768-L800">bump_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3328,7 +3328,7 @@ client.listings.bump_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">start_a_conversation_with_a_seller</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L802-L836">start_a_conversation_with_a_seller</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3410,7 +3410,7 @@ client.listings.start_a_conversation_with_a_seller(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">view_the_images_associated_with_a_particular_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L838-L869">view_the_images_associated_with_a_particular_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3483,7 +3483,7 @@ client.listings.view_the_images_associated_with_a_particular_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">delete_an_image_from_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L871-L905">delete_an_image_from_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3565,7 +3565,7 @@ client.listings.delete_an_image_from_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">see_all_sales_that_include_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L907-L936">see_all_sales_that_include_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3638,7 +3638,7 @@ client.listings.see_all_sales_that_include_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">listing_details</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L938-L965">listing_details</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3711,7 +3711,7 @@ client.listings.listing_details(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">update_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L967-L1157">update_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4040,7 +4040,7 @@ client.listings.update_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">delete_a_draft_listing_cannot_be_used_on_non_drafts</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L1159-L1190">delete_a_draft_listing_cannot_be_used_on_non_drafts</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4113,7 +4113,7 @@ client.listings.delete_a_draft_listing_cannot_be_used_on_non_drafts(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">edit_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L1192-L1219">edit_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4186,7 +4186,7 @@ client.listings.edit_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">flag_a_listing_for_inappropriate_content_or_fraud</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L1221-L1264">flag_a_listing_for_inappropriate_content_or_fraud</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4276,7 +4276,7 @@ client.listings.flag_a_listing_for_inappropriate_content_or_fraud(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">view_reviews_of_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L1266-L1293">view_reviews_of_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4349,7 +4349,7 @@ client.listings.view_reviews_of_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.listings.<a href="src/fern/listings/client.py">create_a_review_for_a_listing</a>(...)</code></summary>
+<details><summary><code>client.listings.<a href="src/fern/listings/client.py#L1295-L1324">create_a_review_for_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4423,7 +4423,7 @@ client.listings.create_a_review_for_a_listing(
 </details>
 
 ## My
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_account_details</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L38-L61">get_account_details</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4486,7 +4486,7 @@ client.my.get_account_details()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">update_account_details</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L63-L122">update_account_details</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4597,7 +4597,7 @@ client.my.update_account_details()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">see_all_addresses_in_your_address_book</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L124-L149">see_all_addresses_in_your_address_book</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4660,7 +4660,7 @@ client.my.see_all_addresses_in_your_address_book()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">create_a_new_address_in_your_address_book</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L151-L176">create_a_new_address_in_your_address_book</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4723,7 +4723,7 @@ client.my.create_a_new_address_in_your_address_book()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">update_an_existing_address_in_your_address_book</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L178-L209">update_an_existing_address_in_your_address_book</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4796,7 +4796,7 @@ client.my.update_an_existing_address_in_your_address_book(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">delete_an_existing_address_in_your_address_book</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L211-L242">delete_an_existing_address_in_your_address_book</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4869,7 +4869,7 @@ client.my.delete_an_existing_address_in_your_address_book(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_your_conversations</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L244-L295">get_a_list_of_your_conversations</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4972,7 +4972,7 @@ client.my.get_a_list_of_your_conversations()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">start_a_conversation</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L297-L358">start_a_conversation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.my.start_a_conversation(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">send_a_message</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L360-L392">send_a_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5167,7 +5167,7 @@ client.my.send_a_message(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">display_conversation_details_with_messages_in_natural_time_order_oldest_to_newest</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L394-L425">display_conversation_details_with_messages_in_natural_time_order_oldest_to_newest</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5240,7 +5240,7 @@ client.my.display_conversation_details_with_messages_in_natural_time_order_oldes
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">mark_a_conversation_read_unread</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L427-L459">mark_a_conversation_read_unread</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5321,7 +5321,7 @@ client.my.mark_a_conversation_read_unread(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_your_actionable_status_counts</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L461-L484">get_your_actionable_status_counts</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5384,7 +5384,7 @@ client.my.get_your_actionable_status_counts()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">post_my_curated_set_product_product_id</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L486-L513">post_my_curated_set_product_product_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5443,7 +5443,7 @@ client.my.post_my_curated_set_product_product_id(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">delete_my_curated_set_product_product_id</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L515-L544">delete_my_curated_set_product_product_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5502,7 +5502,7 @@ client.my.delete_my_curated_set_product_product_id(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_listings_from_your_feed</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L546-L569">get_listings_from_your_feed</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5565,7 +5565,7 @@ client.my.get_listings_from_your_feed()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_your_feed_customization_options</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L571-L594">get_your_feed_customization_options</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5628,7 +5628,7 @@ client.my.get_your_feed_customization_options()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_your_feed</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L596-L619">get_your_feed</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5691,7 +5691,7 @@ client.my.get_your_feed()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">list_of_received_feedback</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L621-L644">list_of_received_feedback</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5754,7 +5754,7 @@ client.my.list_of_received_feedback()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">list_of_sent_feedback</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L646-L669">list_of_sent_feedback</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5817,7 +5817,7 @@ client.my.list_of_sent_feedback()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">see_what_the_user_is_following</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L671-L694">see_what_the_user_is_following</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5880,7 +5880,7 @@ client.my.see_what_the_user_is_following()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">returns_a_users_article_category_follows</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L696-L721">returns_a_users_article_category_follows</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5943,7 +5943,7 @@ client.my.returns_a_users_article_category_follows()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">set_a_users_article_category_follows</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L723-L754">set_a_users_article_category_follows</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6016,7 +6016,7 @@ client.my.set_a_users_article_category_follows(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_brand</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L756-L783">follow_status_for_a_brand</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6089,7 +6089,7 @@ client.my.follow_status_for_a_brand(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_brand</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L785-L812">follow_a_brand</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6162,7 +6162,7 @@ client.my.follow_a_brand(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">unfollow_a_brand</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L814-L841">unfollow_a_brand</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6235,7 +6235,7 @@ client.my.unfollow_a_brand(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_subcategory</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L843-L877">follow_status_for_a_subcategory</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6317,7 +6317,7 @@ client.my.follow_status_for_a_subcategory(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_subcategory</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L879-L911">follow_a_subcategory</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6399,7 +6399,7 @@ client.my.follow_a_subcategory(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">unfollow_a_subcategory</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L913-L945">unfollow_a_subcategory</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6481,7 +6481,7 @@ client.my.unfollow_a_subcategory(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_category</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L947-L976">follow_status_for_a_category</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6554,7 +6554,7 @@ client.my.follow_status_for_a_category(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_category</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L978-L1005">follow_a_category</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6627,7 +6627,7 @@ client.my.follow_a_category(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">unfollow_a_category</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1007-L1034">unfollow_a_category</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6700,7 +6700,7 @@ client.my.unfollow_a_category(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_collection</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1036-L1065">follow_status_for_a_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6773,7 +6773,7 @@ client.my.follow_status_for_a_collection(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_collection</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1067-L1094">follow_a_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6846,7 +6846,7 @@ client.my.follow_a_collection(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">unfollow_a_collection</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1096-L1123">unfollow_a_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6919,7 +6919,7 @@ client.my.unfollow_a_collection(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_handpicked_collection</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1125-L1154">follow_status_for_a_handpicked_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6992,7 +6992,7 @@ client.my.follow_status_for_a_handpicked_collection(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_handpicked_collection</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1156-L1185">follow_a_handpicked_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7065,7 +7065,7 @@ client.my.follow_a_handpicked_collection(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">unfollow_a_handpicked_collection</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1187-L1216">unfollow_a_handpicked_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7138,7 +7138,7 @@ client.my.unfollow_a_handpicked_collection(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_search</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1218-L1241">follow_status_for_a_search</a>()</code></summary>
 <dl>
 <dd>
 
@@ -7201,7 +7201,7 @@ client.my.follow_status_for_a_search()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_search</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1243-L1427">follow_a_search</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7512,7 +7512,7 @@ client.my.follow_a_search()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_status_for_a_shop</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1429-L1456">follow_status_for_a_shop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7585,7 +7585,7 @@ client.my.follow_status_for_a_shop(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">follow_a_shop</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1458-L1485">follow_a_shop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7658,7 +7658,7 @@ client.my.follow_a_shop(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">unfollow_a_shop</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1487-L1514">unfollow_a_shop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7731,7 +7731,7 @@ client.my.unfollow_a_shop(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">delete_a_follow</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1516-L1543">delete_a_follow</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7804,7 +7804,7 @@ client.my.delete_a_follow(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">post_my_follows_follow_id_alert</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1545-L1572">post_my_follows_follow_id_alert</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7863,7 +7863,7 @@ client.my.post_my_follows_follow_id_alert(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">delete_my_follows_follow_id_alert</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1574-L1601">delete_my_follows_follow_id_alert</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7922,7 +7922,7 @@ client.my.delete_my_follows_follow_id_alert(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">retrieve_a_list_of_live_listings_for_the_seller_to_search_all_listings_specify_state_all</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1603-L1799">retrieve_a_list_of_live_listings_for_the_seller_to_search_all_listings_specify_state_all</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8249,7 +8249,7 @@ client.my.retrieve_a_list_of_live_listings_for_the_seller_to_search_all_listings
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">retrieve_a_list_your_draft_listings</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1801-L1985">retrieve_a_list_your_draft_listings</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8560,7 +8560,7 @@ client.my.retrieve_a_list_your_draft_listings()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_active_negotiations_as_a_seller</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L1987-L2025">get_a_list_of_active_negotiations_as_a_seller</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8647,7 +8647,7 @@ client.my.get_a_list_of_active_negotiations_as_a_seller()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">end_a_listing</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2027-L2066">end_a_listing</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8730,7 +8730,7 @@ client.my.end_a_listing(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_your_lists_wishlist_watch_list_etc</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2068-L2093">get_a_list_of_your_lists_wishlist_watch_list_etc</a>()</code></summary>
 <dl>
 <dd>
 
@@ -8793,7 +8793,7 @@ client.my.get_a_list_of_your_lists_wishlist_watch_list_etc()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_active_negotiations_as_a_buyer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2095-L2133">get_a_list_of_active_negotiations_as_a_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8880,7 +8880,7 @@ client.my.get_a_list_of_active_negotiations_as_a_buyer()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_offer_details</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2135-L2162">get_offer_details</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8953,7 +8953,7 @@ client.my.get_offer_details(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">accept_an_offer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2164-L2196">accept_an_offer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9034,7 +9034,7 @@ client.my.accept_an_offer(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">counter_an_offer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2198-L2272">counter_an_offer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9179,7 +9179,7 @@ client.my.counter_an_offer(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">decline_an_offer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2274-L2301">decline_an_offer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9252,7 +9252,7 @@ client.my.decline_an_offer(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">list_of_orders_that_need_feedback</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2303-L2326">list_of_orders_that_need_feedback</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9315,7 +9315,7 @@ client.my.list_of_orders_that_need_feedback()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">returns_all_orders_newest_first</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2328-L2351">returns_all_orders_newest_first</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9378,7 +9378,7 @@ client.my.returns_all_orders_newest_first()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_my_orders_buying_by_uuid_uuid</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2353-L2380">get_my_orders_buying_by_uuid_uuid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9437,7 +9437,7 @@ client.my.get_my_orders_buying_by_uuid_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">returns_unpaid_orders_newest_first</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2382-L2405">returns_unpaid_orders_newest_first</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9500,7 +9500,7 @@ client.my.returns_unpaid_orders_newest_first()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">returns_order_details_for_a_buyer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2407-L2436">returns_order_details_for_a_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9573,7 +9573,7 @@ client.my.returns_order_details_for_a_buyer(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">marks_an_order_as_received_by_the_buyer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2438-L2467">marks_an_order_as_received_by_the_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9646,7 +9646,7 @@ client.my.marks_an_order_as_received_by_the_buyer(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_all_seller_orders_newest_first</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2469-L2492">get_all_seller_orders_newest_first</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9709,7 +9709,7 @@ client.my.get_all_seller_orders_newest_first()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_unpaid_seller_orders_newest_first</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2494-L2517">get_unpaid_seller_orders_newest_first</a>()</code></summary>
 <dl>
 <dd>
 
@@ -9772,7 +9772,7 @@ client.my.get_unpaid_seller_orders_newest_first()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">see_previous_orders_from_buyer</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2519-L2548">see_previous_orders_from_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9845,7 +9845,7 @@ client.my.see_previous_orders_from_buyer(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_my_orders_selling_by_uuid_uuid</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2550-L2577">get_my_orders_selling_by_uuid_uuid</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9904,7 +9904,7 @@ client.my.get_my_orders_selling_by_uuid_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">returns_order_details_for_a_seller</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2579-L2608">returns_order_details_for_a_seller</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9977,7 +9977,7 @@ client.my.returns_order_details_for_a_seller(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">marks_an_order_as_picked_up</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2610-L2642">marks_an_order_as_picked_up</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10058,7 +10058,7 @@ client.my.marks_an_order_as_picked_up(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">marks_an_order_as_shipped</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2644-L2697">marks_an_order_as_shipped</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10158,7 +10158,7 @@ client.my.marks_an_order_as_shipped(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">initiate_a_refund_for_a_sold_order</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2699-L2728">initiate_a_refund_for_a_sold_order</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10231,7 +10231,7 @@ client.my.initiate_a_refund_for_a_sold_order(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_payments</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2730-L2796">get_payments</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10358,7 +10358,7 @@ client.my.get_payments()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_payment</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2798-L2825">get_payment</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10431,7 +10431,7 @@ client.my.get_payment(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_payouts</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2827-L2850">get_a_list_of_payouts</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10494,7 +10494,7 @@ client.my.get_a_list_of_payouts()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">read_the_line_items_of_a_payout</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2852-L2881">read_the_line_items_of_a_payout</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10567,7 +10567,7 @@ client.my.read_the_line_items_of_a_payout(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_refund_requests_as_a_seller</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2883-L2908">get_a_list_of_refund_requests_as_a_seller</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10630,7 +10630,7 @@ client.my.get_a_list_of_refund_requests_as_a_seller()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">update_a_refund_request_for_a_sold_order</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2910-L2939">update_a_refund_request_for_a_sold_order</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10703,7 +10703,7 @@ client.my.update_a_refund_request_for_a_sold_order(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_your_recently_viewed_listings</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2941-L2966">get_a_list_of_your_recently_viewed_listings</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10766,7 +10766,7 @@ client.my.get_a_list_of_your_recently_viewed_listings()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">get_a_list_of_wishlisted_items</a>()</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2968-L2991">get_a_list_of_wishlisted_items</a>()</code></summary>
 <dl>
 <dd>
 
@@ -10829,7 +10829,7 @@ client.my.get_a_list_of_wishlisted_items()
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">add_a_listing_to_your_wishlist</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L2993-L3022">add_a_listing_to_your_wishlist</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10902,7 +10902,7 @@ client.my.add_a_listing_to_your_wishlist(
 </dl>
 </details>
 
-<details><summary><code>client.my.<a href="src/fern/my/client.py">remove_a_listing_from_your_wishlist</a>(...)</code></summary>
+<details><summary><code>client.my.<a href="src/fern/my/client.py#L3024-L3053">remove_a_listing_from_your_wishlist</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10976,7 +10976,7 @@ client.my.remove_a_listing_from_your_wishlist(
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">feedback_details_for_an_orders_buyer</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L25-L54">feedback_details_for_an_orders_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11049,7 +11049,7 @@ client.orders.feedback_details_for_an_orders_buyer(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">add_feedback_about_an_orders_buyer</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L56-L85">add_feedback_about_an_orders_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11122,7 +11122,7 @@ client.orders.add_feedback_about_an_orders_buyer(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">feedback_details_for_an_orders_seller</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L87-L116">feedback_details_for_an_orders_seller</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11195,7 +11195,7 @@ client.orders.feedback_details_for_an_orders_seller(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">add_feedback_about_an_orders_seller</a>(...)</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L118-L147">add_feedback_about_an_orders_seller</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11269,7 +11269,7 @@ client.orders.add_feedback_about_an_orders_seller(
 </details>
 
 ## PaymentMethods
-<details><summary><code>client.payment_methods.<a href="src/fern/payment_methods/client.py">get_list_of_payment_methods</a>()</code></summary>
+<details><summary><code>client.payment_methods.<a href="src/fern/payment_methods/client.py#L25-L48">get_list_of_payment_methods</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11333,7 +11333,7 @@ client.payment_methods.get_list_of_payment_methods()
 </details>
 
 ## Priceguide
-<details><summary><code>client.priceguide.<a href="src/fern/priceguide/client.py">get_a_summary_of_transactions_for_a_given_price_guide</a>(...)</code></summary>
+<details><summary><code>client.priceguide.<a href="src/fern/priceguide/client.py#L25-L65">get_a_summary_of_transactions_for_a_given_price_guide</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11423,7 +11423,7 @@ client.priceguide.get_a_summary_of_transactions_for_a_given_price_guide(
 </details>
 
 ## Products
-<details><summary><code>client.products.<a href="src/fern/products/client.py">view_a_review</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L28-L55">view_a_review</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11496,7 +11496,7 @@ client.products.view_a_review(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">update_a_review</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L57-L103">update_a_review</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11593,7 +11593,7 @@ client.products.update_a_review(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">view_reviews_of_a_comparison_shopping_page</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L105-L134">view_reviews_of_a_comparison_shopping_page</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11666,7 +11666,7 @@ client.products.view_reviews_of_a_comparison_shopping_page(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">create_a_review_for_a_product</a>(...)</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L136-L165">create_a_review_for_a_product</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11740,7 +11740,7 @@ client.products.create_a_review_for_a_product(
 </details>
 
 ## Sales
-<details><summary><code>client.sales.<a href="src/fern/sales/client.py">view_upcoming_and_live_reverb_official_sales</a>()</code></summary>
+<details><summary><code>client.sales.<a href="src/fern/sales/client.py#L25-L50">view_upcoming_and_live_reverb_official_sales</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11803,7 +11803,7 @@ client.sales.view_upcoming_and_live_reverb_official_sales()
 </dl>
 </details>
 
-<details><summary><code>client.sales.<a href="src/fern/sales/client.py">view_your_created_sales</a>()</code></summary>
+<details><summary><code>client.sales.<a href="src/fern/sales/client.py#L52-L75">view_your_created_sales</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11866,7 +11866,7 @@ client.sales.view_your_created_sales()
 </dl>
 </details>
 
-<details><summary><code>client.sales.<a href="src/fern/sales/client.py">add_listings_to_a_sale</a>(...)</code></summary>
+<details><summary><code>client.sales.<a href="src/fern/sales/client.py#L77-L104">add_listings_to_a_sale</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11939,7 +11939,7 @@ client.sales.add_listings_to_a_sale(
 </dl>
 </details>
 
-<details><summary><code>client.sales.<a href="src/fern/sales/client.py">remove_a_listing_from_a_sale</a>(...)</code></summary>
+<details><summary><code>client.sales.<a href="src/fern/sales/client.py#L106-L135">remove_a_listing_from_a_sale</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12012,7 +12012,7 @@ client.sales.remove_a_listing_from_a_sale(
 </dl>
 </details>
 
-<details><summary><code>client.sales.<a href="src/fern/sales/client.py">get_sales_slug</a>(...)</code></summary>
+<details><summary><code>client.sales.<a href="src/fern/sales/client.py#L137-L162">get_sales_slug</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12072,7 +12072,7 @@ client.sales.get_sales_slug(
 </details>
 
 ## Shipping
-<details><summary><code>client.shipping.<a href="src/fern/shipping/client.py">list_of_supported_shipping_providers</a>()</code></summary>
+<details><summary><code>client.shipping.<a href="src/fern/shipping/client.py#L25-L48">list_of_supported_shipping_providers</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12135,7 +12135,7 @@ client.shipping.list_of_supported_shipping_providers()
 </dl>
 </details>
 
-<details><summary><code>client.shipping.<a href="src/fern/shipping/client.py">get_shipping_regions</a>()</code></summary>
+<details><summary><code>client.shipping.<a href="src/fern/shipping/client.py#L50-L71">get_shipping_regions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12185,7 +12185,7 @@ client.shipping.get_shipping_regions()
 </details>
 
 ## Shop
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">get_your_own_shop_details</a>()</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L32-L55">get_your_own_shop_details</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12248,7 +12248,7 @@ client.shop.get_your_own_shop_details()
 </dl>
 </details>
 
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">update_your_shop_profile</a>(...)</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L57-L130">update_your_shop_profile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12399,7 +12399,7 @@ client.shop.update_your_shop_profile()
 </dl>
 </details>
 
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">list_of_supported_product_conditions</a>()</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L132-L155">list_of_supported_product_conditions</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12462,7 +12462,7 @@ client.shop.list_of_supported_product_conditions()
 </dl>
 </details>
 
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">get_accepted_payment_methods</a>()</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L157-L180">get_accepted_payment_methods</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12525,7 +12525,7 @@ client.shop.get_accepted_payment_methods()
 </dl>
 </details>
 
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">returns_shop_vacation_status</a>()</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L182-L205">returns_shop_vacation_status</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12588,7 +12588,7 @@ client.shop.returns_shop_vacation_status()
 </dl>
 </details>
 
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">enable_vacation_mode_all_listings_will_be_unavailable_until_vacation_mode_is_turned_off</a>()</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L207-L236">enable_vacation_mode_all_listings_will_be_unavailable_until_vacation_mode_is_turned_off</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12651,7 +12651,7 @@ client.shop.enable_vacation_mode_all_listings_will_be_unavailable_until_vacation
 </dl>
 </details>
 
-<details><summary><code>client.shop.<a href="src/fern/shop/client.py">disable_vacation_mode_all_listings_will_be_re_enabled</a>()</code></summary>
+<details><summary><code>client.shop.<a href="src/fern/shop/client.py#L238-L265">disable_vacation_mode_all_listings_will_be_re_enabled</a>()</code></summary>
 <dl>
 <dd>
 
@@ -12715,7 +12715,7 @@ client.shop.disable_vacation_mode_all_listings_will_be_re_enabled()
 </details>
 
 ## Shops
-<details><summary><code>client.shops.<a href="src/fern/shops/client.py">get_storefront_details_on_a_shop</a>(...)</code></summary>
+<details><summary><code>client.shops.<a href="src/fern/shops/client.py#L25-L54">get_storefront_details_on_a_shop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12788,7 +12788,7 @@ client.shops.get_storefront_details_on_a_shop(
 </dl>
 </details>
 
-<details><summary><code>client.shops.<a href="src/fern/shops/client.py">list_of_shipping_profiles_for_your_shop</a>(...)</code></summary>
+<details><summary><code>client.shops.<a href="src/fern/shops/client.py#L56-L85">list_of_shipping_profiles_for_your_shop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12861,7 +12861,7 @@ client.shops.list_of_shipping_profiles_for_your_shop(
 </dl>
 </details>
 
-<details><summary><code>client.shops.<a href="src/fern/shops/client.py">get_details_on_a_shop</a>(...)</code></summary>
+<details><summary><code>client.shops.<a href="src/fern/shops/client.py#L87-L125">get_details_on_a_shop</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12942,7 +12942,7 @@ client.shops.get_details_on_a_shop(
 </dl>
 </details>
 
-<details><summary><code>client.shops.<a href="src/fern/shops/client.py">get_sellers_feedback</a>(...)</code></summary>
+<details><summary><code>client.shops.<a href="src/fern/shops/client.py#L127-L154">get_sellers_feedback</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13015,7 +13015,7 @@ client.shops.get_sellers_feedback(
 </dl>
 </details>
 
-<details><summary><code>client.shops.<a href="src/fern/shops/client.py">get_sellers_feedback_as_a_buyer</a>(...)</code></summary>
+<details><summary><code>client.shops.<a href="src/fern/shops/client.py#L156-L185">get_sellers_feedback_as_a_buyer</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13088,7 +13088,7 @@ client.shops.get_sellers_feedback_as_a_buyer(
 </dl>
 </details>
 
-<details><summary><code>client.shops.<a href="src/fern/shops/client.py">get_sellers_feedback_as_a_seller</a>(...)</code></summary>
+<details><summary><code>client.shops.<a href="src/fern/shops/client.py#L187-L216">get_sellers_feedback_as_a_seller</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13162,7 +13162,7 @@ client.shops.get_sellers_feedback_as_a_seller(
 </details>
 
 ## Wants
-<details><summary><code>client.wants.<a href="src/fern/wants/client.py">a_list_of_wanted_items_by_the_user</a>()</code></summary>
+<details><summary><code>client.wants.<a href="src/fern/wants/client.py#L25-L48">a_list_of_wanted_items_by_the_user</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13225,7 +13225,7 @@ client.wants.a_list_of_wanted_items_by_the_user()
 </dl>
 </details>
 
-<details><summary><code>client.wants.<a href="src/fern/wants/client.py">mark_an_item_wanted_returns200on_success_or422on_failure</a>(...)</code></summary>
+<details><summary><code>client.wants.<a href="src/fern/wants/client.py#L50-L81">mark_an_item_wanted_returns200on_success_or422on_failure</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13298,7 +13298,7 @@ client.wants.mark_an_item_wanted_returns200on_success_or422on_failure(
 </dl>
 </details>
 
-<details><summary><code>client.wants.<a href="src/fern/wants/client.py">unmark_an_item_wanted</a>(...)</code></summary>
+<details><summary><code>client.wants.<a href="src/fern/wants/client.py#L83-L110">unmark_an_item_wanted</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13372,7 +13372,7 @@ client.wants.unmark_an_item_wanted(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_webhook_registrations</a>()</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L29-L52">get_webhook_registrations</a>()</code></summary>
 <dl>
 <dd>
 
@@ -13435,7 +13435,7 @@ client.webhooks.get_webhook_registrations()
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">register_a_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L54-L93">register_a_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13518,7 +13518,7 @@ client.webhooks.register_a_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">get_details_of_a_webhook_registration</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L95-L124">get_details_of_a_webhook_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -13591,7 +13591,7 @@ client.webhooks.get_details_of_a_webhook_registration(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">remove_a_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L126-L153">remove_a_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 

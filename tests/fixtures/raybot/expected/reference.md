@@ -1,6 +1,6 @@
 # Reference
 ## Version
-<details><summary><code>client.version.<a href="src/fern/version/client.py">get_version</a>() -> Version</code></summary>
+<details><summary><code>client.version.<a href="src/fern/version/client.py#L26-L48">get_version</a>() -> Version</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.version.get_version()
 </details>
 
 ## Health
-<details><summary><code>client.health.<a href="src/fern/health/client.py">get_health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.health.<a href="src/fern/health/client.py#L26-L48">get_health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.health.get_health()
 </details>
 
 ## ErrorCodes
-<details><summary><code>client.error_codes.<a href="src/fern/error_codes/client.py">get_error_codes</a>() -> typing.List[ErrorCodeResponse]</code></summary>
+<details><summary><code>client.error_codes.<a href="src/fern/error_codes/client.py#L26-L50">get_error_codes</a>() -> typing.List[ErrorCodeResponse]</code></summary>
 <dl>
 <dd>
 
@@ -189,7 +189,7 @@ client.error_codes.get_error_codes()
 </details>
 
 ## Config
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_log_config</a>() -> LogConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L53-L75">get_log_config</a>() -> LogConfig</code></summary>
 <dl>
 <dd>
 
@@ -251,7 +251,7 @@ client.config.get_log_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_log_config</a>(...) -> LogConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L77-L130">update_log_config</a>(...) -> LogConfig</code></summary>
 <dl>
 <dd>
 
@@ -334,7 +334,7 @@ client.config.update_log_config(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_hardware_config</a>() -> HardwareConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L132-L154">get_hardware_config</a>() -> HardwareConfig</code></summary>
 <dl>
 <dd>
 
@@ -396,7 +396,7 @@ client.config.get_hardware_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_hardware_config</a>(...) -> HardwareConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L156-L235">update_hardware_config</a>(...) -> HardwareConfig</code></summary>
 <dl>
 <dd>
 
@@ -500,7 +500,7 @@ client.config.update_hardware_config(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_cloud_config</a>() -> CloudConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L237-L259">get_cloud_config</a>() -> CloudConfig</code></summary>
 <dl>
 <dd>
 
@@ -562,7 +562,7 @@ client.config.get_cloud_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_cloud_config</a>(...) -> CloudConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L261-L300">update_cloud_config</a>(...) -> CloudConfig</code></summary>
 <dl>
 <dd>
 
@@ -636,7 +636,7 @@ client.config.update_cloud_config(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_http_config</a>() -> HttpConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L302-L324">get_http_config</a>() -> HttpConfig</code></summary>
 <dl>
 <dd>
 
@@ -698,7 +698,7 @@ client.config.get_http_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_http_config</a>(...) -> HttpConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L326-L359">update_http_config</a>(...) -> HttpConfig</code></summary>
 <dl>
 <dd>
 
@@ -771,7 +771,7 @@ client.config.update_http_config(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_wifi_config</a>() -> WifiConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L361-L383">get_wifi_config</a>() -> WifiConfig</code></summary>
 <dl>
 <dd>
 
@@ -833,7 +833,7 @@ client.config.get_wifi_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_wifi_config</a>(...) -> WifiConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L385-L426">update_wifi_config</a>(...) -> WifiConfig</code></summary>
 <dl>
 <dd>
 
@@ -916,7 +916,7 @@ client.config.update_wifi_config(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_command_config</a>() -> CommandConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L428-L450">get_command_config</a>() -> CommandConfig</code></summary>
 <dl>
 <dd>
 
@@ -978,7 +978,7 @@ client.config.get_command_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_command_config</a>(...) -> CommandConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L452-L497">update_command_config</a>(...) -> CommandConfig</code></summary>
 <dl>
 <dd>
 
@@ -1059,7 +1059,7 @@ client.config.update_command_config(
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">get_battery_monitoring_config</a>() -> BatteryMonitoringConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L499-L523">get_battery_monitoring_config</a>() -> BatteryMonitoringConfig</code></summary>
 <dl>
 <dd>
 
@@ -1121,7 +1121,7 @@ client.config.get_battery_monitoring_config()
 </dl>
 </details>
 
-<details><summary><code>client.config.<a href="src/fern/config/client.py">update_battery_monitoring_config</a>(...) -> BatteryMonitoringConfig</code></summary>
+<details><summary><code>client.config.<a href="src/fern/config/client.py#L525-L637">update_battery_monitoring_config</a>(...) -> BatteryMonitoringConfig</code></summary>
 <dl>
 <dd>
 
@@ -1229,7 +1229,7 @@ client.config.update_battery_monitoring_config(
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_info</a>() -> SystemInfo</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L27-L49">get_system_info</a>() -> SystemInfo</code></summary>
 <dl>
 <dd>
 
@@ -1291,7 +1291,7 @@ client.system.get_system_info()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">get_system_status</a>() -> SystemStatus</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L51-L73">get_system_status</a>() -> SystemStatus</code></summary>
 <dl>
 <dd>
 
@@ -1353,7 +1353,7 @@ client.system.get_system_status()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">reboot_system</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L75-L96">reboot_system</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1415,7 +1415,7 @@ client.system.reboot_system()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">stop_emergency</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L98-L119">stop_emergency</a>()</code></summary>
 <dl>
 <dd>
 
@@ -1478,7 +1478,7 @@ client.system.stop_emergency()
 </details>
 
 ## RobotState
-<details><summary><code>client.robot_state.<a href="src/fern/robot_state/client.py">get_robot_state</a>() -> RobotStateResponse</code></summary>
+<details><summary><code>client.robot_state.<a href="src/fern/robot_state/client.py#L26-L48">get_robot_state</a>() -> RobotStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1541,7 +1541,7 @@ client.robot_state.get_robot_state()
 </details>
 
 ## State
-<details><summary><code>client.state.<a href="src/fern/state/client.py">get_limit_switch_state</a>() -> LimitSwitchState</code></summary>
+<details><summary><code>client.state.<a href="src/fern/state/client.py#L26-L48">get_limit_switch_state</a>() -> LimitSwitchState</code></summary>
 <dl>
 <dd>
 
@@ -1604,7 +1604,7 @@ client.state.get_limit_switch_state()
 </details>
 
 ## Peripherals
-<details><summary><code>client.peripherals.<a href="src/fern/peripherals/client.py">list_available_serial_ports</a>() -> SerialPortListResponse</code></summary>
+<details><summary><code>client.peripherals.<a href="src/fern/peripherals/client.py#L26-L50">list_available_serial_ports</a>() -> SerialPortListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1667,7 +1667,7 @@ client.peripherals.list_available_serial_ports()
 </details>
 
 ## Commands
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">get_command_by_id</a>(...) -> CommandResponse</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L32-L61">get_command_by_id</a>(...) -> CommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -1739,7 +1739,7 @@ client.commands.get_command_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">delete_command_by_id</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L63-L89">delete_command_by_id</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1811,7 +1811,7 @@ client.commands.delete_command_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">list_commands</a>(...) -> CommandsListResponse</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L91-L146">list_commands</a>(...) -> CommandsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1920,7 +1920,7 @@ Filter the commands by the given statuses. Use `,` to filter by multiple statuse
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">create_command</a>(...) -> CommandResponse</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L148-L181">create_command</a>(...) -> CommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -2003,7 +2003,7 @@ client.commands.create_command(
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">get_current_processing_command</a>() -> CommandResponse</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L183-L207">get_current_processing_command</a>() -> CommandResponse</code></summary>
 <dl>
 <dd>
 
@@ -2065,7 +2065,7 @@ client.commands.get_current_processing_command()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">cancel_current_processing_command</a>()</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L209-L230">cancel_current_processing_command</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2128,7 +2128,7 @@ client.commands.cancel_current_processing_command()
 </details>
 
 ## Alarms
-<details><summary><code>client.alarms.<a href="src/fern/alarms/client.py">list_alarms</a>(...) -> AlarmsListResponse</code></summary>
+<details><summary><code>client.alarms.<a href="src/fern/alarms/client.py#L27-L73">list_alarms</a>(...) -> AlarmsListResponse</code></summary>
 <dl>
 <dd>
 
@@ -2221,7 +2221,7 @@ Filter alarms by status. Required parameter. Allowed values:
 </dl>
 </details>
 
-<details><summary><code>client.alarms.<a href="src/fern/alarms/client.py">delete_deactive_alarms</a>()</code></summary>
+<details><summary><code>client.alarms.<a href="src/fern/alarms/client.py#L75-L96">delete_deactive_alarms</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2283,7 +2283,7 @@ client.alarms.delete_deactive_alarms()
 </dl>
 </details>
 
-<details><summary><code>client.alarms.<a href="src/fern/alarms/client.py">deactivate_alarm</a>(...)</code></summary>
+<details><summary><code>client.alarms.<a href="src/fern/alarms/client.py#L98-L124">deactivate_alarm</a>(...)</code></summary>
 <dl>
 <dd>
 

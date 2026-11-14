@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_tides</a>(...) -> typing.List[TideTable]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L123-L154">list_tides</a>(...) -> typing.List[TideTable]</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.list_tides()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">forecast_surge_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L156-L191">forecast_surge_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.forecast_surge_stream(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">forecast_surge</a>(...) -> Surge</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L193-L224">forecast_surge</a>(...) -> Surge</code></summary>
 <dl>
 <dd>
 
@@ -239,7 +239,7 @@ client.forecast_surge_stream(
 </details>
 
 ## Forecasts
-<details><summary><code>client.forecasts.<a href="src/fern/forecasts/client.py">forecast_the_next_tide</a>(...) -> Forecast</code></summary>
+<details><summary><code>client.forecasts.<a href="src/fern/forecasts/client.py#L29-L56">forecast_the_next_tide</a>(...) -> Forecast</code></summary>
 <dl>
 <dd>
 
@@ -307,7 +307,7 @@ client.forecasts.forecast_the_next_tide(
 </details>
 
 ## Gauges
-<details><summary><code>client.gauges.<a href="src/fern/gauges/client.py">list_gauges</a>() -> typing.List[Gauge]</code></summary>
+<details><summary><code>client.gauges.<a href="src/fern/gauges/client.py#L26-L52">list_gauges</a>() -> typing.List[Gauge]</code></summary>
 <dl>
 <dd>
 

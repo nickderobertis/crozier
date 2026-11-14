@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_harvest</a>(...) -> GetHarvestResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L102-L130">get_harvest</a>(...) -> GetHarvestResponse</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_harvest(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_bundle</a>(...) -> Basket</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L132-L158">create_bundle</a>(...) -> Basket</code></summary>
 <dl>
 <dd>
 

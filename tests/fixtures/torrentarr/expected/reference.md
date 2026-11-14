@@ -1,6 +1,6 @@
 # Reference
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">root</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L26-L47">root</a>()</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.system.root()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">api_swagger_ui</a>() -> str</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L49-L71">api_swagger_ui</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -98,7 +98,7 @@ client.system.api_swagger_ui()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">api_openapi_spec</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L73-L97">api_openapi_spec</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.system.api_openapi_spec()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">health</a>() -> HealthResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L99-L121">health</a>() -> HealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -196,7 +196,7 @@ client.system.health()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">sw_js</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L123-L144">sw_js</a>()</code></summary>
 <dl>
 <dd>
 
@@ -245,7 +245,7 @@ client.system.sw_js()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">ui</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L146-L167">ui</a>()</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.system.ui()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">ui_trailing_slash</a>()</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L169-L190">ui_trailing_slash</a>()</code></summary>
 <dl>
 <dd>
 
@@ -343,7 +343,7 @@ client.system.ui_trailing_slash()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">web_swagger_ui</a>() -> str</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L192-L214">web_swagger_ui</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -392,7 +392,7 @@ client.system.web_swagger_ui()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">web_meta_public</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L216-L242">web_meta_public</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -449,7 +449,7 @@ client.system.web_meta_public()
 </dl>
 </details>
 
-<details><summary><code>client.system.<a href="src/fern/system/client.py">web_openapi_spec</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L244-L268">web_openapi_spec</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -499,7 +499,7 @@ client.system.web_openapi_spec()
 </details>
 
 ## WebUI
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_arr_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L41-L63">api_arr_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -548,7 +548,7 @@ client.web_ui.api_arr_list()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_arr_rebuild</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L65-L89">api_arr_rebuild</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -597,7 +597,7 @@ client.web_ui.api_arr_rebuild()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_arr_test_connection</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L91-L131">api_arr_test_connection</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -678,7 +678,7 @@ client.web_ui.api_arr_test_connection()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">redirect_to_arr_ui_for_movie_series_artist_author_api</a>(...)</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L133-L168">redirect_to_arr_ui_for_movie_series_artist_author_api</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -755,7 +755,7 @@ client.web_ui.redirect_to_arr_ui_for_movie_series_artist_author_api(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_arr_open_item</a>(...)</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L170-L210">api_arr_open_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -833,7 +833,7 @@ client.web_ui.api_arr_open_item(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_arr_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L212-L240">api_arr_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -892,7 +892,7 @@ client.web_ui.api_arr_restart(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_config_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L242-L266">api_config_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -941,7 +941,7 @@ client.web_ui.api_config_get()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_config_post</a>(...) -> ConfigUpdateResponse</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L268-L296">api_config_post</a>(...) -> ConfigUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1002,7 +1002,7 @@ client.web_ui.api_config_post(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_config_schema_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L298-L322">api_config_schema_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1051,7 +1051,7 @@ client.web_ui.api_config_schema_get()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_download_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L324-L348">api_download_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1100,7 +1100,7 @@ client.web_ui.api_download_update()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_lidarr_albums</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L350-L392">api_lidarr_albums</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1183,7 +1183,7 @@ client.web_ui.api_lidarr_albums(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_lidarr_artist_detail</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L394-L425">api_lidarr_artist_detail</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1251,7 +1251,7 @@ client.web_ui.api_lidarr_artist_detail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_lidarr_artist_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L427-L467">api_lidarr_artist_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1327,7 +1327,7 @@ client.web_ui.api_lidarr_artist_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_lidarr_artists</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L469-L529">api_lidarr_artists</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1434,7 +1434,7 @@ client.web_ui.api_lidarr_artists(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">lidarr_tracks_browse_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L531-L573">lidarr_tracks_browse_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1517,7 +1517,7 @@ client.web_ui.lidarr_tracks_browse_api(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_loglevel</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L575-L602">api_loglevel</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1574,7 +1574,7 @@ client.web_ui.api_loglevel()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_logs_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L604-L626">api_logs_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1623,7 +1623,7 @@ client.web_ui.api_logs_list()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_log_content</a>(...) -> LogTailPayload</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L628-L690">api_log_content</a>(...) -> LogTailPayload</code></summary>
 <dl>
 <dd>
 
@@ -1730,7 +1730,7 @@ client.web_ui.api_log_content(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_log_download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L692-L720">api_log_download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1789,7 +1789,7 @@ client.web_ui.api_log_download(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_log_search</a>(...) -> LogSearchResponse</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L722-L781">api_log_search</a>(...) -> LogSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1897,7 +1897,7 @@ client.web_ui.api_log_search(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_log_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L783-L829">api_log_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1994,7 +1994,7 @@ client.web_ui.api_log_stream(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_meta</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L831-L857">api_meta</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2051,7 +2051,7 @@ client.web_ui.api_meta()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_processes</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L859-L881">api_processes</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2100,7 +2100,7 @@ client.web_ui.api_processes()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_processes_restart_all</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L883-L907">api_processes_restart_all</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2149,7 +2149,7 @@ client.web_ui.api_processes_restart_all()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_process_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L909-L941">api_process_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2217,7 +2217,7 @@ client.web_ui.api_process_restart(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">q_bittorrent_managed_categories_api</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L943-L967">q_bittorrent_managed_categories_api</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2266,7 +2266,7 @@ client.web_ui.q_bittorrent_managed_categories_api()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_radarr_movie_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L969-L1009">api_radarr_movie_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2342,7 +2342,7 @@ client.web_ui.api_radarr_movie_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_radarr_movies</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1011-L1081">api_radarr_movies</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2473,7 +2473,7 @@ client.web_ui.api_radarr_movies(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">readarr_author_detail_with_books_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1083-L1116">readarr_author_detail_with_books_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2541,7 +2541,7 @@ client.web_ui.readarr_author_detail_with_books_api(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">readarr_author_thumbnail_api</a>(...)</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1118-L1148">readarr_author_thumbnail_api</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2609,7 +2609,7 @@ client.web_ui.readarr_author_thumbnail_api(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">readarr_authors_browse_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1150-L1192">readarr_authors_browse_api</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2692,7 +2692,7 @@ client.web_ui.readarr_authors_browse_api(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_sonarr_series</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1194-L1236">api_sonarr_series</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2775,7 +2775,7 @@ client.web_ui.api_sonarr_series(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_sonarr_series_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1238-L1278">api_sonarr_series_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2851,7 +2851,7 @@ client.web_ui.api_sonarr_series_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_status</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1280-L1302">api_status</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2900,7 +2900,7 @@ client.web_ui.api_status()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_torrents_distribution</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1304-L1328">api_torrents_distribution</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2949,7 +2949,7 @@ client.web_ui.api_torrents_distribution()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">api_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1330-L1352">api_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2998,7 +2998,7 @@ client.web_ui.api_update()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_arr_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1354-L1376">web_arr_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3047,7 +3047,7 @@ client.web_ui.web_arr_list()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_arr_rebuild</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1378-L1402">web_arr_rebuild</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3096,7 +3096,7 @@ client.web_ui.web_arr_rebuild()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_arr_test_connection</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1404-L1444">web_arr_test_connection</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3177,7 +3177,7 @@ client.web_ui.web_arr_test_connection()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">redirect_to_arr_ui_for_movie_series_artist_author_web</a>(...)</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1446-L1481">redirect_to_arr_ui_for_movie_series_artist_author_web</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3254,7 +3254,7 @@ client.web_ui.redirect_to_arr_ui_for_movie_series_artist_author_web(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_arr_open_item</a>(...)</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1483-L1523">web_arr_open_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3332,7 +3332,7 @@ client.web_ui.web_arr_open_item(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_arr_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1525-L1553">web_arr_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3391,7 +3391,7 @@ client.web_ui.web_arr_restart(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_config_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1555-L1579">web_config_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3440,7 +3440,7 @@ client.web_ui.web_config_get()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_config_post</a>(...) -> ConfigUpdateResponse</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1581-L1609">web_config_post</a>(...) -> ConfigUpdateResponse</code></summary>
 <dl>
 <dd>
 
@@ -3501,7 +3501,7 @@ client.web_ui.web_config_post(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_config_schema_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1611-L1635">web_config_schema_get</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3550,7 +3550,7 @@ client.web_ui.web_config_schema_get()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_download_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1637-L1661">web_download_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3599,7 +3599,7 @@ client.web_ui.web_download_update()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_lidarr_albums</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1663-L1705">web_lidarr_albums</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3682,7 +3682,7 @@ client.web_ui.web_lidarr_albums(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_lidarr_artist_detail</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1707-L1738">web_lidarr_artist_detail</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3750,7 +3750,7 @@ client.web_ui.web_lidarr_artist_detail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_lidarr_artist_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1740-L1780">web_lidarr_artist_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -3826,7 +3826,7 @@ client.web_ui.web_lidarr_artist_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_lidarr_artists</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1782-L1842">web_lidarr_artists</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3933,7 +3933,7 @@ client.web_ui.web_lidarr_artists(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">lidarr_tracks_browse_web</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1844-L1886">lidarr_tracks_browse_web</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4016,7 +4016,7 @@ client.web_ui.lidarr_tracks_browse_web(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_loglevel</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1888-L1915">web_loglevel</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4073,7 +4073,7 @@ client.web_ui.web_loglevel()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_logs_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1917-L1939">web_logs_list</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4122,7 +4122,7 @@ client.web_ui.web_logs_list()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_log_content</a>(...) -> LogTailPayload</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L1941-L2003">web_log_content</a>(...) -> LogTailPayload</code></summary>
 <dl>
 <dd>
 
@@ -4229,7 +4229,7 @@ client.web_ui.web_log_content(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_log_download</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2005-L2033">web_log_download</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4288,7 +4288,7 @@ client.web_ui.web_log_download(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_log_search</a>(...) -> LogSearchResponse</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2035-L2094">web_log_search</a>(...) -> LogSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -4396,7 +4396,7 @@ client.web_ui.web_log_search(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_log_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2096-L2142">web_log_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4493,7 +4493,7 @@ client.web_ui.web_log_stream(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_processes</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2144-L2166">web_processes</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4542,7 +4542,7 @@ client.web_ui.web_processes()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_processes_restart_all</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2168-L2192">web_processes_restart_all</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4591,7 +4591,7 @@ client.web_ui.web_processes_restart_all()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_process_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2194-L2226">web_process_restart</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4659,7 +4659,7 @@ client.web_ui.web_process_restart(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_qbit_categories</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2228-L2252">web_qbit_categories</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4708,7 +4708,7 @@ client.web_ui.web_qbit_categories()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_qbit_overview</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2254-L2281">web_qbit_overview</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4765,7 +4765,7 @@ client.web_ui.web_qbit_overview()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_radarr_movie_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2283-L2323">web_radarr_movie_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4841,7 +4841,7 @@ client.web_ui.web_radarr_movie_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_radarr_movies</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2325-L2395">web_radarr_movies</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4972,7 +4972,7 @@ client.web_ui.web_radarr_movies(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">readarr_author_detail_with_books_web</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2397-L2430">readarr_author_detail_with_books_web</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5040,7 +5040,7 @@ client.web_ui.readarr_author_detail_with_books_web(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">readarr_author_thumbnail_web</a>(...)</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2432-L2462">readarr_author_thumbnail_web</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5108,7 +5108,7 @@ client.web_ui.readarr_author_thumbnail_web(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">readarr_authors_browse_web</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2464-L2506">readarr_authors_browse_web</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5191,7 +5191,7 @@ client.web_ui.readarr_authors_browse_web(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_sonarr_series</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2508-L2550">web_sonarr_series</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5274,7 +5274,7 @@ client.web_ui.web_sonarr_series(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_sonarr_series_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2552-L2592">web_sonarr_series_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -5350,7 +5350,7 @@ client.web_ui.web_sonarr_series_thumbnail(
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_status</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2594-L2616">web_status</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5399,7 +5399,7 @@ client.web_ui.web_status()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">torrent_distribution_by_category_web</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2618-L2642">torrent_distribution_by_category_web</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5448,7 +5448,7 @@ client.web_ui.torrent_distribution_by_category_web()
 </dl>
 </details>
 
-<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py">web_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.web_ui.<a href="src/fern/web_ui/client.py#L2644-L2666">web_update</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5498,7 +5498,7 @@ client.web_ui.web_update()
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">api_token</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L28-L50">api_token</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5547,7 +5547,7 @@ client.auth.api_token()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">login</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L52-L73">login</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5596,7 +5596,7 @@ client.auth.login()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">web_oidc_callback_default</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L75-L96">web_oidc_callback_default</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5645,7 +5645,7 @@ client.auth.web_oidc_callback_default()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">web_oidc_challenge</a>()</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L98-L119">web_oidc_challenge</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5694,7 +5694,7 @@ client.auth.web_oidc_challenge()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">web_set_password</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L121-L162">web_set_password</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5770,7 +5770,7 @@ client.auth.web_set_password(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">web_login</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L164-L196">web_login</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5835,7 +5835,7 @@ client.auth.web_login()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">web_logout</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L198-L220">web_logout</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5884,7 +5884,7 @@ client.auth.web_logout()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">web_token</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L222-L244">web_token</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

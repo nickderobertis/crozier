@@ -1,6 +1,6 @@
 # Reference
 ## Trees
-<details><summary><code>client.trees.<a href="src/fern/trees/client.py">plant_tree</a>(...) -> Tree</code></summary>
+<details><summary><code>client.trees.<a href="src/fern/trees/client.py#L29-L55">plant_tree</a>(...) -> Tree</code></summary>
 <dl>
 <dd>
 

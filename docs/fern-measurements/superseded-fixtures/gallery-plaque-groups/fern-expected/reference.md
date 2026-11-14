@@ -1,6 +1,6 @@
 # Reference
 ## Galleryplaque
-<details><summary><code>client.galleryplaque.<a href="src/fern/galleryplaque/client.py">show</a>(...) -> Plaque</code></summary>
+<details><summary><code>client.galleryplaque.<a href="src/fern/galleryplaque/client.py#L26-L52">show</a>(...) -> Plaque</code></summary>
 <dl>
 <dd>
 
@@ -57,7 +57,7 @@ client.galleryplaque.show(
 </dl>
 </details>
 
-<details><summary><code>client.galleryplaque.<a href="src/fern/galleryplaque/client.py">destroy</a>(...)</code></summary>
+<details><summary><code>client.galleryplaque.<a href="src/fern/galleryplaque/client.py#L54-L79">destroy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.galleryplaque.destroy(
 </details>
 
 ## GalleryLighting
-<details><summary><code>client.gallery_lighting.<a href="src/fern/gallery_lighting/client.py">lighting_plan_show</a>(...)</code></summary>
+<details><summary><code>client.gallery_lighting.<a href="src/fern/gallery_lighting/client.py#L25-L50">lighting_plan_show</a>(...)</code></summary>
 <dl>
 <dd>
 

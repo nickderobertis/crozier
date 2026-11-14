@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_entries</a>(...) -> EntryPage</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L108-L142">list_entries</a>(...) -> EntryPage</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.list_entries()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_accounts</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L144-L164">list_accounts</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

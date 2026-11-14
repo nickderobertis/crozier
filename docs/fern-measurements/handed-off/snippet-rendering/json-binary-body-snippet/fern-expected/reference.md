@@ -1,6 +1,6 @@
 # Reference
 ## Patterns
-<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py">replace_draft</a>(...)</code></summary>
+<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py#L28-L56">replace_draft</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.patterns.replace_draft(
 </dl>
 </details>
 
-<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py">replace_chart</a>(...)</code></summary>
+<details><summary><code>client.patterns.<a href="src/fern/patterns/client.py#L58-L86">replace_chart</a>(...)</code></summary>
 <dl>
 <dd>
 

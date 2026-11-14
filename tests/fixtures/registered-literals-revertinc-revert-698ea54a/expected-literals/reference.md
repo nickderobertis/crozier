@@ -1,6 +1,6 @@
 # Reference
 ## AccountingAccount
-<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py">accounting_account_get_account</a>(...) -> AccountingGetAccountResponse</code></summary>
+<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py#L33-L63">accounting_account_get_account</a>(...) -> AccountingGetAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -80,7 +80,7 @@ client.accounting_account.accounting_account_get_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py">accounting_account_delete_account</a>(...) -> AccountingDeleteAccountResponse</code></summary>
+<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py#L65-L93">accounting_account_delete_account</a>(...) -> AccountingDeleteAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -152,7 +152,7 @@ client.accounting_account.accounting_account_delete_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py">accounting_account_update_account</a>(...) -> AccountingCreateOrUpdateAccountResponse</code></summary>
+<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py#L95-L135">accounting_account_update_account</a>(...) -> AccountingCreateOrUpdateAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -241,7 +241,7 @@ client.accounting_account.accounting_account_update_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py">accounting_account_get_accounts</a>(...) -> AccountingGetAccountsResponse</code></summary>
+<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py#L137-L174">accounting_account_get_accounts</a>(...) -> AccountingGetAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -327,7 +327,7 @@ client.accounting_account.accounting_account_get_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py">accounting_account_create_account</a>(...) -> AccountingCreateOrUpdateAccountResponse</code></summary>
+<details><summary><code>client.accounting_account.<a href="src/fern/accounting_account/client.py#L176-L212">accounting_account_create_account</a>(...) -> AccountingCreateOrUpdateAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.accounting_account.accounting_account_create_account(
 </details>
 
 ## AccountingExpense
-<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py">accounting_expense_get_expense</a>(...) -> AccountingGetExpenseResponse</code></summary>
+<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py#L33-L63">accounting_expense_get_expense</a>(...) -> AccountingGetExpenseResponse</code></summary>
 <dl>
 <dd>
 
@@ -488,7 +488,7 @@ client.accounting_expense.accounting_expense_get_expense(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py">accounting_expense_delete_expense</a>(...) -> AccountingDeleteExpenseResponse</code></summary>
+<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py#L65-L97">accounting_expense_delete_expense</a>(...) -> AccountingDeleteExpenseResponse</code></summary>
 <dl>
 <dd>
 
@@ -568,7 +568,7 @@ client.accounting_expense.accounting_expense_delete_expense(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py">accounting_expense_update_expense</a>(...) -> AccountingCreateOrUpdateExpenseResponse</code></summary>
+<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py#L99-L139">accounting_expense_update_expense</a>(...) -> AccountingCreateOrUpdateExpenseResponse</code></summary>
 <dl>
 <dd>
 
@@ -657,7 +657,7 @@ client.accounting_expense.accounting_expense_update_expense(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py">accounting_expense_get_expenses</a>(...) -> AccountingGetExpensesResponse</code></summary>
+<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py#L141-L178">accounting_expense_get_expenses</a>(...) -> AccountingGetExpensesResponse</code></summary>
 <dl>
 <dd>
 
@@ -743,7 +743,7 @@ client.accounting_expense.accounting_expense_get_expenses()
 </dl>
 </details>
 
-<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py">accounting_expense_create_expense</a>(...) -> AccountingCreateOrUpdateExpenseResponse</code></summary>
+<details><summary><code>client.accounting_expense.<a href="src/fern/accounting_expense/client.py#L180-L216">accounting_expense_create_expense</a>(...) -> AccountingCreateOrUpdateExpenseResponse</code></summary>
 <dl>
 <dd>
 
@@ -824,7 +824,7 @@ client.accounting_expense.accounting_expense_create_expense(
 </details>
 
 ## AccountingProxy
-<details><summary><code>client.accounting_proxy.<a href="src/fern/accounting_proxy/client.py">accounting_proxy_tunnel</a>(...) -> AccountingProxyResponse</code></summary>
+<details><summary><code>client.accounting_proxy.<a href="src/fern/accounting_proxy/client.py#L29-L72">accounting_proxy_tunnel</a>(...) -> AccountingProxyResponse</code></summary>
 <dl>
 <dd>
 
@@ -922,7 +922,7 @@ client.accounting_proxy.accounting_proxy_tunnel(
 </details>
 
 ## AccountingVendor
-<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py">accounting_vendor_get_vendor</a>(...) -> AccountingGetVendorResponse</code></summary>
+<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py#L33-L63">accounting_vendor_get_vendor</a>(...) -> AccountingGetVendorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1002,7 +1002,7 @@ client.accounting_vendor.accounting_vendor_get_vendor(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py">accounting_vendor_delete_vendor</a>(...) -> AccountingDeleteVendorResponse</code></summary>
+<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py#L65-L93">accounting_vendor_delete_vendor</a>(...) -> AccountingDeleteVendorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1074,7 +1074,7 @@ client.accounting_vendor.accounting_vendor_delete_vendor(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py">accounting_vendor_update_vendor</a>(...) -> AccountingCreateOrUpdateVendorResponse</code></summary>
+<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py#L95-L135">accounting_vendor_update_vendor</a>(...) -> AccountingCreateOrUpdateVendorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1163,7 +1163,7 @@ client.accounting_vendor.accounting_vendor_update_vendor(
 </dl>
 </details>
 
-<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py">accounting_vendor_get_vendors</a>(...) -> AccountingGetVendorsResponse</code></summary>
+<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py#L137-L174">accounting_vendor_get_vendors</a>(...) -> AccountingGetVendorsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1249,7 +1249,7 @@ client.accounting_vendor.accounting_vendor_get_vendors()
 </dl>
 </details>
 
-<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py">accounting_vendor_create_vendor</a>(...) -> AccountingCreateOrUpdateVendorResponse</code></summary>
+<details><summary><code>client.accounting_vendor.<a href="src/fern/accounting_vendor/client.py#L176-L212">accounting_vendor_create_vendor</a>(...) -> AccountingCreateOrUpdateVendorResponse</code></summary>
 <dl>
 <dd>
 
@@ -1330,7 +1330,7 @@ client.accounting_vendor.accounting_vendor_create_vendor(
 </details>
 
 ## AtsCandidate
-<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py">ats_candidate_get_candidate</a>(...) -> AtsGetCandidateResponse</code></summary>
+<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py#L33-L64">ats_candidate_get_candidate</a>(...) -> AtsGetCandidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1410,7 +1410,7 @@ client.ats_candidate.ats_candidate_get_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py">ats_candidate_delete_candidate</a>(...) -> AtsDeleteCandidateResponse</code></summary>
+<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py#L66-L96">ats_candidate_delete_candidate</a>(...) -> AtsDeleteCandidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1490,7 +1490,7 @@ client.ats_candidate.ats_candidate_delete_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py">ats_candidate_update_candidate</a>(...) -> AtsCreateOrUpdateCandidateResponse</code></summary>
+<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py#L98-L138">ats_candidate_update_candidate</a>(...) -> AtsCreateOrUpdateCandidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1579,7 +1579,7 @@ client.ats_candidate.ats_candidate_update_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py">ats_candidate_get_candidates</a>(...) -> AtsGetCandidatesResponse</code></summary>
+<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py#L140-L177">ats_candidate_get_candidates</a>(...) -> AtsGetCandidatesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1665,7 +1665,7 @@ client.ats_candidate.ats_candidate_get_candidates()
 </dl>
 </details>
 
-<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py">ats_candidate_create_candidate</a>(...) -> AtsCreateOrUpdateCandidateResponse</code></summary>
+<details><summary><code>client.ats_candidate.<a href="src/fern/ats_candidate/client.py#L179-L215">ats_candidate_create_candidate</a>(...) -> AtsCreateOrUpdateCandidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -1746,7 +1746,7 @@ client.ats_candidate.ats_candidate_create_candidate(
 </details>
 
 ## AtsDepartment
-<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py">ats_department_get_department</a>(...) -> AtsGetDepartmentResponse</code></summary>
+<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py#L33-L64">ats_department_get_department</a>(...) -> AtsGetDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1826,7 +1826,7 @@ client.ats_department.ats_department_get_department(
 </dl>
 </details>
 
-<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py">ats_department_delete_department</a>(...) -> AtsDeleteDepartmentResponse</code></summary>
+<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py#L66-L98">ats_department_delete_department</a>(...) -> AtsDeleteDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1906,7 +1906,7 @@ client.ats_department.ats_department_delete_department(
 </dl>
 </details>
 
-<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py">ats_department_update_department</a>(...) -> AtsCreateOrUpdateDepartmentResponse</code></summary>
+<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py#L100-L140">ats_department_update_department</a>(...) -> AtsCreateOrUpdateDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1995,7 +1995,7 @@ client.ats_department.ats_department_update_department(
 </dl>
 </details>
 
-<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py">ats_department_get_departments</a>(...) -> AtsGetDepartmentsResponse</code></summary>
+<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py#L142-L179">ats_department_get_departments</a>(...) -> AtsGetDepartmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2081,7 +2081,7 @@ client.ats_department.ats_department_get_departments()
 </dl>
 </details>
 
-<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py">ats_department_create_department</a>(...) -> AtsCreateOrUpdateDepartmentResponse</code></summary>
+<details><summary><code>client.ats_department.<a href="src/fern/ats_department/client.py#L181-L217">ats_department_create_department</a>(...) -> AtsCreateOrUpdateDepartmentResponse</code></summary>
 <dl>
 <dd>
 
@@ -2162,7 +2162,7 @@ client.ats_department.ats_department_create_department(
 </details>
 
 ## AtsJob
-<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py">ats_job_get_job</a>(...) -> AtsGetJobResponse</code></summary>
+<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py#L33-L64">ats_job_get_job</a>(...) -> AtsGetJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -2242,7 +2242,7 @@ client.ats_job.ats_job_get_job(
 </dl>
 </details>
 
-<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py">ats_job_delete_job</a>(...) -> AtsDeleteJobResponse</code></summary>
+<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py#L66-L96">ats_job_delete_job</a>(...) -> AtsDeleteJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -2322,7 +2322,7 @@ client.ats_job.ats_job_delete_job(
 </dl>
 </details>
 
-<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py">ats_job_update_job</a>(...) -> AtsCreateOrUpdateJobResponse</code></summary>
+<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py#L98-L138">ats_job_update_job</a>(...) -> AtsCreateOrUpdateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -2411,7 +2411,7 @@ client.ats_job.ats_job_update_job(
 </dl>
 </details>
 
-<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py">ats_job_get_jobs</a>(...) -> AtsGetJobsResponse</code></summary>
+<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py#L140-L177">ats_job_get_jobs</a>(...) -> AtsGetJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2497,7 +2497,7 @@ client.ats_job.ats_job_get_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py">ats_job_create_job</a>(...) -> AtsCreateOrUpdateJobResponse</code></summary>
+<details><summary><code>client.ats_job.<a href="src/fern/ats_job/client.py#L179-L213">ats_job_create_job</a>(...) -> AtsCreateOrUpdateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -2578,7 +2578,7 @@ client.ats_job.ats_job_create_job(
 </details>
 
 ## AtsOffer
-<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py">ats_offer_get_offer</a>(...) -> AtsGetOfferResponse</code></summary>
+<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py#L33-L64">ats_offer_get_offer</a>(...) -> AtsGetOfferResponse</code></summary>
 <dl>
 <dd>
 
@@ -2658,7 +2658,7 @@ client.ats_offer.ats_offer_get_offer(
 </dl>
 </details>
 
-<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py">ats_offer_delete_offer</a>(...) -> AtsDeleteOfferResponse</code></summary>
+<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py#L66-L96">ats_offer_delete_offer</a>(...) -> AtsDeleteOfferResponse</code></summary>
 <dl>
 <dd>
 
@@ -2738,7 +2738,7 @@ client.ats_offer.ats_offer_delete_offer(
 </dl>
 </details>
 
-<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py">ats_offer_update_offer</a>(...) -> AtsCreateOrUpdateOfferResponse</code></summary>
+<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py#L98-L138">ats_offer_update_offer</a>(...) -> AtsCreateOrUpdateOfferResponse</code></summary>
 <dl>
 <dd>
 
@@ -2827,7 +2827,7 @@ client.ats_offer.ats_offer_update_offer(
 </dl>
 </details>
 
-<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py">ats_offer_get_offers</a>(...) -> AtsGetOffersResponse</code></summary>
+<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py#L140-L177">ats_offer_get_offers</a>(...) -> AtsGetOffersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2913,7 +2913,7 @@ client.ats_offer.ats_offer_get_offers()
 </dl>
 </details>
 
-<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py">ats_offer_create_offer</a>(...) -> AtsCreateOrUpdateOfferResponse</code></summary>
+<details><summary><code>client.ats_offer.<a href="src/fern/ats_offer/client.py#L179-L215">ats_offer_create_offer</a>(...) -> AtsCreateOrUpdateOfferResponse</code></summary>
 <dl>
 <dd>
 
@@ -2994,7 +2994,7 @@ client.ats_offer.ats_offer_create_offer(
 </details>
 
 ## AtsProxy
-<details><summary><code>client.ats_proxy.<a href="src/fern/ats_proxy/client.py">ats_proxy_tunnel</a>(...) -> AtsProxyResponse</code></summary>
+<details><summary><code>client.ats_proxy.<a href="src/fern/ats_proxy/client.py#L29-L72">ats_proxy_tunnel</a>(...) -> AtsProxyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3092,7 +3092,7 @@ client.ats_proxy.ats_proxy_tunnel(
 </details>
 
 ## ChatChannels
-<details><summary><code>client.chat_channels.<a href="src/fern/chat_channels/client.py">chat_channels_get_channels</a>(...) -> ChatGetChannelsResponse</code></summary>
+<details><summary><code>client.chat_channels.<a href="src/fern/chat_channels/client.py#L26-L63">chat_channels_get_channels</a>(...) -> ChatGetChannelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3179,7 +3179,7 @@ client.chat_channels.chat_channels_get_channels()
 </details>
 
 ## ChatMessages
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">chat_messages_create_message</a>(...) -> ChatCreateorUpdateMessageResponse</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L29-L64">chat_messages_create_message</a>(...) -> ChatCreateorUpdateMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -3253,7 +3253,7 @@ client.chat_messages.chat_messages_create_message(
 </details>
 
 ## ChatUsers
-<details><summary><code>client.chat_users.<a href="src/fern/chat_users/client.py">chat_users_get_users</a>(...) -> ChatGetUsersResponse</code></summary>
+<details><summary><code>client.chat_users.<a href="src/fern/chat_users/client.py#L26-L63">chat_users_get_users</a>(...) -> ChatGetUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3340,7 +3340,7 @@ client.chat_users.chat_users_get_users()
 </details>
 
 ## Connection
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">getconnection</a>(...) -> GetConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L37-L66">getconnection</a>(...) -> GetConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3412,7 +3412,7 @@ client.connection.getconnection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">deleteconnection</a>(...) -> DeleteConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L68-L97">deleteconnection</a>(...) -> DeleteConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3484,7 +3484,7 @@ client.connection.deleteconnection(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">getallconnections</a>() -> GetAllConnectionResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L99-L121">getallconnections</a>() -> GetAllConnectionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3546,7 +3546,7 @@ client.connection.getallconnections()
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">getwebhook</a>(...) -> GetConnectionWebhookResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L123-L152">getwebhook</a>(...) -> GetConnectionWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3618,7 +3618,7 @@ client.connection.getwebhook(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">createwebhook</a>(...) -> CreateConnectionWebhookResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L154-L188">createwebhook</a>(...) -> CreateConnectionWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3699,7 +3699,7 @@ client.connection.createwebhook(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">deletewebhook</a>(...) -> DeleteConnectionWebhookResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L190-L219">deletewebhook</a>(...) -> DeleteConnectionWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -3771,7 +3771,7 @@ client.connection.deletewebhook(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">getintegrationstatus</a>(...) -> GetConnectStatusResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L221-L254">getintegrationstatus</a>(...) -> GetConnectStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -3852,7 +3852,7 @@ client.connection.getintegrationstatus(
 </dl>
 </details>
 
-<details><summary><code>client.connection.<a href="src/fern/connection/client.py">importconnections</a>(...) -> ImportConnectionsResponse</code></summary>
+<details><summary><code>client.connection.<a href="src/fern/connection/client.py#L256-L305">importconnections</a>(...) -> ImportConnectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3945,7 +3945,7 @@ client.connection.importconnections(
 </details>
 
 ## CrmCompany
-<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py">crm_company_get_company</a>(...) -> CrmGetCompanyResponse</code></summary>
+<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py#L34-L74">crm_company_get_company</a>(...) -> CrmGetCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4033,7 +4033,7 @@ client.crm_company.crm_company_get_company(
 </dl>
 </details>
 
-<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py">crm_company_update_company</a>(...) -> CrmCreateOrUpdateCompanyResponse</code></summary>
+<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py#L76-L185">crm_company_update_company</a>(...) -> CrmCreateOrUpdateCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4130,7 +4130,7 @@ client.crm_company.crm_company_update_company(
 </dl>
 </details>
 
-<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py">crm_company_get_companies</a>(...) -> CrmGetCompaniesResponse</code></summary>
+<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py#L187-L231">crm_company_get_companies</a>(...) -> CrmGetCompaniesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4224,7 +4224,7 @@ client.crm_company.crm_company_get_companies()
 </dl>
 </details>
 
-<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py">crm_company_create_company</a>(...) -> CrmCreateOrUpdateCompanyResponse</code></summary>
+<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py#L233-L341">crm_company_create_company</a>(...) -> CrmCreateOrUpdateCompanyResponse</code></summary>
 <dl>
 <dd>
 
@@ -4408,7 +4408,7 @@ client.crm_company.crm_company_create_company(
 </dl>
 </details>
 
-<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py">crm_company_search_companies</a>(...) -> CrmSearchCompaniesResponse</code></summary>
+<details><summary><code>client.crm_company.<a href="src/fern/crm_company/client.py#L343-L389">crm_company_search_companies</a>(...) -> CrmSearchCompaniesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4505,7 +4505,7 @@ client.crm_company.crm_company_search_companies(
 </details>
 
 ## CrmContact
-<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py">crm_contact_get_contact</a>(...) -> CrmGetContactResponse</code></summary>
+<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py#L33-L72">crm_contact_get_contact</a>(...) -> CrmGetContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -4593,7 +4593,7 @@ client.crm_contact.crm_contact_get_contact(
 </dl>
 </details>
 
-<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py">crm_contact_update_contact</a>(...) -> CrmCreateOrUpdateContactResponse</code></summary>
+<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py#L74-L141">crm_contact_update_contact</a>(...) -> CrmCreateOrUpdateContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -4678,7 +4678,7 @@ client.crm_contact.crm_contact_update_contact(
 </dl>
 </details>
 
-<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py">crm_contact_get_contacts</a>(...) -> CrmGetContactsResponse</code></summary>
+<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py#L143-L187">crm_contact_get_contacts</a>(...) -> CrmGetContactsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4772,7 +4772,7 @@ client.crm_contact.crm_contact_get_contacts()
 </dl>
 </details>
 
-<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py">crm_contact_create_contact</a>(...) -> CrmCreateOrUpdateContactResponse</code></summary>
+<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py#L189-L251">crm_contact_create_contact</a>(...) -> CrmCreateOrUpdateContactResponse</code></summary>
 <dl>
 <dd>
 
@@ -4848,7 +4848,7 @@ client.crm_contact.crm_contact_create_contact(
 </dl>
 </details>
 
-<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py">crm_contact_search_contacts</a>(...) -> CrmSearchContactsResponse</code></summary>
+<details><summary><code>client.crm_contact.<a href="src/fern/crm_contact/client.py#L253-L299">crm_contact_search_contacts</a>(...) -> CrmSearchContactsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4945,7 +4945,7 @@ client.crm_contact.crm_contact_search_contacts(
 </details>
 
 ## CrmDeal
-<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py">crm_deal_get_deal</a>(...) -> CrmGetDealResponse</code></summary>
+<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py#L33-L72">crm_deal_get_deal</a>(...) -> CrmGetDealResponse</code></summary>
 <dl>
 <dd>
 
@@ -5033,7 +5033,7 @@ client.crm_deal.crm_deal_get_deal(
 </dl>
 </details>
 
-<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py">crm_deal_update_deal</a>(...) -> CrmCreateOrUpdateDealResponse</code></summary>
+<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py#L74-L157">crm_deal_update_deal</a>(...) -> CrmCreateOrUpdateDealResponse</code></summary>
 <dl>
 <dd>
 
@@ -5120,7 +5120,7 @@ client.crm_deal.crm_deal_update_deal(
 </dl>
 </details>
 
-<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py">crm_deal_get_deals</a>(...) -> CrmGetDealsResponse</code></summary>
+<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py#L159-L203">crm_deal_get_deals</a>(...) -> CrmGetDealsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5214,7 +5214,7 @@ client.crm_deal.crm_deal_get_deals()
 </dl>
 </details>
 
-<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py">crm_deal_create_deal</a>(...) -> CrmCreateOrUpdateDealResponse</code></summary>
+<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py#L205-L283">crm_deal_create_deal</a>(...) -> CrmCreateOrUpdateDealResponse</code></summary>
 <dl>
 <dd>
 
@@ -5292,7 +5292,7 @@ client.crm_deal.crm_deal_create_deal(
 </dl>
 </details>
 
-<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py">crm_deal_search_deals</a>(...) -> CrmSearchDealsResponse</code></summary>
+<details><summary><code>client.crm_deal.<a href="src/fern/crm_deal/client.py#L285-L331">crm_deal_search_deals</a>(...) -> CrmSearchDealsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5389,7 +5389,7 @@ client.crm_deal.crm_deal_search_deals(
 </details>
 
 ## CrmEvent
-<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py">crm_event_get_event</a>(...) -> CrmGetEventResponse</code></summary>
+<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py#L34-L73">crm_event_get_event</a>(...) -> CrmGetEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -5477,7 +5477,7 @@ client.crm_event.crm_event_get_event(
 </dl>
 </details>
 
-<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py">crm_event_delete_event</a>(...) -> CrmDeleteEventResponse</code></summary>
+<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py#L75-L103">crm_event_delete_event</a>(...) -> CrmDeleteEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -5549,7 +5549,7 @@ client.crm_event.crm_event_delete_event(
 </dl>
 </details>
 
-<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py">crm_event_update_event</a>(...) -> CrmCreateOrUpdateEventResponse</code></summary>
+<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py#L105-L190">crm_event_update_event</a>(...) -> CrmCreateOrUpdateEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -5637,7 +5637,7 @@ client.crm_event.crm_event_update_event(
 </dl>
 </details>
 
-<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py">crm_event_get_events</a>(...) -> CrmGetEventsResponse</code></summary>
+<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py#L192-L236">crm_event_get_events</a>(...) -> CrmGetEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5731,7 +5731,7 @@ client.crm_event.crm_event_get_events()
 </dl>
 </details>
 
-<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py">crm_event_create_event</a>(...) -> CrmCreateOrUpdateEventResponse</code></summary>
+<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py#L238-L318">crm_event_create_event</a>(...) -> CrmCreateOrUpdateEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -5810,7 +5810,7 @@ client.crm_event.crm_event_create_event(
 </dl>
 </details>
 
-<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py">crm_event_search_events</a>(...) -> CrmSearchEventsResponse</code></summary>
+<details><summary><code>client.crm_event.<a href="src/fern/crm_event/client.py#L320-L366">crm_event_search_events</a>(...) -> CrmSearchEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5907,7 +5907,7 @@ client.crm_event.crm_event_search_events(
 </details>
 
 ## CrmLead
-<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py">crm_lead_get_lead</a>(...) -> CrmGetLeadResponse</code></summary>
+<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py#L33-L72">crm_lead_get_lead</a>(...) -> CrmGetLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -5995,7 +5995,7 @@ client.crm_lead.crm_lead_get_lead(
 </dl>
 </details>
 
-<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py">crm_lead_update_lead</a>(...) -> CrmCreateOrUpdateLeadResponse</code></summary>
+<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py#L74-L141">crm_lead_update_lead</a>(...) -> CrmCreateOrUpdateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -6080,7 +6080,7 @@ client.crm_lead.crm_lead_update_lead(
 </dl>
 </details>
 
-<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py">crm_lead_get_leads</a>(...) -> CrmGetLeadsResponse</code></summary>
+<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py#L143-L187">crm_lead_get_leads</a>(...) -> CrmGetLeadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6174,7 +6174,7 @@ client.crm_lead.crm_lead_get_leads()
 </dl>
 </details>
 
-<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py">crm_lead_create_lead</a>(...) -> CrmCreateOrUpdateLeadResponse</code></summary>
+<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py#L189-L251">crm_lead_create_lead</a>(...) -> CrmCreateOrUpdateLeadResponse</code></summary>
 <dl>
 <dd>
 
@@ -6250,7 +6250,7 @@ client.crm_lead.crm_lead_create_lead(
 </dl>
 </details>
 
-<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py">crm_lead_search_leads</a>(...) -> CrmSearchLeadsResponse</code></summary>
+<details><summary><code>client.crm_lead.<a href="src/fern/crm_lead/client.py#L253-L299">crm_lead_search_leads</a>(...) -> CrmSearchLeadsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6347,7 +6347,7 @@ client.crm_lead.crm_lead_search_leads(
 </details>
 
 ## CrmNote
-<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py">crm_note_get_note</a>(...) -> CrmGetNoteResponse</code></summary>
+<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py#L33-L72">crm_note_get_note</a>(...) -> CrmGetNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -6435,7 +6435,7 @@ client.crm_note.crm_note_get_note(
 </dl>
 </details>
 
-<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py">crm_note_update_note</a>(...) -> CrmCreateOrUpdateNoteResponse</code></summary>
+<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py#L74-L119">crm_note_update_note</a>(...) -> CrmCreateOrUpdateNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -6517,7 +6517,7 @@ client.crm_note.crm_note_update_note(
 </dl>
 </details>
 
-<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py">crm_note_get_notes</a>(...) -> CrmGetNotesResponse</code></summary>
+<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py#L121-L165">crm_note_get_notes</a>(...) -> CrmGetNotesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6611,7 +6611,7 @@ client.crm_note.crm_note_get_notes()
 </dl>
 </details>
 
-<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py">crm_note_create_note</a>(...) -> CrmCreateOrUpdateNoteResponse</code></summary>
+<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py#L167-L208">crm_note_create_note</a>(...) -> CrmCreateOrUpdateNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -6684,7 +6684,7 @@ client.crm_note.crm_note_create_note(
 </dl>
 </details>
 
-<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py">crm_note_search_notes</a>(...) -> CrmSearchNotesResponse</code></summary>
+<details><summary><code>client.crm_note.<a href="src/fern/crm_note/client.py#L210-L256">crm_note_search_notes</a>(...) -> CrmSearchNotesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6781,7 +6781,7 @@ client.crm_note.crm_note_search_notes(
 </details>
 
 ## CrmProperties
-<details><summary><code>client.crm_properties.<a href="src/fern/crm_properties/client.py">crm_properties_get_object_properties</a>(...) -> CrmGetObjectPropertiesResponse</code></summary>
+<details><summary><code>client.crm_properties.<a href="src/fern/crm_properties/client.py#L31-L59">crm_properties_get_object_properties</a>(...) -> CrmGetObjectPropertiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6853,7 +6853,7 @@ client.crm_properties.crm_properties_get_object_properties(
 </dl>
 </details>
 
-<details><summary><code>client.crm_properties.<a href="src/fern/crm_properties/client.py">crm_properties_set_custom_properties</a>(...) -> CrmSetObjectPropertiesResponse</code></summary>
+<details><summary><code>client.crm_properties.<a href="src/fern/crm_properties/client.py#L61-L115">crm_properties_set_custom_properties</a>(...) -> CrmSetObjectPropertiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -6938,7 +6938,7 @@ client.crm_properties.crm_properties_set_custom_properties(
 </details>
 
 ## CrmProxy
-<details><summary><code>client.crm_proxy.<a href="src/fern/crm_proxy/client.py">crm_proxy_tunnel</a>(...) -> CrmProxyResponse</code></summary>
+<details><summary><code>client.crm_proxy.<a href="src/fern/crm_proxy/client.py#L29-L72">crm_proxy_tunnel</a>(...) -> CrmProxyResponse</code></summary>
 <dl>
 <dd>
 
@@ -7036,7 +7036,7 @@ client.crm_proxy.crm_proxy_tunnel(
 </details>
 
 ## CrmTask
-<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py">crm_task_get_task</a>(...) -> CrmGetTaskResponse</code></summary>
+<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py#L33-L72">crm_task_get_task</a>(...) -> CrmGetTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -7124,7 +7124,7 @@ client.crm_task.crm_task_get_task(
 </dl>
 </details>
 
-<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py">crm_task_update_task</a>(...) -> CrmCreateOrUpdateTaskResponse</code></summary>
+<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py#L74-L114">crm_task_update_task</a>(...) -> CrmCreateOrUpdateTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -7205,7 +7205,7 @@ client.crm_task.crm_task_update_task(
 </dl>
 </details>
 
-<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py">crm_task_get_tasks</a>(...) -> CrmGetTasksResponse</code></summary>
+<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py#L116-L160">crm_task_get_tasks</a>(...) -> CrmGetTasksResponse</code></summary>
 <dl>
 <dd>
 
@@ -7299,7 +7299,7 @@ client.crm_task.crm_task_get_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py">crm_task_create_task</a>(...) -> CrmCreateOrUpdateTaskResponse</code></summary>
+<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py#L162-L198">crm_task_create_task</a>(...) -> CrmCreateOrUpdateTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -7371,7 +7371,7 @@ client.crm_task.crm_task_create_task(
 </dl>
 </details>
 
-<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py">crm_task_search_tasks</a>(...) -> CrmSearchTasksResponse</code></summary>
+<details><summary><code>client.crm_task.<a href="src/fern/crm_task/client.py#L200-L246">crm_task_search_tasks</a>(...) -> CrmSearchTasksResponse</code></summary>
 <dl>
 <dd>
 
@@ -7468,7 +7468,7 @@ client.crm_task.crm_task_search_tasks(
 </details>
 
 ## CrmUser
-<details><summary><code>client.crm_user.<a href="src/fern/crm_user/client.py">crm_user_get_user</a>(...) -> CrmGetUserResponse</code></summary>
+<details><summary><code>client.crm_user.<a href="src/fern/crm_user/client.py#L31-L70">crm_user_get_user</a>(...) -> CrmGetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -7556,7 +7556,7 @@ client.crm_user.crm_user_get_user(
 </dl>
 </details>
 
-<details><summary><code>client.crm_user.<a href="src/fern/crm_user/client.py">crm_user_get_users</a>(...) -> CrmGetUsersResponse</code></summary>
+<details><summary><code>client.crm_user.<a href="src/fern/crm_user/client.py#L72-L116">crm_user_get_users</a>(...) -> CrmGetUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -7650,7 +7650,7 @@ client.crm_user.crm_user_get_users()
 </dl>
 </details>
 
-<details><summary><code>client.crm_user.<a href="src/fern/crm_user/client.py">crm_user_create_user</a>(...) -> CrmCreateOrUpdateUserResponse</code></summary>
+<details><summary><code>client.crm_user.<a href="src/fern/crm_user/client.py#L118-L176">crm_user_create_user</a>(...) -> CrmCreateOrUpdateUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -7759,7 +7759,7 @@ client.crm_user.crm_user_create_user(
 </details>
 
 ## Fieldmapping
-<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py">getfieldmappingconfig</a>(...) -> GetFieldMappingConfigResponse</code></summary>
+<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py#L36-L83">getfieldmappingconfig</a>(...) -> GetFieldMappingConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -7849,7 +7849,7 @@ client.fieldmapping.getfieldmappingconfig(
 </dl>
 </details>
 
-<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py">createfieldmapping</a>(...) -> CreateFieldMappingResponse</code></summary>
+<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py#L85-L154">createfieldmapping</a>(...) -> CreateFieldMappingResponse</code></summary>
 <dl>
 <dd>
 
@@ -7969,7 +7969,7 @@ client.fieldmapping.createfieldmapping(
 </dl>
 </details>
 
-<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py">deletefieldmapping</a>(...) -> DeleteFieldMappingResponse</code></summary>
+<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py#L156-L191">deletefieldmapping</a>(...) -> DeleteFieldMappingResponse</code></summary>
 <dl>
 <dd>
 
@@ -8050,7 +8050,7 @@ client.fieldmapping.deletefieldmapping(
 </dl>
 </details>
 
-<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py">getfieldmappings</a>(...) -> GetFieldMappingsResponse</code></summary>
+<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py#L193-L228">getfieldmappings</a>(...) -> GetFieldMappingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8131,7 +8131,7 @@ client.fieldmapping.getfieldmappings(
 </dl>
 </details>
 
-<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py">createaccountfieldmappingconfig</a>(...) -> CreateAccountFieldMappingResponse</code></summary>
+<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py#L230-L280">createaccountfieldmappingconfig</a>(...) -> CreateAccountFieldMappingResponse</code></summary>
 <dl>
 <dd>
 
@@ -8226,7 +8226,7 @@ client.fieldmapping.createaccountfieldmappingconfig(
 </dl>
 </details>
 
-<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py">deleteaccountfieldmappingconfig</a>(...) -> DeleteAccountFieldMappingConfigResponse</code></summary>
+<details><summary><code>client.fieldmapping.<a href="src/fern/fieldmapping/client.py#L282-L313">deleteaccountfieldmappingconfig</a>(...) -> DeleteAccountFieldMappingConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -8299,7 +8299,7 @@ client.fieldmapping.deleteaccountfieldmappingconfig(
 </details>
 
 ## InternalAccount
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_get_account_details</a>(...) -> InternalGetAccountDetailsResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L36-L66">internal_account_get_account_details</a>(...) -> InternalGetAccountDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8371,7 +8371,7 @@ client.internal_account.internal_account_get_account_details(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_update_account_credentials</a>(...) -> CommonApp</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L68-L128">internal_account_update_account_credentials</a>(...) -> CommonApp</code></summary>
 <dl>
 <dd>
 
@@ -8493,7 +8493,7 @@ client.internal_account.internal_account_update_account_credentials(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_create_revert_app_for_account</a>(...) -> InternalGetAccountDetailsResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L130-L171">internal_account_create_revert_app_for_account</a>(...) -> InternalGetAccountDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -8583,7 +8583,7 @@ client.internal_account.internal_account_create_revert_app_for_account(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_delete_revert_appfor_account</a>(...) -> InternalDeleteRevertAppResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L173-L203">internal_account_delete_revert_appfor_account</a>(...) -> InternalDeleteRevertAppResponse</code></summary>
 <dl>
 <dd>
 
@@ -8655,7 +8655,7 @@ client.internal_account.internal_account_delete_revert_appfor_account(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_get_svix_account</a>(...) -> InternalSvixAccountResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L205-L238">internal_account_get_svix_account</a>(...) -> InternalSvixAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -8736,7 +8736,7 @@ client.internal_account.internal_account_get_svix_account(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_create_svix_account</a>(...) -> InternalSvixAccountResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L240-L273">internal_account_create_svix_account</a>(...) -> InternalSvixAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -8817,7 +8817,7 @@ client.internal_account.internal_account_create_svix_account(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_create_svix_account_magic_link</a>(...) -> InternalSvixMagicLinkResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L275-L305">internal_account_create_svix_account_magic_link</a>(...) -> InternalSvixMagicLinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -8889,7 +8889,7 @@ client.internal_account.internal_account_create_svix_account_magic_link(
 </dl>
 </details>
 
-<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py">internal_account_set_onboarding_completed</a>(...) -> InternalsetOnboardingResponse</code></summary>
+<details><summary><code>client.internal_account.<a href="src/fern/internal_account/client.py#L307-L340">internal_account_set_onboarding_completed</a>(...) -> InternalsetOnboardingResponse</code></summary>
 <dl>
 <dd>
 
@@ -8971,7 +8971,7 @@ client.internal_account.internal_account_set_onboarding_completed(
 </details>
 
 ## InternalAnalytics
-<details><summary><code>client.internal_analytics.<a href="src/fern/internal_analytics/client.py">internal_analytics_get_analytics</a>(...) -> InternalGetAnalyticsResponse</code></summary>
+<details><summary><code>client.internal_analytics.<a href="src/fern/internal_analytics/client.py#L29-L62">internal_analytics_get_analytics</a>(...) -> InternalGetAnalyticsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9053,7 +9053,7 @@ client.internal_analytics.internal_analytics_get_analytics(
 </details>
 
 ## InternalApp
-<details><summary><code>client.internal_app.<a href="src/fern/internal_app/client.py">internal_app_get_recent_api_calls_for_app</a>(...) -> InternalRecentAppApiCallsResponse</code></summary>
+<details><summary><code>client.internal_app.<a href="src/fern/internal_app/client.py#L26-L54">internal_app_get_recent_api_calls_for_app</a>(...) -> InternalRecentAppApiCallsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9126,7 +9126,7 @@ client.internal_app.internal_app_get_recent_api_calls_for_app(
 </details>
 
 ## InternalTelemetry
-<details><summary><code>client.internal_telemetry.<a href="src/fern/internal_telemetry/client.py">internal_telemetry_create_telemetry_entry</a>(...) -> InternalCreateTelemetryEntryResponse</code></summary>
+<details><summary><code>client.internal_telemetry.<a href="src/fern/internal_telemetry/client.py#L29-L78">internal_telemetry_create_telemetry_entry</a>(...) -> InternalCreateTelemetryEntryResponse</code></summary>
 <dl>
 <dd>
 
@@ -9226,7 +9226,7 @@ client.internal_telemetry.internal_telemetry_create_telemetry_entry(
 </details>
 
 ## Metadata
-<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py">getcrms</a>() -> CrmMetadataResponse</code></summary>
+<details><summary><code>client.metadata.<a href="src/fern/metadata/client.py#L26-L48">getcrms</a>() -> CrmMetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -9289,7 +9289,7 @@ client.metadata.getcrms()
 </details>
 
 ## Sync
-<details><summary><code>client.sync.<a href="src/fern/sync/client.py">triggersync</a>(...) -> TriggerSyncResponse</code></summary>
+<details><summary><code>client.sync.<a href="src/fern/sync/client.py#L26-L72">triggersync</a>(...) -> TriggerSyncResponse</code></summary>
 <dl>
 <dd>
 
@@ -9379,7 +9379,7 @@ client.sync.triggersync(
 </details>
 
 ## TicketCollection
-<details><summary><code>client.ticket_collection.<a href="src/fern/ticket_collection/client.py">ticket_collection_get_collections</a>(...) -> TicketGetCollectionsResponse</code></summary>
+<details><summary><code>client.ticket_collection.<a href="src/fern/ticket_collection/client.py#L26-L63">ticket_collection_get_collections</a>(...) -> TicketGetCollectionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9466,7 +9466,7 @@ client.ticket_collection.ticket_collection_get_collections()
 </details>
 
 ## TicketComment
-<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py">ticket_comment_get_comment</a>(...) -> TicketGetCommentResponse</code></summary>
+<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py#L31-L61">ticket_comment_get_comment</a>(...) -> TicketGetCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -9546,7 +9546,7 @@ client.ticket_comment.ticket_comment_get_comment(
 </dl>
 </details>
 
-<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py">ticket_comment_update_comment</a>(...) -> TicketCreateOrUpdateCommentResponse</code></summary>
+<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py#L63-L109">ticket_comment_update_comment</a>(...) -> TicketCreateOrUpdateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -9636,7 +9636,7 @@ client.ticket_comment.ticket_comment_update_comment(
 </dl>
 </details>
 
-<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py">ticket_comment_get_comments</a>(...) -> TicketGetCommentsResponse</code></summary>
+<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py#L111-L148">ticket_comment_get_comments</a>(...) -> TicketGetCommentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9722,7 +9722,7 @@ client.ticket_comment.ticket_comment_get_comments()
 </dl>
 </details>
 
-<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py">ticket_comment_create_comment</a>(...) -> TicketCreateOrUpdateCommentResponse</code></summary>
+<details><summary><code>client.ticket_comment.<a href="src/fern/ticket_comment/client.py#L150-L192">ticket_comment_create_comment</a>(...) -> TicketCreateOrUpdateCommentResponse</code></summary>
 <dl>
 <dd>
 
@@ -9804,7 +9804,7 @@ client.ticket_comment.ticket_comment_create_comment(
 </details>
 
 ## TicketProxy
-<details><summary><code>client.ticket_proxy.<a href="src/fern/ticket_proxy/client.py">ticket_proxy_tunnel</a>(...) -> TicketProxyResponse</code></summary>
+<details><summary><code>client.ticket_proxy.<a href="src/fern/ticket_proxy/client.py#L29-L72">ticket_proxy_tunnel</a>(...) -> TicketProxyResponse</code></summary>
 <dl>
 <dd>
 
@@ -9902,7 +9902,7 @@ client.ticket_proxy.ticket_proxy_tunnel(
 </details>
 
 ## TicketTask
-<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py">ticket_task_get_task</a>(...) -> TicketGetTaskResponse</code></summary>
+<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py#L33-L63">ticket_task_get_task</a>(...) -> TicketGetTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -9982,7 +9982,7 @@ client.ticket_task.ticket_task_get_task(
 </dl>
 </details>
 
-<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py">ticket_task_update_task</a>(...) -> TicketCreateOrUpdateTaskResponse</code></summary>
+<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py#L65-L163">ticket_task_update_task</a>(...) -> TicketCreateOrUpdateTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -10082,7 +10082,7 @@ client.ticket_task.ticket_task_update_task(
 </dl>
 </details>
 
-<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py">ticket_task_get_tasks</a>(...) -> TicketGetTasksResponse</code></summary>
+<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py#L165-L202">ticket_task_get_tasks</a>(...) -> TicketGetTasksResponse</code></summary>
 <dl>
 <dd>
 
@@ -10168,7 +10168,7 @@ client.ticket_task.ticket_task_get_tasks()
 </dl>
 </details>
 
-<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py">ticket_task_create_task</a>(...) -> TicketCreateOrUpdateTaskResponse</code></summary>
+<details><summary><code>client.ticket_task.<a href="src/fern/ticket_task/client.py#L204-L295">ticket_task_create_task</a>(...) -> TicketCreateOrUpdateTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -10246,7 +10246,7 @@ client.ticket_task.ticket_task_create_task(
 </details>
 
 ## TicketUser
-<details><summary><code>client.ticket_user.<a href="src/fern/ticket_user/client.py">ticket_user_get_user</a>(...) -> TicketGetUserResponse</code></summary>
+<details><summary><code>client.ticket_user.<a href="src/fern/ticket_user/client.py#L27-L57">ticket_user_get_user</a>(...) -> TicketGetUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -10326,7 +10326,7 @@ client.ticket_user.ticket_user_get_user(
 </dl>
 </details>
 
-<details><summary><code>client.ticket_user.<a href="src/fern/ticket_user/client.py">ticket_user_get_users</a>(...) -> TicketGetUsersResponse</code></summary>
+<details><summary><code>client.ticket_user.<a href="src/fern/ticket_user/client.py#L59-L96">ticket_user_get_users</a>(...) -> TicketGetUsersResponse</code></summary>
 <dl>
 <dd>
 

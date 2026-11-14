@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_run</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L96-L117">get_run</a>()</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.get_run()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_health</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L119-L140">get_health</a>()</code></summary>
 <dl>
 <dd>
 

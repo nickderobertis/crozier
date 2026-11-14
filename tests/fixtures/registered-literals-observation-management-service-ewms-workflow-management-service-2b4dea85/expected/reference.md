@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_v1</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L110-L134">get_v1</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.get_v1()
 </details>
 
 ## TaskDirectives
-<details><summary><code>client.task_directives.<a href="src/fern/task_directives/client.py">post_v1query_task_directives</a>(...) -> PostV1QueryTaskDirectivesResponse</code></summary>
+<details><summary><code>client.task_directives.<a href="src/fern/task_directives/client.py#L31-L75">post_v1query_task_directives</a>(...) -> PostV1QueryTaskDirectivesResponse</code></summary>
 <dl>
 <dd>
 
@@ -134,7 +134,7 @@ client.task_directives.post_v1query_task_directives(
 </dl>
 </details>
 
-<details><summary><code>client.task_directives.<a href="src/fern/task_directives/client.py">get_v1task_directives_task_id</a>(...) -> TaskDirectiveObject</code></summary>
+<details><summary><code>client.task_directives.<a href="src/fern/task_directives/client.py#L77-L108">get_v1task_directives_task_id</a>(...) -> TaskDirectiveObject</code></summary>
 <dl>
 <dd>
 
@@ -205,7 +205,7 @@ client.task_directives.get_v1task_directives_task_id(
 </dl>
 </details>
 
-<details><summary><code>client.task_directives.<a href="src/fern/task_directives/client.py">post_v1task_directives_task_id_actions_add_workers</a>(...) -> TaskforceObject</code></summary>
+<details><summary><code>client.task_directives.<a href="src/fern/task_directives/client.py#L110-L154">post_v1task_directives_task_id_actions_add_workers</a>(...) -> TaskforceObject</code></summary>
 <dl>
 <dd>
 
@@ -295,7 +295,7 @@ client.task_directives.post_v1task_directives_task_id_actions_add_workers(
 </details>
 
 ## Taskforces
-<details><summary><code>client.taskforces.<a href="src/fern/taskforces/client.py">post_v1query_taskforces</a>(...) -> PostV1QueryTaskforcesResponse</code></summary>
+<details><summary><code>client.taskforces.<a href="src/fern/taskforces/client.py#L30-L74">post_v1query_taskforces</a>(...) -> PostV1QueryTaskforcesResponse</code></summary>
 <dl>
 <dd>
 
@@ -368,7 +368,7 @@ client.taskforces.post_v1query_taskforces(
 </dl>
 </details>
 
-<details><summary><code>client.taskforces.<a href="src/fern/taskforces/client.py">get_v1taskforces_taskforce_uuid</a>(...) -> TaskforceObject</code></summary>
+<details><summary><code>client.taskforces.<a href="src/fern/taskforces/client.py#L76-L107">get_v1taskforces_taskforce_uuid</a>(...) -> TaskforceObject</code></summary>
 <dl>
 <dd>
 
@@ -440,7 +440,7 @@ client.taskforces.get_v1taskforces_taskforce_uuid(
 </details>
 
 ## Workflows
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">post_v1query_workflows</a>(...) -> PostV1QueryWorkflowsResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L33-L77">post_v1query_workflows</a>(...) -> PostV1QueryWorkflowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -513,7 +513,7 @@ client.workflows.post_v1query_workflows(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">post_v1workflows</a>(...) -> PostV1WorkflowsResponse</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L79-L145">post_v1workflows</a>(...) -> PostV1WorkflowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -627,7 +627,7 @@ client.workflows.post_v1workflows(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">get_v1workflows_workflow_id</a>(...) -> WorkflowObject</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L147-L178">get_v1workflows_workflow_id</a>(...) -> WorkflowObject</code></summary>
 <dl>
 <dd>
 
@@ -698,7 +698,7 @@ client.workflows.get_v1workflows_workflow_id(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">post_v1workflows_workflow_id_actions_abort</a>(...) -> DeactivatedWorkflowResponseObject</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L180-L213">post_v1workflows_workflow_id_actions_abort</a>(...) -> DeactivatedWorkflowResponseObject</code></summary>
 <dl>
 <dd>
 
@@ -769,7 +769,7 @@ client.workflows.post_v1workflows_workflow_id_actions_abort(
 </dl>
 </details>
 
-<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py">post_v1workflows_workflow_id_actions_finished</a>(...) -> DeactivatedWorkflowResponseObject</code></summary>
+<details><summary><code>client.workflows.<a href="src/fern/workflows/client.py#L215-L248">post_v1workflows_workflow_id_actions_finished</a>(...) -> DeactivatedWorkflowResponseObject</code></summary>
 <dl>
 <dd>
 
@@ -841,7 +841,7 @@ client.workflows.post_v1workflows_workflow_id_actions_finished(
 </details>
 
 ## Openapi
-<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py">get_v1schema_openapi</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.openapi.<a href="src/fern/openapi/client.py#L25-L51">get_v1schema_openapi</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -903,7 +903,7 @@ client.openapi.get_v1schema_openapi()
 </details>
 
 ## TmsInternal
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">post_v1tms_condor_complete_taskforces_taskforce_uuid</a>(...) -> PostV1TmsCondorCompleteTaskforcesTaskforceUuidResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L51-L88">post_v1tms_condor_complete_taskforces_taskforce_uuid</a>(...) -> PostV1TmsCondorCompleteTaskforcesTaskforceUuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -983,7 +983,7 @@ client.tms_internal.post_v1tms_condor_complete_taskforces_taskforce_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">post_v1tms_condor_rm_taskforces_taskforce_uuid</a>(...) -> PostV1TmsCondorRmTaskforcesTaskforceUuidResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L90-L123">post_v1tms_condor_rm_taskforces_taskforce_uuid</a>(...) -> PostV1TmsCondorRmTaskforcesTaskforceUuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1054,7 +1054,7 @@ client.tms_internal.post_v1tms_condor_rm_taskforces_taskforce_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">post_v1tms_condor_rm_taskforces_taskforce_uuid_failed</a>(...) -> PostV1TmsCondorRmTaskforcesTaskforceUuidFailedResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L125-L165">post_v1tms_condor_rm_taskforces_taskforce_uuid_failed</a>(...) -> PostV1TmsCondorRmTaskforcesTaskforceUuidFailedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1133,7 +1133,7 @@ client.tms_internal.post_v1tms_condor_rm_taskforces_taskforce_uuid_failed(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">post_v1tms_condor_submit_taskforces_taskforce_uuid</a>(...) -> PostV1TmsCondorSubmitTaskforcesTaskforceUuidResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L167-L289">post_v1tms_condor_submit_taskforces_taskforce_uuid</a>(...) -> PostV1TmsCondorSubmitTaskforcesTaskforceUuidResponse</code></summary>
 <dl>
 <dd>
 
@@ -1212,7 +1212,7 @@ client.tms_internal.post_v1tms_condor_submit_taskforces_taskforce_uuid(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">post_v1tms_condor_submit_taskforces_taskforce_uuid_failed</a>(...) -> PostV1TmsCondorSubmitTaskforcesTaskforceUuidFailedResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L291-L331">post_v1tms_condor_submit_taskforces_taskforce_uuid_failed</a>(...) -> PostV1TmsCondorSubmitTaskforcesTaskforceUuidFailedResponse</code></summary>
 <dl>
 <dd>
 
@@ -1291,7 +1291,7 @@ client.tms_internal.post_v1tms_condor_submit_taskforces_taskforce_uuid_failed(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">get_v1tms_pending_starter_taskforces</a>(...) -> GetV1TmsPendingStarterTaskforcesResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L333-L373">get_v1tms_pending_starter_taskforces</a>(...) -> GetV1TmsPendingStarterTaskforcesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1370,7 +1370,7 @@ client.tms_internal.get_v1tms_pending_starter_taskforces(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">get_v1tms_pending_stopper_taskforces</a>(...) -> GetV1TmsPendingStopperTaskforcesResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L375-L415">get_v1tms_pending_stopper_taskforces</a>(...) -> GetV1TmsPendingStopperTaskforcesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1449,7 +1449,7 @@ client.tms_internal.get_v1tms_pending_stopper_taskforces(
 </dl>
 </details>
 
-<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py">post_v1tms_statuses_taskforces</a>(...) -> PostV1TmsStatusesTaskforcesResponse</code></summary>
+<details><summary><code>client.tms_internal.<a href="src/fern/tms_internal/client.py#L417-L459">post_v1tms_statuses_taskforces</a>(...) -> PostV1TmsStatusesTaskforcesResponse</code></summary>
 <dl>
 <dd>
 

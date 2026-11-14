@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">run_task</a>(...) -> TaskRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L271">run_task</a>(...) -> TaskRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -79,7 +79,7 @@ client.run_task(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">run_workflow</a>(...) -> WorkflowRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L273-L380">run_workflow</a>(...) -> WorkflowRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -175,7 +175,7 @@ client.run_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_run</a>(...) -> GetRunResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L382-L411">get_run</a>(...) -> GetRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -247,7 +247,7 @@ client.get_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">cancel_run</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L413-L442">cancel_run</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -319,7 +319,7 @@ client.cancel_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_workflows</a>(...) -> typing.List[Workflow]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L444-L498">get_workflows</a>(...) -> typing.List[Workflow]</code></summary>
 <dl>
 <dd>
 
@@ -429,7 +429,7 @@ client.get_workflows()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L500-L538">create_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -499,7 +499,7 @@ client.create_workflow()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_workflow</a>(...) -> Workflow</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L540-L587">update_workflow</a>(...) -> Workflow</code></summary>
 <dl>
 <dd>
 
@@ -579,7 +579,7 @@ client.update_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_workflow</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L589-L620">delete_workflow</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -651,7 +651,7 @@ client.delete_workflow(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_artifact</a>(...) -> Artifact</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L622-L650">get_artifact</a>(...) -> Artifact</code></summary>
 <dl>
 <dd>
 
@@ -723,7 +723,7 @@ client.get_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retry_run_webhook</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L652-L681">retry_run_webhook</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -795,7 +795,7 @@ client.retry_run_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_sessions</a>() -> typing.List[BrowserSessionResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L683-L709">get_browser_sessions</a>() -> typing.List[BrowserSessionResponse]</code></summary>
 <dl>
 <dd>
 
@@ -857,7 +857,7 @@ client.get_browser_sessions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L711-L740">create_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -927,7 +927,7 @@ client.create_browser_session()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">close_browser_session</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L742-L773">close_browser_session</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -999,7 +999,7 @@ client.close_browser_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L775-L806">get_browser_session</a>(...) -> BrowserSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1071,7 +1071,7 @@ client.get_browser_session(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">send_totp_code</a>(...) -> TotpCode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L808-L876">send_totp_code</a>(...) -> TotpCode</code></summary>
 <dl>
 <dd>
 
@@ -1192,7 +1192,7 @@ client.send_totp_code(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_credentials</a>(...) -> typing.List[CredentialResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L878-L914">get_credentials</a>(...) -> typing.List[CredentialResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1270,7 +1270,7 @@ client.get_credentials()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L916-L966">create_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 
@@ -1364,7 +1364,7 @@ client.create_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_credential</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L968-L996">delete_credential</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1436,7 +1436,7 @@ client.delete_credential(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_credential</a>(...) -> CredentialResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L998-L1029">get_credential</a>(...) -> CredentialResponse</code></summary>
 <dl>
 <dd>
 

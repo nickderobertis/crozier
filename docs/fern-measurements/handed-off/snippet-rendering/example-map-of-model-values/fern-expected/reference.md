@@ -1,6 +1,6 @@
 # Reference
 ## Records
-<details><summary><code>client.records.<a href="src/fern/records/client.py">search_records</a>(...) -> typing.List[SearchRecordsResponseItem]</code></summary>
+<details><summary><code>client.records.<a href="src/fern/records/client.py#L31-L91">search_records</a>(...) -> typing.List[SearchRecordsResponseItem]</code></summary>
 <dl>
 <dd>
 

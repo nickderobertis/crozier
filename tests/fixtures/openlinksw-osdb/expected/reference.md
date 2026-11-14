@@ -1,6 +1,6 @@
 # Reference
 ## Osdb
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">list_actions</a>(...) -> ListActionsResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L39-L68">list_actions</a>(...) -> ListActionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -72,7 +72,7 @@ client.osdb.list_actions(
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">describe_action</a>(...) -> DescribeActionResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L70-L103">describe_action</a>(...) -> DescribeActionResponse</code></summary>
 <dl>
 <dd>
 
@@ -153,7 +153,7 @@ client.osdb.describe_action(
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">execute_action</a>(...) -> ErrorModel</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L105-L196">execute_action</a>(...) -> ErrorModel</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.osdb.execute_action(
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">action_help</a>(...) -> ActionHelpResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L198-L231">action_help</a>(...) -> ActionHelpResponse</code></summary>
 <dl>
 <dd>
 
@@ -386,7 +386,7 @@ client.osdb.action_help(
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">login</a>() -> LoginResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L233-L255">login</a>() -> LoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -448,7 +448,7 @@ client.osdb.login()
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">logout</a>() -> LogoutResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L257-L279">logout</a>() -> LogoutResponse</code></summary>
 <dl>
 <dd>
 
@@ -510,7 +510,7 @@ client.osdb.logout()
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">list_services</a>() -> ListServicesResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L281-L303">list_services</a>() -> ListServicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -572,7 +572,7 @@ client.osdb.list_services()
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">load_service</a>(...) -> LoadServiceResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L305-L346">load_service</a>(...) -> LoadServiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -653,7 +653,7 @@ client.osdb.load_service(
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">describe_service</a>(...) -> DescribeServiceResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L348-L377">describe_service</a>(...) -> DescribeServiceResponse</code></summary>
 <dl>
 <dd>
 
@@ -725,7 +725,7 @@ client.osdb.describe_service(
 </dl>
 </details>
 
-<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py">unload_service</a>(...) -> UnloadServiceResponse</code></summary>
+<details><summary><code>client.osdb.<a href="src/fern/osdb/client.py#L379-L408">unload_service</a>(...) -> UnloadServiceResponse</code></summary>
 <dl>
 <dd>
 

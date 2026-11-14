@@ -1,6 +1,6 @@
 # Reference
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">event_logs_all</a>(...) -> GetWebhookEventLogsResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L45-L93">event_logs_all</a>(...) -> GetWebhookEventLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.webhooks.event_logs_all(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">resolve</a>(...) -> ResolveWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L95-L143">resolve</a>(...) -> ResolveWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.webhooks.all_(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">add</a>(...) -> CreateWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L191-L256">add</a>(...) -> CreateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -408,7 +408,7 @@ client.webhooks.add(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">one</a>(...) -> GetWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L258-L293">one</a>(...) -> GetWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -490,7 +490,7 @@ client.webhooks.one(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete</a>(...) -> DeleteWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L295-L330">delete</a>(...) -> DeleteWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -572,7 +572,7 @@ client.webhooks.delete(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">update</a>(...) -> UpdateWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L332-L392">update</a>(...) -> UpdateWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -686,7 +686,7 @@ client.webhooks.update(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">execute</a>(...) -> ExecuteWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L394-L437">execute</a>(...) -> ExecuteWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -779,7 +779,7 @@ client.webhooks.execute(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">short_execute</a>(...) -> ExecuteWebhookResponse</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L439-L494">short_execute</a>(...) -> ExecuteWebhookResponse</code></summary>
 <dl>
 <dd>
 

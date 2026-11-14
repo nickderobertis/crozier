@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">fetch_bootstrap_script_url_for_a_cluster</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L118-L149">fetch_bootstrap_script_url_for_a_cluster</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.fetch_bootstrap_script_url_for_a_cluster(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">fetch_cluster_setup_status</a>(...) -> GetClusterClusterStatusResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L151-L182">fetch_cluster_setup_status</a>(...) -> GetClusterClusterStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.fetch_cluster_setup_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_a_secret_value_on_an_edge_cluster</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L184-L222">update_a_secret_value_on_an_edge_cluster</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -241,7 +241,7 @@ client.update_a_secret_value_on_an_edge_cluster(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_a_secret_value_from_an_edge_cluster</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L224-L274">delete_a_secret_value_from_an_edge_cluster</a>(...)</code></summary>
 <dl>
 <dd>
 

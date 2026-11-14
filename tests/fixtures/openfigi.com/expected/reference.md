@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post_mapping</a>(...) -> BulkMappingJobResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L129-L164">post_mapping</a>(...) -> BulkMappingJobResult</code></summary>
 <dl>
 <dd>
 
@@ -77,7 +77,7 @@ client.post_mapping(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_mapping_values_key</a>(...) -> GetMappingValuesKeyResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L166-L197">get_mapping_values_key</a>(...) -> GetMappingValuesKeyResponse</code></summary>
 <dl>
 <dd>
 

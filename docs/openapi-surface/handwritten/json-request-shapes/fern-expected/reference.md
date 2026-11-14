@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">register_crate</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L136">register_crate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.register_crate(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">submit_run</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L138-L166">submit_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -130,7 +130,7 @@ client.submit_run(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_preference</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L168-L197">update_preference</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -189,7 +189,7 @@ client.update_preference(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_labels</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L199-L226">set_labels</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.set_labels(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">define_marker</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L228-L253">define_marker</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.define_marker(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">echo_reading</a>(...) -> Reading</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L255-L281">echo_reading</a>(...) -> Reading</code></summary>
 <dl>
 <dd>
 
@@ -362,7 +362,7 @@ client.echo_reading(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">summarize_field</a>(...) -> FieldSummary</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L283-L309">summarize_field</a>(...) -> FieldSummary</code></summary>
 <dl>
 <dd>
 
@@ -420,7 +420,7 @@ client.summarize_field(
 </details>
 
 ## Vault
-<details><summary><code>client.vault.<a href="src/fern/vault/client.py">list_bundles</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.vault.<a href="src/fern/vault/client.py#L28-L50">list_bundles</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -467,7 +467,7 @@ client.vault.list_bundles()
 </dl>
 </details>
 
-<details><summary><code>client.vault.<a href="src/fern/vault/client.py">deposit_bundle</a>(...)</code></summary>
+<details><summary><code>client.vault.<a href="src/fern/vault/client.py#L52-L77">deposit_bundle</a>(...)</code></summary>
 <dl>
 <dd>
 

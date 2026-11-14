@@ -1,6 +1,6 @@
 # Reference
 ## M
-<details><summary><code>client.m.<a href="src/fern/m/client.py">list_all_metadata_schemes</a>(...) -> ResponsePageMetadataScheme</code></summary>
+<details><summary><code>client.m.<a href="src/fern/m/client.py#L39-L67">list_all_metadata_schemes</a>(...) -> ResponsePageMetadataScheme</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.m.list_all_metadata_schemes()
 </dl>
 </details>
 
-<details><summary><code>client.m.<a href="src/fern/m/client.py">submit_a_new_metadata_scheme_record</a>(...) -> ResponseSuccessMetadataScheme</code></summary>
+<details><summary><code>client.m.<a href="src/fern/m/client.py#L69-L156">submit_a_new_metadata_scheme_record</a>(...) -> ResponseSuccessMetadataScheme</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.m.submit_a_new_metadata_scheme_record()
 </dl>
 </details>
 
-<details><summary><code>client.m.<a href="src/fern/m/client.py">retrieve_an_existing_metadata_scheme_record</a>(...) -> ResponseItemMetadataScheme</code></summary>
+<details><summary><code>client.m.<a href="src/fern/m/client.py#L158-L188">retrieve_an_existing_metadata_scheme_record</a>(...) -> ResponseItemMetadataScheme</code></summary>
 <dl>
 <dd>
 
@@ -176,7 +176,7 @@ client.m.retrieve_an_existing_metadata_scheme_record(
 </dl>
 </details>
 
-<details><summary><code>client.m.<a href="src/fern/m/client.py">modify_an_existing_metadata_scheme_record</a>(...) -> ResponseSuccessMetadataScheme</code></summary>
+<details><summary><code>client.m.<a href="src/fern/m/client.py#L190-L284">modify_an_existing_metadata_scheme_record</a>(...) -> ResponseSuccessMetadataScheme</code></summary>
 <dl>
 <dd>
 
@@ -244,7 +244,7 @@ client.m.modify_an_existing_metadata_scheme_record(
 </dl>
 </details>
 
-<details><summary><code>client.m.<a href="src/fern/m/client.py">remove_an_existing_metadata_scheme_record</a>(...)</code></summary>
+<details><summary><code>client.m.<a href="src/fern/m/client.py#L286-L315">remove_an_existing_metadata_scheme_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -305,7 +305,7 @@ client.m.remove_an_existing_metadata_scheme_record(
 </details>
 
 ## G
-<details><summary><code>client.g.<a href="src/fern/g/client.py">list_all_organizations</a>(...) -> ResponsePageOrganization</code></summary>
+<details><summary><code>client.g.<a href="src/fern/g/client.py#L37-L65">list_all_organizations</a>(...) -> ResponsePageOrganization</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ client.g.list_all_organizations()
 </dl>
 </details>
 
-<details><summary><code>client.g.<a href="src/fern/g/client.py">submit_a_new_organization_record</a>(...) -> ResponseSuccessOrganization</code></summary>
+<details><summary><code>client.g.<a href="src/fern/g/client.py#L67-L137">submit_a_new_organization_record</a>(...) -> ResponseSuccessOrganization</code></summary>
 <dl>
 <dd>
 
@@ -421,7 +421,7 @@ client.g.submit_a_new_organization_record()
 </dl>
 </details>
 
-<details><summary><code>client.g.<a href="src/fern/g/client.py">retrieve_an_existing_organization_record</a>(...) -> ResponseItemOrganization</code></summary>
+<details><summary><code>client.g.<a href="src/fern/g/client.py#L139-L169">retrieve_an_existing_organization_record</a>(...) -> ResponseItemOrganization</code></summary>
 <dl>
 <dd>
 
@@ -481,7 +481,7 @@ client.g.retrieve_an_existing_organization_record(
 </dl>
 </details>
 
-<details><summary><code>client.g.<a href="src/fern/g/client.py">modify_an_existing_organization_record</a>(...) -> ResponseSuccessOrganization</code></summary>
+<details><summary><code>client.g.<a href="src/fern/g/client.py#L171-L248">modify_an_existing_organization_record</a>(...) -> ResponseSuccessOrganization</code></summary>
 <dl>
 <dd>
 
@@ -549,7 +549,7 @@ client.g.modify_an_existing_organization_record(
 </dl>
 </details>
 
-<details><summary><code>client.g.<a href="src/fern/g/client.py">remove_an_existing_organization_record</a>(...)</code></summary>
+<details><summary><code>client.g.<a href="src/fern/g/client.py#L250-L279">remove_an_existing_organization_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -610,7 +610,7 @@ client.g.remove_an_existing_organization_record(
 </details>
 
 ## T
-<details><summary><code>client.t.<a href="src/fern/t/client.py">list_all_tools</a>(...) -> ResponsePageTool</code></summary>
+<details><summary><code>client.t.<a href="src/fern/t/client.py#L39-L67">list_all_tools</a>(...) -> ResponsePageTool</code></summary>
 <dl>
 <dd>
 
@@ -668,7 +668,7 @@ client.t.list_all_tools()
 </dl>
 </details>
 
-<details><summary><code>client.t.<a href="src/fern/t/client.py">submit_a_new_tool_record</a>(...) -> ResponseSuccessTool</code></summary>
+<details><summary><code>client.t.<a href="src/fern/t/client.py#L69-L151">submit_a_new_tool_record</a>(...) -> ResponseSuccessTool</code></summary>
 <dl>
 <dd>
 
@@ -726,7 +726,7 @@ client.t.submit_a_new_tool_record()
 </dl>
 </details>
 
-<details><summary><code>client.t.<a href="src/fern/t/client.py">retrieve_an_existing_tool_record</a>(...) -> ResponseItemTool</code></summary>
+<details><summary><code>client.t.<a href="src/fern/t/client.py#L153-L183">retrieve_an_existing_tool_record</a>(...) -> ResponseItemTool</code></summary>
 <dl>
 <dd>
 
@@ -786,7 +786,7 @@ client.t.retrieve_an_existing_tool_record(
 </dl>
 </details>
 
-<details><summary><code>client.t.<a href="src/fern/t/client.py">modify_an_existing_tool_record</a>(...) -> ResponseSuccessTool</code></summary>
+<details><summary><code>client.t.<a href="src/fern/t/client.py#L185-L274">modify_an_existing_tool_record</a>(...) -> ResponseSuccessTool</code></summary>
 <dl>
 <dd>
 
@@ -854,7 +854,7 @@ client.t.modify_an_existing_tool_record(
 </dl>
 </details>
 
-<details><summary><code>client.t.<a href="src/fern/t/client.py">remove_an_existing_tool_record</a>(...)</code></summary>
+<details><summary><code>client.t.<a href="src/fern/t/client.py#L276-L305">remove_an_existing_tool_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -915,7 +915,7 @@ client.t.remove_an_existing_tool_record(
 </details>
 
 ## C
-<details><summary><code>client.c.<a href="src/fern/c/client.py">list_all_mappings</a>(...) -> ResponsePageMapping</code></summary>
+<details><summary><code>client.c.<a href="src/fern/c/client.py#L39-L67">list_all_mappings</a>(...) -> ResponsePageMapping</code></summary>
 <dl>
 <dd>
 
@@ -973,7 +973,7 @@ client.c.list_all_mappings()
 </dl>
 </details>
 
-<details><summary><code>client.c.<a href="src/fern/c/client.py">submit_a_new_mapping_record</a>(...) -> ResponseSuccessMapping</code></summary>
+<details><summary><code>client.c.<a href="src/fern/c/client.py#L69-L146">submit_a_new_mapping_record</a>(...) -> ResponseSuccessMapping</code></summary>
 <dl>
 <dd>
 
@@ -1031,7 +1031,7 @@ client.c.submit_a_new_mapping_record()
 </dl>
 </details>
 
-<details><summary><code>client.c.<a href="src/fern/c/client.py">retrieve_an_existing_mapping_record</a>(...) -> ResponseItemMapping</code></summary>
+<details><summary><code>client.c.<a href="src/fern/c/client.py#L148-L178">retrieve_an_existing_mapping_record</a>(...) -> ResponseItemMapping</code></summary>
 <dl>
 <dd>
 
@@ -1091,7 +1091,7 @@ client.c.retrieve_an_existing_mapping_record(
 </dl>
 </details>
 
-<details><summary><code>client.c.<a href="src/fern/c/client.py">modify_an_existing_mapping_record</a>(...) -> ResponseSuccessMapping</code></summary>
+<details><summary><code>client.c.<a href="src/fern/c/client.py#L180-L264">modify_an_existing_mapping_record</a>(...) -> ResponseSuccessMapping</code></summary>
 <dl>
 <dd>
 
@@ -1159,7 +1159,7 @@ client.c.modify_an_existing_mapping_record(
 </dl>
 </details>
 
-<details><summary><code>client.c.<a href="src/fern/c/client.py">remove_an_existing_mapping_record</a>(...)</code></summary>
+<details><summary><code>client.c.<a href="src/fern/c/client.py#L266-L295">remove_an_existing_mapping_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1220,7 +1220,7 @@ client.c.remove_an_existing_mapping_record(
 </details>
 
 ## E
-<details><summary><code>client.e.<a href="src/fern/e/client.py">list_all_endorsements</a>(...) -> ResponsePageEndorsement</code></summary>
+<details><summary><code>client.e.<a href="src/fern/e/client.py#L39-L67">list_all_endorsements</a>(...) -> ResponsePageEndorsement</code></summary>
 <dl>
 <dd>
 
@@ -1278,7 +1278,7 @@ client.e.list_all_endorsements()
 </dl>
 </details>
 
-<details><summary><code>client.e.<a href="src/fern/e/client.py">submit_a_new_endorsement_record</a>(...) -> ResponseSuccessEndorsement</code></summary>
+<details><summary><code>client.e.<a href="src/fern/e/client.py#L69-L158">submit_a_new_endorsement_record</a>(...) -> ResponseSuccessEndorsement</code></summary>
 <dl>
 <dd>
 
@@ -1336,7 +1336,7 @@ client.e.submit_a_new_endorsement_record()
 </dl>
 </details>
 
-<details><summary><code>client.e.<a href="src/fern/e/client.py">retrieve_an_existing_endorsement_record</a>(...) -> ResponseItemEndorsement</code></summary>
+<details><summary><code>client.e.<a href="src/fern/e/client.py#L160-L190">retrieve_an_existing_endorsement_record</a>(...) -> ResponseItemEndorsement</code></summary>
 <dl>
 <dd>
 
@@ -1396,7 +1396,7 @@ client.e.retrieve_an_existing_endorsement_record(
 </dl>
 </details>
 
-<details><summary><code>client.e.<a href="src/fern/e/client.py">modify_an_existing_endorsement_record</a>(...) -> ResponseSuccessEndorsement</code></summary>
+<details><summary><code>client.e.<a href="src/fern/e/client.py#L192-L288">modify_an_existing_endorsement_record</a>(...) -> ResponseSuccessEndorsement</code></summary>
 <dl>
 <dd>
 
@@ -1464,7 +1464,7 @@ client.e.modify_an_existing_endorsement_record(
 </dl>
 </details>
 
-<details><summary><code>client.e.<a href="src/fern/e/client.py">remove_an_existing_endorsement_record</a>(...)</code></summary>
+<details><summary><code>client.e.<a href="src/fern/e/client.py#L290-L319">remove_an_existing_endorsement_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1525,7 +1525,7 @@ client.e.remove_an_existing_endorsement_record(
 </details>
 
 ## Rel
-<details><summary><code>client.rel.<a href="src/fern/rel/client.py">list_all_entity_relation_records</a>(...) -> ResponsePageRelation</code></summary>
+<details><summary><code>client.rel.<a href="src/fern/rel/client.py#L37-L65">list_all_entity_relation_records</a>(...) -> ResponsePageRelation</code></summary>
 <dl>
 <dd>
 
@@ -1583,7 +1583,7 @@ client.rel.list_all_entity_relation_records()
 </dl>
 </details>
 
-<details><summary><code>client.rel.<a href="src/fern/rel/client.py">retrieve_an_existing_entity_relation_record</a>(...) -> ResponseItemRelation</code></summary>
+<details><summary><code>client.rel.<a href="src/fern/rel/client.py#L67-L107">retrieve_an_existing_entity_relation_record</a>(...) -> ResponseItemRelation</code></summary>
 <dl>
 <dd>
 
@@ -1652,7 +1652,7 @@ client.rel.retrieve_an_existing_entity_relation_record(
 </dl>
 </details>
 
-<details><summary><code>client.rel.<a href="src/fern/rel/client.py">modify_an_existing_entity_relation_record</a>(...) -> ResponseSuccessRelation</code></summary>
+<details><summary><code>client.rel.<a href="src/fern/rel/client.py#L109-L200">modify_an_existing_entity_relation_record</a>(...) -> ResponseSuccessRelation</code></summary>
 <dl>
 <dd>
 
@@ -1729,7 +1729,7 @@ client.rel.modify_an_existing_entity_relation_record(
 </dl>
 </details>
 
-<details><summary><code>client.rel.<a href="src/fern/rel/client.py">remove_an_existing_entity_relation_record</a>(...)</code></summary>
+<details><summary><code>client.rel.<a href="src/fern/rel/client.py#L202-L241">remove_an_existing_entity_relation_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1798,7 +1798,7 @@ client.rel.remove_an_existing_entity_relation_record(
 </dl>
 </details>
 
-<details><summary><code>client.rel.<a href="src/fern/rel/client.py">add_or_remove_an_individual_entity_relation</a>(...) -> ResponseSuccessRelation</code></summary>
+<details><summary><code>client.rel.<a href="src/fern/rel/client.py#L243-L287">add_or_remove_an_individual_entity_relation</a>(...) -> ResponseSuccessRelation</code></summary>
 <dl>
 <dd>
 
@@ -1879,7 +1879,7 @@ client.rel.add_or_remove_an_individual_entity_relation(
 </details>
 
 ## Invrel
-<details><summary><code>client.invrel.<a href="src/fern/invrel/client.py">list_virtual_records_of_inverse_entity_relations</a>(...) -> ResponsePageInvRelation</code></summary>
+<details><summary><code>client.invrel.<a href="src/fern/invrel/client.py#L34-L64">list_virtual_records_of_inverse_entity_relations</a>(...) -> ResponsePageInvRelation</code></summary>
 <dl>
 <dd>
 
@@ -1937,7 +1937,7 @@ client.invrel.list_virtual_records_of_inverse_entity_relations()
 </dl>
 </details>
 
-<details><summary><code>client.invrel.<a href="src/fern/invrel/client.py">retrieve_a_virtual_record_of_inverse_entity_relations</a>(...) -> ResponseItemInvRelation</code></summary>
+<details><summary><code>client.invrel.<a href="src/fern/invrel/client.py#L66-L106">retrieve_a_virtual_record_of_inverse_entity_relations</a>(...) -> ResponseItemInvRelation</code></summary>
 <dl>
 <dd>
 
@@ -2006,7 +2006,7 @@ client.invrel.retrieve_a_virtual_record_of_inverse_entity_relations(
 </dl>
 </details>
 
-<details><summary><code>client.invrel.<a href="src/fern/invrel/client.py">add_or_remove_an_individual_entity_relation</a>(...) -> ResponseSuccessInvRelation</code></summary>
+<details><summary><code>client.invrel.<a href="src/fern/invrel/client.py#L108-L152">add_or_remove_an_individual_entity_relation</a>(...) -> ResponseSuccessInvRelation</code></summary>
 <dl>
 <dd>
 
@@ -2087,7 +2087,7 @@ client.invrel.add_or_remove_an_individual_entity_relation(
 </details>
 
 ## Datatype
-<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py">list_all_registered_data_types</a>() -> ResponsePageDataType</code></summary>
+<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py#L33-L58">list_all_registered_data_types</a>() -> ResponsePageDataType</code></summary>
 <dl>
 <dd>
 
@@ -2137,7 +2137,7 @@ client.datatype.list_all_registered_data_types()
 </dl>
 </details>
 
-<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py">submit_a_new_data_type</a>(...) -> ResponseSuccessDataType</code></summary>
+<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py#L60-L103">submit_a_new_data_type</a>(...) -> ResponseSuccessDataType</code></summary>
 <dl>
 <dd>
 
@@ -2195,7 +2195,7 @@ client.datatype.submit_a_new_data_type()
 </dl>
 </details>
 
-<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py">retrieve_an_existing_data_type_record</a>(...) -> ResponseItemDataType</code></summary>
+<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py#L105-L135">retrieve_an_existing_data_type_record</a>(...) -> ResponseItemDataType</code></summary>
 <dl>
 <dd>
 
@@ -2255,7 +2255,7 @@ client.datatype.retrieve_an_existing_data_type_record(
 </dl>
 </details>
 
-<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py">modify_an_existing_data_type_record</a>(...) -> ResponseSuccessDataType</code></summary>
+<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py#L137-L186">modify_an_existing_data_type_record</a>(...) -> ResponseSuccessDataType</code></summary>
 <dl>
 <dd>
 
@@ -2323,7 +2323,7 @@ client.datatype.modify_an_existing_data_type_record(
 </dl>
 </details>
 
-<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py">remove_an_existing_data_type_record</a>(...)</code></summary>
+<details><summary><code>client.datatype.<a href="src/fern/datatype/client.py#L188-L217">remove_an_existing_data_type_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2384,7 +2384,7 @@ client.datatype.remove_an_existing_data_type_record(
 </details>
 
 ## Type
-<details><summary><code>client.type.<a href="src/fern/type/client.py">list_all_registered_entity_types</a>() -> ResponsePageVocabularyTerm</code></summary>
+<details><summary><code>client.type.<a href="src/fern/type/client.py#L34-L59">list_all_registered_entity_types</a>() -> ResponsePageVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2434,7 +2434,7 @@ client.type.list_all_registered_entity_types()
 </dl>
 </details>
 
-<details><summary><code>client.type.<a href="src/fern/type/client.py">submit_a_new_entity_type</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
+<details><summary><code>client.type.<a href="src/fern/type/client.py#L61-L111">submit_a_new_entity_type</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2495,7 +2495,7 @@ client.type.submit_a_new_entity_type(
 </dl>
 </details>
 
-<details><summary><code>client.type.<a href="src/fern/type/client.py">retrieve_an_existing_entity_type_record</a>(...) -> ResponseItemVocabularyTerm</code></summary>
+<details><summary><code>client.type.<a href="src/fern/type/client.py#L113-L143">retrieve_an_existing_entity_type_record</a>(...) -> ResponseItemVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2555,7 +2555,7 @@ client.type.retrieve_an_existing_entity_type_record(
 </dl>
 </details>
 
-<details><summary><code>client.type.<a href="src/fern/type/client.py">modify_an_existing_entity_type_record</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
+<details><summary><code>client.type.<a href="src/fern/type/client.py#L145-L199">modify_an_existing_entity_type_record</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2624,7 +2624,7 @@ client.type.modify_an_existing_entity_type_record(
 </dl>
 </details>
 
-<details><summary><code>client.type.<a href="src/fern/type/client.py">remove_an_existing_entity_type_record</a>(...)</code></summary>
+<details><summary><code>client.type.<a href="src/fern/type/client.py#L201-L230">remove_an_existing_entity_type_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2685,7 +2685,7 @@ client.type.remove_an_existing_entity_type_record(
 </details>
 
 ## Location
-<details><summary><code>client.location.<a href="src/fern/location/client.py">list_all_registered_location_url_types</a>() -> ResponsePageVocabularyTerm</code></summary>
+<details><summary><code>client.location.<a href="src/fern/location/client.py#L34-L59">list_all_registered_location_url_types</a>() -> ResponsePageVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2735,7 +2735,7 @@ client.location.list_all_registered_location_url_types()
 </dl>
 </details>
 
-<details><summary><code>client.location.<a href="src/fern/location/client.py">submit_a_new_location_url_type</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
+<details><summary><code>client.location.<a href="src/fern/location/client.py#L61-L111">submit_a_new_location_url_type</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2796,7 +2796,7 @@ client.location.submit_a_new_location_url_type(
 </dl>
 </details>
 
-<details><summary><code>client.location.<a href="src/fern/location/client.py">retrieve_an_existing_location_url_type_record</a>(...) -> ResponseItemVocabularyTerm</code></summary>
+<details><summary><code>client.location.<a href="src/fern/location/client.py#L113-L145">retrieve_an_existing_location_url_type_record</a>(...) -> ResponseItemVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2856,7 +2856,7 @@ client.location.retrieve_an_existing_location_url_type_record(
 </dl>
 </details>
 
-<details><summary><code>client.location.<a href="src/fern/location/client.py">modify_an_existing_location_url_type_record</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
+<details><summary><code>client.location.<a href="src/fern/location/client.py#L147-L201">modify_an_existing_location_url_type_record</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -2925,7 +2925,7 @@ client.location.modify_an_existing_location_url_type_record(
 </dl>
 </details>
 
-<details><summary><code>client.location.<a href="src/fern/location/client.py">remove_an_existing_location_url_type_record</a>(...)</code></summary>
+<details><summary><code>client.location.<a href="src/fern/location/client.py#L203-L232">remove_an_existing_location_url_type_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2986,7 +2986,7 @@ client.location.remove_an_existing_location_url_type_record(
 </details>
 
 ## IdScheme
-<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py">list_all_registered_id_schemes</a>() -> ResponsePageVocabularyTerm</code></summary>
+<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py#L34-L59">list_all_registered_id_schemes</a>() -> ResponsePageVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -3036,7 +3036,7 @@ client.id_scheme.list_all_registered_id_schemes()
 </dl>
 </details>
 
-<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py">submit_a_new_id_scheme</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
+<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py#L61-L111">submit_a_new_id_scheme</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -3097,7 +3097,7 @@ client.id_scheme.submit_a_new_id_scheme(
 </dl>
 </details>
 
-<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py">retrieve_an_existing_id_scheme_record</a>(...) -> ResponseItemVocabularyTerm</code></summary>
+<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py#L113-L143">retrieve_an_existing_id_scheme_record</a>(...) -> ResponseItemVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -3157,7 +3157,7 @@ client.id_scheme.retrieve_an_existing_id_scheme_record(
 </dl>
 </details>
 
-<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py">modify_an_existing_id_scheme_record</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
+<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py#L145-L199">modify_an_existing_id_scheme_record</a>(...) -> ResponseSuccessVocabularyTerm</code></summary>
 <dl>
 <dd>
 
@@ -3226,7 +3226,7 @@ client.id_scheme.modify_an_existing_id_scheme_record(
 </dl>
 </details>
 
-<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py">remove_an_existing_id_scheme_record</a>(...)</code></summary>
+<details><summary><code>client.id_scheme.<a href="src/fern/id_scheme/client.py#L201-L230">remove_an_existing_id_scheme_record</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3287,7 +3287,7 @@ client.id_scheme.remove_an_existing_id_scheme_record(
 </details>
 
 ## Thesaurus
-<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py">retrieve_skos_concept_scheme_for_rdamsc_thesaurus</a>() -> ResponseItemThesaurusConceptScheme</code></summary>
+<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py#L30-L55">retrieve_skos_concept_scheme_for_rdamsc_thesaurus</a>() -> ResponseItemThesaurusConceptScheme</code></summary>
 <dl>
 <dd>
 
@@ -3337,7 +3337,7 @@ client.thesaurus.retrieve_skos_concept_scheme_for_rdamsc_thesaurus()
 </dl>
 </details>
 
-<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py">retrieve_skos_concept_from_rdamsc_thesaurus</a>(...) -> ResponseItemThesaurusConcept</code></summary>
+<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py#L57-L103">retrieve_skos_concept_from_rdamsc_thesaurus</a>(...) -> ResponseItemThesaurusConcept</code></summary>
 <dl>
 <dd>
 
@@ -3418,7 +3418,7 @@ Level of detail to include in the entry.
 </dl>
 </details>
 
-<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py">retrieve_array_of_all_concepts_in_the_rdamsc_thesaurus</a>() -> ResponsePageThesaurusConcept</code></summary>
+<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py#L105-L132">retrieve_array_of_all_concepts_in_the_rdamsc_thesaurus</a>() -> ResponsePageThesaurusConcept</code></summary>
 <dl>
 <dd>
 
@@ -3468,7 +3468,7 @@ client.thesaurus.retrieve_array_of_all_concepts_in_the_rdamsc_thesaurus()
 </dl>
 </details>
 
-<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py">retrieve_array_of_concepts_in_the_rdamsc_thesaurus_that_are_currently_in_use_in_the_catalog</a>() -> ResponsePageThesaurusConcept</code></summary>
+<details><summary><code>client.thesaurus.<a href="src/fern/thesaurus/client.py#L134-L161">retrieve_array_of_concepts_in_the_rdamsc_thesaurus_that_are_currently_in_use_in_the_catalog</a>() -> ResponsePageThesaurusConcept</code></summary>
 <dl>
 <dd>
 
@@ -3519,7 +3519,7 @@ client.thesaurus.retrieve_array_of_concepts_in_the_rdamsc_thesaurus_that_are_cur
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">change_api_user_password</a>(...) -> ResponsePassword</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L30-L62">change_api_user_password</a>(...) -> ResponsePassword</code></summary>
 <dl>
 <dd>
 
@@ -3579,7 +3579,7 @@ client.user.change_api_user_password(
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">request_an_authorization_token</a>() -> GetApi2UserTokenResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L64-L89">request_an_authorization_token</a>() -> GetApi2UserTokenResponse</code></summary>
 <dl>
 <dd>
 

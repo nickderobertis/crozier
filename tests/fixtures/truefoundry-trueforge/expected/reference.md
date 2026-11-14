@@ -1,6 +1,6 @@
 # Reference
 ## Agents
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">list</a>() -> ListAgentsResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L33-L58">list</a>() -> ListAgentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.agents.list()
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">create</a>(...) -> GetAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L60-L98">create</a>(...) -> GetAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.agents.create(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">get</a>(...) -> GetAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L100-L130">get</a>(...) -> GetAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -219,7 +219,7 @@ client.agents.get(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">update</a>(...) -> GetAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L132-L171">update</a>(...) -> GetAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -304,7 +304,7 @@ client.agents.update(
 </dl>
 </details>
 
-<details><summary><code>client.agents.<a href="src/fern/agents/client.py">delete</a>(...) -> DeleteAgentResponse</code></summary>
+<details><summary><code>client.agents.<a href="src/fern/agents/client.py#L173-L203">delete</a>(...) -> DeleteAgentResponse</code></summary>
 <dl>
 <dd>
 
@@ -377,7 +377,7 @@ client.agents.delete(
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">me</a>() -> GetMeResponse</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L26-L51">me</a>() -> GetMeResponse</code></summary>
 <dl>
 <dd>
 
@@ -440,7 +440,7 @@ client.auth.me()
 </details>
 
 ## Server
-<details><summary><code>client.server.<a href="src/fern/server/client.py">get_capabilities</a>() -> GetCapabilitiesResponse</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py#L26-L51">get_capabilities</a>() -> GetCapabilitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -503,7 +503,7 @@ client.server.get_capabilities()
 </details>
 
 ## MCP Servers
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">list</a>(...) -> ListAvailableMcpServersResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L31-L72">list</a>(...) -> ListAvailableMcpServersResponse</code></summary>
 <dl>
 <dd>
 
@@ -581,7 +581,7 @@ client.mcp_servers.list()
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">authorize</a>(...) -> McpAuthStatus</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L74-L113">authorize</a>(...) -> McpAuthStatus</code></summary>
 <dl>
 <dd>
 
@@ -661,7 +661,7 @@ client.mcp_servers.authorize(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">delete_authorization</a>(...) -> GetMcpServerResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L115-L147">delete_authorization</a>(...) -> GetMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -733,7 +733,7 @@ client.mcp_servers.delete_authorization(
 </dl>
 </details>
 
-<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py">list_tools</a>(...) -> ListMcpServerToolsResponse</code></summary>
+<details><summary><code>client.mcp_servers.<a href="src/fern/mcp_servers/client.py#L149-L181">list_tools</a>(...) -> ListMcpServerToolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -806,7 +806,7 @@ client.mcp_servers.list_tools(
 </details>
 
 ## Models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list</a>() -> ListAvailableModelsResponse</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L26-L51">list</a>() -> ListAvailableModelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -869,7 +869,7 @@ client.models.list()
 </details>
 
 ## Schedules
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">list</a>(...) -> ListSchedulesResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L37-L84">list</a>(...) -> ListSchedulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -955,7 +955,7 @@ client.schedules.list()
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">create</a>(...) -> GetScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L86-L133">create</a>(...) -> GetScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1048,7 +1048,7 @@ client.schedules.create(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">create_run</a>(...) -> CreateScheduleRunResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L135-L167">create_run</a>(...) -> CreateScheduleRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -1120,7 +1120,7 @@ client.schedules.create_run(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">get</a>(...) -> GetScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L169-L199">get</a>(...) -> GetScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1192,7 +1192,7 @@ client.schedules.get(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">update</a>(...) -> GetScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L201-L247">update</a>(...) -> GetScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1285,7 +1285,7 @@ client.schedules.update(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">delete</a>(...) -> DeleteScheduleResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L249-L281">delete</a>(...) -> DeleteScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -1357,7 +1357,7 @@ client.schedules.delete(
 </dl>
 </details>
 
-<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py">list_runs</a>(...) -> ListScheduleRunsResponse</code></summary>
+<details><summary><code>client.schedules.<a href="src/fern/schedules/client.py#L283-L315">list_runs</a>(...) -> ListScheduleRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1430,7 +1430,7 @@ client.schedules.list_runs(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list</a>(...) -> ListSessionsResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L49-L114">list</a>(...) -> ListSessionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1540,7 +1540,7 @@ client.sessions.list()
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create</a>(...) -> GetSessionResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L116-L155">create</a>(...) -> GetSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1622,7 +1622,7 @@ client.sessions.create(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">get</a>(...) -> GetSessionResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L157-L187">get</a>(...) -> GetSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1694,7 +1694,7 @@ client.sessions.get(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L189-L218">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1766,7 +1766,7 @@ client.sessions.delete(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">update</a>(...) -> GetSessionResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L220-L261">update</a>(...) -> GetSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1854,7 +1854,7 @@ client.sessions.update(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">cancel</a>(...) -> CancelSessionResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L263-L295">cancel</a>(...) -> CancelSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1926,7 +1926,7 @@ client.sessions.cancel(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_events</a>(...) -> ListSessionEventsResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L297-L350">list_events</a>(...) -> ListSessionEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2022,7 +2022,7 @@ client.sessions.list_events(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_turns</a>(...) -> ListTurnsResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L352-L401">list_turns</a>(...) -> ListTurnsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2110,7 +2110,7 @@ client.sessions.list_turns(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_turn_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L403-L453">create_turn_stream</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2210,7 +2210,7 @@ client.sessions.create_turn_stream(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_turn</a>(...) -> GetTurnResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L455-L503">create_turn</a>(...) -> GetTurnResponse</code></summary>
 <dl>
 <dd>
 
@@ -2310,7 +2310,7 @@ client.sessions.create_turn_stream(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">get_turn</a>(...) -> GetTurnResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L505-L541">get_turn</a>(...) -> GetTurnResponse</code></summary>
 <dl>
 <dd>
 
@@ -2391,7 +2391,7 @@ client.sessions.get_turn(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">download_sandbox_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L543-L585">download_sandbox_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2481,7 +2481,7 @@ client.sessions.download_sandbox_file(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_turn_events</a>(...) -> ListTurnEventsResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L587-L645">list_turn_events</a>(...) -> ListTurnEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2586,7 +2586,7 @@ client.sessions.list_turn_events(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">subscribe_to_turn</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L647-L695">subscribe_to_turn</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -2676,7 +2676,7 @@ client.sessions.subscribe_to_turn(
 </details>
 
 ## Skills
-<details><summary><code>client.skills.<a href="src/fern/skills/client.py">list</a>() -> ListAvailableSkillsResponse</code></summary>
+<details><summary><code>client.skills.<a href="src/fern/skills/client.py#L26-L51">list</a>() -> ListAvailableSkillsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2739,7 +2739,7 @@ client.skills.list()
 </details>
 
 ## Catalogs McpServers
-<details><summary><code>client.catalogs.mcp_servers.<a href="src/fern/catalogs/mcp_servers/client.py">list</a>() -> GetMcpServerCatalogResponse</code></summary>
+<details><summary><code>client.catalogs.mcp_servers.<a href="src/fern/catalogs/mcp_servers/client.py#L26-L51">list</a>() -> GetMcpServerCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -2802,7 +2802,7 @@ client.catalogs.mcp_servers.list()
 </details>
 
 ## Catalogs ModelProviders
-<details><summary><code>client.catalogs.model_providers.<a href="src/fern/catalogs/model_providers/client.py">list</a>() -> GetModelProviderCatalogResponse</code></summary>
+<details><summary><code>client.catalogs.model_providers.<a href="src/fern/catalogs/model_providers/client.py#L26-L51">list</a>() -> GetModelProviderCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -2865,7 +2865,7 @@ client.catalogs.model_providers.list()
 </details>
 
 ## Catalogs SandboxProviders
-<details><summary><code>client.catalogs.sandbox_providers.<a href="src/fern/catalogs/sandbox_providers/client.py">list</a>() -> GetSandboxProviderCatalogResponse</code></summary>
+<details><summary><code>client.catalogs.sandbox_providers.<a href="src/fern/catalogs/sandbox_providers/client.py#L26-L51">list</a>() -> GetSandboxProviderCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -2928,7 +2928,7 @@ client.catalogs.sandbox_providers.list()
 </details>
 
 ## Catalogs Skills
-<details><summary><code>client.catalogs.skills.<a href="src/fern/catalogs/skills/client.py">list</a>() -> GetSkillCatalogResponse</code></summary>
+<details><summary><code>client.catalogs.skills.<a href="src/fern/catalogs/skills/client.py#L26-L51">list</a>() -> GetSkillCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -2991,7 +2991,7 @@ client.catalogs.skills.list()
 </details>
 
 ## Internal Metrics
-<details><summary><code>client.internal.metrics.<a href="src/fern/internal/metrics/client.py">list_charts</a>() -> GetSessionMetricsChartResponse</code></summary>
+<details><summary><code>client.internal.metrics.<a href="src/fern/internal/metrics/client.py#L30-L55">list_charts</a>() -> GetSessionMetricsChartResponse</code></summary>
 <dl>
 <dd>
 
@@ -3053,7 +3053,7 @@ client.internal.metrics.list_charts()
 </dl>
 </details>
 
-<details><summary><code>client.internal.metrics.<a href="src/fern/internal/metrics/client.py">get_chart_data</a>(...) -> GetSessionMetricsChartDataResponse</code></summary>
+<details><summary><code>client.internal.metrics.<a href="src/fern/internal/metrics/client.py#L57-L119">get_chart_data</a>(...) -> GetSessionMetricsChartDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -3153,7 +3153,7 @@ client.internal.metrics.get_chart_data(
 </dl>
 </details>
 
-<details><summary><code>client.internal.metrics.<a href="src/fern/internal/metrics/client.py">get_meters</a>(...) -> GetSessionMetricsMeterResponse</code></summary>
+<details><summary><code>client.internal.metrics.<a href="src/fern/internal/metrics/client.py#L121-L177">get_meters</a>(...) -> GetSessionMetricsMeterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3245,7 +3245,7 @@ client.internal.metrics.get_meters(
 </details>
 
 ## Internal Sessions
-<details><summary><code>client.internal.sessions.<a href="src/fern/internal/sessions/client.py">get_or_create_by_external_id</a>(...) -> GetSessionResponse</code></summary>
+<details><summary><code>client.internal.sessions.<a href="src/fern/internal/sessions/client.py#L30-L69">get_or_create_by_external_id</a>(...) -> GetSessionResponse</code></summary>
 <dl>
 <dd>
 
@@ -3329,7 +3329,7 @@ client.internal.sessions.get_or_create_by_external_id(
 </details>
 
 ## Internal Agents
-<details><summary><code>client.internal.agents.<a href="src/fern/internal/agents/client.py">get_code_snippets</a>(...) -> GetAgentCodeSnippetsResponse</code></summary>
+<details><summary><code>client.internal.agents.<a href="src/fern/internal/agents/client.py#L26-L58">get_code_snippets</a>(...) -> GetAgentCodeSnippetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3402,7 +3402,7 @@ client.internal.agents.get_code_snippets(
 </details>
 
 ## Settings McpServers
-<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py">list</a>(...) -> ListMcpServersResponse</code></summary>
+<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py#L33-L74">list</a>(...) -> ListMcpServersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3480,7 +3480,7 @@ client.settings.mcp_servers.list()
 </dl>
 </details>
 
-<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py">create</a>(...) -> GetMcpServerResponse</code></summary>
+<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py#L76-L112">create</a>(...) -> GetMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -3557,7 +3557,7 @@ client.settings.mcp_servers.create(
 </dl>
 </details>
 
-<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py">create_or_update</a>(...) -> GetMcpServerResponse</code></summary>
+<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py#L114-L150">create_or_update</a>(...) -> GetMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -3634,7 +3634,7 @@ client.settings.mcp_servers.create_or_update(
 </dl>
 </details>
 
-<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py">get</a>(...) -> GetMcpServerResponse</code></summary>
+<details><summary><code>client.settings.mcp_servers.<a href="src/fern/settings/mcp_servers/client.py#L152-L182">get</a>(...) -> GetMcpServerResponse</code></summary>
 <dl>
 <dd>
 
@@ -3707,7 +3707,7 @@ client.settings.mcp_servers.get(
 </details>
 
 ## Settings ModelProviders
-<details><summary><code>client.settings.model_providers.<a href="src/fern/settings/model_providers/client.py">list</a>() -> ListModelProvidersResponse</code></summary>
+<details><summary><code>client.settings.model_providers.<a href="src/fern/settings/model_providers/client.py#L31-L56">list</a>() -> ListModelProvidersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3769,7 +3769,7 @@ client.settings.model_providers.list()
 </dl>
 </details>
 
-<details><summary><code>client.settings.model_providers.<a href="src/fern/settings/model_providers/client.py">create</a>(...) -> GetModelProviderResponse</code></summary>
+<details><summary><code>client.settings.model_providers.<a href="src/fern/settings/model_providers/client.py#L58-L106">create</a>(...) -> GetModelProviderResponse</code></summary>
 <dl>
 <dd>
 
@@ -3852,7 +3852,7 @@ client.settings.model_providers.create(
 </dl>
 </details>
 
-<details><summary><code>client.settings.model_providers.<a href="src/fern/settings/model_providers/client.py">create_or_update</a>(...) -> GetModelProviderResponse</code></summary>
+<details><summary><code>client.settings.model_providers.<a href="src/fern/settings/model_providers/client.py#L108-L156">create_or_update</a>(...) -> GetModelProviderResponse</code></summary>
 <dl>
 <dd>
 
@@ -3936,7 +3936,7 @@ client.settings.model_providers.create_or_update(
 </details>
 
 ## Settings SandboxProviders
-<details><summary><code>client.settings.sandbox_providers.<a href="src/fern/settings/sandbox_providers/client.py">get</a>() -> GetSandboxProviderResponse</code></summary>
+<details><summary><code>client.settings.sandbox_providers.<a href="src/fern/settings/sandbox_providers/client.py#L30-L55">get</a>() -> GetSandboxProviderResponse</code></summary>
 <dl>
 <dd>
 
@@ -3998,7 +3998,7 @@ client.settings.sandbox_providers.get()
 </dl>
 </details>
 
-<details><summary><code>client.settings.sandbox_providers.<a href="src/fern/settings/sandbox_providers/client.py">create_or_update</a>(...) -> GetSandboxProviderResponse</code></summary>
+<details><summary><code>client.settings.sandbox_providers.<a href="src/fern/settings/sandbox_providers/client.py#L57-L102">create_or_update</a>(...) -> GetSandboxProviderResponse</code></summary>
 <dl>
 <dd>
 
@@ -4080,7 +4080,7 @@ client.settings.sandbox_providers.create_or_update(
 </details>
 
 ## Settings Skills
-<details><summary><code>client.settings.skills.<a href="src/fern/settings/skills/client.py">list</a>() -> ListSkillsResponse</code></summary>
+<details><summary><code>client.settings.skills.<a href="src/fern/settings/skills/client.py#L31-L56">list</a>() -> ListSkillsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4142,7 +4142,7 @@ client.settings.skills.list()
 </dl>
 </details>
 
-<details><summary><code>client.settings.skills.<a href="src/fern/settings/skills/client.py">create</a>(...) -> GetSkillResponse</code></summary>
+<details><summary><code>client.settings.skills.<a href="src/fern/settings/skills/client.py#L58-L95">create</a>(...) -> GetSkillResponse</code></summary>
 <dl>
 <dd>
 
@@ -4220,7 +4220,7 @@ client.settings.skills.create(
 </dl>
 </details>
 
-<details><summary><code>client.settings.skills.<a href="src/fern/settings/skills/client.py">create_or_update</a>(...) -> GetSkillResponse</code></summary>
+<details><summary><code>client.settings.skills.<a href="src/fern/settings/skills/client.py#L97-L134">create_or_update</a>(...) -> GetSkillResponse</code></summary>
 <dl>
 <dd>
 

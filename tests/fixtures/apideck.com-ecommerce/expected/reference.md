@@ -107,7 +107,7 @@ client.customers.all_(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...) -> GetEcommerceCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L85-L131">one</a>(...) -> GetEcommerceCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -307,7 +307,7 @@ client.orders.all_(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">one</a>(...) -> GetEcommerceOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L85-L131">one</a>(...) -> GetEcommerceOrderResponse</code></summary>
 <dl>
 <dd>
 
@@ -499,7 +499,7 @@ client.products.all_(
 </dl>
 </details>
 
-<details><summary><code>client.products.<a href="src/fern/products/client.py">one</a>(...) -> GetProductResponse</code></summary>
+<details><summary><code>client.products.<a href="src/fern/products/client.py#L80-L126">one</a>(...) -> GetProductResponse</code></summary>
 <dl>
 <dd>
 
@@ -592,7 +592,7 @@ client.products.one(
 </details>
 
 ## Stores
-<details><summary><code>client.stores.<a href="src/fern/stores/client.py">one</a>(...) -> GetStoreResponse</code></summary>
+<details><summary><code>client.stores.<a href="src/fern/stores/client.py#L26-L67">one</a>(...) -> GetStoreResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">return_faceted_search_results_with_pagination</a>(...) -> PostFacetedSearchResultClassPaginatedResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L166">return_faceted_search_results_with_pagination</a>(...) -> PostFacetedSearchResultClassPaginatedResponse</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.return_faceted_search_results_with_pagination(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">return_all_search_results_as_a_csv_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L168-L206">return_all_search_results_as_a_csv_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -169,7 +169,7 @@ client.return_all_search_results_as_a_csv_file(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">return_all_search_results</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L208-L243">return_all_search_results</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -235,7 +235,7 @@ client.return_all_search_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">return_the_total_count_of_the_faceted_search_results</a>(...) -> PostFacetedSearchResultClassCountResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L245-L280">return_the_total_count_of_the_faceted_search_results</a>(...) -> PostFacetedSearchResultClassCountResponse</code></summary>
 <dl>
 <dd>
 
@@ -301,7 +301,7 @@ client.return_the_total_count_of_the_faceted_search_results(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">return_values_for_a_single_facet</a>(...) -> PostFacetedSearchFacetClassFacetIdResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L282-L337">return_values_for_a_single_facet</a>(...) -> PostFacetedSearchFacetClassFacetIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -400,7 +400,7 @@ client.return_values_for_a_single_facet(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">return_information_about_a_single_resource_optionally_applying_facet_filters</a>(...) -> PostResultClassPageUriResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L339-L382">return_information_about_a_single_resource_optionally_applying_facet_filters</a>(...) -> PostResultClassPageUriResponse</code></summary>
 <dl>
 <dd>
 
@@ -483,7 +483,7 @@ client.return_information_about_a_single_resource_optionally_applying_facet_filt
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">full_text_search</a>(...) -> GetFullTextSearchResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L384-L411">full_text_search</a>(...) -> GetFullTextSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -541,7 +541,7 @@ client.full_text_search(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">federated_search_can_be_used_for_retrieving_the_initial_result_set_from_multiple_sparql_endpoints_for_client_side_faceted_search</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L413-L471">federated_search_can_be_used_for_retrieving_the_initial_result_set_from_multiple_sparql_endpoints_for_client_side_faceted_search</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -650,7 +650,7 @@ client.federated_search_can_be_used_for_retrieving_the_initial_result_set_from_m
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">make_preconfigured_web_feature_service_wfs_api_calls_via_the_backend</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L473-L504">make_preconfigured_web_feature_service_wfs_api_calls_via_the_backend</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -710,7 +710,7 @@ client.make_preconfigured_web_feature_service_wfs_api_calls_via_the_backend(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">route_for_password_protected_wms_layers</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L506-L569">route_for_password_protected_wms_layers</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -838,7 +838,7 @@ client.route_for_password_protected_wms_layers(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">route_for_nls_wmts_api_only_for_contract_customers</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L571-L608">route_for_nls_wmts_api_only_for_contract_customers</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -923,7 +923,7 @@ client.route_for_nls_wmts_api_only_for_contract_customers(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">route_for_nls_wmts_api_free_but_requires_an_api_key</a>(...) -> typing.List[typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L610-L647">route_for_nls_wmts_api_free_but_requires_an_api_key</a>(...) -> typing.List[typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1008,7 +1008,7 @@ client.route_for_nls_wmts_api_free_but_requires_an_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">route_for_nls_vectortiles_api_free_but_requires_an_api_key</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L649-L673">route_for_nls_vectortiles_api_free_but_requires_an_api_key</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1056,7 +1056,7 @@ client.route_for_nls_vectortiles_api_free_but_requires_an_api_key()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_a_vo_id_description</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L675-L706">retrieve_a_vo_id_description</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

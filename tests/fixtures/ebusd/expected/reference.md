@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_all_messages_of_all_circuits</a>(...) -> Data</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L111-L204">get_all_messages_of_all_circuits</a>(...) -> Data</code></summary>
 <dl>
 <dd>
 
@@ -153,7 +153,7 @@ client.get_all_messages_of_all_circuits(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_messages_of_a_particular_circuit</a>(...) -> Data</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L206-L309">get_all_messages_of_a_particular_circuit</a>(...) -> Data</code></summary>
 <dl>
 <dd>
 
@@ -324,7 +324,7 @@ client.get_all_messages_of_a_particular_circuit(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_a_particular_message_of_a_particular_circuit</a>(...) -> Data</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L311-L424">get_a_particular_message_of_a_particular_circuit</a>(...) -> Data</code></summary>
 <dl>
 <dd>
 
@@ -512,7 +512,7 @@ client.get_a_particular_message_of_a_particular_circuit(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_known_field_data_types</a>() -> DataTypes</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L426-L446">get_all_known_field_data_types</a>() -> DataTypes</code></summary>
 <dl>
 <dd>
 
@@ -560,7 +560,7 @@ client.get_all_known_field_data_types()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_known_field_templates_for_the_root</a>() -> Templates</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L448-L470">get_all_known_field_templates_for_the_root</a>() -> Templates</code></summary>
 <dl>
 <dd>
 
@@ -608,7 +608,7 @@ client.get_all_known_field_templates_for_the_root()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_known_field_templates_for_the_path</a>(...) -> Templates</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L472-L498">get_all_known_field_templates_for_the_path</a>(...) -> Templates</code></summary>
 <dl>
 <dd>
 
@@ -666,7 +666,7 @@ client.get_all_known_field_templates_for_the_path(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_raw_data_from_grabbed_and_or_decoded_messages</a>(...) -> RawMessages</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L500-L529">retrieve_raw_data_from_grabbed_and_or_decoded_messages</a>(...) -> RawMessages</code></summary>
 <dl>
 <dd>
 
@@ -724,7 +724,7 @@ client.retrieve_raw_data_from_grabbed_and_or_decoded_messages(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">decode_raw_data_with_the_specified_field_defintion</a>(...) -> typing.Optional[FieldValue]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L531-L564">decode_raw_data_with_the_specified_field_defintion</a>(...) -> typing.Optional[FieldValue]</code></summary>
 <dl>
 <dd>
 
@@ -791,7 +791,7 @@ client.decode_raw_data_with_the_specified_field_defintion(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retrieve_a_particular_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L566-L593">retrieve_a_particular_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

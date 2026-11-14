@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">delete_account</a>(...) -> DeleteAccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L39-L73">delete_account</a>(...) -> DeleteAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.accounts.delete_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">upsert_account</a>(...) -> UpsertAccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L75-L115">upsert_account</a>(...) -> UpsertAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -154,7 +154,7 @@ client.accounts.upsert_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">add_user_to_account</a>(...) -> AddUserToAccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L117-L163">add_user_to_account</a>(...) -> AddUserToAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -240,7 +240,7 @@ client.accounts.add_user_to_account(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">remove_user_from_account</a>(...) -> RemoveUserFromAccountResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L165-L215">remove_user_from_account</a>(...) -> RemoveUserFromAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -329,7 +329,7 @@ client.accounts.remove_user_from_account(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_events</a>() -> GetEventsResponse</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L32-L54">get_events</a>() -> GetEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -391,7 +391,7 @@ client.events.get_events()
 </dl>
 </details>
 
-<details><summary><code>client.events.<a href="src/fern/events/client.py">track_journey_event</a>(...) -> TrackJourneyEventResponse</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L56-L110">track_journey_event</a>(...) -> TrackJourneyEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -492,7 +492,7 @@ client.events.track_journey_event(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">link</a>(...) -> LinkResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L35-L93">link</a>(...) -> LinkResponse</code></summary>
 <dl>
 <dd>
 
@@ -592,7 +592,7 @@ client.users.link(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_user</a>(...) -> DeleteUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L95-L129">delete_user</a>(...) -> DeleteUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -665,7 +665,7 @@ client.users.delete_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">upsert_user</a>(...) -> UpsertUserResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L131-L171">upsert_user</a>(...) -> UpsertUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -747,7 +747,7 @@ client.users.upsert_user(
 </details>
 
 ## Properties
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">get_account_properties</a>() -> GetAccountPropertiesResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L27-L51">get_account_properties</a>() -> GetAccountPropertiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -809,7 +809,7 @@ client.properties.get_account_properties()
 </dl>
 </details>
 
-<details><summary><code>client.properties.<a href="src/fern/properties/client.py">get_user_properties</a>() -> GetUserPropertiesResponse</code></summary>
+<details><summary><code>client.properties.<a href="src/fern/properties/client.py#L53-L77">get_user_properties</a>() -> GetUserPropertiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -872,7 +872,7 @@ client.properties.get_user_properties()
 </details>
 
 ## Segments
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">get_account_segments</a>() -> GetAccountSegmentsResponse</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L27-L51">get_account_segments</a>() -> GetAccountSegmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -934,7 +934,7 @@ client.segments.get_account_segments()
 </dl>
 </details>
 
-<details><summary><code>client.segments.<a href="src/fern/segments/client.py">get_user_segments</a>() -> GetUserSegmentsResponse</code></summary>
+<details><summary><code>client.segments.<a href="src/fern/segments/client.py#L53-L75">get_user_segments</a>() -> GetUserSegmentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -997,7 +997,7 @@ client.segments.get_user_segments()
 </details>
 
 ## Track
-<details><summary><code>client.track.<a href="src/fern/track/client.py">event</a>(...) -> TrackEventResponse</code></summary>
+<details><summary><code>client.track.<a href="src/fern/track/client.py#L31-L83">event</a>(...) -> TrackEventResponse</code></summary>
 <dl>
 <dd>
 
@@ -1096,7 +1096,7 @@ client.track.event(
 </details>
 
 ## Websites
-<details><summary><code>client.websites.<a href="src/fern/websites/client.py">get_tracking_snippet</a>(...) -> GetTrackingSnippetResponse</code></summary>
+<details><summary><code>client.websites.<a href="src/fern/websites/client.py#L26-L55">get_tracking_snippet</a>(...) -> GetTrackingSnippetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1169,7 +1169,7 @@ client.websites.get_tracking_snippet(
 </details>
 
 ## Validation
-<details><summary><code>client.validation.<a href="src/fern/validation/client.py">get_validity</a>() -> GetValidityResponse</code></summary>
+<details><summary><code>client.validation.<a href="src/fern/validation/client.py#L26-L48">get_validity</a>() -> GetValidityResponse</code></summary>
 <dl>
 <dd>
 

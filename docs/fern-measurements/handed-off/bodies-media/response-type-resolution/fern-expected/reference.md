@@ -1,6 +1,6 @@
 # Reference
 ## Kilns
-<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py">get_reading</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py#L26-L50">get_reading</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.kilns.get_reading(
 </dl>
 </details>
 
-<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py">probe_kiln</a>(...)</code></summary>
+<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py#L52-L77">probe_kiln</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.kilns.probe_kiln(
 </dl>
 </details>
 
-<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py">get_profile</a>(...) -> Profile</code></summary>
+<details><summary><code>client.kilns.<a href="src/fern/kilns/client.py#L79-L103">get_profile</a>(...) -> Profile</code></summary>
 <dl>
 <dd>
 
@@ -175,7 +175,7 @@ client.kilns.get_profile(
 </details>
 
 ## Firings
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">get_firing</a>(...) -> typing.Optional[GetFiringResponse]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L29-L55">get_firing</a>(...) -> typing.Optional[GetFiringResponse]</code></summary>
 <dl>
 <dd>
 
@@ -233,7 +233,7 @@ client.firings.get_firing(
 </dl>
 </details>
 
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">get_schedule</a>(...) -> typing.Optional[GetScheduleResponse]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L57-L83">get_schedule</a>(...) -> typing.Optional[GetScheduleResponse]</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.firings.get_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">start_firing</a>(...) -> StartFiringResponse</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L85-L111">start_firing</a>(...) -> StartFiringResponse</code></summary>
 <dl>
 <dd>
 
@@ -349,7 +349,7 @@ client.firings.start_firing(
 </dl>
 </details>
 
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">get_state</a>(...) -> GetStateResponse</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L113-L137">get_state</a>(...) -> GetStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -407,7 +407,7 @@ client.firings.get_state(
 </dl>
 </details>
 
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">stream_log</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L139-L167">stream_log</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

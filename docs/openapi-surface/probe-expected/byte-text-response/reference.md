@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">export_lanterns</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L105-L118">export_lanterns</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

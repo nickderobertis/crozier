@@ -1,6 +1,6 @@
 # Reference
 ## Chains
-<details><summary><code>client.chains.<a href="src/fern/chains/client.py">list_robinhood_chain_networks</a>() -> GetChainsResponse</code></summary>
+<details><summary><code>client.chains.<a href="src/fern/chains/client.py#L43-L69">list_robinhood_chain_networks</a>() -> GetChainsResponse</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.chains.list_robinhood_chain_networks()
 </dl>
 </details>
 
-<details><summary><code>client.chains.<a href="src/fern/chains/client.py">token_identity_and_current_market_observations_at_one_contract_address</a>(...) -> GetTokensAddressResponse</code></summary>
+<details><summary><code>client.chains.<a href="src/fern/chains/client.py#L71-L103">token_identity_and_current_market_observations_at_one_contract_address</a>(...) -> GetTokensAddressResponse</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.chains.token_identity_and_current_market_observations_at_one_contract_add
 </dl>
 </details>
 
-<details><summary><code>client.chains.<a href="src/fern/chains/client.py">get_app_catalog</a>(...) -> GetAppCatalogResponse</code></summary>
+<details><summary><code>client.chains.<a href="src/fern/chains/client.py#L105-L152">get_app_catalog</a>(...) -> GetAppCatalogResponse</code></summary>
 <dl>
 <dd>
 
@@ -241,7 +241,7 @@ client.chains.get_app_catalog(
 </dl>
 </details>
 
-<details><summary><code>client.chains.<a href="src/fern/chains/client.py">priority_tokens_one_contract_per_row_ordered_by_observed_selected_pool_volume</a>(...) -> GetChainsChainIdMarketsResponse</code></summary>
+<details><summary><code>client.chains.<a href="src/fern/chains/client.py#L154-L242">priority_tokens_one_contract_per_row_ordered_by_observed_selected_pool_volume</a>(...) -> GetChainsChainIdMarketsResponse</code></summary>
 <dl>
 <dd>
 
@@ -402,7 +402,7 @@ client.chains.priority_tokens_one_contract_per_row_ordered_by_observed_selected_
 </dl>
 </details>
 
-<details><summary><code>client.chains.<a href="src/fern/chains/client.py">discover_token_market_filters_labels_thresholds_and_useful_query_presets</a>(...) -> GetChainsChainIdMarketsFiltersResponse</code></summary>
+<details><summary><code>client.chains.<a href="src/fern/chains/client.py#L244-L276">discover_token_market_filters_labels_thresholds_and_useful_query_presets</a>(...) -> GetChainsChainIdMarketsFiltersResponse</code></summary>
 <dl>
 <dd>
 
@@ -475,7 +475,7 @@ client.chains.discover_token_market_filters_labels_thresholds_and_useful_query_p
 </dl>
 </details>
 
-<details><summary><code>client.chains.<a href="src/fern/chains/client.py">indexed_pools_with_token_identity_separate_depth_measures_and_current_swap_observations</a>(...) -> GetChainsChainIdDexPoolsResponse</code></summary>
+<details><summary><code>client.chains.<a href="src/fern/chains/client.py#L278-L348">indexed_pools_with_token_identity_separate_depth_measures_and_current_swap_observations</a>(...) -> GetChainsChainIdDexPoolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -606,7 +606,7 @@ client.chains.indexed_pools_with_token_identity_separate_depth_measures_and_curr
 </details>
 
 ## Registry
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">search_issuer_listed_assets_and_their_recorded_chain_observations</a>(...) -> GetChainsChainIdAssetsResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L34-L87">search_issuer_listed_assets_and_their_recorded_chain_observations</a>(...) -> GetChainsChainIdAssetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -713,7 +713,7 @@ client.registry.search_issuer_listed_assets_and_their_recorded_chain_observation
 </dl>
 </details>
 
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">get_one_registry_asset_by_symbol_with_its_state_multiplier_history_mints_and_burns_supply_snapshots_corporate_actions_and_control_plane_events</a>(...) -> GetChainsChainIdAssetsSymbolResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L89-L124">get_one_registry_asset_by_symbol_with_its_state_multiplier_history_mints_and_burns_supply_snapshots_corporate_actions_and_control_plane_events</a>(...) -> GetChainsChainIdAssetsSymbolResponse</code></summary>
 <dl>
 <dd>
 
@@ -795,7 +795,7 @@ client.registry.get_one_registry_asset_by_symbol_with_its_state_multiplier_histo
 </dl>
 </details>
 
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">holders_largest_first_with_share_of_supply_and_what_each_address_is_holder_count_the_latest_concentration_reading_with_the_shares_that_say_where_the_supply_sits_and_whether_the_ledger_has_reached_the_chain_head</a>(...) -> GetChainsChainIdAssetsSymbolHoldersResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L126-L169">holders_largest_first_with_share_of_supply_and_what_each_address_is_holder_count_the_latest_concentration_reading_with_the_shares_that_say_where_the_supply_sits_and_whether_the_ledger_has_reached_the_chain_head</a>(...) -> GetChainsChainIdAssetsSymbolHoldersResponse</code></summary>
 <dl>
 <dd>
 
@@ -885,7 +885,7 @@ client.registry.holders_largest_first_with_share_of_supply_and_what_each_address
 </dl>
 </details>
 
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">transfers_as_economics_one_row_per_utc_day_transfers_volume_mints_burns_dv_p_against_usdg_off_hours_transfers</a>(...) -> GetChainsChainIdAssetsSymbolActivityResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L171-L212">transfers_as_economics_one_row_per_utc_day_transfers_volume_mints_burns_dv_p_against_usdg_off_hours_transfers</a>(...) -> GetChainsChainIdAssetsSymbolActivityResponse</code></summary>
 <dl>
 <dd>
 
@@ -961,7 +961,7 @@ client.registry.transfers_as_economics_one_row_per_utc_day_transfers_volume_mint
 </dl>
 </details>
 
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">pools_trading_the_asset_on_every_dex_the_registry_reads_deepest_first_with_venue_price_liquidity_fee_hooks_last_day_swaps_and_volume_and_the_pool_behind_the_assets_premium_to_the_feed</a>(...) -> GetChainsChainIdAssetsSymbolPoolsResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L214-L249">pools_trading_the_asset_on_every_dex_the_registry_reads_deepest_first_with_venue_price_liquidity_fee_hooks_last_day_swaps_and_volume_and_the_pool_behind_the_assets_premium_to_the_feed</a>(...) -> GetChainsChainIdAssetsSymbolPoolsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1043,7 +1043,7 @@ client.registry.pools_trading_the_asset_on_every_dex_the_registry_reads_deepest_
 </dl>
 </details>
 
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">one_row_per_utc_day_of_everything_the_registry_publishes_about_an_asset_multiplier_pause_and_halt_flags_feed_price_and_staleness_bid_and_ask_divergence_dex_price_premium_and_liquidity_supply_holders_and_lookalike_count</a>(...) -> GetChainsChainIdAssetsSymbolHistoryResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L251-L315">one_row_per_utc_day_of_everything_the_registry_publishes_about_an_asset_multiplier_pause_and_halt_flags_feed_price_and_staleness_bid_and_ask_divergence_dex_price_premium_and_liquidity_supply_holders_and_lookalike_count</a>(...) -> GetChainsChainIdAssetsSymbolHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1168,7 +1168,7 @@ client.registry.one_row_per_utc_day_of_everything_the_registry_publishes_about_a
 </dl>
 </details>
 
-<details><summary><code>client.registry.<a href="src/fern/registry/client.py">the_chainlink_feeds_round_history_for_one_asset_newest_first_round_id_answer_price_multiplier_usd_started_at_updated_at</a>(...) -> GetChainsChainIdAssetsSymbolFeedRoundsResponse</code></summary>
+<details><summary><code>client.registry.<a href="src/fern/registry/client.py#L317-L361">the_chainlink_feeds_round_history_for_one_asset_newest_first_round_id_answer_price_multiplier_usd_started_at_updated_at</a>(...) -> GetChainsChainIdAssetsSymbolFeedRoundsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1253,7 +1253,7 @@ client.registry.the_chainlink_feeds_round_history_for_one_asset_newest_first_rou
 </details>
 
 ## Chain
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">the_issuers_access_controls_registry_paused_implementation_blocked_address_count_and_its_latest_events</a>(...) -> GetChainsChainIdControlPlaneResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L33-L76">the_issuers_access_controls_registry_paused_implementation_blocked_address_count_and_its_latest_events</a>(...) -> GetChainsChainIdControlPlaneResponse</code></summary>
 <dl>
 <dd>
 
@@ -1342,7 +1342,7 @@ client.chain.the_issuers_access_controls_registry_paused_implementation_blocked_
 </dl>
 </details>
 
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">the_chains_latest_vital_signs_head_block_time_base_fee_l1block_batch_count_delayed_messages_batch_poster_balance_status_page</a>(...) -> GetChainsChainIdHealthResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L78-L108">the_chains_latest_vital_signs_head_block_time_base_fee_l1block_batch_count_delayed_messages_batch_poster_balance_status_page</a>(...) -> GetChainsChainIdHealthResponse</code></summary>
 <dl>
 <dd>
 
@@ -1401,7 +1401,7 @@ client.chain.the_chains_latest_vital_signs_head_block_time_base_fee_l1block_batc
 </dl>
 </details>
 
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">corporate_actions_in_progress_as_robinhood_publishes_them_tied_to_the_token_each_affects</a>(...) -> GetChainsChainIdCorporateActionsResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L110-L142">corporate_actions_in_progress_as_robinhood_publishes_them_tied_to_the_token_each_affects</a>(...) -> GetChainsChainIdCorporateActionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1460,7 +1460,7 @@ client.chain.corporate_actions_in_progress_as_robinhood_publishes_them_tied_to_t
 </dl>
 </details>
 
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">the_dex_venues_the_registry_reads_and_what_each_contributes_pools_trading_a_listed_asset_how_many_carry_a_dollar_price_the_last_days_swaps_and_volume_and_how_many_assets_take_their_premium_from_a_pool_there</a>(...) -> GetChainsChainIdDexResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L144-L176">the_dex_venues_the_registry_reads_and_what_each_contributes_pools_trading_a_listed_asset_how_many_carry_a_dollar_price_the_last_days_swaps_and_volume_and_how_many_assets_take_their_premium_from_a_pool_there</a>(...) -> GetChainsChainIdDexResponse</code></summary>
 <dl>
 <dd>
 
@@ -1533,7 +1533,7 @@ client.chain.the_dex_venues_the_registry_reads_and_what_each_contributes_pools_t
 </dl>
 </details>
 
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">the_token_bridge_each_bridged_assets_l1escrow_against_its_l2supply_recent_deposits_and_withdrawals_seen_on_l2and_withdrawals_past_their_seven_day_window</a>(...) -> GetChainsChainIdBridgeResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L178-L219">the_token_bridge_each_bridged_assets_l1escrow_against_its_l2supply_recent_deposits_and_withdrawals_seen_on_l2and_withdrawals_past_their_seven_day_window</a>(...) -> GetChainsChainIdBridgeResponse</code></summary>
 <dl>
 <dd>
 
@@ -1609,7 +1609,7 @@ client.chain.the_token_bridge_each_bridged_assets_l1escrow_against_its_l2supply_
 </dl>
 </details>
 
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">the_issuers_paperwork_every_pdf_the_legal_hub_lists_with_e_tag_last_modified_and_the_token_it_maps_to_plus_watched_pages_and_when_their_text_changed</a>(...) -> GetChainsChainIdIssuerResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L221-L257">the_issuers_paperwork_every_pdf_the_legal_hub_lists_with_e_tag_last_modified_and_the_token_it_maps_to_plus_watched_pages_and_when_their_text_changed</a>(...) -> GetChainsChainIdIssuerResponse</code></summary>
 <dl>
 <dd>
 
@@ -1676,7 +1676,7 @@ client.chain.the_issuers_paperwork_every_pdf_the_legal_hub_lists_with_e_tag_last
 </dl>
 </details>
 
-<details><summary><code>client.chain.<a href="src/fern/chain/client.py">recorded_name_and_ticker_collisions_at_different_contract_addresses_with_available_holder_counts_and_beacon_checks</a>(...) -> GetChainsChainIdLookalikesResponse</code></summary>
+<details><summary><code>client.chain.<a href="src/fern/chain/client.py#L259-L306">recorded_name_and_ticker_collisions_at_different_contract_addresses_with_available_holder_counts_and_beacon_checks</a>(...) -> GetChainsChainIdLookalikesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1775,7 +1775,7 @@ client.chain.recorded_name_and_ticker_collisions_at_different_contract_addresses
 </details>
 
 ## Status
-<details><summary><code>client.status.<a href="src/fern/status/client.py">whether_the_registry_is_live_the_daemons_heartbeat_every_job_against_its_cadence_the_scanners_still_reading_history_and_the_age_of_every_published_figure</a>(...) -> GetChainsChainIdStatusResponse</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L27-L59">whether_the_registry_is_live_the_daemons_heartbeat_every_job_against_its_cadence_the_scanners_still_reading_history_and_the_age_of_every_published_figure</a>(...) -> GetChainsChainIdStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1848,7 +1848,7 @@ client.status.whether_the_registry_is_live_the_daemons_heartbeat_every_job_again
 </dl>
 </details>
 
-<details><summary><code>client.status.<a href="src/fern/status/client.py">alias_of_chains4663status_whether_the_registry_is_live</a>() -> GetStatusResponse</code></summary>
+<details><summary><code>client.status.<a href="src/fern/status/client.py#L61-L87">alias_of_chains4663status_whether_the_registry_is_live</a>() -> GetStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -1898,7 +1898,7 @@ client.status.alias_of_chains4663status_whether_the_registry_is_live()
 </details>
 
 ## Changelog
-<details><summary><code>client.changelog.<a href="src/fern/changelog/client.py">the_registry_changelog_every_pause_block_upgrade_multiplier_change_stale_feed_supply_residual_listing_corporate_action_and_chain_status_change_the_daemon_recorded</a>(...) -> GetChainsChainIdEventsResponse</code></summary>
+<details><summary><code>client.changelog.<a href="src/fern/changelog/client.py#L27-L82">the_registry_changelog_every_pause_block_upgrade_multiplier_change_stale_feed_supply_residual_listing_corporate_action_and_chain_status_change_the_daemon_recorded</a>(...) -> GetChainsChainIdEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2014,7 +2014,7 @@ client.changelog.the_registry_changelog_every_pause_block_upgrade_multiplier_cha
 </dl>
 </details>
 
-<details><summary><code>client.changelog.<a href="src/fern/changelog/client.py">the_same_changelog_as_server_sent_events_each_frames_id_is_the_events_cursor_observed_at_id_so_last_event_id_or_since_resumes_without_gaps</a>(...)</code></summary>
+<details><summary><code>client.changelog.<a href="src/fern/changelog/client.py#L84-L120">the_same_changelog_as_server_sent_events_each_frames_id_is_the_events_cursor_observed_at_id_so_last_event_id_or_since_resumes_without_gaps</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2082,7 +2082,7 @@ client.changelog.the_same_changelog_as_server_sent_events_each_frames_id_is_the_
 </details>
 
 ## Watch
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">list_this_accounts_watchers</a>() -> GetWatchersResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L40-L64">list_this_accounts_watchers</a>() -> GetWatchersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2131,7 +2131,7 @@ client.watch.list_this_accounts_watchers()
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">create_a_watcher</a>(...) -> PostWatchersResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L66-L136">create_a_watcher</a>(...) -> PostWatchersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2252,7 +2252,7 @@ client.watch.create_a_watcher()
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">get_one_watcher</a>(...) -> GetWatchersIdResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L138-L166">get_one_watcher</a>(...) -> GetWatchersIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2311,7 +2311,7 @@ client.watch.get_one_watcher(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">delete_a_watcher</a>(...) -> DeleteWatchersIdResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L168-L196">delete_a_watcher</a>(...) -> DeleteWatchersIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2370,7 +2370,7 @@ client.watch.delete_a_watcher(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">pause_resume_or_re_point_a_watcher</a>(...) -> PatchWatchersIdResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L198-L238">pause_resume_or_re_point_a_watcher</a>(...) -> PatchWatchersIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2445,7 +2445,7 @@ client.watch.pause_resume_or_re_point_a_watcher(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">a_watchers_delivery_history</a>(...) -> GetWatchersIdRunsResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L240-L270">a_watchers_delivery_history</a>(...) -> GetWatchersIdRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2512,7 +2512,7 @@ client.watch.a_watchers_delivery_history(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">list_this_accounts_webhook_endpoints</a>() -> GetWebhooksResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L272-L296">list_this_accounts_webhook_endpoints</a>() -> GetWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2561,7 +2561,7 @@ client.watch.list_this_accounts_webhook_endpoints()
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">register_a_webhook_endpoint</a>(...) -> PostWebhooksResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L298-L332">register_a_webhook_endpoint</a>(...) -> PostWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -2642,7 +2642,7 @@ client.watch.register_a_webhook_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">delete_an_endpoint</a>(...) -> DeleteWebhooksIdResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L334-L364">delete_an_endpoint</a>(...) -> DeleteWebhooksIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2715,7 +2715,7 @@ client.watch.delete_an_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">enable_disable_or_rotate_the_secret_of_an_endpoint</a>(...) -> PatchWebhooksIdResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L366-L405">enable_disable_or_rotate_the_secret_of_an_endpoint</a>(...) -> PatchWebhooksIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2790,7 +2790,7 @@ client.watch.enable_disable_or_rotate_the_secret_of_an_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.watch.<a href="src/fern/watch/client.py">send_a_signed_ping_to_an_endpoint_now</a>(...) -> PostWebhooksIdTestResponse</code></summary>
+<details><summary><code>client.watch.<a href="src/fern/watch/client.py#L407-L437">send_a_signed_ping_to_an_endpoint_now</a>(...) -> PostWebhooksIdTestResponse</code></summary>
 <dl>
 <dd>
 
@@ -2864,7 +2864,7 @@ client.watch.send_a_signed_ping_to_an_endpoint_now(
 </details>
 
 ## Build
-<details><summary><code>client.build.<a href="src/fern/build/client.py">list_this_accounts_projects</a>() -> GetProjectsResponse</code></summary>
+<details><summary><code>client.build.<a href="src/fern/build/client.py#L27-L51">list_this_accounts_projects</a>() -> GetProjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2913,7 +2913,7 @@ client.build.list_this_accounts_projects()
 </dl>
 </details>
 
-<details><summary><code>client.build.<a href="src/fern/build/client.py">get_one_builds_status_contracts_and_toolchain_report</a>(...) -> GetBuildsIdResponse</code></summary>
+<details><summary><code>client.build.<a href="src/fern/build/client.py#L53-L83">get_one_builds_status_contracts_and_toolchain_report</a>(...) -> GetBuildsIdResponse</code></summary>
 <dl>
 <dd>
 

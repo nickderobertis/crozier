@@ -1,6 +1,6 @@
 # Reference
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">create_session</a>(...) -> Session</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L29-L64">create_session</a>(...) -> Session</code></summary>
 <dl>
 <dd>
 
@@ -83,7 +83,7 @@ client.sessions.create_session(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">list_groups</a>(...) -> typing.List[Group]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L26-L56">list_groups</a>(...) -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -156,7 +156,7 @@ client.groups.list_groups(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">get_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L58-L91">get_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -239,7 +239,7 @@ client.groups.get_group(
 </details>
 
 ## Members
-<details><summary><code>client.members.<a href="src/fern/members/client.py">list_members</a>(...) -> typing.List[Member]</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L26-L71">list_members</a>(...) -> typing.List[Member]</code></summary>
 <dl>
 <dd>
 
@@ -337,7 +337,7 @@ client.members.list_members(
 </dl>
 </details>
 
-<details><summary><code>client.members.<a href="src/fern/members/client.py">get_member</a>(...) -> Member</code></summary>
+<details><summary><code>client.members.<a href="src/fern/members/client.py#L73-L116">get_member</a>(...) -> Member</code></summary>
 <dl>
 <dd>
 
@@ -429,7 +429,7 @@ client.members.get_member(
 </details>
 
 ## Posts
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">list_posts</a>(...) -> typing.List[Post]</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L29-L82">list_posts</a>(...) -> typing.List[Post]</code></summary>
 <dl>
 <dd>
 
@@ -535,7 +535,7 @@ client.posts.list_posts(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">create_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L84-L139">create_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -643,7 +643,7 @@ client.posts.create_post(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">get_post</a>(...) -> Post</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L141-L179">get_post</a>(...) -> Post</code></summary>
 <dl>
 <dd>
 
@@ -734,7 +734,7 @@ client.posts.get_post(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">list_comments</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L181-L219">list_comments</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -825,7 +825,7 @@ client.posts.list_comments(
 </dl>
 </details>
 
-<details><summary><code>client.posts.<a href="src/fern/posts/client.py">create_comment</a>(...)</code></summary>
+<details><summary><code>client.posts.<a href="src/fern/posts/client.py#L221-L267">create_comment</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -926,7 +926,7 @@ client.posts.create_comment(
 </details>
 
 ## Chat
-<details><summary><code>client.chat.<a href="src/fern/chat/client.py">list_chat_messages</a>(...) -> typing.List[ChatMessage]</code></summary>
+<details><summary><code>client.chat.<a href="src/fern/chat/client.py#L29-L74">list_chat_messages</a>(...) -> typing.List[ChatMessage]</code></summary>
 <dl>
 <dd>
 
@@ -1024,7 +1024,7 @@ client.chat.list_chat_messages(
 </dl>
 </details>
 
-<details><summary><code>client.chat.<a href="src/fern/chat/client.py">send_chat_message</a>(...)</code></summary>
+<details><summary><code>client.chat.<a href="src/fern/chat/client.py#L76-L121">send_chat_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1124,7 +1124,7 @@ client.chat.send_chat_message(
 </details>
 
 ## Analytics
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">get_group_analytics</a>(...) -> GetGroupAnalyticsResponse</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L27-L72">get_group_analytics</a>(...) -> GetGroupAnalyticsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1223,7 +1223,7 @@ client.analytics.get_group_analytics(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">list_webhooks</a>(...) -> typing.List[Webhook]</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L30-L60">list_webhooks</a>(...) -> typing.List[Webhook]</code></summary>
 <dl>
 <dd>
 
@@ -1296,7 +1296,7 @@ client.webhooks.list_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">create_webhook</a>(...) -> Webhook</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L62-L114">create_webhook</a>(...) -> Webhook</code></summary>
 <dl>
 <dd>
 
@@ -1399,7 +1399,7 @@ client.webhooks.create_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">delete_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L116-L148">delete_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 

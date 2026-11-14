@@ -1,6 +1,6 @@
 # Reference
 ## Chats
-<details><summary><code>client.chats.<a href="src/fern/chats/client.py">list_chats</a>(...) -> ListChatsResponse</code></summary>
+<details><summary><code>client.chats.<a href="src/fern/chats/client.py#L35-L87">list_chats</a>(...) -> ListChatsResponse</code></summary>
 <dl>
 <dd>
 
@@ -105,7 +105,7 @@ client.chats.list_chats(
 </dl>
 </details>
 
-<details><summary><code>client.chats.<a href="src/fern/chats/client.py">create_chat</a>(...) -> Chat</code></summary>
+<details><summary><code>client.chats.<a href="src/fern/chats/client.py#L89-L146">create_chat</a>(...) -> Chat</code></summary>
 <dl>
 <dd>
 
@@ -209,7 +209,7 @@ client.chats.create_chat(
 </dl>
 </details>
 
-<details><summary><code>client.chats.<a href="src/fern/chats/client.py">get_chat</a>(...) -> Chat</code></summary>
+<details><summary><code>client.chats.<a href="src/fern/chats/client.py#L148-L186">get_chat</a>(...) -> Chat</code></summary>
 <dl>
 <dd>
 
@@ -290,7 +290,7 @@ client.chats.get_chat(
 </dl>
 </details>
 
-<details><summary><code>client.chats.<a href="src/fern/chats/client.py">delete_chat</a>(...)</code></summary>
+<details><summary><code>client.chats.<a href="src/fern/chats/client.py#L188-L216">delete_chat</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ client.chats.delete_chat(
 </dl>
 </details>
 
-<details><summary><code>client.chats.<a href="src/fern/chats/client.py">update_chat</a>(...)</code></summary>
+<details><summary><code>client.chats.<a href="src/fern/chats/client.py#L218-L255">update_chat</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -445,7 +445,7 @@ client.chats.update_chat(
 </details>
 
 ## Chat Members
-<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py">list_chat_members</a>(...) -> ListChatMembersResponse</code></summary>
+<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py#L35-L77">list_chat_members</a>(...) -> ListChatMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -534,7 +534,7 @@ client.chat_members.list_chat_members(
 </dl>
 </details>
 
-<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py">add_chat_member</a>(...) -> ConversationMember</code></summary>
+<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py#L79-L135">add_chat_member</a>(...) -> ConversationMember</code></summary>
 <dl>
 <dd>
 
@@ -617,7 +617,7 @@ client.chat_members.add_chat_member(
 </dl>
 </details>
 
-<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py">add_multiple_chat_members</a>(...) -> typing.List[AddMultipleChatMembersResponseItem]</code></summary>
+<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py#L137-L180">add_multiple_chat_members</a>(...) -> typing.List[AddMultipleChatMembersResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -704,7 +704,7 @@ client.chat_members.add_multiple_chat_members(
 </dl>
 </details>
 
-<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py">get_chat_member</a>(...) -> ConversationMember</code></summary>
+<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py#L182-L217">get_chat_member</a>(...) -> ConversationMember</code></summary>
 <dl>
 <dd>
 
@@ -786,7 +786,7 @@ client.chat_members.get_chat_member(
 </dl>
 </details>
 
-<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py">remove_chat_member</a>(...)</code></summary>
+<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py#L219-L255">remove_chat_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -868,7 +868,7 @@ client.chat_members.remove_chat_member(
 </dl>
 </details>
 
-<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py">update_chat_member</a>(...)</code></summary>
+<details><summary><code>client.chat_members.<a href="src/fern/chat_members/client.py#L257-L303">update_chat_member</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -967,7 +967,7 @@ client.chat_members.update_chat_member(
 </details>
 
 ## Chat Messages
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">list_chat_messages</a>(...) -> ListChatMessagesResponse</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L39-L93">list_chat_messages</a>(...) -> ListChatMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1074,7 +1074,7 @@ client.chat_messages.list_chat_messages(
 </dl>
 </details>
 
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">send_chat_message</a>(...) -> ChatMessage</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L95-L157">send_chat_message</a>(...) -> ChatMessage</code></summary>
 <dl>
 <dd>
 
@@ -1191,7 +1191,7 @@ client.chat_messages.send_chat_message(
 </dl>
 </details>
 
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">get_chat_message</a>(...) -> ChatMessage</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L159-L204">get_chat_message</a>(...) -> ChatMessage</code></summary>
 <dl>
 <dd>
 
@@ -1281,7 +1281,7 @@ client.chat_messages.get_chat_message(
 </dl>
 </details>
 
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">delete_chat_message</a>(...)</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L206-L240">delete_chat_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1363,7 +1363,7 @@ client.chat_messages.delete_chat_message(
 </dl>
 </details>
 
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">update_chat_message</a>(...)</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L242-L285">update_chat_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1453,7 +1453,7 @@ client.chat_messages.update_chat_message(
 </dl>
 </details>
 
-<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py">get_all_messages_for_user</a>(...) -> GetAllMessagesForUserResponse</code></summary>
+<details><summary><code>client.chat_messages.<a href="src/fern/chat_messages/client.py#L287-L329">get_all_messages_for_user</a>(...) -> GetAllMessagesForUserResponse</code></summary>
 <dl>
 <dd>
 
@@ -1541,7 +1541,7 @@ client.chat_messages.get_all_messages_for_user()
 </details>
 
 ## Teams
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list_joined_teams</a>() -> ListJoinedTeamsResponse</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L39-L63">list_joined_teams</a>() -> ListJoinedTeamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1604,7 +1604,7 @@ client.teams.list_joined_teams()
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">list_all_teams</a>(...) -> ListAllTeamsResponse</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L65-L105">list_all_teams</a>(...) -> ListAllTeamsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1691,7 +1691,7 @@ client.teams.list_all_teams()
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">create_team</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L107-L142">create_team</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1769,7 +1769,7 @@ client.teams.create_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">get_team</a>(...) -> Team</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L144-L186">get_team</a>(...) -> Team</code></summary>
 <dl>
 <dd>
 
@@ -1858,7 +1858,7 @@ client.teams.get_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">delete_team</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L188-L216">delete_team</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1931,7 +1931,7 @@ client.teams.delete_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">update_team</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L218-L286">update_team</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2068,7 +2068,7 @@ client.teams.update_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">archive_team</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L288-L328">archive_team</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2149,7 +2149,7 @@ client.teams.archive_team(
 </dl>
 </details>
 
-<details><summary><code>client.teams.<a href="src/fern/teams/client.py">unarchive_team</a>(...)</code></summary>
+<details><summary><code>client.teams.<a href="src/fern/teams/client.py#L330-L358">unarchive_team</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2223,7 +2223,7 @@ client.teams.unarchive_team(
 </details>
 
 ## Team Members
-<details><summary><code>client.team_members.<a href="src/fern/team_members/client.py">list_team_members</a>(...) -> ListTeamMembersResponse</code></summary>
+<details><summary><code>client.team_members.<a href="src/fern/team_members/client.py#L34-L82">list_team_members</a>(...) -> ListTeamMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -2320,7 +2320,7 @@ client.team_members.list_team_members(
 </dl>
 </details>
 
-<details><summary><code>client.team_members.<a href="src/fern/team_members/client.py">add_team_member</a>(...) -> ConversationMember</code></summary>
+<details><summary><code>client.team_members.<a href="src/fern/team_members/client.py#L84-L140">add_team_member</a>(...) -> ConversationMember</code></summary>
 <dl>
 <dd>
 
@@ -2403,7 +2403,7 @@ client.team_members.add_team_member(
 </dl>
 </details>
 
-<details><summary><code>client.team_members.<a href="src/fern/team_members/client.py">add_multiple_team_members</a>(...) -> typing.List[AddMultipleTeamMembersResponseItem]</code></summary>
+<details><summary><code>client.team_members.<a href="src/fern/team_members/client.py#L142-L185">add_multiple_team_members</a>(...) -> typing.List[AddMultipleTeamMembersResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -2491,7 +2491,7 @@ client.team_members.add_multiple_team_members(
 </details>
 
 ## Channels
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">list_all_channels</a>(...) -> ListAllChannelsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L34-L83">list_all_channels</a>(...) -> ListAllChannelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2589,7 +2589,7 @@ client.channels.list_all_channels(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">list_channels</a>(...) -> ListChannelsResponse</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L85-L138">list_channels</a>(...) -> ListChannelsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2695,7 +2695,7 @@ client.channels.list_channels(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">create_channel</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L140-L199">create_channel</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -2809,7 +2809,7 @@ client.channels.create_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_channel</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L201-L251">get_channel</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -2908,7 +2908,7 @@ client.channels.get_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">delete_channel</a>(...)</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L253-L287">delete_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2990,7 +2990,7 @@ client.channels.delete_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">update_channel</a>(...)</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L289-L335">update_channel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3088,7 +3088,7 @@ client.channels.update_channel(
 </dl>
 </details>
 
-<details><summary><code>client.channels.<a href="src/fern/channels/client.py">get_channel_from_all_channels</a>(...) -> Channel</code></summary>
+<details><summary><code>client.channels.<a href="src/fern/channels/client.py#L337-L372">get_channel_from_all_channels</a>(...) -> Channel</code></summary>
 <dl>
 <dd>
 
@@ -3171,7 +3171,7 @@ client.channels.get_channel_from_all_channels(
 </details>
 
 ## Channel Members
-<details><summary><code>client.channel_members.<a href="src/fern/channel_members/client.py">list_channel_members</a>(...) -> ListChannelMembersResponse</code></summary>
+<details><summary><code>client.channel_members.<a href="src/fern/channel_members/client.py#L32-L85">list_channel_members</a>(...) -> ListChannelMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -3277,7 +3277,7 @@ client.channel_members.list_channel_members(
 </dl>
 </details>
 
-<details><summary><code>client.channel_members.<a href="src/fern/channel_members/client.py">add_channel_member</a>(...) -> ConversationMember</code></summary>
+<details><summary><code>client.channel_members.<a href="src/fern/channel_members/client.py#L87-L149">add_channel_member</a>(...) -> ConversationMember</code></summary>
 <dl>
 <dd>
 
@@ -3370,7 +3370,7 @@ client.channel_members.add_channel_member(
 </details>
 
 ## Channel Messages
-<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py">list_channel_messages</a>(...) -> ListChannelMessagesResponse</code></summary>
+<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py#L38-L91">list_channel_messages</a>(...) -> ListChannelMessagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3476,7 +3476,7 @@ client.channel_messages.list_channel_messages(
 </dl>
 </details>
 
-<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py">send_channel_message</a>(...) -> ChatMessage</code></summary>
+<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py#L93-L166">send_channel_message</a>(...) -> ChatMessage</code></summary>
 <dl>
 <dd>
 
@@ -3610,7 +3610,7 @@ client.channel_messages.send_channel_message(
 </dl>
 </details>
 
-<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py">get_channel_message</a>(...) -> ChatMessage</code></summary>
+<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py#L168-L218">get_channel_message</a>(...) -> ChatMessage</code></summary>
 <dl>
 <dd>
 
@@ -3709,7 +3709,7 @@ client.channel_messages.get_channel_message(
 </dl>
 </details>
 
-<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py">delete_channel_message</a>(...)</code></summary>
+<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py#L220-L265">delete_channel_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3800,7 +3800,7 @@ client.channel_messages.delete_channel_message(
 </dl>
 </details>
 
-<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py">update_channel_message</a>(...)</code></summary>
+<details><summary><code>client.channel_messages.<a href="src/fern/channel_messages/client.py#L267-L315">update_channel_message</a>(...)</code></summary>
 <dl>
 <dd>
 

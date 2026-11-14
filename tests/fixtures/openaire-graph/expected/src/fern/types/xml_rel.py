@@ -14,6 +14,7 @@ from ..core.xml_utilities import (
     XmlElement,
     XmlNode,
     build_xml_model,
+    check_xml_extra_attributes,
     extra_xml_attributes,
     order_xml_content,
     parse_xml,
@@ -107,18 +108,22 @@ class XmlRel(UniversalBaseModel):
             Additional XML attributes not declared in the API definition.
         """
         super().__init__(
-            **dict(
-                inferred=inferred,
-                trust=trust,
-                inferenceprovenance=inferenceprovenance,
-                provenanceaction=provenanceaction,
-                to=to,
-                legalname=legalname,
-                country=country,
-                legalshortname=legalshortname,
-                websiteurl=websiteurl,
-            ),
-            **extra_attributes,
+            **check_xml_extra_attributes(
+                type(self),
+                {},
+                dict(
+                    inferred=inferred,
+                    trust=trust,
+                    inferenceprovenance=inferenceprovenance,
+                    provenanceaction=provenanceaction,
+                    to=to,
+                    legalname=legalname,
+                    country=country,
+                    legalshortname=legalshortname,
+                    websiteurl=websiteurl,
+                ),
+                extra_attributes,
+            )
         )
         self._content.extend(order_xml_content([], self.to, self.country))
 

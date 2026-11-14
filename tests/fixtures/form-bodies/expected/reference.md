@@ -1,6 +1,6 @@
 # Reference
 ## Forms
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">upload</a>(...) -> UploadResponse</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L31-L70">upload</a>(...) -> UploadResponse</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.forms.upload(
 </dl>
 </details>
 
-<details><summary><code>client.forms.<a href="src/fern/forms/client.py">submit</a>(...)</code></summary>
+<details><summary><code>client.forms.<a href="src/fern/forms/client.py#L72-L109">submit</a>(...)</code></summary>
 <dl>
 <dd>
 

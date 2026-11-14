@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">append_card_note</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L99-L124">append_card_note</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.append_card_note(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">append_card_scan</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L126-L145">append_card_scan</a>(...)</code></summary>
 <dl>
 <dd>
 

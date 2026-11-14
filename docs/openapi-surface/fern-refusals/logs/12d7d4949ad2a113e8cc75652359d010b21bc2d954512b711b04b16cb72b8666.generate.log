@@ -1,12 +1,12 @@
-fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/fern-refusals-w_4yhyoe/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk Found 0 errors and 10 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
-[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/tmp-1875833-XAJ5YXJjbZMt
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.25
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           Failed to format Cannot parse: 3:9
                                               Defaults to FernApiEnvironment.DEFAULT

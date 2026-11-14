@@ -1,6 +1,6 @@
 # Reference
 ## Firings
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">book_firing</a>(...)</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L29-L64">book_firing</a>(...)</code></summary>
 <dl>
 <dd>
 

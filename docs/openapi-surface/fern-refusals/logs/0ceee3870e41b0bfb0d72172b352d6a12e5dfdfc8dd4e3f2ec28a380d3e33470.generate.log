@@ -1,7 +1,7 @@
-fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Prove-crozier-s-last-unproven-features-and-the-feature-combinations-that-matter/scratch/3736322-28/native-tmp/fern-refusals-fv8cissw/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk itemSearch.yml -> service -> endpoints -> getItemSearch -> request -> query-parameters -> intersects

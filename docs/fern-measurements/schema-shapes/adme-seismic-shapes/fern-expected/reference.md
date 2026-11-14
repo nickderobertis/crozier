@@ -1,6 +1,6 @@
 # Reference
 ## Items
-<details><summary><code>client.items.<a href="src/fern/items/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.items.<a href="src/fern/items/client.py#L32-L100">create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -101,7 +101,7 @@ client.items.create(
 </details>
 
 ## Widgetpart
-<details><summary><code>client.widgetpart.<a href="src/fern/widgetpart/client.py">get</a>(...)</code></summary>
+<details><summary><code>client.widgetpart.<a href="src/fern/widgetpart/client.py#L25-L50">get</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -159,7 +159,7 @@ client.widgetpart.get(
 </details>
 
 ## WidgetPart
-<details><summary><code>client.widget_part.<a href="src/fern/widget_part/client.py">widget_part_list</a>()</code></summary>
+<details><summary><code>client.widget_part.<a href="src/fern/widget_part/client.py#L25-L46">widget_part_list</a>()</code></summary>
 <dl>
 <dd>
 

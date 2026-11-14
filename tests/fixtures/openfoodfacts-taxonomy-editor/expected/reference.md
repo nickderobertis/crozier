@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">hello_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L105-L127">hello_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.hello_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pong_ping_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L129-L153">pong_ping_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -107,7 +107,7 @@ client.pong_ping_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_projects_projects_get</a>() -> typing.List[Project]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L155-L181">get_all_projects_projects_get</a>() -> typing.List[Project]</code></summary>
 <dl>
 <dd>
 
@@ -168,7 +168,7 @@ client.get_all_projects_projects_get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_project_info_taxonomy_name_branch_project_get</a>(...) -> Project</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L183-L218">get_project_info_taxonomy_name_branch_project_get</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.get_project_info_taxonomy_name_branch_project_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">set_project_status_taxonomy_name_branch_set_project_status_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L220-L262">set_project_status_taxonomy_name_branch_set_project_status_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -336,7 +336,7 @@ client.set_project_status_taxonomy_name_branch_set_project_status_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_all_nodes_taxonomy_name_branch_nodes_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L264-L299">find_all_nodes_taxonomy_name_branch_nodes_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -416,7 +416,7 @@ client.find_all_nodes_taxonomy_name_branch_nodes_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_all_root_nodes_taxonomy_name_branch_rootentries_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L301-L336">find_all_root_nodes_taxonomy_name_branch_rootentries_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -496,7 +496,7 @@ client.find_all_root_nodes_taxonomy_name_branch_rootentries_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_one_entry_taxonomy_name_branch_entry_entry_get</a>(...) -> EntryNode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L338-L376">find_one_entry_taxonomy_name_branch_entry_entry_get</a>(...) -> EntryNode</code></summary>
 <dl>
 <dd>
 
@@ -585,7 +585,7 @@ client.find_one_entry_taxonomy_name_branch_entry_entry_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">edit_entry_taxonomy_name_branch_entry_entry_post</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L378-L418">edit_entry_taxonomy_name_branch_entry_entry_post</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -676,7 +676,7 @@ client.edit_entry_taxonomy_name_branch_entry_entry_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_one_entry_parents_taxonomy_name_branch_entry_entry_parents_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L420-L458">find_one_entry_parents_taxonomy_name_branch_entry_entry_parents_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -765,7 +765,7 @@ client.find_one_entry_parents_taxonomy_name_branch_entry_entry_parents_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_one_entry_children_taxonomy_name_branch_entry_entry_children_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L460-L498">find_one_entry_children_taxonomy_name_branch_entry_entry_children_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -854,7 +854,7 @@ client.find_one_entry_children_taxonomy_name_branch_entry_entry_children_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">edit_entry_children_taxonomy_name_branch_entry_entry_children_post</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L500-L540">edit_entry_children_taxonomy_name_branch_entry_entry_children_post</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -945,7 +945,7 @@ client.edit_entry_children_taxonomy_name_branch_entry_entry_children_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_one_synonym_taxonomy_name_branch_synonym_synonym_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L542-L580">find_one_synonym_taxonomy_name_branch_synonym_synonym_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1034,7 +1034,7 @@ client.find_one_synonym_taxonomy_name_branch_synonym_synonym_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_all_synonyms_taxonomy_name_branch_synonym_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L582-L617">find_all_synonyms_taxonomy_name_branch_synonym_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1114,7 +1114,7 @@ client.find_all_synonyms_taxonomy_name_branch_synonym_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_one_stopword_taxonomy_name_branch_stopword_stopword_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L619-L657">find_one_stopword_taxonomy_name_branch_stopword_stopword_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1203,7 +1203,7 @@ client.find_one_stopword_taxonomy_name_branch_stopword_stopword_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_all_stopwords_taxonomy_name_branch_stopword_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L659-L694">find_all_stopwords_taxonomy_name_branch_stopword_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1283,7 +1283,7 @@ client.find_all_stopwords_taxonomy_name_branch_stopword_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_header_taxonomy_name_branch_header_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L696-L731">find_header_taxonomy_name_branch_header_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1363,7 +1363,7 @@ client.find_header_taxonomy_name_branch_header_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_footer_taxonomy_name_branch_footer_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L733-L768">find_footer_taxonomy_name_branch_footer_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1443,7 +1443,7 @@ client.find_footer_taxonomy_name_branch_footer_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">find_all_errors_taxonomy_name_branch_parsing_errors_get</a>(...) -> ErrorNode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L770-L805">find_all_errors_taxonomy_name_branch_parsing_errors_get</a>(...) -> ErrorNode</code></summary>
 <dl>
 <dd>
 
@@ -1523,7 +1523,7 @@ client.find_all_errors_taxonomy_name_branch_parsing_errors_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">search_entry_nodes_taxonomy_name_branch_nodes_entry_get</a>(...) -> EntryNodeSearchResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L807-L851">search_entry_nodes_taxonomy_name_branch_nodes_entry_get</a>(...) -> EntryNodeSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -1605,7 +1605,7 @@ client.search_entry_nodes_taxonomy_name_branch_nodes_entry_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">export_to_text_file_taxonomy_name_branch_downloadexport_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L853-L886">export_to_text_file_taxonomy_name_branch_downloadexport_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1671,7 +1671,7 @@ client.export_to_text_file_taxonomy_name_branch_downloadexport_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">export_to_github_taxonomy_name_branch_githubexport_get</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L888-L921">export_to_github_taxonomy_name_branch_githubexport_get</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1737,7 +1737,7 @@ client.export_to_github_taxonomy_name_branch_githubexport_get(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">import_from_github_taxonomy_name_branch_import_post</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L923-L958">import_from_github_taxonomy_name_branch_import_post</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1817,7 +1817,7 @@ client.import_from_github_taxonomy_name_branch_import_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">upload_taxonomy_taxonomy_name_branch_upload_post</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L960-L1007">upload_taxonomy_taxonomy_name_branch_upload_post</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1915,7 +1915,7 @@ client.upload_taxonomy_taxonomy_name_branch_upload_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_entry_node_taxonomy_name_branch_entry_post</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1009-L1056">create_entry_node_taxonomy_name_branch_entry_post</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2013,7 +2013,7 @@ client.create_entry_node_taxonomy_name_branch_entry_post(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_node_taxonomy_name_branch_nodes_id_delete</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1058-L1096">delete_node_taxonomy_name_branch_nodes_id_delete</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2102,7 +2102,7 @@ client.delete_node_taxonomy_name_branch_nodes_id_delete(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_project_taxonomy_name_branch_delete</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1098-L1132">delete_project_taxonomy_name_branch_delete</a>(...)</code></summary>
 <dl>
 <dd>
 

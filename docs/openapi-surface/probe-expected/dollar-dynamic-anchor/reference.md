@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_tree</a>() -> Tree</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L107-L127">get_tree</a>() -> Tree</code></summary>
 <dl>
 <dd>
 
@@ -47,7 +47,7 @@ client.get_tree()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_strict_tree</a>() -> StrictTree</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L129-L149">get_strict_tree</a>() -> StrictTree</code></summary>
 <dl>
 <dd>
 

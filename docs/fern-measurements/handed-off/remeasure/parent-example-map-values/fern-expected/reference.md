@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">submit_envelopes</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L133">submit_envelopes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.submit_envelopes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">submit_records</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L135-L167">submit_records</a>(...)</code></summary>
 <dl>
 <dd>
 

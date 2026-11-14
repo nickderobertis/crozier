@@ -1,6 +1,6 @@
 # Reference
 ## capabilities
-<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py">get_capabilities</a>() -> Capabilities</code></summary>
+<details><summary><code>client.capabilities.<a href="src/fern/capabilities/client.py#L26-L52">get_capabilities</a>() -> Capabilities</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.capabilities.get_capabilities()
 </details>
 
 ## entities
-<details><summary><code>client.entities.<a href="src/fern/entities/client.py">list_entities</a>(...) -> ListEntitiesResponse</code></summary>
+<details><summary><code>client.entities.<a href="src/fern/entities/client.py#L31-L96">list_entities</a>(...) -> ListEntitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -186,7 +186,7 @@ Sort order:
 </dl>
 </details>
 
-<details><summary><code>client.entities.<a href="src/fern/entities/client.py">get_entity</a>(...) -> Entity</code></summary>
+<details><summary><code>client.entities.<a href="src/fern/entities/client.py#L98-L127">get_entity</a>(...) -> Entity</code></summary>
 <dl>
 <dd>
 
@@ -259,7 +259,7 @@ client.entities.get_entity(
 </dl>
 </details>
 
-<details><summary><code>client.entities.<a href="src/fern/entities/client.py">delete_entity</a>(...)</code></summary>
+<details><summary><code>client.entities.<a href="src/fern/entities/client.py#L129-L163">delete_entity</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -338,7 +338,7 @@ client.entities.delete_entity(
 </dl>
 </details>
 
-<details><summary><code>client.entities.<a href="src/fern/entities/client.py">get_entity_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.entities.<a href="src/fern/entities/client.py#L165-L200">get_entity_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -415,7 +415,7 @@ client.entities.get_entity_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.entities.<a href="src/fern/entities/client.py">head_entity_metadata</a>(...)</code></summary>
+<details><summary><code>client.entities.<a href="src/fern/entities/client.py#L202-L232">head_entity_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -489,7 +489,7 @@ client.entities.head_entity_metadata(
 </details>
 
 ## search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">entities</a>(...) -> SearchEntitiesResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L34-L164">entities</a>(...) -> SearchEntitiesResponse</code></summary>
 <dl>
 <dd>
 
@@ -686,7 +686,7 @@ Sort order:
 </details>
 
 ## files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_files</a>(...) -> ListFilesResponse</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L31-L85">list_files</a>(...) -> ListFilesResponse</code></summary>
 <dl>
 <dd>
 
@@ -795,7 +795,7 @@ Sort order:
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get_file</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L87-L146">get_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -903,7 +903,7 @@ client.files.get_file(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">head_file</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L148-L206">head_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1011,7 +1011,7 @@ client.files.head_file(
 </details>
 
 ## deposits
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">create_deposit</a>(...) -> Deposit</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L31-L68">create_deposit</a>(...) -> Deposit</code></summary>
 <dl>
 <dd>
 
@@ -1090,7 +1090,7 @@ client.deposits.create_deposit()
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">get_deposit</a>(...) -> Deposit</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L70-L101">get_deposit</a>(...) -> Deposit</code></summary>
 <dl>
 <dd>
 
@@ -1165,7 +1165,7 @@ client.deposits.get_deposit(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">abort_deposit</a>(...)</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L103-L135">abort_deposit</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1242,7 +1242,7 @@ client.deposits.abort_deposit(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">stage_deposit_metadata</a>(...)</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L137-L174">stage_deposit_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1330,7 +1330,7 @@ client.deposits.stage_deposit_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">stage_deposit_file</a>(...) -> typing.Optional[FileUploadTarget]</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L176-L239">stage_deposit_file</a>(...) -> typing.Optional[FileUploadTarget]</code></summary>
 <dl>
 <dd>
 
@@ -1446,7 +1446,7 @@ client.deposits.stage_deposit_file(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">unstage_deposit_file</a>(...)</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L241-L277">unstage_deposit_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1530,7 +1530,7 @@ client.deposits.unstage_deposit_file(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">finalise_deposit</a>(...) -> Deposit</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L279-L318">finalise_deposit</a>(...) -> Deposit</code></summary>
 <dl>
 <dd>
 
@@ -1613,7 +1613,7 @@ client.deposits.finalise_deposit(
 </dl>
 </details>
 
-<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py">create_update_deposit</a>(...) -> Deposit</code></summary>
+<details><summary><code>client.deposits.<a href="src/fern/deposits/client.py#L320-L353">create_update_deposit</a>(...) -> Deposit</code></summary>
 <dl>
 <dd>
 
@@ -1691,7 +1691,7 @@ client.deposits.create_update_deposit(
 </details>
 
 ## ro_crates
-<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py">list_ro_crates</a>(...) -> ListRoCratesResponse</code></summary>
+<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py#L30-L82">list_ro_crates</a>(...) -> ListRoCratesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1794,7 +1794,7 @@ Sort order:
 </dl>
 </details>
 
-<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py">get_ro_crate</a>(...) -> RoCrate</code></summary>
+<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py#L84-L117">get_ro_crate</a>(...) -> RoCrate</code></summary>
 <dl>
 <dd>
 
@@ -1871,7 +1871,7 @@ client.ro_crates.get_ro_crate(
 </dl>
 </details>
 
-<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py">delete_ro_crate</a>(...)</code></summary>
+<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py#L119-L155">delete_ro_crate</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1952,7 +1952,7 @@ client.ro_crates.delete_ro_crate(
 </dl>
 </details>
 
-<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py">get_ro_crate_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py#L157-L190">get_ro_crate_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2027,7 +2027,7 @@ client.ro_crates.get_ro_crate_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py">head_ro_crate_metadata</a>(...)</code></summary>
+<details><summary><code>client.ro_crates.<a href="src/fern/ro_crates/client.py#L192-L224">head_ro_crate_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 

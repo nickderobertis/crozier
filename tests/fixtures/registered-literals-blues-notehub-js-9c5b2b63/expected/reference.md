@@ -1,6 +1,6 @@
 # Reference
 ## authorization
-<details><summary><code>client.authorization.<a href="src/fern/authorization/client.py">login</a>(...) -> LoginResponse</code></summary>
+<details><summary><code>client.authorization.<a href="src/fern/authorization/client.py#L31-L68">login</a>(...) -> LoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -82,7 +82,7 @@ client.authorization.login(
 </dl>
 </details>
 
-<details><summary><code>client.authorization.<a href="src/fern/authorization/client.py">o_auth2client_credentials</a>(...) -> OAuth2TokenResponse</code></summary>
+<details><summary><code>client.authorization.<a href="src/fern/authorization/client.py#L70-L123">o_auth2client_credentials</a>(...) -> OAuth2TokenResponse</code></summary>
 <dl>
 <dd>
 
@@ -183,7 +183,7 @@ client.authorization.o_auth2client_credentials(
 </details>
 
 ## billing_account
-<details><summary><code>client.billing_account.<a href="src/fern/billing_account/client.py">get_billing_accounts</a>() -> GetBillingAccountsResponse</code></summary>
+<details><summary><code>client.billing_account.<a href="src/fern/billing_account/client.py#L28-L54">get_billing_accounts</a>() -> GetBillingAccountsResponse</code></summary>
 <dl>
 <dd>
 
@@ -246,7 +246,7 @@ client.billing_account.get_billing_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.billing_account.<a href="src/fern/billing_account/client.py">get_billing_account</a>(...) -> GetBillingAccountResponse</code></summary>
+<details><summary><code>client.billing_account.<a href="src/fern/billing_account/client.py#L56-L86">get_billing_account</a>(...) -> GetBillingAccountResponse</code></summary>
 <dl>
 <dd>
 
@@ -319,7 +319,7 @@ client.billing_account.get_billing_account(
 </dl>
 </details>
 
-<details><summary><code>client.billing_account.<a href="src/fern/billing_account/client.py">get_billing_account_balance_history</a>(...) -> GetBillingAccountBalanceHistoryResponse</code></summary>
+<details><summary><code>client.billing_account.<a href="src/fern/billing_account/client.py#L88-L131">get_billing_account_balance_history</a>(...) -> GetBillingAccountBalanceHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -409,7 +409,7 @@ client.billing_account.get_billing_account_balance_history(
 </details>
 
 ## Description
-<details><summary><code>client.description.<a href="src/fern/description/client.py">list_global_descriptions</a>() -> DescriptionRecordList</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L30-L56">list_global_descriptions</a>() -> DescriptionRecordList</code></summary>
 <dl>
 <dd>
 
@@ -472,7 +472,7 @@ client.description.list_global_descriptions()
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">get_global_description</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L58-L88">get_global_description</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -545,7 +545,7 @@ client.description.get_global_description(
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">set_global_description</a>(...) -> DescriptionRecord</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L90-L117">set_global_description</a>(...) -> DescriptionRecord</code></summary>
 <dl>
 <dd>
 
@@ -615,7 +615,7 @@ client.description.set_global_description(...)
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">delete_global_description</a>(...)</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L119-L148">delete_global_description</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -688,7 +688,7 @@ client.description.delete_global_description(
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">list_project_descriptions</a>(...) -> DescriptionRecordList</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L150-L180">list_project_descriptions</a>(...) -> DescriptionRecordList</code></summary>
 <dl>
 <dd>
 
@@ -761,7 +761,7 @@ client.description.list_project_descriptions(
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">get_project_description</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L182-L221">get_project_description</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -843,7 +843,7 @@ client.description.get_project_description(
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">set_project_description</a>(...) -> DescriptionRecord</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L223-L253">set_project_description</a>(...) -> DescriptionRecord</code></summary>
 <dl>
 <dd>
 
@@ -921,7 +921,7 @@ client.description.set_project_description(...)
 </dl>
 </details>
 
-<details><summary><code>client.description.<a href="src/fern/description/client.py">delete_project_description</a>(...)</code></summary>
+<details><summary><code>client.description.<a href="src/fern/description/client.py#L255-L293">delete_project_description</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1004,7 +1004,7 @@ client.description.delete_project_description(
 </details>
 
 ## organization
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">get_organizations</a>() -> GetOrganizationsResponse</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L28-L52">get_organizations</a>() -> GetOrganizationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1067,7 +1067,7 @@ client.organization.get_organizations()
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">get_organization</a>(...) -> GetOrganizationResponse</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L54-L84">get_organization</a>(...) -> GetOrganizationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1140,7 +1140,7 @@ client.organization.get_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organization.<a href="src/fern/organization/client.py">get_organization_balance_history</a>(...) -> GetOrganizationBalanceHistoryResponse</code></summary>
+<details><summary><code>client.organization.<a href="src/fern/organization/client.py#L86-L129">get_organization_balance_history</a>(...) -> GetOrganizationBalanceHistoryResponse</code></summary>
 <dl>
 <dd>
 
@@ -1230,7 +1230,7 @@ client.organization.get_organization_balance_history(
 </details>
 
 ## device
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_environment_variables_by_pin</a>(...) -> GetDeviceEnvironmentVariablesByPinResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L48-L92">get_device_environment_variables_by_pin</a>(...) -> GetDeviceEnvironmentVariablesByPinResponse</code></summary>
 <dl>
 <dd>
 
@@ -1321,7 +1321,7 @@ client.device.get_device_environment_variables_by_pin(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">set_device_environment_variables_by_pin</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L94-L151">set_device_environment_variables_by_pin</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -1423,7 +1423,7 @@ client.device.set_device_environment_variables_by_pin(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_devices</a>(...) -> GetDevicesResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L153-L240">get_devices</a>(...) -> GetDevicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1584,7 +1584,7 @@ client.device.get_devices(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device</a>(...) -> Device</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L242-L275">get_device</a>(...) -> Device</code></summary>
 <dl>
 <dd>
 
@@ -1666,7 +1666,7 @@ client.device.get_device(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">delete_device</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L277-L309">delete_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1748,7 +1748,7 @@ client.device.delete_device(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">disable_device</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L311-L343">disable_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1830,7 +1830,7 @@ client.device.disable_device(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">enable_device</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L345-L377">enable_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1912,7 +1912,7 @@ client.device.enable_device(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_environment_hierarchy</a>(...) -> EnvTreeJsonNode</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L379-L412">get_device_environment_hierarchy</a>(...) -> EnvTreeJsonNode</code></summary>
 <dl>
 <dd>
 
@@ -1980,7 +1980,7 @@ client.device.get_device_environment_hierarchy(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_environment_variables</a>(...) -> GetDeviceEnvironmentVariablesResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L414-L449">get_device_environment_variables</a>(...) -> GetDeviceEnvironmentVariablesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2062,7 +2062,7 @@ client.device.get_device_environment_variables(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">set_device_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L451-L502">set_device_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -2155,7 +2155,7 @@ client.device.set_device_environment_variables(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">delete_device_environment_variable</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L504-L548">delete_device_environment_variable</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -2246,7 +2246,7 @@ client.device.delete_device_environment_variable(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">list_notefiles</a>(...) -> NotefileList</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L550-L597">list_notefiles</a>(...) -> NotefileList</code></summary>
 <dl>
 <dd>
 
@@ -2344,7 +2344,7 @@ client.device.list_notefiles(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">delete_notefiles</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L599-L641">delete_notefiles</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2434,7 +2434,7 @@ client.device.delete_notefiles(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_health_log</a>(...) -> GetDeviceHealthLogResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L643-L701">get_device_health_log</a>(...) -> GetDeviceHealthLogResponse</code></summary>
 <dl>
 <dd>
 
@@ -2540,7 +2540,7 @@ client.device.get_device_health_log(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_journeys</a>(...) -> GetDeviceJourneysResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L703-L754">get_device_journeys</a>(...) -> GetDeviceJourneysResponse</code></summary>
 <dl>
 <dd>
 
@@ -2638,7 +2638,7 @@ client.device.get_device_journeys(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_journey</a>(...) -> GetDeviceJourneyResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L756-L811">get_device_journey</a>(...) -> GetDeviceJourneyResponse</code></summary>
 <dl>
 <dd>
 
@@ -2745,7 +2745,7 @@ client.device.get_device_journey(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_latest_events</a>(...) -> GetDeviceLatestEventsResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L813-L848">get_device_latest_events</a>(...) -> GetDeviceLatestEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2827,7 +2827,7 @@ client.device.get_device_latest_events(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">create_notefile</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L850-L892">create_notefile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2918,7 +2918,7 @@ client.device.create_notefile(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_notefile</a>(...) -> GetNotefileResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L894-L955">get_notefile</a>(...) -> GetNotefileResponse</code></summary>
 <dl>
 <dd>
 
@@ -3033,7 +3033,7 @@ client.device.get_notefile(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">add_qi_note</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L957-L1007">add_qi_note</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3132,7 +3132,7 @@ client.device.add_qi_note(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_db_note</a>(...) -> GetDbNoteResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1009-L1070">get_db_note</a>(...) -> GetDbNoteResponse</code></summary>
 <dl>
 <dd>
 
@@ -3248,7 +3248,7 @@ client.device.get_db_note(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">add_db_note</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1072-L1132">add_db_note</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3356,7 +3356,7 @@ client.device.add_db_note(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">update_db_note</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1134-L1194">update_db_note</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3464,7 +3464,7 @@ client.device.update_db_note(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">delete_note</a>(...)</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1196-L1242">delete_note</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3564,7 +3564,7 @@ client.device.delete_note(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_plans</a>(...) -> GetDevicePlansResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1244-L1279">get_device_plans</a>(...) -> GetDevicePlansResponse</code></summary>
 <dl>
 <dd>
 
@@ -3646,7 +3646,7 @@ client.device.get_device_plans(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">provision_device</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1281-L1338">provision_device</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3753,7 +3753,7 @@ client.device.provision_device(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_public_key</a>(...) -> GetDevicePublicKeyResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1340-L1375">get_device_public_key</a>(...) -> GetDevicePublicKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3835,7 +3835,7 @@ client.device.get_device_public_key(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_sessions</a>(...) -> GetDeviceSessionsResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1377-L1441">get_device_sessions</a>(...) -> GetDeviceSessionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3957,7 +3957,7 @@ client.device.get_device_sessions(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">signal_device</a>(...) -> SignalDeviceResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1443-L1485">signal_device</a>(...) -> SignalDeviceResponse</code></summary>
 <dl>
 <dd>
 
@@ -4047,7 +4047,7 @@ client.device.signal_device(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_device_public_keys</a>(...) -> GetDevicePublicKeysResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1487-L1528">get_device_public_keys</a>(...) -> GetDevicePublicKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -4136,7 +4136,7 @@ client.device.get_device_public_keys(
 </dl>
 </details>
 
-<details><summary><code>client.device.<a href="src/fern/device/client.py">get_fleet_devices</a>(...) -> GetFleetDevicesResponse</code></summary>
+<details><summary><code>client.device.<a href="src/fern/device/client.py#L1530-L1618">get_fleet_devices</a>(...) -> GetFleetDevicesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4299,7 +4299,7 @@ client.device.get_fleet_devices(
 </details>
 
 ## webhook
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">create_legacy_webhook_event</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L30-L76">create_legacy_webhook_event</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4394,7 +4394,7 @@ client.webhook.create_legacy_webhook_event(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">update_legacy_webhook_session</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L78-L120">update_legacy_webhook_session</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4487,7 +4487,7 @@ client.webhook.update_legacy_webhook_session(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">create_webhook_device_event_by_product</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L122-L169">create_webhook_device_event_by_product</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4589,7 +4589,7 @@ client.webhook.create_webhook_device_event_by_product(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">create_webhook_event_by_product</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L171-L214">create_webhook_event_by_product</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4682,7 +4682,7 @@ client.webhook.create_webhook_event_by_product(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">get_webhook_settings_by_product</a>(...) -> WebhookSettings</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L216-L252">get_webhook_settings_by_product</a>(...) -> WebhookSettings</code></summary>
 <dl>
 <dd>
 
@@ -4764,7 +4764,7 @@ client.webhook.get_webhook_settings_by_product(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">update_webhook_settings_by_product</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L254-L307">update_webhook_settings_by_product</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4856,7 +4856,7 @@ client.webhook.update_webhook_settings_by_product(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">get_webhooks</a>(...) -> GetWebhooksResponse</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L309-L339">get_webhooks</a>(...) -> GetWebhooksResponse</code></summary>
 <dl>
 <dd>
 
@@ -4929,7 +4929,7 @@ client.webhook.get_webhooks(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">get_webhook</a>(...) -> WebhookSettings</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L341-L375">get_webhook</a>(...) -> WebhookSettings</code></summary>
 <dl>
 <dd>
 
@@ -5011,7 +5011,7 @@ client.webhook.get_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">create_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L377-L433">create_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5101,7 +5101,7 @@ client.webhook.create_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">update_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L435-L493">update_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5193,7 +5193,7 @@ client.webhook.update_webhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">delete_webhook</a>(...)</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L495-L530">delete_webhook</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5276,7 +5276,7 @@ client.webhook.delete_webhook(
 </details>
 
 ## external devices
-<details><summary><code>client.external_devices.<a href="src/fern/external_devices/client.py">create_event_ext_device</a>(...)</code></summary>
+<details><summary><code>client.external_devices.<a href="src/fern/external_devices/client.py#L30-L379">create_event_ext_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5366,7 +5366,7 @@ client.external_devices.create_event_ext_device(
 </dl>
 </details>
 
-<details><summary><code>client.external_devices.<a href="src/fern/external_devices/client.py">ext_device_session_close</a>(...)</code></summary>
+<details><summary><code>client.external_devices.<a href="src/fern/external_devices/client.py#L381-L670">ext_device_session_close</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5456,7 +5456,7 @@ client.external_devices.ext_device_session_close(
 </dl>
 </details>
 
-<details><summary><code>client.external_devices.<a href="src/fern/external_devices/client.py">ext_device_session_open</a>(...)</code></summary>
+<details><summary><code>client.external_devices.<a href="src/fern/external_devices/client.py#L672-L961">ext_device_session_open</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5547,7 +5547,7 @@ client.external_devices.ext_device_session_open(
 </details>
 
 ## project
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_by_product</a>(...) -> Project</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L67-L97">get_project_by_product</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -5620,7 +5620,7 @@ client.project.get_project_by_product(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_projects</a>() -> GetProjectsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L99-L123">get_projects</a>() -> GetProjectsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5683,7 +5683,7 @@ client.project.get_projects()
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">create_project</a>(...) -> Project</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L125-L162">create_project</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -5765,7 +5765,7 @@ client.project.create_project(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project</a>(...) -> Project</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L164-L194">get_project</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -5838,7 +5838,7 @@ client.project.get_project(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_project</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L196-L225">delete_project</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5911,7 +5911,7 @@ client.project.delete_project(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_aws_role_config</a>(...) -> AwsRoleConfig</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L227-L258">get_aws_role_config</a>(...) -> AwsRoleConfig</code></summary>
 <dl>
 <dd>
 
@@ -5985,7 +5985,7 @@ client.project.get_aws_role_config(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">clone_project</a>(...) -> Project</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L260-L318">clone_project</a>(...) -> Project</code></summary>
 <dl>
 <dd>
 
@@ -6092,7 +6092,7 @@ client.project.clone_project(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_device_dfu_history</a>(...) -> DeviceDfuHistory</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L320-L365">get_device_dfu_history</a>(...) -> DeviceDfuHistory</code></summary>
 <dl>
 <dd>
 
@@ -6184,7 +6184,7 @@ client.project.get_device_dfu_history(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_device_dfu_status</a>(...) -> DeviceDfuStatus</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L367-L412">get_device_dfu_status</a>(...) -> DeviceDfuStatus</code></summary>
 <dl>
 <dd>
 
@@ -6276,7 +6276,7 @@ client.project.get_device_dfu_status(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_device_fleets</a>(...) -> GetDeviceFleetsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L414-L449">get_device_fleets</a>(...) -> GetDeviceFleetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6358,7 +6358,7 @@ client.project.get_device_fleets(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">add_device_to_fleets</a>(...) -> AddDeviceToFleetsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L451-L495">add_device_to_fleets</a>(...) -> AddDeviceToFleetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6451,7 +6451,7 @@ client.project.add_device_to_fleets(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_device_from_fleets</a>(...) -> DeleteDeviceFromFleetsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L497-L541">delete_device_from_fleets</a>(...) -> DeleteDeviceFromFleetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6544,7 +6544,7 @@ client.project.delete_device_from_fleets(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">perform_dfu_action</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L543-L641">perform_dfu_action</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6716,7 +6716,7 @@ client.project.perform_dfu_action(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_devices_dfu_history</a>(...) -> DeviceDfuHistoryPage</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L643-L745">get_devices_dfu_history</a>(...) -> DeviceDfuHistoryPage</code></summary>
 <dl>
 <dd>
 
@@ -6903,7 +6903,7 @@ client.project.get_devices_dfu_history(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_devices_dfu_status</a>(...) -> DeviceDfuStatusPage</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L747-L849">get_devices_dfu_status</a>(...) -> DeviceDfuStatusPage</code></summary>
 <dl>
 <dd>
 
@@ -7090,7 +7090,7 @@ client.project.get_devices_dfu_status(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_environment_hierarchy</a>(...) -> EnvTreeJsonNode</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L851-L881">get_project_environment_hierarchy</a>(...) -> EnvTreeJsonNode</code></summary>
 <dl>
 <dd>
 
@@ -7149,7 +7149,7 @@ client.project.get_project_environment_hierarchy(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L883-L915">get_project_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -7222,7 +7222,7 @@ client.project.get_project_environment_variables(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">set_project_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L917-L963">set_project_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -7306,7 +7306,7 @@ client.project.set_project_environment_variables(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_project_environment_variable</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L965-L1001">delete_project_environment_variable</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -7388,7 +7388,7 @@ client.project.delete_project_environment_variable(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_firmware_info</a>(...) -> typing.List[FirmwareInfo]</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1003-L1078">get_firmware_info</a>(...) -> typing.List[FirmwareInfo]</code></summary>
 <dl>
 <dd>
 
@@ -7534,7 +7534,7 @@ client.project.get_firmware_info(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">download_firmware</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1080-L1110">download_firmware</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -7612,7 +7612,7 @@ client.project.download_firmware(...)
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">update_firmware</a>(...) -> FirmwareInfo</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1112-L1175">update_firmware</a>(...) -> FirmwareInfo</code></summary>
 <dl>
 <dd>
 
@@ -7728,7 +7728,7 @@ client.project.update_firmware(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">upload_firmware</a>(...) -> FirmwareInfo</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1177-L1224">upload_firmware</a>(...) -> FirmwareInfo</code></summary>
 <dl>
 <dd>
 
@@ -7830,7 +7830,7 @@ client.project.upload_firmware(...)
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_firmware</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1226-L1270">delete_firmware</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7922,7 +7922,7 @@ client.project.delete_firmware(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_fleets</a>(...) -> GetFleetsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1272-L1302">get_fleets</a>(...) -> GetFleetsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7995,7 +7995,7 @@ client.project.get_fleets(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">create_fleet</a>(...) -> Fleet</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1304-L1357">create_fleet</a>(...) -> Fleet</code></summary>
 <dl>
 <dd>
 
@@ -8100,7 +8100,7 @@ client.project.create_fleet(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_fleet</a>(...) -> Fleet</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1359-L1392">get_fleet</a>(...) -> Fleet</code></summary>
 <dl>
 <dd>
 
@@ -8182,7 +8182,7 @@ client.project.get_fleet(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">update_fleet</a>(...) -> Fleet</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1394-L1467">update_fleet</a>(...) -> Fleet</code></summary>
 <dl>
 <dd>
 
@@ -8320,7 +8320,7 @@ client.project.update_fleet(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_fleet</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1469-L1501">delete_fleet</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8402,7 +8402,7 @@ client.project.delete_fleet(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_fleet_environment_hierarchy</a>(...) -> EnvTreeJsonNode</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1503-L1536">get_fleet_environment_hierarchy</a>(...) -> EnvTreeJsonNode</code></summary>
 <dl>
 <dd>
 
@@ -8470,7 +8470,7 @@ client.project.get_fleet_environment_hierarchy(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_fleet_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1538-L1573">get_fleet_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -8552,7 +8552,7 @@ client.project.get_fleet_environment_variables(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">set_fleet_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1575-L1626">set_fleet_environment_variables</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -8645,7 +8645,7 @@ client.project.set_fleet_environment_variables(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_fleet_environment_variable</a>(...) -> EnvironmentVariables</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1628-L1672">delete_fleet_environment_variable</a>(...) -> EnvironmentVariables</code></summary>
 <dl>
 <dd>
 
@@ -8736,7 +8736,7 @@ client.project.delete_fleet_environment_variable(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">set_global_event_transformation</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1674-L1705">set_global_event_transformation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8809,7 +8809,7 @@ client.project.set_global_event_transformation(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">disable_global_event_transformation</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1707-L1738">disable_global_event_transformation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8882,7 +8882,7 @@ client.project.disable_global_event_transformation(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">enable_global_event_transformation</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1740-L1771">enable_global_event_transformation</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8955,7 +8955,7 @@ client.project.enable_global_event_transformation(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_members</a>(...) -> GetProjectMembersResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1773-L1803">get_project_members</a>(...) -> GetProjectMembersResponse</code></summary>
 <dl>
 <dd>
 
@@ -9028,7 +9028,7 @@ client.project.get_project_members(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_products</a>(...) -> GetProductsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1805-L1835">get_products</a>(...) -> GetProductsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9101,7 +9101,7 @@ client.project.get_products(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">create_product</a>(...) -> Product</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1837-L1894">create_product</a>(...) -> Product</code></summary>
 <dl>
 <dd>
 
@@ -9208,7 +9208,7 @@ client.project.create_product(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_product</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1896-L1930">delete_product</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9290,7 +9290,7 @@ client.project.delete_product(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_notefile_schemas</a>(...) -> typing.List[NotefileSchema]</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1932-L1960">get_notefile_schemas</a>(...) -> typing.List[NotefileSchema]</code></summary>
 <dl>
 <dd>
 
@@ -9349,7 +9349,7 @@ client.project.get_notefile_schemas(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">get_project_secrets</a>(...) -> GetProjectSecretsResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1962-L1992">get_project_secrets</a>(...) -> GetProjectSecretsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9422,7 +9422,7 @@ client.project.get_project_secrets(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">create_project_secret</a>(...) -> ProjectSecret</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L1994-L2039">create_project_secret</a>(...) -> ProjectSecret</code></summary>
 <dl>
 <dd>
 
@@ -9513,7 +9513,7 @@ client.project.create_project_secret(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">update_project_secret</a>(...) -> ProjectSecret</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L2041-L2086">update_project_secret</a>(...) -> ProjectSecret</code></summary>
 <dl>
 <dd>
 
@@ -9604,7 +9604,7 @@ client.project.update_project_secret(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">delete_project_secret</a>(...)</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L2088-L2123">delete_project_secret</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9687,7 +9687,7 @@ client.project.delete_project_secret(
 </details>
 
 ## Alert
-<details><summary><code>client.alert.<a href="src/fern/alert/client.py">get_alerts</a>(...) -> GetAlertsResponse</code></summary>
+<details><summary><code>client.alert.<a href="src/fern/alert/client.py#L26-L74">get_alerts</a>(...) -> GetAlertsResponse</code></summary>
 <dl>
 <dd>
 
@@ -9785,7 +9785,7 @@ client.alert.get_alerts(
 </details>
 
 ## event
-<details><summary><code>client.event.<a href="src/fern/event/client.py">get_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py#L38-L152">get_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -9999,7 +9999,7 @@ client.event.get_events(...)
 </dl>
 </details>
 
-<details><summary><code>client.event.<a href="src/fern/event/client.py">get_events_by_cursor</a>(...) -> GetEventsByCursorResponse</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py#L154-L226">get_events_by_cursor</a>(...) -> GetEventsByCursorResponse</code></summary>
 <dl>
 <dd>
 
@@ -10137,7 +10137,7 @@ client.event.get_events_by_cursor(
 </dl>
 </details>
 
-<details><summary><code>client.event.<a href="src/fern/event/client.py">get_route_logs_by_event</a>(...) -> typing.List[RouteLog]</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py#L228-L263">get_route_logs_by_event</a>(...) -> typing.List[RouteLog]</code></summary>
 <dl>
 <dd>
 
@@ -10219,7 +10219,7 @@ client.event.get_route_logs_by_event(
 </dl>
 </details>
 
-<details><summary><code>client.event.<a href="src/fern/event/client.py">get_fleet_events</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py#L265-L378">get_fleet_events</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -10433,7 +10433,7 @@ client.event.get_fleet_events(...)
 </dl>
 </details>
 
-<details><summary><code>client.event.<a href="src/fern/event/client.py">get_fleet_events_by_cursor</a>(...) -> GetFleetEventsByCursorResponse</code></summary>
+<details><summary><code>client.event.<a href="src/fern/event/client.py#L380-L463">get_fleet_events_by_cursor</a>(...) -> GetFleetEventsByCursorResponse</code></summary>
 <dl>
 <dd>
 
@@ -10589,7 +10589,7 @@ client.event.get_fleet_events_by_cursor(
 </details>
 
 ## jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_jobs</a>(...) -> GetJobsResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L40-L70">get_jobs</a>(...) -> GetJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -10662,7 +10662,7 @@ client.jobs.get_jobs(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">create_job</a>(...) -> CreateJobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L72-L145">create_job</a>(...) -> CreateJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -10764,7 +10764,7 @@ client.jobs.create_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job</a>(...) -> JobDetail</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L147-L181">get_job</a>(...) -> JobDetail</code></summary>
 <dl>
 <dd>
 
@@ -10846,7 +10846,7 @@ client.jobs.get_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">delete_job</a>(...) -> DeleteJobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L183-L217">delete_job</a>(...) -> DeleteJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -10928,7 +10928,7 @@ client.jobs.delete_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">run_job</a>(...) -> RunJobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L219-L263">run_job</a>(...) -> RunJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -11018,7 +11018,7 @@ client.jobs.run_job(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_runs</a>(...) -> GetJobRunsResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L265-L313">get_job_runs</a>(...) -> GetJobRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -11116,7 +11116,7 @@ client.jobs.get_job_runs(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get_job_run</a>(...) -> JobRun</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L315-L359">get_job_run</a>(...) -> JobRun</code></summary>
 <dl>
 <dd>
 
@@ -11206,7 +11206,7 @@ client.jobs.get_job_run(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">delete_job_run</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L361-L394">delete_job_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -11288,7 +11288,7 @@ client.jobs.delete_job_run(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel_job_run</a>(...) -> CancelJobRunResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L396-L430">cancel_job_run</a>(...) -> CancelJobRunResponse</code></summary>
 <dl>
 <dd>
 
@@ -11371,7 +11371,7 @@ client.jobs.cancel_job_run(
 </details>
 
 ## Monitor
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">get_monitors</a>(...) -> typing.List[Monitor]</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L37-L67">get_monitors</a>(...) -> typing.List[Monitor]</code></summary>
 <dl>
 <dd>
 
@@ -11444,7 +11444,7 @@ client.monitor.get_monitors(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">create_monitor</a>(...) -> Monitor</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L69-L211">create_monitor</a>(...) -> Monitor</code></summary>
 <dl>
 <dd>
 
@@ -11693,7 +11693,7 @@ client.monitor.create_monitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">get_monitor</a>(...) -> Monitor</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L213-L246">get_monitor</a>(...) -> Monitor</code></summary>
 <dl>
 <dd>
 
@@ -11775,7 +11775,7 @@ client.monitor.get_monitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">update_monitor</a>(...) -> Monitor</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L248-L388">update_monitor</a>(...) -> Monitor</code></summary>
 <dl>
 <dd>
 
@@ -11865,7 +11865,7 @@ client.monitor.update_monitor(
 </dl>
 </details>
 
-<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py">delete_monitor</a>(...) -> Monitor</code></summary>
+<details><summary><code>client.monitor.<a href="src/fern/monitor/client.py#L390-L425">delete_monitor</a>(...) -> Monitor</code></summary>
 <dl>
 <dd>
 
@@ -11948,7 +11948,7 @@ client.monitor.delete_monitor(
 </details>
 
 ## route
-<details><summary><code>client.route.<a href="src/fern/route/client.py">get_routes</a>(...) -> typing.List[NotehubRouteSummary]</code></summary>
+<details><summary><code>client.route.<a href="src/fern/route/client.py#L51-L81">get_routes</a>(...) -> typing.List[NotehubRouteSummary]</code></summary>
 <dl>
 <dd>
 
@@ -12021,7 +12021,7 @@ client.route.get_routes(
 </dl>
 </details>
 
-<details><summary><code>client.route.<a href="src/fern/route/client.py">create_route</a>(...) -> NotehubRoute</code></summary>
+<details><summary><code>client.route.<a href="src/fern/route/client.py#L83-L218">create_route</a>(...) -> NotehubRoute</code></summary>
 <dl>
 <dd>
 
@@ -12115,7 +12115,7 @@ client.route.create_route(
 </dl>
 </details>
 
-<details><summary><code>client.route.<a href="src/fern/route/client.py">get_route</a>(...) -> NotehubRoute</code></summary>
+<details><summary><code>client.route.<a href="src/fern/route/client.py#L220-L253">get_route</a>(...) -> NotehubRoute</code></summary>
 <dl>
 <dd>
 
@@ -12197,7 +12197,7 @@ client.route.get_route(
 </dl>
 </details>
 
-<details><summary><code>client.route.<a href="src/fern/route/client.py">update_route</a>(...) -> NotehubRoute</code></summary>
+<details><summary><code>client.route.<a href="src/fern/route/client.py#L255-L386">update_route</a>(...) -> NotehubRoute</code></summary>
 <dl>
 <dd>
 
@@ -12287,7 +12287,7 @@ client.route.update_route(
 </dl>
 </details>
 
-<details><summary><code>client.route.<a href="src/fern/route/client.py">delete_route</a>(...)</code></summary>
+<details><summary><code>client.route.<a href="src/fern/route/client.py#L388-L420">delete_route</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12369,7 +12369,7 @@ client.route.delete_route(
 </dl>
 </details>
 
-<details><summary><code>client.route.<a href="src/fern/route/client.py">get_route_logs_by_route</a>(...) -> typing.List[RouteLog]</code></summary>
+<details><summary><code>client.route.<a href="src/fern/route/client.py#L422-L520">get_route_logs_by_route</a>(...) -> typing.List[RouteLog]</code></summary>
 <dl>
 <dd>
 
@@ -12549,7 +12549,7 @@ client.route.get_route_logs_by_route(
 </details>
 
 ## usage
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">get_data_usage</a>(...) -> GetDataUsageResponse</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L37-L111">get_data_usage</a>(...) -> GetDataUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -12680,7 +12680,7 @@ client.usage.get_data_usage(
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">get_events_usage</a>(...) -> UsageEventsResponse</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L113-L202">get_events_usage</a>(...) -> UsageEventsResponse</code></summary>
 <dl>
 <dd>
 
@@ -12835,7 +12835,7 @@ client.usage.get_events_usage(
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">get_route_logs_usage</a>(...) -> GetRouteLogsUsageResponse</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L204-L278">get_route_logs_usage</a>(...) -> GetRouteLogsUsageResponse</code></summary>
 <dl>
 <dd>
 
@@ -12966,7 +12966,7 @@ client.usage.get_route_logs_usage(
 </dl>
 </details>
 
-<details><summary><code>client.usage.<a href="src/fern/usage/client.py">get_sessions_usage</a>(...) -> GetSessionsUsageResponse</code></summary>
+<details><summary><code>client.usage.<a href="src/fern/usage/client.py#L280-L359">get_sessions_usage</a>(...) -> GetSessionsUsageResponse</code></summary>
 <dl>
 <dd>
 

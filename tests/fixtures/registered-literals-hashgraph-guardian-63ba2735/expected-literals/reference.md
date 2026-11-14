@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_get_session</a>() -> AccountsSessionResponseDto</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L32-L58">account_api_get_session</a>() -> AccountsSessionResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.accounts.account_api_get_session()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_register</a>(...) -> AccountsResponseDto</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L60-L111">account_api_register</a>(...) -> AccountsResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -163,7 +163,7 @@ client.accounts.account_api_register(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_login</a>(...) -> AccountsSessionResponseDto</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L113-L146">account_api_login</a>(...) -> AccountsSessionResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -231,7 +231,7 @@ client.accounts.account_api_login(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_get_access_token</a>()</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L148-L171">account_api_get_access_token</a>()</code></summary>
 <dl>
 <dd>
 
@@ -294,7 +294,7 @@ client.accounts.account_api_get_access_token()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_get_all_accounts</a>() -> AccountsResponseDto</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L173-L199">account_api_get_all_accounts</a>() -> AccountsResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -357,7 +357,7 @@ client.accounts.account_api_get_all_accounts()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_get_standatd_registries</a>() -> AccountsResponseDto</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L201-L227">account_api_get_standatd_registries</a>() -> AccountsResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -420,7 +420,7 @@ client.accounts.account_api_get_standatd_registries()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_get_aggregated_standard_registries</a>() -> typing.List[AggregatedDtoItem]</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L229-L255">account_api_get_aggregated_standard_registries</a>() -> typing.List[AggregatedDtoItem]</code></summary>
 <dl>
 <dd>
 
@@ -483,7 +483,7 @@ client.accounts.account_api_get_aggregated_standard_registries()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">account_api_get_balance</a>() -> BalanceResponseDto</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L257-L281">account_api_get_balance</a>() -> BalanceResponseDto</code></summary>
 <dl>
 <dd>
 
@@ -547,7 +547,7 @@ client.accounts.account_api_get_balance()
 </details>
 
 ## Analytics
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_search_policies</a>(...) -> SearchPoliciesDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L34-L64">analytics_api_search_policies</a>(...) -> SearchPoliciesDto</code></summary>
 <dl>
 <dd>
 
@@ -620,7 +620,7 @@ client.analytics.analytics_api_search_policies(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_policies</a>(...) -> ComparePoliciesDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L66-L132">analytics_api_compare_policies</a>(...) -> ComparePoliciesDto</code></summary>
 <dl>
 <dd>
 
@@ -699,7 +699,7 @@ client.analytics.analytics_api_compare_policies(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_modules</a>(...) -> CompareModulesDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L134-L195">analytics_api_compare_modules</a>(...) -> CompareModulesDto</code></summary>
 <dl>
 <dd>
 
@@ -777,7 +777,7 @@ client.analytics.analytics_api_compare_modules(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_schemas</a>(...) -> CompareSchemasDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L197-L240">analytics_api_compare_schemas</a>(...) -> CompareSchemasDto</code></summary>
 <dl>
 <dd>
 
@@ -852,7 +852,7 @@ client.analytics.analytics_api_compare_schemas(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_documents</a>(...) -> CompareDocumentsDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L242-L288">analytics_api_compare_documents</a>(...) -> CompareDocumentsDto</code></summary>
 <dl>
 <dd>
 
@@ -927,7 +927,7 @@ client.analytics.analytics_api_compare_documents(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_tools</a>(...) -> CompareToolsDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L290-L328">analytics_api_compare_tools</a>(...) -> CompareToolsDto</code></summary>
 <dl>
 <dd>
 
@@ -1002,7 +1002,7 @@ client.analytics.analytics_api_compare_tools(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_policies_export</a>(...) -> str</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L330-L396">analytics_api_compare_policies_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1081,7 +1081,7 @@ client.analytics.analytics_api_compare_policies_export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_modules_export</a>(...) -> str</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L398-L459">analytics_api_compare_modules_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1159,7 +1159,7 @@ client.analytics.analytics_api_compare_modules_export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_schemas_export</a>(...) -> str</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L461-L504">analytics_api_compare_schemas_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1234,7 +1234,7 @@ client.analytics.analytics_api_compare_schemas_export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_documents_export</a>(...) -> str</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L506-L552">analytics_api_compare_documents_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1309,7 +1309,7 @@ client.analytics.analytics_api_compare_documents_export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_compare_tools_export</a>(...) -> str</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L554-L592">analytics_api_compare_tools_export</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1384,7 +1384,7 @@ client.analytics.analytics_api_compare_tools_export(
 </dl>
 </details>
 
-<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py">analytics_api_search_blocks</a>(...) -> SearchPoliciesDto</code></summary>
+<details><summary><code>client.analytics.<a href="src/fern/analytics/client.py#L594-L624">analytics_api_search_blocks</a>(...) -> SearchPoliciesDto</code></summary>
 <dl>
 <dd>
 
@@ -1458,7 +1458,7 @@ client.analytics.analytics_api_search_blocks(
 </details>
 
 ## Artifacts
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">returns_all_artifacts</a>(...) -> typing.List[Artifact]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L31-L73">returns_all_artifacts</a>(...) -> typing.List[Artifact]</code></summary>
 <dl>
 <dd>
 
@@ -1545,7 +1545,7 @@ client.artifacts.returns_all_artifacts()
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">artifact_api_upload_artifacts</a>(...) -> typing.List[ArtifactDtoItem]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L75-L106">artifact_api_upload_artifacts</a>(...) -> typing.List[ArtifactDtoItem]</code></summary>
 <dl>
 <dd>
 
@@ -1618,7 +1618,7 @@ client.artifacts.artifact_api_upload_artifacts(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">delete_artifact</a>(...) -> bool</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L108-L137">delete_artifact</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -1691,7 +1691,7 @@ client.artifacts.delete_artifact(
 </dl>
 </details>
 
-<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py">upload_artifact</a>(...) -> typing.List[Artifact]</code></summary>
+<details><summary><code>client.artifacts.<a href="src/fern/artifacts/client.py#L139-L177">upload_artifact</a>(...) -> typing.List[Artifact]</code></summary>
 <dl>
 <dd>
 
@@ -1774,7 +1774,7 @@ client.artifacts.upload_artifact(
 </details>
 
 ## Contracts
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_get_contracts</a>(...) -> typing.List[ContractDto]</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L34-L76">contracts_api_get_contracts</a>(...) -> typing.List[ContractDto]</code></summary>
 <dl>
 <dd>
 
@@ -1861,7 +1861,7 @@ client.contracts.contracts_api_get_contracts()
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_create_contract</a>(...) -> ContractDto</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L78-L108">contracts_api_create_contract</a>(...) -> ContractDto</code></summary>
 <dl>
 <dd>
 
@@ -1932,7 +1932,7 @@ client.contracts.contracts_api_create_contract()
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_import_contract</a>(...) -> ContractDto</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L110-L149">contracts_api_import_contract</a>(...) -> ContractDto</code></summary>
 <dl>
 <dd>
 
@@ -2013,7 +2013,7 @@ client.contracts.contracts_api_import_contract(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_contract_permissions</a>(...) -> float</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L151-L182">contracts_api_contract_permissions</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -2086,7 +2086,7 @@ client.contracts.contracts_api_contract_permissions(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_remove_contract</a>(...) -> bool</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L184-L215">contracts_api_remove_contract</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -2159,7 +2159,7 @@ client.contracts.contracts_api_remove_contract(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_get_wipe_requests</a>(...) -> typing.List[WiperRequestDto]</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L217-L261">contracts_api_get_wipe_requests</a>(...) -> typing.List[WiperRequestDto]</code></summary>
 <dl>
 <dd>
 
@@ -2248,7 +2248,7 @@ client.contracts.contracts_api_get_wipe_requests(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_enable_wipe_requests</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L263-L293">contracts_api_enable_wipe_requests</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2321,7 +2321,7 @@ client.contracts.contracts_api_enable_wipe_requests(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_disable_wipe_requests</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L295-L325">contracts_api_disable_wipe_requests</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2394,7 +2394,7 @@ client.contracts.contracts_api_disable_wipe_requests(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_approve_wipe_request</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L327-L357">contracts_api_approve_wipe_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2467,7 +2467,7 @@ client.contracts.contracts_api_approve_wipe_request(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_reject_wipe_request</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L359-L398">contracts_api_reject_wipe_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2548,7 +2548,7 @@ client.contracts.contracts_api_reject_wipe_request(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_clear_wipe_requests</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L400-L430">contracts_api_clear_wipe_requests</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2621,7 +2621,7 @@ client.contracts.contracts_api_clear_wipe_requests(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_wipe_add_admin</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L432-L468">contracts_api_wipe_add_admin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2703,7 +2703,7 @@ client.contracts.contracts_api_wipe_add_admin(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_wipe_remove_admin</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L470-L506">contracts_api_wipe_remove_admin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2785,7 +2785,7 @@ client.contracts.contracts_api_wipe_remove_admin(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_wipe_add_manager</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L508-L544">contracts_api_wipe_add_manager</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2867,7 +2867,7 @@ client.contracts.contracts_api_wipe_add_manager(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_wipe_remove_manager</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L546-L582">contracts_api_wipe_remove_manager</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2949,7 +2949,7 @@ client.contracts.contracts_api_wipe_remove_manager(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_wipe_add_wiper</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L584-L620">contracts_api_wipe_add_wiper</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3031,7 +3031,7 @@ client.contracts.contracts_api_wipe_add_wiper(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_wipe_remove_wiper</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L622-L658">contracts_api_wipe_remove_wiper</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3113,7 +3113,7 @@ client.contracts.contracts_api_wipe_remove_wiper(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_retire_sync_pools</a>(...) -> Date</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L660-L691">contracts_api_retire_sync_pools</a>(...) -> Date</code></summary>
 <dl>
 <dd>
 
@@ -3186,7 +3186,7 @@ client.contracts.contracts_api_retire_sync_pools(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_get_retire_requests</a>(...) -> typing.List[RetireRequestDto]</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L693-L737">contracts_api_get_retire_requests</a>(...) -> typing.List[RetireRequestDto]</code></summary>
 <dl>
 <dd>
 
@@ -3275,7 +3275,7 @@ client.contracts.contracts_api_get_retire_requests(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_get_retire_pools</a>(...) -> typing.List[RetirePoolDto]</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L739-L792">contracts_api_get_retire_pools</a>(...) -> typing.List[RetirePoolDto]</code></summary>
 <dl>
 <dd>
 
@@ -3373,7 +3373,7 @@ client.contracts.contracts_api_get_retire_pools(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_clear_retire_requests</a>(...) -> bool</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L794-L825">contracts_api_clear_retire_requests</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3446,7 +3446,7 @@ client.contracts.contracts_api_clear_retire_requests(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_set_retire_pool</a>(...) -> RetirePoolDto</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L827-L866">contracts_api_set_retire_pool</a>(...) -> RetirePoolDto</code></summary>
 <dl>
 <dd>
 
@@ -3537,7 +3537,7 @@ client.contracts.contracts_api_set_retire_pool(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_clear_retire_pools</a>(...) -> bool</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L868-L899">contracts_api_clear_retire_pools</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3610,7 +3610,7 @@ client.contracts.contracts_api_clear_retire_pools(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_unset_retire_pool</a>(...) -> bool</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L901-L932">contracts_api_unset_retire_pool</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3683,7 +3683,7 @@ client.contracts.contracts_api_unset_retire_pool(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_unset_retire_request</a>(...) -> bool</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L934-L965">contracts_api_unset_retire_request</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3756,7 +3756,7 @@ client.contracts.contracts_api_unset_retire_request(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_retire</a>(...) -> bool</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L967-L1015">contracts_api_retire</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -3858,7 +3858,7 @@ client.contracts.contracts_api_retire(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_approve_retire</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L1017-L1047">contracts_api_approve_retire</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3931,7 +3931,7 @@ client.contracts.contracts_api_approve_retire(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_cancel_retire_request</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L1049-L1079">contracts_api_cancel_retire_request</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4004,7 +4004,7 @@ client.contracts.contracts_api_cancel_retire_request(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_retire_add_admin</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L1081-L1117">contracts_api_retire_add_admin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4086,7 +4086,7 @@ client.contracts.contracts_api_retire_add_admin(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_retire_remove_admin</a>(...)</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L1119-L1155">contracts_api_retire_remove_admin</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4168,7 +4168,7 @@ client.contracts.contracts_api_retire_remove_admin(
 </dl>
 </details>
 
-<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py">contracts_api_get_retire_v_cs</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.contracts.<a href="src/fern/contracts/client.py#L1157-L1195">contracts_api_get_retire_v_cs</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4248,7 +4248,7 @@ client.contracts.contracts_api_get_retire_v_cs()
 </details>
 
 ## Demo
-<details><summary><code>client.demo.<a href="src/fern/demo/client.py">demo_api_registered_users</a>() -> RegisteredUsersDto</code></summary>
+<details><summary><code>client.demo.<a href="src/fern/demo/client.py#L28-L54">demo_api_registered_users</a>() -> RegisteredUsersDto</code></summary>
 <dl>
 <dd>
 
@@ -4311,7 +4311,7 @@ client.demo.demo_api_registered_users()
 </dl>
 </details>
 
-<details><summary><code>client.demo.<a href="src/fern/demo/client.py">get_demo_random_key</a>() -> HederaAccount</code></summary>
+<details><summary><code>client.demo.<a href="src/fern/demo/client.py#L56-L80">get_demo_random_key</a>() -> HederaAccount</code></summary>
 <dl>
 <dd>
 
@@ -4374,7 +4374,7 @@ client.demo.get_demo_random_key()
 </dl>
 </details>
 
-<details><summary><code>client.demo.<a href="src/fern/demo/client.py">generates_a_new_hedera_account_with_a_random_private_key</a>() -> Task</code></summary>
+<details><summary><code>client.demo.<a href="src/fern/demo/client.py#L82-L110">generates_a_new_hedera_account_with_a_random_private_key</a>() -> Task</code></summary>
 <dl>
 <dd>
 
@@ -4438,7 +4438,7 @@ client.demo.generates_a_new_hedera_account_with_a_random_private_key()
 </details>
 
 ## External
-<details><summary><code>client.external.<a href="src/fern/external/client.py">sends_data_from_an_external_source</a>(...)</code></summary>
+<details><summary><code>client.external.<a href="src/fern/external/client.py#L28-L70">sends_data_from_an_external_source</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4532,7 +4532,7 @@ client.external.sends_data_from_an_external_source(
 </details>
 
 ## Ipfs
-<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py">ipfs_api_post_file</a>()</code></summary>
+<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py#L25-L48">ipfs_api_post_file</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4595,7 +4595,7 @@ client.ipfs.ipfs_api_post_file()
 </dl>
 </details>
 
-<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py">ipfs_api_post_file_dry_run</a>(...)</code></summary>
+<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py#L50-L80">ipfs_api_post_file_dry_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4668,7 +4668,7 @@ client.ipfs.ipfs_api_post_file_dry_run(
 </dl>
 </details>
 
-<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py">get_file_from_ipfs</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py#L82-L113">get_file_from_ipfs</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -4741,7 +4741,7 @@ client.ipfs.get_file_from_ipfs(
 </dl>
 </details>
 
-<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py">ipfs_api_get_file_dry_run</a>(...)</code></summary>
+<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py#L115-L142">ipfs_api_get_file_dry_run</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4814,7 +4814,7 @@ client.ipfs.ipfs_api_get_file_dry_run(
 </dl>
 </details>
 
-<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py">add_file_to_ipfs</a>() -> str</code></summary>
+<details><summary><code>client.ipfs.<a href="src/fern/ipfs/client.py#L144-L168">add_file_to_ipfs</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -4878,7 +4878,7 @@ client.ipfs.add_file_to_ipfs()
 </details>
 
 ## Logs
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">returns_logs</a>(...) -> PostLogsResponse</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L30-L92">returns_logs</a>(...) -> PostLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5005,7 +5005,7 @@ client.logs.returns_logs()
 </dl>
 </details>
 
-<details><summary><code>client.logs.<a href="src/fern/logs/client.py">returns_logs_attributes</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.logs.<a href="src/fern/logs/client.py#L94-L132">returns_logs_attributes</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -5085,7 +5085,7 @@ client.logs.returns_logs_attributes()
 </details>
 
 ## Maps
-<details><summary><code>client.maps.<a href="src/fern/maps/client.py">returns_map_api_key</a>() -> str</code></summary>
+<details><summary><code>client.maps.<a href="src/fern/maps/client.py#L25-L49">returns_map_api_key</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -5149,7 +5149,7 @@ client.maps.returns_map_api_key()
 </details>
 
 ## Map
-<details><summary><code>client.map_.<a href="src/fern/map_/client.py">map_api_get_sentinel_key</a>()</code></summary>
+<details><summary><code>client.map_.<a href="src/fern/map_/client.py#L25-L46">map_api_get_sentinel_key</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5199,7 +5199,7 @@ client.map_.map_api_get_sentinel_key()
 </details>
 
 ## Metrics
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">metrics_api_get_metrics</a>()</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L25-L46">metrics_api_get_metrics</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5249,7 +5249,7 @@ client.metrics.metrics_api_get_metrics()
 </details>
 
 ## Modules
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">return_a_list_of_all_modules</a>(...) -> Module</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L33-L71">return_a_list_of_all_modules</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -5328,7 +5328,7 @@ client.modules.return_a_list_of_all_modules()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">creates_a_new_module</a>(...)</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L73-L154">creates_a_new_module</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5399,7 +5399,7 @@ client.modules.creates_a_new_module()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">modules_api_get_module_schemas</a>()</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L156-L177">modules_api_get_module_schemas</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5448,7 +5448,7 @@ client.modules.modules_api_get_module_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">modules_api_post_schemas</a>()</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L179-L200">modules_api_post_schemas</a>()</code></summary>
 <dl>
 <dd>
 
@@ -5497,7 +5497,7 @@ client.modules.modules_api_post_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">retrieves_module_configuration</a>(...) -> Module</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L202-L233">retrieves_module_configuration</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -5570,7 +5570,7 @@ client.modules.retrieves_module_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">updates_module_configuration</a>(...) -> Module</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L235-L324">updates_module_configuration</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -5651,7 +5651,7 @@ client.modules.updates_module_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">deletes_the_module</a>(...) -> bool</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L326-L355">deletes_the_module</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -5724,7 +5724,7 @@ client.modules.deletes_the_module(
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">return_a_list_of_modules</a>() -> typing.List[Module]</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L357-L383">return_a_list_of_modules</a>() -> typing.List[Module]</code></summary>
 <dl>
 <dd>
 
@@ -5787,7 +5787,7 @@ client.modules.return_a_list_of_modules()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">return_module_and_its_artifacts_in_a_zip_file_format_for_the_specified_module</a>(...)</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L385-L417">return_module_and_its_artifacts_in_a_zip_file_format_for_the_specified_module</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5860,7 +5860,7 @@ client.modules.return_module_and_its_artifacts_in_a_zip_file_format_for_the_spec
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">return_heder_message_id_for_the_specified_published_module</a>(...) -> ExportModule</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L419-L452">return_heder_message_id_for_the_specified_published_module</a>(...) -> ExportModule</code></summary>
 <dl>
 <dd>
 
@@ -5933,7 +5933,7 @@ client.modules.return_heder_message_id_for_the_specified_published_module(
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">imports_new_module_from_ipfs</a>(...) -> Module</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L454-L484">imports_new_module_from_ipfs</a>(...) -> Module</code></summary>
 <dl>
 <dd>
 
@@ -6004,7 +6004,7 @@ client.modules.imports_new_module_from_ipfs()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">imports_new_module_from_a_zip_file</a>() -> Module</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L486-L510">imports_new_module_from_a_zip_file</a>() -> Module</code></summary>
 <dl>
 <dd>
 
@@ -6067,7 +6067,7 @@ client.modules.imports_new_module_from_a_zip_file()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">module_preview_from_ipfs</a>(...) -> PreviewModule</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L512-L540">module_preview_from_ipfs</a>(...) -> PreviewModule</code></summary>
 <dl>
 <dd>
 
@@ -6138,7 +6138,7 @@ client.modules.module_preview_from_ipfs()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">module_preview_from_a_zip_file</a>() -> PreviewModule</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L542-L568">module_preview_from_a_zip_file</a>() -> PreviewModule</code></summary>
 <dl>
 <dd>
 
@@ -6201,7 +6201,7 @@ client.modules.module_preview_from_a_zip_file()
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">publishes_the_module_onto_ipfs</a>(...) -> PublishModule</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L570-L601">publishes_the_module_onto_ipfs</a>(...) -> PublishModule</code></summary>
 <dl>
 <dd>
 
@@ -6274,7 +6274,7 @@ client.modules.publishes_the_module_onto_ipfs(
 </dl>
 </details>
 
-<details><summary><code>client.modules.<a href="src/fern/modules/client.py">validates_module</a>(...) -> ValidateModule</code></summary>
+<details><summary><code>client.modules.<a href="src/fern/modules/client.py#L603-L685">validates_module</a>(...) -> ValidateModule</code></summary>
 <dl>
 <dd>
 
@@ -6346,7 +6346,7 @@ client.modules.validates_module()
 </details>
 
 ## Tools
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_get_tools</a>(...) -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L31-L69">tools_api_get_tools</a>(...) -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -6425,7 +6425,7 @@ client.tools.tools_api_get_tools()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_create_new_tool</a>() -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L71-L95">tools_api_create_new_tool</a>() -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -6488,7 +6488,7 @@ client.tools.tools_api_create_new_tool()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_create_new_tool_async</a>() -> TaskDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L97-L121">tools_api_create_new_tool_async</a>() -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -6551,7 +6551,7 @@ client.tools.tools_api_create_new_tool_async()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_get_tool_by_id</a>(...) -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L123-L152">tools_api_get_tool_by_id</a>(...) -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -6624,7 +6624,7 @@ client.tools.tools_api_get_tool_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_update_tool</a>(...) -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L154-L183">tools_api_update_tool</a>(...) -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -6697,7 +6697,7 @@ client.tools.tools_api_update_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_delete_tool</a>(...)</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L185-L213">tools_api_delete_tool</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6770,7 +6770,7 @@ client.tools.tools_api_delete_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_publish_tool</a>(...) -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L215-L244">tools_api_publish_tool</a>(...) -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -6843,7 +6843,7 @@ client.tools.tools_api_publish_tool(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_publish_tool_async</a>(...) -> TaskDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L246-L277">tools_api_publish_tool_async</a>(...) -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -6916,7 +6916,7 @@ client.tools.tools_api_publish_tool_async(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_validate_tool</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L279-L305">tools_api_validate_tool</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6979,7 +6979,7 @@ client.tools.tools_api_validate_tool()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_export_file</a>(...)</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L307-L335">tools_api_tool_export_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7052,7 +7052,7 @@ client.tools.tools_api_tool_export_file(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_export_message</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L337-L368">tools_api_tool_export_message</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7125,7 +7125,7 @@ client.tools.tools_api_tool_export_message(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_message_preview</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L370-L396">tools_api_tool_import_message_preview</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7188,7 +7188,7 @@ client.tools.tools_api_tool_import_message_preview()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_message</a>() -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L398-L422">tools_api_tool_import_message</a>() -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -7251,7 +7251,7 @@ client.tools.tools_api_tool_import_message()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_file_preview</a>() -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L424-L450">tools_api_tool_import_file_preview</a>() -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7314,7 +7314,7 @@ client.tools.tools_api_tool_import_file_preview()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_file</a>() -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L452-L476">tools_api_tool_import_file</a>() -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -7377,7 +7377,7 @@ client.tools.tools_api_tool_import_file()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_file_with_metadata</a>(...) -> ToolDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L478-L516">tools_api_tool_import_file_with_metadata</a>(...) -> ToolDto</code></summary>
 <dl>
 <dd>
 
@@ -7459,7 +7459,7 @@ client.tools.tools_api_tool_import_file_with_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_file_async</a>() -> TaskDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L518-L542">tools_api_tool_import_file_async</a>() -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -7522,7 +7522,7 @@ client.tools.tools_api_tool_import_file_async()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_file_with_metadata_async</a>(...) -> TaskDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L544-L582">tools_api_tool_import_file_with_metadata_async</a>(...) -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -7604,7 +7604,7 @@ client.tools.tools_api_tool_import_file_with_metadata_async(
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_tool_import_message_async</a>() -> TaskDto</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L584-L610">tools_api_tool_import_message_async</a>() -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -7667,7 +7667,7 @@ client.tools.tools_api_tool_import_message_async()
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">tools_api_get_menu</a>() -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L612-L638">tools_api_get_menu</a>() -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -7731,7 +7731,7 @@ client.tools.tools_api_get_menu()
 </details>
 
 ## Profiles
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_get_profile</a>(...) -> ProfileDto</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L35-L66">profile_api_get_profile</a>(...) -> ProfileDto</code></summary>
 <dl>
 <dd>
 
@@ -7804,7 +7804,7 @@ client.profiles.profile_api_get_profile(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_set_user_profile</a>(...)</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L68-L135">profile_api_set_user_profile</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7888,7 +7888,7 @@ client.profiles.profile_api_set_user_profile(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_set_user_profile_async</a>(...) -> TaskDto</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L137-L205">profile_api_set_user_profile_async</a>(...) -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -7972,7 +7972,7 @@ client.profiles.profile_api_set_user_profile_async(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_get_user_balance</a>(...) -> str</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L207-L238">profile_api_get_user_balance</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -8045,7 +8045,7 @@ client.profiles.profile_api_get_user_balance(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_restore_user_profile</a>(...) -> TaskDto</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L240-L308">profile_api_restore_user_profile</a>(...) -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -8129,7 +8129,7 @@ client.profiles.profile_api_restore_user_profile(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_restore_topic</a>(...) -> TaskDto</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L310-L378">profile_api_restore_topic</a>(...) -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -8213,7 +8213,7 @@ client.profiles.profile_api_restore_topic(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_validate_did_document</a>(...) -> DidDocumentStatusDto</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L380-L456">profile_api_validate_did_document</a>(...) -> DidDocumentStatusDto</code></summary>
 <dl>
 <dd>
 
@@ -8296,7 +8296,7 @@ client.profiles.profile_api_validate_did_document(
 </dl>
 </details>
 
-<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py">profile_api_validate_did_keys</a>(...) -> DidKeyStatusDto</code></summary>
+<details><summary><code>client.profiles.<a href="src/fern/profiles/client.py#L458-L504">profile_api_validate_did_keys</a>(...) -> DidKeyStatusDto</code></summary>
 <dl>
 <dd>
 
@@ -8396,7 +8396,7 @@ client.profiles.profile_api_validate_did_keys(
 </details>
 
 ## Policies
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">return_a_list_of_all_policies</a>(...) -> typing.List[GetPoliciesResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L54-L92">return_a_list_of_all_policies</a>(...) -> typing.List[GetPoliciesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8475,7 +8475,7 @@ client.policies.return_a_list_of_all_policies()
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">creates_a_new_policy</a>(...) -> Task</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L94-L184">creates_a_new_policy</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -8556,7 +8556,7 @@ client.policies.creates_a_new_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_migrate_data</a>(...) -> typing.List[PolicyApiMigrateDataResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L186-L280">policy_api_migrate_data</a>(...) -> typing.List[PolicyApiMigrateDataResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -8659,7 +8659,7 @@ client.policies.policy_api_migrate_data(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_migrate_data_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L282-L376">policy_api_migrate_data_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8762,7 +8762,7 @@ client.policies.policy_api_migrate_data_async(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_update_policy_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L378-L407">policy_api_update_policy_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8821,7 +8821,7 @@ client.policies.policy_api_update_policy_async(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_delete_policy_async</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L409-L437">policy_api_delete_policy_async</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8880,7 +8880,7 @@ client.policies.policy_api_delete_policy_async(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">retrieves_policy_configuration</a>(...) -> GetPoliciesPolicyIdResponse</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L439-L470">retrieves_policy_configuration</a>(...) -> GetPoliciesPolicyIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -8953,7 +8953,7 @@ client.policies.retrieves_policy_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">updates_policy_configuration</a>(...) -> PolicyConfig</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L472-L568">updates_policy_configuration</a>(...) -> PolicyConfig</code></summary>
 <dl>
 <dd>
 
@@ -9043,7 +9043,7 @@ client.policies.updates_policy_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">publishes_the_policy_onto_ipfs</a>(...) -> PublishPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L570-L609">publishes_the_policy_onto_ipfs</a>(...) -> PublishPolicy</code></summary>
 <dl>
 <dd>
 
@@ -9124,7 +9124,7 @@ client.policies.publishes_the_policy_onto_ipfs(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">publishes_the_policy_with_the_specified_internal_policy_id_onto_ipfs_sends_a_message_featuring_its_ipfs_cid_into_the_corresponding_hedera_topic</a>(...) -> Task</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L611-L650">publishes_the_policy_with_the_specified_internal_policy_id_onto_ipfs_sends_a_message_featuring_its_ipfs_cid_into_the_corresponding_hedera_topic</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -9205,7 +9205,7 @@ client.policies.publishes_the_policy_with_the_specified_internal_policy_id_onto_
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">dry_run_policy</a>(...) -> PublishPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L652-L683">dry_run_policy</a>(...) -> PublishPolicy</code></summary>
 <dl>
 <dd>
 
@@ -9278,7 +9278,7 @@ client.policies.dry_run_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_discontinue_policy</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L685-L724">policy_api_discontinue_policy</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -9359,7 +9359,7 @@ client.policies.policy_api_discontinue_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">return_policy_to_editing</a>(...) -> PublishPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L726-L757">return_policy_to_editing</a>(...) -> PublishPolicy</code></summary>
 <dl>
 <dd>
 
@@ -9432,7 +9432,7 @@ client.policies.return_policy_to_editing(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">validates_policy</a>(...) -> ValidatePolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L759-L849">validates_policy</a>(...) -> ValidatePolicy</code></summary>
 <dl>
 <dd>
 
@@ -9513,7 +9513,7 @@ client.policies.validates_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_policy_navigation</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L851-L882">policy_api_get_policy_navigation</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -9586,7 +9586,7 @@ client.policies.policy_api_get_policy_navigation(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">returns_a_list_of_groups_the_user_is_a_member_of</a>(...) -> typing.List[GetPoliciesPolicyIdGroupsResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L884-L917">returns_a_list_of_groups_the_user_is_a_member_of</a>(...) -> typing.List[GetPoliciesPolicyIdGroupsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -9659,7 +9659,7 @@ client.policies.returns_a_list_of_groups_the_user_is_a_member_of(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">makes_the_selected_group_active</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L919-L957">makes_the_selected_group_active</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -9740,7 +9740,7 @@ client.policies.makes_the_selected_group_active(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_policy_documents</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L959-L1020">policy_api_get_policy_documents</a>(...) -> typing.List[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -9849,7 +9849,7 @@ client.policies.policy_api_get_policy_documents(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_download_policy_data</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1022-L1053">policy_api_download_policy_data</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -9922,7 +9922,7 @@ client.policies.policy_api_download_policy_data(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_upload_policy_data</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1055-L1085">policy_api_upload_policy_data</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -9995,7 +9995,7 @@ client.policies.policy_api_upload_policy_data(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_tag_block_map</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1087-L1118">policy_api_get_tag_block_map</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10068,7 +10068,7 @@ client.policies.policy_api_get_tag_block_map(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_download_virtual_keys</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1120-L1151">policy_api_download_virtual_keys</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -10141,7 +10141,7 @@ client.policies.policy_api_download_virtual_keys(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_upload_virtual_keys</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1153-L1188">policy_api_upload_virtual_keys</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10223,7 +10223,7 @@ client.policies.policy_api_upload_virtual_keys(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">retrieves_data_for_the_policy_root_block</a>(...) -> PolicyBlock</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1190-L1223">retrieves_data_for_the_policy_root_block</a>(...) -> PolicyBlock</code></summary>
 <dl>
 <dd>
 
@@ -10296,7 +10296,7 @@ client.policies.retrieves_data_for_the_policy_root_block(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">requests_block_data</a>(...) -> PolicyBlockData</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1225-L1260">requests_block_data</a>(...) -> PolicyBlockData</code></summary>
 <dl>
 <dd>
 
@@ -10378,7 +10378,7 @@ client.policies.requests_block_data(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">sends_data_to_the_specified_block</a>(...) -> PolicyBlockData</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1262-L1307">sends_data_to_the_specified_block</a>(...) -> PolicyBlockData</code></summary>
 <dl>
 <dd>
 
@@ -10471,7 +10471,7 @@ client.policies.sends_data_to_the_specified_block(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_blocks_by_tag_name</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1309-L1346">policy_api_get_blocks_by_tag_name</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10553,7 +10553,7 @@ client.policies.policy_api_get_blocks_by_tag_name(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_set_blocks_by_tag_name</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1348-L1385">policy_api_set_blocks_by_tag_name</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10635,7 +10635,7 @@ client.policies.policy_api_set_blocks_by_tag_name(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_block_by_tag_name</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1387-L1424">policy_api_get_block_by_tag_name</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10717,7 +10717,7 @@ client.policies.policy_api_get_block_by_tag_name(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_block_parents</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1426-L1458">policy_api_get_block_parents</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -10785,7 +10785,7 @@ client.policies.policy_api_get_block_parents(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">return_policy_and_its_artifacts_in_a_zip_file_format_for_the_specified_policy</a>(...) -> ExportPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1460-L1493">return_policy_and_its_artifacts_in_a_zip_file_format_for_the_specified_policy</a>(...) -> ExportPolicy</code></summary>
 <dl>
 <dd>
 
@@ -10858,7 +10858,7 @@ client.policies.return_policy_and_its_artifacts_in_a_zip_file_format_for_the_spe
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">return_heder_message_id_for_the_specified_published_policy</a>(...) -> ExportPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1495-L1528">return_heder_message_id_for_the_specified_published_policy</a>(...) -> ExportPolicy</code></summary>
 <dl>
 <dd>
 
@@ -10931,7 +10931,7 @@ client.policies.return_heder_message_id_for_the_specified_published_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_policy_export_xlsx</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1530-L1561">policy_api_get_policy_export_xlsx</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -11004,7 +11004,7 @@ client.policies.policy_api_get_policy_export_xlsx(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">imports_new_policy_from_ipfs</a>(...) -> typing.List[PolicyConfig]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1563-L1602">imports_new_policy_from_ipfs</a>(...) -> typing.List[PolicyConfig]</code></summary>
 <dl>
 <dd>
 
@@ -11085,7 +11085,7 @@ client.policies.imports_new_policy_from_ipfs(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">imports_new_policy_and_all_associated_artifacts_from_ipfs_into_the_local_db</a>(...) -> Task</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1604-L1634">imports_new_policy_and_all_associated_artifacts_from_ipfs_into_the_local_db</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -11156,7 +11156,7 @@ client.policies.imports_new_policy_and_all_associated_artifacts_from_ipfs_into_t
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_preview_from_ipfs</a>(...) -> PreviewPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1636-L1664">policy_preview_from_ipfs</a>(...) -> PreviewPolicy</code></summary>
 <dl>
 <dd>
 
@@ -11227,7 +11227,7 @@ client.policies.policy_preview_from_ipfs()
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">previews_the_policy_from_ipfs_without_loading_it_into_the_local_db</a>(...) -> Task</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1666-L1696">previews_the_policy_from_ipfs_without_loading_it_into_the_local_db</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -11298,7 +11298,7 @@ client.policies.previews_the_policy_from_ipfs_without_loading_it_into_the_local_
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">imports_new_policy_from_a_zip_file</a>(...) -> typing.List[PolicyConfig]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1698-L1734">imports_new_policy_from_a_zip_file</a>(...) -> typing.List[PolicyConfig]</code></summary>
 <dl>
 <dd>
 
@@ -11371,7 +11371,7 @@ client.policies.imports_new_policy_from_a_zip_file(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_import_policy_from_file_with_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1736-L1781">policy_api_import_policy_from_file_with_metadata</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11461,7 +11461,7 @@ client.policies.policy_api_import_policy_from_file_with_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">imports_new_policy_and_all_associated_artifacts_such_as_schemas_and_v_cs_from_the_provided_zip_file_into_the_local_db</a>() -> Task</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1783-L1811">imports_new_policy_and_all_associated_artifacts_such_as_schemas_and_v_cs_from_the_provided_zip_file_into_the_local_db</a>() -> Task</code></summary>
 <dl>
 <dd>
 
@@ -11524,7 +11524,7 @@ client.policies.imports_new_policy_and_all_associated_artifacts_such_as_schemas_
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_import_policy_from_file_with_metadata_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1813-L1858">policy_api_import_policy_from_file_with_metadata_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11614,7 +11614,7 @@ client.policies.policy_api_import_policy_from_file_with_metadata_async(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_preview_from_a_zip_file</a>() -> PreviewPolicy</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1860-L1886">policy_preview_from_a_zip_file</a>() -> PreviewPolicy</code></summary>
 <dl>
 <dd>
 
@@ -11677,7 +11677,7 @@ client.policies.policy_preview_from_a_zip_file()
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_import_policy_from_xlsx</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1888-L1924">policy_api_import_policy_from_xlsx</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11759,7 +11759,7 @@ client.policies.policy_api_import_policy_from_xlsx(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_import_policy_from_xlsx_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1926-L1962">policy_api_import_policy_from_xlsx_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11841,7 +11841,7 @@ client.policies.policy_api_import_policy_from_xlsx_async(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_import_policy_from_xlsx_preview</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1964-L1996">policy_api_import_policy_from_xlsx_preview</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11914,7 +11914,7 @@ client.policies.policy_api_import_policy_from_xlsx_preview(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_block_about</a>()</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L1998-L2019">policy_api_get_block_about</a>()</code></summary>
 <dl>
 <dd>
 
@@ -11963,7 +11963,7 @@ client.policies.policy_api_get_block_about()
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">returns_all_virtual_users</a>(...) -> typing.List[GetPoliciesPolicyIdDryRunUsersResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2021-L2052">returns_all_virtual_users</a>(...) -> typing.List[GetPoliciesPolicyIdDryRunUsersResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12036,7 +12036,7 @@ client.policies.returns_all_virtual_users(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">create_a_new_virtual_account</a>(...) -> typing.List[PostPoliciesPolicyIdDryRunUserResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2054-L2085">create_a_new_virtual_account</a>(...) -> typing.List[PostPoliciesPolicyIdDryRunUserResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12109,7 +12109,7 @@ client.policies.create_a_new_virtual_account(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">logs_virtual_user_into_the_system</a>(...) -> typing.List[PostPoliciesPolicyIdDryRunLoginResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2087-L2126">logs_virtual_user_into_the_system</a>(...) -> typing.List[PostPoliciesPolicyIdDryRunLoginResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12190,7 +12190,7 @@ client.policies.logs_virtual_user_into_the_system(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">restarts_the_execution_of_the_policy</a>(...)</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2128-L2158">restarts_the_execution_of_the_policy</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -12263,7 +12263,7 @@ client.policies.restarts_the_execution_of_the_policy(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">returns_lists_of_virtual_transactions</a>(...) -> typing.List[GetPoliciesPolicyIdDryRunTransactionsResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2160-L2191">returns_lists_of_virtual_transactions</a>(...) -> typing.List[GetPoliciesPolicyIdDryRunTransactionsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12336,7 +12336,7 @@ client.policies.returns_lists_of_virtual_transactions(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">returns_lists_of_virtual_artifacts</a>(...) -> typing.List[GetPoliciesPolicyIdDryRunIpfsResponseItem]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2193-L2224">returns_lists_of_virtual_artifacts</a>(...) -> typing.List[GetPoliciesPolicyIdDryRunIpfsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -12409,7 +12409,7 @@ client.policies.returns_lists_of_virtual_artifacts(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">requests_multi_policy_config</a>(...) -> MultiPolicyConfig</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2226-L2257">requests_multi_policy_config</a>(...) -> MultiPolicyConfig</code></summary>
 <dl>
 <dd>
 
@@ -12482,7 +12482,7 @@ client.policies.requests_multi_policy_config(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">creates_multi_policy_config</a>(...) -> MultiPolicyConfig</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2259-L2306">creates_multi_policy_config</a>(...) -> MultiPolicyConfig</code></summary>
 <dl>
 <dd>
 
@@ -12573,7 +12573,7 @@ client.policies.creates_multi_policy_config(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_policy_categories_async</a>() -> typing.List[PolicyCategoryDto]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2308-L2334">policy_api_get_policy_categories_async</a>() -> typing.List[PolicyCategoryDto]</code></summary>
 <dl>
 <dd>
 
@@ -12636,7 +12636,7 @@ client.policies.policy_api_get_policy_categories_async()
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">policy_api_get_policies_by_category</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2336-L2368">policy_api_get_policies_by_category</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12709,7 +12709,7 @@ client.policies.policy_api_get_policies_by_category(
 </dl>
 </details>
 
-<details><summary><code>client.policies.<a href="src/fern/policies/client.py">requests_block_id_from_a_policy_by_tag</a>(...) -> GetPoliciesPolicyIdTagTagResponse</code></summary>
+<details><summary><code>client.policies.<a href="src/fern/policies/client.py#L2370-L2407">requests_block_id_from_a_policy_by_tag</a>(...) -> GetPoliciesPolicyIdTagTagResponse</code></summary>
 <dl>
 <dd>
 
@@ -12792,7 +12792,7 @@ client.policies.requests_block_id_from_a_policy_by_tag(
 </details>
 
 ## Schema
-<details><summary><code>client.schema.<a href="src/fern/schema/client.py">returns_schema_by_schema_id</a>(...) -> Schema</code></summary>
+<details><summary><code>client.schema.<a href="src/fern/schema/client.py#L28-L59">returns_schema_by_schema_id</a>(...) -> Schema</code></summary>
 <dl>
 <dd>
 
@@ -12865,7 +12865,7 @@ client.schema.returns_schema_by_schema_id(
 </dl>
 </details>
 
-<details><summary><code>client.schema.<a href="src/fern/schema/client.py">single_schema_api_get_schema_parents</a>(...) -> typing.List[SchemaDto]</code></summary>
+<details><summary><code>client.schema.<a href="src/fern/schema/client.py#L61-L92">single_schema_api_get_schema_parents</a>(...) -> typing.List[SchemaDto]</code></summary>
 <dl>
 <dd>
 
@@ -12938,7 +12938,7 @@ client.schema.single_schema_api_get_schema_parents(
 </dl>
 </details>
 
-<details><summary><code>client.schema.<a href="src/fern/schema/client.py">single_schema_api_get_schema_tree</a>(...) -> SingleSchemaApiGetSchemaTreeResponse</code></summary>
+<details><summary><code>client.schema.<a href="src/fern/schema/client.py#L94-L125">single_schema_api_get_schema_tree</a>(...) -> SingleSchemaApiGetSchemaTreeResponse</code></summary>
 <dl>
 <dd>
 
@@ -13012,7 +13012,7 @@ client.schema.single_schema_api_get_schema_tree(
 </details>
 
 ## Schemas
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">returns_all_schemas</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L37-L75">returns_all_schemas</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -13091,7 +13091,7 @@ client.schemas.returns_all_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">returns_all_schemas_by_topic_id</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L77-L121">returns_all_schemas_by_topic_id</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -13180,7 +13180,7 @@ client.schemas.returns_all_schemas_by_topic_id(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">create_new_schema</a>(...) -> Task</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L123-L217">create_new_schema</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -13266,7 +13266,7 @@ client.schemas.create_new_schema(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_get_schema_by_type</a>(...) -> SchemaDto</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L219-L250">schema_api_get_schema_by_type</a>(...) -> SchemaDto</code></summary>
 <dl>
 <dd>
 
@@ -13339,7 +13339,7 @@ client.schemas.schema_api_get_schema_by_type(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_get_all</a>() -> typing.List[SchemaDto]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L252-L276">schema_api_get_all</a>() -> typing.List[SchemaDto]</code></summary>
 <dl>
 <dd>
 
@@ -13402,7 +13402,7 @@ client.schemas.schema_api_get_all()
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_get_sub</a>(...) -> typing.List[SchemaDto]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L278-L316">schema_api_get_sub</a>(...) -> typing.List[SchemaDto]</code></summary>
 <dl>
 <dd>
 
@@ -13481,7 +13481,7 @@ client.schemas.schema_api_get_sub()
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_copy_schema_async</a>(...) -> TaskDto</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L318-L348">schema_api_copy_schema_async</a>(...) -> TaskDto</code></summary>
 <dl>
 <dd>
 
@@ -13554,7 +13554,7 @@ client.schemas.schema_api_copy_schema_async(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">updates_the_schema</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L350-L444">updates_the_schema</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -13640,7 +13640,7 @@ client.schemas.updates_the_schema(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">deletes_the_schema</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L446-L477">deletes_the_schema</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -13713,7 +13713,7 @@ client.schemas.deletes_the_schema(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">publishes_the_schema</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L479-L516">publishes_the_schema</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -13794,7 +13794,7 @@ client.schemas.publishes_the_schema(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">publishes_the_schema_with_the_provided_internal_schema_id_onto_ipfs_sends_a_message_featuring_ipfs_cid_into_the_corresponding_hedera_topic</a>(...) -> Task</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L518-L557">publishes_the_schema_with_the_provided_internal_schema_id_onto_ipfs_sends_a_message_featuring_ipfs_cid_into_the_corresponding_hedera_topic</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -13875,7 +13875,7 @@ client.schemas.publishes_the_schema_with_the_provided_internal_schema_id_onto_ip
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_preview_from_ipfs</a>(...) -> Task</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L559-L587">schema_preview_from_ipfs</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -13946,7 +13946,7 @@ client.schemas.schema_preview_from_ipfs()
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_preview_from_a_zip_file</a>() -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L589-L615">schema_preview_from_a_zip_file</a>() -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -14009,7 +14009,7 @@ client.schemas.schema_preview_from_a_zip_file()
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">imports_new_schema_from_ipfs</a>(...) -> Task</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L617-L656">imports_new_schema_from_ipfs</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -14090,7 +14090,7 @@ client.schemas.imports_new_schema_from_ipfs(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">imports_new_schema_from_a_zip_file</a>(...) -> Task</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L658-L689">imports_new_schema_from_a_zip_file</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -14163,7 +14163,7 @@ client.schemas.imports_new_schema_from_a_zip_file(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">list_hedera_message_i_ds_of_published_schemas</a>(...) -> ExportSchema</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L691-L724">list_hedera_message_i_ds_of_published_schemas</a>(...) -> ExportSchema</code></summary>
 <dl>
 <dd>
 
@@ -14236,7 +14236,7 @@ client.schemas.list_hedera_message_i_ds_of_published_schemas(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">return_zip_file_with_schemas</a>(...)</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L726-L756">return_zip_file_with_schemas</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14309,7 +14309,7 @@ client.schemas.return_zip_file_with_schemas(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">returns_all_system_schemas_by_username</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L758-L802">returns_all_system_schemas_by_username</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -14398,7 +14398,7 @@ client.schemas.returns_all_system_schemas_by_username(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">creates_new_system_schema</a>(...)</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L804-L897">creates_new_system_schema</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14484,7 +14484,7 @@ client.schemas.creates_new_system_schema(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">returns_schema_by_schema_type</a>(...) -> Schema</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L899-L933">returns_schema_by_schema_type</a>(...) -> Schema</code></summary>
 <dl>
 <dd>
 
@@ -14557,7 +14557,7 @@ client.schemas.returns_schema_by_schema_type(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_get_policy_export_xlsx</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L935-L966">schema_api_get_policy_export_xlsx</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -14630,7 +14630,7 @@ client.schemas.schema_api_get_policy_export_xlsx(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_import_policy_from_xlsx</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L968-L1004">schema_api_import_policy_from_xlsx</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14712,7 +14712,7 @@ client.schemas.schema_api_import_policy_from_xlsx(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_import_policy_from_xlsx_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L1006-L1042">schema_api_import_policy_from_xlsx_async</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14794,7 +14794,7 @@ client.schemas.schema_api_import_policy_from_xlsx_async(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_import_policy_from_xlsx_preview</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L1044-L1076">schema_api_import_policy_from_xlsx_preview</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14867,7 +14867,7 @@ client.schemas.schema_api_import_policy_from_xlsx_preview(
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">schema_api_export_template</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L1078-L1104">schema_api_export_template</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -14930,7 +14930,7 @@ client.schemas.schema_api_export_template()
 </dl>
 </details>
 
-<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py">returns_schema_by_type</a>(...) -> Schema</code></summary>
+<details><summary><code>client.schemas.<a href="src/fern/schemas/client.py#L1106-L1135">returns_schema_by_type</a>(...) -> Schema</code></summary>
 <dl>
 <dd>
 
@@ -15004,7 +15004,7 @@ client.schemas.returns_schema_by_type(
 </details>
 
 ## Settings
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">returns_current_settings</a>() -> CommonSettings</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L26-L50">returns_current_settings</a>() -> CommonSettings</code></summary>
 <dl>
 <dd>
 
@@ -15067,7 +15067,7 @@ client.settings.returns_current_settings()
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">set_settings</a>()</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L52-L75">set_settings</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15130,7 +15130,7 @@ client.settings.set_settings()
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">returns_current_environment_name</a>() -> str</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L77-L101">returns_current_environment_name</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -15193,7 +15193,7 @@ client.settings.returns_current_environment_name()
 </dl>
 </details>
 
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">settings_api_get_about</a>()</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L103-L124">settings_api_get_about</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15243,7 +15243,7 @@ client.settings.settings_api_get_about()
 </details>
 
 ## Tags
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">tags_api_set_tags</a>()</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L38-L59">tags_api_set_tags</a>()</code></summary>
 <dl>
 <dd>
 
@@ -15292,7 +15292,7 @@ client.tags.tags_api_set_tags()
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">search_tags</a>(...) -> PostTagsSearchResponse</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L61-L96">search_tags</a>(...) -> PostTagsSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -15369,7 +15369,7 @@ client.tags.search_tags(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">delete_tag</a>(...) -> bool</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L98-L127">delete_tag</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -15442,7 +15442,7 @@ client.tags.delete_tag(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">synchronization</a>(...) -> TagMap</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L129-L166">synchronization</a>(...) -> TagMap</code></summary>
 <dl>
 <dd>
 
@@ -15524,7 +15524,7 @@ client.tags.synchronization(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">returns_all_schemas</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L168-L206">returns_all_schemas</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -15603,7 +15603,7 @@ client.tags.returns_all_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">creates_new_schema</a>(...) -> Schema</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L208-L296">creates_new_schema</a>(...) -> Schema</code></summary>
 <dl>
 <dd>
 
@@ -15680,7 +15680,7 @@ client.tags.creates_new_schema(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">updates_the_schema</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L298-L392">updates_the_schema</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -15766,7 +15766,7 @@ client.tags.updates_the_schema(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">delete_the_schema</a>(...) -> bool</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L394-L423">delete_the_schema</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -15839,7 +15839,7 @@ client.tags.delete_the_schema(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">publishes_the_schema</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L425-L456">publishes_the_schema</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -15912,7 +15912,7 @@ client.tags.publishes_the_schema(
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">return_a_list_of_all_published_schemas</a>() -> typing.List[Schema]</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L458-L484">return_a_list_of_all_published_schemas</a>() -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -15975,7 +15975,7 @@ client.tags.return_a_list_of_all_published_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.tags.<a href="src/fern/tags/client.py">creates_new_tag</a>(...) -> Tag</code></summary>
+<details><summary><code>client.tags.<a href="src/fern/tags/client.py#L486-L580">creates_new_tag</a>(...) -> Tag</code></summary>
 <dl>
 <dd>
 
@@ -16051,7 +16051,7 @@ client.tags.creates_new_tag(
 </details>
 
 ## Tasks
-<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py">returns_task_statuses</a>(...) -> TaskStatus</code></summary>
+<details><summary><code>client.tasks.<a href="src/fern/tasks/client.py#L26-L57">returns_task_statuses</a>(...) -> TaskStatus</code></summary>
 <dl>
 <dd>
 
@@ -16125,7 +16125,7 @@ client.tasks.returns_task_statuses(
 </details>
 
 ## Tokens
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">return_a_list_of_tokens</a>() -> typing.List[GetTokensResponseItem]</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L31-L57">return_a_list_of_tokens</a>() -> typing.List[GetTokensResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -16188,7 +16188,7 @@ client.tokens.return_a_list_of_tokens()
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">creates_a_new_token</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L59-L140">creates_a_new_token</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16270,7 +16270,7 @@ client.tokens.creates_a_new_token(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">tokens_api_delete_token_async</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L142-L170">tokens_api_delete_token_async</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16329,7 +16329,7 @@ client.tokens.tokens_api_delete_token_async(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">associates_the_user_with_the_provided_hedera_token</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L172-L205">associates_the_user_with_the_provided_hedera_token</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16402,7 +16402,7 @@ client.tokens.associates_the_user_with_the_provided_hedera_token(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">associate_the_user_with_the_provided_hedera_token</a>(...)</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L207-L239">associate_the_user_with_the_provided_hedera_token</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -16475,7 +16475,7 @@ client.tokens.associate_the_user_with_the_provided_hedera_token(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">disassociates_the_user_with_the_provided_hedera_token</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L241-L274">disassociates_the_user_with_the_provided_hedera_token</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16548,7 +16548,7 @@ client.tokens.disassociates_the_user_with_the_provided_hedera_token(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">sets_the_kyc_flag_for_the_user</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L276-L311">sets_the_kyc_flag_for_the_user</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16630,7 +16630,7 @@ client.tokens.sets_the_kyc_flag_for_the_user(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">unsets_the_kyc_flag_for_the_user</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L313-L350">unsets_the_kyc_flag_for_the_user</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16712,7 +16712,7 @@ client.tokens.unsets_the_kyc_flag_for_the_user(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">freeze_transfers_of_the_specified_token_for_the_user</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L352-L389">freeze_transfers_of_the_specified_token_for_the_user</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16794,7 +16794,7 @@ client.tokens.freeze_transfers_of_the_specified_token_for_the_user(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">unfreezes_transfers_of_the_specified_token_for_the_user</a>(...) -> Task</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L391-L428">unfreezes_transfers_of_the_specified_token_for_the_user</a>(...) -> Task</code></summary>
 <dl>
 <dd>
 
@@ -16876,7 +16876,7 @@ client.tokens.unfreezes_transfers_of_the_specified_token_for_the_user(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">get_tokens_token_id_username_info</a>(...) -> TokenInfo</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L430-L467">get_tokens_token_id_username_info</a>(...) -> TokenInfo</code></summary>
 <dl>
 <dd>
 
@@ -16958,7 +16958,7 @@ client.tokens.get_tokens_token_id_username_info(
 </dl>
 </details>
 
-<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py">tokens_api_get_token_serials</a>(...) -> typing.List[float]</code></summary>
+<details><summary><code>client.tokens.<a href="src/fern/tokens/client.py#L469-L500">tokens_api_get_token_serials</a>(...) -> typing.List[float]</code></summary>
 <dl>
 <dd>
 
@@ -17032,7 +17032,7 @@ client.tokens.tokens_api_get_token_serials(
 </details>
 
 ## Themes
-<details><summary><code>client.themes.<a href="src/fern/themes/client.py">return_a_list_of_all_themes</a>() -> typing.List[Theme]</code></summary>
+<details><summary><code>client.themes.<a href="src/fern/themes/client.py#L30-L56">return_a_list_of_all_themes</a>() -> typing.List[Theme]</code></summary>
 <dl>
 <dd>
 
@@ -17095,7 +17095,7 @@ client.themes.return_a_list_of_all_themes()
 </dl>
 </details>
 
-<details><summary><code>client.themes.<a href="src/fern/themes/client.py">creates_a_new_theme</a>(...)</code></summary>
+<details><summary><code>client.themes.<a href="src/fern/themes/client.py#L58-L113">creates_a_new_theme</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17180,7 +17180,7 @@ client.themes.creates_a_new_theme(
 </dl>
 </details>
 
-<details><summary><code>client.themes.<a href="src/fern/themes/client.py">updates_theme_configuration</a>(...) -> Theme</code></summary>
+<details><summary><code>client.themes.<a href="src/fern/themes/client.py#L115-L176">updates_theme_configuration</a>(...) -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -17274,7 +17274,7 @@ client.themes.updates_theme_configuration(
 </dl>
 </details>
 
-<details><summary><code>client.themes.<a href="src/fern/themes/client.py">deletes_the_theme</a>(...) -> bool</code></summary>
+<details><summary><code>client.themes.<a href="src/fern/themes/client.py#L178-L207">deletes_the_theme</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -17347,7 +17347,7 @@ client.themes.deletes_the_theme(
 </dl>
 </details>
 
-<details><summary><code>client.themes.<a href="src/fern/themes/client.py">imports_new_theme_from_a_zip_file</a>() -> Theme</code></summary>
+<details><summary><code>client.themes.<a href="src/fern/themes/client.py#L209-L233">imports_new_theme_from_a_zip_file</a>() -> Theme</code></summary>
 <dl>
 <dd>
 
@@ -17410,7 +17410,7 @@ client.themes.imports_new_theme_from_a_zip_file()
 </dl>
 </details>
 
-<details><summary><code>client.themes.<a href="src/fern/themes/client.py">returns_a_zip_file_containing_the_theme</a>(...)</code></summary>
+<details><summary><code>client.themes.<a href="src/fern/themes/client.py#L235-L265">returns_a_zip_file_containing_the_theme</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -17484,7 +17484,7 @@ client.themes.returns_a_zip_file_containing_the_theme(
 </details>
 
 ## Trustchains
-<details><summary><code>client.trustchains.<a href="src/fern/trustchains/client.py">returns_a_list_of_all_vp_documents</a>(...) -> typing.List[VerifiablePresentation]</code></summary>
+<details><summary><code>client.trustchains.<a href="src/fern/trustchains/client.py#L27-L77">returns_a_list_of_all_vp_documents</a>(...) -> typing.List[VerifiablePresentation]</code></summary>
 <dl>
 <dd>
 
@@ -17579,7 +17579,7 @@ client.trustchains.returns_a_list_of_all_vp_documents()
 </dl>
 </details>
 
-<details><summary><code>client.trustchains.<a href="src/fern/trustchains/client.py">returns_a_trustchain_for_a_vp_document</a>(...) -> TrustChains</code></summary>
+<details><summary><code>client.trustchains.<a href="src/fern/trustchains/client.py#L79-L110">returns_a_trustchain_for_a_vp_document</a>(...) -> TrustChains</code></summary>
 <dl>
 <dd>
 
@@ -17653,7 +17653,7 @@ client.trustchains.returns_a_trustchain_for_a_vp_document(
 </details>
 
 ## Wizard
-<details><summary><code>client.wizard.<a href="src/fern/wizard/client.py">creates_a_new_policy</a>(...) -> PostWizardPolicyResponse</code></summary>
+<details><summary><code>client.wizard.<a href="src/fern/wizard/client.py#L34-L86">creates_a_new_policy</a>(...) -> PostWizardPolicyResponse</code></summary>
 <dl>
 <dd>
 
@@ -17735,7 +17735,7 @@ client.wizard.creates_a_new_policy(
 </dl>
 </details>
 
-<details><summary><code>client.wizard.<a href="src/fern/wizard/client.py">wizard_api_set_policy_async</a>(...) -> bool</code></summary>
+<details><summary><code>client.wizard.<a href="src/fern/wizard/client.py#L88-L124">wizard_api_set_policy_async</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -17814,7 +17814,7 @@ client.wizard.wizard_api_set_policy_async()
 </dl>
 </details>
 
-<details><summary><code>client.wizard.<a href="src/fern/wizard/client.py">get_policy_config</a>(...) -> PostWizardPolicyIdConfigResponse</code></summary>
+<details><summary><code>client.wizard.<a href="src/fern/wizard/client.py#L126-L188">get_policy_config</a>(...) -> PostWizardPolicyIdConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -17906,7 +17906,7 @@ client.wizard.get_policy_config(
 </details>
 
 ## Branding
-<details><summary><code>client.branding.<a href="src/fern/branding/client.py">branding_api_get_branding</a>()</code></summary>
+<details><summary><code>client.branding.<a href="src/fern/branding/client.py#L25-L46">branding_api_get_branding</a>()</code></summary>
 <dl>
 <dd>
 
@@ -17955,7 +17955,7 @@ client.branding.branding_api_get_branding()
 </dl>
 </details>
 
-<details><summary><code>client.branding.<a href="src/fern/branding/client.py">branding_api_set_branding</a>()</code></summary>
+<details><summary><code>client.branding.<a href="src/fern/branding/client.py#L48-L69">branding_api_set_branding</a>()</code></summary>
 <dl>
 <dd>
 
@@ -18005,7 +18005,7 @@ client.branding.branding_api_set_branding()
 </details>
 
 ## Suggestions
-<details><summary><code>client.suggestions.<a href="src/fern/suggestions/client.py">suggestions_api_policy_suggestions</a>(...) -> SuggestionsOutputDto</code></summary>
+<details><summary><code>client.suggestions.<a href="src/fern/suggestions/client.py#L31-L69">suggestions_api_policy_suggestions</a>(...) -> SuggestionsOutputDto</code></summary>
 <dl>
 <dd>
 
@@ -18087,7 +18087,7 @@ client.suggestions.suggestions_api_policy_suggestions(
 </dl>
 </details>
 
-<details><summary><code>client.suggestions.<a href="src/fern/suggestions/client.py">suggestions_api_get_policy_suggestions_config</a>() -> SuggestionsConfigDto</code></summary>
+<details><summary><code>client.suggestions.<a href="src/fern/suggestions/client.py#L71-L97">suggestions_api_get_policy_suggestions_config</a>() -> SuggestionsConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -18150,7 +18150,7 @@ client.suggestions.suggestions_api_get_policy_suggestions_config()
 </dl>
 </details>
 
-<details><summary><code>client.suggestions.<a href="src/fern/suggestions/client.py">suggestions_api_set_policy_suggestions_config</a>(...) -> SuggestionsConfigDto</code></summary>
+<details><summary><code>client.suggestions.<a href="src/fern/suggestions/client.py#L99-L135">suggestions_api_set_policy_suggestions_config</a>(...) -> SuggestionsConfigDto</code></summary>
 <dl>
 <dd>
 
@@ -18228,7 +18228,7 @@ client.suggestions.suggestions_api_set_policy_suggestions_config(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">notifications_api_get_all_notifications</a>() -> typing.List[NotificationDto]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L27-L53">notifications_api_get_all_notifications</a>() -> typing.List[NotificationDto]</code></summary>
 <dl>
 <dd>
 
@@ -18291,7 +18291,7 @@ client.notifications.notifications_api_get_all_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">notifications_api_get_new_notifications</a>() -> typing.List[NotificationDto]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L55-L81">notifications_api_get_new_notifications</a>() -> typing.List[NotificationDto]</code></summary>
 <dl>
 <dd>
 
@@ -18354,7 +18354,7 @@ client.notifications.notifications_api_get_new_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">notifications_api_get_progresses</a>() -> typing.List[ProgressDto]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L83-L109">notifications_api_get_progresses</a>() -> typing.List[ProgressDto]</code></summary>
 <dl>
 <dd>
 
@@ -18417,7 +18417,7 @@ client.notifications.notifications_api_get_progresses()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">notifications_api_read_all</a>() -> typing.List[NotificationDto]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L111-L137">notifications_api_read_all</a>() -> typing.List[NotificationDto]</code></summary>
 <dl>
 <dd>
 
@@ -18480,7 +18480,7 @@ client.notifications.notifications_api_read_all()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">notifications_api_delete</a>(...) -> float</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L139-L169">notifications_api_delete</a>(...) -> float</code></summary>
 <dl>
 <dd>
 
@@ -18554,7 +18554,7 @@ client.notifications.notifications_api_delete(
 </details>
 
 ## Projects
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">projects_api_project_search</a>(...) -> typing.List[ProjectDto]</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L31-L61">projects_api_project_search</a>(...) -> typing.List[ProjectDto]</code></summary>
 <dl>
 <dd>
 
@@ -18627,7 +18627,7 @@ client.projects.projects_api_project_search(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">projects_api_compare_documents_v2</a>(...) -> CompareDocumentsDtov2</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L63-L109">projects_api_compare_documents_v2</a>(...) -> CompareDocumentsDtov2</code></summary>
 <dl>
 <dd>
 
@@ -18702,7 +18702,7 @@ client.projects.projects_api_compare_documents_v2(
 </dl>
 </details>
 
-<details><summary><code>client.projects.<a href="src/fern/projects/client.py">projects_api_get_policy_properties</a>() -> typing.List[PropertiesDto]</code></summary>
+<details><summary><code>client.projects.<a href="src/fern/projects/client.py#L111-L137">projects_api_get_policy_properties</a>() -> typing.List[PropertiesDto]</code></summary>
 <dl>
 <dd>
 
@@ -18766,7 +18766,7 @@ client.projects.projects_api_get_policy_properties()
 </details>
 
 ## Record
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_get_record_status</a>(...) -> RecordStatusDto</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L32-L63">record_api_get_record_status</a>(...) -> RecordStatusDto</code></summary>
 <dl>
 <dd>
 
@@ -18839,7 +18839,7 @@ client.record.record_api_get_record_status(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_start_record</a>(...) -> bool</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L65-L96">record_api_start_record</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -18920,7 +18920,7 @@ client.record.record_api_start_record(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_stop_record</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L98-L129">record_api_stop_record</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -19001,7 +19001,7 @@ client.record.record_api_stop_record(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_get_record_actions</a>(...) -> typing.List[RecordActionDto]</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L131-L162">record_api_get_record_actions</a>(...) -> typing.List[RecordActionDto]</code></summary>
 <dl>
 <dd>
 
@@ -19074,7 +19074,7 @@ client.record.record_api_get_record_actions(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_run_record</a>(...) -> bool</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L164-L198">record_api_run_record</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -19156,7 +19156,7 @@ client.record.record_api_run_record(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_stop_running</a>(...) -> bool</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L200-L231">record_api_stop_running</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -19237,7 +19237,7 @@ client.record.record_api_stop_running(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_get_record_results</a>(...) -> RunningResultDto</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L233-L264">record_api_get_record_results</a>(...) -> RunningResultDto</code></summary>
 <dl>
 <dd>
 
@@ -19310,7 +19310,7 @@ client.record.record_api_get_record_results(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_get_record_details</a>(...) -> RunningDetailsDto</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L266-L297">record_api_get_record_details</a>(...) -> RunningDetailsDto</code></summary>
 <dl>
 <dd>
 
@@ -19383,7 +19383,7 @@ client.record.record_api_get_record_details(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_fast_forward</a>(...) -> bool</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L299-L330">record_api_fast_forward</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -19464,7 +19464,7 @@ client.record.record_api_fast_forward(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_retry_step</a>(...) -> bool</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L332-L361">record_api_retry_step</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -19545,7 +19545,7 @@ client.record.record_api_retry_step(
 </dl>
 </details>
 
-<details><summary><code>client.record.<a href="src/fern/record/client.py">record_api_skip_step</a>(...) -> bool</code></summary>
+<details><summary><code>client.record.<a href="src/fern/record/client.py#L363-L392">record_api_skip_step</a>(...) -> bool</code></summary>
 <dl>
 <dd>
 
@@ -19627,7 +19627,7 @@ client.record.record_api_skip_step(
 </details>
 
 ## AiSuggestions
-<details><summary><code>client.ai_suggestions.<a href="src/fern/ai_suggestions/client.py">ai_suggestions_api_get_ai_answer</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.ai_suggestions.<a href="src/fern/ai_suggestions/client.py#L25-L56">ai_suggestions_api_get_ai_answer</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -19700,7 +19700,7 @@ client.ai_suggestions.ai_suggestions_api_get_ai_answer(
 </dl>
 </details>
 
-<details><summary><code>client.ai_suggestions.<a href="src/fern/ai_suggestions/client.py">ai_suggestions_api_rebuild_vector</a>()</code></summary>
+<details><summary><code>client.ai_suggestions.<a href="src/fern/ai_suggestions/client.py#L58-L81">ai_suggestions_api_rebuild_vector</a>()</code></summary>
 <dl>
 <dd>
 

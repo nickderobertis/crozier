@@ -1,6 +1,6 @@
 # Reference
 ## Accounts
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">request_password_reset</a>(...) -> SimpleMessageResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L37-L67">request_password_reset</a>(...) -> SimpleMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -73,7 +73,7 @@ client.accounts.request_password_reset(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">verify_password_reset</a>(...) -> SimpleMessageResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L69-L104">verify_password_reset</a>(...) -> SimpleMessageResponse</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.accounts.verify_password_reset(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">register_user</a>(...) -> UserRegistrationResponse</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L106-L144">register_user</a>(...) -> UserRegistrationResponse</code></summary>
 <dl>
 <dd>
 
@@ -246,7 +246,7 @@ client.accounts.register_user(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">complete_registration</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L146-L188">complete_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -337,7 +337,7 @@ client.accounts.complete_registration(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">verify_user_registration</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L190-L217">verify_user_registration</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -410,7 +410,7 @@ client.accounts.verify_user_registration(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_all_organization_roles</a>(...) -> PaginatedResponseOfUserRoles</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L219-L263">get_all_organization_roles</a>(...) -> PaginatedResponseOfUserRoles</code></summary>
 <dl>
 <dd>
 
@@ -499,7 +499,7 @@ client.accounts.get_all_organization_roles(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_users_of_organization</a>(...) -> PaginatedResponseOfUserPresentation</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L265-L309">get_users_of_organization</a>(...) -> PaginatedResponseOfUserPresentation</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +588,7 @@ client.accounts.get_users_of_organization(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">invite_users</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L311-L352">invite_users</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -662,7 +662,7 @@ client.accounts.invite_users(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_user_roles</a>(...) -> PaginatedResponseOfstring</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L354-L401">get_user_roles</a>(...) -> PaginatedResponseOfstring</code></summary>
 <dl>
 <dd>
 
@@ -746,7 +746,7 @@ client.accounts.get_user_roles(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">add_user_roles</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L403-L444">add_user_roles</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -822,7 +822,7 @@ client.accounts.add_user_roles(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">remove_user_roles</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L446-L487">remove_user_roles</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -898,7 +898,7 @@ client.accounts.remove_user_roles(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">list_all_roles</a>(...) -> PaginatedResponseOfRole</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L489-L531">list_all_roles</a>(...) -> PaginatedResponseOfRole</code></summary>
 <dl>
 <dd>
 
@@ -985,7 +985,7 @@ client.accounts.list_all_roles()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">get_organizations_of_user</a>(...) -> PaginatedResponseOfOrganization</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L533-L573">get_organizations_of_user</a>(...) -> PaginatedResponseOfOrganization</code></summary>
 <dl>
 <dd>
 
@@ -1058,7 +1058,7 @@ client.accounts.get_organizations_of_user()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">find_users</a>(...) -> PaginatedResponseOfUserPresentation</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L575-L614">find_users</a>(...) -> PaginatedResponseOfUserPresentation</code></summary>
 <dl>
 <dd>
 
@@ -1131,7 +1131,7 @@ client.accounts.find_users()
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">find_user_by_username</a>(...) -> UserPresentation</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L616-L645">find_user_by_username</a>(...) -> UserPresentation</code></summary>
 <dl>
 <dd>
 
@@ -1190,7 +1190,7 @@ client.accounts.find_user_by_username(
 </dl>
 </details>
 
-<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py">login</a>(...)</code></summary>
+<details><summary><code>client.accounts.<a href="src/fern/accounts/client.py#L647-L680">login</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1270,7 +1270,7 @@ client.accounts.login()
 </details>
 
 ## Api Keys
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">list_all_api_keys_of_organization</a>(...) -> PaginatedResponseOfApiKeyPresentation</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L33-L75">list_all_api_keys_of_organization</a>(...) -> PaginatedResponseOfApiKeyPresentation</code></summary>
 <dl>
 <dd>
 
@@ -1357,7 +1357,7 @@ client.api_keys.list_all_api_keys_of_organization()
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">create_new_api_key</a>(...) -> ApiKeyPresentation</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L77-L115">create_new_api_key</a>(...) -> ApiKeyPresentation</code></summary>
 <dl>
 <dd>
 
@@ -1448,7 +1448,7 @@ client.api_keys.create_new_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">list_all_api_key_privileges</a>(...) -> PaginatedResponseOfApiKeyPrivilegeInfo</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L117-L159">list_all_api_key_privileges</a>(...) -> PaginatedResponseOfApiKeyPrivilegeInfo</code></summary>
 <dl>
 <dd>
 
@@ -1535,7 +1535,7 @@ client.api_keys.list_all_api_key_privileges()
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">get_api_key</a>(...) -> ApiKeyPresentation</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L161-L190">get_api_key</a>(...) -> ApiKeyPresentation</code></summary>
 <dl>
 <dd>
 
@@ -1608,7 +1608,7 @@ client.api_keys.get_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">update_api_key</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L192-L234">update_api_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1698,7 +1698,7 @@ client.api_keys.update_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">delete_api_key</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L236-L264">delete_api_key</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1771,7 +1771,7 @@ client.api_keys.delete_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">list_api_key_privileges</a>(...) -> PaginatedResponseOfApiKeyPrivilege</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L266-L308">list_api_key_privileges</a>(...) -> PaginatedResponseOfApiKeyPrivilege</code></summary>
 <dl>
 <dd>
 
@@ -1846,7 +1846,7 @@ client.api_keys.list_api_key_privileges(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">add_api_key_privilege</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L310-L341">add_api_key_privilege</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1914,7 +1914,7 @@ client.api_keys.add_api_key_privilege(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">remove_api_key_privilege</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L343-L374">remove_api_key_privilege</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1982,7 +1982,7 @@ client.api_keys.remove_api_key_privilege(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">list_id4ns</a>(...) -> PaginatedResponseOfId4NPresentation</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L376-L425">list_id4ns</a>(...) -> PaginatedResponseOfId4NPresentation</code></summary>
 <dl>
 <dd>
 
@@ -2080,7 +2080,7 @@ client.api_keys.list_id4ns(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">add_api_key_privilege_for_id4ns</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L427-L469">add_api_key_privilege_for_id4ns</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2156,7 +2156,7 @@ client.api_keys.add_api_key_privilege_for_id4ns(
 </dl>
 </details>
 
-<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py">remove_api_key_privilege_for_id4ns</a>(...)</code></summary>
+<details><summary><code>client.api_keys.<a href="src/fern/api_keys/client.py#L471-L513">remove_api_key_privilege_for_id4ns</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2233,7 +2233,7 @@ client.api_keys.remove_api_key_privilege_for_id4ns(
 </details>
 
 ## Billing
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">get_sum_for_organization</a>(...) -> ServiceCosts</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L28-L70">get_sum_for_organization</a>(...) -> ServiceCosts</code></summary>
 <dl>
 <dd>
 
@@ -2308,7 +2308,7 @@ client.billing.get_sum_for_organization(
 </dl>
 </details>
 
-<details><summary><code>client.billing.<a href="src/fern/billing/client.py">get_positions_for_organization</a>(...) -> typing.List[BillingPosition]</code></summary>
+<details><summary><code>client.billing.<a href="src/fern/billing/client.py#L72-L114">get_positions_for_organization</a>(...) -> typing.List[BillingPosition]</code></summary>
 <dl>
 <dd>
 
@@ -2384,7 +2384,7 @@ client.billing.get_positions_for_organization(
 </details>
 
 ## Auditing
-<details><summary><code>client.auditing.<a href="src/fern/auditing/client.py">list_organization_change_log</a>(...) -> PaginatedResponseOfChangeLogEntry</code></summary>
+<details><summary><code>client.auditing.<a href="src/fern/auditing/client.py#L27-L89">list_organization_change_log</a>(...) -> PaginatedResponseOfChangeLogEntry</code></summary>
 <dl>
 <dd>
 
@@ -2498,7 +2498,7 @@ client.auditing.list_organization_change_log(
 </details>
 
 ## Collections
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">create_collection</a>(...) -> Id4N</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L37-L81">create_collection</a>(...) -> Id4N</code></summary>
 <dl>
 <dd>
 
@@ -2583,7 +2583,7 @@ client.collections.create_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">find_collection</a>(...) -> GuidCollection</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L83-L110">find_collection</a>(...) -> GuidCollection</code></summary>
 <dl>
 <dd>
 
@@ -2642,7 +2642,7 @@ client.collections.find_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">delete_collection</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L112-L138">delete_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2701,7 +2701,7 @@ client.collections.delete_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">update_collection</a>(...) -> typing.Optional[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L140-L210">update_collection</a>(...) -> typing.Optional[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -2782,7 +2782,7 @@ client.collections.update_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">list_elements_of_collection</a>(...) -> PaginatedResponseOfGuid</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L212-L258">list_elements_of_collection</a>(...) -> PaginatedResponseOfGuid</code></summary>
 <dl>
 <dd>
 
@@ -2865,7 +2865,7 @@ client.collections.list_elements_of_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">add_elements_to_collection</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L260-L295">add_elements_to_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2932,7 +2932,7 @@ client.collections.add_elements_to_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">remove_elements_from_collection</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L297-L332">remove_elements_from_collection</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2999,7 +2999,7 @@ client.collections.remove_elements_from_collection(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get_properties</a>(...) -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L334-L374">get_properties</a>(...) -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -3080,7 +3080,7 @@ client.collections.get_properties(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">delete_properties</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L376-L420">delete_properties</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3173,7 +3173,7 @@ client.collections.delete_properties(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">patch_properties</a>(...)</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L422-L466">patch_properties</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3266,7 +3266,7 @@ client.collections.patch_properties(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get_multiple_properties</a>(...) -> ListOfId4NProperties</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L468-L508">get_multiple_properties</a>(...) -> ListOfId4NProperties</code></summary>
 <dl>
 <dd>
 
@@ -3349,7 +3349,7 @@ client.collections.get_multiple_properties(
 </dl>
 </details>
 
-<details><summary><code>client.collections.<a href="src/fern/collections/client.py">get_all_collections_of_organization</a>(...) -> PaginatedResponseOfGuidCollection</code></summary>
+<details><summary><code>client.collections.<a href="src/fern/collections/client.py#L510-L577">get_all_collections_of_organization</a>(...) -> PaginatedResponseOfGuidCollection</code></summary>
 <dl>
 <dd>
 
@@ -3471,7 +3471,7 @@ client.collections.get_all_collections_of_organization(
 </details>
 
 ## Organizations
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">list_countries</a>(...) -> PaginatedResponseOfCountry</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L34-L68">list_countries</a>(...) -> PaginatedResponseOfCountry</code></summary>
 <dl>
 <dd>
 
@@ -3536,7 +3536,7 @@ client.organizations.list_countries()
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">create_organization</a>(...) -> Organization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L70-L119">create_organization</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -3610,7 +3610,7 @@ client.organizations.create_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">find_organization</a>(...) -> Organization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L121-L152">find_organization</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -3683,7 +3683,7 @@ client.organizations.find_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">update_organization</a>(...) -> Organization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L154-L190">update_organization</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -3750,7 +3750,7 @@ client.organizations.update_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">delete_organization</a>(...)</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L192-L220">delete_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3809,7 +3809,7 @@ client.organizations.delete_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">find_organization_billing_address</a>(...) -> OrganizationAddress</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L222-L251">find_organization_billing_address</a>(...) -> OrganizationAddress</code></summary>
 <dl>
 <dd>
 
@@ -3868,7 +3868,7 @@ client.organizations.find_organization_billing_address(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">update_organization_billing_address</a>(...) -> OrganizationAddress</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L253-L333">update_organization_billing_address</a>(...) -> OrganizationAddress</code></summary>
 <dl>
 <dd>
 
@@ -3941,7 +3941,7 @@ client.organizations.update_organization_billing_address(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">delete_organization_billing_address</a>(...)</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L335-L365">delete_organization_billing_address</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4000,7 +4000,7 @@ client.organizations.delete_organization_billing_address(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">find_organization_address</a>(...) -> OrganizationAddress</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L367-L396">find_organization_address</a>(...) -> OrganizationAddress</code></summary>
 <dl>
 <dd>
 
@@ -4059,7 +4059,7 @@ client.organizations.find_organization_address(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">update_organization_address</a>(...) -> OrganizationAddress</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L398-L478">update_organization_address</a>(...) -> OrganizationAddress</code></summary>
 <dl>
 <dd>
 
@@ -4132,7 +4132,7 @@ client.organizations.update_organization_address(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">set_organization_logo</a>(...) -> PublicImagePresentation</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L480-L514">set_organization_logo</a>(...) -> PublicImagePresentation</code></summary>
 <dl>
 <dd>
 
@@ -4214,7 +4214,7 @@ client.organizations.set_organization_logo(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">delete_organization_logo</a>(...)</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L516-L544">delete_organization_logo</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4273,7 +4273,7 @@ client.organizations.delete_organization_logo(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">get_partner_organizations</a>(...) -> PaginatedResponseOfPartnerOrganization</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L546-L590">get_partner_organizations</a>(...) -> PaginatedResponseOfPartnerOrganization</code></summary>
 <dl>
 <dd>
 
@@ -4362,7 +4362,7 @@ client.organizations.get_partner_organizations(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">add_partner_organization</a>(...)</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L592-L632">add_partner_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4444,7 +4444,7 @@ client.organizations.add_partner_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">remove_partner_organization</a>(...)</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L634-L674">remove_partner_organization</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4526,7 +4526,7 @@ client.organizations.remove_partner_organization(
 </dl>
 </details>
 
-<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py">get_organization_privileges</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.organizations.<a href="src/fern/organizations/client.py#L676-L707">get_organization_privileges</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -4600,7 +4600,7 @@ client.organizations.get_organization_privileges(
 </details>
 
 ## Storage
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_all_documents</a>(...) -> PaginatedResponseOfDocument</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L32-L80">list_all_documents</a>(...) -> PaginatedResponseOfDocument</code></summary>
 <dl>
 <dd>
 
@@ -4697,7 +4697,7 @@ client.storage.list_all_documents(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">list_documents</a>(...) -> PaginatedResponseOfDocument</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L82-L135">list_documents</a>(...) -> PaginatedResponseOfDocument</code></summary>
 <dl>
 <dd>
 
@@ -4803,7 +4803,7 @@ client.storage.list_documents(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">create_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L137-L182">create_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -4894,7 +4894,7 @@ client.storage.create_document(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">put_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L184-L229">put_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -4985,7 +4985,7 @@ client.storage.put_document(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">read_document</a>(...) -> str</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L231-L273">read_document</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5062,7 +5062,7 @@ client.storage.read_document(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">delete_document</a>(...)</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L275-L316">delete_document</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -5139,7 +5139,7 @@ client.storage.delete_document(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">get_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L318-L360">get_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -5216,7 +5216,7 @@ client.storage.get_document(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">update_document_metadata</a>(...) -> typing.Optional[Document]</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L362-L423">update_document_metadata</a>(...) -> typing.Optional[Document]</code></summary>
 <dl>
 <dd>
 
@@ -5317,7 +5317,7 @@ client.storage.update_document_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">read_from_microstorage</a>(...) -> str</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L425-L458">read_from_microstorage</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -5385,7 +5385,7 @@ client.storage.read_from_microstorage(
 </dl>
 </details>
 
-<details><summary><code>client.storage.<a href="src/fern/storage/client.py">write_to_microstorage</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.storage.<a href="src/fern/storage/client.py#L460-L498">write_to_microstorage</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5463,7 +5463,7 @@ client.storage.write_to_microstorage(
 </details>
 
 ## Guids
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">create_guid</a>(...) -> ListOfId4Ns</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L35-L76">create_guid</a>(...) -> ListOfId4Ns</code></summary>
 <dl>
 <dd>
 
@@ -5554,7 +5554,7 @@ client.guids.create_guid(
 </dl>
 </details>
 
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">get_guids_without_collection</a>(...) -> PaginatedResponseOfGuid</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L78-L120">get_guids_without_collection</a>(...) -> PaginatedResponseOfGuid</code></summary>
 <dl>
 <dd>
 
@@ -5629,7 +5629,7 @@ client.guids.get_guids_without_collection(
 </dl>
 </details>
 
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">get_guid</a>(...) -> Guid</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L122-L158">get_guid</a>(...) -> Guid</code></summary>
 <dl>
 <dd>
 
@@ -5696,7 +5696,7 @@ client.guids.get_guid(
 </dl>
 </details>
 
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">update_guid</a>(...) -> typing.Optional[typing.Dict[str, typing.Any]]</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L160-L227">update_guid</a>(...) -> typing.Optional[typing.Dict[str, typing.Any]]</code></summary>
 <dl>
 <dd>
 
@@ -5777,7 +5777,7 @@ client.guids.update_guid(
 </dl>
 </details>
 
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">get_id4n</a>(...) -> Id4NPresentation</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L229-L267">get_id4n</a>(...) -> Id4NPresentation</code></summary>
 <dl>
 <dd>
 
@@ -5858,7 +5858,7 @@ client.guids.get_id4n(
 </dl>
 </details>
 
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">get_collections</a>(...) -> PaginatedResponseOfGuidCollection</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L269-L317">get_collections</a>(...) -> PaginatedResponseOfGuidCollection</code></summary>
 <dl>
 <dd>
 
@@ -5955,7 +5955,7 @@ client.guids.get_collections(
 </dl>
 </details>
 
-<details><summary><code>client.guids.<a href="src/fern/guids/client.py">import_gs1codes</a>(...)</code></summary>
+<details><summary><code>client.guids.<a href="src/fern/guids/client.py#L319-L354">import_gs1codes</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6038,7 +6038,7 @@ client.guids.import_gs1codes(
 </details>
 
 ## History
-<details><summary><code>client.history.<a href="src/fern/history/client.py">filtered_list</a>(...) -> PaginatedResponseOfHistoryItem</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L34-L113">filtered_list</a>(...) -> PaginatedResponseOfHistoryItem</code></summary>
 <dl>
 <dd>
 
@@ -6175,7 +6175,7 @@ client.history.filtered_list(
 </dl>
 </details>
 
-<details><summary><code>client.history.<a href="src/fern/history/client.py">add_item</a>(...)</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L115-L187">add_item</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6258,7 +6258,7 @@ client.history.add_item(
 </dl>
 </details>
 
-<details><summary><code>client.history.<a href="src/fern/history/client.py">list</a>(...) -> PaginatedResponseOfHistoryItem</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L189-L247">list</a>(...) -> PaginatedResponseOfHistoryItem</code></summary>
 <dl>
 <dd>
 
@@ -6364,7 +6364,7 @@ client.history.list(
 </dl>
 </details>
 
-<details><summary><code>client.history.<a href="src/fern/history/client.py">retrieve_item</a>(...) -> HistoryItem</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L249-L291">retrieve_item</a>(...) -> HistoryItem</code></summary>
 <dl>
 <dd>
 
@@ -6441,7 +6441,7 @@ client.history.retrieve_item(
 </dl>
 </details>
 
-<details><summary><code>client.history.<a href="src/fern/history/client.py">update_item</a>(...) -> typing.Optional[HistoryItem]</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L293-L349">update_item</a>(...) -> typing.Optional[HistoryItem]</code></summary>
 <dl>
 <dd>
 
@@ -6534,7 +6534,7 @@ client.history.update_item(
 </dl>
 </details>
 
-<details><summary><code>client.history.<a href="src/fern/history/client.py">update_item_visibility</a>(...) -> HistoryItem</code></summary>
+<details><summary><code>client.history.<a href="src/fern/history/client.py#L351-L408">update_item_visibility</a>(...) -> HistoryItem</code></summary>
 <dl>
 <dd>
 
@@ -6620,7 +6620,7 @@ client.history.update_item_visibility(
 </details>
 
 ## Alias
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">get_guid_aliases</a>(...) -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L33-L64">get_guid_aliases</a>(...) -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -6693,7 +6693,7 @@ client.alias.get_guid_aliases(
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">add_guid_alias</a>(...)</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L66-L109">add_guid_alias</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6784,7 +6784,7 @@ client.alias.add_guid_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">remove_guid_alias</a>(...)</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L111-L149">remove_guid_alias</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6866,7 +6866,7 @@ client.alias.remove_guid_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">search_by_alias</a>(...) -> PaginatedResponseOfGuid</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L151-L198">search_by_alias</a>(...) -> PaginatedResponseOfGuid</code></summary>
 <dl>
 <dd>
 
@@ -6950,7 +6950,7 @@ client.alias.search_by_alias(
 </dl>
 </details>
 
-<details><summary><code>client.alias.<a href="src/fern/alias/client.py">get_guid_alias_types</a>() -> typing.List[GetGuidAliasTypesResponseItem]</code></summary>
+<details><summary><code>client.alias.<a href="src/fern/alias/client.py#L200-L226">get_guid_alias_types</a>() -> typing.List[GetGuidAliasTypesResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -7014,7 +7014,7 @@ client.alias.get_guid_alias_types()
 </details>
 
 ## Meta Information
-<details><summary><code>client.meta_information.<a href="src/fern/meta_information/client.py">application_info</a>() -> AppInfoPresentation</code></summary>
+<details><summary><code>client.meta_information.<a href="src/fern/meta_information/client.py#L26-L50">application_info</a>() -> AppInfoPresentation</code></summary>
 <dl>
 <dd>
 
@@ -7078,7 +7078,7 @@ client.meta_information.application_info()
 </details>
 
 ## Messaging
-<details><summary><code>client.messaging.<a href="src/fern/messaging/client.py">get_default_queue</a>(...) -> QueuePresentation</code></summary>
+<details><summary><code>client.messaging.<a href="src/fern/messaging/client.py#L29-L58">get_default_queue</a>(...) -> QueuePresentation</code></summary>
 <dl>
 <dd>
 
@@ -7137,7 +7137,7 @@ client.messaging.get_default_queue(
 </dl>
 </details>
 
-<details><summary><code>client.messaging.<a href="src/fern/messaging/client.py">patch_default_queue</a>(...)</code></summary>
+<details><summary><code>client.messaging.<a href="src/fern/messaging/client.py#L60-L104">patch_default_queue</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7220,7 +7220,7 @@ client.messaging.patch_default_queue(
 </dl>
 </details>
 
-<details><summary><code>client.messaging.<a href="src/fern/messaging/client.py">enqueue_custom_message</a>(...)</code></summary>
+<details><summary><code>client.messaging.<a href="src/fern/messaging/client.py#L106-L151">enqueue_custom_message</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7314,7 +7314,7 @@ client.messaging.enqueue_custom_message(
 </details>
 
 ## Public Services
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">list_all_public_documents</a>(...) -> PaginatedResponseOfDocument</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L31-L88">list_all_public_documents</a>(...) -> PaginatedResponseOfDocument</code></summary>
 <dl>
 <dd>
 
@@ -7419,7 +7419,7 @@ client.public_services.list_all_public_documents(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">read_public_document</a>(...) -> str</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L90-L134">read_public_document</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7496,7 +7496,7 @@ client.public_services.read_public_document(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">get_public_document</a>(...) -> Document</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L136-L180">get_public_document</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -7573,7 +7573,7 @@ client.public_services.get_public_document(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">list_public_history</a>(...) -> PaginatedResponseOfHistoryItem</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L182-L226">list_public_history</a>(...) -> PaginatedResponseOfHistoryItem</code></summary>
 <dl>
 <dd>
 
@@ -7662,7 +7662,7 @@ client.public_services.list_public_history(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">read_organization_info</a>(...) -> Organization</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L228-L257">read_organization_info</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -7721,7 +7721,7 @@ client.public_services.read_organization_info(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">get_routes</a>(...) -> typing.List[Route]</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L259-L302">get_routes</a>(...) -> typing.List[Route]</code></summary>
 <dl>
 <dd>
 
@@ -7797,7 +7797,7 @@ client.public_services.get_routes(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">go</a>(...)</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L304-L332">go</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -7870,7 +7870,7 @@ client.public_services.go(
 </dl>
 </details>
 
-<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py">resolve_who_is_entry</a>(...) -> WhoIsResponse</code></summary>
+<details><summary><code>client.public_services.<a href="src/fern/public_services/client.py#L334-L363">resolve_who_is_entry</a>(...) -> WhoIsResponse</code></summary>
 <dl>
 <dd>
 
@@ -7930,7 +7930,7 @@ client.public_services.resolve_who_is_entry(
 </details>
 
 ## Images
-<details><summary><code>client.images.<a href="src/fern/images/client.py">resolve_image_using_get</a>(...) -> str</code></summary>
+<details><summary><code>client.images.<a href="src/fern/images/client.py#L25-L52">resolve_image_using_get</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -7990,7 +7990,7 @@ client.images.resolve_image_using_get(
 </details>
 
 ## Routing
-<details><summary><code>client.routing.<a href="src/fern/routing/client.py">get_routing_file</a>(...) -> RoutingFile</code></summary>
+<details><summary><code>client.routing.<a href="src/fern/routing/client.py#L30-L68">get_routing_file</a>(...) -> RoutingFile</code></summary>
 <dl>
 <dd>
 
@@ -8057,7 +8057,7 @@ client.routing.get_routing_file(
 </dl>
 </details>
 
-<details><summary><code>client.routing.<a href="src/fern/routing/client.py">update_routing_file</a>(...)</code></summary>
+<details><summary><code>client.routing.<a href="src/fern/routing/client.py#L70-L118">update_routing_file</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8143,7 +8143,7 @@ client.routing.update_routing_file(
 </dl>
 </details>
 
-<details><summary><code>client.routing.<a href="src/fern/routing/client.py">get_route</a>(...) -> Route</code></summary>
+<details><summary><code>client.routing.<a href="src/fern/routing/client.py#L120-L176">get_route</a>(...) -> Route</code></summary>
 <dl>
 <dd>
 
@@ -8235,7 +8235,7 @@ client.routing.get_route(
 </dl>
 </details>
 
-<details><summary><code>client.routing.<a href="src/fern/routing/client.py">get_all_routes</a>(...) -> typing.List[Route]</code></summary>
+<details><summary><code>client.routing.<a href="src/fern/routing/client.py#L178-L225">get_all_routes</a>(...) -> typing.List[Route]</code></summary>
 <dl>
 <dd>
 
@@ -8320,7 +8320,7 @@ client.routing.get_all_routes(
 </details>
 
 ## Transfer
-<details><summary><code>client.transfer.<a href="src/fern/transfer/client.py">receive</a>(...)</code></summary>
+<details><summary><code>client.transfer.<a href="src/fern/transfer/client.py#L29-L63">receive</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -8402,7 +8402,7 @@ client.transfer.receive(
 </dl>
 </details>
 
-<details><summary><code>client.transfer.<a href="src/fern/transfer/client.py">get_send_info</a>(...) -> TransferSendInfo</code></summary>
+<details><summary><code>client.transfer.<a href="src/fern/transfer/client.py#L65-L92">get_send_info</a>(...) -> TransferSendInfo</code></summary>
 <dl>
 <dd>
 
@@ -8461,7 +8461,7 @@ client.transfer.get_send_info(
 </dl>
 </details>
 
-<details><summary><code>client.transfer.<a href="src/fern/transfer/client.py">prepare</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.transfer.<a href="src/fern/transfer/client.py#L94-L157">prepare</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

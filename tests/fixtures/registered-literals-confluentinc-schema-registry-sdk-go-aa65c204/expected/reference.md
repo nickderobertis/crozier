@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_dek_subjects</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L151-L185">get_dek_subjects</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.get_dek_subjects(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_dek</a>(...) -> Dek</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L187-L211">create_dek</a>(...) -> Dek</code></summary>
 <dl>
 <dd>
 
@@ -121,7 +121,7 @@ client.create_dek(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_kek_names</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L213-L238">get_kek_names</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -177,7 +177,7 @@ client.get_kek_names()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_kek</a>(...) -> Kek</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L240-L260">create_kek</a>(...) -> Kek</code></summary>
 <dl>
 <dd>
 
@@ -225,7 +225,7 @@ client.create_kek(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_kek</a>(...) -> Kek</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L262-L296">get_kek</a>(...) -> Kek</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.get_kek(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_kek</a>(...) -> Kek</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L298-L322">put_kek</a>(...) -> Kek</code></summary>
 <dl>
 <dd>
 
@@ -347,7 +347,7 @@ client.put_kek(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_kek</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L324-L357">delete_kek</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -413,7 +413,7 @@ client.delete_kek(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_dek</a>(...) -> Dek</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L359-L404">get_dek</a>(...) -> Dek</code></summary>
 <dl>
 <dd>
 
@@ -496,7 +496,7 @@ client.get_dek(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_dek_versions</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L406-L450">delete_dek_versions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -579,7 +579,7 @@ client.delete_dek_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_dek_by_version</a>(...) -> Dek</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L452-L502">get_dek_by_version</a>(...) -> Dek</code></summary>
 <dl>
 <dd>
 
@@ -671,7 +671,7 @@ client.get_dek_by_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_dek_version</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L504-L553">delete_dek_version</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -763,7 +763,7 @@ client.delete_dek_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_dek_versions</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L555-L600">get_dek_versions</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -846,7 +846,7 @@ client.get_dek_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">undelete_dek_version</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L602-L647">undelete_dek_version</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -930,7 +930,7 @@ client.undelete_dek_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">undelete_dek_versions</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L649-L689">undelete_dek_versions</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1005,7 +1005,7 @@ client.undelete_dek_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">undelete_kek</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L691-L715">undelete_kek</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1063,7 +1063,7 @@ client.undelete_kek(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_business_metadata</a>(...) -> typing.List[BusinessMetadataResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L717-L752">create_business_metadata</a>(...) -> typing.List[BusinessMetadataResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1144,7 +1144,7 @@ client.create_business_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_business_metadata</a>(...) -> typing.List[BusinessMetadataResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L754-L789">update_business_metadata</a>(...) -> typing.List[BusinessMetadataResponse]</code></summary>
 <dl>
 <dd>
 
@@ -1225,7 +1225,7 @@ client.update_business_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get</a>() -> typing.Dict[str, GetResponseValue]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L791-L813">get</a>() -> typing.Dict[str, GetResponseValue]</code></summary>
 <dl>
 <dd>
 
@@ -1287,7 +1287,7 @@ client.get()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post</a>() -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L815-L835">post</a>() -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -1335,7 +1335,7 @@ client.post()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_compatibility_for_subject</a>(...) -> CompatibilityCheckResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L837-L868">test_compatibility_for_subject</a>(...) -> CompatibilityCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -1413,7 +1413,7 @@ client.test_compatibility_for_subject(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">test_compatibility_by_subject_name</a>(...) -> CompatibilityCheckResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L870-L905">test_compatibility_by_subject_name</a>(...) -> CompatibilityCheckResponse</code></summary>
 <dl>
 <dd>
 
@@ -1499,7 +1499,7 @@ client.test_compatibility_by_subject_name(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_top_level_config</a>() -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L907-L929">get_top_level_config</a>() -> Config</code></summary>
 <dl>
 <dd>
 
@@ -1561,7 +1561,7 @@ client.get_top_level_config()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_top_level_config</a>(...) -> ConfigUpdateRequest</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L931-L953">update_top_level_config</a>(...) -> ConfigUpdateRequest</code></summary>
 <dl>
 <dd>
 
@@ -1623,7 +1623,7 @@ client.update_top_level_config(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_top_level_config</a>() -> DeleteTopLevelConfigResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L955-L979">delete_top_level_config</a>() -> DeleteTopLevelConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -1685,7 +1685,7 @@ client.delete_top_level_config()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_subject_level_config</a>(...) -> Config</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L981-L1015">get_subject_level_config</a>(...) -> Config</code></summary>
 <dl>
 <dd>
 
@@ -1751,7 +1751,7 @@ client.get_subject_level_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_subject_level_config</a>(...) -> ConfigUpdateRequest</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1017-L1043">update_subject_level_config</a>(...) -> ConfigUpdateRequest</code></summary>
 <dl>
 <dd>
 
@@ -1807,7 +1807,7 @@ client.update_subject_level_config(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_subject_config</a>(...) -> DeleteSubjectConfigResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1045-L1072">delete_subject_config</a>(...) -> DeleteSubjectConfigResponse</code></summary>
 <dl>
 <dd>
 
@@ -1865,7 +1865,7 @@ client.delete_subject_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_contexts</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1074-L1099">list_contexts</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -1921,7 +1921,7 @@ client.list_contexts()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_top_level_mode</a>() -> Mode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1101-L1121">get_top_level_mode</a>() -> Mode</code></summary>
 <dl>
 <dd>
 
@@ -1969,7 +1969,7 @@ client.get_top_level_mode()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_top_level_mode</a>(...) -> ModeUpdateRequest</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1123-L1143">update_top_level_mode</a>(...) -> ModeUpdateRequest</code></summary>
 <dl>
 <dd>
 
@@ -2017,7 +2017,7 @@ client.update_top_level_mode(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_mode</a>(...) -> DeleteModeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1145-L1170">delete_mode</a>(...) -> DeleteModeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2073,7 +2073,7 @@ client.delete_mode()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_mode</a>(...) -> Mode</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1172-L1207">get_mode</a>(...) -> Mode</code></summary>
 <dl>
 <dd>
 
@@ -2139,7 +2139,7 @@ client.get_mode(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_mode</a>(...) -> ModeUpdateRequest</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1209-L1233">update_mode</a>(...) -> ModeUpdateRequest</code></summary>
 <dl>
 <dd>
 
@@ -2195,7 +2195,7 @@ client.update_mode(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_subject_mode</a>(...) -> DeleteSubjectModeResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1235-L1269">delete_subject_mode</a>(...) -> DeleteSubjectModeResponse</code></summary>
 <dl>
 <dd>
 
@@ -2261,7 +2261,7 @@ client.delete_subject_mode(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_schemas</a>(...) -> typing.List[Schema]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1271-L1317">get_schemas</a>(...) -> typing.List[Schema]</code></summary>
 <dl>
 <dd>
 
@@ -2349,7 +2349,7 @@ client.get_schemas()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_schema</a>(...) -> SchemaString</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1319-L1360">get_schema</a>(...) -> SchemaString</code></summary>
 <dl>
 <dd>
 
@@ -2431,7 +2431,7 @@ client.get_schema(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_subjects</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1362-L1398">get_subjects</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2505,7 +2505,7 @@ client.get_subjects(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_versions</a>(...) -> typing.List[SubjectVersion]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1400-L1436">get_versions</a>(...) -> typing.List[SubjectVersion]</code></summary>
 <dl>
 <dd>
 
@@ -2579,7 +2579,7 @@ client.get_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_schema_types</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1438-L1458">get_schema_types</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2627,7 +2627,7 @@ client.get_schema_types()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1460-L1496">list</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -2699,7 +2699,7 @@ client.list()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">look_up_schema_under_subject</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1498-L1530">look_up_schema_under_subject</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2771,7 +2771,7 @@ client.look_up_schema_under_subject(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_subject</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1532-L1565">delete_subject</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -2837,7 +2837,7 @@ client.delete_subject(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_versions</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1567-L1606">list_versions</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -2911,7 +2911,7 @@ client.list_versions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">register</a>(...) -> RegisterSchemaResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1608-L1646">register</a>(...) -> RegisterSchemaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2999,7 +2999,7 @@ client.register(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_schema_by_version</a>(...) -> Schema</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1648-L1692">get_schema_by_version</a>(...) -> Schema</code></summary>
 <dl>
 <dd>
 
@@ -3082,7 +3082,7 @@ client.get_schema_by_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_schema_version</a>(...) -> int</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1694-L1734">delete_schema_version</a>(...) -> int</code></summary>
 <dl>
 <dd>
 
@@ -3157,7 +3157,7 @@ client.delete_schema_version(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_referenced_by</a>(...) -> typing.List[int]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1736-L1767">get_referenced_by</a>(...) -> typing.List[int]</code></summary>
 <dl>
 <dd>
 
@@ -3224,7 +3224,7 @@ client.get_referenced_by(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_schema_only</a>(...) -> str</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1769-L1813">get_schema_only</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -3307,7 +3307,7 @@ client.get_schema_only(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_cluster_id</a>() -> ServerClusterId</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1815-L1835">get_cluster_id</a>() -> ServerClusterId</code></summary>
 <dl>
 <dd>
 
@@ -3355,7 +3355,7 @@ client.get_cluster_id()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_exporters</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1837-L1857">get_exporters</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -3403,7 +3403,7 @@ client.get_exporters()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_exporter</a>(...) -> CreateExporterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1859-L1879">create_exporter</a>(...) -> CreateExporterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3451,7 +3451,7 @@ client.create_exporter(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_exporter_info</a>(...) -> ExporterInfo</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1881-L1905">get_exporter_info</a>(...) -> ExporterInfo</code></summary>
 <dl>
 <dd>
 
@@ -3509,7 +3509,7 @@ client.get_exporter_info(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_exporter</a>(...) -> UpdateExporterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1907-L1931">put_exporter</a>(...) -> UpdateExporterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3565,7 +3565,7 @@ client.put_exporter(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_exporter</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1933-L1957">delete_exporter</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3623,7 +3623,7 @@ client.delete_exporter(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_exporter_config</a>(...) -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1959-L1985">get_exporter_config</a>(...) -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -3681,7 +3681,7 @@ client.get_exporter_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_exporter_config</a>(...) -> UpdateExporterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1987-L2011">put_exporter_config</a>(...) -> UpdateExporterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3737,7 +3737,7 @@ client.put_exporter_config(...)
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_exporter_cluster_link_config</a>(...) -> typing.Dict[str, str]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2013-L2039">get_exporter_cluster_link_config</a>(...) -> typing.Dict[str, str]</code></summary>
 <dl>
 <dd>
 
@@ -3795,7 +3795,7 @@ client.get_exporter_cluster_link_config(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">pause_exporter</a>(...) -> UpdateExporterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2041-L2068">pause_exporter</a>(...) -> UpdateExporterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3853,7 +3853,7 @@ client.pause_exporter(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">reset_exporter</a>(...) -> UpdateExporterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2070-L2097">reset_exporter</a>(...) -> UpdateExporterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3911,7 +3911,7 @@ client.reset_exporter(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">resume_exporter</a>(...) -> UpdateExporterResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2099-L2126">resume_exporter</a>(...) -> UpdateExporterResponse</code></summary>
 <dl>
 <dd>
 
@@ -3969,7 +3969,7 @@ client.resume_exporter(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_exporter_status</a>(...) -> ExporterStatus</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2128-L2154">get_exporter_status</a>(...) -> ExporterStatus</code></summary>
 <dl>
 <dd>
 
@@ -4027,7 +4027,7 @@ client.get_exporter_status(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_tags</a>(...) -> typing.List[TagResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2156-L2207">create_tags</a>(...) -> typing.List[TagResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4126,7 +4126,7 @@ client.create_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_tags</a>(...) -> typing.List[TagResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2209-L2260">update_tags</a>(...) -> typing.List[TagResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4225,7 +4225,7 @@ client.update_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_business_metadata</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2262-L2305">delete_business_metadata</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4315,7 +4315,7 @@ client.delete_business_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_tag</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2307-L2348">delete_tag</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -4405,7 +4405,7 @@ client.delete_tag(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_business_metadata</a>(...) -> typing.List[BusinessMetadataResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2350-L2383">get_business_metadata</a>(...) -> typing.List[BusinessMetadataResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4486,7 +4486,7 @@ client.get_business_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_by_unique_attributes</a>(...) -> AtlasEntityWithExtInfo</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2385-L2441">get_by_unique_attributes</a>(...) -> AtlasEntityWithExtInfo</code></summary>
 <dl>
 <dd>
 
@@ -4591,7 +4591,7 @@ client.get_by_unique_attributes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_by_unique_attributes</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2443-L2474">delete_by_unique_attributes</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4658,7 +4658,7 @@ client.delete_by_unique_attributes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_tags</a>(...) -> typing.List[TagResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2476-L2509">get_tags</a>(...) -> typing.List[TagResponse]</code></summary>
 <dl>
 <dd>
 
@@ -4739,7 +4739,7 @@ client.get_tags(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_or_update</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2511-L2733">create_or_update</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5024,7 +5024,7 @@ client.create_or_update(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">partial_update_by_unique_attributes</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2735-L2957">partial_update_by_unique_attributes</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -5309,7 +5309,7 @@ client.partial_update_by_unique_attributes(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">search_using_attribute</a>(...) -> SearchResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2959-L3065">search_using_attribute</a>(...) -> SearchResult</code></summary>
 <dl>
 <dd>
 
@@ -5499,7 +5499,7 @@ client.search_using_attribute()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">search_using_basic</a>(...) -> SearchResult</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3067-L3168">search_using_basic</a>(...) -> SearchResult</code></summary>
 <dl>
 <dd>
 
@@ -5681,7 +5681,7 @@ client.search_using_basic()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_business_metadata_defs</a>(...) -> typing.List[BusinessMetadataDefResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3170-L3197">get_all_business_metadata_defs</a>(...) -> typing.List[BusinessMetadataDefResponse]</code></summary>
 <dl>
 <dd>
 
@@ -5751,7 +5751,7 @@ client.get_all_business_metadata_defs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_business_metadata_defs</a>(...) -> typing.List[BusinessMetadataDefResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3199-L3315">create_business_metadata_defs</a>(...) -> typing.List[BusinessMetadataDefResponse]</code></summary>
 <dl>
 <dd>
 
@@ -5917,7 +5917,7 @@ client.create_business_metadata_defs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_business_metadata_defs</a>(...) -> typing.List[BusinessMetadataDefResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3317-L3433">update_business_metadata_defs</a>(...) -> typing.List[BusinessMetadataDefResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6083,7 +6083,7 @@ client.update_business_metadata_defs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_all_tag_defs</a>(...) -> typing.List[TagDefResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3435-L3462">get_all_tag_defs</a>(...) -> typing.List[TagDefResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6153,7 +6153,7 @@ client.get_all_tag_defs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_tag_defs</a>(...) -> typing.List[TagDefResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3464-L3574">create_tag_defs</a>(...) -> typing.List[TagDefResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6330,7 +6330,7 @@ client.create_tag_defs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">update_tag_defs</a>(...) -> typing.List[TagDefResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3576-L3686">update_tag_defs</a>(...) -> typing.List[TagDefResponse]</code></summary>
 <dl>
 <dd>
 
@@ -6507,7 +6507,7 @@ client.update_tag_defs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_business_metadata_def_by_name</a>(...) -> AtlasBusinessMetadataDef</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3688-L3717">get_business_metadata_def_by_name</a>(...) -> AtlasBusinessMetadataDef</code></summary>
 <dl>
 <dd>
 
@@ -6579,7 +6579,7 @@ client.get_business_metadata_def_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_business_metadata_def</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3719-L3747">delete_business_metadata_def</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6651,7 +6651,7 @@ client.delete_business_metadata_def(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_tag_def_by_name</a>(...) -> TagDef</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3749-L3776">get_tag_def_by_name</a>(...) -> TagDef</code></summary>
 <dl>
 <dd>
 
@@ -6723,7 +6723,7 @@ client.get_tag_def_by_name(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_tag_def</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3778-L3804">delete_tag_def</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -6795,7 +6795,7 @@ client.delete_tag_def(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_asyncapi_parse</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3806-L3827">put_asyncapi_parse</a>()</code></summary>
 <dl>
 <dd>
 
@@ -6857,7 +6857,7 @@ client.put_asyncapi_parse()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">put_asyncapi</a>()</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3829-L3850">put_asyncapi</a>()</code></summary>
 <dl>
 <dd>
 

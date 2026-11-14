@@ -1,6 +1,6 @@
 # Reference
 ## Operations
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">list</a>(...) -> OperationList</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py#L26-L55">list</a>(...) -> OperationList</code></summary>
 <dl>
 <dd>
 
@@ -74,7 +74,7 @@ client.operations.list(
 </details>
 
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">list</a>(...) -> JobResourceList</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L36-L81">list</a>(...) -> JobResourceList</code></summary>
 <dl>
 <dd>
 
@@ -164,7 +164,7 @@ client.jobs.list(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">listbyresourcegroup</a>(...) -> JobResourceList</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L83-L137">listbyresourcegroup</a>(...) -> JobResourceList</code></summary>
 <dl>
 <dd>
 
@@ -263,7 +263,7 @@ client.jobs.listbyresourcegroup(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">get</a>(...) -> JobResource</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L139-L199">get</a>(...) -> JobResource</code></summary>
 <dl>
 <dd>
 
@@ -371,7 +371,7 @@ client.jobs.get(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">create</a>(...) -> JobResource</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L201-L296">create</a>(...) -> JobResource</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.jobs.create(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L298-L348">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -584,7 +584,7 @@ client.jobs.delete(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">update</a>(...) -> JobResource</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L350-L420">update</a>(...) -> JobResource</code></summary>
 <dl>
 <dd>
 
@@ -708,7 +708,7 @@ client.jobs.update(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">bookshipmentpickup</a>(...) -> ShipmentPickUpResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L422-L501">bookshipmentpickup</a>(...) -> ShipmentPickUpResponse</code></summary>
 <dl>
 <dd>
 
@@ -836,7 +836,7 @@ client.jobs.bookshipmentpickup(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">cancel</a>(...)</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L503-L563">cancel</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -945,7 +945,7 @@ client.jobs.cancel(
 </dl>
 </details>
 
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">listcredentials</a>(...) -> UnencryptedCredentialsList</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L565-L616">listcredentials</a>(...) -> UnencryptedCredentialsList</code></summary>
 <dl>
 <dd>
 
@@ -1046,7 +1046,7 @@ client.jobs.listcredentials(
 </details>
 
 ## Service
-<details><summary><code>client.service.<a href="src/fern/service/client.py">listavailableskus</a>(...) -> AvailableSkusResult</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L42-L114">listavailableskus</a>(...) -> AvailableSkusResult</code></summary>
 <dl>
 <dd>
 
@@ -1148,7 +1148,7 @@ client.service.listavailableskus(
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">regionconfiguration</a>(...) -> RegionConfigurationResponse</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L116-L175">regionconfiguration</a>(...) -> RegionConfigurationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1255,7 +1255,7 @@ client.service.regionconfiguration(
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">validateaddress</a>(...) -> AddressValidationOutput</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L177-L255">validateaddress</a>(...) -> AddressValidationOutput</code></summary>
 <dl>
 <dd>
 
@@ -1386,7 +1386,7 @@ client.service.validateaddress(
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">validateinputs</a>(...) -> ValidationResponse</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L257-L327">validateinputs</a>(...) -> ValidationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1491,7 +1491,7 @@ client.service.validateinputs(
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">listavailableskusbyresourcegroup</a>(...) -> AvailableSkusResult</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L329-L407">listavailableskusbyresourcegroup</a>(...) -> AvailableSkusResult</code></summary>
 <dl>
 <dd>
 
@@ -1602,7 +1602,7 @@ client.service.listavailableskusbyresourcegroup(
 </dl>
 </details>
 
-<details><summary><code>client.service.<a href="src/fern/service/client.py">validateinputsbyresourcegroup</a>(...) -> ValidationResponse</code></summary>
+<details><summary><code>client.service.<a href="src/fern/service/client.py#L409-L485">validateinputsbyresourcegroup</a>(...) -> ValidationResponse</code></summary>
 <dl>
 <dd>
 

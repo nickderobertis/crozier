@@ -1,6 +1,6 @@
 # Reference
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list</a>(...) -> FileList</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L33-L60">list</a>(...) -> FileList</code></summary>
 <dl>
 <dd>
 
@@ -59,7 +59,7 @@ client.files.list(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">upload</a>(...) -> File</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L62-L105">upload</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -136,7 +136,7 @@ client.files.upload(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">get</a>(...) -> File</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L107-L138">get</a>(...) -> File</code></summary>
 <dl>
 <dd>
 
@@ -204,7 +204,7 @@ client.files.get(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">delete</a>(...)</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L140-L172">delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.files.delete(
 </dl>
 </details>
 
-<details><summary><code>client.files.<a href="src/fern/files/client.py">getcontent</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L174-L195">getcontent</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -418,7 +418,7 @@ If the `purpose` is set to "fine-tune", each line is a JSON record with "prompt"
 </details>
 
 ## FineTunes
-<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py">fine_tunes_list</a>(...) -> FineTuneList</code></summary>
+<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py#L31-L60">fine_tunes_list</a>(...) -> FineTuneList</code></summary>
 <dl>
 <dd>
 
@@ -477,7 +477,7 @@ client.fine_tunes.fine_tunes_list(
 </dl>
 </details>
 
-<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py">fine_tunes_create</a>(...) -> FineTune</code></summary>
+<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py#L62-L173">fine_tunes_create</a>(...) -> FineTune</code></summary>
 <dl>
 <dd>
 
@@ -662,7 +662,7 @@ A larger beta score puts more weight on recall and less on precision. A smaller 
 </dl>
 </details>
 
-<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py">fine_tunes_get</a>(...) -> FineTune</code></summary>
+<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py#L175-L210">fine_tunes_get</a>(...) -> FineTune</code></summary>
 <dl>
 <dd>
 
@@ -730,7 +730,7 @@ client.fine_tunes.fine_tunes_get(
 </dl>
 </details>
 
-<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py">fine_tunes_delete</a>(...)</code></summary>
+<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py#L212-L246">fine_tunes_delete</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -798,7 +798,7 @@ client.fine_tunes.fine_tunes_delete(
 </dl>
 </details>
 
-<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py">fine_tunes_get_events</a>(...) -> EventList</code></summary>
+<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py#L248-L294">fine_tunes_get_events</a>(...) -> EventList</code></summary>
 <dl>
 <dd>
 
@@ -879,7 +879,7 @@ If set to false, only events generated so far will be returned..
 </dl>
 </details>
 
-<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py">fine_tunes_cancel</a>(...) -> FineTune</code></summary>
+<details><summary><code>client.fine_tunes.<a href="src/fern/fine_tunes/client.py#L296-L331">fine_tunes_cancel</a>(...) -> FineTune</code></summary>
 <dl>
 <dd>
 
@@ -948,7 +948,7 @@ client.fine_tunes.fine_tunes_cancel(
 </details>
 
 ## Models
-<details><summary><code>client.models.<a href="src/fern/models/client.py">list</a>(...) -> ModelList</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L27-L54">list</a>(...) -> ModelList</code></summary>
 <dl>
 <dd>
 
@@ -1007,7 +1007,7 @@ client.models.list(
 </dl>
 </details>
 
-<details><summary><code>client.models.<a href="src/fern/models/client.py">get</a>(...) -> Model</code></summary>
+<details><summary><code>client.models.<a href="src/fern/models/client.py#L56-L87">get</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 

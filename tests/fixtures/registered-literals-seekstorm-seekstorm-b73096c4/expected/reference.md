@@ -1,6 +1,6 @@
 # Reference
 ## Info
-<details><summary><code>client.info.<a href="src/fern/info/client.py">live</a>() -> str</code></summary>
+<details><summary><code>client.info.<a href="src/fern/info/client.py#L25-L49">live</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -63,7 +63,7 @@ client.info.live()
 </details>
 
 ## API Key
-<details><summary><code>client.api_key.<a href="src/fern/api_key/client.py">get_api_key_info</a>() -> typing.List[IndexResponseObject]</code></summary>
+<details><summary><code>client.api_key.<a href="src/fern/api_key/client.py#L29-L55">get_api_key_info</a>() -> typing.List[IndexResponseObject]</code></summary>
 <dl>
 <dd>
 
@@ -125,7 +125,7 @@ client.api_key.get_api_key_info()
 </dl>
 </details>
 
-<details><summary><code>client.api_key.<a href="src/fern/api_key/client.py">create_api_key</a>(...) -> str</code></summary>
+<details><summary><code>client.api_key.<a href="src/fern/api_key/client.py#L57-L127">create_api_key</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -245,7 +245,7 @@ client.api_key.create_api_key(
 </dl>
 </details>
 
-<details><summary><code>client.api_key.<a href="src/fern/api_key/client.py">delete_api_key</a>() -> str</code></summary>
+<details><summary><code>client.api_key.<a href="src/fern/api_key/client.py#L129-L155">delete_api_key</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -310,7 +310,7 @@ client.api_key.delete_api_key()
 </details>
 
 ## Index
-<details><summary><code>client.index.<a href="src/fern/index/client.py">create_index</a>(...) -> str</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L41-L167">create_index</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -514,7 +514,7 @@ Note: enabling n-gram indexing (ngram_indexing>0) will increase index size and i
 </dl>
 </details>
 
-<details><summary><code>client.index.<a href="src/fern/index/client.py">get_index_info</a>(...) -> IndexResponseObject</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L169-L200">get_index_info</a>(...) -> IndexResponseObject</code></summary>
 <dl>
 <dd>
 
@@ -586,7 +586,7 @@ client.index.get_index_info(
 </dl>
 </details>
 
-<details><summary><code>client.index.<a href="src/fern/index/client.py">delete_index</a>(...) -> str</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L202-L231">delete_index</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -658,7 +658,7 @@ client.index.delete_index(
 </dl>
 </details>
 
-<details><summary><code>client.index.<a href="src/fern/index/client.py">commit_index</a>(...) -> str</code></summary>
+<details><summary><code>client.index.<a href="src/fern/index/client.py#L233-L279">commit_index</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -748,7 +748,7 @@ client.index.commit_index(
 </details>
 
 ## Iterator
-<details><summary><code>client.iterator.<a href="src/fern/iterator/client.py">document_iterator_get</a>(...) -> IteratorResult</code></summary>
+<details><summary><code>client.iterator.<a href="src/fern/iterator/client.py#L29-L127">document_iterator_get</a>(...) -> IteratorResult</code></summary>
 <dl>
 <dd>
 
@@ -902,7 +902,7 @@ client.iterator.document_iterator_get(
 </dl>
 </details>
 
-<details><summary><code>client.iterator.<a href="src/fern/iterator/client.py">document_iterator_post</a>(...) -> IteratorResult</code></summary>
+<details><summary><code>client.iterator.<a href="src/fern/iterator/client.py#L129-L226">document_iterator_post</a>(...) -> IteratorResult</code></summary>
 <dl>
 <dd>
 
@@ -1057,7 +1057,7 @@ take>0: take next t document IDs, take<0: take previous t document IDs
 </details>
 
 ## Document
-<details><summary><code>client.document.<a href="src/fern/document/client.py">index_document</a>(...) -> str</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L37-L78">index_document</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1143,7 +1143,7 @@ client.document.index_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">delete_document_by_request_object</a>(...) -> str</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L80-L222">delete_document_by_request_object</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1231,7 +1231,7 @@ client.document.delete_document_by_request_object(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">update_document</a>(...) -> str</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L224-L267">update_document</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1320,7 +1320,7 @@ client.document.update_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">get_document</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L269-L305">get_document</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1402,7 +1402,7 @@ client.document.get_document(
 </dl>
 </details>
 
-<details><summary><code>client.document.<a href="src/fern/document/client.py">delete_document_by_parameter</a>(...) -> str</code></summary>
+<details><summary><code>client.document.<a href="src/fern/document/client.py#L307-L351">delete_document_by_parameter</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1491,7 +1491,7 @@ client.document.delete_document_by_parameter(
 </details>
 
 ## PDF File
-<details><summary><code>client.pdf_file.<a href="src/fern/pdf_file/client.py">index_pdf_file</a>(...) -> str</code></summary>
+<details><summary><code>client.pdf_file.<a href="src/fern/pdf_file/client.py#L28-L58">index_pdf_file</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1565,7 +1565,7 @@ client.pdf_file.index_pdf_file(...)
 </dl>
 </details>
 
-<details><summary><code>client.pdf_file.<a href="src/fern/pdf_file/client.py">get_pdf_file</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.pdf_file.<a href="src/fern/pdf_file/client.py#L60-L96">get_pdf_file</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -1648,7 +1648,7 @@ client.pdf_file.get_pdf_file(
 </details>
 
 ## Query
-<details><summary><code>client.query.<a href="src/fern/query/client.py">index_get</a>(...) -> SearchResultObject</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L38-L108">index_get</a>(...) -> SearchResultObject</code></summary>
 <dl>
 <dd>
 
@@ -1768,7 +1768,7 @@ client.query.index_get(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">index_post</a>(...) -> SearchResultObject</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L110-L294">index_post</a>(...) -> SearchResultObject</code></summary>
 <dl>
 <dd>
 

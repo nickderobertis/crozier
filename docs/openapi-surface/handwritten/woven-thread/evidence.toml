@@ -1,6 +1,6 @@
-fern_cli_version = "5.163.1"
-fern_python_sdk_version = "5.41.3"
-digest = "ef7ddf52d02ad5e21c0be2a70ef610eade06ac1354501218b1a86e99933121c4"
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "809090fc0f0f9e769a42d8f7105e7cfa329d2164289e036ed94658d835ecb0b8"
 
 [[covers]]
 key = "forward-refs-omit-hoisted-variant-models"

@@ -95,7 +95,7 @@ The SDK also exports an `async` client so that you can make non-blocking calls t
 ```python
 import asyncio
 
-from fern import AsyncFernApi
+from fern import AsyncFernApi, Panel, PanelReading_Sensors, SensorReadingChannelsItem, Window, SensorReadingBench, SensorReadingAlertsItem_Vent, AlertOperator, SensorReadingSeason_Autumn, AutumnSeasonPhase, SensorReadingChecksItem_Threshold
 
 client = AsyncFernApi()
 

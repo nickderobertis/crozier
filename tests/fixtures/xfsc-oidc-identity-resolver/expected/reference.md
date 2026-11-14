@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">post</a>(...) -> BeginTaskResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L122-L176">post</a>(...) -> BeginTaskResponse</code></summary>
 <dl>
 <dd>
 
@@ -97,7 +97,7 @@ client.post(
 </details>
 
 ## IdentityResource
-<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py">get_continue_login</a>()</code></summary>
+<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py#L25-L46">get_continue_login</a>()</code></summary>
 <dl>
 <dd>
 
@@ -146,7 +146,7 @@ client.identity_resource.get_continue_login()
 </dl>
 </details>
 
-<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py">get_error</a>() -> typing.Any</code></summary>
+<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py#L48-L70">get_error</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -195,7 +195,7 @@ client.identity_resource.get_error()
 </dl>
 </details>
 
-<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py">get_login</a>() -> typing.Any</code></summary>
+<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py#L72-L94">get_login</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -244,7 +244,7 @@ client.identity_resource.get_login()
 </dl>
 </details>
 
-<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py">delete_session_nonce</a>(...)</code></summary>
+<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py#L96-L121">delete_session_nonce</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -303,7 +303,7 @@ client.identity_resource.delete_session_nonce(
 </dl>
 </details>
 
-<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py">get_start_login_nonce</a>(...)</code></summary>
+<details><summary><code>client.identity_resource.<a href="src/fern/identity_resource/client.py#L123-L148">get_start_login_nonce</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -363,7 +363,7 @@ client.identity_resource.get_start_login_nonce(
 </details>
 
 ## BeginTaskResource
-<details><summary><code>client.begin_task_resource.<a href="src/fern/begin_task_resource/client.py">post_session</a>(...) -> BeginResponse</code></summary>
+<details><summary><code>client.begin_task_resource.<a href="src/fern/begin_task_resource/client.py#L30-L84">post_session</a>(...) -> BeginResponse</code></summary>
 <dl>
 <dd>
 

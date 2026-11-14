@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">preview_loaf</a>() -> Loaf</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L119">preview_loaf</a>() -> Loaf</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.preview_loaf()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">list_loaves</a>() -> typing.List[Loaf]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L121-L143">list_loaves</a>() -> typing.List[Loaf]</code></summary>
 <dl>
 <dd>
 

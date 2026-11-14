@@ -1,6 +1,6 @@
 # Reference
 ## Allergies and Intolerances
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_allergies</a>(...) -> Ok</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L33-L100">base_url_persons_person_id_chart_allergies</a>(...) -> Ok</code></summary>
 <dl>
 <dd>
 
@@ -126,7 +126,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_allergies(
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_allergies_allergy_id</a>(...) -> Ok1</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L102-L139">base_url_persons_person_id_chart_allergies_allergy_id</a>(...) -> Ok1</code></summary>
 <dl>
 <dd>
 
@@ -207,7 +207,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_allergies_all
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_allergies_allergy_id_dur_check</a>(...) -> Ok1</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L141-L178">base_url_persons_person_id_chart_allergies_allergy_id_dur_check</a>(...) -> Ok1</code></summary>
 <dl>
 <dd>
 
@@ -288,7 +288,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_allergies_all
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_deleted_allergies</a>(...) -> Ok</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L180-L247">base_url_persons_person_id_chart_deleted_allergies</a>(...) -> Ok</code></summary>
 <dl>
 <dd>
 
@@ -414,7 +414,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_deleted_aller
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_encounters_encounter_id_allergies</a>(...) -> Ok4</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L249-L295">base_url_persons_person_id_chart_encounters_encounter_id_allergies</a>(...) -> Ok4</code></summary>
 <dl>
 <dd>
 
@@ -504,7 +504,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_encounters_en
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">post_base_url_persons_person_id_chart_encounters_encounter_id_allergies</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L297-L342">post_base_url_persons_person_id_chart_encounters_encounter_id_allergies</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -594,7 +594,7 @@ client.allergies_and_intolerances.post_base_url_persons_person_id_chart_encounte
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id1</a>(...) -> Ok1</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L344-L390">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id1</a>(...) -> Ok1</code></summary>
 <dl>
 <dd>
 
@@ -684,7 +684,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_encounters_en
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L392-L442">put_base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -783,7 +783,7 @@ client.allergies_and_intolerances.put_base_url_persons_person_id_chart_encounter
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L444-L490">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -873,7 +873,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_encounters_en
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions</a>(...) -> Ok6</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L492-L540">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions</a>(...) -> Ok6</code></summary>
 <dl>
 <dd>
 
@@ -963,7 +963,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_encounters_en
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">post_base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L542-L592">post_base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1062,7 +1062,7 @@ client.allergies_and_intolerances.post_base_url_persons_person_id_chart_encounte
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions_reaction_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L594-L649">put_base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions_reaction_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1170,7 +1170,7 @@ client.allergies_and_intolerances.put_base_url_persons_person_id_chart_encounter
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions_reaction_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L651-L702">base_url_persons_person_id_chart_encounters_encounter_id_allergies_allergy_id_reactions_reaction_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -1269,7 +1269,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_encounters_en
 </dl>
 </details>
 
-<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py">base_url_persons_person_id_chart_health_concerns_allergies</a>(...) -> Ok7</code></summary>
+<details><summary><code>client.allergies_and_intolerances.<a href="src/fern/allergies_and_intolerances/client.py#L704-L771">base_url_persons_person_id_chart_health_concerns_allergies</a>(...) -> Ok7</code></summary>
 <dl>
 <dd>
 
@@ -1396,7 +1396,7 @@ client.allergies_and_intolerances.base_url_persons_person_id_chart_health_concer
 </details>
 
 ## Assessment and Plan of Treatment
-<details><summary><code>client.assessment_and_plan_of_treatment.<a href="src/fern/assessment_and_plan_of_treatment/client.py">base_url_persons_person_id_chart_assessments</a>(...) -> Ok8</code></summary>
+<details><summary><code>client.assessment_and_plan_of_treatment.<a href="src/fern/assessment_and_plan_of_treatment/client.py#L27-L94">base_url_persons_person_id_chart_assessments</a>(...) -> Ok8</code></summary>
 <dl>
 <dd>
 
@@ -1522,7 +1522,7 @@ client.assessment_and_plan_of_treatment.base_url_persons_person_id_chart_assessm
 </dl>
 </details>
 
-<details><summary><code>client.assessment_and_plan_of_treatment.<a href="src/fern/assessment_and_plan_of_treatment/client.py">base_url_persons_person_id_chart_care_plan_assessments</a>(...) -> Ok8</code></summary>
+<details><summary><code>client.assessment_and_plan_of_treatment.<a href="src/fern/assessment_and_plan_of_treatment/client.py#L96-L163">base_url_persons_person_id_chart_care_plan_assessments</a>(...) -> Ok8</code></summary>
 <dl>
 <dd>
 
@@ -1648,7 +1648,7 @@ client.assessment_and_plan_of_treatment.base_url_persons_person_id_chart_care_pl
 </dl>
 </details>
 
-<details><summary><code>client.assessment_and_plan_of_treatment.<a href="src/fern/assessment_and_plan_of_treatment/client.py">base_url_persons_person_id_chart_health_concerns_assessment_scales</a>(...) -> Ok10</code></summary>
+<details><summary><code>client.assessment_and_plan_of_treatment.<a href="src/fern/assessment_and_plan_of_treatment/client.py#L165-L232">base_url_persons_person_id_chart_health_concerns_assessment_scales</a>(...) -> Ok10</code></summary>
 <dl>
 <dd>
 
@@ -1775,7 +1775,7 @@ client.assessment_and_plan_of_treatment.base_url_persons_person_id_chart_health_
 </details>
 
 ## Care Team Members
-<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py">base_url_persons_person_id_chart_care_team_members</a>(...) -> Ok11</code></summary>
+<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py#L29-L96">base_url_persons_person_id_chart_care_team_members</a>(...) -> Ok11</code></summary>
 <dl>
 <dd>
 
@@ -1901,7 +1901,7 @@ client.care_team_members.base_url_persons_person_id_chart_care_team_members(
 </dl>
 </details>
 
-<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py">post_base_url_persons_person_id_chart_care_team_members</a>(...) -> str</code></summary>
+<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py#L98-L134">post_base_url_persons_person_id_chart_care_team_members</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -1982,7 +1982,7 @@ client.care_team_members.post_base_url_persons_person_id_chart_care_team_members
 </dl>
 </details>
 
-<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py">put_base_url_persons_person_id_chart_care_team_members_care_team_member_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py#L136-L181">put_base_url_persons_person_id_chart_care_team_members_care_team_member_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2072,7 +2072,7 @@ client.care_team_members.put_base_url_persons_person_id_chart_care_team_members_
 </dl>
 </details>
 
-<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py">base_url_persons_person_id_chart_care_team_members_care_team_member_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.care_team_members.<a href="src/fern/care_team_members/client.py#L183-L220">base_url_persons_person_id_chart_care_team_members_care_team_member_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2154,7 +2154,7 @@ client.care_team_members.base_url_persons_person_id_chart_care_team_members_care
 </details>
 
 ## Clinical Notes
-<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py">base_url_persons_person_id_chart_clinical_notes</a>(...) -> Ok12</code></summary>
+<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py#L31-L98">base_url_persons_person_id_chart_clinical_notes</a>(...) -> Ok12</code></summary>
 <dl>
 <dd>
 
@@ -2280,7 +2280,7 @@ client.clinical_notes.base_url_persons_person_id_chart_clinical_notes(
 </dl>
 </details>
 
-<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py">base_url_persons_person_id_chart_encounters_encounter_id_clinical_notes</a>(...) -> Ok12</code></summary>
+<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py#L100-L172">base_url_persons_person_id_chart_encounters_encounter_id_clinical_notes</a>(...) -> Ok12</code></summary>
 <dl>
 <dd>
 
@@ -2415,7 +2415,7 @@ client.clinical_notes.base_url_persons_person_id_chart_encounters_encounter_id_c
 </dl>
 </details>
 
-<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py">base_url_persons_person_id_chart_documents</a>(...) -> Ok12</code></summary>
+<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py#L174-L241">base_url_persons_person_id_chart_documents</a>(...) -> Ok12</code></summary>
 <dl>
 <dd>
 
@@ -2541,7 +2541,7 @@ client.clinical_notes.base_url_persons_person_id_chart_documents(
 </dl>
 </details>
 
-<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py">base_url_persons_person_id_chart_documents_document_id</a>(...) -> Ok15</code></summary>
+<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py#L243-L280">base_url_persons_person_id_chart_documents_document_id</a>(...) -> Ok15</code></summary>
 <dl>
 <dd>
 
@@ -2622,7 +2622,7 @@ client.clinical_notes.base_url_persons_person_id_chart_documents_document_id(
 </dl>
 </details>
 
-<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py">base_url_persons_person_id_chart_documents_document_id_pdf</a>(...) -> Ok16</code></summary>
+<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py#L282-L327">base_url_persons_person_id_chart_documents_document_id_pdf</a>(...) -> Ok16</code></summary>
 <dl>
 <dd>
 
@@ -2711,7 +2711,7 @@ client.clinical_notes.base_url_persons_person_id_chart_documents_document_id_pdf
 </dl>
 </details>
 
-<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py">base_url_persons_person_id_chart_encounters_encounter_id_documents</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.clinical_notes.<a href="src/fern/clinical_notes/client.py#L329-L404">base_url_persons_person_id_chart_encounters_encounter_id_documents</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -2832,7 +2832,7 @@ client.clinical_notes.base_url_persons_person_id_chart_encounters_encounter_id_d
 </details>
 
 ## Goals
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_care_plan_goals</a>(...) -> Ok17</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L34-L101">base_url_persons_person_id_chart_care_plan_goals</a>(...) -> Ok17</code></summary>
 <dl>
 <dd>
 
@@ -2958,7 +2958,7 @@ client.goals.base_url_persons_person_id_chart_care_plan_goals(
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals</a>(...) -> Ok17</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L103-L182">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals</a>(...) -> Ok17</code></summary>
 <dl>
 <dd>
 
@@ -3102,7 +3102,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">post_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L184-L234">post_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3201,7 +3201,7 @@ client.goals.post_base_url_persons_person_id_chart_encounters_encounter_id_care_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id1</a>(...) -> Ok19</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L236-L287">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id1</a>(...) -> Ok19</code></summary>
 <dl>
 <dd>
 
@@ -3300,7 +3300,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L289-L344">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3408,7 +3408,7 @@ client.goals.put_base_url_persons_person_id_chart_encounters_encounter_id_care_p
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L346-L397">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3507,7 +3507,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions</a>(...) -> Ok20</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L399-L490">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions</a>(...) -> Ok20</code></summary>
 <dl>
 <dd>
 
@@ -3660,7 +3660,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">post_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L492-L547">post_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3768,7 +3768,7 @@ client.goals.post_base_url_persons_person_id_chart_encounters_encounter_id_care_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id1</a>(...) -> Ok21</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L549-L605">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id1</a>(...) -> Ok21</code></summary>
 <dl>
 <dd>
 
@@ -3876,7 +3876,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L607-L673">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -3993,7 +3993,7 @@ client.goals.put_base_url_persons_person_id_chart_encounters_encounter_id_care_p
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L675-L731">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4101,7 +4101,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes</a>(...) -> Ok22</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L733-L830">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes</a>(...) -> Ok22</code></summary>
 <dl>
 <dd>
 
@@ -4263,7 +4263,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">post_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L832-L898">post_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4380,7 +4380,7 @@ client.goals.post_base_url_persons_person_id_chart_encounters_encounter_id_care_
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">get_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes_outcome_id</a>(...) -> Ok23</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L900-L973">get_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes_outcome_id</a>(...) -> Ok23</code></summary>
 <dl>
 <dd>
 
@@ -4506,7 +4506,7 @@ client.goals.get_base_url_persons_person_id_chart_encounters_encounter_id_care_p
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes_outcome_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L975-L1047">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes_outcome_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4632,7 +4632,7 @@ client.goals.put_base_url_persons_person_id_chart_encounters_encounter_id_care_p
 </dl>
 </details>
 
-<details><summary><code>client.goals.<a href="src/fern/goals/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes_outcome_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.goals.<a href="src/fern/goals/client.py#L1049-L1116">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id_goals_goal_id_interventions_intervention_id_outcomes_outcome_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4750,7 +4750,7 @@ client.goals.base_url_persons_person_id_chart_encounters_encounter_id_care_plan_
 </details>
 
 ## Health Concerns
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_care_plan_health_concerns</a>(...) -> Ok24</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L35-L108">base_url_persons_person_id_chart_care_plan_health_concerns</a>(...) -> Ok24</code></summary>
 <dl>
 <dd>
 
@@ -4876,7 +4876,7 @@ client.health_concerns.base_url_persons_person_id_chart_care_plan_health_concern
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L110-L155">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -4966,7 +4966,7 @@ client.health_concerns.base_url_persons_person_id_chart_encounters_encounter_id_
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">get_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id</a>(...) -> Ok25</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L157-L208">get_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id</a>(...) -> Ok25</code></summary>
 <dl>
 <dd>
 
@@ -5065,7 +5065,7 @@ client.health_concerns.get_base_url_persons_person_id_chart_encounters_encounter
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L210-L260">put_base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5164,7 +5164,7 @@ client.health_concerns.put_base_url_persons_person_id_chart_encounters_encounter
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L262-L308">base_url_persons_person_id_chart_encounters_encounter_id_care_plan_health_concerns_health_concern_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -5254,7 +5254,7 @@ client.health_concerns.base_url_persons_person_id_chart_encounters_encounter_id_
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_health_concerns_encounter_diagnosis</a>(...) -> Ok26</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L310-L383">base_url_persons_person_id_chart_health_concerns_encounter_diagnosis</a>(...) -> Ok26</code></summary>
 <dl>
 <dd>
 
@@ -5380,7 +5380,7 @@ client.health_concerns.base_url_persons_person_id_chart_health_concerns_encounte
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_health_concerns_family_histories_organizer</a>(...) -> Ok28</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L385-L458">base_url_persons_person_id_chart_health_concerns_family_histories_organizer</a>(...) -> Ok28</code></summary>
 <dl>
 <dd>
 
@@ -5506,7 +5506,7 @@ client.health_concerns.base_url_persons_person_id_chart_health_concerns_family_h
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_health_concerns_problem_observations</a>(...) -> Ok29</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L460-L533">base_url_persons_person_id_chart_health_concerns_problem_observations</a>(...) -> Ok29</code></summary>
 <dl>
 <dd>
 
@@ -5632,7 +5632,7 @@ client.health_concerns.base_url_persons_person_id_chart_health_concerns_problem_
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_health_concerns_social_history</a>(...) -> Ok30</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L535-L608">base_url_persons_person_id_chart_health_concerns_social_history</a>(...) -> Ok30</code></summary>
 <dl>
 <dd>
 
@@ -5758,7 +5758,7 @@ client.health_concerns.base_url_persons_person_id_chart_health_concerns_social_h
 </dl>
 </details>
 
-<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py">base_url_persons_person_id_chart_health_concerns_vitals</a>(...) -> Ok31</code></summary>
+<details><summary><code>client.health_concerns.<a href="src/fern/health_concerns/client.py#L610-L683">base_url_persons_person_id_chart_health_concerns_vitals</a>(...) -> Ok31</code></summary>
 <dl>
 <dd>
 
@@ -5885,7 +5885,7 @@ client.health_concerns.base_url_persons_person_id_chart_health_concerns_vitals(
 </details>
 
 ## Immunizations
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_charts_immunizations</a>(...) -> Ok32</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L44-L111">base_url_persons_charts_immunizations</a>(...) -> Ok32</code></summary>
 <dl>
 <dd>
 
@@ -6002,7 +6002,7 @@ client.immunizations.base_url_persons_charts_immunizations(
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L113-L158">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6092,7 +6092,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L160-L212">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6191,7 +6191,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L214-L264">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6290,7 +6290,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L266-L321">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6398,7 +6398,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id_vis_histories</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L323-L378">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id_vis_histories</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6506,7 +6506,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id_vis_histories_vis_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L380-L440">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id_vis_histories_vis_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6623,7 +6623,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id_wasted_vaccines</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L442-L497">base_url_persons_person_id_chart_encounters_encounter_id_immunizations_orders_order_id_vaccines_vaccine_id_wasted_vaccines</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -6731,7 +6731,7 @@ client.immunizations.base_url_persons_person_id_chart_encounters_encounter_id_im
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations</a>(...) -> Ok32</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L499-L572">base_url_persons_person_id_chart_immunizations</a>(...) -> Ok32</code></summary>
 <dl>
 <dd>
 
@@ -6857,7 +6857,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations(
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_dose_validation</a>(...) -> Ok34</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L574-L647">base_url_persons_person_id_chart_immunizations_dose_validation</a>(...) -> Ok34</code></summary>
 <dl>
 <dd>
 
@@ -6983,7 +6983,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_dose_validat
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_exclusions</a>(...) -> Ok35</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L649-L722">base_url_persons_person_id_chart_immunizations_exclusions</a>(...) -> Ok35</code></summary>
 <dl>
 <dd>
 
@@ -7109,7 +7109,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_exclusions(
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">post_base_url_persons_person_id_chart_immunizations_exclusions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L724-L760">post_base_url_persons_person_id_chart_immunizations_exclusions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7190,7 +7190,7 @@ client.immunizations.post_base_url_persons_person_id_chart_immunizations_exclusi
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_exclusions_exclusion_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L762-L807">base_url_persons_person_id_chart_immunizations_exclusions_exclusion_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7280,7 +7280,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_exclusions_e
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_group_status</a>(...) -> Ok36</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L809-L842">base_url_persons_person_id_chart_immunizations_group_status</a>(...) -> Ok36</code></summary>
 <dl>
 <dd>
 
@@ -7352,7 +7352,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_group_status
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_interactions</a>(...) -> Ok37</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L844-L885">base_url_persons_person_id_chart_immunizations_interactions</a>(...) -> Ok37</code></summary>
 <dl>
 <dd>
 
@@ -7442,7 +7442,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_interactions
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders</a>(...) -> Ok38</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L887-L954">base_url_persons_person_id_chart_immunizations_orders</a>(...) -> Ok38</code></summary>
 <dl>
 <dd>
 
@@ -7568,7 +7568,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders(
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id</a>(...) -> Ok39</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L956-L993">base_url_persons_person_id_chart_immunizations_orders_order_id</a>(...) -> Ok39</code></summary>
 <dl>
 <dd>
 
@@ -7649,7 +7649,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_insurances</a>(...) -> Ok40</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L995-L1032">base_url_persons_person_id_chart_immunizations_orders_order_id_insurances</a>(...) -> Ok40</code></summary>
 <dl>
 <dd>
 
@@ -7730,7 +7730,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_tracking_comments</a>(...) -> Ok41</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1034-L1071">base_url_persons_person_id_chart_immunizations_orders_order_id_tracking_comments</a>(...) -> Ok41</code></summary>
 <dl>
 <dd>
 
@@ -7811,7 +7811,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">post_base_url_persons_person_id_chart_immunizations_orders_order_id_tracking_comments</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1073-L1120">post_base_url_persons_person_id_chart_immunizations_orders_order_id_tracking_comments</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -7901,7 +7901,7 @@ client.immunizations.post_base_url_persons_person_id_chart_immunizations_orders_
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines</a>(...) -> Ok42</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1122-L1159">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines</a>(...) -> Ok42</code></summary>
 <dl>
 <dd>
 
@@ -7982,7 +7982,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id1</a>(...) -> Ok43</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1161-L1204">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id1</a>(...) -> Ok43</code></summary>
 <dl>
 <dd>
 
@@ -8072,7 +8072,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1206-L1247">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8162,7 +8162,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_component_lot_numbers</a>(...) -> Ok44</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1249-L1290">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_component_lot_numbers</a>(...) -> Ok44</code></summary>
 <dl>
 <dd>
 
@@ -8252,7 +8252,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_suspected_diagnoses</a>(...) -> Ok45</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1292-L1333">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_suspected_diagnoses</a>(...) -> Ok45</code></summary>
 <dl>
 <dd>
 
@@ -8342,7 +8342,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_vis_histories</a>(...) -> Ok46</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1335-L1376">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_vis_histories</a>(...) -> Ok46</code></summary>
 <dl>
 <dd>
 
@@ -8432,7 +8432,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_wasted_vaccines</a>(...) -> Ok47</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1378-L1419">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_wasted_vaccines</a>(...) -> Ok47</code></summary>
 <dl>
 <dd>
 
@@ -8522,7 +8522,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_wasted_vaccines_wasted_vaccine_id</a>(...) -> Ok47</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1421-L1472">base_url_persons_person_id_chart_immunizations_orders_order_id_vaccines_vaccine_id_wasted_vaccines_wasted_vaccine_id</a>(...) -> Ok47</code></summary>
 <dl>
 <dd>
 
@@ -8621,7 +8621,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_orders_order
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_series_completions</a>(...) -> Ok49</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1474-L1507">base_url_persons_person_id_chart_immunizations_series_completions</a>(...) -> Ok49</code></summary>
 <dl>
 <dd>
 
@@ -8693,7 +8693,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_series_compl
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">post_base_url_persons_person_id_chart_immunizations_series_completions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1509-L1545">post_base_url_persons_person_id_chart_immunizations_series_completions</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8774,7 +8774,7 @@ client.immunizations.post_base_url_persons_person_id_chart_immunizations_series_
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">base_url_persons_person_id_chart_immunizations_series_completions_series_id</a>(...) -> Ok49</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1547-L1584">base_url_persons_person_id_chart_immunizations_series_completions_series_id</a>(...) -> Ok49</code></summary>
 <dl>
 <dd>
 
@@ -8855,7 +8855,7 @@ client.immunizations.base_url_persons_person_id_chart_immunizations_series_compl
 </dl>
 </details>
 
-<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py">put_base_url_persons_person_id_chart_immunizations_series_completions_series_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.immunizations.<a href="src/fern/immunizations/client.py#L1586-L1631">put_base_url_persons_person_id_chart_immunizations_series_completions_series_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -8946,7 +8946,7 @@ client.immunizations.put_base_url_persons_person_id_chart_immunizations_series_c
 </details>
 
 ## Implantable Device Identifiers
-<details><summary><code>client.implantable_device_identifiers.<a href="src/fern/implantable_device_identifiers/client.py">base_url_persons_person_id_chart_devices</a>(...) -> Ok51</code></summary>
+<details><summary><code>client.implantable_device_identifiers.<a href="src/fern/implantable_device_identifiers/client.py#L27-L94">base_url_persons_person_id_chart_devices</a>(...) -> Ok51</code></summary>
 <dl>
 <dd>
 
@@ -9072,7 +9072,7 @@ client.implantable_device_identifiers.base_url_persons_person_id_chart_devices(
 </dl>
 </details>
 
-<details><summary><code>client.implantable_device_identifiers.<a href="src/fern/implantable_device_identifiers/client.py">base_url_persons_person_id_chart_devices_device_id</a>(...) -> Ok52</code></summary>
+<details><summary><code>client.implantable_device_identifiers.<a href="src/fern/implantable_device_identifiers/client.py#L96-L133">base_url_persons_person_id_chart_devices_device_id</a>(...) -> Ok52</code></summary>
 <dl>
 <dd>
 
@@ -9154,7 +9154,7 @@ client.implantable_device_identifiers.base_url_persons_person_id_chart_devices_d
 </details>
 
 ## Laboratory
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_encounters_encounter_id_lab_orders</a>(...) -> Ok53</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L41-L86">base_url_persons_person_id_chart_encounters_encounter_id_lab_orders</a>(...) -> Ok53</code></summary>
 <dl>
 <dd>
 
@@ -9244,7 +9244,7 @@ client.laboratory.base_url_persons_person_id_chart_encounters_encounter_id_lab_o
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders</a>(...) -> Ok54</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L88-L155">base_url_persons_person_id_chart_lab_orders</a>(...) -> Ok54</code></summary>
 <dl>
 <dd>
 
@@ -9370,7 +9370,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id1</a>(...) -> Ok53</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L157-L194">base_url_persons_person_id_chart_lab_orders_order_id1</a>(...) -> Ok53</code></summary>
 <dl>
 <dd>
 
@@ -9451,7 +9451,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id1(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">put_base_url_persons_person_id_chart_lab_orders_order_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L196-L241">put_base_url_persons_person_id_chart_lab_orders_order_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -9541,7 +9541,7 @@ client.laboratory.put_base_url_persons_person_id_chart_lab_orders_order_id(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L243-L280">base_url_persons_person_id_chart_lab_orders_order_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -9622,7 +9622,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_insurances</a>(...) -> Ok56</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L282-L355">base_url_persons_person_id_chart_lab_orders_order_id_insurances</a>(...) -> Ok56</code></summary>
 <dl>
 <dd>
 
@@ -9757,7 +9757,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_insurance
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_schedule</a>(...) -> Ok57</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L357-L394">base_url_persons_person_id_chart_lab_orders_order_id_schedule</a>(...) -> Ok57</code></summary>
 <dl>
 <dd>
 
@@ -9838,7 +9838,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_schedule(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_orders_order_id_schedule</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L396-L441">post_base_url_persons_person_id_chart_lab_orders_order_id_schedule</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -9928,7 +9928,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_orders_order_id_sche
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_send</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L443-L480">base_url_persons_person_id_chart_lab_orders_order_id_send</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10009,7 +10009,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_send(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests</a>(...) -> Ok58</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L482-L555">base_url_persons_person_id_chart_lab_orders_order_id_tests</a>(...) -> Ok58</code></summary>
 <dl>
 <dd>
 
@@ -10144,7 +10144,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_orders_order_id_tests</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L557-L602">post_base_url_persons_person_id_chart_lab_orders_order_id_tests</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10234,7 +10234,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_orders_order_id_test
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id1</a>(...) -> Ok59</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L604-L645">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id1</a>(...) -> Ok59</code></summary>
 <dl>
 <dd>
 
@@ -10324,7 +10324,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests_tes
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">put_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L647-L697">put_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10423,7 +10423,7 @@ client.laboratory.put_base_url_persons_person_id_chart_lab_orders_order_id_tests
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L699-L740">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10513,7 +10513,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests_tes
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers</a>(...) -> Ok60</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L742-L823">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers</a>(...) -> Ok60</code></summary>
 <dl>
 <dd>
 
@@ -10657,7 +10657,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests_tes
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L825-L875">post_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10756,7 +10756,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_orders_order_id_test
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">put_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers_answer_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L877-L932">put_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers_answer_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10864,7 +10864,7 @@ client.laboratory.put_base_url_persons_person_id_chart_lab_orders_order_id_tests
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers_answer_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L934-L985">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_order_entry_answers_answer_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -10963,7 +10963,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests_tes
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_suspected_diagnoses</a>(...) -> Ok61</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L987-L1068">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_suspected_diagnoses</a>(...) -> Ok61</code></summary>
 <dl>
 <dd>
 
@@ -11107,7 +11107,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests_tes
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_suspected_diagnoses</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1070-L1120">post_base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_suspected_diagnoses</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11206,7 +11206,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_orders_order_id_test
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_suspected_diagnoses_diagnosis_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1122-L1173">base_url_persons_person_id_chart_lab_orders_order_id_tests_test_id_suspected_diagnoses_diagnosis_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11305,7 +11305,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tests_tes
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_orders_order_id_tracking_comments</a>(...) -> Ok41</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1175-L1212">base_url_persons_person_id_chart_lab_orders_order_id_tracking_comments</a>(...) -> Ok41</code></summary>
 <dl>
 <dd>
 
@@ -11386,7 +11386,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_orders_order_id_tracking_
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_orders_order_id_tracking_comments</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1214-L1259">post_base_url_persons_person_id_chart_lab_orders_order_id_tracking_comments</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11476,7 +11476,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_orders_order_id_trac
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_panels</a>(...) -> Ok63</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1261-L1328">base_url_persons_person_id_chart_lab_panels</a>(...) -> Ok63</code></summary>
 <dl>
 <dd>
 
@@ -11602,7 +11602,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_panels(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_panels</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1330-L1366">post_base_url_persons_person_id_chart_lab_panels</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11683,7 +11683,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_panels(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_panels_panel_id1</a>(...) -> Ok64</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1368-L1405">base_url_persons_person_id_chart_lab_panels_panel_id1</a>(...) -> Ok64</code></summary>
 <dl>
 <dd>
 
@@ -11764,7 +11764,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_panels_panel_id1(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">put_base_url_persons_person_id_chart_lab_panels_panel_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1407-L1452">put_base_url_persons_person_id_chart_lab_panels_panel_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11854,7 +11854,7 @@ client.laboratory.put_base_url_persons_person_id_chart_lab_panels_panel_id(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_panels_panel_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1454-L1491">base_url_persons_person_id_chart_lab_panels_panel_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -11935,7 +11935,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_panels_panel_id(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_panels_panel_id_results</a>(...) -> Ok65</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1493-L1530">base_url_persons_person_id_chart_lab_panels_panel_id_results</a>(...) -> Ok65</code></summary>
 <dl>
 <dd>
 
@@ -12016,7 +12016,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_panels_panel_id_results(
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">post_base_url_persons_person_id_chart_lab_panels_panel_id_results</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1532-L1577">post_base_url_persons_person_id_chart_lab_panels_panel_id_results</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12106,7 +12106,7 @@ client.laboratory.post_base_url_persons_person_id_chart_lab_panels_panel_id_resu
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">put_base_url_persons_person_id_chart_lab_panels_panel_id_results_sequence_number</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1579-L1629">put_base_url_persons_person_id_chart_lab_panels_panel_id_results_sequence_number</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12205,7 +12205,7 @@ client.laboratory.put_base_url_persons_person_id_chart_lab_panels_panel_id_resul
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_panels_panel_id_results_sequence_number</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1631-L1677">base_url_persons_person_id_chart_lab_panels_panel_id_results_sequence_number</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12295,7 +12295,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_panels_panel_id_results_s
 </dl>
 </details>
 
-<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py">base_url_persons_person_id_chart_lab_results</a>(...) -> Ok66</code></summary>
+<details><summary><code>client.laboratory.<a href="src/fern/laboratory/client.py#L1679-L1746">base_url_persons_person_id_chart_lab_results</a>(...) -> Ok66</code></summary>
 <dl>
 <dd>
 
@@ -12422,7 +12422,7 @@ client.laboratory.base_url_persons_person_id_chart_lab_results(
 </details>
 
 ## Medications
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_charts_medications</a>(...) -> Ok67</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L35-L96">base_url_persons_charts_medications</a>(...) -> Ok67</code></summary>
 <dl>
 <dd>
 
@@ -12539,7 +12539,7 @@ client.medications.base_url_persons_charts_medications(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_medication_history</a>(...) -> Ok68</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L98-L131">base_url_persons_person_id_medication_history</a>(...) -> Ok68</code></summary>
 <dl>
 <dd>
 
@@ -12611,7 +12611,7 @@ client.medications.base_url_persons_person_id_medication_history(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_medication_history_create_consent</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L133-L169">base_url_persons_person_id_medication_history_create_consent</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12692,7 +12692,7 @@ client.medications.base_url_persons_person_id_medication_history_create_consent(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_medication_history_create_request</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L171-L204">base_url_persons_person_id_medication_history_create_request</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12764,7 +12764,7 @@ client.medications.base_url_persons_person_id_medication_history_create_request(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_encounters_encounter_id_medications</a>(...) -> Ok67</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L206-L279">base_url_persons_person_id_chart_encounters_encounter_id_medications</a>(...) -> Ok67</code></summary>
 <dl>
 <dd>
 
@@ -12899,7 +12899,7 @@ client.medications.base_url_persons_person_id_chart_encounters_encounter_id_medi
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">post_base_url_persons_person_id_chart_encounters_encounter_id_medications</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L281-L326">post_base_url_persons_person_id_chart_encounters_encounter_id_medications</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -12989,7 +12989,7 @@ client.medications.post_base_url_persons_person_id_chart_encounters_encounter_id
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">get_base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id</a>(...) -> Ok70</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L328-L376">get_base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id</a>(...) -> Ok70</code></summary>
 <dl>
 <dd>
 
@@ -13079,7 +13079,7 @@ client.medications.get_base_url_persons_person_id_chart_encounters_encounter_id_
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id1</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L378-L430">base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id1</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13178,7 +13178,7 @@ client.medications.base_url_persons_person_id_chart_encounters_encounter_id_medi
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L432-L482">base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13277,7 +13277,7 @@ client.medications.base_url_persons_person_id_chart_encounters_encounter_id_medi
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id_renew</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L484-L536">base_url_persons_person_id_chart_encounters_encounter_id_medications_medication_id_renew</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13376,7 +13376,7 @@ client.medications.base_url_persons_person_id_chart_encounters_encounter_id_medi
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications</a>(...) -> Ok67</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L538-L605">base_url_persons_person_id_chart_medications</a>(...) -> Ok67</code></summary>
 <dl>
 <dd>
 
@@ -13502,7 +13502,7 @@ client.medications.base_url_persons_person_id_chart_medications(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id</a>(...) -> Ok70</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L607-L644">base_url_persons_person_id_chart_medications_medication_id</a>(...) -> Ok70</code></summary>
 <dl>
 <dd>
 
@@ -13583,7 +13583,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id_cancel</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L646-L683">base_url_persons_person_id_chart_medications_medication_id_cancel</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13664,7 +13664,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id_ca
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id_notes</a>(...) -> Ok73</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L685-L758">base_url_persons_person_id_chart_medications_medication_id_notes</a>(...) -> Ok73</code></summary>
 <dl>
 <dd>
 
@@ -13799,7 +13799,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id_no
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">post_base_url_persons_person_id_chart_medications_medication_id_notes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L760-L805">post_base_url_persons_person_id_chart_medications_medication_id_notes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -13889,7 +13889,7 @@ client.medications.post_base_url_persons_person_id_chart_medications_medication_
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id_notes_note_id1</a>(...) -> Ok74</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L807-L853">base_url_persons_person_id_chart_medications_medication_id_notes_note_id1</a>(...) -> Ok74</code></summary>
 <dl>
 <dd>
 
@@ -13979,7 +13979,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id_no
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">put_base_url_persons_person_id_chart_medications_medication_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L855-L905">put_base_url_persons_person_id_chart_medications_medication_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14078,7 +14078,7 @@ client.medications.put_base_url_persons_person_id_chart_medications_medication_i
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L907-L953">base_url_persons_person_id_chart_medications_medication_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14168,7 +14168,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id_no
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id_send_erx</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L955-L1000">base_url_persons_person_id_chart_medications_medication_id_send_erx</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14258,7 +14258,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id_se
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medication_id_stop</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L1002-L1047">base_url_persons_person_id_chart_medications_medication_id_stop</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14348,7 +14348,7 @@ client.medications.base_url_persons_person_id_chart_medications_medication_id_st
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medid_dur_check</a>(...)</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L1049-L1094">base_url_persons_person_id_chart_medications_medid_dur_check</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -14438,7 +14438,7 @@ client.medications.base_url_persons_person_id_chart_medications_medid_dur_check(
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medid_monograph_data</a>(...) -> Ok75</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L1096-L1133">base_url_persons_person_id_chart_medications_medid_monograph_data</a>(...) -> Ok75</code></summary>
 <dl>
 <dd>
 
@@ -14519,7 +14519,7 @@ client.medications.base_url_persons_person_id_chart_medications_medid_monograph_
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_medid_patient_education</a>(...) -> Ok76</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L1135-L1190">base_url_persons_person_id_chart_medications_medid_patient_education</a>(...) -> Ok76</code></summary>
 <dl>
 <dd>
 
@@ -14618,7 +14618,7 @@ client.medications.base_url_persons_person_id_chart_medications_medid_patient_ed
 </dl>
 </details>
 
-<details><summary><code>client.medications.<a href="src/fern/medications/client.py">base_url_persons_person_id_chart_medications_pdmp_report</a>(...) -> Ok67</code></summary>
+<details><summary><code>client.medications.<a href="src/fern/medications/client.py#L1192-L1225">base_url_persons_person_id_chart_medications_pdmp_report</a>(...) -> Ok67</code></summary>
 <dl>
 <dd>
 
@@ -14691,7 +14691,7 @@ client.medications.base_url_persons_person_id_chart_medications_pdmp_report(
 </details>
 
 ## Patient Demographics
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons</a>(...) -> Ok78</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L33-L99">base_url_persons</a>(...) -> Ok78</code></summary>
 <dl>
 <dd>
 
@@ -14817,7 +14817,7 @@ client.patient_demographics.base_url_persons(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">post_base_url_persons</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L101-L131">post_base_url_persons</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -14889,7 +14889,7 @@ client.patient_demographics.post_base_url_persons(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id</a>(...) -> Ok79</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L133-L164">base_url_persons_person_id</a>(...) -> Ok79</code></summary>
 <dl>
 <dd>
 
@@ -14961,7 +14961,7 @@ client.patient_demographics.base_url_persons_person_id(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id1</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L166-L202">base_url_persons_person_id1</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -15042,7 +15042,7 @@ client.patient_demographics.base_url_persons_person_id1(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">patch_base_url_persons_person_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L204-L240">patch_base_url_persons_person_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -15123,7 +15123,7 @@ client.patient_demographics.patch_base_url_persons_person_id(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id_address_histories</a>(...) -> Ok79</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L242-L275">base_url_persons_person_id_address_histories</a>(...) -> Ok79</code></summary>
 <dl>
 <dd>
 
@@ -15195,7 +15195,7 @@ client.patient_demographics.base_url_persons_person_id_address_histories(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id_ethnicities</a>(...) -> Ok81</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L277-L308">base_url_persons_person_id_ethnicities</a>(...) -> Ok81</code></summary>
 <dl>
 <dd>
 
@@ -15267,7 +15267,7 @@ client.patient_demographics.base_url_persons_person_id_ethnicities(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id_gender_identities</a>(...) -> Ok81</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L310-L343">base_url_persons_person_id_gender_identities</a>(...) -> Ok81</code></summary>
 <dl>
 <dd>
 
@@ -15339,7 +15339,7 @@ client.patient_demographics.base_url_persons_person_id_gender_identities(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id_races</a>(...) -> Ok83</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L345-L376">base_url_persons_person_id_races</a>(...) -> Ok83</code></summary>
 <dl>
 <dd>
 
@@ -15411,7 +15411,7 @@ client.patient_demographics.base_url_persons_person_id_races(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_lookup</a>(...) -> Ok84</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L378-L510">base_url_persons_lookup</a>(...) -> Ok84</code></summary>
 <dl>
 <dd>
 
@@ -15651,7 +15651,7 @@ client.patient_demographics.base_url_persons_lookup(
 </dl>
 </details>
 
-<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py">base_url_persons_person_id_chart_encounters</a>(...) -> Ok78</code></summary>
+<details><summary><code>client.patient_demographics.<a href="src/fern/patient_demographics/client.py#L512-L581">base_url_persons_person_id_chart_encounters</a>(...) -> Ok78</code></summary>
 <dl>
 <dd>
 
@@ -15780,7 +15780,7 @@ client.patient_demographics.base_url_persons_person_id_chart_encounters(
 </details>
 
 ## Problems
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems</a>(...) -> Ok86</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L33-L100">base_url_persons_person_id_chart_problems</a>(...) -> Ok86</code></summary>
 <dl>
 <dd>
 
@@ -15906,7 +15906,7 @@ client.problems.base_url_persons_person_id_chart_problems(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">post_base_url_persons_person_id_chart_problems</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L102-L138">post_base_url_persons_person_id_chart_problems</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -15987,7 +15987,7 @@ client.problems.post_base_url_persons_person_id_chart_problems(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_problem_id1</a>(...) -> Ok87</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L140-L177">base_url_persons_person_id_chart_problems_problem_id1</a>(...) -> Ok87</code></summary>
 <dl>
 <dd>
 
@@ -16068,7 +16068,7 @@ client.problems.base_url_persons_person_id_chart_problems_problem_id1(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">put_base_url_persons_person_id_chart_problems_problem_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L179-L224">put_base_url_persons_person_id_chart_problems_problem_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -16158,7 +16158,7 @@ client.problems.put_base_url_persons_person_id_chart_problems_problem_id(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_problem_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L226-L263">base_url_persons_person_id_chart_problems_problem_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -16239,7 +16239,7 @@ client.problems.base_url_persons_person_id_chart_problems_problem_id(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_problem_id_interactions</a>(...) -> typing.List[Ok37]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L265-L302">base_url_persons_person_id_chart_problems_problem_id_interactions</a>(...) -> typing.List[Ok37]</code></summary>
 <dl>
 <dd>
 
@@ -16320,7 +16320,7 @@ client.problems.base_url_persons_person_id_chart_problems_problem_id_interaction
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_problem_id_notes</a>(...) -> Ok89</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L304-L377">base_url_persons_person_id_chart_problems_problem_id_notes</a>(...) -> Ok89</code></summary>
 <dl>
 <dd>
 
@@ -16455,7 +16455,7 @@ client.problems.base_url_persons_person_id_chart_problems_problem_id_notes(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">post_base_url_persons_person_id_chart_problems_problem_id_notes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L379-L424">post_base_url_persons_person_id_chart_problems_problem_id_notes</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -16545,7 +16545,7 @@ client.problems.post_base_url_persons_person_id_chart_problems_problem_id_notes(
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_problem_id_notes_note_id1</a>(...) -> Ok90</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L426-L467">base_url_persons_person_id_chart_problems_problem_id_notes_note_id1</a>(...) -> Ok90</code></summary>
 <dl>
 <dd>
 
@@ -16635,7 +16635,7 @@ client.problems.base_url_persons_person_id_chart_problems_problem_id_notes_note_
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">put_base_url_persons_person_id_chart_problems_problem_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L469-L519">put_base_url_persons_person_id_chart_problems_problem_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -16734,7 +16734,7 @@ client.problems.put_base_url_persons_person_id_chart_problems_problem_id_notes_n
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_problem_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L521-L562">base_url_persons_person_id_chart_problems_problem_id_notes_note_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -16824,7 +16824,7 @@ client.problems.base_url_persons_person_id_chart_problems_problem_id_notes_note_
 </dl>
 </details>
 
-<details><summary><code>client.problems.<a href="src/fern/problems/client.py">base_url_persons_person_id_chart_problems_interactions</a>(...) -> typing.List[Ok37]</code></summary>
+<details><summary><code>client.problems.<a href="src/fern/problems/client.py#L564-L631">base_url_persons_person_id_chart_problems_interactions</a>(...) -> typing.List[Ok37]</code></summary>
 <dl>
 <dd>
 
@@ -16951,7 +16951,7 @@ client.problems.base_url_persons_person_id_chart_problems_interactions(
 </details>
 
 ## Procedures
-<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py">base_url_persons_person_id_chart_procedures</a>(...) -> Ok92</code></summary>
+<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py#L30-L97">base_url_persons_person_id_chart_procedures</a>(...) -> Ok92</code></summary>
 <dl>
 <dd>
 
@@ -17077,7 +17077,7 @@ client.procedures.base_url_persons_person_id_chart_procedures(
 </dl>
 </details>
 
-<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py">base_url_persons_person_id_chart_encounters_encounter_id_procedures_procedure_id</a>(...) -> Ok93</code></summary>
+<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py#L99-L145">base_url_persons_person_id_chart_encounters_encounter_id_procedures_procedure_id</a>(...) -> Ok93</code></summary>
 <dl>
 <dd>
 
@@ -17167,7 +17167,7 @@ client.procedures.base_url_persons_person_id_chart_encounters_encounter_id_proce
 </dl>
 </details>
 
-<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_procedures_procedure_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py#L147-L199">put_base_url_persons_person_id_chart_encounters_encounter_id_procedures_procedure_id</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -17266,7 +17266,7 @@ client.procedures.put_base_url_persons_person_id_chart_encounters_encounter_id_p
 </dl>
 </details>
 
-<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py">base_url_persons_person_id_chart_encounters_encounter_id_procedures_procedure_id1</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py#L201-L247">base_url_persons_person_id_chart_encounters_encounter_id_procedures_procedure_id1</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -17356,7 +17356,7 @@ client.procedures.base_url_persons_person_id_chart_encounters_encounter_id_proce
 </dl>
 </details>
 
-<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py">base_url_persons_person_id_chart_encounters_encounter_id_procedures</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.procedures.<a href="src/fern/procedures/client.py#L249-L294">base_url_persons_person_id_chart_encounters_encounter_id_procedures</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -17447,7 +17447,7 @@ client.procedures.base_url_persons_person_id_chart_encounters_encounter_id_proce
 </details>
 
 ## Smoking Status
-<details><summary><code>client.smoking_status.<a href="src/fern/smoking_status/client.py">base_url_persons_person_id_chart_health_concerns_tobacco_smoking_usage_status</a>(...) -> Ok94</code></summary>
+<details><summary><code>client.smoking_status.<a href="src/fern/smoking_status/client.py#L28-L95">base_url_persons_person_id_chart_health_concerns_tobacco_smoking_usage_status</a>(...) -> Ok94</code></summary>
 <dl>
 <dd>
 
@@ -17573,7 +17573,7 @@ client.smoking_status.base_url_persons_person_id_chart_health_concerns_tobacco_s
 </dl>
 </details>
 
-<details><summary><code>client.smoking_status.<a href="src/fern/smoking_status/client.py">base_url_persons_person_id_chart_social_history</a>(...) -> Ok95</code></summary>
+<details><summary><code>client.smoking_status.<a href="src/fern/smoking_status/client.py#L97-L164">base_url_persons_person_id_chart_social_history</a>(...) -> Ok95</code></summary>
 <dl>
 <dd>
 
@@ -17699,7 +17699,7 @@ client.smoking_status.base_url_persons_person_id_chart_social_history(
 </dl>
 </details>
 
-<details><summary><code>client.smoking_status.<a href="src/fern/smoking_status/client.py">base_url_persons_person_id_chart_tobacco_usage</a>(...) -> Ok96</code></summary>
+<details><summary><code>client.smoking_status.<a href="src/fern/smoking_status/client.py#L166-L233">base_url_persons_person_id_chart_tobacco_usage</a>(...) -> Ok96</code></summary>
 <dl>
 <dd>
 
@@ -17826,7 +17826,7 @@ client.smoking_status.base_url_persons_person_id_chart_tobacco_usage(
 </details>
 
 ## Vital Signs
-<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py">base_url_persons_person_id_chart_vitals</a>(...) -> Ok97</code></summary>
+<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py#L30-L97">base_url_persons_person_id_chart_vitals</a>(...) -> Ok97</code></summary>
 <dl>
 <dd>
 
@@ -17952,7 +17952,7 @@ client.vital_signs.base_url_persons_person_id_chart_vitals(
 </dl>
 </details>
 
-<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py">base_url_persons_person_id_chart_encounters_encounter_id_vitals_vitals_id</a>(...) -> Ok98</code></summary>
+<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py#L99-L145">base_url_persons_person_id_chart_encounters_encounter_id_vitals_vitals_id</a>(...) -> Ok98</code></summary>
 <dl>
 <dd>
 
@@ -18042,7 +18042,7 @@ client.vital_signs.base_url_persons_person_id_chart_encounters_encounter_id_vita
 </dl>
 </details>
 
-<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py">put_base_url_persons_person_id_chart_encounters_encounter_id_vitals_vitals_id</a>(...) -> Ok98</code></summary>
+<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py#L147-L197">put_base_url_persons_person_id_chart_encounters_encounter_id_vitals_vitals_id</a>(...) -> Ok98</code></summary>
 <dl>
 <dd>
 
@@ -18141,7 +18141,7 @@ client.vital_signs.put_base_url_persons_person_id_chart_encounters_encounter_id_
 </dl>
 </details>
 
-<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py">base_url_persons_person_id_chart_encounters_encounter_id_vitals</a>(...) -> Ok98</code></summary>
+<details><summary><code>client.vital_signs.<a href="src/fern/vital_signs/client.py#L199-L244">base_url_persons_person_id_chart_encounters_encounter_id_vitals</a>(...) -> Ok98</code></summary>
 <dl>
 <dd>
 

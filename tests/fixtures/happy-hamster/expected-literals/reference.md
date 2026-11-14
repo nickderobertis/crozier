@@ -1,6 +1,6 @@
 # Reference
 ## Locations
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">get_locations_by_coordinates</a>(...) -> typing.List[Location]</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L30-L73">get_locations_by_coordinates</a>(...) -> typing.List[Location]</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.locations.get_locations_by_coordinates(
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">get_location_by_id</a>(...) -> Location</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L75-L106">get_location_by_id</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -157,7 +157,7 @@ client.locations.get_location_by_id(
 </dl>
 </details>
 
-<details><summary><code>client.locations.<a href="src/fern/locations/client.py">search_locations</a>(...) -> LocationSearchResult</code></summary>
+<details><summary><code>client.locations.<a href="src/fern/locations/client.py#L108-L152">search_locations</a>(...) -> LocationSearchResult</code></summary>
 <dl>
 <dd>
 
@@ -247,7 +247,7 @@ client.locations.search_locations(
 </details>
 
 ## Occupancy
-<details><summary><code>client.occupancy.<a href="src/fern/occupancy/client.py">add_occupancy</a>(...) -> Location</code></summary>
+<details><summary><code>client.occupancy.<a href="src/fern/occupancy/client.py#L31-L77">add_occupancy</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.occupancy.add_occupancy(
 </details>
 
 ## LocationTypes
-<details><summary><code>client.location_types.<a href="src/fern/location_types/client.py">list_location_types</a>() -> typing.List[typing.Optional[LocationType]]</code></summary>
+<details><summary><code>client.location_types.<a href="src/fern/location_types/client.py#L26-L52">list_location_types</a>() -> typing.List[typing.Optional[LocationType]]</code></summary>
 <dl>
 <dd>
 
@@ -403,7 +403,7 @@ client.location_types.list_location_types()
 </details>
 
 ## UserFavorites
-<details><summary><code>client.user_favorites.<a href="src/fern/user_favorites/client.py">list_favorites</a>() -> typing.List[Location]</code></summary>
+<details><summary><code>client.user_favorites.<a href="src/fern/user_favorites/client.py#L27-L51">list_favorites</a>() -> typing.List[Location]</code></summary>
 <dl>
 <dd>
 
@@ -466,7 +466,7 @@ client.user_favorites.list_favorites()
 </dl>
 </details>
 
-<details><summary><code>client.user_favorites.<a href="src/fern/user_favorites/client.py">add_favorite_by_location_id</a>(...) -> Location</code></summary>
+<details><summary><code>client.user_favorites.<a href="src/fern/user_favorites/client.py#L53-L84">add_favorite_by_location_id</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -539,7 +539,7 @@ client.user_favorites.add_favorite_by_location_id(
 </dl>
 </details>
 
-<details><summary><code>client.user_favorites.<a href="src/fern/user_favorites/client.py">delete_favorite_by_location_id</a>(...) -> Location</code></summary>
+<details><summary><code>client.user_favorites.<a href="src/fern/user_favorites/client.py#L86-L117">delete_favorite_by_location_id</a>(...) -> Location</code></summary>
 <dl>
 <dd>
 
@@ -613,7 +613,7 @@ client.user_favorites.delete_favorite_by_location_id(
 </details>
 
 ## UserBadges
-<details><summary><code>client.user_badges.<a href="src/fern/user_badges/client.py">list_badges</a>() -> UserBadges</code></summary>
+<details><summary><code>client.user_badges.<a href="src/fern/user_badges/client.py#L27-L51">list_badges</a>() -> UserBadges</code></summary>
 <dl>
 <dd>
 
@@ -676,7 +676,7 @@ client.user_badges.list_badges()
 </dl>
 </details>
 
-<details><summary><code>client.user_badges.<a href="src/fern/user_badges/client.py">list_newest_badge</a>() -> BadgeUpdate</code></summary>
+<details><summary><code>client.user_badges.<a href="src/fern/user_badges/client.py#L53-L77">list_newest_badge</a>() -> BadgeUpdate</code></summary>
 <dl>
 <dd>
 
@@ -740,7 +740,7 @@ client.user_badges.list_newest_badge()
 </details>
 
 ## UserLevel
-<details><summary><code>client.user_level.<a href="src/fern/user_level/client.py">get_level</a>() -> Level</code></summary>
+<details><summary><code>client.user_level.<a href="src/fern/user_level/client.py#L26-L50">get_level</a>() -> Level</code></summary>
 <dl>
 <dd>
 

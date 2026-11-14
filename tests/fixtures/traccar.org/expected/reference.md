@@ -1,6 +1,6 @@
 # Reference
 ## Attributes
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">fetch_a_list_of_attributes</a>(...) -> typing.List[Attribute]</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py#L29-L84">fetch_a_list_of_attributes</a>(...) -> typing.List[Attribute]</code></summary>
 <dl>
 <dd>
 
@@ -104,7 +104,7 @@ client.attributes.fetch_a_list_of_attributes()
 </dl>
 </details>
 
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">create_an_attribute</a>(...) -> Attribute</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py#L86-L136">create_an_attribute</a>(...) -> Attribute</code></summary>
 <dl>
 <dd>
 
@@ -162,7 +162,7 @@ client.attributes.create_an_attribute()
 </dl>
 </details>
 
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">update_an_attribute</a>(...) -> Attribute</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py#L138-L194">update_an_attribute</a>(...) -> Attribute</code></summary>
 <dl>
 <dd>
 
@@ -230,7 +230,7 @@ client.attributes.update_an_attribute(
 </dl>
 </details>
 
-<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py">delete_an_attribute</a>(...)</code></summary>
+<details><summary><code>client.attributes.<a href="src/fern/attributes/client.py#L196-L222">delete_an_attribute</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -291,7 +291,7 @@ client.attributes.delete_an_attribute(
 </details>
 
 ## Calendars
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">fetch_a_list_of_calendars</a>(...) -> typing.List[Calendar]</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py#L30-L69">fetch_a_list_of_calendars</a>(...) -> typing.List[Calendar]</code></summary>
 <dl>
 <dd>
 
@@ -371,7 +371,7 @@ client.calendars.fetch_a_list_of_calendars()
 </dl>
 </details>
 
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">create_a_calendar</a>(...) -> Calendar</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py#L71-L113">create_a_calendar</a>(...) -> Calendar</code></summary>
 <dl>
 <dd>
 
@@ -429,7 +429,7 @@ client.calendars.create_a_calendar()
 </dl>
 </details>
 
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">update_a_calendar</a>(...) -> Calendar</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py#L115-L162">update_a_calendar</a>(...) -> Calendar</code></summary>
 <dl>
 <dd>
 
@@ -497,7 +497,7 @@ client.calendars.update_a_calendar(
 </dl>
 </details>
 
-<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py">delete_a_calendar</a>(...)</code></summary>
+<details><summary><code>client.calendars.<a href="src/fern/calendars/client.py#L164-L190">delete_a_calendar</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -558,7 +558,7 @@ client.calendars.delete_a_calendar(
 </details>
 
 ## Commands
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_saved_commands</a>(...) -> typing.List[Command]</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L31-L86">fetch_a_list_of_saved_commands</a>(...) -> typing.List[Command]</code></summary>
 <dl>
 <dd>
 
@@ -662,7 +662,7 @@ client.commands.fetch_a_list_of_saved_commands()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">create_a_saved_command</a>(...) -> Command</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L88-L137">create_a_saved_command</a>(...) -> Command</code></summary>
 <dl>
 <dd>
 
@@ -720,7 +720,7 @@ client.commands.create_a_saved_command()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_saved_commands_supported_by_device_at_the_moment</a>(...) -> typing.List[Command]</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L139-L171">fetch_a_list_of_saved_commands_supported_by_device_at_the_moment</a>(...) -> typing.List[Command]</code></summary>
 <dl>
 <dd>
 
@@ -792,7 +792,7 @@ client.commands.fetch_a_list_of_saved_commands_supported_by_device_at_the_moment
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">dispatch_commands_to_device</a>(...) -> Command</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L173-L224">dispatch_commands_to_device</a>(...) -> Command</code></summary>
 <dl>
 <dd>
 
@@ -864,7 +864,7 @@ client.commands.dispatch_commands_to_device()
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">fetch_a_list_of_available_commands_for_the_device_or_all_possible_commands_if_device_ommited</a>(...) -> typing.List[CommandType]</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L226-L267">fetch_a_list_of_available_commands_for_the_device_or_all_possible_commands_if_device_ommited</a>(...) -> typing.List[CommandType]</code></summary>
 <dl>
 <dd>
 
@@ -938,7 +938,7 @@ client.commands.fetch_a_list_of_available_commands_for_the_device_or_all_possibl
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">update_a_saved_command</a>(...) -> Command</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L269-L324">update_a_saved_command</a>(...) -> Command</code></summary>
 <dl>
 <dd>
 
@@ -1006,7 +1006,7 @@ client.commands.update_a_saved_command(
 </dl>
 </details>
 
-<details><summary><code>client.commands.<a href="src/fern/commands/client.py">delete_a_saved_command</a>(...)</code></summary>
+<details><summary><code>client.commands.<a href="src/fern/commands/client.py#L326-L352">delete_a_saved_command</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1067,7 +1067,7 @@ client.commands.delete_a_saved_command(
 </details>
 
 ## Devices
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">fetch_a_list_of_devices</a>(...) -> typing.List[Device]</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L31-L78">fetch_a_list_of_devices</a>(...) -> typing.List[Device]</code></summary>
 <dl>
 <dd>
 
@@ -1163,7 +1163,7 @@ client.devices.fetch_a_list_of_devices()
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">create_a_device</a>(...) -> Device</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L80-L166">create_a_device</a>(...) -> Device</code></summary>
 <dl>
 <dd>
 
@@ -1221,7 +1221,7 @@ client.devices.create_a_device()
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">update_a_device</a>(...) -> Device</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L168-L260">update_a_device</a>(...) -> Device</code></summary>
 <dl>
 <dd>
 
@@ -1289,7 +1289,7 @@ client.devices.update_a_device(
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">delete_a_device</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L262-L288">delete_a_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1349,7 +1349,7 @@ client.devices.delete_a_device(
 </dl>
 </details>
 
-<details><summary><code>client.devices.<a href="src/fern/devices/client.py">update_total_distance_and_hours_of_the_device</a>(...)</code></summary>
+<details><summary><code>client.devices.<a href="src/fern/devices/client.py#L290-L333">update_total_distance_and_hours_of_the_device</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1434,7 +1434,7 @@ client.devices.update_total_distance_and_hours_of_the_device(
 </details>
 
 ## Drivers
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">fetch_a_list_of_drivers</a>(...) -> typing.List[Driver]</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py#L30-L85">fetch_a_list_of_drivers</a>(...) -> typing.List[Driver]</code></summary>
 <dl>
 <dd>
 
@@ -1538,7 +1538,7 @@ client.drivers.fetch_a_list_of_drivers()
 </dl>
 </details>
 
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">create_a_driver</a>(...) -> Driver</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py#L87-L128">create_a_driver</a>(...) -> Driver</code></summary>
 <dl>
 <dd>
 
@@ -1596,7 +1596,7 @@ client.drivers.create_a_driver()
 </dl>
 </details>
 
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">update_a_driver</a>(...) -> Driver</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py#L130-L176">update_a_driver</a>(...) -> Driver</code></summary>
 <dl>
 <dd>
 
@@ -1664,7 +1664,7 @@ client.drivers.update_a_driver(
 </dl>
 </details>
 
-<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py">delete_a_driver</a>(...)</code></summary>
+<details><summary><code>client.drivers.<a href="src/fern/drivers/client.py#L178-L204">delete_a_driver</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -1725,7 +1725,7 @@ client.drivers.delete_a_driver(
 </details>
 
 ## Events
-<details><summary><code>client.events.<a href="src/fern/events/client.py">get_events_id</a>(...) -> Event</code></summary>
+<details><summary><code>client.events.<a href="src/fern/events/client.py#L26-L53">get_events_id</a>(...) -> Event</code></summary>
 <dl>
 <dd>
 
@@ -1786,7 +1786,7 @@ client.events.get_events_id(
 </details>
 
 ## Geofences
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">fetch_a_list_of_geofences</a>(...) -> typing.List[Geofence]</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py#L30-L85">fetch_a_list_of_geofences</a>(...) -> typing.List[Geofence]</code></summary>
 <dl>
 <dd>
 
@@ -1890,7 +1890,7 @@ client.geofences.fetch_a_list_of_geofences()
 </dl>
 </details>
 
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">create_a_geofence</a>(...) -> Geofence</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py#L87-L140">create_a_geofence</a>(...) -> Geofence</code></summary>
 <dl>
 <dd>
 
@@ -1948,7 +1948,7 @@ client.geofences.create_a_geofence()
 </dl>
 </details>
 
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">update_a_geofence</a>(...) -> Geofence</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py#L142-L201">update_a_geofence</a>(...) -> Geofence</code></summary>
 <dl>
 <dd>
 
@@ -2016,7 +2016,7 @@ client.geofences.update_a_geofence(
 </dl>
 </details>
 
-<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py">delete_a_geofence</a>(...)</code></summary>
+<details><summary><code>client.geofences.<a href="src/fern/geofences/client.py#L203-L229">delete_a_geofence</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2077,7 +2077,7 @@ client.geofences.delete_a_geofence(
 </details>
 
 ## Groups
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">fetch_a_list_of_groups</a>(...) -> typing.List[Group]</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L30-L67">fetch_a_list_of_groups</a>(...) -> typing.List[Group]</code></summary>
 <dl>
 <dd>
 
@@ -2157,7 +2157,7 @@ client.groups.fetch_a_list_of_groups()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">create_a_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L69-L110">create_a_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -2215,7 +2215,7 @@ client.groups.create_a_group()
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">update_a_group</a>(...) -> Group</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L112-L158">update_a_group</a>(...) -> Group</code></summary>
 <dl>
 <dd>
 
@@ -2283,7 +2283,7 @@ client.groups.update_a_group(
 </dl>
 </details>
 
-<details><summary><code>client.groups.<a href="src/fern/groups/client.py">delete_a_group</a>(...)</code></summary>
+<details><summary><code>client.groups.<a href="src/fern/groups/client.py#L160-L186">delete_a_group</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2344,7 +2344,7 @@ client.groups.delete_a_group(
 </details>
 
 ## Maintenance
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">fetch_a_list_of_maintenance</a>(...) -> typing.List[Maintenance]</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L30-L85">fetch_a_list_of_maintenance</a>(...) -> typing.List[Maintenance]</code></summary>
 <dl>
 <dd>
 
@@ -2448,7 +2448,7 @@ client.maintenance.fetch_a_list_of_maintenance()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">create_a_maintenance</a>(...) -> Maintenance</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L87-L140">create_a_maintenance</a>(...) -> Maintenance</code></summary>
 <dl>
 <dd>
 
@@ -2506,7 +2506,7 @@ client.maintenance.create_a_maintenance()
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">update_a_maintenance</a>(...) -> Maintenance</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L142-L201">update_a_maintenance</a>(...) -> Maintenance</code></summary>
 <dl>
 <dd>
 
@@ -2574,7 +2574,7 @@ client.maintenance.update_a_maintenance(
 </dl>
 </details>
 
-<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py">delete_a_maintenance</a>(...)</code></summary>
+<details><summary><code>client.maintenance.<a href="src/fern/maintenance/client.py#L203-L229">delete_a_maintenance</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -2635,7 +2635,7 @@ client.maintenance.delete_a_maintenance(
 </details>
 
 ## Notifications
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">fetch_a_list_of_notifications</a>(...) -> typing.List[Notification]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L31-L86">fetch_a_list_of_notifications</a>(...) -> typing.List[Notification]</code></summary>
 <dl>
 <dd>
 
@@ -2739,7 +2739,7 @@ client.notifications.fetch_a_list_of_notifications()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">create_a_notification</a>(...) -> Notification</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L88-L149">create_a_notification</a>(...) -> Notification</code></summary>
 <dl>
 <dd>
 
@@ -2797,7 +2797,7 @@ client.notifications.create_a_notification()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">send_test_notification_to_current_user_via_email_and_sms</a>()</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L151-L177">send_test_notification_to_current_user_via_email_and_sms</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2847,7 +2847,7 @@ client.notifications.send_test_notification_to_current_user_via_email_and_sms()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">fetch_a_list_of_available_notification_types</a>() -> typing.List[NotificationType]</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L179-L204">fetch_a_list_of_available_notification_types</a>() -> typing.List[NotificationType]</code></summary>
 <dl>
 <dd>
 
@@ -2897,7 +2897,7 @@ client.notifications.fetch_a_list_of_available_notification_types()
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">update_a_notification</a>(...) -> Notification</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L206-L273">update_a_notification</a>(...) -> Notification</code></summary>
 <dl>
 <dd>
 
@@ -2965,7 +2965,7 @@ client.notifications.update_a_notification(
 </dl>
 </details>
 
-<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py">delete_a_notification</a>(...)</code></summary>
+<details><summary><code>client.notifications.<a href="src/fern/notifications/client.py#L275-L301">delete_a_notification</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3026,7 +3026,7 @@ client.notifications.delete_a_notification(
 </details>
 
 ## Permissions
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">link_an_object_to_another_object</a>(...) -> Permission</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L29-L103">link_an_object_to_another_object</a>(...) -> Permission</code></summary>
 <dl>
 <dd>
 
@@ -3084,7 +3084,7 @@ client.permissions.link_an_object_to_another_object()
 </dl>
 </details>
 
-<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py">unlink_an_object_from_another_object</a>(...)</code></summary>
+<details><summary><code>client.permissions.<a href="src/fern/permissions/client.py#L105-L178">unlink_an_object_from_another_object</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -3143,7 +3143,7 @@ client.permissions.unlink_an_object_from_another_object()
 </details>
 
 ## Positions
-<details><summary><code>client.positions.<a href="src/fern/positions/client.py">fetches_a_list_of_positions</a>(...) -> typing.List[Position]</code></summary>
+<details><summary><code>client.positions.<a href="src/fern/positions/client.py#L27-L74">fetches_a_list_of_positions</a>(...) -> typing.List[Position]</code></summary>
 <dl>
 <dd>
 
@@ -3240,7 +3240,7 @@ client.positions.fetches_a_list_of_positions()
 </details>
 
 ## Reports
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_events_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[Event]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L31-L89">fetch_a_list_of_events_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[Event]</code></summary>
 <dl>
 <dd>
 
@@ -3348,7 +3348,7 @@ client.reports.fetch_a_list_of_events_within_the_time_period_for_the_devices_or_
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[Position]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L91-L145">fetch_a_list_of_positions_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[Position]</code></summary>
 <dl>
 <dd>
 
@@ -3448,7 +3448,7 @@ client.reports.fetch_a_list_of_positions_within_the_time_period_for_the_devices_
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportStops]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L147-L201">fetch_a_list_of_report_stops_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportStops]</code></summary>
 <dl>
 <dd>
 
@@ -3548,7 +3548,7 @@ client.reports.fetch_a_list_of_report_stops_within_the_time_period_for_the_devic
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportSummary]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L203-L257">fetch_a_list_of_report_summary_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportSummary]</code></summary>
 <dl>
 <dd>
 
@@ -3648,7 +3648,7 @@ client.reports.fetch_a_list_of_report_summary_within_the_time_period_for_the_dev
 </dl>
 </details>
 
-<details><summary><code>client.reports.<a href="src/fern/reports/client.py">fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportTrips]</code></summary>
+<details><summary><code>client.reports.<a href="src/fern/reports/client.py#L259-L313">fetch_a_list_of_report_trips_within_the_time_period_for_the_devices_or_groups</a>(...) -> typing.List[ReportTrips]</code></summary>
 <dl>
 <dd>
 
@@ -3749,7 +3749,7 @@ client.reports.fetch_a_list_of_report_trips_within_the_time_period_for_the_devic
 </details>
 
 ## Server
-<details><summary><code>client.server.<a href="src/fern/server/client.py">fetch_server_information</a>() -> Server</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py#L30-L53">fetch_server_information</a>() -> Server</code></summary>
 <dl>
 <dd>
 
@@ -3799,7 +3799,7 @@ client.server.fetch_server_information()
 </dl>
 </details>
 
-<details><summary><code>client.server.<a href="src/fern/server/client.py">update_server_information</a>(...) -> Server</code></summary>
+<details><summary><code>client.server.<a href="src/fern/server/client.py#L55-L152">update_server_information</a>(...) -> Server</code></summary>
 <dl>
 <dd>
 
@@ -3858,7 +3858,7 @@ client.server.update_server_information()
 </details>
 
 ## Session
-<details><summary><code>client.session.<a href="src/fern/session/client.py">fetch_session_information</a>(...) -> User</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py#L29-L56">fetch_session_information</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -3916,7 +3916,7 @@ client.session.fetch_session_information()
 </dl>
 </details>
 
-<details><summary><code>client.session.<a href="src/fern/session/client.py">create_a_new_session</a>(...) -> User</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py#L58-L92">create_a_new_session</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -3985,7 +3985,7 @@ client.session.create_a_new_session(
 </dl>
 </details>
 
-<details><summary><code>client.session.<a href="src/fern/session/client.py">close_the_session</a>()</code></summary>
+<details><summary><code>client.session.<a href="src/fern/session/client.py#L94-L116">close_the_session</a>()</code></summary>
 <dl>
 <dd>
 
@@ -4036,7 +4036,7 @@ client.session.close_the_session()
 </details>
 
 ## Statistics
-<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py">fetch_server_statistics</a>(...) -> typing.List[Statistics]</code></summary>
+<details><summary><code>client.statistics.<a href="src/fern/statistics/client.py#L27-L67">fetch_server_statistics</a>(...) -> typing.List[Statistics]</code></summary>
 <dl>
 <dd>
 
@@ -4107,7 +4107,7 @@ client.statistics.fetch_server_statistics(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">fetch_a_list_of_users</a>(...) -> typing.List[User]</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L31-L59">fetch_a_list_of_users</a>(...) -> typing.List[User]</code></summary>
 <dl>
 <dd>
 
@@ -4165,7 +4165,7 @@ client.users.fetch_a_list_of_users()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_a_user</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L61-L175">create_a_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -4223,7 +4223,7 @@ client.users.create_a_user()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_a_user</a>(...) -> User</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L177-L297">update_a_user</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -4291,7 +4291,7 @@ client.users.update_a_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_a_user</a>(...)</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L299-L325">delete_a_user</a>(...)</code></summary>
 <dl>
 <dd>
 

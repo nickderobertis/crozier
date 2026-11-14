@@ -1,6 +1,6 @@
 # Reference
 ## Context
-<details><summary><code>client.context.<a href="src/fern/context/client.py">listownercontexts</a>(...) -> ContextListOwnerContextsResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L40-L90">listownercontexts</a>(...) -> ContextListOwnerContextsResponse</code></summary>
 <dl>
 <dd>
 
@@ -95,7 +95,7 @@ client.context.listownercontexts()
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">createnewcontext</a>(...) -> ContextCreateNewContextResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L92-L134">createnewcontext</a>(...) -> ContextCreateNewContextResponse</code></summary>
 <dl>
 <dd>
 
@@ -180,7 +180,7 @@ client.context.createnewcontext(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">getinformation</a>(...) -> ContextGetInformationResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L136-L167">getinformation</a>(...) -> ContextGetInformationResponse</code></summary>
 <dl>
 <dd>
 
@@ -253,7 +253,7 @@ client.context.getinformation(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">removecontext</a>(...) -> ContextRemoveContextResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L169-L198">removecontext</a>(...) -> ContextRemoveContextResponse</code></summary>
 <dl>
 <dd>
 
@@ -312,7 +312,7 @@ client.context.removecontext(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">listenvironmentvariables</a>(...) -> ContextListEnvironmentVariablesResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L200-L240">listenvironmentvariables</a>(...) -> ContextListEnvironmentVariablesResponse</code></summary>
 <dl>
 <dd>
 
@@ -393,7 +393,7 @@ client.context.listenvironmentvariables(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">updateenvironmentvariable</a>(...) -> ContextUpdateEnvironmentVariableResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L242-L283">updateenvironmentvariable</a>(...) -> ContextUpdateEnvironmentVariableResponse</code></summary>
 <dl>
 <dd>
 
@@ -484,7 +484,7 @@ client.context.updateenvironmentvariable(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">removeenvironmentvariable</a>(...) -> ContextRemoveEnvironmentVariableResponse</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L285-L322">removeenvironmentvariable</a>(...) -> ContextRemoveEnvironmentVariableResponse</code></summary>
 <dl>
 <dd>
 
@@ -566,7 +566,7 @@ client.context.removeenvironmentvariable(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">getrestrictions</a>(...) -> ContextProjectRestrictionsList</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L324-L355">getrestrictions</a>(...) -> ContextProjectRestrictionsList</code></summary>
 <dl>
 <dd>
 
@@ -639,7 +639,7 @@ client.context.getrestrictions(
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">createrestriction</a>(...) -> RestrictionCreated</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L357-L414">createrestriction</a>(...) -> RestrictionCreated</code></summary>
 <dl>
 <dd>
 
@@ -745,7 +745,7 @@ and implies restriction_type is "project".
 </dl>
 </details>
 
-<details><summary><code>client.context.<a href="src/fern/context/client.py">deleterestriction</a>(...) -> RestrictionDeleted</code></summary>
+<details><summary><code>client.context.<a href="src/fern/context/client.py#L416-L451">deleterestriction</a>(...) -> RestrictionDeleted</code></summary>
 <dl>
 <dd>
 
@@ -828,7 +828,7 @@ client.context.deleterestriction(
 </details>
 
 ## Insights
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getprojectsummarymetrics</a>(...) -> InsightsGetProjectSummaryMetricsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L49-L104">getprojectsummarymetrics</a>(...) -> InsightsGetProjectSummaryMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -928,7 +928,7 @@ client.insights.getprojectsummarymetrics(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getjobtimeseriesdata</a>(...) -> InsightsGetJobTimeseriesDataResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L106-L177">getjobtimeseriesdata</a>(...) -> InsightsGetJobTimeseriesDataResponse</code></summary>
 <dl>
 <dd>
 
@@ -1045,7 +1045,7 @@ client.insights.getjobtimeseriesdata(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getsummarymetricswithtrends</a>(...) -> InsightsGetSummaryMetricsWithTrendsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L179-L224">getsummarymetricswithtrends</a>(...) -> InsightsGetSummaryMetricsWithTrendsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1135,7 +1135,7 @@ client.insights.getsummarymetricswithtrends(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">listprojectbranches</a>(...) -> InsightsListProjectBranchesResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L226-L267">listprojectbranches</a>(...) -> InsightsListProjectBranchesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1217,7 +1217,7 @@ client.insights.listprojectbranches(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getflakytests</a>(...) -> InsightsGetFlakyTestsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L269-L301">getflakytests</a>(...) -> InsightsGetFlakyTestsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1291,7 +1291,7 @@ client.insights.getflakytests(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getprojectworkflowmetrics</a>(...) -> InsightsGetProjectWorkflowMetricsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L303-L360">getprojectworkflowmetrics</a>(...) -> InsightsGetProjectWorkflowMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1396,7 +1396,7 @@ client.insights.getprojectworkflowmetrics(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getrecentworkflowruns</a>(...) -> InsightsGetRecentWorkflowRunsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L362-L438">getrecentworkflowruns</a>(...) -> InsightsGetRecentWorkflowRunsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1521,7 +1521,7 @@ client.insights.getrecentworkflowruns(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getprojectworkflowjobmetrics</a>(...) -> InsightsGetProjectWorkflowJobMetricsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L440-L503">getprojectworkflowjobmetrics</a>(...) -> InsightsGetProjectWorkflowJobMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1635,7 +1635,7 @@ client.insights.getprojectworkflowjobmetrics(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getworkflowsummarymetrics</a>(...) -> InsightsGetWorkflowSummaryMetricsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L505-L554">getworkflowsummarymetrics</a>(...) -> InsightsGetWorkflowSummaryMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1733,7 +1733,7 @@ client.insights.getworkflowsummarymetrics(
 </dl>
 </details>
 
-<details><summary><code>client.insights.<a href="src/fern/insights/client.py">getprojectworkflowtestmetrics</a>(...) -> InsightsGetProjectWorkflowTestMetricsResponse</code></summary>
+<details><summary><code>client.insights.<a href="src/fern/insights/client.py#L556-L605">getprojectworkflowtestmetrics</a>(...) -> InsightsGetProjectWorkflowTestMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1832,7 +1832,7 @@ client.insights.getprojectworkflowtestmetrics(
 </details>
 
 ## User
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getinformation</a>() -> UserGetInformationResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L28-L52">getinformation</a>() -> UserGetInformationResponse</code></summary>
 <dl>
 <dd>
 
@@ -1895,7 +1895,7 @@ client.user.getinformation()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">listcollaborations</a>() -> UserListCollaborationsResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L54-L86">listcollaborations</a>() -> UserListCollaborationsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1964,7 +1964,7 @@ client.user.listcollaborations()
 </dl>
 </details>
 
-<details><summary><code>client.user.<a href="src/fern/user/client.py">getuserinformation</a>(...) -> UserGetUserInformationResponse</code></summary>
+<details><summary><code>client.user.<a href="src/fern/user/client.py#L88-L119">getuserinformation</a>(...) -> UserGetUserInformationResponse</code></summary>
 <dl>
 <dd>
 
@@ -2038,7 +2038,7 @@ client.user.getuserinformation(
 </details>
 
 ## Pipeline
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">listrecentpipelines</a>(...) -> PipelineListRecentPipelinesResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L41-L85">listrecentpipelines</a>(...) -> PipelineListRecentPipelinesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2127,7 +2127,7 @@ client.pipeline.listrecentpipelines(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">continueexecution</a>(...) -> PipelineContinueExecutionResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L87-L135">continueexecution</a>(...) -> PipelineContinueExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -2217,7 +2217,7 @@ client.pipeline.continueexecution(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">getbyid</a>(...) -> PipelineGetByIdResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L137-L168">getbyid</a>(...) -> PipelineGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2290,7 +2290,7 @@ client.pipeline.getbyid(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">getconfigurationbyid</a>(...) -> PipelineGetConfigurationByIdResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L170-L201">getconfigurationbyid</a>(...) -> PipelineGetConfigurationByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -2363,7 +2363,7 @@ client.pipeline.getconfigurationbyid(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">listworkflows</a>(...) -> PipelineListWorkflowsResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L203-L241">listworkflows</a>(...) -> PipelineListWorkflowsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2444,7 +2444,7 @@ client.pipeline.listworkflows(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">getallpipelines</a>(...) -> PipelineGetAllPipelinesResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L243-L287">getallpipelines</a>(...) -> PipelineGetAllPipelinesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2533,7 +2533,7 @@ client.pipeline.getallpipelines(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">triggernewpipeline</a>(...) -> PipelineTriggerNewPipelineResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L289-L337">triggernewpipeline</a>(...) -> PipelineTriggerNewPipelineResponse</code></summary>
 <dl>
 <dd>
 
@@ -2630,7 +2630,7 @@ client.pipeline.triggernewpipeline(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">listuserpipelines</a>(...) -> PipelineListUserPipelinesResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L339-L379">listuserpipelines</a>(...) -> PipelineListUserPipelinesResponse</code></summary>
 <dl>
 <dd>
 
@@ -2711,7 +2711,7 @@ client.pipeline.listuserpipelines(
 </dl>
 </details>
 
-<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py">getbynumber</a>(...) -> PipelineGetByNumberResponse</code></summary>
+<details><summary><code>client.pipeline.<a href="src/fern/pipeline/client.py#L381-L416">getbynumber</a>(...) -> PipelineGetByNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -2794,7 +2794,7 @@ client.pipeline.getbynumber(
 </details>
 
 ## Project
-<details><summary><code>client.project.<a href="src/fern/project/client.py">getbyslug</a>(...) -> ProjectGetBySlugResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L41-L72">getbyslug</a>(...) -> ProjectGetBySlugResponse</code></summary>
 <dl>
 <dd>
 
@@ -2867,7 +2867,7 @@ client.project.getbyslug(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">listcheckoutkeys</a>(...) -> ProjectListCheckoutKeysResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L74-L112">listcheckoutkeys</a>(...) -> ProjectListCheckoutKeysResponse</code></summary>
 <dl>
 <dd>
 
@@ -2948,7 +2948,7 @@ client.project.listcheckoutkeys(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">createcheckoutkey</a>(...) -> ProjectCreateCheckoutKeyResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L114-L158">createcheckoutkey</a>(...) -> ProjectCreateCheckoutKeyResponse</code></summary>
 <dl>
 <dd>
 
@@ -3034,7 +3034,7 @@ client.project.createcheckoutkey(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">getcheckoutkeybyfingerprint</a>(...) -> ProjectGetCheckoutKeyByFingerprintResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L160-L197">getcheckoutkeybyfingerprint</a>(...) -> ProjectGetCheckoutKeyByFingerprintResponse</code></summary>
 <dl>
 <dd>
 
@@ -3116,7 +3116,7 @@ client.project.getcheckoutkeybyfingerprint(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">deletecheckoutkeybyfingerprint</a>(...) -> ProjectDeleteCheckoutKeyByFingerprintResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L199-L236">deletecheckoutkeybyfingerprint</a>(...) -> ProjectDeleteCheckoutKeyByFingerprintResponse</code></summary>
 <dl>
 <dd>
 
@@ -3198,7 +3198,7 @@ client.project.deletecheckoutkeybyfingerprint(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">listenvvarvalues</a>(...) -> ProjectListEnvVarValuesResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L238-L269">listenvvarvalues</a>(...) -> ProjectListEnvVarValuesResponse</code></summary>
 <dl>
 <dd>
 
@@ -3271,7 +3271,7 @@ client.project.listenvvarvalues(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">createenvvar</a>(...) -> ProjectCreateEnvVarResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L271-L310">createenvvar</a>(...) -> ProjectCreateEnvVarResponse</code></summary>
 <dl>
 <dd>
 
@@ -3362,7 +3362,7 @@ client.project.createenvvar(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">getmaskedenvvar</a>(...) -> ProjectGetMaskedEnvVarResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L312-L347">getmaskedenvvar</a>(...) -> ProjectGetMaskedEnvVarResponse</code></summary>
 <dl>
 <dd>
 
@@ -3444,7 +3444,7 @@ client.project.getmaskedenvvar(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">deleteenvironmentvariable</a>(...) -> ProjectDeleteEnvironmentVariableResponse</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L349-L384">deleteenvironmentvariable</a>(...) -> ProjectDeleteEnvironmentVariableResponse</code></summary>
 <dl>
 <dd>
 
@@ -3526,7 +3526,7 @@ client.project.deleteenvironmentvariable(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">createprojectdefaultsettings</a>(...) -> ProjectSettings</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L386-L427">createprojectdefaultsettings</a>(...) -> ProjectSettings</code></summary>
 <dl>
 <dd>
 
@@ -3617,7 +3617,7 @@ client.project.createprojectdefaultsettings(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">getsettings</a>(...) -> ProjectSettings</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L429-L468">getsettings</a>(...) -> ProjectSettings</code></summary>
 <dl>
 <dd>
 
@@ -3708,7 +3708,7 @@ client.project.getsettings(
 </dl>
 </details>
 
-<details><summary><code>client.project.<a href="src/fern/project/client.py">updatesettings</a>(...) -> ProjectSettings</code></summary>
+<details><summary><code>client.project.<a href="src/fern/project/client.py#L470-L524">updatesettings</a>(...) -> ProjectSettings</code></summary>
 <dl>
 <dd>
 
@@ -3815,7 +3815,7 @@ client.project.updatesettings(
 </details>
 
 ## Job
-<details><summary><code>client.job.<a href="src/fern/job/client.py">getdetails</a>(...) -> JobGetDetailsResponse</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L29-L64">getdetails</a>(...) -> JobGetDetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3897,7 +3897,7 @@ client.job.getdetails(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">cancelwithnumber</a>(...) -> JobCancelWithNumberResponse</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L66-L101">cancelwithnumber</a>(...) -> JobCancelWithNumberResponse</code></summary>
 <dl>
 <dd>
 
@@ -3979,7 +3979,7 @@ client.job.cancelwithnumber(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">getartifacts</a>(...) -> JobGetArtifactsResponse</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L103-L138">getartifacts</a>(...) -> JobGetArtifactsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4061,7 +4061,7 @@ client.job.getartifacts(
 </dl>
 </details>
 
-<details><summary><code>client.job.<a href="src/fern/job/client.py">gettestmetadata</a>(...) -> JobGetTestMetadataResponse</code></summary>
+<details><summary><code>client.job.<a href="src/fern/job/client.py#L140-L175">gettestmetadata</a>(...) -> JobGetTestMetadataResponse</code></summary>
 <dl>
 <dd>
 
@@ -4144,7 +4144,7 @@ client.job.gettestmetadata(
 </details>
 
 ## Schedule
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">getallschedules</a>(...) -> ScheduleGetAllSchedulesResponse</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py#L41-L81">getallschedules</a>(...) -> ScheduleGetAllSchedulesResponse</code></summary>
 <dl>
 <dd>
 
@@ -4225,7 +4225,7 @@ client.schedule.getallschedules(
 </dl>
 </details>
 
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">createnewschedule</a>(...) -> ScheduleCreateNewScheduleResponse</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py#L83-L161">createnewschedule</a>(...) -> ScheduleCreateNewScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -4354,7 +4354,7 @@ client.schedule.createnewschedule(
 </dl>
 </details>
 
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">getbyid</a>(...) -> ScheduleGetByIdResponse</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py#L163-L194">getbyid</a>(...) -> ScheduleGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4427,7 +4427,7 @@ client.schedule.getbyid(
 </dl>
 </details>
 
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">removebyid</a>(...) -> ScheduleRemoveByIdResponse</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py#L196-L227">removebyid</a>(...) -> ScheduleRemoveByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4500,7 +4500,7 @@ client.schedule.removebyid(
 </dl>
 </details>
 
-<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py">updateschedule</a>(...) -> ScheduleUpdateScheduleResponse</code></summary>
+<details><summary><code>client.schedule.<a href="src/fern/schedule/client.py#L229-L291">updateschedule</a>(...) -> ScheduleUpdateScheduleResponse</code></summary>
 <dl>
 <dd>
 
@@ -4614,7 +4614,7 @@ client.schedule.updateschedule(
 </details>
 
 ## Webhook
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">listmatchingscope</a>(...) -> WebhookListMatchingScopeResponse</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L37-L80">listmatchingscope</a>(...) -> WebhookListMatchingScopeResponse</code></summary>
 <dl>
 <dd>
 
@@ -4697,7 +4697,7 @@ client.webhook.listmatchingscope(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">createoutboundwebhook</a>(...) -> WebhookCreateOutboundWebhookResponse</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L82-L158">createoutboundwebhook</a>(...) -> WebhookCreateOutboundWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -4821,7 +4821,7 @@ client.webhook.createoutboundwebhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">getbyid</a>(...) -> WebhookGetByIdResponse</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L160-L191">getbyid</a>(...) -> WebhookGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -4894,7 +4894,7 @@ client.webhook.getbyid(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">updateoutboundwebhook</a>(...) -> WebhookUpdateOutboundWebhookResponse</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L193-L255">updateoutboundwebhook</a>(...) -> WebhookUpdateOutboundWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -5007,7 +5007,7 @@ client.webhook.updateoutboundwebhook(
 </dl>
 </details>
 
-<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py">deleteoutboundwebhook</a>(...) -> WebhookDeleteOutboundWebhookResponse</code></summary>
+<details><summary><code>client.webhook.<a href="src/fern/webhook/client.py#L257-L288">deleteoutboundwebhook</a>(...) -> WebhookDeleteOutboundWebhookResponse</code></summary>
 <dl>
 <dd>
 
@@ -5081,7 +5081,7 @@ client.webhook.deleteoutboundwebhook(
 </details>
 
 ## Workflow
-<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py">getbyid</a>(...) -> WorkflowGetByIdResponse</code></summary>
+<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py#L33-L62">getbyid</a>(...) -> WorkflowGetByIdResponse</code></summary>
 <dl>
 <dd>
 
@@ -5154,7 +5154,7 @@ client.workflow.getbyid(
 </dl>
 </details>
 
-<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py">approvejob</a>(...) -> WorkflowApproveJobResponse</code></summary>
+<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py#L64-L99">approvejob</a>(...) -> WorkflowApproveJobResponse</code></summary>
 <dl>
 <dd>
 
@@ -5236,7 +5236,7 @@ client.workflow.approvejob(
 </dl>
 </details>
 
-<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py">cancelworkflow</a>(...) -> WorkflowCancelWorkflowResponse</code></summary>
+<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py#L101-L132">cancelworkflow</a>(...) -> WorkflowCancelWorkflowResponse</code></summary>
 <dl>
 <dd>
 
@@ -5309,7 +5309,7 @@ client.workflow.cancelworkflow(
 </dl>
 </details>
 
-<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py">getjobs</a>(...) -> WorkflowGetJobsResponse</code></summary>
+<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py#L134-L163">getjobs</a>(...) -> WorkflowGetJobsResponse</code></summary>
 <dl>
 <dd>
 
@@ -5382,7 +5382,7 @@ client.workflow.getjobs(
 </dl>
 </details>
 
-<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py">rerunworkflow</a>(...) -> WorkflowRerunWorkflowResponse</code></summary>
+<details><summary><code>client.workflow.<a href="src/fern/workflow/client.py#L165-L222">rerunworkflow</a>(...) -> WorkflowRerunWorkflowResponse</code></summary>
 <dl>
 <dd>
 
@@ -5488,7 +5488,7 @@ client.workflow.rerunworkflow(
 </details>
 
 ## OIDC Token Management
-<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py">oidc_token_management_get_org_claims</a>(...) -> ClaimResponse</code></summary>
+<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py#L30-L60">oidc_token_management_get_org_claims</a>(...) -> ClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -5561,7 +5561,7 @@ client.oidc_token_management.oidc_token_management_get_org_claims(
 </dl>
 </details>
 
-<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py">oidc_token_management_delete_org_claims</a>(...) -> ClaimResponse</code></summary>
+<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py#L62-L98">oidc_token_management_delete_org_claims</a>(...) -> ClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -5643,7 +5643,7 @@ client.oidc_token_management.oidc_token_management_delete_org_claims(
 </dl>
 </details>
 
-<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py">oidc_token_management_update_org_claims</a>(...) -> ClaimResponse</code></summary>
+<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py#L100-L141">oidc_token_management_update_org_claims</a>(...) -> ClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -5724,7 +5724,7 @@ client.oidc_token_management.oidc_token_management_update_org_claims(
 </dl>
 </details>
 
-<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py">oidc_token_management_get_project_claims</a>(...) -> ClaimResponse</code></summary>
+<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py#L143-L178">oidc_token_management_get_project_claims</a>(...) -> ClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -5806,7 +5806,7 @@ client.oidc_token_management.oidc_token_management_get_project_claims(
 </dl>
 </details>
 
-<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py">oidc_token_management_delete_project_claims</a>(...) -> ClaimResponse</code></summary>
+<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py#L180-L219">oidc_token_management_delete_project_claims</a>(...) -> ClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -5897,7 +5897,7 @@ client.oidc_token_management.oidc_token_management_delete_project_claims(
 </dl>
 </details>
 
-<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py">oidc_token_management_update_project_claims</a>(...) -> ClaimResponse</code></summary>
+<details><summary><code>client.oidc_token_management.<a href="src/fern/oidc_token_management/client.py#L221-L266">oidc_token_management_update_project_claims</a>(...) -> ClaimResponse</code></summary>
 <dl>
 <dd>
 
@@ -5988,7 +5988,7 @@ client.oidc_token_management.oidc_token_management_update_project_claims(
 </details>
 
 ## Policy Management
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_get_decision_audit_logs</a>(...) -> PolicyManagementGetDecisionAuditLogsResponse</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L36-L112">policy_management_get_decision_audit_logs</a>(...) -> PolicyManagementGetDecisionAuditLogsResponse</code></summary>
 <dl>
 <dd>
 
@@ -6126,7 +6126,7 @@ client.policy_management.policy_management_get_decision_audit_logs(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_evaluate_input_data</a>(...) -> Decision</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L114-L160">policy_management_evaluate_input_data</a>(...) -> Decision</code></summary>
 <dl>
 <dd>
 
@@ -6225,7 +6225,7 @@ client.policy_management.policy_management_evaluate_input_data(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_get_decision_settings</a>(...) -> DecisionSettings</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L162-L197">policy_management_get_decision_settings</a>(...) -> DecisionSettings</code></summary>
 <dl>
 <dd>
 
@@ -6307,7 +6307,7 @@ client.policy_management.policy_management_get_decision_settings(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_modify_decision_settings</a>(...) -> DecisionSettings</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L199-L241">policy_management_modify_decision_settings</a>(...) -> DecisionSettings</code></summary>
 <dl>
 <dd>
 
@@ -6397,7 +6397,7 @@ client.policy_management.policy_management_modify_decision_settings(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_get_decision_audit_log_by_given_id</a>(...) -> DecisionLog</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L243-L281">policy_management_get_decision_audit_log_by_given_id</a>(...) -> DecisionLog</code></summary>
 <dl>
 <dd>
 
@@ -6488,7 +6488,7 @@ client.policy_management.policy_management_get_decision_audit_log_by_given_id(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_get_policy_bundle_for_decision</a>(...) -> PolicyBundle</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L283-L321">policy_management_get_policy_bundle_for_decision</a>(...) -> PolicyBundle</code></summary>
 <dl>
 <dd>
 
@@ -6579,7 +6579,7 @@ client.policy_management.policy_management_get_policy_bundle_for_decision(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_get_policy_bundle</a>(...) -> PolicyBundle</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L323-L358">policy_management_get_policy_bundle</a>(...) -> PolicyBundle</code></summary>
 <dl>
 <dd>
 
@@ -6661,7 +6661,7 @@ client.policy_management.policy_management_get_policy_bundle(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_create_policy_bundle_for_context</a>(...) -> BundleDiff</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L360-L405">policy_management_create_policy_bundle_for_context</a>(...) -> BundleDiff</code></summary>
 <dl>
 <dd>
 
@@ -6759,7 +6759,7 @@ client.policy_management.policy_management_create_policy_bundle_for_context(
 </dl>
 </details>
 
-<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py">policy_management_get_document</a>(...) -> Policy</code></summary>
+<details><summary><code>client.policy_management.<a href="src/fern/policy_management/client.py#L407-L446">policy_management_get_document</a>(...) -> Policy</code></summary>
 <dl>
 <dd>
 

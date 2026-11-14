@@ -1,9 +1,9 @@
 [project]
-name = "default_package_name"
+name = "default-package-name"
 dynamic = ["version"]
 
 [tool.poetry]
-name = "default_package_name"
+name = "default-package-name"
 version = "0.0.0"
 description = ""
 readme = "README.md"

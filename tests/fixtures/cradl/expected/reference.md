@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_actions</a>(...) -> Actions</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L181-L215">get_actions</a>(...) -> Actions</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.get_actions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_actions</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L217-L277">post_actions</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -177,7 +177,7 @@ client.post_actions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_actions_action_id</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L279-L307">get_actions_action_id</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -236,7 +236,7 @@ client.get_actions_action_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_actions_action_id</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L309-L337">delete_actions_action_id</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -295,7 +295,7 @@ client.delete_actions_action_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_actions_action_id</a>(...) -> Action</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L339-L405">patch_actions_action_id</a>(...) -> Action</code></summary>
 <dl>
 <dd>
 
@@ -418,7 +418,7 @@ client.patch_actions_action_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_actions_action_id_runs</a>(...) -> ActionRuns</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L407-L449">get_actions_action_id_runs</a>(...) -> ActionRuns</code></summary>
 <dl>
 <dd>
 
@@ -501,7 +501,7 @@ client.get_actions_action_id_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_actions_action_id_runs</a>(...) -> ActionRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L451-L501">post_actions_action_id_runs</a>(...) -> ActionRun</code></summary>
 <dl>
 <dd>
 
@@ -592,7 +592,7 @@ client.post_actions_action_id_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_actions_action_id_runs_run_id</a>(...) -> ActionRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L503-L536">get_actions_action_id_runs_run_id</a>(...) -> ActionRun</code></summary>
 <dl>
 <dd>
 
@@ -660,7 +660,7 @@ client.get_actions_action_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_actions_action_id_runs_run_id</a>(...) -> ActionRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L538-L584">patch_actions_action_id_runs_run_id</a>(...) -> ActionRun</code></summary>
 <dl>
 <dd>
 
@@ -752,7 +752,7 @@ client.patch_actions_action_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_agents</a>(...) -> Agents</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L586-L620">get_agents</a>(...) -> Agents</code></summary>
 <dl>
 <dd>
 
@@ -817,7 +817,7 @@ client.get_agents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_agents</a>(...) -> Agent</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L622-L666">post_agents</a>(...) -> Agent</code></summary>
 <dl>
 <dd>
 
@@ -898,7 +898,7 @@ client.post_agents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_agents_agent_id</a>(...) -> Agent</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L668-L694">get_agents_agent_id</a>(...) -> Agent</code></summary>
 <dl>
 <dd>
 
@@ -957,7 +957,7 @@ client.get_agents_agent_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_agents_agent_id</a>(...) -> Agent</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L696-L724">delete_agents_agent_id</a>(...) -> Agent</code></summary>
 <dl>
 <dd>
 
@@ -1016,7 +1016,7 @@ client.delete_agents_agent_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_agents_agent_id</a>(...) -> Agent</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L726-L776">patch_agents_agent_id</a>(...) -> Agent</code></summary>
 <dl>
 <dd>
 
@@ -1107,7 +1107,7 @@ client.patch_agents_agent_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_agents_agent_id_runs</a>(...) -> AgentRuns</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L778-L848">get_agents_agent_id_runs</a>(...) -> AgentRuns</code></summary>
 <dl>
 <dd>
 
@@ -1238,7 +1238,7 @@ client.get_agents_agent_id_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_agents_agent_id_runs</a>(...) -> AgentRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L850-L886">post_agents_agent_id_runs</a>(...) -> AgentRun</code></summary>
 <dl>
 <dd>
 
@@ -1305,7 +1305,7 @@ client.post_agents_agent_id_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_agents_agent_id_runs_run_id</a>(...) -> AgentRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L888-L919">get_agents_agent_id_runs_run_id</a>(...) -> AgentRun</code></summary>
 <dl>
 <dd>
 
@@ -1373,7 +1373,7 @@ client.get_agents_agent_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_agents_agent_id_runs_run_id</a>(...) -> AgentRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L921-L954">delete_agents_agent_id_runs_run_id</a>(...) -> AgentRun</code></summary>
 <dl>
 <dd>
 
@@ -1441,7 +1441,7 @@ client.delete_agents_agent_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_agents_agent_id_runs_run_id</a>(...) -> AgentRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L956-L996">patch_agents_agent_id_runs_run_id</a>(...) -> AgentRun</code></summary>
 <dl>
 <dd>
 
@@ -1517,7 +1517,7 @@ client.patch_agents_agent_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_agents_agent_id_statistics</a>(...) -> AgentStatistics</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L998-L1037">get_agents_agent_id_statistics</a>(...) -> AgentStatistics</code></summary>
 <dl>
 <dd>
 
@@ -1592,7 +1592,7 @@ client.get_agents_agent_id_statistics(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_documents</a>(...) -> Documents</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1039-L1095">get_documents</a>(...) -> Documents</code></summary>
 <dl>
 <dd>
 
@@ -1697,7 +1697,7 @@ client.get_documents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_documents</a>(...) -> Document</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1097-L1165">post_documents</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -1826,7 +1826,7 @@ client.post_documents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_documents</a>(...) -> Documents</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1167-L1211">delete_documents</a>(...) -> Documents</code></summary>
 <dl>
 <dd>
 
@@ -1907,7 +1907,7 @@ client.delete_documents()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_documents_document_id</a>(...) -> Document</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1213-L1241">get_documents_document_id</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -1966,7 +1966,7 @@ client.get_documents_document_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_documents_document_id</a>(...) -> Document</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1243-L1271">delete_documents_document_id</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2025,7 +2025,7 @@ client.delete_documents_document_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_documents_document_id</a>(...) -> Document</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1273-L1331">patch_documents_document_id</a>(...) -> Document</code></summary>
 <dl>
 <dd>
 
@@ -2132,7 +2132,7 @@ client.patch_documents_document_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_functions</a>(...) -> Functions</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1333-L1381">get_functions</a>(...) -> Functions</code></summary>
 <dl>
 <dd>
 
@@ -2221,7 +2221,7 @@ client.get_functions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_functions</a>(...) -> Function</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1383-L1423">post_functions</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -2302,7 +2302,7 @@ client.post_functions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_functions_function_id</a>(...) -> Function</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1425-L1453">get_functions_function_id</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -2361,7 +2361,7 @@ client.get_functions_function_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_functions_function_id</a>(...) -> Function</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1455-L1483">delete_functions_function_id</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -2420,7 +2420,7 @@ client.delete_functions_function_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_functions_function_id</a>(...) -> Function</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1485-L1527">patch_functions_function_id</a>(...) -> Function</code></summary>
 <dl>
 <dd>
 
@@ -2503,7 +2503,7 @@ client.patch_functions_function_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_hooks</a>(...) -> Hooks</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1529-L1563">get_hooks</a>(...) -> Hooks</code></summary>
 <dl>
 <dd>
 
@@ -2568,7 +2568,7 @@ client.get_hooks()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_hooks</a>(...) -> Hook</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1565-L1629">post_hooks</a>(...) -> Hook</code></summary>
 <dl>
 <dd>
 
@@ -2689,7 +2689,7 @@ client.post_hooks()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_hooks_hook_id</a>(...) -> Hook</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1631-L1657">get_hooks_hook_id</a>(...) -> Hook</code></summary>
 <dl>
 <dd>
 
@@ -2748,7 +2748,7 @@ client.get_hooks_hook_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_hooks_hook_id</a>(...) -> Hook</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1659-L1685">delete_hooks_hook_id</a>(...) -> Hook</code></summary>
 <dl>
 <dd>
 
@@ -2807,7 +2807,7 @@ client.delete_hooks_hook_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_hooks_hook_id</a>(...) -> Hook</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1687-L1757">patch_hooks_hook_id</a>(...) -> Hook</code></summary>
 <dl>
 <dd>
 
@@ -2938,7 +2938,7 @@ client.patch_hooks_hook_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_hooks_hook_id_runs</a>(...) -> HookRuns</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1759-L1801">get_hooks_hook_id_runs</a>(...) -> HookRuns</code></summary>
 <dl>
 <dd>
 
@@ -3021,7 +3021,7 @@ client.get_hooks_hook_id_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_hooks_hook_id_runs</a>(...) -> HookRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1803-L1857">post_hooks_hook_id_runs</a>(...) -> HookRun</code></summary>
 <dl>
 <dd>
 
@@ -3120,7 +3120,7 @@ client.post_hooks_hook_id_runs(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_hooks_hook_id_runs_run_id</a>(...) -> HookRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1859-L1890">get_hooks_hook_id_runs_run_id</a>(...) -> HookRun</code></summary>
 <dl>
 <dd>
 
@@ -3188,7 +3188,7 @@ client.get_hooks_hook_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_hooks_hook_id_runs_run_id</a>(...) -> HookRun</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1892-L1938">patch_hooks_hook_id_runs_run_id</a>(...) -> HookRun</code></summary>
 <dl>
 <dd>
 
@@ -3280,7 +3280,7 @@ client.patch_hooks_hook_id_runs_run_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_logs</a>(...) -> Logs</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1940-L1996">get_logs</a>(...) -> Logs</code></summary>
 <dl>
 <dd>
 
@@ -3385,7 +3385,7 @@ client.get_logs()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_logs_log_id</a>(...) -> Log</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L1998-L2024">get_logs_log_id</a>(...) -> Log</code></summary>
 <dl>
 <dd>
 
@@ -3444,7 +3444,7 @@ client.get_logs_log_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_models</a>(...) -> Models</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2026-L2063">get_models</a>(...) -> Models</code></summary>
 <dl>
 <dd>
 
@@ -3517,7 +3517,7 @@ client.get_models()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_models</a>(...) -> Model</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2065-L2127">post_models</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -3634,7 +3634,7 @@ client.post_models(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_models_model_id</a>(...) -> Model</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2129-L2165">get_models_model_id</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -3701,7 +3701,7 @@ client.get_models_model_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_models_model_id</a>(...) -> Model</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2167-L2195">delete_models_model_id</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -3760,7 +3760,7 @@ client.delete_models_model_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_models_model_id</a>(...) -> Model</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2197-L2267">patch_models_model_id</a>(...) -> Model</code></summary>
 <dl>
 <dd>
 
@@ -3891,7 +3891,7 @@ client.patch_models_model_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_organizations</a>(...) -> Organizations</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2269-L2303">get_organizations</a>(...) -> Organizations</code></summary>
 <dl>
 <dd>
 
@@ -3956,7 +3956,7 @@ client.get_organizations()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_organizations</a>(...) -> Organization</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2305-L2353">post_organizations</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -4045,7 +4045,7 @@ client.post_organizations()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_organizations_organization_id</a>(...) -> Organization</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2355-L2383">get_organizations_organization_id</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -4104,7 +4104,7 @@ client.get_organizations_organization_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_organizations_organization_id</a>(...) -> Organization</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2385-L2447">patch_organizations_organization_id</a>(...) -> Organization</code></summary>
 <dl>
 <dd>
 
@@ -4219,7 +4219,7 @@ client.patch_organizations_organization_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_predictions</a>(...) -> Predictions</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2449-L2497">get_predictions</a>(...) -> Predictions</code></summary>
 <dl>
 <dd>
 
@@ -4308,7 +4308,7 @@ client.get_predictions()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_predictions</a>(...) -> Prediction</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2499-L2586">post_predictions</a>(...) -> Prediction</code></summary>
 <dl>
 <dd>
 
@@ -4472,7 +4472,7 @@ client.post_predictions(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_predictions_prediction_id</a>(...) -> Prediction</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2588-L2616">get_predictions_prediction_id</a>(...) -> Prediction</code></summary>
 <dl>
 <dd>
 
@@ -4531,7 +4531,7 @@ client.get_predictions_prediction_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_roles</a>(...) -> Roles</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2618-L2652">get_roles</a>(...) -> Roles</code></summary>
 <dl>
 <dd>
 
@@ -4596,7 +4596,7 @@ client.get_roles()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_roles</a>(...) -> Role</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2654-L2711">post_roles</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -4685,7 +4685,7 @@ client.post_roles(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_roles_role_id</a>(...) -> Role</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2713-L2739">get_roles_role_id</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -4744,7 +4744,7 @@ client.get_roles_role_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_roles_role_id</a>(...) -> Role</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2741-L2767">delete_roles_role_id</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -4803,7 +4803,7 @@ client.delete_roles_role_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_roles_role_id</a>(...) -> Role</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2769-L2819">patch_roles_role_id</a>(...) -> Role</code></summary>
 <dl>
 <dd>
 
@@ -4894,7 +4894,7 @@ client.patch_roles_role_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users</a>(...) -> Users</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2821-L2855">get_users</a>(...) -> Users</code></summary>
 <dl>
 <dd>
 
@@ -4959,7 +4959,7 @@ client.get_users()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_users</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2857-L2911">post_users</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5058,7 +5058,7 @@ client.post_users(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_users_user_id</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2913-L2939">get_users_user_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5117,7 +5117,7 @@ client.get_users_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_users_user_id</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2941-L2967">delete_users_user_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5176,7 +5176,7 @@ client.delete_users_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_users_user_id</a>(...) -> User</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L2969-L3019">patch_users_user_id</a>(...) -> User</code></summary>
 <dl>
 <dd>
 
@@ -5267,7 +5267,7 @@ client.patch_users_user_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_validations</a>(...) -> Validations</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3021-L3055">get_validations</a>(...) -> Validations</code></summary>
 <dl>
 <dd>
 
@@ -5332,7 +5332,7 @@ client.get_validations()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_validations</a>(...) -> Validation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3057-L3105">post_validations</a>(...) -> Validation</code></summary>
 <dl>
 <dd>
 
@@ -5421,7 +5421,7 @@ client.post_validations()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_validations_validation_id</a>(...) -> Validation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3107-L3135">get_validations_validation_id</a>(...) -> Validation</code></summary>
 <dl>
 <dd>
 
@@ -5480,7 +5480,7 @@ client.get_validations_validation_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">delete_validations_validation_id</a>(...) -> Validation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3137-L3165">delete_validations_validation_id</a>(...) -> Validation</code></summary>
 <dl>
 <dd>
 
@@ -5539,7 +5539,7 @@ client.delete_validations_validation_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_validations_validation_id</a>(...) -> Validation</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3167-L3217">patch_validations_validation_id</a>(...) -> Validation</code></summary>
 <dl>
 <dd>
 
@@ -5630,7 +5630,7 @@ client.patch_validations_validation_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_validations_validation_id_tasks</a>(...) -> ValidationTasks</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3219-L3265">get_validations_validation_id_tasks</a>(...) -> ValidationTasks</code></summary>
 <dl>
 <dd>
 
@@ -5713,7 +5713,7 @@ client.get_validations_validation_id_tasks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">post_validations_validation_id_tasks</a>(...) -> ValidationTask</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3267-L3321">post_validations_validation_id_tasks</a>(...) -> ValidationTask</code></summary>
 <dl>
 <dd>
 
@@ -5812,7 +5812,7 @@ client.post_validations_validation_id_tasks(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">get_validations_validation_id_tasks_task_id</a>(...) -> ValidationTask</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3323-L3356">get_validations_validation_id_tasks_task_id</a>(...) -> ValidationTask</code></summary>
 <dl>
 <dd>
 
@@ -5880,7 +5880,7 @@ client.get_validations_validation_id_tasks_task_id(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">patch_validations_validation_id_tasks_task_id</a>(...) -> ValidationTask</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L3358-L3417">patch_validations_validation_id_tasks_task_id</a>(...) -> ValidationTask</code></summary>
 <dl>
 <dd>
 

@@ -99,7 +99,7 @@ client.customers.all_(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">add</a>(...) -> CreateCustomerSupportCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L96-L208">add</a>(...) -> CreateCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -180,7 +180,7 @@ client.customers.add()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">one</a>(...) -> GetCustomerSupportCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L210-L256">one</a>(...) -> GetCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -272,7 +272,7 @@ client.customers.one(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">delete</a>(...) -> DeleteCustomerSupportCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L258-L295">delete</a>(...) -> DeleteCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 
@@ -355,7 +355,7 @@ client.customers.delete(
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">update</a>(...) -> UpdateCustomerSupportCustomerResponse</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L297-L416">update</a>(...) -> UpdateCustomerSupportCustomerResponse</code></summary>
 <dl>
 <dd>
 

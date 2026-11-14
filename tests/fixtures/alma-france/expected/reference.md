@@ -1,6 +1,6 @@
 # Reference
 ## Payments
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">listpayments</a>(...) -> ListpaymentsResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L32-L66">listpayments</a>(...) -> ListpaymentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -65,7 +65,7 @@ client.payments.listpayments()
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">createpayment</a>(...) -> Payment</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L68-L108">createpayment</a>(...) -> Payment</code></summary>
 <dl>
 <dd>
 
@@ -137,7 +137,7 @@ client.payments.createpayment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">getpayment</a>(...) -> Payment</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L110-L137">getpayment</a>(...) -> Payment</code></summary>
 <dl>
 <dd>
 
@@ -196,7 +196,7 @@ client.payments.getpayment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">modifypayment</a>(...) -> Payment</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L139-L175">modifypayment</a>(...) -> Payment</code></summary>
 <dl>
 <dd>
 
@@ -263,7 +263,7 @@ client.payments.modifypayment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancelpayment</a>(...) -> Payment</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L177-L204">cancelpayment</a>(...) -> Payment</code></summary>
 <dl>
 <dd>
 
@@ -322,7 +322,7 @@ client.payments.cancelpayment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">capturepayment</a>(...) -> Payment</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L206-L233">capturepayment</a>(...) -> Payment</code></summary>
 <dl>
 <dd>
 
@@ -381,7 +381,7 @@ client.payments.capturepayment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">sendpaymentsms</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L235-L265">sendpaymentsms</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -449,7 +449,7 @@ client.payments.sendpaymentsms(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">sendpaymentemail</a>(...)</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L267-L297">sendpaymentemail</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -517,7 +517,7 @@ client.payments.sendpaymentemail(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">cancel_payment</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L299-L328">cancel_payment</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -590,7 +590,7 @@ client.payments.cancel_payment(
 </dl>
 </details>
 
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">update_payment</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L330-L364">update_payment</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -675,7 +675,7 @@ client.payments.update_payment(
 </details>
 
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">createorder</a>(...) -> Order</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L29-L67">createorder</a>(...) -> Order</code></summary>
 <dl>
 <dd>
 
@@ -742,7 +742,7 @@ client.orders.createorder(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">update_order_status</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L69-L107">update_order_status</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -826,7 +826,7 @@ client.orders.update_order_status(
 </dl>
 </details>
 
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">send_shipment_info</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L109-L147">send_shipment_info</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -911,7 +911,7 @@ client.orders.send_shipment_info(
 </details>
 
 ## Refunds
-<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py">createrefund</a>(...) -> Refund</code></summary>
+<details><summary><code>client.refunds.<a href="src/fern/refunds/client.py#L29-L62">createrefund</a>(...) -> Refund</code></summary>
 <dl>
 <dd>
 
@@ -980,7 +980,7 @@ client.refunds.createrefund(
 </details>
 
 ## Eligibility
-<details><summary><code>client.eligibility.<a href="src/fern/eligibility/client.py">checkpurchaseeligibility</a>(...) -> EligibilityResponse</code></summary>
+<details><summary><code>client.eligibility.<a href="src/fern/eligibility/client.py#L29-L67">checkpurchaseeligibility</a>(...) -> EligibilityResponse</code></summary>
 <dl>
 <dd>
 
@@ -1048,7 +1048,7 @@ client.eligibility.checkpurchaseeligibility(
 </details>
 
 ## Addresses
-<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py">createaddress</a>(...) -> Address</code></summary>
+<details><summary><code>client.addresses.<a href="src/fern/addresses/client.py#L29-L89">createaddress</a>(...) -> Address</code></summary>
 <dl>
 <dd>
 
@@ -1106,7 +1106,7 @@ client.addresses.createaddress()
 </details>
 
 ## BalanceTransactions
-<details><summary><code>client.balance_transactions.<a href="src/fern/balance_transactions/client.py">listbalancetransactions</a>(...) -> ListbalancetransactionsResponse</code></summary>
+<details><summary><code>client.balance_transactions.<a href="src/fern/balance_transactions/client.py#L26-L60">listbalancetransactions</a>(...) -> ListbalancetransactionsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1172,7 +1172,7 @@ client.balance_transactions.listbalancetransactions()
 </details>
 
 ## DataExports
-<details><summary><code>client.data_exports.<a href="src/fern/data_exports/client.py">createdataexport</a>(...) -> DataExport</code></summary>
+<details><summary><code>client.data_exports.<a href="src/fern/data_exports/client.py#L30-L70">createdataexport</a>(...) -> DataExport</code></summary>
 <dl>
 <dd>
 
@@ -1245,7 +1245,7 @@ client.data_exports.createdataexport()
 </dl>
 </details>
 
-<details><summary><code>client.data_exports.<a href="src/fern/data_exports/client.py">getdataexport</a>(...) -> DataExport</code></summary>
+<details><summary><code>client.data_exports.<a href="src/fern/data_exports/client.py#L72-L99">getdataexport</a>(...) -> DataExport</code></summary>
 <dl>
 <dd>
 
@@ -1305,7 +1305,7 @@ client.data_exports.getdataexport(
 </details>
 
 ## Webhooks
-<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py">configure_webhooks</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.webhooks.<a href="src/fern/webhooks/client.py#L28-L58">configure_webhooks</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1381,7 +1381,7 @@ client.webhooks.configure_webhooks(
 </details>
 
 ## Customers
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">get_customer</a>() -> typing.Any</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L28-L52">get_customer</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1444,7 +1444,7 @@ client.customers.get_customer()
 </dl>
 </details>
 
-<details><summary><code>client.customers.<a href="src/fern/customers/client.py">create_customer</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.customers.<a href="src/fern/customers/client.py#L54-L84">create_customer</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 

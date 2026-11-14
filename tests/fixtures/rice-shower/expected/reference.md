@@ -1,6 +1,6 @@
 # Reference
 ## Query
-<details><summary><code>client.query.<a href="src/fern/query/client.py">get_thermo_metrics</a>(...) -> GetThermoMetricsResponse</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L31-L90">get_thermo_metrics</a>(...) -> GetThermoMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -106,7 +106,7 @@ client.query.get_thermo_metrics(
 </dl>
 </details>
 
-<details><summary><code>client.query.<a href="src/fern/query/client.py">get_heater_metrics</a>(...) -> GetHeaterMetricsResponse</code></summary>
+<details><summary><code>client.query.<a href="src/fern/query/client.py#L92-L151">get_heater_metrics</a>(...) -> GetHeaterMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -213,7 +213,7 @@ client.query.get_heater_metrics(
 </details>
 
 ## Scrape
-<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py">get_all_scrape_metrics</a>() -> typing.List[GetAllScrapeMetricsResponseItem]</code></summary>
+<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py#L29-L55">get_all_scrape_metrics</a>() -> typing.List[GetAllScrapeMetricsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -274,7 +274,7 @@ client.scrape.get_all_scrape_metrics()
 </dl>
 </details>
 
-<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py">get_system_scrape_metrics</a>(...) -> GetSystemScrapeMetricsResponse</code></summary>
+<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py#L57-L87">get_system_scrape_metrics</a>(...) -> GetSystemScrapeMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -345,7 +345,7 @@ client.scrape.get_system_scrape_metrics(
 </dl>
 </details>
 
-<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py">get_all_scrape_status</a>() -> typing.List[GetAllScrapeStatusResponseItem]</code></summary>
+<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py#L89-L115">get_all_scrape_status</a>() -> typing.List[GetAllScrapeStatusResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -406,7 +406,7 @@ client.scrape.get_all_scrape_status()
 </dl>
 </details>
 
-<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py">get_system_scrape_status</a>(...) -> GetSystemScrapeStatusResponse</code></summary>
+<details><summary><code>client.scrape.<a href="src/fern/scrape/client.py#L117-L147">get_system_scrape_status</a>(...) -> GetSystemScrapeStatusResponse</code></summary>
 <dl>
 <dd>
 
@@ -478,7 +478,7 @@ client.scrape.get_system_scrape_status(
 </details>
 
 ## Systems
-<details><summary><code>client.systems.<a href="src/fern/systems/client.py">list_systems</a>() -> typing.List[ListSystemsResponseItem]</code></summary>
+<details><summary><code>client.systems.<a href="src/fern/systems/client.py#L37-L63">list_systems</a>() -> typing.List[ListSystemsResponseItem]</code></summary>
 <dl>
 <dd>
 
@@ -539,7 +539,7 @@ client.systems.list_systems()
 </dl>
 </details>
 
-<details><summary><code>client.systems.<a href="src/fern/systems/client.py">create_system</a>(...) -> CreateSystemResponse</code></summary>
+<details><summary><code>client.systems.<a href="src/fern/systems/client.py#L65-L152">create_system</a>(...) -> CreateSystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -682,7 +682,7 @@ client.systems.create_system(
 </dl>
 </details>
 
-<details><summary><code>client.systems.<a href="src/fern/systems/client.py">get_system</a>(...) -> GetSystemResponse</code></summary>
+<details><summary><code>client.systems.<a href="src/fern/systems/client.py#L154-L182">get_system</a>(...) -> GetSystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -753,7 +753,7 @@ client.systems.get_system(
 </dl>
 </details>
 
-<details><summary><code>client.systems.<a href="src/fern/systems/client.py">update_system</a>(...) -> UpdateSystemResponse</code></summary>
+<details><summary><code>client.systems.<a href="src/fern/systems/client.py#L184-L248">update_system</a>(...) -> UpdateSystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -880,7 +880,7 @@ client.systems.update_system(
 </dl>
 </details>
 
-<details><summary><code>client.systems.<a href="src/fern/systems/client.py">delete_system</a>(...) -> DeleteSystemResponse</code></summary>
+<details><summary><code>client.systems.<a href="src/fern/systems/client.py#L250-L280">delete_system</a>(...) -> DeleteSystemResponse</code></summary>
 <dl>
 <dd>
 
@@ -952,7 +952,7 @@ client.systems.delete_system(
 </details>
 
 ## Experiments
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">list_experiments</a>(...) -> ListExperimentsResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L38-L100">list_experiments</a>(...) -> ListExperimentsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1077,7 +1077,7 @@ client.experiments.list_experiments()
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">start_experiment</a>(...) -> StartExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L102-L149">start_experiment</a>(...) -> StartExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1174,7 +1174,7 @@ client.experiments.start_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">get_active_experiment</a>(...) -> GetActiveExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L151-L186">get_active_experiment</a>(...) -> GetActiveExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1254,7 +1254,7 @@ client.experiments.get_active_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">get_experiment</a>(...) -> GetExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L188-L218">get_experiment</a>(...) -> GetExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1325,7 +1325,7 @@ client.experiments.get_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">delete_experiment</a>(...) -> DeleteExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L220-L250">delete_experiment</a>(...) -> DeleteExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1396,7 +1396,7 @@ client.experiments.delete_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">update_experiment</a>(...) -> UpdateExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L252-L291">update_experiment</a>(...) -> UpdateExperimentResponse</code></summary>
 <dl>
 <dd>
 
@@ -1483,7 +1483,7 @@ client.experiments.update_experiment(
 </dl>
 </details>
 
-<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py">stop_experiment</a>(...) -> StopExperimentResponse</code></summary>
+<details><summary><code>client.experiments.<a href="src/fern/experiments/client.py#L293-L323">stop_experiment</a>(...) -> StopExperimentResponse</code></summary>
 <dl>
 <dd>
 

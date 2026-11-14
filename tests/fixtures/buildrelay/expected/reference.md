@@ -1,6 +1,6 @@
 # Reference
 ## Jobs
-<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py">submit_filesystem_job</a>(...) -> JobResponse</code></summary>
+<details><summary><code>client.jobs.<a href="src/fern/jobs/client.py#L29-L94">submit_filesystem_job</a>(...) -> JobResponse</code></summary>
 <dl>
 <dd>
 

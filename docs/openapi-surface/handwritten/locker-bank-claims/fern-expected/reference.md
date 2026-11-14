@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">vacancies</a>() -> typing.List[Locker]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L112-L132">vacancies</a>() -> typing.List[Locker]</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.vacancies()
 </details>
 
 ## Lockers
-<details><summary><code>client.lockers.<a href="src/fern/lockers/client.py">claim_now</a>(...)</code></summary>
+<details><summary><code>client.lockers.<a href="src/fern/lockers/client.py#L28-L55">claim_now</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.lockers.claim_now(
 </dl>
 </details>
 
-<details><summary><code>client.lockers.<a href="src/fern/lockers/client.py">release</a>(...)</code></summary>
+<details><summary><code>client.lockers.<a href="src/fern/lockers/client.py#L57-L80">release</a>(...)</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Beds
-<details><summary><code>client.beds.<a href="src/fern/beds/client.py">list_beds</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.beds.<a href="src/fern/beds/client.py#L26-L86">list_beds</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -116,7 +116,7 @@ client.beds.list_beds(
 </dl>
 </details>
 
-<details><summary><code>client.beds.<a href="src/fern/beds/client.py">get_bed</a>(...) -> str</code></summary>
+<details><summary><code>client.beds.<a href="src/fern/beds/client.py#L88-L112">get_bed</a>(...) -> str</code></summary>
 <dl>
 <dd>
 

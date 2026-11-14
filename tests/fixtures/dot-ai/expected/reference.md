@@ -1,6 +1,6 @@
 # Reference
 ## McpProtocol
-<details><summary><code>client.mcp_protocol.<a href="src/fern/mcp_protocol/client.py">open_mcp_sse_stream</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.mcp_protocol.<a href="src/fern/mcp_protocol/client.py#L31-L55">open_mcp_sse_stream</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -62,7 +62,7 @@ client.mcp_protocol.open_mcp_sse_stream()
 </dl>
 </details>
 
-<details><summary><code>client.mcp_protocol.<a href="src/fern/mcp_protocol/client.py">send_mcp_json_rpc_message</a>(...) -> McpJsonRpcResponse</code></summary>
+<details><summary><code>client.mcp_protocol.<a href="src/fern/mcp_protocol/client.py#L57-L112">send_mcp_json_rpc_message</a>(...) -> McpJsonRpcResponse</code></summary>
 <dl>
 <dd>
 
@@ -167,7 +167,7 @@ client.mcp_protocol.send_mcp_json_rpc_message(
 </details>
 
 ## Intelligence
-<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py">execute_impact_analysis_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py#L29-L68">execute_impact_analysis_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -248,7 +248,7 @@ client.intelligence.execute_impact_analysis_tool(
 </dl>
 </details>
 
-<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py">execute_query_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.intelligence.<a href="src/fern/intelligence/client.py#L70-L109">execute_query_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -330,7 +330,7 @@ client.intelligence.execute_query_tool(
 </details>
 
 ## Knowledge
-<details><summary><code>client.knowledge.<a href="src/fern/knowledge/client.py">execute_manage_knowledge_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.knowledge.<a href="src/fern/knowledge/client.py#L32-L111">execute_manage_knowledge_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -468,7 +468,7 @@ client.knowledge.execute_manage_knowledge_tool(
 </dl>
 </details>
 
-<details><summary><code>client.knowledge.<a href="src/fern/knowledge/client.py">delete_all_knowledge_base_chunks_for_a_source_identifier_used_by_controller_for_git_knowledge_source_cleanup</a>(...) -> KnowledgeSourceSourceIdentifierDeleteResponse</code></summary>
+<details><summary><code>client.knowledge.<a href="src/fern/knowledge/client.py#L113-L144">delete_all_knowledge_base_chunks_for_a_source_identifier_used_by_controller_for_git_knowledge_source_cleanup</a>(...) -> KnowledgeSourceSourceIdentifierDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -540,7 +540,7 @@ client.knowledge.delete_all_knowledge_base_chunks_for_a_source_identifier_used_b
 </dl>
 </details>
 
-<details><summary><code>client.knowledge.<a href="src/fern/knowledge/client.py">ask_a_question_and_receive_an_ai_synthesized_answer_from_the_knowledge_base_uses_an_agentic_approach_that_can_search_multiple_times_with_different_phrasings_for_comprehensive_answers</a>(...) -> KnowledgeAskPostResponse</code></summary>
+<details><summary><code>client.knowledge.<a href="src/fern/knowledge/client.py#L146-L189">ask_a_question_and_receive_an_ai_synthesized_answer_from_the_knowledge_base_uses_an_agentic_approach_that_can_search_multiple_times_with_different_phrasings_for_comprehensive_answers</a>(...) -> KnowledgeAskPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -630,7 +630,7 @@ client.knowledge.ask_a_question_and_receive_an_ai_synthesized_answer_from_the_kn
 </details>
 
 ## Management
-<details><summary><code>client.management.<a href="src/fern/management/client.py">execute_manage_org_data_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.management.<a href="src/fern/management/client.py#L33-L151">execute_manage_org_data_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -816,7 +816,7 @@ client.management.execute_manage_org_data_tool(
 </details>
 
 ## Operations
-<details><summary><code>client.operations.<a href="src/fern/operations/client.py">execute_operate_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.operations.<a href="src/fern/operations/client.py#L29-L94">execute_operate_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -934,7 +934,7 @@ client.operations.execute_operate_tool(
 </details>
 
 ## ProjectSetup
-<details><summary><code>client.project_setup.<a href="src/fern/project_setup/client.py">execute_project_setup_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.project_setup.<a href="src/fern/project_setup/client.py#L30-L97">execute_project_setup_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1059,7 +1059,7 @@ client.project_setup.execute_project_setup_tool(
 </details>
 
 ## Deployment
-<details><summary><code>client.deployment.<a href="src/fern/deployment/client.py">execute_recommend_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.deployment.<a href="src/fern/deployment/client.py#L29-L142">execute_recommend_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1251,7 +1251,7 @@ client.deployment.execute_recommend_tool(
 </details>
 
 ## Troubleshooting
-<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py">execute_remediate_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.troubleshooting.<a href="src/fern/troubleshooting/client.py#L31-L119">execute_remediate_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1399,7 +1399,7 @@ client.troubleshooting.execute_remediate_tool(
 </details>
 
 ## System
-<details><summary><code>client.system.<a href="src/fern/system/client.py">execute_version_tool</a>(...) -> ToolExecutionResponse</code></summary>
+<details><summary><code>client.system.<a href="src/fern/system/client.py#L29-L60">execute_version_tool</a>(...) -> ToolExecutionResponse</code></summary>
 <dl>
 <dd>
 
@@ -1472,7 +1472,7 @@ client.system.execute_version_tool(
 </details>
 
 ## Tools
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">discover_available_tools_with_optional_filtering_by_category_tag_or_search_term</a>(...) -> ToolsGetResponse</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L31-L71">discover_available_tools_with_optional_filtering_by_category_tag_or_search_term</a>(...) -> ToolsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1558,7 +1558,7 @@ client.tools.discover_available_tools_with_optional_filtering_by_category_tag_or
 </dl>
 </details>
 
-<details><summary><code>client.tools.<a href="src/fern/tools/client.py">execute_a_tool_with_the_provided_parameters</a>(...) -> ToolsToolNamePostResponse</code></summary>
+<details><summary><code>client.tools.<a href="src/fern/tools/client.py#L73-L111">execute_a_tool_with_the_provided_parameters</a>(...) -> ToolsToolNamePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -1642,7 +1642,7 @@ client.tools.execute_a_tool_with_the_provided_parameters(
 </details>
 
 ## Documentation
-<details><summary><code>client.documentation.<a href="src/fern/documentation/client.py">get_the_open_api30specification_for_this_api</a>() -> OpenapiGetResponse</code></summary>
+<details><summary><code>client.documentation.<a href="src/fern/documentation/client.py#L26-L50">get_the_open_api30specification_for_this_api</a>() -> OpenapiGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1705,7 +1705,7 @@ client.documentation.get_the_open_api30specification_for_this_api()
 </details>
 
 ## Resources
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">list_resources_filtered_by_kind_and_optional_namespace</a>(...) -> ResourcesGetResponse</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L34-L90">list_resources_filtered_by_kind_and_optional_namespace</a>(...) -> ResourcesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1810,7 +1810,7 @@ client.resources.list_resources_filtered_by_kind_and_optional_namespace(
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">list_all_resource_kinds_available_in_the_cluster_with_counts</a>(...) -> ResourcesKindsGetResponse</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L92-L121">list_all_resource_kinds_available_in_the_cluster_with_counts</a>(...) -> ResourcesKindsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1880,7 +1880,7 @@ client.resources.list_all_resource_kinds_available_in_the_cluster_with_counts()
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">search_for_resources_using_semantic_search</a>(...) -> ResourcesSearchGetResponse</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L123-L162">search_for_resources_using_semantic_search</a>(...) -> ResourcesSearchGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -1970,7 +1970,7 @@ client.resources.search_for_resources_using_semantic_search(
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">sync_resources_from_the_kubernetes_controller</a>(...) -> ResourcesSyncPostResponse</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L164-L204">sync_resources_from_the_kubernetes_controller</a>(...) -> ResourcesSyncPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -2056,7 +2056,7 @@ client.resources.sync_resources_from_the_kubernetes_controller()
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">get_a_single_resource_with_full_details_including_live_status</a>(...) -> ResourceGetResponse</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L206-L254">get_a_single_resource_with_full_details_including_live_status</a>(...) -> ResourceGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2154,7 +2154,7 @@ client.resources.get_a_single_resource_with_full_details_including_live_status(
 </dl>
 </details>
 
-<details><summary><code>client.resources.<a href="src/fern/resources/client.py">list_all_namespaces_in_the_cluster</a>() -> NamespacesGetResponse</code></summary>
+<details><summary><code>client.resources.<a href="src/fern/resources/client.py#L256-L280">list_all_namespaces_in_the_cluster</a>() -> NamespacesGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2217,7 +2217,7 @@ client.resources.list_all_namespaces_in_the_cluster()
 </details>
 
 ## Observability
-<details><summary><code>client.observability.<a href="src/fern/observability/client.py">get_kubernetes_events_for_a_specific_resource</a>(...) -> EventsGetResponse</code></summary>
+<details><summary><code>client.observability.<a href="src/fern/observability/client.py#L27-L70">get_kubernetes_events_for_a_specific_resource</a>(...) -> EventsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2306,7 +2306,7 @@ client.observability.get_kubernetes_events_for_a_specific_resource(
 </dl>
 </details>
 
-<details><summary><code>client.observability.<a href="src/fern/observability/client.py">get_container_logs_from_a_pod</a>(...) -> LogsGetResponse</code></summary>
+<details><summary><code>client.observability.<a href="src/fern/observability/client.py#L72-L128">get_container_logs_from_a_pod</a>(...) -> LogsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2412,7 +2412,7 @@ client.observability.get_container_logs_from_a_pod(
 </details>
 
 ## Prompts
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">list_all_available_prompts</a>(...) -> PromptsGetResponse</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L33-L77">list_all_available_prompts</a>(...) -> PromptsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2506,7 +2506,7 @@ client.prompts.list_all_available_prompts()
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">force_refresh_the_prompts_cache_by_pulling_latest_from_the_git_repository</a>() -> PromptsRefreshPostResponse</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L79-L105">force_refresh_the_prompts_cache_by_pulling_latest_from_the_git_repository</a>() -> PromptsRefreshPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -2568,7 +2568,7 @@ client.prompts.force_refresh_the_prompts_cache_by_pulling_latest_from_the_git_re
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">ingest_upload_a_skill_source_the_server_caches_and_renders_via_post_api_v1prompts_prompt_name_source_identifier_with_no_git_clone_prd647</a>(...) -> PromptsSourcesPostResponse</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L107-L157">ingest_upload_a_skill_source_the_server_caches_and_renders_via_post_api_v1prompts_prompt_name_source_identifier_with_no_git_clone_prd647</a>(...) -> PromptsSourcesPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -2663,7 +2663,7 @@ client.prompts.ingest_upload_a_skill_source_the_server_caches_and_renders_via_po
 </dl>
 </details>
 
-<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py">get_a_prompt_with_rendered_template_arguments</a>(...) -> PromptsPromptNamePostResponse</code></summary>
+<details><summary><code>client.prompts.<a href="src/fern/prompts/client.py#L159-L219">get_a_prompt_with_rendered_template_arguments</a>(...) -> PromptsPromptNamePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -2776,7 +2776,7 @@ client.prompts.get_a_prompt_with_rendered_template_arguments(
 </details>
 
 ## Visualization
-<details><summary><code>client.visualization.<a href="src/fern/visualization/client.py">get_structured_visualization_data_for_a_session</a>(...) -> VisualizeSessionIdGetResponse</code></summary>
+<details><summary><code>client.visualization.<a href="src/fern/visualization/client.py#L26-L64">get_structured_visualization_data_for_a_session</a>(...) -> VisualizeSessionIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2857,7 +2857,7 @@ client.visualization.get_structured_visualization_data_for_a_session(
 </details>
 
 ## Sessions
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">list_sessions_with_optional_status_filtering_and_pagination</a>(...) -> SessionsGetResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L28-L71">list_sessions_with_optional_status_filtering_and_pagination</a>(...) -> SessionsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -2946,7 +2946,7 @@ client.sessions.list_sessions_with_optional_status_filtering_and_pagination(
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">get_raw_session_data_for_any_tool_type_remediate_query_recommend_etc</a>(...) -> SessionsSessionIdGetResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L73-L104">get_raw_session_data_for_any_tool_type_remediate_query_recommend_etc</a>(...) -> SessionsSessionIdGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3018,7 +3018,7 @@ client.sessions.get_raw_session_data_for_any_tool_type_remediate_query_recommend
 </dl>
 </details>
 
-<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py">sse_stream_for_real_time_remediation_session_events_returns_text_event_stream</a>() -> EventsRemediationsGetResponse</code></summary>
+<details><summary><code>client.sessions.<a href="src/fern/sessions/client.py#L106-L132">sse_stream_for_real_time_remediation_session_events_returns_text_event_stream</a>() -> EventsRemediationsGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3081,7 +3081,7 @@ client.sessions.sse_stream_for_real_time_remediation_session_events_returns_text
 </details>
 
 ## Embeddings
-<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py">migrate_embedding_vectors_when_switching_between_embedding_providers_re_embeds_all_data_using_the_current_provider</a>(...) -> EmbeddingsMigratePostResponse</code></summary>
+<details><summary><code>client.embeddings.<a href="src/fern/embeddings/client.py#L29-L58">migrate_embedding_vectors_when_switching_between_embedding_providers_re_embeds_all_data_using_the_current_provider</a>(...) -> EmbeddingsMigratePostResponse</code></summary>
 <dl>
 <dd>
 
@@ -3152,7 +3152,7 @@ client.embeddings.migrate_embedding_vectors_when_switching_between_embedding_pro
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">list_all_dex_static_users_emails_only</a>() -> UsersGetResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L31-L55">list_all_dex_static_users_emails_only</a>() -> UsersGetResponse</code></summary>
 <dl>
 <dd>
 
@@ -3214,7 +3214,7 @@ client.users.list_all_dex_static_users_emails_only()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_a_new_dex_static_user</a>(...) -> UsersPostResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L57-L92">create_a_new_dex_static_user</a>(...) -> UsersPostResponse</code></summary>
 <dl>
 <dd>
 
@@ -3295,7 +3295,7 @@ client.users.create_a_new_dex_static_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_a_dex_static_user_by_email</a>(...) -> UsersEmailDeleteResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L94-L123">delete_a_dex_static_user_by_email</a>(...) -> UsersEmailDeleteResponse</code></summary>
 <dl>
 <dd>
 

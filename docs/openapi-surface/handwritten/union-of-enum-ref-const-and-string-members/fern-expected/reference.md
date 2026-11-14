@@ -1,6 +1,6 @@
 # Reference
 ## Vats
-<details><summary><code>client.vats.<a href="src/fern/vats/client.py">fetch_shade</a>(...) -> Shade</code></summary>
+<details><summary><code>client.vats.<a href="src/fern/vats/client.py#L26-L52">fetch_shade</a>(...) -> Shade</code></summary>
 <dl>
 <dd>
 

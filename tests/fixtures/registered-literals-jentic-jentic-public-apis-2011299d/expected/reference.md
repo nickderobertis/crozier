@@ -1,6 +1,6 @@
 # Reference
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">upload</a>(...) -> UploadedFile</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L29-L54">upload</a>(...) -> UploadedFile</code></summary>
 <dl>
 <dd>
 
@@ -66,7 +66,7 @@ client.files.upload(...)
 </details>
 
 ## Transcripts
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">list</a>(...) -> TranscriptList</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L53-L126">list</a>(...) -> TranscriptList</code></summary>
 <dl>
 <dd>
 
@@ -190,7 +190,7 @@ client.transcripts.list()
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">submit</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L128-L470">submit</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -722,7 +722,7 @@ Note: This parameter can only be used with the Universal-3 Pro model.
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L472-L502">get</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -796,7 +796,7 @@ client.transcripts.get(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">delete</a>(...) -> Transcript</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L504-L535">delete</a>(...) -> Transcript</code></summary>
 <dl>
 <dd>
 
@@ -871,7 +871,7 @@ client.transcripts.delete(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_subtitles</a>(...) -> str</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L537-L585">get_subtitles</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -963,7 +963,7 @@ client.transcripts.get_subtitles(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_sentences</a>(...) -> SentencesResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L587-L619">get_sentences</a>(...) -> SentencesResponse</code></summary>
 <dl>
 <dd>
 
@@ -1037,7 +1037,7 @@ client.transcripts.get_sentences(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_paragraphs</a>(...) -> ParagraphsResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L621-L653">get_paragraphs</a>(...) -> ParagraphsResponse</code></summary>
 <dl>
 <dd>
 
@@ -1111,7 +1111,7 @@ client.transcripts.get_paragraphs(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">word_search</a>(...) -> WordSearchResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L655-L695">word_search</a>(...) -> WordSearchResponse</code></summary>
 <dl>
 <dd>
 
@@ -1196,7 +1196,7 @@ client.transcripts.word_search(
 </dl>
 </details>
 
-<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py">get_redacted_audio</a>(...) -> RedactedAudioResponse</code></summary>
+<details><summary><code>client.transcripts.<a href="src/fern/transcripts/client.py#L697-L730">get_redacted_audio</a>(...) -> RedactedAudioResponse</code></summary>
 <dl>
 <dd>
 

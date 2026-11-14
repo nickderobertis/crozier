@@ -1,6 +1,6 @@
 # Reference
 ## Manifests
-<details><summary><code>client.manifests.<a href="src/fern/manifests/client.py">file_manifest</a>(...) -> Receipt</code></summary>
+<details><summary><code>client.manifests.<a href="src/fern/manifests/client.py#L29-L70">file_manifest</a>(...) -> Receipt</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.manifests.file_manifest(
 </details>
 
 ## Berths
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">list_berths</a>(...) -> typing.List[Berth]</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L26-L64">list_berths</a>(...) -> typing.List[Berth]</code></summary>
 <dl>
 <dd>
 
@@ -134,7 +134,7 @@ client.berths.list_berths(
 </dl>
 </details>
 
-<details><summary><code>client.berths.<a href="src/fern/berths/client.py">release_berths</a>(...)</code></summary>
+<details><summary><code>client.berths.<a href="src/fern/berths/client.py#L66-L99">release_berths</a>(...)</code></summary>
 <dl>
 <dd>
 

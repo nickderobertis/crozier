@@ -1,6 +1,6 @@
 # Reference
 ## Meta
-<details><summary><code>client.meta.<a href="src/fern/meta/client.py">ping</a>() -> Ping</code></summary>
+<details><summary><code>client.meta.<a href="src/fern/meta/client.py#L26-L50">ping</a>() -> Ping</code></summary>
 <dl>
 <dd>
 
@@ -64,7 +64,7 @@ client.meta.ping()
 </details>
 
 ## Search
-<details><summary><code>client.search.<a href="src/fern/search/client.py">search_steam_games_and_configurations_all_at_once</a>(...) -> SearchResponseBody</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L36-L88">search_steam_games_and_configurations_all_at_once</a>(...) -> SearchResponseBody</code></summary>
 <dl>
 <dd>
 
@@ -165,7 +165,7 @@ client.search.search_steam_games_and_configurations_all_at_once(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">search_steam_input_configurations</a>(...) -> PostV1SearchConfigsResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L90-L154">search_steam_input_configurations</a>(...) -> PostV1SearchConfigsResponse</code></summary>
 <dl>
 <dd>
 
@@ -286,7 +286,7 @@ client.search.search_steam_input_configurations(
 </dl>
 </details>
 
-<details><summary><code>client.search.<a href="src/fern/search/client.py">search_steam_games</a>(...) -> PostV1SearchGamesResponse</code></summary>
+<details><summary><code>client.search.<a href="src/fern/search/client.py#L156-L206">search_steam_games</a>(...) -> PostV1SearchGamesResponse</code></summary>
 <dl>
 <dd>
 
@@ -392,7 +392,7 @@ client.search.search_steam_games(
 </details>
 
 ## Steam
-<details><summary><code>client.steam.<a href="src/fern/steam/client.py">get_steam_app_info</a>(...) -> AppInfoItem</code></summary>
+<details><summary><code>client.steam.<a href="src/fern/steam/client.py#L34-L86">get_steam_app_info</a>(...) -> AppInfoItem</code></summary>
 <dl>
 <dd>
 
@@ -497,7 +497,7 @@ client.steam.get_steam_app_info(
 </dl>
 </details>
 
-<details><summary><code>client.steam.<a href="src/fern/steam/client.py">get_controller_config_details</a>(...) -> GetV1SteamFiledetailsResponse</code></summary>
+<details><summary><code>client.steam.<a href="src/fern/steam/client.py#L88-L132">get_controller_config_details</a>(...) -> GetV1SteamFiledetailsResponse</code></summary>
 <dl>
 <dd>
 
@@ -588,7 +588,7 @@ client.steam.get_controller_config_details(
 </dl>
 </details>
 
-<details><summary><code>client.steam.<a href="src/fern/steam/client.py">log_in_with_steam</a>(...) -> LoginResponse</code></summary>
+<details><summary><code>client.steam.<a href="src/fern/steam/client.py#L134-L258">log_in_with_steam</a>(...) -> LoginResponse</code></summary>
 <dl>
 <dd>
 
@@ -824,7 +824,7 @@ client.steam.log_in_with_steam(
 </dl>
 </details>
 
-<details><summary><code>client.steam.<a href="src/fern/steam/client.py">get_steam_user_info</a>(...) -> UserInfoResponse</code></summary>
+<details><summary><code>client.steam.<a href="src/fern/steam/client.py#L260-L308">get_steam_user_info</a>(...) -> UserInfoResponse</code></summary>
 <dl>
 <dd>
 

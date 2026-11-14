@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">read_depth</a>(...) -> ReadDepthResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L97-L122">read_depth</a>(...) -> ReadDepthResponse</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.read_depth(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">retire_buoy</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L124-L149">retire_buoy</a>(...)</code></summary>
 <dl>
 <dd>
 

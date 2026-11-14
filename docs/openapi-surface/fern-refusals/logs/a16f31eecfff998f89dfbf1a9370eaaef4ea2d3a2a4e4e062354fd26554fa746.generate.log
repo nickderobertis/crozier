@@ -1,0 +1,17 @@
+fern-refusals: Fern CLI 5.200.0, fernapi/fern-python-sdk 5.41.25
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk intent.yml -> service -> endpoints -> addMediaIntentHandling -> examples[0] -> request
+                  intent.yml
+                  [error] Missing discriminant property ("method")
+                  
+[api]: python-sdk intent.yml -> service -> endpoints -> updateMediaAffinityIntentHandling -> examples[0] -> request
+                  intent.yml
+                  [error] Missing discriminant property ("method")
+                  
+[api]: python-sdk Found 2 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

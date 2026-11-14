@@ -1,6 +1,6 @@
 # Reference
 ## Queue
-<details><summary><code>client.queue.<a href="src/fern/queue/client.py">advance_queue</a>()</code></summary>
+<details><summary><code>client.queue.<a href="src/fern/queue/client.py#L28-L47">advance_queue</a>()</code></summary>
 <dl>
 <dd>
 

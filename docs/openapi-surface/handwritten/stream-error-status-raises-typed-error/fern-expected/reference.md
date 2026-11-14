@@ -1,6 +1,6 @@
 # Reference
 ## Sails
-<details><summary><code>client.sails.<a href="src/fern/sails/client.py">stream_rotations</a>() -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.sails.<a href="src/fern/sails/client.py#L26-L50">stream_rotations</a>() -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

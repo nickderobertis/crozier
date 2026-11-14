@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">list_valves</a>() -> typing.List[Valve]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L113-L136">list_valves</a>() -> typing.List[Valve]</code></summary>
 <dl>
 <dd>
 

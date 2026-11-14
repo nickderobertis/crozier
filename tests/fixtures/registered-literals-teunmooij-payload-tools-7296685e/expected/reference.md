@@ -1,6 +1,6 @@
 # Reference
 ## Pages
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">find_paginated_pages</a>(...) -> Pagess</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L35-L100">find_paginated_pages</a>(...) -> Pagess</code></summary>
 <dl>
 <dd>
 
@@ -119,7 +119,7 @@ client.pages.find_paginated_pages()
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">create_a_new_page</a>(...) -> PagesUpsertConfirmation</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L102-L171">create_a_new_page</a>(...) -> PagesUpsertConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -218,7 +218,7 @@ client.pages.create_a_new_page(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">delete_multiple_pages</a>(...) -> DeletePagesResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L173-L240">delete_multiple_pages</a>(...) -> DeletePagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -339,7 +339,7 @@ client.pages.delete_multiple_pages(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">update_multiple_pages</a>(...) -> PatchPagesResponse</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L242-L332">update_multiple_pages</a>(...) -> PatchPagesResponse</code></summary>
 <dl>
 <dd>
 
@@ -471,7 +471,7 @@ client.pages.update_multiple_pages(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">get_a_single_page_by_its_id</a>(...) -> Pages</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L334-L406">get_a_single_page_by_its_id</a>(...) -> Pages</code></summary>
 <dl>
 <dd>
 
@@ -600,7 +600,7 @@ client.pages.get_a_single_page_by_its_id(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">deletes_an_existing_page</a>(...) -> PagesUpsertConfirmation</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L408-L456">deletes_an_existing_page</a>(...) -> PagesUpsertConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -697,7 +697,7 @@ client.pages.deletes_an_existing_page(
 </dl>
 </details>
 
-<details><summary><code>client.pages.<a href="src/fern/pages/client.py">updates_a_page</a>(...) -> PagesUpsertConfirmation</code></summary>
+<details><summary><code>client.pages.<a href="src/fern/pages/client.py#L458-L533">updates_a_page</a>(...) -> PagesUpsertConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -806,7 +806,7 @@ client.pages.updates_a_page(
 </details>
 
 ## Users
-<details><summary><code>client.users.<a href="src/fern/users/client.py">find_paginated_users</a>(...) -> Userss</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L34-L99">find_paginated_users</a>(...) -> Userss</code></summary>
 <dl>
 <dd>
 
@@ -925,7 +925,7 @@ client.users.find_paginated_users()
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">create_a_new_user</a>(...) -> UsersUpsertConfirmation</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L101-L194">create_a_new_user</a>(...) -> UsersUpsertConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -1024,7 +1024,7 @@ client.users.create_a_new_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">delete_multiple_users</a>(...) -> DeleteUsersResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L196-L263">delete_multiple_users</a>(...) -> DeleteUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1145,7 +1145,7 @@ client.users.delete_multiple_users(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">update_multiple_users</a>(...) -> PatchUsersResponse</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L265-L379">update_multiple_users</a>(...) -> PatchUsersResponse</code></summary>
 <dl>
 <dd>
 
@@ -1277,7 +1277,7 @@ client.users.update_multiple_users(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">get_a_single_user_by_its_id</a>(...) -> Users</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L381-L453">get_a_single_user_by_its_id</a>(...) -> Users</code></summary>
 <dl>
 <dd>
 
@@ -1406,7 +1406,7 @@ client.users.get_a_single_user_by_its_id(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">deletes_an_existing_user</a>(...) -> UsersUpsertConfirmation</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L455-L503">deletes_an_existing_user</a>(...) -> UsersUpsertConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -1503,7 +1503,7 @@ client.users.deletes_an_existing_user(
 </dl>
 </details>
 
-<details><summary><code>client.users.<a href="src/fern/users/client.py">updates_a_user</a>(...) -> UsersUpsertConfirmation</code></summary>
+<details><summary><code>client.users.<a href="src/fern/users/client.py#L505-L604">updates_a_user</a>(...) -> UsersUpsertConfirmation</code></summary>
 <dl>
 <dd>
 
@@ -1612,7 +1612,7 @@ client.users.updates_a_user(
 </details>
 
 ## Auth
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">current_user_data</a>() -> UsersMe</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L31-L55">current_user_data</a>() -> UsersMe</code></summary>
 <dl>
 <dd>
 
@@ -1675,7 +1675,7 @@ client.auth.current_user_data()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">login</a>(...) -> UsersMe</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L57-L88">login</a>(...) -> UsersMe</code></summary>
 <dl>
 <dd>
 
@@ -1757,7 +1757,7 @@ client.auth.login(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">logout</a>() -> Confirmation</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L90-L114">logout</a>() -> Confirmation</code></summary>
 <dl>
 <dd>
 
@@ -1820,7 +1820,7 @@ client.auth.logout()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">refresh_jwt</a>() -> UsersMe</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L116-L140">refresh_jwt</a>() -> UsersMe</code></summary>
 <dl>
 <dd>
 
@@ -1883,7 +1883,7 @@ client.auth.refresh_jwt()
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">unlock_account</a>(...) -> Confirmation</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L142-L170">unlock_account</a>(...) -> Confirmation</code></summary>
 <dl>
 <dd>
 
@@ -1956,7 +1956,7 @@ client.auth.unlock_account(
 </dl>
 </details>
 
-<details><summary><code>client.auth.<a href="src/fern/auth/client.py">current_users_resource_access</a>() -> Access</code></summary>
+<details><summary><code>client.auth.<a href="src/fern/auth/client.py#L172-L196">current_users_resource_access</a>() -> Access</code></summary>
 <dl>
 <dd>
 
@@ -2020,7 +2020,7 @@ client.auth.current_users_resource_access()
 </details>
 
 ## GlobalMyGlobal
-<details><summary><code>client.global_my_global.<a href="src/fern/global_my_global/client.py">get_the_my_global</a>(...) -> MyGlobal</code></summary>
+<details><summary><code>client.global_my_global.<a href="src/fern/global_my_global/client.py#L31-L73">get_the_my_global</a>(...) -> MyGlobal</code></summary>
 <dl>
 <dd>
 
@@ -2107,7 +2107,7 @@ client.global_my_global.get_the_my_global()
 </dl>
 </details>
 
-<details><summary><code>client.global_my_global.<a href="src/fern/global_my_global/client.py">updates_the_my_global</a>(...) -> MyGlobalUpsertConfirmation</code></summary>
+<details><summary><code>client.global_my_global.<a href="src/fern/global_my_global/client.py#L75-L142">updates_the_my_global</a>(...) -> MyGlobalUpsertConfirmation</code></summary>
 <dl>
 <dd>
 

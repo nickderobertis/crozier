@@ -1,6 +1,6 @@
 # Reference
 ## Varieties
-<details><summary><code>client.varieties.<a href="src/fern/varieties/client.py">register_variety</a>(...) -> Variety</code></summary>
+<details><summary><code>client.varieties.<a href="src/fern/varieties/client.py#L31-L57">register_variety</a>(...) -> Variety</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.varieties.register_variety(
 </dl>
 </details>
 
-<details><summary><code>client.varieties.<a href="src/fern/varieties/client.py">replace_traits</a>(...) -> Variety</code></summary>
+<details><summary><code>client.varieties.<a href="src/fern/varieties/client.py#L59-L88">replace_traits</a>(...) -> Variety</code></summary>
 <dl>
 <dd>
 
@@ -127,7 +127,7 @@ client.varieties.replace_traits(
 </dl>
 </details>
 
-<details><summary><code>client.varieties.<a href="src/fern/varieties/client.py">patch_notes</a>(...) -> Variety</code></summary>
+<details><summary><code>client.varieties.<a href="src/fern/varieties/client.py#L90-L123">patch_notes</a>(...) -> Variety</code></summary>
 <dl>
 <dd>
 

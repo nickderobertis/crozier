@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_shipment</a>() -> typing.Optional[GetShipmentResponse]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L101-L125">get_shipment</a>() -> typing.Optional[GetShipmentResponse]</code></summary>
 <dl>
 <dd>
 
@@ -46,7 +46,7 @@ client.get_shipment()
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">dispatch</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L127-L152">dispatch</a>(...)</code></summary>
 <dl>
 <dd>
 
