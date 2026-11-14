@@ -421,10 +421,14 @@ version = "0.0.0"
 source = { virtual = "tools/llmlint-resolution" }
 dependencies = [
     { name = "crozier-llmlint-tooling" },
+    { name = "pyyaml" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "crozier-llmlint-tooling", virtual = "tools/llmlint" }]
+requires-dist = [
+    { name = "crozier-llmlint-tooling", virtual = "tools/llmlint" },
+    { name = "pyyaml", specifier = ">=6" },
+]
 
 [[package]]
 name = "crozier-llmlint-tooling"

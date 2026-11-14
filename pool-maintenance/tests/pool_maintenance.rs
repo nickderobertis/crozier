@@ -196,6 +196,96 @@ fn measure_times_one_steady_state_pass_after_clearing_the_backlog() {
     }
 }
 
+/// A restored cache can hold the ordinary build older than another build of the same unit,
+/// which only some other command uses. The measurement keeps the ordinary build as the
+/// steady state: the untimed pass clears the other build as backlog, and the timed pass still
+/// removes exactly the alternative build's entries.
+#[test]
+fn measure_keeps_the_ordinary_build_when_an_older_copy_of_it_sits_beside_a_newer_variant() {
+    let slot = workspace();
+    let dir = slot.path();
+    let fingerprints = |dir: &Path| -> BTreeSet<PathBuf> {
+        fs::read_dir(dir.join("target/debug/.fingerprint"))
+            .unwrap()
+            .map(|entry| entry.unwrap().path())
+            .collect()
+    };
+    run(cargo(dir).args(["test", "--no-run", "--locked", "--quiet"]));
+    let ordinary = fingerprints(dir);
+    run(cargo(dir).args([
+        "test",
+        "--no-run",
+        "--locked",
+        "--quiet",
+        "--config",
+        "profile.dev.debug-assertions=false",
+    ]));
+    let variant: Vec<PathBuf> = fingerprints(dir).difference(&ordinary).cloned().collect();
+    assert!(
+        !variant.is_empty(),
+        "the variant build made new fingerprints"
+    );
+    // Everything past the window, the ordinary build the older of the two, as a cache restores it.
+    run(Command::new("find").arg(dir.join("target/debug")).args([
+        "-exec",
+        "touch",
+        "-h",
+        "-t",
+        "200101010000",
+        "{}",
+        "+",
+    ]));
+    for fingerprint in &variant {
+        let name = fingerprint.file_name().unwrap().to_str().unwrap();
+        let hash = name.rsplit('-').next().unwrap();
+        run(Command::new("find").arg(dir.join("target/debug")).args([
+            "-name",
+            &format!("*-{hash}*"),
+            "-exec",
+            "touch",
+            "-h",
+            "-t",
+            "200201010000",
+            "{}",
+            "+",
+        ]));
+    }
+
+    let evidence = dir.join("evidence");
+    let measured = Command::new(dir.join("pool-maintenance/measure.sh"))
+        .current_dir(dir.join("pool-maintenance"))
+        .env("ONEBUDGETSPEC_RESULT", dir.join("result.json"))
+        .env("POOL_MAINTENANCE_EVIDENCE", &evidence)
+        .env_remove("CARGO_TARGET_DIR")
+        .env_remove("CARGO_BUILD_TARGET_DIR")
+        .output()
+        .unwrap();
+    let stderr = String::from_utf8_lossy(&measured.stderr);
+    assert!(measured.status.success(), "measure.sh failed: {stderr}");
+    let alt = listed(&evidence, "alt");
+    let removed = listed(&evidence, "removed");
+    assert!(
+        removed.is_subset(&alt),
+        "the timed pass removed only the alternative build's entries: {:?}",
+        removed.difference(&alt).collect::<Vec<_>>()
+    );
+    let before_alt = listed(&evidence, "before-alt");
+    for stale in &variant {
+        let name = stale.file_name().unwrap().to_str().unwrap();
+        assert!(
+            !before_alt.iter().any(|entry| entry.ends_with(name)),
+            "the untimed pass cleared the newer variant {name} as backlog"
+        );
+    }
+    for kept in &ordinary {
+        let name = kept.file_name().unwrap().to_str().unwrap();
+        assert!(
+            before_alt.iter().any(|entry| entry.ends_with(name)),
+            "the ordinary build's {name} survived the untimed pass"
+        );
+    }
+}
+
 /// A test build that fails stops the measurement with the build's error and no
 /// figure, rather than timing a pass over a half-built slot.
 #[test]

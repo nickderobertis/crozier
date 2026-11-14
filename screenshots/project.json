@@ -37,7 +37,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= screenshots/tests/demo_gif_test.py screenshots/tests/capture_visual_docs_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= screenshots/tests/demo_gif_test.py screenshots/tests/capture_visual_docs_test.py screenshots/tests/fetch_tool_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/screenshots/test/.coverage"
         }
@@ -57,7 +57,10 @@
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/screenshots/test"
-      ]
+      ],
+      "metadata": {
+        "description": "llmlint: ignore[shell_test_tiers_stay_split] fetch_tool_test.py drives only curl against a loopback server on 127.0.0.1, which every leg carries and which reaches no network; it installs nothing and ran in 4 s (`uv run --locked --all-packages pytest screenshots/tests/fetch_tool_test.py`). A case that adds an install or a real network reach belongs in a split project."
+      }
     },
     "lint-boundaries": {
       "executor": "nx:run-commands",

@@ -916,3 +916,383 @@ fn the_root_gallery_is_published_from_a_push_to_main() {
         "it publishes a real capture"
     );
 }
+
+const REQUIRE_TOOLS: &str = "node tools/ci/require-tools.mjs ";
+
+/// The names (and `@` pins) a `require-tools.mjs` step proves.
+fn required_tools(step: &Value) -> Option<Vec<&str>> {
+    let run = text(step, "run")?;
+    let line = run.lines().find_map(|line| {
+        line.trim()
+            .split_once(REQUIRE_TOOLS)
+            .map(|(_, tools)| tools)
+    })?;
+    Some(line.split_whitespace().collect())
+}
+
+/// Every job that bootstraps proves each tool its install steps put on PATH runs, after
+/// the last of them and before `just bootstrap`, so an installer that reported success
+/// without its executable is named there and not by the gate (#814); and `just` is held
+/// to the version its install step pins.
+#[test]
+fn every_bootstrapping_job_proves_its_installed_tools_before_the_gate() {
+    let mut proved = Vec::new();
+    for (file, source) in [("ci.yml", CI_WORKFLOW), ("ci-caches.yml", CI_CACHES)] {
+        let workflow: Value =
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        for (name, job) in workflow["jobs"].as_object().expect("jobs") {
+            let steps = steps(job);
+            let Some(bootstrap) = steps
+                .iter()
+                .position(|step| text(step, "run") == Some("just bootstrap"))
+            else {
+                continue;
+            };
+            let installs: Vec<usize> = (0..bootstrap)
+                .filter(|&index| {
+                    text(&steps[index], "uses").is_some_and(|uses| {
+                        [
+                            "extractions/setup-just@",
+                            "actions/setup-node@",
+                            "oven-sh/setup-bun@",
+                            "actions-rust-lang/setup-rust-toolchain@",
+                            "taiki-e/install-action@",
+                            "astral-sh/setup-uv@",
+                        ]
+                        .iter()
+                        .any(|prefix| uses.starts_with(prefix))
+                    })
+                })
+                .collect();
+            let proof = (0..bootstrap)
+                .find(|&index| required_tools(&steps[index]).is_some())
+                .unwrap_or_else(|| panic!("{file}: `{name}` bootstraps without proving its tools"));
+            assert!(
+                installs.iter().all(|&install| install < proof),
+                "{file}: `{name}` proves its tools before every install step has run"
+            );
+            let tools = required_tools(&steps[proof]).expect("the proof names tools");
+            let names: Vec<&str> = tools
+                .iter()
+                .map(|tool| tool.split('@').next().unwrap())
+                .collect();
+            let mut expected = vec!["just", "node", "bun", "cargo", "uv"];
+            for &install in &installs {
+                if let Some(listed) = steps[install]
+                    .get("with")
+                    .and_then(|with| text(with, "tool"))
+                {
+                    expected.extend(listed.split(','));
+                }
+            }
+            for tool in expected {
+                assert!(
+                    names.contains(&tool),
+                    "{file}: `{name}` never proves `{tool}` runs"
+                );
+            }
+            let pin = installs
+                .iter()
+                .find_map(|&install| {
+                    text(&steps[install], "uses")
+                        .filter(|uses| uses.starts_with("extractions/setup-just@"))
+                        .and_then(|_| steps[install].get("with"))
+                        .and_then(|with| text(with, "just-version"))
+                })
+                .unwrap_or_else(|| panic!("{file}: `{name}` installs an unpinned just"));
+            assert!(
+                tools.contains(&format!("just@{pin}").as_str()),
+                "{file}: `{name}` pins just {pin} but proves another version"
+            );
+            proved.push(format!("{file}:{name}"));
+        }
+    }
+    assert_eq!(proved.len(), 7, "the bootstrapping jobs: {proved:?}");
+}
+
+/// The proof the lanes run, read from `test-linux`, over a PATH of stand-ins: one the
+/// installer left out is named, and the gate never starts, as is a wrong `just`.
+#[cfg(unix)]
+#[test]
+fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
+    use std::os::unix::fs::PermissionsExt;
+    use std::process::Command;
+
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let tools = steps(job(&workflow, "test-linux"))
+        .iter()
+        .find_map(required_tools)
+        .expect("test-linux proves its tools");
+    let node = std::env::var_os("PATH")
+        .and_then(|path| {
+            std::env::split_paths(&path)
+                .map(|dir| dir.join("node"))
+                .find(|candidate| candidate.is_file())
+        })
+        .expect("node is on PATH");
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let scratch = tempfile::tempdir().expect("a scratch directory");
+    let stand_in = |name: &str, answer: &str| {
+        let path = scratch.path().join(name);
+        std::fs::write(&path, format!("#!/bin/sh\necho \"{answer}\"\n")).expect("a stand-in");
+        std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755))
+            .expect("executable");
+    };
+    for tool in &tools {
+        let (name, version) = tool.split_once('@').unwrap_or((tool, "1.0.0"));
+        match name {
+            "just" => {}
+            "cargo" => stand_in("cargo", "cargo-$1 1.0.0"),
+            _ => stand_in(name, &format!("{name} {version}")),
+        }
+    }
+    let prove = || {
+        Command::new(&node)
+            .arg("tools/ci/require-tools.mjs")
+            .args(&tools)
+            .current_dir(&root)
+            .env("PATH", scratch.path())
+            .output()
+            .expect("node runs the proof")
+    };
+    let missing = prove();
+    assert_eq!(
+        missing.status.code(),
+        Some(1),
+        "a missing tool fails the proof"
+    );
+    let stderr = String::from_utf8_lossy(&missing.stderr);
+    assert!(
+        stderr.contains("require-tools: `just` is not on PATH"),
+        "{stderr}"
+    );
+    assert!(stderr.contains("re-run the job"), "{stderr}");
+
+    stand_in("just", "just 1.57.0");
+    let stale = prove();
+    assert_eq!(stale.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&stale.stderr);
+    assert!(
+        stderr.contains("is not the pinned 1.58.0: it answered 'just 1.57.0'"),
+        "{stderr}"
+    );
+
+    std::fs::write(
+        scratch.path().join("just"),
+        "#!/bin/sh\necho 'just: cannot load its library' >&2\nexit 3\n",
+    )
+    .expect("a broken stand-in");
+    let broken = prove();
+    assert_eq!(
+        broken.status.code(),
+        Some(1),
+        "a tool that does not run fails the proof"
+    );
+    let stderr = String::from_utf8_lossy(&broken.stderr);
+    assert!(
+        stderr.contains("`just --version` did not run (exit 3): just: cannot load its library"),
+        "{stderr}"
+    );
+
+    // A call it does not take is a usage error (2), never a tool the proof found missing (1).
+    for arguments in [&[][..], &["ju st"][..], &["just@"][..]] {
+        let usage = Command::new(&node)
+            .arg("tools/ci/require-tools.mjs")
+            .args(arguments)
+            .current_dir(&root)
+            .env("PATH", scratch.path())
+            .output()
+            .expect("node runs the proof");
+        assert_eq!(usage.status.code(), Some(2), "{arguments:?}");
+        let stderr = String::from_utf8_lossy(&usage.stderr);
+        assert!(
+            stderr.contains("usage: node tools/ci/require-tools.mjs NAME[@VERSION]..."),
+            "{stderr}"
+        );
+    }
+
+    stand_in("just", "just 1.58.0");
+    let present = prove();
+    let stdout = String::from_utf8_lossy(&present.stdout);
+    assert_eq!(
+        present.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&present.stderr)
+    );
+    assert!(
+        stdout.starts_with("require-tools: just 1.58.0, node "),
+        "{stdout}"
+    );
+}
+
+/// What each lane may spend, as main had it before the delivery work (#822): a lane is made
+/// to fit by doing less repeated work, never by being allowed longer.
+const LANE_LIMITS: [(&str, u64); 4] = [
+    ("lint", 30),
+    ("test-linux", 240),
+    ("test-windows", 150),
+    ("test-macos", 150),
+];
+
+/// No lane's limit rises, and every entrypoint, comparison and command the inventory
+/// (tools/ci/lanes.json) records still runs on a required lane on each platform it owes:
+/// the real inventory check, over this tree's graph and workflow, accepts it, and a
+/// comparison another target carries is still run by that carrier's own source.
+#[test]
+fn no_lane_limit_rises_and_no_inventoried_verdict_is_dropped() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    for (name, limit) in LANE_LIMITS {
+        let minutes = job(&workflow, name)
+            .get("timeout-minutes")
+            .and_then(Value::as_u64)
+            .unwrap_or_else(|| panic!("{name} states its timeout-minutes"));
+        assert!(
+            minutes <= limit,
+            "{name}'s limit rose to {minutes} minutes from {limit}"
+        );
+    }
+    assert_eq!(
+        required_checks(),
+        LANE_LIMITS.map(|(name, _)| name.to_string()),
+        "the required contexts are the four lanes"
+    );
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let lanes: Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join("tools/ci/lanes.json")).expect("lanes.json"),
+    )
+    .expect("lanes.json is JSON");
+    // Every row's target still exists, wherever its row says it now runs. Which lane reaches
+    // it on which platform is the real inventory check's (`lane-inventory:lint`), driven over
+    // the real graph by tools/ci-journeys/tests/selection.test.mjs.
+    let targets = project_targets(&root);
+    let rows = lanes["entrypoints"].as_object().expect("entrypoints");
+    for (entry, row) in rows {
+        let now = text(row, "now").unwrap_or(entry);
+        assert!(targets.contains(now), "{entry}: its target {now} is gone");
+    }
+    for entry in lanes["added"].as_object().expect("added").keys() {
+        assert!(
+            targets.contains(entry.as_str()),
+            "{entry}: the target is gone"
+        );
+    }
+    let carried = lanes["carried"]
+        .as_object()
+        .expect("lanes.json lists carried targets");
+    for target in ["corpus-match:test-match", "corpus-match:test-strict"] {
+        let row = &carried[target];
+        assert_eq!(
+            text(row, "by"),
+            Some("corpus-match:test-offline"),
+            "{target}"
+        );
+        let source = std::fs::read_to_string(root.join(text(row, "source").expect("a source")))
+            .expect("the carrier's source");
+        let recipe = text(row, "recipe").expect("a recipe");
+        assert!(
+            source.contains(&format!("((\"{recipe}\",)"))
+                || source.contains(&format!("(\"{recipe}\",)")),
+            "{target}: the carrier no longer runs `just {recipe}`"
+        );
+    }
+}
+
+/// On Windows an npm-installed CLI is a `.cmd` shim, which only the shell runs: the proof
+/// finds it through PATHEXT and runs it, and still names one that is absent.
+#[cfg(windows)]
+#[test]
+fn the_tool_proof_runs_a_windows_cmd_shim_and_names_a_missing_one() {
+    use std::process::Command;
+
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let scratch = tempfile::tempdir().expect("a scratch directory");
+    std::fs::write(scratch.path().join("claude.cmd"), "@echo claude 2.0.0\r\n").expect("a shim");
+    let node = std::env::var_os("PATH")
+        .and_then(|path| {
+            std::env::split_paths(&path)
+                .map(|dir| dir.join("node.exe"))
+                .find(|candidate| candidate.is_file())
+        })
+        .expect("node is on PATH");
+    let path = std::env::join_paths([
+        scratch.path().to_path_buf(),
+        std::path::PathBuf::from(r"C:\Windows\System32"),
+    ])
+    .expect("a PATH");
+    let prove = |tools: &[&str]| {
+        Command::new(&node)
+            .arg("tools/ci/require-tools.mjs")
+            .args(tools)
+            .current_dir(&root)
+            .env("PATH", &path)
+            .output()
+            .expect("node runs the proof")
+    };
+    let shim = prove(&["claude@2.0.0"]);
+    assert_eq!(
+        shim.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&shim.stderr)
+    );
+    assert!(String::from_utf8_lossy(&shim.stdout).contains("claude 2.0.0"));
+    let missing = prove(&["claude", "llmlint"]);
+    assert_eq!(missing.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("`llmlint` is not on PATH"));
+}
+
+/// Every `project:target` the tree's `project.json` files declare, skipping the trees no
+/// project lives in (the corpus, the docs, build output and installed packages).
+fn project_targets(root: &std::path::Path) -> std::collections::BTreeSet<String> {
+    fn walk(dir: &std::path::Path, depth: usize, found: &mut std::collections::BTreeSet<String>) {
+        let manifest = dir.join("project.json");
+        if let Ok(text) = std::fs::read_to_string(&manifest) {
+            // Whole-line `//` comments, as Nx and lane-inventory.mjs read them.
+            let text: String = text
+                .lines()
+                .filter(|line| !line.trim_start().starts_with("//"))
+                .collect::<Vec<_>>()
+                .join("\n");
+            let project: Value = serde_json::from_str(&text)
+                .unwrap_or_else(|error| panic!("{}: {error}", manifest.display()));
+            let name = text_or_panic(&project, "name", &manifest);
+            for target in project["targets"]
+                .as_object()
+                .into_iter()
+                .flatten()
+                .map(|(t, _)| t)
+            {
+                found.insert(format!("{name}:{target}"));
+            }
+        }
+        if depth == 0 {
+            return;
+        }
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let name = entry.file_name();
+            let skip = [
+                "node_modules",
+                "target",
+                "fixtures",
+                "docs",
+                ".git",
+                ".nx",
+                ".venv",
+                ".local",
+            ];
+            if entry.path().is_dir() && !skip.iter().any(|s| name == *s) {
+                walk(&entry.path(), depth - 1, found);
+            }
+        }
+    }
+    fn text_or_panic<'a>(value: &'a Value, key: &str, path: &std::path::Path) -> &'a str {
+        text(value, key).unwrap_or_else(|| panic!("{} has no {key}", path.display()))
+    }
+    let mut found = std::collections::BTreeSet::new();
+    walk(root, 3, &mut found);
+    found
+}

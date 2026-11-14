@@ -1,0 +1,84 @@
+{
+  "name": "corpus-offline-tools",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python",
+    "lane:live",
+    "platform:linux"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/corpus_match/corpus_offline_test.py OfflineCorpusRecipes.test_real_recipes_without_network_or_cache",
+        "env": {
+          "CORPUS_OFFLINE_RECIPES": "tools"
+        }
+      },
+      "cache": false,
+      "inputs": [
+        "default",
+        "crateSource",
+        "generator",
+        "{workspaceRoot}/tests/corpus_match/corpus_offline_test.py",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/scripts/census-python.sh",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tests/census_fallback/**/*",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/tools/corpus/corpus_sources.py",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/fern-refusals/**/*",
+        "{workspaceRoot}/docs/fern-refusals/**/*",
+        "witnessIndexReads",
+        "{workspaceRoot}/tools/witness-search/witness-search-redo.py"
+      ],
+      "metadata": {
+        "description": "The census, the refusal-class gate and the census-fallback samples run through their real recipes with sockets denied and no cache: the half of the offline proof that compares no golden (corpus-match:test-offline is the other)."
+      },
+      "dependsOn": [
+        {
+          "projects": [
+            "corpus-match"
+          ],
+          "target": "cold-registry-build"
+        }
+      ],
+      "parallelism": false
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus-offline-tools"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-certified-pair",
+        "lint-boundaries"
+      ]
+    },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/corpus_offline_tools"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
+      ]
+    }
+  }
+}

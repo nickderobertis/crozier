@@ -46,27 +46,33 @@ function crozierUnits(stdout) {
 }
 
 const build = (cwd, env) => crozierUnits(cargo(cwd, cargoArgs(target("src", "build").command, "--message-format=json"), env).stdout);
+// The golden replays' build: the `e2e` profile the suite, sdk-env, runtime and the corpus recipes share.
+const replayBuild = (cwd, env) => crozierUnits(cargo(cwd, cargoArgs(target("crates/crozier-e2e", "build-replay").command, "--message-format=json"), env).stdout);
 const suiteBuild = (cwd) => crozierUnits(cargo(cwd, cargoArgs(target("crates/crozier-e2e", "test").command, "--no-run", "--cargo-message-format", "json")).stdout);
 // The build tests/corpus_match/match.sh starts with; `corpus-match` is a tier, so this project cannot read it.
-const matchBuild = (cwd) => crozierUnits(cargo(cwd, ["build", "--locked", "--quiet", "-p", "crozier", "--bin", "crozier", "--message-format=json"]).stdout);
-const binaryIn = (root) => join(root, "target/debug", `crozier${process.platform === "win32" ? ".exe" : ""}`);
+const matchBuild = (cwd) => crozierUnits(cargo(cwd, ["build", "--locked", "--quiet", "--profile", "e2e", "-p", "crozier", "--bin", "crozier", "--message-format=json"]).stdout);
+const binaryIn = (root, profile = "debug") => join(root, "target", profile, `crozier${process.platform === "win32" ? ".exe" : ""}`);
 
 test("in the real tree, every later step uses the build the first produced", () => {
   // `crozier:build` compiles here only if nothing in this job has yet; whichever
   // step came first, nothing after this line may compile crozier again.
   build(ROOT);
+  replayBuild(ROOT);
   const built = statSync(binaryIn(ROOT)).mtimeMs;
-  assert.deepEqual(suiteBuild(ROOT), { lib: false }, "a suite's build reuses crozier's library rather than compiling its own");
-  assert.deepEqual(matchBuild(ROOT), { lib: false, bin: false }, "the corpus recipe reuses crozier");
+  const replayed = statSync(binaryIn(ROOT, "e2e")).mtimeMs;
+  assert.deepEqual(suiteBuild(ROOT), { lib: false }, "the suite's build reuses the replay build's library rather than compiling its own");
+  assert.deepEqual(matchBuild(ROOT), { lib: false, bin: false }, "the corpus recipe reuses the replay build");
+  assert.deepEqual(replayBuild(ROOT), { lib: false, bin: false }, "a later replay build still answers from the first");
   assert.deepEqual(build(ROOT), { lib: false, bin: false }, "a later `crozier:build` still answers from the first");
   assert.equal(statSync(binaryIn(ROOT)).mtimeMs, built, "no later step rewrote the binary");
+  assert.equal(statSync(binaryIn(ROOT, "e2e")).mtimeMs, replayed, "no later step rewrote the replay binary");
 });
 
 /** A workspace laid out and named like the real one, so the real commands run on it unchanged. */
 function namesakeWorkspace() {
   const root = mkdtempSync(join(tmpdir(), "crozier-build-reuse-"));
   const files = {
-    "Cargo.toml": '[workspace]\nmembers = [".", "crates/crozier-e2e"]\nresolver = "2"\n\n[package]\nname = "crozier"\nversion = "0.0.0"\nedition = "2021"\n',
+    "Cargo.toml": '[workspace]\nmembers = [".", "crates/crozier-e2e"]\nresolver = "2"\n\n[package]\nname = "crozier"\nversion = "0.0.0"\nedition = "2021"\n\n[profile.e2e]\ninherits = "dev"\n\n[profile.e2e.package.crozier]\nopt-level = 2\n',
     "src/lib.rs": "pub const LIT: bool = true;\n",
     "src/main.rs": "fn main() {\n    assert!(crozier::LIT);\n}\n",
     "crates/crozier-e2e/Cargo.toml": '[package]\nname = "crozier-e2e"\nversion = "0.0.0"\nedition = "2021"\n\n[dev-dependencies]\ncrozier = { path = "../.." }\n',
@@ -85,14 +91,15 @@ function namesakeWorkspace() {
 test("a changed source rebuilds for every step, and other compiler flags take no old build", () => {
   const root = namesakeWorkspace();
   try {
-    assert.deepEqual(build(root), { lib: true, bin: true }, "the first step compiles");
+    assert.deepEqual(replayBuild(root), { lib: true, bin: true }, "the first step compiles");
     assert.deepEqual(suiteBuild(root), { lib: false }, "the next uses it");
 
     appendFileSync(join(root, "src/lib.rs"), "\n// a changed input\n");
     assert.deepEqual(suiteBuild(root), { lib: true }, "a changed source reaches the suite's build");
-    assert.deepEqual(build(root), { lib: false, bin: true }, "and the binary links the rebuilt library, once");
+    assert.deepEqual(replayBuild(root), { lib: false, bin: true }, "and the binary links the rebuilt library, once");
 
-    assert.deepEqual(build(root, { RUSTFLAGS: "--cfg crozier_reuse_probe" }), { lib: true, bin: true }, "other flags compile their own build");
+    assert.deepEqual(build(root), { lib: true, bin: true }, "the dev profile is a build of its own");
+    assert.deepEqual(replayBuild(root, { RUSTFLAGS: "--cfg crozier_reuse_probe" }), { lib: true, bin: true }, "other flags compile their own build");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

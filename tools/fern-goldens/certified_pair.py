@@ -64,6 +64,9 @@ DELEGATED = (
     "tests/census_fallback/",
     "tests/corpus_match/",
     "tests/corpus_match_selection/",
+    # llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] Delegation is declared here, as for every root in this tuple: corpus-offline-tools is a type:tier project whose definition the whole-tree check may not read (nx.json's boundaries), so it cannot discover the delegation there.
+    "tests/corpus_offline_tools/",
+    # llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     # llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] Delegation is declared here, as for every root in this tuple: lane-inventory is a type:tier project whose definition the whole-tree check may not read (nx.json's boundaries), so it cannot discover the delegation there.
     "tests/lane_inventory/",
     # llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]

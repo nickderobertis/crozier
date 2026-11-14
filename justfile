@@ -423,7 +423,7 @@ predicate-grammar:
 # without the network the unscoped recipe needs. Part of `check` (the recipe
 # above is not). Same split as test-fixtures-coverage vs fixtures-coverage.
 test-surface-census:
-    @just nx run surface-census:test-census
+    @just nx run-many --targets=test-census,test-census-verdicts --projects=surface-census
 
 # Screen every APIs.guru catalogue version for the owned surface-gap selectors.
 apis-guru-gap-screen *args:

@@ -1,10 +1,14 @@
 # crozier-e2e
 
-- **Run it through its target** (`just test-e2e`). The binary is the one
-  `crozier:build` leaves in the profile directory beside this suite's `deps/`
-  (Cargo sets `CARGO_BIN_EXE_crozier` only inside the owning package, so
-  `crozier_bin()` looks there); a bare `cargo nextest run -p crozier-e2e` drives
-  whatever binary was built last.
+- **Run it through its target** (`just test-e2e`). It runs on the `e2e` profile
+  (`Cargo.toml`: crozier at opt-level 2, every check on), and the binary is the one
+  `crozier-e2e:build-replay` leaves in that profile's directory beside this suite's
+  `deps/` (Cargo sets `CARGO_BIN_EXE_crozier` only inside the owning package, so
+  `crozier_bin()` looks there). Under nextest the run's first test copies it to
+  `crozier-e2e-pinned/<NEXTEST_RUN_ID>/`, and every test of the run drives that copy,
+  so a rebuild mid-run cannot reach it. A bare `cargo nextest run -p crozier-e2e`
+  (dev profile) drives whatever dev binary was built last. `sdk-env`, `runtime` and
+  the corpus recipes use the same profile, so the job compiles the suite once.
 - **Paths are repository-relative**: read the tree through `repo_root()`;
   `include_str!` paths are relative to this crate (`../../../docs/...`).
 - **The harness runs other projects' tooling** — `corpus_sources.py` for every

@@ -221,6 +221,32 @@ OTHER_FAMILIES = {
     ("departure-evidence", DEPARTURE),
 }
 
+
+@dataclass(frozen=True)
+class StageAnswer:
+    """What a stood-in Fern stage exits with and prints."""
+
+    exit: int
+    printed: str
+
+
+@dataclass(frozen=True)
+class StoodInProbe:
+    """How the stood-in Fern answers one probe: its check stage, the stage that hangs past its
+    bound, and how long the check takes to answer (a runner too slow for the bound)."""
+
+    check: StageAnswer
+    hang: str | None = None
+    check_delay: float = 0
+
+    def rule(self) -> dict[str, object]:
+        """The stand-in's JSON rule for this probe."""
+        rule: dict[str, object] = {"check": [self.check.exit, self.check.printed], "check_delay": self.check_delay}
+        if self.hang is not None:
+            rule["hang"] = self.hang
+        return rule
+
+
 # A stand-in for Fern: it answers `fern check` and `fern generate` in the
 # workspace the recipe scaffolds, from rules keyed by the document's title, and
 # writes the tree the test prepared for that title, stamped with the CLI and
@@ -242,8 +268,13 @@ if rule.get("hang") in (True, args[0]):
     import time
     time.sleep(600)
 if args[0] == "check":
+    # A runner too slow for the check stage's bound, as a slow CI runner can be.
+    __import__("time").sleep(rule.get("check_delay", 0))
     code, message = rule.get("check", [0, ""])
-    print(f"issue: {message}" if message else "All checks passed")
+    print(f"issue: {message}" if message else "All checks passed", flush=True)
+    # The check stage's own event: it answered, before its caller moves on to generation.
+    with open(config["calls"], "a", encoding="utf-8") as calls:
+        calls.write(json.dumps({"command": "check", "title": title, "answered": True}) + "\n")
     sys.exit(code)
 code, message = rule.get("generate", [0, ""])
 if code:
@@ -1649,6 +1680,8 @@ class WeeklyRunTests(unittest.TestCase):
         # The tree Fern writes where it generates from the probe.
         shutil.copytree(self.trees / "Alpha Lanterns", trees / "probe")
         self.stand_in({"trees": str(trees), "rules": {"probe": rule}})
+        # The stood-in Fern's events from here on are this run's alone, not the seed's.
+        (self.scratch / "fern-calls.jsonl").unlink(missing_ok=True)
         state = self.run_workflow(**env)
         shard = next(state.artifacts.glob("fern-goldens-shard-*/result.json"))
         items: list[ShardItem] = json.loads(shard.read_text(encoding="utf-8"))["items"]
@@ -1776,15 +1809,40 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assert_refusal_reported(state, item, "refuses-otherwise", now)
 
-    def test_a_refusal_whose_phrase_fern_prints_before_a_stage_overruns_is_unsettled(self) -> None:
-        rule = {"check": [1, "Default value '-createdAt' is not a valid enum value"], "hang": "generate"}
-        state, item = self.refusal_journey(rule, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
-        now = (
-            "unsettled: `fern generate` ran past the probe's 2-second bound (check exit 1, generate exit timeout); "
-            "the check stage still prints the class's phrase; a run cut short says nothing about whether Fern "
-            "refuses given more time or memory"
+    def check_answered(self, title: str) -> bool:
+        """Whether the stood-in `fern check` for `title` answered, by its own recorded event."""
+        calls = (self.scratch / "fern-calls.jsonl").read_text(encoding="utf-8").splitlines()
+        return any(json.loads(call) == {"command": "check", "title": title, "answered": True} for call in calls)
+
+    def overrun_report(self, check_answered: bool) -> str:
+        """What the probe reports when generation overruns, given whether the check stage answered first."""
+        if check_answered:
+            return (
+                "unsettled: `fern generate` ran past the probe's 2-second bound (check exit 1, generate exit "
+                "timeout); the check stage still prints the class's phrase; a run cut short says nothing about "
+                "whether Fern refuses given more time or memory"
+            )
+        return (
+            "unsettled: `fern check` and `fern generate` ran past the probe's 2-second bound (check exit timeout, "
+            "generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing "
+            "about whether Fern refuses given more time or memory"
         )
+
+    PHRASE = "Default value '-createdAt' is not a valid enum value"
+
+    def test_a_refusal_probe_whose_generation_overruns_reports_the_stages_that_overran(self) -> None:
+        # Which stages overran is read from the check stage's own event, never from how fast this
+        # runner starts a process: a check slower than the bound is the case below, not a failure here.
+        probe = StoodInProbe(check=StageAnswer(exit=1, printed=self.PHRASE), hang="generate")
+        state, item = self.refusal_journey(probe.rule(), CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        now = self.overrun_report(self.check_answered("probe"))
         self.assert_refusal_reported(state, item, "unsettled", now)
+
+    def test_a_check_stage_a_slow_runner_also_overruns_is_reported_as_both_overrunning(self) -> None:
+        probe = StoodInProbe(check=StageAnswer(exit=1, printed=self.PHRASE), hang="generate", check_delay=30)
+        state, item = self.refusal_journey(probe.rule(), CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        self.assertFalse(self.check_answered("probe"), "the bound ended the check stage before it answered")
+        self.assert_refusal_reported(state, item, "unsettled", self.overrun_report(False))
 
     def test_a_changed_refusal_report_naming_no_outcome_fails_its_item_and_the_assembly(self) -> None:
         """A report the probe's delegate wrote that names the class but no

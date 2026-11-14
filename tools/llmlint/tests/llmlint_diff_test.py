@@ -17,6 +17,7 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 from pathlib import Path
 
@@ -33,7 +34,14 @@ STUB = textwrap.dedent(
     with open(os.environ["STUB_LOG"], "a", encoding="utf-8") as log:
         log.write(json.dumps(sys.argv[1:]) + "\\n")
     files = [a for a in sys.argv[1:] if not a.startswith("-") and a not in ("git", "base")]
-    code = int(os.environ.get("STUB_EXIT_" + (files[0].replace("/", "_").replace(".", "_") if files else "ALL"), "0"))
+    key = files[0].replace("/", "_").replace(".", "_") if files else "ALL"
+    # A comma list scripts successive calls for the same batch: "2,0" errors once, then passes.
+    script = os.environ.get("STUB_EXIT_" + key, "0").split(",")
+    counter = os.environ["STUB_LOG"] + "." + key
+    seen = int(open(counter).read()) if os.path.exists(counter) else 0
+    with open(counter, "w") as count:
+        count.write(str(seen + 1))
+    code = int(script[min(seen, len(script) - 1)])
     if code < 0:
         os.kill(os.getpid(), -code)
     sys.exit(code)
@@ -62,7 +70,12 @@ class LlmlintDiffTests(unittest.TestCase):
             stub.write_text(STUB, encoding="utf-8")
             stub.chmod(0o755)
         self.log = self.root / "calls.jsonl"
-        self.env = {**os.environ, "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}", "STUB_LOG": str(self.log)}
+        self.env = {
+            **os.environ,
+            "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+            "STUB_LOG": str(self.log),
+            "LLMLINT_DIFF_RETRY_DELAY": "0",
+        }
         self.git("init", "-q", "-b", "base")
         self.write("README.md", "base\n")
         self.git("add", "-A")
@@ -143,11 +156,14 @@ class LlmlintDiffTests(unittest.TestCase):
         named = [call[4:] for call in self.calls()]
         self.assertEqual([["a.md", "b.md"], ["c.md"]], named)
 
-    def test_the_worst_batch_status_is_the_exit_status(self) -> None:
+    def test_a_failed_rule_is_the_exit_status_even_beside_an_unanswered_batch(self) -> None:
         self.commit({"a.md": "a" * 900, "b.md": "b" * 900, "c.md": "c" * 900})
         run = self.run_script("--budget", "1000", a_md="1", b_md="2")
-        self.assertEqual(2, run.returncode)
-        self.assertEqual(3, len(self.calls()), "a failing batch does not stop the batches after it")
+        self.assertEqual(1, run.returncode, "a rejection is a verdict, whatever else went unanswered")
+        named = [call[4:] for call in self.calls()]
+        # The rejected batch is never re-sent; the unanswered one is, twice.
+        self.assertEqual([["a.md"], ["b.md"], ["b.md"], ["b.md"], ["c.md"]], named)
+        self.assertIn("verification unavailable: 1 of 3 batch(es)", run.stderr)
 
     def test_a_batch_killed_before_its_verdict_fails_the_run(self) -> None:
         self.commit({"a.md": "a" * 900, "b.md": "b" * 900})
@@ -155,6 +171,52 @@ class LlmlintDiffTests(unittest.TestCase):
         self.assertEqual(2, run.returncode, "a batch with no verdict is an error, never a pass")
         run = self.run_script(ALL="-9")
         self.assertEqual(2, run.returncode, "so is the single plain invocation")
+
+    def test_an_unanswered_batch_is_retried_alone_until_the_judge_answers(self) -> None:
+        self.commit({"a.md": "a" * 900, "b.md": "b" * 900, "c.md": "c" * 900})
+        run = self.run_script("--budget", "1000", b_md="2,2,0")
+        self.assertEqual(0, run.returncode, run.stdout + run.stderr)
+        named = [call[4:] for call in self.calls()]
+        self.assertEqual([["a.md"], ["b.md"], ["b.md"], ["b.md"], ["c.md"]], named, "answered batches are not replayed")
+        self.assertIn("llmlint-diff: batch 2/3: no verdict from the judge; retry 1/2 on the same tree", run.stdout)
+        self.assertIn("retry 2/2", run.stdout)
+        self.assertNotIn("verification unavailable", run.stderr)
+
+    def test_a_judge_still_unanswered_after_its_retries_is_unavailable_not_rejected(self) -> None:
+        self.commit({"a.md": "a"})
+        run = self.run_script(ALL="2")
+        self.assertEqual(2, run.returncode)
+        self.assertEqual(3, len(self.calls()), "the plain invocation is retried twice")
+        self.assertIn("verification unavailable: 1 of 1 batch(es) got no verdict after 2 retries", run.stderr)
+
+    def test_each_retry_waits_longer_than_the_last(self) -> None:
+        self.commit({"a.md": "a"})
+        env = {**self.env, "LLMLINT_DIFF_RETRY_DELAY": "0.3", "STUB_EXIT_ALL": "2,2,0"}
+        started = time.monotonic()
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env, capture_output=True, text=True
+        )
+        self.assertEqual(0, run.returncode, run.stdout + run.stderr)
+        self.assertIn("retry 1/2 on the same tree in 0.3s", run.stdout)
+        self.assertIn("retry 2/2 on the same tree in 0.6s", run.stdout)
+        self.assertGreaterEqual(time.monotonic() - started, 0.9, "the waits were 0.3 s and then 0.6 s")
+
+    def test_a_rule_failure_is_never_retried(self) -> None:
+        self.commit({"a.md": "a"})
+        run = self.run_script(ALL="1")
+        self.assertEqual(1, run.returncode)
+        self.assertEqual(1, len(self.calls()))
+        self.assertNotIn("retry", run.stdout)
+
+    def test_a_retry_delay_that_is_not_seconds_is_refused_before_any_batch(self) -> None:
+        self.commit({"a.md": "a"})
+        env = {**self.env, "LLMLINT_DIFF_RETRY_DELAY": "soon"}
+        run = subprocess.run(
+            [sys.executable, str(SCRIPT), "base"], cwd=self.repo, env=env, capture_output=True, text=True
+        )
+        self.assertEqual(2, run.returncode)
+        self.assertIn("LLMLINT_DIFF_RETRY_DELAY must be a number of seconds", run.stderr)
+        self.assertEqual([], self.calls())
 
     def test_every_changed_file_is_judged_in_exactly_one_batch(self) -> None:
         files: dict[str, str] = {f"d{n}/f{n}.md": "x" * (200 * n) for n in range(1, 9)}

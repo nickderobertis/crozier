@@ -14,21 +14,32 @@ neighbouring files stay together, into batches under the budget. It runs
 `llmlint --diff` on each with the files named and fails if any batch fails.
 A file larger than the budget on its own is a batch of one.
 
-Exit status is the worst batch's: 2 (a judge errored) over 1 (a rule failed)
-over 0. Any other nonzero status, a batch killed by a signal included, is read
-as 2: a batch that returned no verdict fails the run, never passes it. A run
-it cannot make at all (no llmlint, an invalid budget, a git or config failure)
-exits 2 as well, never 1, which only a failed rule earns.
+A batch that returns no verdict (llmlint's exit 2: the judge errored or could
+not be reached) is retried on the same tree, twice, after
+`LLMLINT_DIFF_RETRY_DELAY` seconds (default 30) and then twice that. Only the
+unanswered batch is re-sent: an answered one is never replayed, and a rule
+failure (exit 1) is a verdict, so it is never retried.
+
+Exit status: 1 when any batch's rule failed, since a rejection stands whatever
+else happened; otherwise 2 when a batch still has no verdict after its retries,
+announced by a `verification unavailable` line naming no rule; otherwise 0. Any
+other nonzero status, a batch killed by a signal included, is read as 2: a
+batch that returned no verdict never passes the run. A run it cannot make at
+all (no llmlint, an invalid budget, a git or config failure) exits 2 as well,
+never 1, which only a failed rule earns.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
 import sys
+import time
+from enum import IntEnum
 from pathlib import Path
 from typing import NoReturn
 
@@ -36,6 +47,11 @@ from typing import NoReturn
 # 22-file code batch); an 8 MB one never did. The default leaves headroom below
 # the first.
 DEFAULT_BUDGET = 3_000_000
+
+# A judge outage seen in CI lasted minutes, not seconds; two retries, the second
+# after twice the first delay, bound the wait at three times it.
+RETRIES = 2
+DEFAULT_RETRY_DELAY = 30.0
 
 
 def fail(message: str) -> NoReturn:
@@ -128,9 +144,64 @@ def batches(sizes: dict[str, int], budget: int) -> list[list[str]]:
     return out
 
 
-def severity(code: int) -> int:
-    """A batch's status on llmlint's 0/1/2 scale; anything else is an error."""
-    return code if code in (0, 1, 2) else 2
+class Verdict(IntEnum):
+    """A batch's or the run's outcome; its value is the exit status llmlint and this script use."""
+
+    PASSED = 0
+    REJECTED = 1
+    UNAVAILABLE = 2
+
+
+def severity(code: int) -> Verdict:
+    """A batch's verdict from llmlint's exit status; any status but 0 or 1 is no verdict."""
+    return Verdict(code) if code in (0, 1) else Verdict.UNAVAILABLE
+
+
+def retry_delay() -> float:
+    """Seconds before the first retry of an unanswered batch, from `LLMLINT_DIFF_RETRY_DELAY`."""
+    raw = os.environ.get("LLMLINT_DIFF_RETRY_DELAY", "")
+    if not raw:
+        return DEFAULT_RETRY_DELAY
+    try:
+        delay = float(raw)
+    except ValueError:
+        delay = -1.0
+    if not 0 <= delay <= 600:
+        fail(f"LLMLINT_DIFF_RETRY_DELAY must be a number of seconds from 0 to 600, not {raw!r}")
+    return delay
+
+
+def judge(command: list[str], label: str, delay: float) -> Verdict:
+    """One batch's status, re-sending it while the judge gives no verdict, up to `RETRIES` times."""
+    status = severity(subprocess.run(command).returncode)
+    for attempt in range(1, RETRIES + 1):
+        if status is not Verdict.UNAVAILABLE:
+            break
+        wait = delay * attempt
+        print(
+            f"llmlint-diff: {label}: no verdict from the judge; retry {attempt}/{RETRIES} "
+            f"on the same tree in {wait:g}s",
+            flush=True,
+        )
+        time.sleep(wait)
+        status = severity(subprocess.run(command).returncode)
+    return status
+
+
+def verdict(statuses: list[Verdict]) -> Verdict:
+    """The run's verdict: a failed rule over an unanswered batch over a pass."""
+    unanswered = statuses.count(Verdict.UNAVAILABLE)
+    if unanswered:
+        print(
+            f"llmlint-diff: verification unavailable: {unanswered} of {len(statuses)} batch(es) got no "
+            f"verdict after {RETRIES} retries, so the judge never decided them; re-run the judged lint "
+            "on this head once the judge answers",
+            file=sys.stderr,
+            flush=True,
+        )
+    if Verdict.REJECTED in statuses:
+        return Verdict.REJECTED
+    return Verdict.UNAVAILABLE if unanswered else Verdict.PASSED
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -147,18 +218,19 @@ def main(argv: list[str] | None = None) -> int:
     llmlint = shutil.which("llmlint")
     if llmlint is None:
         fail("llmlint is not on PATH — run `just setup-llmlint`")
+    delay = retry_delay()
     command = [llmlint, "--diff", "git", "--diff-base", args.base, *extra]
     sizes = changed(args.base, llmlint)
     if sum(sizes.values()) <= args.budget:
-        return severity(subprocess.run(command).returncode)
+        return int(verdict([judge(command, "the diff", delay)]))
     groups = batches(sizes, args.budget)
-    worst = 0
+    statuses = []
     for number, group in enumerate(groups, start=1):
         size = sum(sizes[path] for path in group)
-        print(f"llmlint-diff: batch {number}/{len(groups)}: {len(group)} file(s), {size:,} bytes", flush=True)
-        code = subprocess.run([*command, *group]).returncode
-        worst = max(worst, severity(code))
-    return worst
+        label = f"batch {number}/{len(groups)}"
+        print(f"llmlint-diff: {label}: {len(group)} file(s), {size:,} bytes", flush=True)
+        statuses.append(judge([*command, *group], label, delay))
+    return int(verdict(statuses))
 
 
 if __name__ == "__main__":

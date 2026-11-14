@@ -3430,9 +3430,19 @@ class RecipeWiringTests(unittest.TestCase):
         # surface-census project's aggregate names the target running this file.
         project = census_project()
         self.assertNotIn("tier:promoted", project["tags"])
+        this = Path(__file__).resolve().relative_to(REPO).as_posix()
+        # The file's slowest classes run as test-census-verdicts, beside test-census, which leaves them out.
+        # llmlint: ignore[test_tiers_split_by_project_not_by_marker] The two halves are one tier with identical inputs, split only so Nx runs them at once (manager ruling a1 permits sharding the census); a project of its own would select exactly when this one does, so it would skip nothing independently.
+        halves = ("HandedOffCombinationVerdictsTests", "RankedBacklogTests", "CombinationSearchRecordTests")
         self.assertEqual(
             "uv run --locked --all-packages pytest --cov --cov-report= "
-            f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
+            + " ".join(f"{this}::{name}" for name in halves),
+            project["targets"]["test-census-verdicts"]["options"]["command"],
+        )
+        self.assertEqual(
+            "uv run --locked --all-packages pytest --cov --cov-report= "
+            + "".join(f"--deselect={this}::{name} " for name in halves)
+            + f"{this} "
             "tools/surface-census/tests/apis_guru_gap_screen_test.py tools/surface-census/tests/reach_store_test.py "
             "tools/surface-census/tests/repin_base_test.py tools/surface-census/tests/repin_messages_test.py "
             "tools/surface-census/tests/repin_merge_test.py tools/surface-census/tests/repin_anchor_test.py "
@@ -3440,7 +3450,11 @@ class RecipeWiringTests(unittest.TestCase):
             project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
-        self.assertEqual(["@just nx run surface-census:test-census"], recipe_body("test-surface-census"))
+        self.assertIn("test-census-verdicts", project["targets"]["test"]["dependsOn"])
+        self.assertEqual(
+            ["@just nx run-many --targets=test-census,test-census-verdicts --projects=surface-census"],
+            recipe_body("test-surface-census"),
+        )
 
 
 # The document-reading predicates `BodyAndResponseSelectorControls` discriminates:
