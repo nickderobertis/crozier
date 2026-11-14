@@ -444,16 +444,17 @@ impl Context {
         })
     }
 
-    /// Whether `tree` holds the client module `rel`.
-    fn tree_holds(&self, tree: Tree, rel: &str) -> bool {
+    /// Whether `tree` holds `rel` among its `client.py` modules.
+    fn holds_client_module(&self, tree: Tree, rel: &str) -> bool {
         self.client_modules().of(tree).contains_key(rel)
     }
 
     /// The first and last lines of `method` in the sync client of `tree`'s
     /// module `rel`, as crozier's `reference.md` anchors them.
-    fn client_method_lines(&self, tree: Tree, rel: &str, method: &str) -> Option<(usize, usize)> {
+    fn client_method_lines(&self, tree: Tree, rel: &str, method: &str) -> Option<LineRange> {
         let text = self.client_modules().of(tree).get(rel)?;
         crate::emit::sync_client_method_lines(text, method)
+            .map(|(start, end)| LineRange { start, end })
     }
 
     /// The context of the trees at `reference` and `crozier`, read only if a
@@ -5373,7 +5374,7 @@ fn emoji_tag_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -
                 .to_string();
             // A heading's link into the raw-spelt module Fern's tree does not
             // hold anchors nothing; crozier's anchor is part of the correction.
-            let unanchored = reference_heading_without_anchor(crozier);
+            let unanchored = reference_heading_without_anchor(pair, crozier);
             let line = unanchored.as_deref().unwrap_or(crozier);
             raw != identifier
                 && python_identifier(&identifier)
@@ -5459,20 +5460,105 @@ fn non_string_client_header_example(pair: &Pair<'_>, fern: &str, crozier: &str) 
         })
 }
 
-/// A `reference.md` heading line with its link's `#L<start>-L<end>` anchor
-/// removed, when it has one: crozier anchors every heading at the method it
-/// documents, where Fern's lookup of a name its SDK does not define finds no
-/// lines and leaves the bare path. `None` for any other line.
-fn reference_heading_without_anchor(line: &str) -> Option<String> {
-    if !line.starts_with("<details><summary><code>client.") {
-        return None;
+/// A `reference.md` heading link's range, `L<start>-L<end>`: the documented
+/// method's `def` line through its last line, both 1-based.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct LineRange {
+    start: usize,
+    end: usize,
+}
+
+impl LineRange {
+    /// `L<start>-L<end>` with `0 < start <= end`; `None` for anything else.
+    fn parse(text: &str) -> Option<Self> {
+        let (start, end) = text.strip_prefix('L')?.split_once("-L")?;
+        let number = |text: &str| {
+            (!text.is_empty() && text.bytes().all(|b| b.is_ascii_digit()))
+                .then(|| text.parse::<usize>().ok())
+                .flatten()
+        };
+        let (start, end) = (number(start)?, number(end)?);
+        (0 < start && start <= end).then_some(Self { start, end })
     }
-    let (head, rest) = line.split_once("<a href=\"")?;
-    let (href, tail) = rest.split_once('"')?;
-    let (path, anchor) = href.split_once("#L")?;
-    let (start, end) = anchor.split_once("-L")?;
-    let digits = |text: &str| !text.is_empty() && text.bytes().all(|b| b.is_ascii_digit());
-    (digits(start) && digits(end)).then(|| format!("{head}<a href=\"{path}\"{tail}"))
+}
+
+impl std::fmt::Display for LineRange {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "L{}-L{}", self.start, self.end)
+    }
+}
+
+/// A `reference.md` heading split around its link:
+/// `<head><a href="<module>[#<range>]"><method></a><tail>`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ReferenceHeading {
+    head: String,
+    module: String,
+    range: Option<LineRange>,
+    method: String,
+    tail: String,
+}
+
+impl ReferenceHeading {
+    /// The heading `line`, or `None` for a line that is no heading or whose
+    /// link's fragment is not a line range.
+    fn parse(line: &str) -> Option<Self> {
+        if !line.starts_with("<details><summary><code>client.") {
+            return None;
+        }
+        let (head, rest) = line.split_once("<a href=\"")?;
+        let (href, rest) = rest.split_once("\">")?;
+        let (method, tail) = rest.split_once("</a>")?;
+        let (module, range) = match href.split_once('#') {
+            Some((module, range)) => (module, Some(LineRange::parse(range)?)),
+            None => (href, None),
+        };
+        Some(Self {
+            head: head.to_string(),
+            module: module.to_string(),
+            range,
+            method: method.to_string(),
+            tail: tail.to_string(),
+        })
+    }
+
+    /// The heading with `module` and `range` as its link.
+    fn render(&self) -> String {
+        let range = self
+            .range
+            .map(|range| format!("#{range}"))
+            .unwrap_or_default();
+        format!(
+            "{}<a href=\"{}{range}\">{}</a>{}",
+            self.head, self.module, self.method, self.tail
+        )
+    }
+
+    /// Whether its range is exactly its method's lines in `tree`'s module.
+    fn range_is_its_method(&self, context: &Context, tree: Tree) -> bool {
+        self.range.is_some()
+            && context.client_method_lines(tree, &self.module, &self.method) == self.range
+    }
+
+    /// The same heading without a range.
+    fn without_range(&self) -> Self {
+        Self {
+            range: None,
+            ..self.clone()
+        }
+    }
+}
+
+/// crozier's `reference.md` heading `line` without its link's range, when the
+/// range is exactly the documented method's lines in crozier's linked client:
+/// crozier anchors every heading at the method it documents, where Fern's
+/// lookup of a name its SDK does not define finds no lines and leaves the bare
+/// path. `None` for any other line.
+fn reference_heading_without_anchor(pair: &Pair<'_>, line: &str) -> Option<String> {
+    let heading = ReferenceHeading::parse(line)?;
+    heading
+        .range_is_its_method(pair.context, Tree::Crozier)
+        .then(|| heading.without_range().render())
 }
 
 /// `empty-namespace-package`'s `reference.md` heading: both sides link the `_`
@@ -5483,50 +5569,16 @@ fn empty_namespace_reference_anchor(pair: &Pair<'_>, fern: &str, crozier: &str) 
     if pair.rel != "reference.md" || fern == crozier {
         return false;
     }
-    let Some(bare) = reference_heading_without_anchor(crozier) else {
+    let Some(heading) = ReferenceHeading::parse(crozier) else {
         return false;
     };
-    let Some((path, rest)) = crozier
-        .split_once("<a href=\"")
-        .and_then(|(_, rest)| rest.split_once("\">"))
-    else {
-        return false;
-    };
-    let Some(((path, range), (method, _))) = path.split_once('#').zip(rest.split_once("</a>"))
-    else {
-        return false;
-    };
-    path.ends_with("/_/client.py")
-        && path.starts_with("src/")
-        && bare == fern
-        && pair
+    heading.module.ends_with("/_/client.py")
+        && heading.module.starts_with("src/")
+        && heading.without_range().render() == fern
+        && !pair
             .context
-            .client_method_lines(Tree::Reference, path, method)
-            .is_none()
-        && pair
-            .context
-            .client_method_lines(Tree::Crozier, path, method)
-            .is_some_and(|(start, end)| format!("L{start}-L{end}") == range)
-}
-
-/// A `reference.md` heading split around its link's range: the line with the
-/// range taken out (its frame, which also holds the module and method), the
-/// linked module, the method and the range (`L<start>-L<end>`). `None` for a
-/// line that is no heading or whose link has no range.
-fn anchored_heading(line: &str) -> Option<(String, String, String, String)> {
-    if !line.starts_with("<details><summary><code>client.") {
-        return None;
-    }
-    let (head, rest) = line.split_once("<a href=\"")?;
-    let (href, rest) = rest.split_once("\">")?;
-    let (path, range) = href.split_once('#')?;
-    let (method, tail) = rest.split_once("</a>")?;
-    Some((
-        format!("{head}\u{0}{path}\u{0}{method}\u{0}{tail}"),
-        path.to_string(),
-        method.to_string(),
-        range.to_string(),
-    ))
+            .holds_client_module(Tree::Reference, &heading.module)
+        && heading.range_is_its_method(pair.context, Tree::Crozier)
 }
 
 /// Two `reference.md` heading lines with their ranges taken out, when both link
@@ -5540,29 +5592,22 @@ fn without_verified_ranges<'a>(
     crozier: &'a str,
 ) -> (std::borrow::Cow<'a, str>, std::borrow::Cow<'a, str>) {
     use std::borrow::Cow;
-    let (
-        Some((_, path, method, fern_range)),
-        Some((_, crozier_path, crozier_method, crozier_range)),
-    ) = (anchored_heading(fern), anchored_heading(crozier))
-    else {
+    let (Some(fern_heading), Some(crozier_heading)) = (
+        ReferenceHeading::parse(fern),
+        ReferenceHeading::parse(crozier),
+    ) else {
         return (Cow::Borrowed(fern), Cow::Borrowed(crozier));
     };
-    let range = |tree: Tree| {
-        pair.context
-            .client_method_lines(tree, &path, &method)
-            .map(|(start, end)| format!("L{start}-L{end}"))
-    };
-    if path != crozier_path
-        || method != crozier_method
-        || range(Tree::Reference).as_deref() != Some(fern_range.as_str())
-        || range(Tree::Crozier).as_deref() != Some(crozier_range.as_str())
+    if fern_heading.module != crozier_heading.module
+        || fern_heading.method != crozier_heading.method
+        || !fern_heading.range_is_its_method(pair.context, Tree::Reference)
+        || !crozier_heading.range_is_its_method(pair.context, Tree::Crozier)
     {
         return (Cow::Borrowed(fern), Cow::Borrowed(crozier));
     }
-    let strip = |line: &str, range: &str| line.replacen(&format!("#{range}\""), "\"", 1);
     (
-        Cow::Owned(strip(fern, &fern_range)),
-        Cow::Owned(strip(crozier, &crozier_range)),
+        Cow::Owned(fern_heading.without_range().render()),
+        Cow::Owned(crozier_heading.without_range().render()),
     )
 }
 
@@ -5571,31 +5616,29 @@ fn without_verified_ranges<'a>(
 /// `src/<package>/pet/client.py`, which its own flat tree does not hold, and so
 /// carries no range. `Some` with crozier's line in Fern's link form when Fern's
 /// link is exactly `src/<package>/` before crozier's module, Fern's tree lacks
-/// that file, crozier's holds its module, and crozier's range is exactly the
-/// named method's lines there; `None` otherwise.
+/// that module, and crozier's range is exactly the named method's lines in its
+/// own; `None` otherwise.
 fn flat_link_in_fern_form(pair: &Pair<'_>, fern: &str, crozier: &str) -> Option<String> {
-    let link = |line: &str| -> Option<(String, String, String)> {
-        if !line.starts_with("<details><summary><code>client.") {
-            return None;
-        }
-        let (head, rest) = line.split_once("<a href=\"")?;
-        let (href, rest) = rest.split_once("\">")?;
-        Some((head.to_string(), href.to_string(), rest.to_string()))
-    };
-    let ((_, fern_href, _), (head, crozier_href, rest)) = (link(fern)?, link(crozier)?);
-    let (module, range) = crozier_href.split_once('#')?;
-    let method = rest.split_once("</a>")?.0;
-    let (package, packaged) = fern_href.strip_prefix("src/")?.split_once('/')?;
-    let lines = pair
-        .context
-        .client_method_lines(Tree::Crozier, module, method)?;
-    (packaged == module
+    let (fern_heading, crozier_heading) = (
+        ReferenceHeading::parse(fern)?,
+        ReferenceHeading::parse(crozier)?,
+    );
+    let (package, packaged) = fern_heading.module.strip_prefix("src/")?.split_once('/')?;
+    (packaged == crozier_heading.module
         && !package.is_empty()
-        && !fern_href.contains('#')
-        && !pair.context.tree_holds(Tree::Reference, &fern_href)
-        && pair.context.tree_holds(Tree::Crozier, module)
-        && format!("L{}-L{}", lines.0, lines.1) == range)
-        .then(|| format!("{head}<a href=\"{fern_href}\">{rest}"))
+        && fern_heading.range.is_none()
+        && !pair
+            .context
+            .holds_client_module(Tree::Reference, &fern_heading.module)
+        && crozier_heading.range_is_its_method(pair.context, Tree::Crozier))
+    .then(|| {
+        ReferenceHeading {
+            module: fern_heading.module.clone(),
+            range: None,
+            ..crozier_heading.clone()
+        }
+        .render()
+    })
 }
 
 /// `flat-reference-link-target`: a flat tree's `reference.md` heading linking
@@ -5620,37 +5663,29 @@ fn reference_anchor_follows_corrected_client(pair: &Pair<'_>) -> Result<Option<R
     if pair.rel != "reference.md" {
         return Ok(None);
     }
-    let parts = anchored_heading;
-    let range =
-        |lines: Option<(usize, usize)>| lines.map(|(start, end)| format!("L{start}-L{end}"));
     for (at, crozier) in pair.crozier.iter().enumerate() {
         if pair.fern.contains(crozier) {
             continue;
         }
-        let Some((frame, path, method, crozier_range)) = parts(crozier) else {
+        let Some(crozier_heading) =
+            ReferenceHeading::parse(crozier).filter(|heading| heading.range.is_some())
+        else {
             continue;
         };
+        let frame = crozier_heading.without_range();
         let mut matches = pair
             .fern
             .iter()
             .enumerate()
-            .filter_map(|(index, fern)| Some((index, parts(fern)?)))
-            .filter(|(_, (fern_frame, _, _, _))| *fern_frame == frame);
-        let (Some((index, (_, _, _, fern_range))), None) = (matches.next(), matches.next()) else {
+            .filter_map(|(index, fern)| Some((index, ReferenceHeading::parse(fern)?)))
+            .filter(|(_, fern_heading)| {
+                fern_heading.range.is_some() && fern_heading.without_range() == frame
+            });
+        let (Some((index, fern_heading)), None) = (matches.next(), matches.next()) else {
             continue;
         };
-        if range(
-            pair.context
-                .client_method_lines(Tree::Reference, &path, &method),
-        )
-        .as_deref()
-            == Some(fern_range.as_str())
-            && range(
-                pair.context
-                    .client_method_lines(Tree::Crozier, &path, &method),
-            )
-            .as_deref()
-                == Some(crozier_range.as_str())
+        if fern_heading.range_is_its_method(pair.context, Tree::Reference)
+            && crozier_heading.range_is_its_method(pair.context, Tree::Crozier)
         {
             return Ok(Some(Region {
                 fern: index..index + 1,
@@ -5671,7 +5706,7 @@ fn reference_heading_escaped_method_name(pair: &Pair<'_>, fern: &str, crozier: &
     if pair.rel != "reference.md" || fern == crozier {
         return false;
     }
-    let Some(bare) = reference_heading_without_anchor(crozier) else {
+    let Some(bare) = reference_heading_without_anchor(pair, crozier) else {
         return false;
     };
     let Some((head, rest)) = bare.split_once("<a href=\"") else {
@@ -5697,7 +5732,7 @@ fn reference_heading_escaped_method_name(pair: &Pair<'_>, fern: &str, crozier: &
                 .and_then(|(_, rest)| rest.split_once('/'))
                 .is_some_and(|(package, _)| {
                     let packaged = format!("src/{package}/{path}");
-                    !pair.context.tree_holds(Tree::Reference, &packaged)
+                    !pair.context.holds_client_module(Tree::Reference, &packaged)
                         && fern == format!("{head}<a href=\"{packaged}\">{unescaped}</a>{tail}")
                 }))
 }
@@ -5744,7 +5779,7 @@ fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozi
                     });
             // Fern's misspelt name anchors nothing; crozier's anchor is part
             // of the same correction.
-            let unanchored = reference_heading_without_anchor(crozier);
+            let unanchored = reference_heading_without_anchor(pair, crozier);
             let heading_line = unanchored.as_deref().unwrap_or(crozier);
             let heading = heading_line.starts_with("<details><summary><code>client.")
                 && heading_line
@@ -8932,6 +8967,7 @@ mod tests {
             crozier.replace("GetApplicantsResponse", "GetJobsResponse"),
             crozier.replace(">all_<", ">al_<"),
             crozier.replace("#L2-L3", "#Lx-L3"),
+            crozier.replace("#L2-L3", "#L999-L1000"),
             crozier.replace("#L2-L3", ""),
             crozier.replace("client.applicants.", "client.jobs."),
         ] {
@@ -9085,11 +9121,25 @@ mod tests {
         let document = serde_json::json!({"openapi": "3.0.3", "paths": {"/legacy": {"get": {
             "tags": ["🚧 Legacy endpoints"], "responses": {}
         }}}});
-        let context = source_context(document, &[("src/fern/legacy_endpoints/client.py", "")]);
+        let context = source_context(
+            document,
+            &[(
+                "src/fern/legacy_endpoints/client.py",
+                "class LegacyEndpointsClient:\n    def list(self) -> None:\n        pass\n",
+            )],
+        );
         let rule: LineRule = emoji_tag_reference_identifiers;
-        let crozier = "<details><summary><code>client.legacy_endpoints.<a href=\"src/fern/legacy_endpoints/client.py#L26-L40\">list</a>(...)</code></summary>";
+        let crozier = "<details><summary><code>client.legacy_endpoints.<a href=\"src/fern/legacy_endpoints/client.py#L2-L3\">list</a>(...)</code></summary>";
         let fern = "<details><summary><code>client.🚧_legacy_endpoints.<a href=\"src/fern/🚧_legacy_endpoints/client.py\">list</a>(...)</code></summary>";
         assert!(line_holds(rule, "reference.md", &context, fern, crozier));
+        // A range that is not the method's lines is no departure.
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            fern,
+            &crozier.replace("#L2-L3", "#L26-L40")
+        ));
         assert!(!line_holds(
             rule,
             "reference.md",
@@ -9150,7 +9200,7 @@ mod tests {
     }
 
     #[test]
-    fn a_flat_link_departs_only_to_the_module_the_flat_tree_holds() {
+    fn a_flat_link_departs_only_to_the_module_the_flat_holds_client_module() {
         let client = "class PetClient:\n    def add_pet(self) -> None:\n        pass\n";
         let context =
             Context::from_sources([("pet/client.py", client)], [("pet/client.py", client)]);
