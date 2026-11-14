@@ -1,5 +1,16 @@
 # request-property-camelcase-collision
 
+## At Fern CLI 5.200.0 / fern-python-sdk 5.41.25
+
+Decision: **refuse**, unchanged. The Fern goldens run 43423270787
+re-took the [probe record](fern-refusal.txt) at this pair, and Fern still refuses
+the probe as recorded. Every shape, confirmation and reduction the registry
+carries for the class was retaken at this pair (`fern-refusals.py shapes`,
+`confirm` and `reduce`, serially), each with its role's verdict, and
+`fern-refusals.py check` holds them there. crozier's behaviour is unchanged: the
+e2e gate still runs its probe in both modes. The sections below are history at
+the pairs they name.
+
 ## Narrowed for the document-acceptance area (2026-11-01, Fern CLI 5.163.1 / fern-python-sdk 5.41.3)
 
 A bracketed query name (`shelf[]`) beside its bare name (`shelf`) is the certified pair's refusal too, and crozier now refuses it in both modes where it wrote a call passing `shelf` twice ([`never-compared-request-property-camelcase-collision`](../../fern-measurements/handed-off/document-acceptance/never-compared-request-property-camelcase-collision/README.md); api-platform's schema-generator). Decision otherwise unchanged: **refuse**, in both modes.

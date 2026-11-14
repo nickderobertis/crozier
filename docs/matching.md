@@ -69,7 +69,12 @@ exactly, except:
 ## Parity status and the residual manifest
 
 **Every registered corpus but two reproduces its whole committed Fern golden
-byte-for-byte at `fernapi/fern-python-sdk:5.41.3`.** Every `Corpus` in
+byte-for-byte at Fern CLI 5.200.0 / `fernapi/fern-python-sdk:5.41.25`**, the
+certified pair, apart from the catalogued departures the ledger pins. The Fern
+goldens run 43423270787 regenerated every golden at that pair. `subsloth` and
+`viskit-studio`, whose pinned upstream URLs now answer 404, were regenerated
+from their committed copies, each verified against the corpus row's recorded
+SHA-256 first (`fetch-corpus --if-missing`), so they too are compared there. Every `Corpus` in
 `crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list except `komga` and
 `webflow-v2`, which are registered with a measured residual; that file is the
 measured truth, and this document holds the judgment about *why* each shape generates the
@@ -103,7 +108,7 @@ coverage.
 
 `calorieninjas.com` is the only such corpus. Its source operation declares no
 `operationId`; Fern 5.20.0 emitted unnamed methods (`def (`, `_raw_client.(`) and
-its own Ruff pass then rejected the SDK (not re-measured at the certified 5.41.3), so the failure is upstream of crozier —
+its own Ruff pass then rejected the SDK (reproduced with the same exit and fingerprint at the certified 5.41.25 by the Fern goldens run 43423270787), so the failure is upstream of crozier —
 crozier generates that same spec successfully and *names* the operation. The
 registration is bound to the exact generator version, corpus name/ref/URL, exit
 code, ordered syntax diagnostics with their source lines, Ruff summary, and

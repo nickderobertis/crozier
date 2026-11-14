@@ -30,9 +30,12 @@ One type crozier refused as declared twice where the certified pair declares it 
 - `crates/crozier-e2e/tests/e2e/document_acceptance.rs`: `each_repaired_cause_generates_its_certified_pair_tree`, `enum_bearing_repairs_generate_the_literals_tree_too`; the narrowed refusals' controls are `narrowed_refusals_still_fire_on_their_controls`.
 - Unit tests: `ir::document_acceptance_tests::a_multipart_components_nested_types_leave_the_root`, `name_refusals::tests::a_group_placed_component_enum_is_no_collision`, `name_refusals::tests::components_differing_in_first_letter_case_are_no_refusal`, `document_refusals::examples::tests::an_earlier_enum_whose_first_value_the_later_drops_collides`.
 
-**Regenerated at the certified pair.** The Fern goldens workflow (run
-43423270787) regenerated every `fern-expected/` tree this record holds at Fern
-CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair, and
-crozier's comparison holds the record to those trees. Statements above that name Fern CLI
+**Regenerated at the certified pair.** Every tree this record holds is at Fern
+CLI 5.200.0 / `fernapi/fern-python-sdk` 5.41.25, the certified pair: the Fern
+goldens workflow (run 43423270787) regenerated those its measurements family
+covers, and this change regenerated `expected-literals/` the same way, one Fern
+run at a time through `tools/fern-goldens/fern-references.py`'s own
+`generated_tree` (and `reduce_overlay` for an overlay). crozier's comparison
+holds the record to those trees. Statements above that name Fern CLI
 5.163.1 / fern-python-sdk 5.41.3 describe the measurement as first taken, at
 the pair certified then; a digest, log or exit code they cite is that run's.

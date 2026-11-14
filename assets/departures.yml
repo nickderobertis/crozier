@@ -374,6 +374,24 @@
     configuration of a Fern run it did not make.
   evidence: docs/departures/evidence/fern-metadata-generator-config.md
 
+- id: flat-reference-link-target
+  kind: fern-defect
+  trigger: >-
+    The flat layout (`layout: flat`): every heading link in `reference.md`.
+  fern: >-
+    The link names `src/<package>/<module>/client.py`, the packaged path, which
+    the flat tree does not hold (its modules sit at the root), and carries no
+    `#L<start>-L<end>` range.
+  crozier: >-
+    The link names the module the flat tree holds (`<module>/client.py`) and
+    carries the range of the documented method there, found as for every other
+    heading. Every other byte of the line is retained.
+  reason: >-
+    A link to a file the SDK does not contain documents nothing: following it
+    from the generated tree's own `reference.md` finds no file, so the heading
+    cannot lead to the method it documents.
+  evidence: docs/departures/evidence/flat-reference-link-target.md
+
 - id: init-type-checking-import-order
   kind: ordering
   trigger: >-

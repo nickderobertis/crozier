@@ -3634,10 +3634,19 @@ fn reference_entry(
         } else {
             format!("client.{}.", module_path(module))
         },
-        href: if module.is_empty() {
-            format!("src/{pkg}/client.py{REFERENCE_RANGE_MARKER}")
-        } else {
-            format!("src/{pkg}/{module}/client.py{REFERENCE_RANGE_MARKER}")
+        // The module the tree holds: `src/<package>/…` packaged, the root in
+        // the flat layout, where Fern links a `src/` path its flat tree does not
+        // have (the `flat-reference-link-target` departure).
+        href: {
+            let root = match ir.layout {
+                Layout::Packaged => format!("src/{pkg}/"),
+                Layout::Flat => String::new(),
+            };
+            if module.is_empty() {
+                format!("{root}client.py{REFERENCE_RANGE_MARKER}")
+            } else {
+                format!("{root}{module}/client.py{REFERENCE_RANGE_MARKER}")
+            }
         },
         pkg: pkg.to_string(),
         // The method the SDK defines, escape included (`all_`): Fern writes the

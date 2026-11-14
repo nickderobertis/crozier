@@ -378,6 +378,19 @@ impl Context {
         }
     }
 
+    /// Whether the reference tree (`reference`) or crozier's holds the file `rel`.
+    fn tree_holds(&self, reference: bool, rel: &str) -> bool {
+        match (&self.sources, &self.roots) {
+            (Some((fern, crozier)), _) => {
+                (if reference { fern } else { crozier }).contains_key(rel)
+            }
+            (None, Some((fern, crozier))) => {
+                (if reference { fern } else { crozier }).join(rel).is_file()
+            }
+            (None, None) => false,
+        }
+    }
+
     /// The first and last lines of `method` in the sync client of the module
     /// `rel` of the reference tree (`reference`) or crozier's, as crozier's
     /// `reference.md` anchors them.
@@ -1972,7 +1985,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 47] = [
+pub const RULE_IDS: [&str; 48] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1991,6 +2004,7 @@ pub const RULE_IDS: [&str; 47] = [
     "empty-namespace-package",
     "empty-root-security-optional-credential",
     "fern-metadata-generator-config",
+    "flat-reference-link-target",
     "init-type-checking-import-order",
     "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
@@ -2055,6 +2069,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         "collapsed-anyof-property-description" => Rule {
             line: Some(collapsed_anyof_property_description),
             added_at: Some(collapsed_anyof_property_description_line),
+            ..none
+        },
+        "flat-reference-link-target" => Rule {
+            line: Some(flat_reference_link_target),
             ..none
         },
         "reference-anchor-follows-corrected-client" => Rule {
@@ -3834,7 +3852,10 @@ fn stream_reference_return_type(pair: &Pair<'_>, fern: &str, crozier: &str) -> b
     if pair.rel != "reference.md" || !fern.starts_with(OPEN) {
         return false;
     }
-    // A range shifted by the client's other departures is judged apart.
+    // A range shifted by the client's other departures, or a flat tree's link
+    // to the module it holds, is judged apart.
+    let flat = flat_link_in_fern_form(pair, fern, crozier);
+    let crozier = flat.as_deref().unwrap_or(crozier);
     let (fern, crozier) = without_verified_ranges(pair, fern, crozier);
     let (fern, crozier) = (fern.as_ref(), crozier.as_ref());
     let Some(head) = fern
@@ -5508,6 +5529,46 @@ fn without_verified_ranges<'a>(
     )
 }
 
+/// A flat tree's `reference.md` heading as Fern writes its link: crozier links
+/// the module the flat tree holds (`pet/client.py#L34-L93`), where Fern links
+/// `src/<package>/pet/client.py`, which its own flat tree does not hold, and so
+/// carries no range. `Some` with crozier's line in Fern's link form when Fern's
+/// link is exactly `src/<package>/` before crozier's module, Fern's tree lacks
+/// that file, crozier's holds its module, and crozier's range is exactly the
+/// named method's lines there; `None` otherwise.
+fn flat_link_in_fern_form(pair: &Pair<'_>, fern: &str, crozier: &str) -> Option<String> {
+    let link = |line: &str| -> Option<(String, String, String)> {
+        if !line.starts_with("<details><summary><code>client.") {
+            return None;
+        }
+        let (head, rest) = line.split_once("<a href=\"")?;
+        let (href, rest) = rest.split_once("\">")?;
+        Some((head.to_string(), href.to_string(), rest.to_string()))
+    };
+    let ((_, fern_href, _), (head, crozier_href, rest)) = (link(fern)?, link(crozier)?);
+    let (module, range) = crozier_href.split_once('#')?;
+    let method = rest.split_once("</a>")?.0;
+    let (package, packaged) = fern_href.strip_prefix("src/")?.split_once('/')?;
+    let lines = pair.context.client_method_lines(false, module, method)?;
+    (packaged == module
+        && !package.is_empty()
+        && !fern_href.contains('#')
+        && !pair.context.tree_holds(true, &fern_href)
+        && pair.context.tree_holds(false, module)
+        && format!("L{}-L{}", lines.0, lines.1) == range)
+        .then(|| format!("{head}<a href=\"{fern_href}\">{rest}"))
+}
+
+/// `flat-reference-link-target`: a flat tree's `reference.md` heading linking
+/// the module the tree holds, with its range, where Fern links a `src/` path
+/// its flat tree does not hold (see [`flat_link_in_fern_form`]). Every other
+/// byte of the line is Fern's.
+fn flat_reference_link_target(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    pair.rel == "reference.md"
+        && fern != crozier
+        && flat_link_in_fern_form(pair, fern, crozier).is_some_and(|line| line == fern)
+}
+
 /// `reference-anchor-follows-corrected-client`: a `reference.md` heading whose
 /// only difference is its link's `#L<start>-L<end>` range, where each side's
 /// range is exactly the documented method's lines in its own tree's linked
@@ -5582,7 +5643,16 @@ fn reference_heading_escaped_method_name(pair: &Pair<'_>, fern: &str, crozier: &
             .context
             .crozier_method_returns()
             .contains_key(&(path.to_string(), method.to_string()))
-        && fern == format!("{head}<a href=\"{path}\">{unescaped}</a>{tail}")
+        && (fern == format!("{head}<a href=\"{path}\">{unescaped}</a>{tail}")
+            // A flat tree's link Fern writes into the `src/` tree it lacks.
+            || fern
+                .split_once("<a href=\"src/")
+                .and_then(|(_, rest)| rest.split_once('/'))
+                .is_some_and(|(package, _)| {
+                    let packaged = format!("src/{package}/{path}");
+                    !pair.context.tree_holds(true, &packaged)
+                        && fern == format!("{head}<a href=\"{packaged}\">{unescaped}</a>{tail}")
+                }))
 }
 
 /// Only the underscore missing from a declared, generated method's documentation.
@@ -9029,6 +9099,53 @@ mod tests {
             &undefined,
             "from PetStore import AsyncPetstoreApi, PetStoreApi",
             crozier
+        ));
+    }
+
+    #[test]
+    fn a_flat_link_departs_only_to_the_module_the_flat_tree_holds() {
+        let client = "class PetClient:\n    def add_pet(self) -> None:\n        pass\n";
+        let context =
+            Context::from_sources([("pet/client.py", client)], [("pet/client.py", client)]);
+        let rule: LineRule = flat_reference_link_target;
+        let fern = "<details><summary><code>client.pet.<a href=\"src/fern/pet/client.py\">add_pet</a>(...) -> Pet</code></summary>";
+        let crozier = "<details><summary><code>client.pet.<a href=\"pet/client.py#L2-L3\">add_pet</a>(...) -> Pet</code></summary>";
+        assert!(line_holds(rule, "reference.md", &context, fern, crozier));
+        // A wrong range, no range, another module, another method, an unrelated
+        // change, or another file.
+        for mutated in [
+            crozier.replace("#L2-L3", "#L2-L4"),
+            crozier.replace("#L2-L3", ""),
+            crozier.replace("pet/client.py", "store/client.py"),
+            crozier.replace(">add_pet<", ">get_pet<"),
+            crozier.replace("-> Pet", "-> Store"),
+        ] {
+            assert!(
+                !line_holds(rule, "reference.md", &context, fern, &mutated),
+                "{mutated}"
+            );
+        }
+        assert!(!line_holds(rule, "README.md", &context, fern, crozier));
+        // Fern's link is no defect where its own tree holds the file it names.
+        let packaged = Context::from_sources(
+            [("src/fern/pet/client.py", client)],
+            [("pet/client.py", client)],
+        );
+        assert!(!line_holds(rule, "reference.md", &packaged, fern, crozier));
+        // Escaped names and stream return types still depart in a flat tree.
+        let escaped = Context::from_sources(
+            [("applicants/client.py", "")],
+            [(
+                "applicants/client.py",
+                "class ApplicantsClient:\n    def all_(self) -> None:\n        pass\n",
+            )],
+        );
+        assert!(line_holds(
+            reference_heading_escaped_method_name,
+            "reference.md",
+            &escaped,
+            "<details><summary><code>client.applicants.<a href=\"src/fern/applicants/client.py\">all</a>(...)</code></summary>",
+            "<details><summary><code>client.applicants.<a href=\"applicants/client.py#L2-L3\">all_</a>(...)</code></summary>"
         ));
     }
 

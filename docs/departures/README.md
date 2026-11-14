@@ -197,7 +197,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 33 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 34 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -366,6 +366,15 @@ when the two differ.
 - **crozier writes:** The one fixed metadata record crozier always writes, whose `generatorConfig` is `pydantic_config.enum_type: python_enums` whatever crozier was configured with.
 - **Why:** The block records how a generator was run, not anything the SDK does; crozier ships one fixed provenance record rather than imitating the configuration of a Fern run it did not make.
 - **Evidence:** [`docs/departures/evidence/fern-metadata-generator-config.md`](../../docs/departures/evidence/fern-metadata-generator-config.md)
+
+### `flat-reference-link-target`
+
+- **Kind:** `fern-defect`
+- **Trigger:** The flat layout (`layout: flat`): every heading link in `reference.md`.
+- **Fern writes:** The link names `src/<package>/<module>/client.py`, the packaged path, which the flat tree does not hold (its modules sit at the root), and carries no `#L<start>-L<end>` range.
+- **crozier writes:** The link names the module the flat tree holds (`<module>/client.py`) and carries the range of the documented method there, found as for every other heading. Every other byte of the line is retained.
+- **Why:** A link to a file the SDK does not contain documents nothing: following it from the generated tree's own `reference.md` finds no file, so the heading cannot lead to the method it documents.
+- **Evidence:** [`docs/departures/evidence/flat-reference-link-target.md`](../../docs/departures/evidence/flat-reference-link-target.md)
 
 ### `init-type-checking-import-order`
 
