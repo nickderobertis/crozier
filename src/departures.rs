@@ -4002,7 +4002,8 @@ fn readme_constructor<'a>(lines: &[&'a str], heading: &str) -> Option<(usize, Ve
 /// (credentials and required headers) first. The region is crozier's run of
 /// such argument lines (a lifted base-path parameter's line is
 /// `lifted-base-path-docs-examples`'), each the very line the usage snippet's
-/// constructor holds and absent from Fern's snippet; Fern's side is the point
+/// constructor holds, or passing a required typed header of crozier's
+/// constructor, and absent from Fern's snippet; Fern's side is the point
 /// before its `environment=` argument.
 fn readme_environment_constructor_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != "README.md" {
@@ -4038,10 +4039,17 @@ fn readme_environment_constructor_arguments(pair: &Pair<'_>) -> Result<Option<Re
             last.push_str(&squeeze(line));
         }
     }
+    // `readme-constructor-required-header`, earlier by id, may already have
+    // taken a required typed header out of the usage constructor.
+    let required = required_typed_constructor_parameters(pair.context);
     let run: Vec<&str> = arguments[first..]
         .iter()
         .take_while(|line| {
-            usage_arguments.contains(&squeeze(line)) && !fern_arguments.contains(line)
+            let header = line
+                .trim_start()
+                .split_once('=')
+                .is_some_and(|(name, _)| required.contains(name));
+            (usage_arguments.contains(&squeeze(line)) || header) && !fern_arguments.contains(line)
         })
         .copied()
         .collect();
@@ -4072,10 +4080,7 @@ fn list_path_parameters(context: &Context) -> BTreeMap<String, String> {
         let mut rest = text.as_str();
         while let Some(start) = rest.find("def ") {
             rest = &rest[start + 4..];
-            let (Some(open), Some(close)) = (
-                rest.find('('),
-                rest.find(") ->").or_else(|| rest.find("):")),
-            ) else {
+            let (Some(open), Some(close)) = (rest.find('('), signature_close(rest)) else {
                 break;
             };
             if close < open {
@@ -4229,6 +4234,16 @@ fn list_path_parameter_call(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     Ok(None)
 }
 
+/// Where the `def` signature `rest` starts with closes: its first `) ->` or
+/// `):`, whichever comes first, so a signature without a return annotation does
+/// not run on into the next one.
+fn signature_close(rest: &str) -> Option<usize> {
+    [rest.find(") ->"), rest.find("):")]
+        .into_iter()
+        .flatten()
+        .min()
+}
+
 /// Whether `method`, as the first `def` of the name in the client module
 /// `text`, declares a parameter besides `self` without a default.
 fn method_requires_argument(text: &str, method: &str) -> bool {
@@ -4242,7 +4257,7 @@ fn method_requires_argument(text: &str, method: &str) -> bool {
     let Some(open) = rest.find('(') else {
         return false;
     };
-    let Some(close) = rest.find(") ->").or_else(|| rest.find("):")) else {
+    let Some(close) = signature_close(rest) else {
         return false;
     };
     let mut depth = 0usize;
@@ -4342,7 +4357,8 @@ fn required_typed_constructor_parameters(context: &Context) -> BTreeSet<String> 
         let mut rest = text.as_str();
         while let Some(start) = rest.find("    def __init__(") {
             rest = &rest[start + 17..];
-            let Some(close) = rest.find(") -> None:") else {
+            // The signature closes on its own indent, `    ):` or `    ) -> None:`.
+            let Some(close) = rest.find("\n    )") else {
                 break;
             };
             for line in rest[..close].lines() {
@@ -9925,6 +9941,17 @@ mod tests {
             );
         }
         assert!(region_of(rule, "reference.md", &fern, &crozier, &context).is_none());
+        // A required typed header `readme-constructor-required-header` already
+        // took out of the usage constructor; an optional one is not.
+        let client = "class FernApi:\n    def __init__(\n        self,\n        *,\n        strict_mode: bool,\n        retries: typing.Optional[int] = None,\n    ):\n        pass\n";
+        let headers = Context::from_sources([], [("src/fern/client.py", client)]);
+        let crozier = readme("    api_key=\"<value>\",\n    strict_mode=True,\n");
+        let region = region_of(rule, "README.md", &fern, &crozier, &headers)
+            .expect("the usage argument and the required header");
+        assert_eq!(region.crozier.len(), 2);
+        let optional = readme("    api_key=\"<value>\",\n    retries=1,\n");
+        assert!(region_of(rule, "README.md", &fern, &optional, &headers).is_none());
+        assert!(region_of(rule, "README.md", &fern, &crozier, &context).is_none());
     }
 
     #[test]
@@ -10032,6 +10059,17 @@ mod tests {
             &context,
             fern,
             "    client.probe(...)"
+        ));
+        // A signature with no return annotation ends at its own `):`, not at the
+        // next method's.
+        let unannotated = "class FernApi:\n    def ping(self):\n        pass\n\n    def probe(self, value: int) -> None:\n        pass\n";
+        let unannotated = Context::from_sources([], [("src/fern/client.py", unannotated)]);
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &unannotated,
+            "    client.ping()",
+            "    client.ping(...)"
         ));
     }
 
@@ -10157,7 +10195,7 @@ mod tests {
 
     #[test]
     fn a_constructor_departs_only_for_its_required_typed_headers() {
-        let client = "class FernApi:\n    def __init__(\n        self,\n        *,\n        probe_param: typing.List[str],\n        tenant: str,\n        retries: typing.Optional[int] = None,\n    ) -> None:\n        pass\n";
+        let client = "class FernApi:\n    def __init__(\n        self,\n        *,\n        probe_param: typing.List[str],\n        tenant: str,\n        retries: typing.Optional[int] = None,\n    ):\n        pass\n\n    def probe(\n        self,\n        *,\n        count: int,\n    ) -> None:\n        pass\n";
         let context = Context::from_sources([], [("src/fern/client.py", client)]);
         let rule: RegionRule = readme_constructor_required_header;
         let fern = "x\nclient = FernApi()\ny";
@@ -10175,6 +10213,8 @@ mod tests {
                 "client = FernApi(\n    tenant=\"<X-Tenant>\",\n)",
             ),
             ("client = FernApi()", "client = FernApi(\n    retries=1,\n)"),
+            // A required parameter of a method, not of the constructor.
+            ("client = FernApi()", "client = FernApi(\n    count=1,\n)"),
             (
                 "client = FernApi()",
                 "client = FernApi(\n    probe_param=[],\n    retries=1,\n)",
