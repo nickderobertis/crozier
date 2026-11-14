@@ -1,6 +1,6 @@
 # Reference
 ## Stalls
-<details><summary><code>client.stalls.<a href="src/fern/stalls/client.py">check_availability</a>(...) -> CheckAvailabilityResponse</code></summary>
+<details><summary><code>client.stalls.<a href="src/fern/stalls/client.py#L26-L70">check_availability</a>(...) -> CheckAvailabilityResponse</code></summary>
 <dl>
 <dd>
 

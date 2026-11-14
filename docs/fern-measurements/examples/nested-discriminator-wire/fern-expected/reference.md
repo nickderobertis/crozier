@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">place_order</a>(...) -> Pastry</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L100-L131">place_order</a>(...) -> Pastry</code></summary>
 <dl>
 <dd>
 

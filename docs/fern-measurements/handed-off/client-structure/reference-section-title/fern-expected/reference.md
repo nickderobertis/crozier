@@ -1,6 +1,6 @@
 # Reference
 ## Draft Filings
-<details><summary><code>client.draft_filings.<a href="src/fern/draft_filings/client.py">list</a>() -> str</code></summary>
+<details><summary><code>client.draft_filings.<a href="src/fern/draft_filings/client.py#L25-L45">list</a>() -> str</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.draft_filings.list()
 </dl>
 </details>
 
-<details><summary><code>client.draft_filings.<a href="src/fern/draft_filings/client.py">read</a>(...) -> str</code></summary>
+<details><summary><code>client.draft_filings.<a href="src/fern/draft_filings/client.py#L47-L71">read</a>(...) -> str</code></summary>
 <dl>
 <dd>
 
@@ -107,7 +107,7 @@ client.draft_filings.read(
 </details>
 
 ## Archive
-<details><summary><code>client.archive.<a href="src/fern/archive/client.py">list</a>() -> str</code></summary>
+<details><summary><code>client.archive.<a href="src/fern/archive/client.py#L25-L45">list</a>() -> str</code></summary>
 <dl>
 <dd>
 

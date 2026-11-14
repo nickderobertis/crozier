@@ -1,6 +1,6 @@
 # Reference
 ## Packets
-<details><summary><code>client.packets.<a href="src/fern/packets/client.py">get_packet</a>(...) -> Packet</code></summary>
+<details><summary><code>client.packets.<a href="src/fern/packets/client.py#L29-L53">get_packet</a>(...) -> Packet</code></summary>
 <dl>
 <dd>
 
@@ -58,7 +58,7 @@ client.packets.get_packet(
 </dl>
 </details>
 
-<details><summary><code>client.packets.<a href="src/fern/packets/client.py">relabel_packet</a>(...) -> Packet</code></summary>
+<details><summary><code>client.packets.<a href="src/fern/packets/client.py#L55-L91">relabel_packet</a>(...) -> Packet</code></summary>
 <dl>
 <dd>
 

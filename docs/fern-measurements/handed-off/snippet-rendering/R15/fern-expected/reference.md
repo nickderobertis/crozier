@@ -1,6 +1,6 @@
 # Reference
 ## Portraits
-<details><summary><code>client.portraits.<a href="src/fern/portraits/client.py">get_portrait</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.portraits.<a href="src/fern/portraits/client.py#L25-L44">get_portrait</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.portraits.get_portrait(...)
 </dl>
 </details>
 
-<details><summary><code>client.portraits.<a href="src/fern/portraits/client.py">get_sepia_portrait</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.portraits.<a href="src/fern/portraits/client.py#L46-L65">get_sepia_portrait</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 
@@ -112,7 +112,7 @@ client.portraits.get_sepia_portrait(...)
 </dl>
 </details>
 
-<details><summary><code>client.portraits.<a href="src/fern/portraits/client.py">get_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
+<details><summary><code>client.portraits.<a href="src/fern/portraits/client.py#L67-L93">get_thumbnail</a>(...) -> typing.Iterator[bytes]</code></summary>
 <dl>
 <dd>
 

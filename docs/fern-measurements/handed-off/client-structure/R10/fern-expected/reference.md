@@ -1,6 +1,6 @@
 # Reference
 ## Payments
-<details><summary><code>client.payments.<a href="src/fern/payments/client.py">pay_toll</a>(...) -> PayTollResponse</code></summary>
+<details><summary><code>client.payments.<a href="src/fern/payments/client.py#L30-L61">pay_toll</a>(...) -> PayTollResponse</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Core
-<details><summary><code>client.core.<a href="src/fern/core/client.py">get_status</a>() -> ServerStatus</code></summary>
+<details><summary><code>client.core.<a href="src/fern/core/client.py#L26-L46">get_status</a>() -> ServerStatus</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.core.get_status()
 </details>
 
 ## Files
-<details><summary><code>client.files.<a href="src/fern/files/client.py">list_files</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.files.<a href="src/fern/files/client.py#L25-L45">list_files</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Library Members
-<details><summary><code>client.library.members.<a href="src/fern/library/members/client.py">list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.library.members.<a href="src/fern/library/members/client.py#L25-L45">list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -49,7 +49,7 @@ client.library.members.list()
 </details>
 
 ## Library Loans
-<details><summary><code>client.library.loans.<a href="src/fern/library/loans/client.py">list</a>() -> typing.List[Loan]</code></summary>
+<details><summary><code>client.library.loans.<a href="src/fern/library/loans/client.py#L33-L53">list</a>() -> typing.List[Loan]</code></summary>
 <dl>
 <dd>
 
@@ -98,7 +98,7 @@ client.library.loans.list()
 </details>
 
 ## Library Archive Boxes
-<details><summary><code>client.library.archive.boxes.<a href="src/fern/library/archive/boxes/client.py">list</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.library.archive.boxes.<a href="src/fern/library/archive/boxes/client.py#L25-L45">list</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -147,7 +147,7 @@ client.library.archive.boxes.list()
 </details>
 
 ## Library Loans Renewals
-<details><summary><code>client.library.loans.renewals.<a href="src/fern/library/loans/renewals/client.py">create</a>(...) -> Loan</code></summary>
+<details><summary><code>client.library.loans.renewals.<a href="src/fern/library/loans/renewals/client.py#L26-L50">create</a>(...) -> Loan</code></summary>
 <dl>
 <dd>
 

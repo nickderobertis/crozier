@@ -1,6 +1,6 @@
 # Reference
 ## Orders
-<details><summary><code>client.orders.<a href="src/fern/orders/client.py">place_order</a>(...) -> PlaceOrderResponse</code></summary>
+<details><summary><code>client.orders.<a href="src/fern/orders/client.py#L29-L55">place_order</a>(...) -> PlaceOrderResponse</code></summary>
 <dl>
 <dd>
 

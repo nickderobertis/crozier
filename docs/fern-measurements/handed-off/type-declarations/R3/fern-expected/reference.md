@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">get_current_reading</a>(...) -> typing.Optional[ClimateReading]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L103-L131">get_current_reading</a>(...) -> typing.Optional[ClimateReading]</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.get_current_reading(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">create_greenhouse</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L133-L165">create_greenhouse</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -115,7 +115,7 @@ client.create_greenhouse(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">replace_greenhouse</a>(...)</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L167-L199">replace_greenhouse</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -174,7 +174,7 @@ client.replace_greenhouse(
 </dl>
 </details>
 
-<details><summary><code>client.<a href="src/fern/client.py">open_vent</a>(...) -> typing.Optional[VentState]</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L201-L229">open_vent</a>(...) -> typing.Optional[VentState]</code></summary>
 <dl>
 <dd>
 

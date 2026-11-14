@@ -1,6 +1,6 @@
 # Reference
 ## Firings
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">schedule_firing</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L28-L71">schedule_firing</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 
@@ -84,7 +84,7 @@ client.firings.schedule_firing(
 </dl>
 </details>
 
-<details><summary><code>client.firings.<a href="src/fern/firings/client.py">amend_firing</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
+<details><summary><code>client.firings.<a href="src/fern/firings/client.py#L73-L107">amend_firing</a>(...) -> typing.Dict[str, typing.Any]</code></summary>
 <dl>
 <dd>
 

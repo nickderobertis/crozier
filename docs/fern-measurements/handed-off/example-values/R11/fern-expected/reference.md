@@ -1,6 +1,6 @@
 # Reference
 ## Vessels
-<details><summary><code>client.vessels.<a href="src/fern/vessels/client.py">list_vessels</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.vessels.<a href="src/fern/vessels/client.py#L26-L68">list_vessels</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

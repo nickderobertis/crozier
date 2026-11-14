@@ -66,6 +66,10 @@ the class whose phrase the pair prints.
 **crozier.** crozier generates `openapi.yml` in both enum modes and both refusal
 modes. [`crozier-tree.tsv`](crozier-tree.tsv) records each file's SHA-256, with
 `python_enums`; the literals tree is the same without `src/fern/core/enum.py`.
+At Fern CLI 5.200.0 / fern-python-sdk 5.41.25 it was re-recorded after checking
+that only the files every SDK shares had moved (the hyphenated distribution
+name, the vendored runtime, `.fern/metadata.json` and `reference.md`'s link
+ranges).
 `crates/crozier-e2e/tests/e2e/empty_sdk_documents.rs` holds the tree to that manifest, the pair's empty SDK to its log and file
 count, and the control to its generation.
 

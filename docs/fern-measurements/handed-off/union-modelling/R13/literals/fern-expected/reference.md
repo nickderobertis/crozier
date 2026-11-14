@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">toggle_assistant</a>(...) -> ToggleAssistantResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L98-L128">toggle_assistant</a>(...) -> ToggleAssistantResponse</code></summary>
 <dl>
 <dd>
 

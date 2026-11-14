@@ -1,6 +1,6 @@
 # Reference
 ## Snippets
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">create_snippet</a>(...) -> Snippet</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L29-L58">create_snippet</a>(...) -> Snippet</code></summary>
 <dl>
 <dd>
 
@@ -67,7 +67,7 @@ client.snippets.create_snippet(
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">create_snippets</a>(...) -> typing.List[Snippet]</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L60-L93">create_snippets</a>(...) -> typing.List[Snippet]</code></summary>
 <dl>
 <dd>
 
@@ -134,7 +134,7 @@ client.snippets.create_snippets(
 </dl>
 </details>
 
-<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py">get_snippet</a>(...) -> Snippet</code></summary>
+<details><summary><code>client.snippets.<a href="src/fern/snippets/client.py#L95-L124">get_snippet</a>(...) -> Snippet</code></summary>
 <dl>
 <dd>
 

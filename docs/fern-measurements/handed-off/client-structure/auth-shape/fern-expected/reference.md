@@ -1,6 +1,6 @@
 # Reference
 ## Tickets
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">list_tickets</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L25-L48">list_tickets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -50,7 +50,7 @@ client.tickets.list_tickets()
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">list_escalated_tickets</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L50-L73">list_escalated_tickets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -100,7 +100,7 @@ client.tickets.list_escalated_tickets()
 </dl>
 </details>
 
-<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py">list_archived_tickets</a>() -> typing.List[str]</code></summary>
+<details><summary><code>client.tickets.<a href="src/fern/tickets/client.py#L75-L98">list_archived_tickets</a>() -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

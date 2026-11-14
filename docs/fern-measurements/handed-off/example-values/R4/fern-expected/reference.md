@@ -1,6 +1,6 @@
 # Reference
 ## Keepers
-<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py">list_keeper_shifts</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py#L26-L86">list_keeper_shifts</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -100,7 +100,7 @@ client.keepers.list_keeper_shifts(
 </dl>
 </details>
 
-<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py">list_keeper_callbacks</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py#L88-L114">list_keeper_callbacks</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.keepers.list_keeper_callbacks()
 </dl>
 </details>
 
-<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py">search_keepers</a>(...) -> typing.List[str]</code></summary>
+<details><summary><code>client.keepers.<a href="src/fern/keepers/client.py#L116-L142">search_keepers</a>(...) -> typing.List[str]</code></summary>
 <dl>
 <dd>
 

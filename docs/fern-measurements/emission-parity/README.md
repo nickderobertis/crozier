@@ -132,7 +132,15 @@ moved, `src/fern/types/__init__.py`'s: the client-structure repair of `R10`
 ([`../handed-off/client-structure.tsv`](../handed-off/client-structure.tsv))
 imports a discriminated union and its variant wrappers in one statement, as
 the certified pair does, so `Door` and `Parcel` each carry their wrappers on
-their own import line. Every other file still matches the base tree.
+their own import line. Every other file still matches the base tree. Moving the
+certified pair to Fern CLI 5.200.0 / fern-python-sdk 5.41.25 moved 16 digests
+per mode, all in files every SDK shares: the hyphenated distribution name
+(`pyproject.toml`, `version.py`, `_default_clients.py`, `client_wrapper.py`,
+`tests/test_aiohttp_autodetect.py`), the vendored runtime (`core/file.py`,
+`core/http_client.py`, `core/jsonable_encoder.py`, `core/pydantic_utilities.py`
+and the four `core/http_sse/` files), `.fern/metadata.json`, `reference.md`'s
+link ranges and `README.md`'s async imports. The manifests were re-recorded
+from crozier's output after checking that no other path moved.
 
 `crates/crozier-e2e/tests/e2e/emission_parity.rs` holds each tree whole
 through the parity engine and the departures ledger. Each test then induces a

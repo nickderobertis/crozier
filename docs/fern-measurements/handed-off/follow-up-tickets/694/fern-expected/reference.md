@@ -1,6 +1,6 @@
 # Reference
 ## Fleets
-<details><summary><code>client.fleets.<a href="src/fern/fleets/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.fleets.<a href="src/fern/fleets/client.py#L35-L63">create</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -56,7 +56,7 @@ client.fleets.create()
 </details>
 
 ## Fleets Sensors
-<details><summary><code>client.fleets.sensors.<a href="src/fern/fleets/sensors/client.py">create</a>(...)</code></summary>
+<details><summary><code>client.fleets.sensors.<a href="src/fern/fleets/sensors/client.py#L29-L56">create</a>(...)</code></summary>
 <dl>
 <dd>
 

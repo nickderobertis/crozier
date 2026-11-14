@@ -1,6 +1,6 @@
 # Reference
 ## Movies
-<details><summary><code>client.movies.<a href="src/fern/movies/client.py">list_movies</a>(...) -> MovieListResponse</code></summary>
+<details><summary><code>client.movies.<a href="src/fern/movies/client.py#L29-L118">list_movies</a>(...) -> MovieListResponse</code></summary>
 <dl>
 <dd>
 
@@ -155,7 +155,7 @@ client.movies.list_movies(
 </dl>
 </details>
 
-<details><summary><code>client.movies.<a href="src/fern/movies/client.py">get_movie</a>(...) -> MovieDetailResponse</code></summary>
+<details><summary><code>client.movies.<a href="src/fern/movies/client.py#L120-L150">get_movie</a>(...) -> MovieDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -216,7 +216,7 @@ client.movies.get_movie(
 </details>
 
 ## Shows
-<details><summary><code>client.shows.<a href="src/fern/shows/client.py">list_shows</a>(...) -> ShowListResponse</code></summary>
+<details><summary><code>client.shows.<a href="src/fern/shows/client.py#L29-L118">list_shows</a>(...) -> ShowListResponse</code></summary>
 <dl>
 <dd>
 
@@ -371,7 +371,7 @@ client.shows.list_shows(
 </dl>
 </details>
 
-<details><summary><code>client.shows.<a href="src/fern/shows/client.py">get_show</a>(...) -> ShowDetailResponse</code></summary>
+<details><summary><code>client.shows.<a href="src/fern/shows/client.py#L120-L148">get_show</a>(...) -> ShowDetailResponse</code></summary>
 <dl>
 <dd>
 
@@ -432,7 +432,7 @@ client.shows.get_show(
 </details>
 
 ## Episodes
-<details><summary><code>client.episodes.<a href="src/fern/episodes/client.py">get_episode</a>(...) -> EpisodeDetailResponse</code></summary>
+<details><summary><code>client.episodes.<a href="src/fern/episodes/client.py#L26-L56">get_episode</a>(...) -> EpisodeDetailResponse</code></summary>
 <dl>
 <dd>
 

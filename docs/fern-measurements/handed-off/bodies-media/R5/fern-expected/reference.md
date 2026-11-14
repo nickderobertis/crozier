@@ -1,6 +1,6 @@
 # Reference
 ## Passages
-<details><summary><code>client.passages.<a href="src/fern/passages/client.py">get_passage</a>(...) -> Passage</code></summary>
+<details><summary><code>client.passages.<a href="src/fern/passages/client.py#L26-L50">get_passage</a>(...) -> Passage</code></summary>
 <dl>
 <dd>
 

@@ -1,6 +1,6 @@
 # Reference
 ## Questions
-<details><summary><code>client.questions.<a href="src/fern/questions/client.py">list_open_questions</a>() -> OpenQuestions</code></summary>
+<details><summary><code>client.questions.<a href="src/fern/questions/client.py#L30-L50">list_open_questions</a>() -> OpenQuestions</code></summary>
 <dl>
 <dd>
 
@@ -48,7 +48,7 @@ client.questions.list_open_questions()
 </dl>
 </details>
 
-<details><summary><code>client.questions.<a href="src/fern/questions/client.py">file_question</a>(...) -> Ticket</code></summary>
+<details><summary><code>client.questions.<a href="src/fern/questions/client.py#L52-L102">file_question</a>(...) -> Ticket</code></summary>
 <dl>
 <dd>
 

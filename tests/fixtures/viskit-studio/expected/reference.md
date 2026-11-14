@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">health_health_get</a>() -> typing.Any</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py#L128-L152">health_health_get</a>() -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -61,7 +61,7 @@ client.health_health_get()
 </details>
 
 ## Assets
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">list_assets</a>(...) -> AssetListResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L28-L60">list_assets</a>(...) -> AssetListResponse</code></summary>
 <dl>
 <dd>
 
@@ -124,7 +124,7 @@ client.assets.list_assets()
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">delete_asset</a>(...) -> AssetDeleteResponse</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L62-L90">delete_asset</a>(...) -> AssetDeleteResponse</code></summary>
 <dl>
 <dd>
 
@@ -181,7 +181,7 @@ client.assets.delete_asset(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">download_asset</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L92-L118">download_asset</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -238,7 +238,7 @@ client.assets.download_asset(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">get_asset_edit_context</a>(...) -> AssetEditContext</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L120-L148">get_asset_edit_context</a>(...) -> AssetEditContext</code></summary>
 <dl>
 <dd>
 
@@ -295,7 +295,7 @@ client.assets.get_asset_edit_context(
 </dl>
 </details>
 
-<details><summary><code>client.assets.<a href="src/fern/assets/client.py">get_asset_image</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.assets.<a href="src/fern/assets/client.py#L150-L176">get_asset_image</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -353,7 +353,7 @@ client.assets.get_asset_image(
 </details>
 
 ## GenerationJobs
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">list_generation_jobs</a>(...) -> GenerationJobListResponse</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L38-L77">list_generation_jobs</a>(...) -> GenerationJobListResponse</code></summary>
 <dl>
 <dd>
 
@@ -438,7 +438,7 @@ client.generation_jobs.list_generation_jobs()
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">create_generation_job</a>(...) -> GenerationJobCreated</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L79-L144">create_generation_job</a>(...) -> GenerationJobCreated</code></summary>
 <dl>
 <dd>
 
@@ -550,7 +550,7 @@ client.generation_jobs.create_generation_job(
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">get_kit_slot_output_image</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L146-L179">get_kit_slot_output_image</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -616,7 +616,7 @@ client.generation_jobs.get_kit_slot_output_image(
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">get_generation_job</a>(...) -> GenerationJobOut</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L181-L209">get_generation_job</a>(...) -> GenerationJobOut</code></summary>
 <dl>
 <dd>
 
@@ -673,7 +673,7 @@ client.generation_jobs.get_generation_job(
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">generation_job_events</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L211-L239">generation_job_events</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -730,7 +730,7 @@ client.generation_jobs.generation_job_events(
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">get_generation_output_image</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L241-L272">get_generation_output_image</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -796,7 +796,7 @@ client.generation_jobs.get_generation_output_image(
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">start_generation_job</a>(...) -> GenerationJobStartResponse</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L274-L302">start_generation_job</a>(...) -> GenerationJobStartResponse</code></summary>
 <dl>
 <dd>
 
@@ -853,7 +853,7 @@ client.generation_jobs.start_generation_job(
 </dl>
 </details>
 
-<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py">stop_generation_job</a>(...) -> GenerationJobStopResponse</code></summary>
+<details><summary><code>client.generation_jobs.<a href="src/fern/generation_jobs/client.py#L304-L332">stop_generation_job</a>(...) -> GenerationJobStopResponse</code></summary>
 <dl>
 <dd>
 
@@ -911,7 +911,7 @@ client.generation_jobs.stop_generation_job(
 </details>
 
 ## GenerationPlan
-<details><summary><code>client.generation_plan.<a href="src/fern/generation_plan/client.py">create_generation_plan</a>(...) -> GenerationPlanOut</code></summary>
+<details><summary><code>client.generation_plan.<a href="src/fern/generation_plan/client.py#L31-L93">create_generation_plan</a>(...) -> GenerationPlanOut</code></summary>
 <dl>
 <dd>
 
@@ -1029,7 +1029,7 @@ client.generation_plan.create_generation_plan(
 </details>
 
 ## Editor
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">get_image_bytes</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L34-L60">get_image_bytes</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1086,7 +1086,7 @@ client.editor.get_image_bytes(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">start_edit</a>(...) -> EditAccepted</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L62-L108">start_edit</a>(...) -> EditAccepted</code></summary>
 <dl>
 <dd>
 
@@ -1171,7 +1171,7 @@ client.editor.start_edit(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">create_edit_result</a>(...) -> EditResultOut</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L110-L157">create_edit_result</a>(...) -> EditResultOut</code></summary>
 <dl>
 <dd>
 
@@ -1253,7 +1253,7 @@ client.editor.create_edit_result(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">get_edit_result_image</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L159-L190">get_edit_result_image</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1319,7 +1319,7 @@ client.editor.get_edit_result_image(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">edit_events</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L192-L223">edit_events</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1385,7 +1385,7 @@ client.editor.edit_events(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">ocr_image</a>(...) -> OcrResponse</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L225-L251">ocr_image</a>(...) -> OcrResponse</code></summary>
 <dl>
 <dd>
 
@@ -1442,7 +1442,7 @@ client.editor.ocr_image(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">get_editor_project</a>(...) -> EditorProjectResponse</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L253-L283">get_editor_project</a>(...) -> EditorProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -1513,7 +1513,7 @@ client.editor.get_editor_project(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">put_editor_project</a>(...) -> EditorProjectResponse</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L285-L337">put_editor_project</a>(...) -> EditorProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -1595,7 +1595,7 @@ client.editor.put_editor_project(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">export_editor_project</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L339-L369">export_editor_project</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -1666,7 +1666,7 @@ client.editor.export_editor_project(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">import_editor_project</a>(...) -> EditorProjectResponse</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L371-L423">import_editor_project</a>(...) -> EditorProjectResponse</code></summary>
 <dl>
 <dd>
 
@@ -1748,7 +1748,7 @@ client.editor.import_editor_project(
 </dl>
 </details>
 
-<details><summary><code>client.editor.<a href="src/fern/editor/client.py">save_edited_image</a>(...) -> SaveImageResponse</code></summary>
+<details><summary><code>client.editor.<a href="src/fern/editor/client.py#L425-L470">save_edited_image</a>(...) -> SaveImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -1839,7 +1839,7 @@ client.editor.save_edited_image(
 </details>
 
 ## Imagegen
-<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py">list_kits</a>(...) -> KitListResponse</code></summary>
+<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py#L36-L121">list_kits</a>(...) -> KitListResponse</code></summary>
 <dl>
 <dd>
 
@@ -1995,7 +1995,7 @@ client.imagegen.list_kits()
 </dl>
 </details>
 
-<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py">delete_generated_image</a>(...) -> DeleteKitImageResponse</code></summary>
+<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py#L123-L156">delete_generated_image</a>(...) -> DeleteKitImageResponse</code></summary>
 <dl>
 <dd>
 
@@ -2075,7 +2075,7 @@ client.imagegen.delete_generated_image(
 </dl>
 </details>
 
-<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py">get_kit_meta</a>(...) -> KitMetaResponse</code></summary>
+<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py#L158-L188">get_kit_meta</a>(...) -> KitMetaResponse</code></summary>
 <dl>
 <dd>
 
@@ -2146,7 +2146,7 @@ client.imagegen.get_kit_meta(
 </dl>
 </details>
 
-<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py">get_kit_events</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py#L190-L225">get_kit_events</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2224,7 +2224,7 @@ client.imagegen.get_kit_events(
 </dl>
 </details>
 
-<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py">post_generate</a>(...) -> GenerateResponse</code></summary>
+<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py#L227-L344">post_generate</a>(...) -> GenerateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2390,7 +2390,7 @@ client.imagegen.post_generate(
 </dl>
 </details>
 
-<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py">get_generated_image</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.imagegen.<a href="src/fern/imagegen/client.py#L346-L379">get_generated_image</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -2471,7 +2471,7 @@ client.imagegen.get_generated_image(
 </details>
 
 ## Extract
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">warmup_extract_api_kits_warmup_extract_get</a>()</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L29-L58">warmup_extract_api_kits_warmup_extract_get</a>()</code></summary>
 <dl>
 <dd>
 
@@ -2536,7 +2536,7 @@ client.extract.warmup_extract_api_kits_warmup_extract_get()
 </dl>
 </details>
 
-<details><summary><code>client.extract.<a href="src/fern/extract/client.py">extract</a>(...) -> ExtractResponse</code></summary>
+<details><summary><code>client.extract.<a href="src/fern/extract/client.py#L60-L108">extract</a>(...) -> ExtractResponse</code></summary>
 <dl>
 <dd>
 
@@ -2631,7 +2631,7 @@ client.extract.extract(
 </details>
 
 ## Copywriter
-<details><summary><code>client.copywriter.<a href="src/fern/copywriter/client.py">create_spec</a>(...) -> SpecResponse</code></summary>
+<details><summary><code>client.copywriter.<a href="src/fern/copywriter/client.py#L32-L98">create_spec</a>(...) -> SpecResponse</code></summary>
 <dl>
 <dd>
 
@@ -2742,7 +2742,7 @@ client.copywriter.create_spec(
 </details>
 
 ## Metrics
-<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py">get_weekly_metrics</a>() -> WeeklyMetricsResponse</code></summary>
+<details><summary><code>client.metrics.<a href="src/fern/metrics/client.py#L26-L50">get_weekly_metrics</a>() -> WeeklyMetricsResponse</code></summary>
 <dl>
 <dd>
 
@@ -2804,7 +2804,7 @@ client.metrics.get_weekly_metrics()
 </details>
 
 ## Onboarding
-<details><summary><code>client.onboarding.<a href="src/fern/onboarding/client.py">get_onboarding_needed</a>() -> OnboardingNeededResponse</code></summary>
+<details><summary><code>client.onboarding.<a href="src/fern/onboarding/client.py#L26-L52">get_onboarding_needed</a>() -> OnboardingNeededResponse</code></summary>
 <dl>
 <dd>
 
@@ -2866,7 +2866,7 @@ client.onboarding.get_onboarding_needed()
 </details>
 
 ## Providers
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_config_state</a>() -> ConfigStateResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L40-L69">get_config_state</a>() -> ConfigStateResponse</code></summary>
 <dl>
 <dd>
 
@@ -2932,7 +2932,7 @@ client.providers.get_config_state()
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">save_endpoints</a>(...) -> SaveEndpointsResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L71-L106">save_endpoints</a>(...) -> SaveEndpointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3012,7 +3012,7 @@ client.providers.save_endpoints(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_endpoint</a>(...) -> EndpointStanza</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L108-L136">get_endpoint</a>(...) -> EndpointStanza</code></summary>
 <dl>
 <dd>
 
@@ -3083,7 +3083,7 @@ client.providers.get_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">create_endpoint</a>(...) -> SaveEndpointsResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L138-L205">create_endpoint</a>(...) -> SaveEndpointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3208,7 +3208,7 @@ client.providers.create_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">update_endpoint</a>(...) -> SaveEndpointsResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L207-L279">update_endpoint</a>(...) -> SaveEndpointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3338,7 +3338,7 @@ client.providers.update_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">delete_endpoint</a>(...) -> SaveEndpointsResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L281-L315">delete_endpoint</a>(...) -> SaveEndpointsResponse</code></summary>
 <dl>
 <dd>
 
@@ -3413,7 +3413,7 @@ client.providers.delete_endpoint(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_endpoint_secret</a>(...) -> EndpointSecretResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L317-L351">get_endpoint_secret</a>(...) -> EndpointSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -3488,7 +3488,7 @@ client.providers.get_endpoint_secret(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_provider_health</a>() -> typing.List[ProviderHealthRow]</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L353-L383">get_provider_health</a>() -> typing.List[ProviderHealthRow]</code></summary>
 <dl>
 <dd>
 
@@ -3553,7 +3553,7 @@ client.providers.get_provider_health()
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">list_provider_models</a>(...) -> ProviderProbeResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L385-L417">list_provider_models</a>(...) -> ProviderProbeResponse</code></summary>
 <dl>
 <dd>
 
@@ -3626,7 +3626,7 @@ client.providers.list_provider_models()
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">probe_candidate</a>(...) -> ProbeCandidateResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L419-L482">probe_candidate</a>(...) -> ProbeCandidateResponse</code></summary>
 <dl>
 <dd>
 
@@ -3739,7 +3739,7 @@ client.providers.probe_candidate(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">store_secret</a>(...) -> StoreSecretResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L484-L527">store_secret</a>(...) -> StoreSecretResponse</code></summary>
 <dl>
 <dd>
 
@@ -3833,7 +3833,7 @@ client.providers.store_secret(
 </dl>
 </details>
 
-<details><summary><code>client.providers.<a href="src/fern/providers/client.py">get_provider_summary</a>() -> ProvidersSummaryResponse</code></summary>
+<details><summary><code>client.providers.<a href="src/fern/providers/client.py#L529-L555">get_provider_summary</a>() -> ProvidersSummaryResponse</code></summary>
 <dl>
 <dd>
 
@@ -3895,7 +3895,7 @@ client.providers.get_provider_summary()
 </details>
 
 ## Queue
-<details><summary><code>client.queue.<a href="src/fern/queue/client.py">get_active_queue</a>() -> typing.List[QueueJob]</code></summary>
+<details><summary><code>client.queue.<a href="src/fern/queue/client.py#L26-L50">get_active_queue</a>() -> typing.List[QueueJob]</code></summary>
 <dl>
 <dd>
 
@@ -3957,7 +3957,7 @@ client.queue.get_active_queue()
 </details>
 
 ## Settings
-<details><summary><code>client.settings.<a href="src/fern/settings/client.py">post_settings</a>(...) -> SettingsResponse</code></summary>
+<details><summary><code>client.settings.<a href="src/fern/settings/client.py#L30-L80">post_settings</a>(...) -> SettingsResponse</code></summary>
 <dl>
 <dd>
 
@@ -4055,7 +4055,7 @@ client.settings.post_settings()
 </details>
 
 ## SourceImages
-<details><summary><code>client.source_images.<a href="src/fern/source_images/client.py">create_source_image</a>() -> SourceImageOut</code></summary>
+<details><summary><code>client.source_images.<a href="src/fern/source_images/client.py#L30-L52">create_source_image</a>() -> SourceImageOut</code></summary>
 <dl>
 <dd>
 
@@ -4102,7 +4102,7 @@ client.source_images.create_source_image()
 </dl>
 </details>
 
-<details><summary><code>client.source_images.<a href="src/fern/source_images/client.py">create_source_image_from_existing</a>(...) -> SourceImageImportOut</code></summary>
+<details><summary><code>client.source_images.<a href="src/fern/source_images/client.py#L54-L84">create_source_image_from_existing</a>(...) -> SourceImageImportOut</code></summary>
 <dl>
 <dd>
 
@@ -4159,7 +4159,7 @@ client.source_images.create_source_image_from_existing(
 </dl>
 </details>
 
-<details><summary><code>client.source_images.<a href="src/fern/source_images/client.py">get_source_image</a>(...) -> typing.Any</code></summary>
+<details><summary><code>client.source_images.<a href="src/fern/source_images/client.py#L86-L114">get_source_image</a>(...) -> typing.Any</code></summary>
 <dl>
 <dd>
 
@@ -4217,7 +4217,7 @@ client.source_images.get_source_image(
 </details>
 
 ## Templates
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">get_templates</a>() -> typing.List[TemplateSummary]</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L38-L60">get_templates</a>() -> typing.List[TemplateSummary]</code></summary>
 <dl>
 <dd>
 
@@ -4264,7 +4264,7 @@ client.templates.get_templates()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">create_template</a>(...) -> TemplateSummary</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L62-L144">create_template</a>(...) -> TemplateSummary</code></summary>
 <dl>
 <dd>
 
@@ -4414,7 +4414,7 @@ client.templates.create_template(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">copy_template</a>(...) -> TemplateSummary</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L146-L180">copy_template</a>(...) -> TemplateSummary</code></summary>
 <dl>
 <dd>
 
@@ -4479,7 +4479,7 @@ client.templates.copy_template(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">get_managed_templates</a>() -> typing.List[TemplateSummary]</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L182-L206">get_managed_templates</a>() -> typing.List[TemplateSummary]</code></summary>
 <dl>
 <dd>
 
@@ -4526,7 +4526,7 @@ client.templates.get_managed_templates()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">preview_template</a>(...) -> PreviewResponse</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L208-L281">preview_template</a>(...) -> PreviewResponse</code></summary>
 <dl>
 <dd>
 
@@ -4657,7 +4657,7 @@ client.templates.preview_template(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">list_schemes</a>(...) -> typing.List[SchemeSummary]</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L283-L312">list_schemes</a>(...) -> typing.List[SchemeSummary]</code></summary>
 <dl>
 <dd>
 
@@ -4712,7 +4712,7 @@ client.templates.list_schemes()
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">create_scheme</a>(...) -> SchemeSummary</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L314-L373">create_scheme</a>(...) -> SchemeSummary</code></summary>
 <dl>
 <dd>
 
@@ -4809,7 +4809,7 @@ client.templates.create_scheme(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">delete_template</a>(...) -> typing.Dict[str, bool]</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L375-L403">delete_template</a>(...) -> typing.Dict[str, bool]</code></summary>
 <dl>
 <dd>
 
@@ -4866,7 +4866,7 @@ client.templates.delete_template(
 </dl>
 </details>
 
-<details><summary><code>client.templates.<a href="src/fern/templates/client.py">update_template</a>(...) -> TemplateSummary</code></summary>
+<details><summary><code>client.templates.<a href="src/fern/templates/client.py#L405-L483">update_template</a>(...) -> TemplateSummary</code></summary>
 <dl>
 <dd>
 
