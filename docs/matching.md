@@ -1495,8 +1495,14 @@ an **XML model** (`src/emit/xml.rs`, after Fern's own generator source): its
 pydantic class gains `to_xml`/`from_xml`, `__str__`, private ordered-content
 fields, `add_child`/`add_text`/the comment methods, a fluent builder per XML
 model its child lists hold, and `copy_on_model_validation = "none"`; the SDK
-gains `core/xml_utilities.py` and a `tests/xml/test_<model>.py` round trip per
-model. What Fern reads, and so what crozier reads:
+gains `core/xml_utilities.py` and a `tests/xml/test_xml_<model>.py` round trip
+per model (`test_<model>.py` before fern-python-sdk 5.41.25). A model whose
+constructor takes its text or inline children passes its extra keyword
+arguments through `check_xml_extra_attributes`, with the attributes whose XML
+name differs from their field (`{"schemaLocation": "xsi_schema_location"}`):
+such a key sets that attribute, and one differing from a declared name only by
+case raises `TypeError`, where 5.41.3 kept either as an undeclared attribute.
+What Fern reads, and so what crozier reads:
 
 - the element is the `xml.name`, else the type name, with `namespace`/`prefix`;
 - each property of the model is a child element unless its `xml` (or, for a
@@ -1514,7 +1520,7 @@ sample document leaves out fails its round trip in Fern's SDK too.
 
 ### Known defects crozier reproduces on purpose
 
-By user ruling, crozier reproduces fern-python-sdk 5.41.3's XML models and their
+By user ruling, crozier reproduces fern-python-sdk 5.41.25's XML models and their
 generated `tests/xml/` modules byte for byte, **including their known defects**:
 this is a deliberate match, not a catalogued departure. Only a specification
 that declares OpenAPI `xml` objects is affected; without one no XML model and no
@@ -1536,9 +1542,10 @@ that declares OpenAPI `xml` objects is affected; without one no XML model and no
   single-valued field, so the serialized form has one `<header />` and the
   `in` assertion fails.
 
-Measured by running each golden's `tests/xml/` with pytest under pydantic
-2.14.1 on Python 3.14 (crozier's output byte-matches each golden, so the counts
-are crozier's too):
+Measured at Fern CLI 5.200.0 / fern-python-sdk 5.41.25 by running each golden's
+`tests/xml/` with pytest under pydantic 2.14.0 on Python 3.14.7 (crozier's
+output byte-matches each golden, so the counts are crozier's too). The counts
+and shapes are the ones 5.41.3 measured:
 
 | golden | failing / total | shapes |
 |---|---|---|
