@@ -2219,7 +2219,11 @@ class BuildTests(BuildHarness):
         }
         for record, accepted in (
             (good, True),
-            # A refusal keeps the pin it asked for: no bytes were had to name.
+            # A refusal had no bytes to name: it records none, or (an earlier ledger) the pin it asked for.
+            (
+                {key: value for key, value in good.items() if key != "content_sha256"} | {"how": "refused-http-404"},
+                True,
+            ),
             ({**good, "how": "refused-http-404", "content_sha256": good["pin"]}, True),
             ({**good, "population": "gitlab"}, False),
             ({**good, "content_sha256": good["pin"]}, False),
@@ -2397,6 +2401,13 @@ class BuildTests(BuildHarness):
         )
         self.assertEqual(0, acquired.returncode, acquired.stderr)
         self.assertIn("refused-http-404", acquired.stdout)
+        # A refusal had no bytes, so its ledger line names no content digest.
+        attempts = [
+            json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text(encoding="utf-8").splitlines()
+        ]
+        refusals = [line for line in attempts if line["how"].startswith("refused-http-")]
+        self.assertTrue(refusals)
+        self.assertEqual([], [line for line in refusals if "content_sha256" in line])
         # A code-search hit the search recorded for one key, never fetched.
         search = self.scratch / "search"
         self.write(
@@ -2462,6 +2473,65 @@ class BuildTests(BuildHarness):
         hit = rows[("github", "acme/new/spec/openapi.yaml")]
         self.assertEqual(("combo-property-defs-pointer", "-"), (hit.key, hit.sha256))
         self.assertIn("never fetched", hit.status)
+
+    def test_a_census_candidate_named_by_digest_owes_its_row_however_its_bytes_were_missed(self) -> None:
+        # An earlier census names a withheld document only by its digest, which is a planned ledger identity's.
+        digest = hashlib.sha256(self.pointer).hexdigest()
+        self.combination_census(
+            "witness-search-operation-combinations/census.tsv.gz", [(KEY_SA, f"(withheld) [sha256:{digest}]", digest)]
+        )
+        plan = self.scratch / "plan.tsv.gz"
+        self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
+        attempt = {
+            "population": "github",
+            "document": "acme/pointers/openapi.json",
+            "commit": "2" * 40,
+            "pin": digest,
+        }
+        for ledger_lines, reason in (
+            # Never asked: the census's keys pass to the identity its digest names.
+            (
+                [],
+                "listed by an earlier named census and never fetched: the guarded raw lane's budget was spent "
+                "before it was reached",
+            ),
+            # Had once, and the store no longer holds the bytes.
+            (
+                [{**attempt, "how": "raw", "content_sha256": digest}],
+                "had once through the guarded raw lane, and its bytes are no longer in this host's store",
+            ),
+            # Served, but not the bytes the pin names: no HTTP refusal, and nothing held.
+            (
+                [{**attempt, "how": "digest-differs"}],
+                "fetched 1 time(s) at the recorded commit through the guarded raw lane, which gave bytes whose "
+                "digest is not the recorded one",
+            ),
+        ):
+            with self.subTest(reason=reason):
+                ledger = self.scratch / "acquisitions.jsonl"
+                self.write(ledger, ledger_lines)
+                manifest = self.scratch / "population.tsv"
+                built = self.build(
+                    "manifest",
+                    "--identities",
+                    str(plan),
+                    "--archive",
+                    str(self.archive),
+                    "--store",
+                    str(self.store),
+                    "--preflight",
+                    str(self.scratch / "none"),
+                    "--acquisitions",
+                    str(ledger),
+                    "--output",
+                    str(manifest),
+                )
+                self.assertEqual(0, built.returncode, built.stderr)
+                [entry] = [e for e in SCREEN.read_manifest(manifest) if e.document == "acme/pointers/openapi.json"]
+                # A fetched document also keeps the keys its recorded hits match by field name.
+                self.assertEqual(
+                    (digest, True, reason), (entry.sha256, KEY_SA in entry.keys.split(";"), entry.unfetchable)
+                )
 
     def test_bytes_the_ledger_had_at_another_commit_or_pin_are_not_attributed_to_the_plan(self) -> None:
         fetched = json.dumps(CASES[3][1]).encode()

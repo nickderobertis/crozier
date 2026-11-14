@@ -1991,10 +1991,10 @@ def acquire(
             else:
                 how = f"refused-http-{status}" if status != 200 else Acquired.DIGEST_DIFFERS
         tally[how] += 1
+        # Only bytes had are named by their content's SHA-256; a refusal records the pin it asked for alone.
+        content = {"content_sha256": sha256} if how in HELD else {}
         with ledger.open("a", encoding="utf-8", newline="\n") as handle:
-            handle.write(
-                json.dumps({**identity._asdict(), "how": how, "content_sha256": sha256}, sort_keys=True) + "\n"
-            )
+            handle.write(json.dumps({**identity._asdict(), "how": how, **content}, sort_keys=True) + "\n")
     print(
         "population-screen: acquire: " + ", ".join(f"{name} {count}" for name, count in sorted(tally.items())),
         file=out,

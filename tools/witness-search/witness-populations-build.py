@@ -453,14 +453,17 @@ def handed_off(tree: Tree) -> list[HandedOff]:
 
 
 class Acquisition(NamedTuple):
-    """One line of the acquisition ledger: a planned identity, how its bytes were had, and their digest."""
+    """One line of the acquisition ledger: a planned identity, how its bytes were had, and their digest.
+
+    `content_sha256` is the SHA-256 of the bytes had, and None for a refusal, which had none.
+    """
 
     population: str
     document: SCREEN.DocumentId
     commit: SCREEN.Commit
     pin: SCREEN.Pin
     how: str
-    content_sha256: SCREEN.Sha256
+    content_sha256: SCREEN.Sha256 | None
 
     @property
     def held(self) -> bool:
@@ -487,7 +490,7 @@ def acquisitions(path: Path) -> list[Acquisition]:
             or not isinstance(digest, str)
             or not any(pattern.fullmatch(digest) for pattern in (SCREEN.SHA, SCREEN.BLOB, SCREEN.COMMIT_PIN))
             or not SCREEN.acquisition_outcome(row["how"])
-            # Bytes had are named by their content's SHA-256; only a refusal keeps the pin it asked for.
+            # Bytes had are named by their content's SHA-256; a refusal names none (earlier ledgers repeat its pin).
             or (row["how"] in SCREEN.HELD and not SCREEN.SHA.fullmatch(digest))
         ):
             fail(
@@ -495,7 +498,10 @@ def acquisitions(path: Path) -> list[Acquisition]:
                 "and a SHA-256 for bytes had); "
                 "restore it from git"
             )
-        out.append(Acquisition(row["population"], row["document"], row["commit"], pin, row["how"], digest))
+        held = row["how"] in SCREEN.HELD
+        out.append(
+            Acquisition(row["population"], row["document"], row["commit"], pin, row["how"], digest if held else None)
+        )
     return out
 
 
@@ -648,7 +654,7 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     contents = {
         (row.population, row.document, row.commit, row.pin): row.content_sha256
         for row in acquisitions(args.acquisitions)
-        if row.held
+        if row.held and row.content_sha256 is not None
     }
     seen: set[tuple[str, str]] = set()
     for identity in plan:
@@ -805,7 +811,14 @@ def unavailable(
         elif tried:
             identity, rows = tried[0]
             statuses = sorted({row.how.removeprefix("refused-http-") for row in rows})
-            answered = " and ".join("no answer" if status == "0" else f"HTTP {status}" for status in statuses)
+            answered = " and ".join(
+                "no answer"
+                if status == "0"
+                else "bytes whose digest is not the recorded one"
+                if status == SCREEN.Acquired.DIGEST_DIFFERS
+                else f"HTTP {status}"
+                for status in statuses
+            )
             reason = (
                 f"fetched {len(rows)} time(s) at the recorded commit through the guarded raw lane, which gave "
                 f"{answered}"
