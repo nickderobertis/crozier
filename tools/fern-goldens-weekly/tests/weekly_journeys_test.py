@@ -17,6 +17,8 @@ the candidate's, as they are once the decision job builds crozier from the tree.
 
 from __future__ import annotations
 
+import contextlib
+import hashlib
 import json
 import os
 import re
@@ -69,6 +71,35 @@ LEDGER_ROW = "tests/fixtures/alpha/expected\tsrc/fern/core/client_wrapper.py\t{l
 # free disk and memory every progress line of `decide` states.
 HANG = "sh -c 'touch \"$HANG_SENTINEL\"; exec sleep 600'"
 RESOURCE = r"disk free [0-9.]+ GiB on \S+, memory available ([0-9.]+ GiB|unknown \(no /proc/meminfo\))"
+DECLARED_LIMIT = re.search(
+    r"(?m)^BODY_LIMIT = (\d+)$", (REPO / "tools/fern-goldens/weekly.py").read_text(encoding="utf-8")
+)
+assert DECLARED_LIMIT is not None, "tools/fern-goldens/weekly.py no longer declares BODY_LIMIT"
+BODY_LIMIT = int(DECLARED_LIMIT[1])
+# Every reference family `fern-references.py` registers, for a stand-in gate
+# that decides them all at once.
+ALL_FAMILIES = ",".join(runpy.run_path(str(REPO / "tools/fern-goldens/fern-references.py"))["FAMILY"])
+# Stand-ins for crozier-e2e's suite and the corpus reporter, so a decision over
+# thousands of items costs one process, or one per corpus item: `bulk.sh`
+# fails every `bulk-<family>-<n>` item its arguments count; `drift.sh` reports
+# its corpus's departure ledger row as stale, which the real reporter states
+# before it compares that corpus's files.
+BULK_GATE = """\
+#!/bin/sh
+count=$1
+shift
+for family in "$@"; do
+  for n in $(seq 0 $((count - 1))); do echo "bulk-$family-$n: differs"; done
+done
+exit 3
+"""
+DRIFT_GATE = """\
+#!/bin/sh
+printf '  Comparison processing failed: tests/fixtures/departures-ledger.tsv: `%s` is stale: committed\\n\\n' "$1"
+echo "0 differing file(s) across the reported corpora."
+echo "0 comparison generation failure(s) across the reported corpora."
+echo "1 comparison processing failure(s) across the reported corpora."
+"""
 
 
 class RuffDiagnostic(TypedDict):
@@ -190,6 +221,32 @@ OTHER_FAMILIES = {
     ("departure-evidence", DEPARTURE),
 }
 
+
+@dataclass(frozen=True)
+class StageAnswer:
+    """What a stood-in Fern stage exits with and prints."""
+
+    exit: int
+    printed: str
+
+
+@dataclass(frozen=True)
+class StoodInProbe:
+    """How the stood-in Fern answers one probe: its check stage, the stage that hangs past its
+    bound, and how long the check takes to answer (a runner too slow for the bound)."""
+
+    check: StageAnswer
+    hang: str | None = None
+    check_delay: float = 0
+
+    def rule(self) -> dict[str, object]:
+        """The stand-in's JSON rule for this probe."""
+        rule: dict[str, object] = {"check": [self.check.exit, self.check.printed], "check_delay": self.check_delay}
+        if self.hang is not None:
+            rule["hang"] = self.hang
+        return rule
+
+
 # A stand-in for Fern: it answers `fern check` and `fern generate` in the
 # workspace the recipe scaffolds, from rules keyed by the document's title, and
 # writes the tree the test prepared for that title, stamped with the CLI and
@@ -211,8 +268,13 @@ if rule.get("hang") in (True, args[0]):
     import time
     time.sleep(600)
 if args[0] == "check":
+    # A runner too slow for the check stage's bound, as a slow CI runner can be.
+    __import__("time").sleep(rule.get("check_delay", 0))
     code, message = rule.get("check", [0, ""])
-    print(f"issue: {message}" if message else "All checks passed")
+    print(f"issue: {message}" if message else "All checks passed", flush=True)
+    # The check stage's own event: it answered, before its caller moves on to generation.
+    with open(config["calls"], "a", encoding="utf-8") as calls:
+        calls.write(json.dumps({"command": "check", "title": title, "answered": True}) + "\n")
     sys.exit(code)
 code, message = rule.get("generate", [0, ""])
 if code:
@@ -387,14 +449,16 @@ body = next((body for fragment, body in served.items() if fragment in url), None
 if body is None:
     print(f"curl stand-in: nothing served at {url}", file=sys.stderr)
     sys.exit(6)
+# Every body is written as exactly its UTF-8 bytes, as curl writes what it
+# received: no newline translation on Windows.
 if "--output" in args:
-    pathlib.Path(args[args.index("--output") + 1]).write_text(body, encoding="utf-8")
+    pathlib.Path(args[args.index("--output") + 1]).write_text(body, encoding="utf-8", newline="")
     pathlib.Path(args[args.index("--dump-header") + 1]).write_text("HTTP/1.1 200 OK\n", encoding="utf-8")
     sys.stdout.write("200")
 elif "-o" in args:
-    pathlib.Path(args[args.index("-o") + 1]).write_text(body, encoding="utf-8")
+    pathlib.Path(args[args.index("-o") + 1]).write_text(body, encoding="utf-8", newline="")
 else:
-    sys.stdout.write(body)
+    sys.stdout.buffer.write(body.encode("utf-8"))
 """
 
 
@@ -980,28 +1044,216 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(again.plan)
         self.assertIn("is the certified pair already", again.ran("resolve").stdout)
 
-    def test_an_oversized_mandatory_overview_refuses_before_publication(self) -> None:
+    def synthetic_decision(
+        self, gates: str, items: list[dict[str, Any]], *, files: Mapping[str, str] | None = None, **env: str
+    ) -> tuple[Journey, Path, subprocess.CompletedProcess[str]]:
+        """The workflow through its assembly, the assembled bundle then
+        carrying `items` as its shards would have reported them, and the real
+        `apply` and `decide` over it under `gates` (with the stand-in gate
+        scripts at `gates/` in the tree)."""
+        (self.seed / "gates").mkdir()
+        write_executable(self.seed / "gates/bulk.sh", BULK_GATE)
+        write_executable(self.seed / "gates/drift.sh", DRIFT_GATE)
+        for path, text in (files or {}).items():
+            (self.seed / path).write_text(text, encoding="utf-8")
+        (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(gates, encoding="utf-8")
         self.publish_seed()
-        self.stand_in(
-            {"rules": {"probe": self.refusal_rule, "Harbour Lanterns": {"generate": [2, "generation failed"]}}}
-        )
         state = self.run_workflow(stop_after="assemble")
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
         bundle = state.artifacts / "bundle"
         manifest = bundle / "bundle.json"
         record = json.loads(manifest.read_text(encoding="utf-8"))
-        failed = next(entry for entry in record["items"] if entry["status"] == "failed")
-        failed["detail"] = "failure " * 10000
+        record["items"] += items
         manifest.write_text(json.dumps(record), encoding="utf-8")
         decider = self.clone()
-        applied = self.phase(decider, "apply", "--bundle", str(bundle))
+        applied = self.phase(decider, "apply", "--bundle", str(bundle), **env)
         self.assertEqual(0, applied.returncode, applied.stderr)
-        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision"))
-        self.assertEqual(1, decided.returncode, decided.stdout)
-        self.assertIn("mandatory pull request overview exceeds the body limit", decided.stderr)
-        self.assertTrue((state.artifacts / "decision/decision.json").is_file(), "the full result is retained")
-        self.assertFalse((state.artifacts / "decision/body.md").exists())
-        self.assertIsNone(state.publish)
-        self.assert_untouched()
+        decision = state.artifacts / "decision"
+        decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), **env)
+        state.decide = decided
+        if (decision / "decision.json").is_file():
+            state.decision = json.loads((decision / "decision.json").read_text(encoding="utf-8"))
+        return state, decision, decided
+
+    @staticmethod
+    def item(family: str, name: str, status: str = "ok", detail: str = "", shard: int = 0) -> dict[str, Any]:
+        """One item as a shard reports it (gh's and the tool's JSON, so `Any`)."""
+        return {
+            "family": family,
+            "item": name,
+            "status": status,
+            "detail": detail,
+            "seconds": 0.0,
+            "changed": [],
+            "log": f"logs/{family}/{name}.log" if status == "failed" else "",
+            "shard": shard,
+        }
+
+    def test_thousands_of_failing_and_unchecked_items_publish_a_bounded_body_and_keep_every_one(self) -> None:
+        """A week Fern changes every SDK: 3,200 failing items across four
+        families and 1,000 unchecked, which run 42566793545's body could not
+        hold, so no pull request opened. `decide` writes a body within the
+        limit stating every family's total and the not-compared count, publish
+        opens the pull request with it, and the decision keeps every item."""
+        families = ("corpus", "handwritten", "measurements", "probes")
+        count = 800
+        gates = (
+            "family\tscope\tverdict\tcommand\n"
+            f"{ALL_FAMILIES}\tfamily\texit:0/3\tsh {{root}}/gates/bulk.sh {count} {' '.join(families)}\n"
+        )
+        failing = {family: [f"bulk-{family}-{n}" for n in range(count)] for family in families}
+        lost = [self.item("corpus", f"lost-{n}", "not-generated", "shard 9 uploaded no result", 9) for n in range(900)]
+        broken = [self.item("measurements", f"broken-{n}", "failed", f"missing document {n}") for n in range(100)]
+        items = [self.item(family, name) for family, names in failing.items() for name in names] + lost + broken
+        run = {"GITHUB_RUN_ID": "77", "GITHUB_REPOSITORY": "owner/crozier"}
+        state, decision, decided = self.synthetic_decision(
+            gates, items, GITHUB_RUN_ID=run["GITHUB_RUN_ID"], GITHUB_REPOSITORY=run["GITHUB_REPOSITORY"]
+        )
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual("diff", state.outcome())
+        self.assertEqual(failing, state.failing())
+        self.assertEqual(
+            sorted(entry["item"] for entry in lost + broken), sorted(entry["item"] for entry in state.unchecked())
+        )
+        body = (decision / "body.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(body), BODY_LIMIT)
+        published = self.publish(state.artifacts / "bundle", decision, **run)
+        self.assertEqual(0, published.returncode, published.stderr + self.summary())
+        (pull,) = self.pulls()
+        self.assertEqual(body, pull["body"])
+        self.assertIsNone(pull["autoMergeRequest"])
+        self.assertIn("Failing items: 3200.", body)
+        for family in families:
+            self.assertIn(f"- {family}: {count}\n", body)
+            self.assertIn(f"- {family} ({count}): `bulk-{family}-0`", body)
+        self.assertIn("- not compared: 1000 (1000 not checked, 0 corpus reference(s)", body)
+        self.assertIn("1000 item(s) were not checked", body)
+        self.assertIn("- **shard 9 uploaded no result** (its job failed or was cancelled before uploading): ", body)
+        self.assertIn("900 reference(s) not compared (corpus 900)", body)
+        self.assertIn(f"{3200 - 4 * 12} of 3200 failing item(s) left out of this body", body)
+        self.assertRegex(body, r"\d+ of 1000 item\(s\) not checked left out of this body")
+        self.assertIn("the run's `fern-goldens-decision` artifact (`decision.json`) lists every one", body)
+        self.assertIn("[the workflow run](https://github.com/owner/crozier/actions/runs/77#artifacts)", body)
+        self.assertIn("## Inventory", body)
+
+    def test_a_bounded_overview_still_past_the_limit_is_trimmed_and_decide_still_writes_it(self) -> None:
+        """Names so long that even the bounded samples overrun BODY_LIMIT:
+        `decide` still exits 0, its body is cut at a line, says where the rest
+        is and closes with the inventory, and the decision keeps every item."""
+        families = ALL_FAMILIES.split(",")
+        names = {family: [f"long-{family}-{n}-" + "n" * 700 for n in range(12)] for family in families}
+        report = "".join(f"{name}: differs\n" for listed in names.values() for name in listed)
+        gates = f"family\tscope\tverdict\tcommand\n{ALL_FAMILIES}\tfamily\texit:0/3\tsh {{root}}/gates/names.sh\n"
+        items = [self.item(family, name) for family, listed in names.items() for name in listed]
+        script = 'cat "$(dirname "$0")/names.txt"\nexit 3\n'
+        state, decision, decided = self.synthetic_decision(
+            gates, items, files={"gates/names.txt": report, "gates/names.sh": script}
+        )
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        self.assertEqual(names, state.failing())
+        body = (decision / "body.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(body), BODY_LIMIT)
+        trimmed = "… (trimmed to the pull request body limit; the run's `fern-goldens-decision` artifact"
+        self.assertIn(trimmed, body)
+        self.assertIn("## Inventory", body.split(trimmed, 1)[1])
+
+    def assert_sections_bounded(self, count: int) -> tuple[str, dict[str, Any]]:
+        """`decide` over `count` items of each section the body bounds: corpus
+        references whose files were not compared, unchecked items, shards that
+        uploaded nothing (one item each), reproduced and changed known
+        failures, unfetchable references and refusal changes, each with a long
+        name or reason."""
+        pad = "x" * 160
+        gates = (
+            "family\tscope\tverdict\tcommand\n"
+            "corpus\titem\tfixtures-report\tsh {root}/gates/drift.sh {item}\n"
+            f"{ALL_FAMILIES}\tfamily\texit:0/3\tsh -c 'exit 0'\n"
+        )
+        reason = "y" * 400
+        items = [
+            *(self.item("corpus", f"drift-{pad}-{n}") for n in range(count)),
+            *(self.item("handwritten", f"broken-{pad}-{n}", "failed", f"{reason} {n}") for n in range(count)),
+            *(self.item("corpus", f"known-{pad}-{n}", "known-upstream-failure", "reproduced") for n in range(count)),
+            *(
+                self.item("corpus", f"changed-{pad}-{n}", "known-upstream-failure-changed", f"generates: {reason}")
+                for n in range(count)
+            ),
+            *(
+                self.item("probes", f"lost-{n}", "not-generated", f"shard {1000 + n} uploaded no result", 1000 + n)
+                for n in range(count)
+            ),
+            *(self.item("corpus", f"gone-{pad}-{n}", "spec-unfetchable", f"404 {reason}") for n in range(count)),
+            *(
+                self.item("refusals", f"moved-{pad}-{n}", "refusal-changed", f"generates: {reason}")
+                for n in range(count)
+            ),
+        ]
+        _state, decision, decided = self.synthetic_decision(gates, items)
+        self.assertEqual(0, decided.returncode, decided.stderr)
+        recorded = json.loads((decision / "decision.json").read_text(encoding="utf-8"))
+        drifted = [entry["item"] for entry in recorded["failing"]["corpus"] if entry.get("files_compared") is False]
+        self.assertEqual(
+            sorted(f"drift-{pad}-{n}" for n in range(count)), sorted(name for name in drifted if "drift-" in name)
+        )
+        self.assertEqual(2 * count, len(recorded["unchecked"]))
+        self.assertEqual(count, len(recorded["known_changed"]))
+        self.assertEqual(count, len([e for e in recorded["known_reproduced"] if e["item"].startswith("known-")]))
+        self.assertEqual(count, len(recorded["unfetchable"]))
+        self.assertEqual(count, len(recorded["refusals_changed"]))
+        body = (decision / "body.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(body), BODY_LIMIT)
+        return body, recorded
+
+    def test_sections_each_past_the_body_limit_are_bounded_and_say_how_many_they_left_out(self) -> None:
+        count = 400
+        body, recorded = self.assert_sections_bounded(count)
+        sections = {
+            "reference(s) not compared": [e for e in recorded["failing"]["corpus"] if e.get("files_compared") is False],
+            "item(s) not checked": recorded["unchecked"],
+            "reproduced known failure(s)": recorded["known_reproduced"],
+            "unfetchable reference(s)": recorded["unfetchable"],
+            "refusal change(s)": recorded["refusals_changed"],
+            "changed known failure(s)": recorded["known_changed"],
+        }
+        for what, entries in sections.items():
+            with self.subTest(section=what):
+                # Listed whole, this section alone would overrun the body.
+                self.assertGreater(
+                    sum(len(entry["item"]) + len(entry.get("detail", "")) for entry in entries), BODY_LIMIT
+                )
+                total = len(entries) + (what == "reproduced known failure(s)") * (
+                    len(recorded["known_reproduced"]) - count
+                )
+                left = re.search(rf"(\d+) of {total} {re.escape(what)} left out of this body", body)
+                self.assertIsNotNone(left, body)
+                assert left is not None
+                self.assertGreater(int(left[1]), 0)
+        self.assertIn("## References not compared", body)
+        self.assertIn(f"{count - 20} of {count} lost shard(s) left out of this body", body)
+        for shard in range(1000, 1020):
+            self.assertIn(f"- **shard {shard} uploaded no result** (its job failed or was cancelled", body)
+        self.assertNotIn("**shard 1020 uploaded no result**", body)
+        drifted = len(sections["reference(s) not compared"])
+        unchecked = 2 * count
+        self.assertIn(f"- not compared: {unchecked + drifted} ({unchecked} not checked, {drifted} corpus", body)
+
+    def test_an_ordinary_small_decision_lists_every_item_in_full(self) -> None:
+        body, recorded = self.assert_sections_bounded(3)
+        self.assertNotIn("left out of this body", body)
+        listed = [
+            *(entry["item"] for entries in recorded["failing"].values() for entry in entries),
+            *(entry["item"] for entry in recorded["unchecked"]),
+            *(entry["item"] for entry in recorded["known_reproduced"]),
+            *(entry["item"] for entry in recorded["unfetchable"]),
+            *(entry["item"] for entry in recorded["refusals_changed"]),
+            *(entry["item"] for entry in recorded["known_changed"]),
+        ]
+        for name in listed:
+            self.assertIn(f"`{name}`", body)
+        for entry in recorded["unchecked"]:
+            self.assertIn(f"- {entry['family']} `{entry['item']}`: {entry['status']}: {entry['detail']}", body)
+        for shard in range(1000, 1003):
+            self.assertIn(f"- **shard {shard} uploaded no result** (its job failed or was cancelled", body)
 
     def test_large_diff_publication_accounts_for_every_kind_before_reports(self) -> None:
         self.publish_seed()
@@ -1428,6 +1680,8 @@ class WeeklyRunTests(unittest.TestCase):
         # The tree Fern writes where it generates from the probe.
         shutil.copytree(self.trees / "Alpha Lanterns", trees / "probe")
         self.stand_in({"trees": str(trees), "rules": {"probe": rule}})
+        # The stood-in Fern's events from here on are this run's alone, not the seed's.
+        (self.scratch / "fern-calls.jsonl").unlink(missing_ok=True)
         state = self.run_workflow(**env)
         shard = next(state.artifacts.glob("fern-goldens-shard-*/result.json"))
         items: list[ShardItem] = json.loads(shard.read_text(encoding="utf-8"))["items"]
@@ -1555,15 +1809,40 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assert_refusal_reported(state, item, "refuses-otherwise", now)
 
-    def test_a_refusal_whose_phrase_fern_prints_before_a_stage_overruns_is_unsettled(self) -> None:
-        rule = {"check": [1, "Default value '-createdAt' is not a valid enum value"], "hang": "generate"}
-        state, item = self.refusal_journey(rule, CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
-        now = (
-            "unsettled: `fern generate` ran past the probe's 2-second bound (check exit 1, generate exit timeout); "
-            "the check stage still prints the class's phrase; a run cut short says nothing about whether Fern "
-            "refuses given more time or memory"
+    def check_answered(self, title: str) -> bool:
+        """Whether the stood-in `fern check` for `title` answered, by its own recorded event."""
+        calls = (self.scratch / "fern-calls.jsonl").read_text(encoding="utf-8").splitlines()
+        return any(json.loads(call) == {"command": "check", "title": title, "answered": True} for call in calls)
+
+    def overrun_report(self, check_answered: bool) -> str:
+        """What the probe reports when generation overruns, given whether the check stage answered first."""
+        if check_answered:
+            return (
+                "unsettled: `fern generate` ran past the probe's 2-second bound (check exit 1, generate exit "
+                "timeout); the check stage still prints the class's phrase; a run cut short says nothing about "
+                "whether Fern refuses given more time or memory"
+            )
+        return (
+            "unsettled: `fern check` and `fern generate` ran past the probe's 2-second bound (check exit timeout, "
+            "generate exit timeout), printing no diagnostic matching the template; a run cut short says nothing "
+            "about whether Fern refuses given more time or memory"
         )
+
+    PHRASE = "Default value '-createdAt' is not a valid enum value"
+
+    def test_a_refusal_probe_whose_generation_overruns_reports_the_stages_that_overran(self) -> None:
+        # Which stages overran is read from the check stage's own event, never from how fast this
+        # runner starts a process: a check slower than the bound is the case below, not a failure here.
+        probe = StoodInProbe(check=StageAnswer(exit=1, printed=self.PHRASE), hang="generate")
+        state, item = self.refusal_journey(probe.rule(), CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        now = self.overrun_report(self.check_answered("probe"))
         self.assert_refusal_reported(state, item, "unsettled", now)
+
+    def test_a_check_stage_a_slow_runner_also_overruns_is_reported_as_both_overrunning(self) -> None:
+        probe = StoodInProbe(check=StageAnswer(exit=1, printed=self.PHRASE), hang="generate", check_delay=30)
+        state, item = self.refusal_journey(probe.rule(), CROZIER_FERN_REFUSALS_PROBE_TIMEOUT="2")
+        self.assertFalse(self.check_answered("probe"), "the bound ended the check stage before it answered")
+        self.assert_refusal_reported(state, item, "unsettled", self.overrun_report(False))
 
     def test_a_changed_refusal_report_naming_no_outcome_fails_its_item_and_the_assembly(self) -> None:
         """A report the probe's delegate wrote that names the class but no
@@ -1857,11 +2136,67 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("### corpus (1)", pull["body"])
         self.assertIn("- `alpha`", pull["body"].split("## Failing items", 1)[1])
         self.assertIn(f"{len(lost)} item(s) were not checked", pull["body"])
+        # The body names the lost shard, how many references it left
+        # uncompared and why, so a reader needs no artifact to see it.
+        counts: dict[str, int] = {}
+        for family, _item in lost:
+            counts[family] = counts.get(family, 0) + 1
+        self.assertIn(
+            f"- **shard {state.lost} uploaded no result** (its job failed or was cancelled before uploading): "
+            f"{len(lost)} reference(s) not compared ({', '.join(f'{f} {n}' for f, n in counts.items())})",
+            pull["body"],
+        )
+        self.assertIn(
+            f"(shard {state.lost} uploaded no result, so {len(lost)} reference(s) were never generated)", pull["body"]
+        )
+        self.assertIn(f"- not compared: {len(lost)} ({len(lost)} not checked, ", pull["body"])
         tree = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
         alpha = next(p for p in tree if p.startswith("tests/fixtures/alpha/expected/") and p.endswith("lantern.py"))
         self.assertIn("lit_x:", self.remote_file("fern-goldens/update", alpha))
         timings = self.remote_file("fern-goldens/update", TIMINGS)
         self.assertIn("handwritten\tlantern\t4000.0", timings, "an item nothing generated keeps its timing")
+
+    def test_a_corpus_row_under_a_later_tables_own_heading_regenerates_in_its_shard(self) -> None:
+        """seldon-wrapper is CORPUS.md row 5371, in a table headed `| # | API |
+        … |` rather than the manifest's own header. Run 42566793545's shard
+        failed it as `fixture 'seldon-wrapper' is not a numbered CORPUS.md row`
+        although the fetch and the corpus listing both read that row; over the
+        real CORPUS.md, the shard regenerates it."""
+        source = REPO / "tests/fixtures/corpus-sources/seldon-wrapper/openapi.yaml"
+        fixtures = self.seed / "tests/fixtures"
+        shutil.copy2(REPO / "tests/fixtures/CORPUS.md", fixtures / "CORPUS.md")
+        # An empty golden directory lists the fixture in the corpus family.
+        (fixtures / "seldon-wrapper/expected").mkdir(parents=True)
+        (fixtures / "seldon-wrapper/expected/.gitkeep").write_text("", encoding="utf-8")
+        sources = (REPO / "tests/fixtures/corpus-sources.tsv").read_text(encoding="utf-8").splitlines()
+        recorded = [line for line in sources if line.startswith(("#", "seldon-wrapper\t"))]
+        (fixtures / "corpus-sources.tsv").write_text("\n".join(recorded) + "\n", encoding="utf-8")
+        (fixtures / "corpus-sources/seldon-wrapper").mkdir(parents=True)
+        shutil.copy2(source, fixtures / "corpus-sources/seldon-wrapper/openapi.yaml")
+        self.publish_seed()
+        # The row's pinned URL, served by the stood-in curl with exactly the
+        # bytes its recorded digest pins: read as bytes, so no newline is
+        # translated, and written back by the stand-in as those same bytes.
+        served = source.read_bytes()
+        pinned = next(line.split("\t")[3] for line in recorded if line.startswith("seldon-wrapper\t"))
+        self.assertEqual(pinned, hashlib.sha256(served).hexdigest())
+        self.served = {"APIs/seldon.local/wrapper/0.1/openapi.yaml": served.decode("utf-8")}
+        self.fern_tree("Seldon External API", source)
+        state = self.run_workflow("corpus:seldon-wrapper", stop_after="shards")
+        (shard,) = state.shards
+        self.assertEqual(0, shard.returncode, shard.stderr)
+        (result,) = state.artifacts.glob("fern-goldens-shard-*/result.json")
+        record = json.loads(result.read_text(encoding="utf-8"))
+        (item,) = record["items"]
+        log = (result.parent / item["log"]).read_text(encoding="utf-8")
+        self.assertNotIn("not a numbered CORPUS.md row", log)
+        self.assertEqual(("corpus", "seldon-wrapper", "ok"), (item["family"], item["item"], item["status"]), log)
+        written = [path for path in record["written"] if path.startswith("tests/fixtures/seldon-wrapper/expected/")]
+        self.assertIn(
+            "tests/fixtures/seldon-wrapper/expected/src/seldon_external_api/core/client_wrapper.py", written, log
+        )
+        for path in written:
+            self.assertTrue((result.parent / "files" / path).is_file(), path)
 
     def test_an_incomplete_shard_is_red_before_anything_is_published(self) -> None:
         self.publish_seed()
@@ -2022,6 +2357,170 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(5, len(released), text)
         self.assertTrue(all(1.0 <= amount <= 62.8 for amount in released), text)
 
+    def test_memory_under_the_floor_mid_comparison_stops_the_newest_which_reruns_alone(self) -> None:
+        self.assert_guarded_decision()
+
+    def test_a_platform_without_proc_finds_a_stopped_comparisons_processes_through_ps(self) -> None:
+        """macOS has no `/proc`: the processes a stopped comparison started are
+        found through `ps`, and end with it all the same."""
+        self.assert_guarded_decision(CROZIER_FERN_WEEKLY_PROC=str(self.scratch / "no-proc"))
+
+    def test_with_no_process_listing_a_stop_ends_the_comparison_and_says_what_it_could_not(self) -> None:
+        """No `/proc` and a `ps` that fails: the guard still stops the newest
+        comparisons and reruns them alone, and says that what each started
+        was not ended, which then runs on until it finishes by itself."""
+        failing = self.scratch / "failing-ps"
+        write_executable(failing / "ps", "#!/bin/sh\nexit 1\n")
+        self.assert_guarded_decision(
+            listed=False,
+            CROZIER_FERN_WEEKLY_PROC=str(self.scratch / "no-proc"),
+            PATH=f"{failing}{os.pathsep}{self.bin}{os.pathsep}{os.environ['PATH']}",
+        )
+
+    def assert_guarded_decision(self, *, listed: bool = True, **env: str) -> None:
+        """The reserve is read only as a comparison starts; one that grows
+        after it has started can starve the runner (run 42566793545's second
+        decision job died with the runner out of contact). While three run and
+        the memory left stays under the floor, decide stops the newest, then
+        the next newest, each with everything it started, until one is left;
+        says so; starts nothing more until there is room; runs each stopped one
+        again alone once the rest are done; and records each rerun's verdict
+        once. A heartbeat names what is running and the memory left meanwhile."""
+        if sys.platform == "win32":
+            raise unittest.SkipTest("the stand-in comparisons are POSIX shell scripts")
+        block = self.scratch / "block"
+        block.mkdir()
+        (self.seed / "gates").mkdir()
+        # alpha's, beta's and lantern's comparisons each hold a child and a
+        # grandchild until `go`, each writing its pid, so a stop is seen to end all.
+        write_executable(
+            self.seed / "gates/block.sh",
+            '#!/bin/sh\necho "$1" >> "$BLOCK_DIR/started"\n'
+            'case "$1" in alpha|beta|lantern) sh "$(dirname "$0")/hold.sh" "$1" child ;; esac\nexit 0\n',
+        )
+        write_executable(
+            self.seed / "gates/hold.sh",
+            '#!/bin/sh\necho $$ >> "$BLOCK_DIR/$1.pids"\n'
+            'if [ "$2" = child ]; then sh "$(dirname "$0")/hold.sh" "$1" grandchild; exit $?; fi\n'
+            'while [ ! -f "$BLOCK_DIR/go" ]; do sleep 0.1; done\n',
+        )
+        header, *rows = GATES.splitlines()
+        blocking = [row.split("\t", 1)[0] + "\titem\texit:0/3\tsh {root}/gates/block.sh {item}" for row in rows]
+        (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(
+            "\n".join([header, *blocking]) + "\n", encoding="utf-8"
+        )
+        self.publish_seed()
+        state = self.run_workflow(stop_after="assemble")
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        decider = self.clone()
+        bundle = state.artifacts / "bundle"
+        self.assertEqual(0, self.phase(decider, "apply", "--bundle", str(bundle)).returncode)
+        cgroup = self.scratch / "cgroup/job"
+        cgroup.mkdir(parents=True)
+
+        def available(gib: float) -> None:
+            (cgroup / "memory.max").write_text(f"{64 * 2**30}\n", encoding="utf-8")
+            (cgroup / "memory.current").write_text(f"{int((64 - gib) * 2**30)}\n", encoding="utf-8")
+            (cgroup / "memory.stat").write_text("inactive_file 0\n", encoding="utf-8")
+
+        available(32.0)
+        log = self.scratch / "guarded-decide.log"
+        started = block / "started"
+        with log.open("w", encoding="utf-8") as written:
+            decide = subprocess.Popen(
+                [
+                    sys.executable,
+                    str(decider / "tools/fern-goldens/weekly.py"),
+                    *("decide", "--bundle", str(bundle), "--output", str(state.artifacts / "decision")),
+                    *("--jobs", "3", "--reserve-gib", "1", "--floor-gib", "1", "--heartbeat-seconds", "1"),
+                ],
+                cwd=decider,
+                env=self.environment(decider, BLOCK_DIR=str(block), CROZIER_FERN_WEEKLY_CGROUP=str(cgroup), **env),
+                stdout=written,
+                stderr=subprocess.STDOUT,
+                start_new_session=True,
+            )
+
+            def end_group() -> None:
+                # A failing case leaves its blocked comparisons running.
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(decide.pid, signal.SIGKILL)
+
+            self.addCleanup(end_group)
+
+            def wait_for(condition: Callable[[], bool], what: str) -> None:
+                for _ in range(300):
+                    if condition() or decide.poll() is not None:
+                        break
+                    time.sleep(0.1)
+                self.assertTrue(condition(), f"{what}:\n{log.read_text(encoding='utf-8')}")
+
+            def pids(item: str) -> list[int]:
+                path = block / f"{item}.pids"
+                return [int(pid) for pid in path.read_text(encoding="utf-8").split()] if path.exists() else []
+
+            def alive(pid: int) -> bool:
+                try:
+                    os.kill(pid, 0)
+                except ProcessLookupError:
+                    return False
+                # A process killed but not yet reaped by its parent is a zombie.
+                state = subprocess.run(["ps", "-o", "stat=", "-p", str(pid)], capture_output=True, text=True)
+                return not state.stdout.strip().startswith("Z")
+
+            three = ["alpha", "beta", "lantern"]
+            wait_for(
+                lambda: started.exists()
+                and sorted(started.read_text(encoding="utf-8").split()) == three
+                and all(len(pids(item)) == 2 for item in three),
+                "all three run, each with its child and grandchild",
+            )
+            available(0.5)
+            wait_for(lambda: log.read_text(encoding="utf-8").count(" stopped: ") == 2, "the two newer ones stopped")
+            # Their children and grandchildren ended with them where a listing
+            # named them; with none, they run on until released. alpha's still run.
+            for item in ("beta", "lantern"):
+                self.assertEqual(2, len(pids(item)))
+                if listed:
+                    wait_for(lambda item=item: not any(map(alive, pids(item))), f"every process {item}'s ended")
+                else:
+                    self.assertTrue(all(map(alive, pids(item))), f"no listing named what {item}'s started")
+            self.assertTrue(all(map(alive, pids("alpha"))), "the oldest comparison's processes are untouched")
+            time.sleep(2)
+            held = log.read_text(encoding="utf-8")
+            self.assertEqual(2, held.count(" stopped: "), "one left running is never stopped")
+            self.assertNotIn("comparison 4/8", held, "nothing more starts while memory is short")
+            self.assertRegex(held, r"decide: running comparison 1/8 \(corpus `alpha`\); memory available 0\.5 GiB")
+            available(32.0)
+            (block / "go").write_text("", encoding="utf-8")
+            self.assertEqual(0, decide.wait(timeout=120), log.read_text(encoding="utf-8"))
+        lines = log.read_text(encoding="utf-8").splitlines()
+        stopped = [line.split("fern-goldens-weekly: ", 1)[1] for line in lines if " stopped: " in line]
+        floor = "stopped: memory available 0.5 GiB is under the 1.0 GiB floor with"
+        unlisted = "" if listed else " (no process listing answered, so only it, not what it started, was ended)"
+        self.assertEqual(
+            [
+                f"comparison 3/8 (handwritten `lantern`) {floor} 3 comparison(s) running; it runs again alone{unlisted}",
+                f"comparison 2/8 (corpus `beta`) {floor} 2 comparison(s) running; it runs again alone{unlisted}",
+            ],
+            stopped,
+        )
+        ended = [i for i, line in enumerate(lines) if re.search(r"comparison [0-9]/8 .*\) ended: ", line)]
+        self.assertEqual(8, len(ended), "each comparison ends once: a stopped one only on its rerun")
+        reruns = [
+            next(i for i, line in enumerate(lines) if f"comparison {label} (again, alone) started" in line)
+            for label in ("2/8 (corpus `beta`)", "3/8 (handwritten `lantern`)")
+        ]
+        self.assertEqual([again + 1 for again in reruns], ended[-2:], "each reruns alone, after every other ended")
+        self.assertTrue(all("(again, alone) ended: pass" in lines[i] for i in ended[-2:]))
+        for item in ("beta", "lantern"):
+            self.assertEqual(2, started.read_text(encoding="utf-8").split().count(item))
+        recorded = json.loads((state.artifacts / "decision/decision.json").read_text(encoding="utf-8"))
+        for item in ("beta", "lantern"):
+            runs = [run["verdict"] for run in recorded["gates"] if run["item"] == item]
+            self.assertEqual(["pass"], runs, f"{item}'s rerun verdict, recorded once")
+        self.assertEqual({"pass"}, {run["verdict"] for run in recorded["gates"]})
+
     def test_a_decision_killed_mid_comparison_leaves_a_log_naming_it_and_the_resources_left(self) -> None:
         """A runner that dies mid-step leaves only what the step already wrote:
         the decision writes each comparison's start and end (its elapsed time and
@@ -2043,6 +2542,18 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assertEqual(1, refused.returncode)
         self.assertIn("--reserve-gib -1.0: name the GiB to keep available, 0 or more", refused.stderr)
+        for option, value, message in (
+            ("--floor-gib", "-1", "--floor-gib -1.0: name the GiB below which comparisons are stopped, a finite"),
+            ("--floor-gib", "inf", "--floor-gib inf: name the GiB below which comparisons are stopped, a finite"),
+            ("--heartbeat-seconds", "0", "--heartbeat-seconds 0.0: name a finite positive interval"),
+            ("--heartbeat-seconds", "inf", "--heartbeat-seconds inf: name a finite positive interval"),
+        ):
+            with self.subTest(option=option, value=value):
+                refused = self.phase(
+                    decider, "decide", "--bundle", str(bundle), "--output", str(self.scratch / "d"), option, value
+                )
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(message, refused.stderr)
         hanging = rf"comparison 3/8 \(handwritten `lantern`\) started: `{re.escape(HANG)}`; {resource}"
         # One at a time, the runner dies with the hanging comparison the log's
         # last line; several at once, it dies once every other one has ended.

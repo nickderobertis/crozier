@@ -13,7 +13,11 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cargo nextest run --locked -p crozier-e2e --run-ignored only -E \"test(=sdk_env_crozier_matches_fern_runtime_behavior)\""
+        "commands": [
+          "cargo build --locked --profile e2e -p crozier --bin crozier",
+          "cargo nextest run --locked --cargo-profile e2e -p crozier-e2e --run-ignored only -E \"test(=sdk_env_crozier_matches_fern_runtime_behavior)\""
+        ],
+        "parallel": false
       },
       "cache": false,
       "inputs": [
@@ -24,14 +28,6 @@
         "{workspaceRoot}/tests/fixtures/corpus-sources/airbyte.local-config/**/*",
         "generator",
         "default"
-      ],
-      "dependsOn": [
-        {
-          "projects": [
-            "crozier"
-          ],
-          "target": "build"
-        }
       ]
     },
     "lint-boundaries": {

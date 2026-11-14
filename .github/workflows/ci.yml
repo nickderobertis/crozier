@@ -39,6 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
+      actions: write  # cancel this run when the judge gives no verdict (the last step below)
       contents: write  # visual docs: push the pull request's gallery preview to gh-pages
       pull-requests: write  # the suppressions and visual docs comments
     steps:
@@ -72,6 +73,8 @@ jobs:
         continue-on-error: true
         uses: nickderobertis/notignored@v0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -96,6 +99,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -114,7 +121,9 @@ jobs:
           go-version: "1.26"
           cache: false
       - name: Install workflow syntax checker
-        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          node tools/ci/require-tools.mjs actionlint@1.7.12
       - name: Format, lint, type-check and audit the affected projects
         run: just ci-lint
       # The LLM-judge tier (llmlint): non-deterministic and harness-backed, so never inside
@@ -130,6 +139,7 @@ jobs:
           npm install -g @anthropic-ai/claude-code
           just setup-llmlint
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          PATH="$HOME/.local/bin:$PATH" node tools/ci/require-tools.mjs claude llmlint
       # Prove the rule set still resolves with its origin unreachable. CROZIER_REQUIRE_LLMLINT
       # turns the "llmlint absent" skip into a failure, so this cannot silently no-op.
       - name: Plugin-resolution boundary tests
@@ -140,7 +150,11 @@ jobs:
       - name: Validate llmlint config
         if: github.event_name == 'pull_request'
         run: just lint-llm-validate --diff-base origin/main
+      # The recipe retries a batch the judge left unanswered on this same tree and exits 2
+      # only once its retries are spent: that is no verdict, so this step records it rather
+      # than failing, and the last step of the lane withholds the lane's verdict.
       - name: Judge the changed files
+        id: judge
         if: github.event_name == 'pull_request'
         env:
           # oneharness drives the `claude` CLI, which reads CLAUDE_CODE_OAUTH_TOKEN for
@@ -153,7 +167,14 @@ jobs:
                  "are gated by the require-approval-for-fork-workflows setting; see AGENTS.md." >&2
             exit 1
           fi
-          just lint-llm-diff origin/main
+          status=0
+          just lint-llm-diff origin/main || status=$?
+          if [ "$status" -eq 2 ]; then
+            echo "verdict=unavailable" >> "$GITHUB_OUTPUT"
+            echo "::warning::Judged lint unavailable: the judge gave no verdict after its retries, and no rule rejected this change."
+            exit 0
+          fi
+          exit "$status"
       # The visual docs as steps of this lane, not screencomp's reusable workflow, whose
       # jobs would each hold a slot: capture in the pinned container, compare against the
       # committed x86_64 baseline, publish the gallery preview and comment the before/after.
@@ -172,6 +193,22 @@ jobs:
           fail-on-drift: true
           publish: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
           github-token: ${{ github.token }}
+      # A job concludes success or failure unless its run is cancelled, so cancelling is how an
+      # unanswered judge ends this required lane as neither: it does not pass the merge gate and
+      # does not read as rejected code. It runs last, once every other verdict here is in, and
+      # stops the platform lanes too, which cannot make this head mergeable. Re-run the
+      # workflow once the judge answers.
+      - name: Withhold the verdict the judge could not give
+        if: steps.judge.outputs.verdict == 'unavailable'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "::error::Verification unavailable: the judged lint got no verdict from the judge after its retries; no rule rejected this change. Cancelling the run so this head reports no verdict; re-run the workflow once the judge answers." >&2
+          gh run cancel "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"
+          # The cancellation stops this step; outliving it means it never landed.
+          sleep 300
+          echo "::error::The run was not cancelled within 300 s; re-run this workflow." >&2
+          exit 1
 
   # llmlint: ignore[comments_earn_their_place] Manager ruling c-de8af5d0b87584fa7cfb48d4c2b4deed requires these measured figures and their run beside the limit they justify.
   # The Linux test lane: the only platform for the Prism, corpus and packaging proof, which
@@ -193,6 +230,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -217,6 +256,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -235,6 +278,7 @@ jobs:
           # conftest prefers a Prism on PATH over an `npx` fetch; the version is single-sourced
           # from the suite, so the pin can never drift between the workflow and it.
           npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
+          node tools/ci/require-tools.mjs maturin@1.14.1 prism
       # Prove the PUBLISHED crate builds, before anything can dirty the tree: `cargo publish
       # --dry-run` packages the crate (honoring Cargo.toml's `include`) and compiles from
       # that tarball, the only check that catches an include-list gap.
@@ -289,11 +333,20 @@ jobs:
       - name: Enable Git long paths
         if: runner.os == 'Windows'
         run: git config --global core.longpaths true
+      # The hosted runner is ephemeral and discarded with this job, so leaving this job's own
+      # checkout (cargo's target is inside it) and its temp directories out of real-time
+      # scanning loosens nothing that outlives it. The e2e suites write and run thousands of
+      # fresh files there, each scanned on first touch. One measured attempt (manager ruling a3).
+      - name: Leave this job's own directories out of Defender scanning
+        shell: pwsh
+        run: Add-MpPreference -ExclusionPath $env:GITHUB_WORKSPACE, $env:RUNNER_TEMP, $env:TEMP
       # Full history: the affected tier's base is a merge base, which must be in the checkout.
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -318,6 +371,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.
@@ -366,6 +423,8 @@ jobs:
         with:
           fetch-depth: 0
       - uses: extractions/setup-just@v2
+        with:
+          just-version: "1.58.0"
       # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
       # installs it with bun, on Node.
       - uses: actions/setup-node@v4
@@ -390,6 +449,10 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
+      # An installer can report success without its executable on PATH; this names the tool
+      # before the gate does, as a late, misleading setup failure.
+      - name: Prove the installed tools run
+        run: node tools/ci/require-tools.mjs just@1.58.0 node bun cargo cargo-nextest cargo-llvm-cov cargo-deny cargo-machete uv
       - name: Bootstrap
         run: just bootstrap
       # Results keyed on what Nx does not hash; see docs/ci-lanes.md.

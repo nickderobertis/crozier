@@ -43,10 +43,23 @@
         "boundaries"
       ]
     },
+    "build-replay": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo build --locked --profile e2e -p crozier --bin crozier"
+      },
+      "cache": false,
+      "inputs": [
+        "crateSource"
+      ],
+      "metadata": {
+        "description": "The binary the golden replays drive, under the `e2e` profile (Cargo.toml): crozier optimised, every check on. Cargo decides its freshness."
+      }
+    },
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cargo nextest run --locked -p crozier-e2e"
+        "command": "cargo nextest run --locked --cargo-profile e2e -p crozier-e2e"
       },
       "cache": true,
       "inputs": [
@@ -56,7 +69,7 @@
         "generator"
       ],
       "dependsOn": [
-        "^build"
+        "build-replay"
       ]
     },
     "fixtures-gaps": {

@@ -10,7 +10,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/llmlint-resolution/tests/llmlint_resolution_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/llmlint-resolution/tests/llmlint_resolution_test.py tools/llmlint-resolution/tests/judged_lint_job_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/llmlint-resolution/test/.coverage"
         }
@@ -21,6 +21,8 @@
         "{workspaceRoot}/llmlint.yml",
         "{workspaceRoot}/llmlint-plugins/**/*",
         "{workspaceRoot}/tools/llmlint/tests/llmlint_plugins_test.py",
+        "{workspaceRoot}/tools/llmlint/llmlint-diff.py",
+        "{workspaceRoot}/oneharness.toml",
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/justfile",
         {

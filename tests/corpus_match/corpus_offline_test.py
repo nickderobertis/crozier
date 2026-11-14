@@ -19,8 +19,32 @@ from typing import ClassVar
 
 REPO = Path(__file__).resolve().parents[2]
 HANDOFF_ENV = "CROZIER_COLD_REGISTRY_HANDOFF"
-CARGO_TEST = ("cargo", "test", "--locked", "--no-run", "-p", "crozier-e2e", "--test", "e2e")
-CARGO_BIN = ("cargo", "build", "--locked", "--quiet", "-p", "crozier", "--bin", "crozier")
+# The golden replays' profile (Cargo.toml `[profile.e2e]`): the build every corpus recipe uses.
+CARGO_TEST = ("cargo", "test", "--locked", "--profile", "e2e", "--no-run", "-p", "crozier-e2e", "--test", "e2e")
+CARGO_BIN = ("cargo", "build", "--locked", "--quiet", "--profile", "e2e", "-p", "crozier", "--bin", "crozier")
+
+
+# The recipes proved with sockets denied, in two halves so each runs on its own inputs:
+# `goldens` holds the corpus byte-match (the `corpus-match` project's `test-offline`),
+# `tools` the census, the refusal-class gate and the fallback samples (`test-offline-tools`).
+# The refusal-class gate is the offline `fern-refusals` project's target, not the
+# `test-fern-refusals` alias: that alias also runs fern-refusals-strict, whose `measure`
+# journeys fetch from a loopback server, and a denied socket() denies loopback too.
+OFFLINE_RECIPES: dict[str, tuple[tuple[str, ...], ...]] = {
+    "goldens": (("test-corpus-match",), ("test-corpus-match-strict",)),
+    "tools": (("surface-census",), ("nx", "run", "fern-refusals:test"), ("test-census-fallback-samples",)),
+}
+RECIPES_ENV = "CORPUS_OFFLINE_RECIPES"
+
+
+def offline_recipes() -> tuple[tuple[str, ...], ...]:
+    """The recipes `CORPUS_OFFLINE_RECIPES` names (`goldens` or `tools`), or both halves when unset."""
+    half = os.environ.get(RECIPES_ENV, "")
+    if not half:
+        return (*OFFLINE_RECIPES["goldens"], *OFFLINE_RECIPES["tools"])
+    if half not in OFFLINE_RECIPES:
+        raise SystemExit(f"{RECIPES_ENV} is {half!r}; set it to goldens or tools, or unset it for both")
+    return OFFLINE_RECIPES[half]
 
 
 def deny_network() -> None:
@@ -258,17 +282,7 @@ class OfflineCorpusRecipes(unittest.TestCase):
                 self.assertNotEqual(0, probe.returncode)
                 self.assertIn("Operation not permitted", probe.stderr)
                 warm_dependencies(self, os.environ)
-                # The refusal-class gate is the offline `fern-refusals` project's
-                # target, not the `test-fern-refusals` alias: that alias also runs
-                # fern-refusals-strict, whose `measure` journeys fetch from a
-                # loopback server, and a denied socket() denies loopback too.
-                for recipe in (
-                    ("test-corpus-match",),
-                    ("test-corpus-match-strict",),
-                    ("surface-census",),
-                    ("nx", "run", "fern-refusals:test"),
-                    ("test-census-fallback-samples",),
-                ):
+                for recipe in offline_recipes():
                     with self.subTest(recipe=" ".join(recipe)):
                         result = subprocess.run(
                             [sys.executable, str(Path(__file__).resolve()), "--deny-network", "just", *recipe],

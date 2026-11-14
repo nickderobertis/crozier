@@ -27,7 +27,7 @@ tempfile = "3"
 name = "crozier"
 # Literal, not inherited: release-plz is the only version driver and bumps this
 # line; no other member is ever released.
-version = "0.0.162"
+version = "0.0.163"
 edition.workspace = true
 description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
 license.workspace = true
@@ -101,3 +101,17 @@ lto = true
 codegen-units = 1
 strip = true
 panic = "abort"
+
+# The golden replays' build: the e2e suite, the binary it drives and the corpus recipes.
+# Most of a large golden's time is crozier's own generation and comparison, which run
+# about 4x faster optimised (one golden: 258 s at dev's opt-level 0, 66 s here). Only
+# crozier is optimised: its dependencies and the suite gained nothing measurable. Every
+# check stays on, so a replay panics wherever the dev build would. Coverage and the
+# instrumented measurements stay on `dev`; see docs/ci-lanes.md.
+[profile.e2e]
+inherits = "dev"
+debug-assertions = true
+overflow-checks = true
+
+[profile.e2e.package.crozier]
+opt-level = 2

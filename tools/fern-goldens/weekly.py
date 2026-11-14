@@ -66,6 +66,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -76,7 +77,7 @@ from dataclasses import dataclass, field, replace
 from enum import StrEnum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import TypeVar
+from typing import NamedTuple, TypeVar
 
 ROOT_ENV = "CROZIER_FERN_WEEKLY_ROOT"
 METADATA = Path("assets/scaffolding/metadata.json")
@@ -145,6 +146,15 @@ ASSEMBLY_MINUTES = 2.0
 # comparison grew to over run 41564405289's tree, bunq.com's 5.7 GiB, with
 # headroom (docs/fern-goldens.md).
 COMPARISON_RESERVE_GIB = 6.0
+# The GiB below which, while more than one comparison runs, the decision stops
+# the one it started last and runs it again alone (`decide --floor-gib`): the
+# reserve is read only as a comparison starts, so this bounds what comparisons
+# that grow after starting may take, leaving the runner agent room to report
+# (docs/fern-goldens.md).
+COMPARISON_FLOOR_GIB = 1.5
+# How often the decision writes what is running and the memory left, so a
+# runner that dies mid-comparison leaves its last reading in the step log.
+HEARTBEAT_SECONDS = 60.0
 # Estimated, not measured: a crozier build and its golden gates over the tree.
 DECISION_MINUTES = 30.0
 PUBLISH_MINUTES = 1.0
@@ -162,6 +172,18 @@ VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*")
 REPORT_LIMIT = 6000
 BODY_LIMIT = 60000
+# The pull request body states every kind of result and its count, but lists a
+# bounded sample of each, so no input's size can stop it publishing; every
+# list is whole in the `fern-goldens-decision` artifact (docs/fern-goldens.md).
+# A section of at most SECTION_LINES entries is listed whole; a longer one
+# lists that many and says how many it left out.
+SECTION_LINES = 20
+# The names a grouped line (a reason's items, a family's failures) shows.
+SAMPLE_NAMES = 12
+# A reason or detail past this is clipped to one line of it.
+DETAIL_LIMIT = 300
+ARTIFACT = "the run's `fern-goldens-decision` artifact (`decision.json`)"
+TRIMMED = f"… (trimmed to the pull request body limit; {ARTIFACT} holds everything)"
 
 
 class WeeklyError(RuntimeError):
@@ -2246,14 +2268,186 @@ def read_report(code: int, output: str) -> tuple[Verdict, tuple[str, ...]]:
     return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS, ()
 
 
-def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
+@dataclass(frozen=True)
+class Running:
+    """A comparison the guard holds: its progress label and its process."""
+
+    label: str
+    process: subprocess.Popen[str]
+
+
+class Guard:
+    """What the decision's comparisons hold of the runner, watched while they
+    run: every `heartbeat` seconds a line naming each running comparison and
+    the memory left, and, while more than one runs and less than `floor` bytes
+    are available, the one started last stopped (with all it started) and
+    named in `stopped`, to run again alone. Stopping the youngest until one is
+    left never needs more memory than running each alone does."""
+
+    def __init__(self, floor: float, heartbeat: float, poll: float = 1.0) -> None:
+        self.floor = floor
+        self.heartbeat = heartbeat
+        self.poll = poll
+        self.lock = threading.Lock()
+        self.running: dict[int, Running] = {}
+        self.stopped: set[int] = set()
+        self.done = threading.Event()
+        self.thread = threading.Thread(target=self.watch, daemon=True)
+
+    def __enter__(self) -> Guard:
+        self.thread.start()
+        return self
+
+    def __exit__(self, *_exc: object) -> None:
+        self.done.set()
+        self.thread.join()
+
+    @contextlib.contextmanager
+    def holding(self, number: int, label: str, process: subprocess.Popen[str]) -> Generator[None]:
+        with self.lock:
+            self.running[number] = Running(label, process)
+        try:
+            yield
+        finally:
+            with self.lock:
+                self.running.pop(number, None)
+
+    def watch(self) -> None:
+        beat = time.monotonic()
+        while not self.done.wait(self.poll):
+            available = memory_available()
+            with self.lock:
+                if available is not None and available < self.floor and len(self.running) > 1:
+                    number = max(self.running)
+                    held = self.running.pop(number)
+                    self.stopped.add(number)
+                    listed = stop(held.process)
+                    progress(
+                        f"{held.label} stopped: memory available {available / 2**30:.1f} GiB is under the "
+                        f"{self.floor / 2**30:.1f} GiB floor with {len(self.running) + 1} comparison(s) running; "
+                        "it runs again alone"
+                        + (
+                            ""
+                            if listed
+                            else " (no process listing answered, so only it, not what it started, was ended)"
+                        )
+                    )
+                if self.running and time.monotonic() - beat >= self.heartbeat:
+                    beat = time.monotonic()
+                    labels = ", ".join(held.label for held in self.running.values())
+                    memory = "unknown" if available is None else f"{available / 2**30:.1f} GiB"
+                    progress(f"decide: running {labels}; memory available {memory}")
+
+
+# The directory listing processes (`/proc`); one without `self/stat`, as on
+# macOS, sends process discovery to `ps`.
+PROC_ENV = "CROZIER_FERN_WEEKLY_PROC"
+
+
+class Parented(NamedTuple):
+    """A process and the process that started it."""
+
+    pid: int
+    parent: int
+
+
+def parents() -> list[Parented] | None:
+    """Every process and its parent: from Linux's `/proc` (a record that
+    vanished or does not parse is a process that ended mid-read, skipped),
+    else from `ps` (macOS); None when neither answers."""
+    proc = Path(os.environ.get(PROC_ENV) or "/proc")
+    if (proc / "self/stat").is_file():
+        found: list[Parented] = []
+        for stat in proc.glob("[0-9]*/stat"):
+            try:
+                # The command name may hold spaces and parentheses; the fields
+                # after its closing parenthesis are the state, then the parent.
+                fields = stat.read_text(encoding="utf-8", errors="replace").rpartition(")")[2].split()
+                found.append(Parented(int(stat.parent.name), int(fields[1])))
+            except (OSError, ValueError, IndexError):
+                continue
+        return found
+    try:
+        listed = subprocess.run(["ps", "-A", "-o", "pid=", "-o", "ppid="], capture_output=True, text=True, check=False)
+    except OSError:
+        return None
+    if listed.returncode != 0:
+        return None
+    return [
+        Parented(int(cells[0]), int(cells[1]))
+        for cells in (line.split() for line in listed.stdout.splitlines())
+        if len(cells) == 2 and cells[0].isdigit() and cells[1].isdigit()
+    ]
+
+
+def descendants(pid: int) -> list[int] | None:
+    """Every process `pid` started, and theirs; None when no listing answers."""
+    listed = parents()
+    if listed is None:
+        return None
+    children: dict[int, list[int]] = {}
+    for entry in listed:
+        children.setdefault(entry.parent, []).append(entry.pid)
+    queue: list[int] = [pid]
+    seen: list[int] = []
+    while queue:
+        for child in children.get(queue.pop(), []):
+            seen.append(child)
+            queue.append(child)
+    return seen
+
+
+# The signal that ends a process without letting it decline. Windows has no
+# SIGKILL; there `os.kill` with SIGTERM is TerminateProcess, which is as final.
+KILL = signal.SIGTERM if sys.platform == "win32" else signal.SIGKILL
+
+
+def stop(process: subprocess.Popen[str]) -> bool:
+    """End a comparison and everything it started (`just`, Nx, cargo, crozier),
+    which stay in the decision's own process group so the step's own ending
+    still reaches them; False when no listing named what it started, so only
+    the comparison itself was ended."""
+    started = descendants(process.pid)
+    for pid in [process.pid, *(started or [])]:
+        with contextlib.suppress(ProcessLookupError, PermissionError):
+            os.kill(pid, KILL)
+    return started is not None
+
+
+def run_held(
+    words: list[str], base: Path, guard: Guard | None, number: int, label: str
+) -> subprocess.CompletedProcess[str]:
+    """`words` run as `run` runs them, held by the guard while it runs."""
+    if guard is None:
+        return run(words, base)
+    try:
+        process = subprocess.Popen(
+            words,
+            cwd=base,
+            env={**os.environ, "PYTHONUTF8": "1"},
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+    except OSError as error:
+        raise WeeklyError(f"could not run {words[0]!r}: {error}; install it, then re-run") from error
+    with guard.holding(number, label, process):
+        stdout, stderr = process.communicate()
+    return subprocess.CompletedProcess(words, process.returncode, stdout, stderr)
+
+
+def run_gate(
+    base: Path, gate: Gate, item: str | None, guard: Guard | None = None, number: int = 0, label: str = ""
+) -> GateResult:
     with tempfile.TemporaryDirectory(prefix="fern-goldens-gate-") as scratch:
         words = [
             word.replace("{root}", str(base)).replace("{scratch}", scratch).replace("{item}", item or "")
             for word in shlex.split(gate.command)
         ]
         try:
-            result = run(words, base)
+            result = run_held(words, base, guard, number, label)
         except WeeklyError as error:
             return GateResult(Verdict.CANNOT_RUN, str(error))
     output = (result.stdout or "") + (result.stderr or "")
@@ -2417,6 +2611,8 @@ def decide_bundle(
     families: Iterable[str],
     jobs: int = 1,
     reserve: float = COMPARISON_RESERVE_GIB * 2**30,
+    floor: float = COMPARISON_FLOOR_GIB * 2**30,
+    heartbeat: float = HEARTBEAT_SECONDS,
 ) -> Decision:
     decision = Decision(bundle.pair, bundle.complete, digest, ledger=ledger_change(base))
     items: dict[str, list[ItemResult]] = {}
@@ -2467,22 +2663,33 @@ def decide_bundle(
     progress(f"decide: {len(runs)} comparison(s) to run, up to {jobs} item comparison(s) at once; {resources(base)}")
     admission = Admission(reserve)
 
-    def timed(number: int, run: Comparison) -> GateResult:
-        label = run.label(number, len(runs))
-        with admission.slot(number, lambda: progress(f"{label} started: `{run.gate.command}`; {resources(base)}")):
-            started = time.monotonic()
-            result = run_gate(base, run.gate, run.item)
+    def compared(number: int, run: Comparison, guard: Guard, label: str) -> GateResult:
+        started = time.monotonic()
+        result = run_gate(base, run.gate, run.item, guard, number, label)
+        if number not in guard.stopped:
             elapsed = time.monotonic() - started
             progress(f"{label} ended: {result.verdict.value} in {elapsed:.1f}s; {resources(base)}")
         return result
 
+    def timed(number: int, run: Comparison, guard: Guard) -> GateResult:
+        label = run.label(number, len(runs))
+        with admission.slot(number, lambda: progress(f"{label} started: `{run.gate.command}`; {resources(base)}")):
+            return compared(number, run, guard, label)
+
     # Each item's comparison is one process on one core (the corpus reporter
     # formats file by file), so they share the machine; a family's runs a whole
-    # suite across every core, so those run one at a time after them. Results
+    # suite across every core, so those run one at a time after them. A
+    # comparison the guard stopped runs again alone between the two. Results
     # are recorded in the planned order, whatever order they finish in.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-        results = list(pool.map(timed, range(1, per_item + 1), runs[:per_item]))
-    results += [timed(number, run) for number, run in enumerate(runs[per_item:], per_item + 1)]
+    with Guard(floor, heartbeat) as guard:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
+            results = list(pool.map(timed, range(1, per_item + 1), runs[:per_item], itertools.repeat(guard)))
+        for number in sorted(guard.stopped):
+            label = runs[number - 1].label(number, len(runs)) + " (again, alone)"
+            progress(f"{label} started: `{runs[number - 1].gate.command}`; {resources(base)}")
+            guard.stopped.discard(number)
+            results[number - 1] = compared(number, runs[number - 1], guard, label)
+        results += [timed(number, run, guard) for number, run in enumerate(runs[per_item:], per_item + 1)]
     for run, result in zip(runs, results, strict=True):
         record_gate(decision, reports, run.gate, ",".join(run.families), run.item, result)
         if result.verdict != Verdict.REJECT:
@@ -2521,16 +2728,109 @@ def fenced(text: str) -> str:
     return f"{fence}text\n{text}\n{fence}"
 
 
-# llmlint: ignore[changed_behavior_has_e2e] The weekly journeys publish this body from a real decision and assert its sections, failing items, crozier's report and the run link; fence escaping and the truncation limits need reports far larger, or with backtick runs, that crozier's comparison of a small synthetic tree never prints, so tools/fern-goldens/tests/weekly_test.py drives them through this same function.
+def clipped(text: str, limit: int = DETAIL_LIMIT) -> str:
+    """`text` on one line, clipped to `limit` characters."""
+    line = " ".join(text.split())
+    return line if len(line) <= limit else line[: limit - 1] + "…"
+
+
+def sample(names: Sequence[str]) -> str:
+    """Up to SAMPLE_NAMES of `names`, and how many more there are."""
+    left = len(names) - SAMPLE_NAMES
+    return ", ".join(names[:SAMPLE_NAMES]) + (f" and {left} more" if left > 0 else "")
+
+
+def left_out(omitted: int, total: int, what: str) -> list[str]:
+    """The line a bounded section ends with when it left entries out."""
+    if omitted <= 0:
+        return []
+    return ["", f"{omitted} of {total} {what} left out of this body; {ARTIFACT} lists every one."]
+
+
+def bounded(entries: Sequence[str], what: str) -> list[str]:
+    """A section's lines: all of them, whole, up to SECTION_LINES; else that
+    many, each clipped, and how many it left out."""
+    if len(entries) <= SECTION_LINES:
+        return [f"- {entry}" for entry in entries]
+    shown = [clipped(entry, 2 * DETAIL_LIMIT) for entry in entries[:SECTION_LINES]]
+    return [f"- {entry}" for entry in shown] + left_out(len(entries) - len(shown), len(entries), what)
+
+
+@dataclass(frozen=True)
+class Listed:
+    """One entry of a section the body may group: why it is there, the name a
+    group's sample shows, and its own line when the section is listed whole."""
+
+    reason: str
+    name: str
+    line: str
+
+
+def grouped(entries: Sequence[Listed], what: str) -> list[str]:
+    """Each entry's line when they fit a section, else one line per reason
+    (most entries first) with its count and a sample of its names, at most
+    SECTION_LINES reasons, and how many entries went unnamed."""
+    if len(entries) <= SECTION_LINES:
+        return [f"- {entry.line}" for entry in entries]
+    # Reasons that read alike once clipped are one group.
+    reasons: dict[str, list[str]] = {}
+    for entry in entries:
+        reasons.setdefault(clipped(entry.reason), []).append(entry.name)
+    ordered = sorted(reasons.items(), key=lambda pair: -len(pair[1]))
+    lines = [f"- {len(names)} {what}: {reason}: {sample(names)}" for reason, names in ordered[:SECTION_LINES]]
+    more = ordered[SECTION_LINES:]
+    if more:
+        lines.append(f"- {sum(len(names) for _r, names in more)} {what} for {len(more)} other reason(s)")
+    named = sum(min(len(names), SAMPLE_NAMES) for _r, names in ordered[:SECTION_LINES])
+    return lines + left_out(len(entries) - named, len(entries), what)
+
+
+def family_counts(entries: Iterable[ItemResult]) -> str:
+    counts: dict[str, int] = {}
+    for entry in entries:
+        counts[entry.family] = counts.get(entry.family, 0) + 1
+    return ", ".join(f"{family} {count}" for family, count in counts.items())
+
+
+def lost_shards(bundle: Bundle) -> dict[int, list[ItemResult]]:
+    """Each shard that uploaded no result, with the items the assembly carried
+    as not generated for it."""
+    lost: dict[int, list[ItemResult]] = {}
+    for entry in bundle.items:
+        if entry.status == Status.NOT_GENERATED and entry.shard is not None:
+            lost.setdefault(entry.shard, []).append(entry)
+    return dict(sorted(lost.items()))
+
+
+def trimmed(text: str, limit: int) -> str:
+    """`text` within `limit`: whole when it fits, else cut at a line and ended
+    with where the rest is, so composing a body never refuses."""
+    if len(text) <= limit:
+        return text
+    kept = text[: limit - len(TRIMMED) - 2]
+    return kept[: kept.rfind("\n") + 1] + "\n" + TRIMMED + "\n"
+
+
+# llmlint: ignore[changed_behavior_has_e2e] The weekly journeys drive this body through `decide` and `publish` over thousands of failing and unchecked items, a lost shard and sections each past BODY_LIMIT, and assert its counts, samples, omissions and the artifact pointer; fence escaping and per-report truncation need reports far larger, or with backtick runs, that crozier's comparison of a small synthetic tree never prints, so tools/fern-goldens/tests/weekly_test.py drives them through this same function.
 def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
+    """The pull request body: every kind of result with its count and a bounded
+    sample, then the optional reports in whatever room is left; never longer
+    than BODY_LIMIT, with every list whole in the decision artifact."""
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID") and os.environ.get("GITHUB_REPOSITORY"):
         server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
         run_url = f"{server}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
+    full_list = f"Full lists and reports: {ARTIFACT}."
+    if run_url:
+        full_list += f" Download it from [the workflow run]({run_url}#artifacts)."
     optional_reports: list[list[str]] = []
     families: dict[str, int] = {}
     for entry in bundle.items:
         families[entry.family] = families.get(entry.family, 0) + 1
+    lost = lost_shards(bundle)
+    not_compared = [
+        (family, entry) for family, entries in decision.failing.items() for entry in entries if not entry.files_compared
+    ]
     lines = [
         "## What",
         "",
@@ -2561,9 +2861,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             else ""
         )
         ledger = f", and the departures ledger {ledger_headline(decision.ledger)}" if decision.ledger else ""
+        shards = (
+            f" ({', '.join(f'shard {index}' for index in lost)} uploaded no result, so "
+            f"{sum(len(entries) for entries in lost.values())} reference(s) were never generated)"
+            if lost
+            else ""
+        )
         unchecked = (
-            f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran), "
-            "so the run that opened this concluded failure"
+            f", and {len(decision.unchecked)} item(s) were not checked (their generation failed or never ran)"
+            f"{shards}, so the run that opened this concluded failure"
             if decision.unchecked
             else ""
         )
@@ -2583,7 +2889,21 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             "the next run checks the item again.",
             "",
         ]
-        lines += [f"- {entry.line()}" for entry in decision.unchecked]
+        lines += [
+            f"- **shard {index} uploaded no result** (its job failed or was cancelled before uploading): "
+            f"{len(entries)} reference(s) not compared ({family_counts(entries)})"
+            for index, entries in list(lost.items())[:SECTION_LINES]
+        ]
+        lines += left_out(len(lost) - SECTION_LINES, len(lost), "lost shard(s)")
+        if lost:
+            lines += [""]
+        lines += grouped(
+            [
+                Listed(f"{entry.status.value}: {entry.detail}", f"{entry.family} `{entry.item}`", entry.line())
+                for entry in decision.unchecked
+            ],
+            "item(s) not checked",
+        )
         lines += [""]
     if decision.known_reproduced:
         lines += ["## Known upstream Fern failures reproduced", ""]
@@ -2592,7 +2912,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             "comparison; crozier's suite holds the registration.",
             "",
         ]
-        lines += [f"- {entry.line()}" for entry in decision.known_reproduced]
+        lines += bounded([entry.line() for entry in decision.known_reproduced], "reproduced known failure(s)")
         lines += [""]
     if decision.ledger:
         lines += ["## Departures ledger", "", *ledger_lines(decision.ledger), ""]
@@ -2607,11 +2927,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             )
     if decision.known_changed:
         lines += ["## Known upstream Fern failures that changed", ""]
+        lines += bounded(
+            [f"corpus `{change.item}`: {change.detail}" for change in decision.known_changed],
+            "changed known failure(s)",
+        )
+        lines += [""]
         for change in decision.known_changed:
             report = change.report
             if len(report) > REPORT_LIMIT:
                 report = report[:REPORT_LIMIT] + "\n… (truncated; the bundle carries the whole file)"
-            lines += [f"- corpus `{change.item}`: {change.detail}", ""]
             optional_reports.append(
                 [
                     f"<details><summary>{change.item}: what this carries</summary>",
@@ -2630,14 +2954,21 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             "Fern refuses given more time or memory.",
             "",
         ]
-        lines += [f"- refusals `{change.item}`: {change.detail}" for change in decision.refusals_changed]
+        lines += bounded(
+            [f"refusals `{change.item}`: {change.detail}" for change in decision.refusals_changed],
+            "refusal change(s)",
+        )
         lines += [""]
     if decision.unfetchable:
         lines += ["## Not regenerated: upstream specification unavailable", ""]
-        lines += [f"- corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable]
+        lines += bounded(
+            [f"corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable],
+            "unfetchable reference(s)",
+        )
         lines += [""]
     if decision.outcome == Outcome.DIFF:
-        # Reserve the complete overview before spending space on comparison reports.
+        # The overview first, bounded whatever the input's size; comparison
+        # reports then spend only the room it leaves.
         total = sum(len(entries) for entries in decision.failing.values())
         lines += ["## Comparison totals", "", f"Failing items: {total}.", ""]
         lines += [f"- {family}: {len(entries)}" for family, entries in decision.failing.items()]
@@ -2645,20 +2976,41 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             f"- changed known failures: {len(decision.known_changed)}",
             f"- changed refusal probes: {len(decision.refusals_changed)}",
             f"- not regenerated: {len(decision.unfetchable)}",
-            f"- not compared (including broken inputs): {len(decision.unchecked)}",
+            f"- not compared: {len(decision.unchecked) + len(not_compared)} "
+            f"({len(decision.unchecked)} not checked, {len(not_compared)} corpus reference(s) whose files were not "
+            "compared)",
             f"- ledger refusals or changes: {int(decision.ledger is not None)}",
             "",
-            "## Non-corpus failures and references not compared",
-            "",
         ]
-        for family, entries in decision.failing.items():
+        if decision.failing:
+            lines += ["## Failures by family", ""]
             lines += [
-                f"- {family} {entry.summary()}" for entry in entries if family != "corpus" or not entry.files_compared
+                f"- {family} ({len(entries)}): {sample([f'`{entry.item}`' for entry in entries])}"
+                for family, entries in decision.failing.items()
             ]
-        full_list = "Full list and reports: the run's `fern-goldens-decision` artifact (`decision.json`)."
-        if run_url:
-            full_list += f" Download it from [the workflow run]({run_url}#artifacts)."
-        lines += ["", full_list, ""]
+            named = sum(min(len(entries), SAMPLE_NAMES) for entries in decision.failing.values())
+            lines += left_out(total - named, total, "failing item(s)")
+            lines += [""]
+        if not_compared:
+            lines += ["## References not compared", ""]
+            lines += [
+                "The corpus reporter states a corpus's departure ledger drift before it compares that corpus's "
+                "files, so these references' files were never compared.",
+                "",
+            ]
+            lines += grouped(
+                [
+                    Listed(
+                        "its departure ledger rows drifted (stale or unrecorded), so its files were not compared",
+                        f"{family} `{entry.item}`",
+                        f"{family} {entry.summary()}",
+                    )
+                    for family, entry in not_compared
+                ],
+                "reference(s) not compared",
+            )
+            lines += [""]
+        lines += [full_list, ""]
         reports: list[str] = []
         omitted_reports = 0
         for block in optional_reports:
@@ -2698,15 +3050,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
             if decision.text_diffs_omitted():
                 lines += [TEXT_DIFFS_OMITTED, ""]
         lines += reports
-    lines += ["## Inventory", "", "| family | items |", "|---|---:|"]
-    lines += [f"| {family} | {count} |" for family, count in families.items()]
+    tail = ["## Inventory", "", "| family | items |", "|---|---:|"]
+    tail += [f"| {family} | {count} |" for family, count in families.items()]
     if run_url:
-        lines += ["", f"Run: {run_url}"]
-    lines += ["", "🤖 Generated by the Fern goldens workflow."]
-    text = "\n".join(lines) + "\n"
-    if len(text) > BODY_LIMIT:
-        raise WeeklyError("mandatory pull request overview exceeds the body limit; see the decision artifact")
-    return text
+        tail += ["", f"Run: {run_url}"]
+    tail += ["", "🤖 Generated by the Fern goldens workflow."]
+    ending = "\n".join(tail) + "\n"
+    # The inventory and the run link always close the body; whatever runs past
+    # the limit before them is trimmed, never refused.
+    return trimmed("\n".join(lines) + "\n", BODY_LIMIT - len(ending)) + ending
 
 
 def decide(args: argparse.Namespace) -> int:
@@ -2720,6 +3072,12 @@ def decide(args: argparse.Namespace) -> int:
         raise WeeklyError(f"--jobs {args.jobs}: name how many comparisons run at once, or 0 for one per CPU")
     if not args.reserve_gib >= 0:
         raise WeeklyError(f"--reserve-gib {args.reserve_gib}: name the GiB to keep available, 0 or more")
+    if not (math.isfinite(args.floor_gib) and args.floor_gib >= 0):
+        raise WeeklyError(
+            f"--floor-gib {args.floor_gib}: name the GiB below which comparisons are stopped, a finite 0 or more"
+        )
+    if not (math.isfinite(args.heartbeat_seconds) and args.heartbeat_seconds > 0):
+        raise WeeklyError(f"--heartbeat-seconds {args.heartbeat_seconds}: name a finite positive interval")
     decision = decide_bundle(
         base,
         bundle,
@@ -2728,6 +3086,8 @@ def decide(args: argparse.Namespace) -> int:
         load_references(base).FAMILY,
         args.jobs or cpus(),
         args.reserve_gib * 2**30,
+        args.floor_gib * 2**30,
+        args.heartbeat_seconds,
     )
     for path in decision.ledger.carried() if decision.ledger else ():
         carried = output / LEDGER_CARRIED / path
@@ -3016,6 +3376,18 @@ def main(argv: list[str] | None = None) -> int:
         type=float,
         default=COMPARISON_RESERVE_GIB,
         help="start another comparison beside a running one only while this much memory is available",
+    )
+    phase.add_argument(
+        "--floor-gib",
+        type=float,
+        default=COMPARISON_FLOOR_GIB,
+        help="while more than one comparison runs with less than this available, stop the newest and rerun it alone",
+    )
+    phase.add_argument(
+        "--heartbeat-seconds",
+        type=float,
+        default=HEARTBEAT_SECONDS,
+        help="how often to log the running comparisons and the memory left",
     )
     phase = commands.add_parser("resources", help="the runner's free disk and available memory, before a step")
     phase.add_argument("--before", required=True, help="the step about to run")

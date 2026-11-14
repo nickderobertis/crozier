@@ -34,7 +34,7 @@ const RECORD = `node -e "const f=require('fs');f.appendFileSync(process.env.RAN_
 function realGraph(t) {
   const root = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(), "crozier-graph-"));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  for (const path of ["justfile", "nx.json", "package.json", "tools/ci/lane-inventory.mjs", "tools/ci/lanes.json", "tools/ci/project-files-digest.mjs", "tools/ci/gate.mjs", "tools/ci/result-cache.mjs", "tools/ci/gate-timing.mjs", "tools/ci/gate-timing/core.mjs", "tools/ci/ci-tier.mjs"]) {
+  for (const path of ["justfile", "nx.json", "package.json", "tools/ci/lane-inventory.mjs", "tools/ci/lanes.json", "tools/ci/project-files-digest.mjs", "tools/ci/gate.mjs", "tools/ci/result-cache.mjs", "tools/ci/gate-timing.mjs", "tools/ci/gate-timing/core.mjs", "tools/ci/ci-tier.mjs", "tests/corpus_match/corpus_offline_test.py"]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     cpSync(join(REPO, path), join(root, path));
   }
@@ -42,16 +42,23 @@ function realGraph(t) {
   // Its line endings, or a checkout here turns the workflows CRLF on a Windows runner's core.autocrlf.
   cpSync(join(REPO, ".gitattributes"), join(root, ".gitattributes"));
   symlinkSync(join(REPO, "node_modules"), join(root, "node_modules"), "junction");
+  // A target that carries another (tools/ci/lanes.json `carried`) keeps the source it runs and
+  // the recipe group it selects, which the inventory check holds it to; the recorder ignores both.
+  const carriers = new Map(Object.values(JSON.parse(readFileSync(join(REPO, "tools/ci/lanes.json"), "utf8")).carried ?? {}).map((row) => [row.by, row]));
   for (const path of tracked()) {
     const project = readProject(path);
     for (const [name, target] of Object.entries(project.targets ?? {})) {
       const inputs = target.inputs?.filter((input) => typeof input === "string" || !("runtime" in input));
       const id = `${project.name}:${name}`;
+      const carrier = carriers.get(id);
+      const recorded = carrier
+        ? { command: `${RECORD} ${id} ${carrier.source}`, env: { [carrier.selector.env]: carrier.selector.group } }
+        : { command: `${RECORD} ${id}` };
       project.targets[name] = id === "lane-inventory:lint"
         ? { command: "node tools/ci/lane-inventory.mjs", cache: false, inputs }
         : target.executor === "nx:noop"
         ? { ...target, ...(inputs ? { inputs } : {}) }
-        : { command: `${RECORD} ${id}`, cache: false, ...(target.dependsOn ? { dependsOn: target.dependsOn } : {}), ...(inputs ? { inputs } : {}), ...(target.parallelism === false ? { parallelism: false } : {}) };
+        : { executor: "nx:run-commands", options: recorded, cache: false, ...(target.dependsOn ? { dependsOn: target.dependsOn } : {}), ...(inputs ? { inputs } : {}), ...(target.parallelism === false ? { parallelism: false } : {}) };
     }
     write(root, { [path]: JSON.stringify(project) });
   }
@@ -94,7 +101,7 @@ const every = (ran, names) => names.filter((name) => !ran.has(name));
 const JOURNEYS = ["crozier:test", "crozier-e2e:test", "nested-discriminator-golden:test", "surface-census:test-census", "golden-reach:test-reach", "golden-reach:test-reach-portable"];
 const PROMOTED = {
   "tag:lane:sdk-env": ["sdk-env:test", "runtime:test", "nested-discriminator-runtime:test"],
-  "tag:lane:live": ["live-e2e:test", "corpus-match:test-match", "corpus-match:test-strict", "corpus-match:test-offline", "corpus-match-selection:test"],
+  "tag:lane:live": ["live-e2e:test", "corpus-match:test-offline", "corpus-offline-tools:test", "corpus-match-selection:test"],
 };
 
 test("a generator, template, lockfile or toolchain edit executes every dependent full journey", (t) => {
@@ -123,7 +130,38 @@ test("a shared-harness or corpus edit executes every journey built on it", (t) =
     assert.deepEqual(every(ran, owners), [], `${edit}:\n${output}`);
   }
   const corpus = lane(graph, ["tests/fixtures/CORPUS.md"], "lane-test", ["--projects=tag:lane:live", "--platform=linux"]);
-  assert.deepEqual(every(corpus.ran, ["corpus-match:test-match", "corpus-match:test-strict", "corpus-match:test-offline"]), [], corpus.output);
+  assert.deepEqual(every(corpus.ran, ["corpus-match:test-offline"]), [], corpus.output);
+  // test-offline runs the byte-match and its strict form through their recipes, so the lane
+  // never runs them a second time beside it (tools/ci/lanes.json `carried`).
+  for (const name of ["corpus-match:test-match", "corpus-match:test-strict"]) assert.ok(!corpus.ran.has(name), `${name} ran twice:\n${corpus.output}`);
+});
+
+// Every target that byte-compares crozier's output with a committed golden.
+const GOLDEN_COMPARISONS = ["crozier-e2e:test", "nested-discriminator-golden:test", "corpus-match:test-offline", "corpus-match:test-match", "corpus-match:test-strict"];
+const LINUX_LANE = ["lane-test", ["--platform=linux", "--include-promoted"]];
+
+test("delivery tooling reruns no golden byte comparison, and every generator input still does (#817)", (t) => {
+  const graph = realGraph(t);
+  for (const edit of [
+    "scripts/install.sh",
+    ".github/workflows/ci-caches.yml",
+    "tools/ci/require-tools.mjs",
+    "tools/llmlint/llmlint-diff.py",
+    "tools/llmlint-resolution/tests/judged_lint_job_test.py",
+    "tools/fern-refusals/fern-refusals.py",
+    "tools/fern-refusals-strict/AGENTS.md",
+    "screenshots/capture-visual-docs.sh",
+  ]) {
+    const { ran, status, output } = lane(graph, [edit], ...LINUX_LANE);
+    assert.equal(status, 0, output);
+    const compared = GOLDEN_COMPARISONS.filter((name) => ran.has(name));
+    assert.deepEqual(compared, [], `${edit} reran golden comparisons whose inputs it is not:\n${[...ran].join(" ")}`);
+  }
+  for (const edit of ["src/lib.rs", "assets/departures.yml", "tests/fixtures/discord.com/expected/README.md", "tests/fixtures/corpus-sources/swagger-petstore/openapi.yaml"]) {
+    const { ran, status, output } = lane(graph, [edit], ...LINUX_LANE);
+    assert.equal(status, 0, output);
+    assert.deepEqual(every(ran, ["crozier-e2e:test", "corpus-match:test-offline"]), [], `${edit} left a golden comparison unrun:\n${output}`);
+  }
 });
 
 test("a census-only edit runs the census, not the reach or golden suites; a reach-only edit the reverse", (t) => {
@@ -274,7 +312,7 @@ test("a change to a tier manifest alone selects the inventory check, which fails
     ["a platform dropped", editManifest(SDK, (p) => { p.tags.push("platform:linux"); }), /sdk-env:test: no longer runs on macos/],
     ["a lane removed", editManifest("tests/live_e2e/project.json", (p) => { p.tags = p.tags.filter((tag) => !tag.startsWith("lane:")); }), /live-e2e: tier:promoted with no lane: tag/],
     ["a lane only Linux has", editManifest(SDK, (p) => { p.tags = p.tags.map((tag) => (tag === "lane:sdk-env" ? "lane:packaging" : tag)); }), /sdk-env:test: test-windows has no step `--projects=tag:lane:packaging`/],
-    ["a target no lane reaches any more", editManifest("tests/corpus_match/project.json", (p) => { p.targets.test.dependsOn = p.targets.test.dependsOn.filter((name) => name !== "test-strict"); }), /corpus-match:test-strict: no lane reaches it/],
+    ["a target no lane reaches any more", editManifest("tests/corpus_match/project.json", (p) => { p.targets.test.dependsOn = p.targets.test.dependsOn.filter((name) => name !== "test-offline"); }), /corpus-match:test-offline: no lane reaches it/],
     ["a tier deleted outright", (root) => rmSync(join(root, "tests/live_e2e/project.json")), /live-e2e:test: project live-e2e is gone/],
   ];
   for (const [what, edit, message] of cases) {

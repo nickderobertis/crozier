@@ -66,6 +66,55 @@ build() {
   }
 }
 
+# The ordinary build, made the newest build of every unit it uses. A job's restored cache can
+# hold an older copy of one of them beside a newer build of the same unit that only a
+# per-package build uses; (a) would then remove the ordinary build's copy as superseded, (b)
+# recreate it, (c) make it newest again, and (d) remove the per-package build as well, which is
+# no part of what is timed. Touching what the ordinary build reports gives (a) and (d) one
+# steady state: whatever it leaves superseded is backlog, cleared by (a).
+current() {
+  cargo test --workspace --no-run --locked --message-format=json >"$scratch/current.json" 2>"$scratch/build.log" || {
+    cat "$scratch/build.log" >&2
+    die "the test build failed (above); fix it, then rerun"
+  }
+  if ! python3 -I -S - "$scratch/current.json" >"$scratch/current-hashes.unsorted" <<'PY'
+import json
+import re
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    for line in stream:
+        if not line.startswith("{"):
+            continue
+        message = json.loads(line)
+        paths = [*(message.get("filenames") or []), message.get("executable") or "", message.get("out_dir") or ""]
+        for path in paths:
+            for found in re.findall(r"-([0-9a-f]{16})(?=[/.]|$)", path):
+                print(f"-{found}")
+PY
+  then
+    die "could not read the test build's artifact list ($scratch/current.json); rerun, and if it recurs check that cargo printed JSON messages"
+  fi
+  LC_ALL=C sort -u "$scratch/current-hashes.unsorted" >"$scratch/current-hashes" ||
+    die "could not write $scratch/current-hashes; check that the temporary directory is writable, then rerun"
+  [ -s "$scratch/current-hashes" ] ||
+    die "the test build reported no artifacts, so there is no current build to keep; check that \`cargo test --workspace --no-run --message-format=json\` lists them, then rerun"
+  entries >"$scratch/all-entries" ||
+    die "could not list the target directories' build entries; check that they are readable, then rerun"
+  local found=0
+  grep -F -f "$scratch/current-hashes" "$scratch/all-entries" >"$scratch/current-entries" || found=$?
+  case $found in
+    0) ;;
+    1) die "none of the ordinary build's artifacts is among the target's entries; check pool_maintenance_targets in the justfile names this target directory, then rerun" ;;
+    *) die "could not match the ordinary build's artifacts against the target's entries (grep exited $found); rerun, and if it recurs check $scratch is writable" ;;
+  esac
+  while IFS= read -r entry; do
+    find "$entry" -exec touch -h {} + ||
+      die "could not mark $entry as the ordinary build's; check that the target directory is writable by this user, then rerun"
+  done <"$scratch/current-entries"
+}
+current
+
 # (a) The backlog, cleared untimed; its own report kept as evidence.
 ONEBUDGETSPEC_RESULT="$scratch/backlog.json" just pool-maintenance >&2
 
