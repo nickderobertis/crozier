@@ -167,7 +167,6 @@ class RealPlanTests(unittest.TestCase):
         corpus = [seconds for (family, _item), seconds in table.items() if family == "corpus"]
         self.assertTrue(corpus, "the table is seeded with corpus timings")
         self.assertAlmostEqual(sum(corpus) / len(corpus), default)
-        # Every planned item is priced at its recorded seconds.
         for shard in self.plan.shards:
             for entry in shard.items:
                 with self.subTest(item=entry.key()):

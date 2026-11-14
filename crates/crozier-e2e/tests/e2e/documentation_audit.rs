@@ -89,6 +89,11 @@ fn the_audit_reports_each_defect_class_on_its_line_and_nothing_in_crozier_s_tree
         ("client = FernApi()", "call", "FernApi(...): missing required ['base_url']"),
         ("client.record_reading(depot=\"YOUR_DEPOT\", vehicle=\"v\", metres=1, trip_count=1, drift=1, bias=1, checkpoints=[1])", "placeholder", "client.record_reading: `depot='YOUR_DEPOT'` for `int`"),
         ("client.no_such_method()", "call", "`client.no_such_method`: no such method"),
+        (
+            "client.record_reading(1, depot=1, vehicle=\"v\", metres=1, trip_count=1, drift=1, bias=1, checkpoints=[1])",
+            "call",
+            "client.record_reading: 1 positional argument(s) for 0",
+        ),
         ("client.f(depot=1, depot=2)", "syntax", "keyword argument repeated: depot"),
     ];
     let mut text = original.clone();

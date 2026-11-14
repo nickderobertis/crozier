@@ -39,22 +39,45 @@ from __future__ import annotations
 import argparse
 import csv
 import hashlib
+import importlib.util
 import io
 import json
 import os
+import re
 import shlex
 import subprocess
 import sys
 import tempfile
-from dataclasses import dataclass
+from dataclasses import astuple, dataclass
+from enum import StrEnum
 from pathlib import Path
+from types import ModuleType
+from typing import Any
 
 import yaml
 
-REGISTRY = Path("docs/openapi-surface/output-insensitive.tsv")
-COLUMNS = ("key", "context", "search_record", "fern_comparison", "crozier_comparison")
 CORPUS_SOURCES = Path("tests/fixtures/corpus-sources")
 FERN_TIMEOUT_SECONDS = 1800
+LIST_INDEX = re.compile(r"0|[1-9][0-9]*")
+
+
+def load_reader() -> ModuleType:
+    """`output-insensitive.py`, whose columns, pair and evidence-path rules this
+    re-measure writes to, so neither file restates them."""
+    spec = importlib.util.spec_from_file_location(
+        "output_insensitive", Path(__file__).with_name("output-insensitive.py")
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("cannot load output-insensitive.py beside this script")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+READER = load_reader()
+REGISTRY: Path = READER.REGISTRY
+COLUMNS: tuple[str, ...] = READER.COLUMNS
 
 
 class UsageError(ValueError):
@@ -65,10 +88,23 @@ class GenerationError(RuntimeError):
     """A generator that did not write its tree."""
 
 
+class Generator(StrEnum):
+    FERN = "fern"
+    CROZIER = "crozier"
+
+
 @dataclass(frozen=True)
-class Pair:
-    cli: str
-    generator: str
+class Row:
+    """One disposition of the shared table, in its column order."""
+
+    key: str
+    context: str
+    search_record: str
+    fern_comparison: str
+    crozier_comparison: str
+
+    def record(self, generator: Generator) -> str:
+        return self.fern_comparison if generator is Generator.FERN else self.crozier_comparison
 
 
 @dataclass(frozen=True)
@@ -82,7 +118,7 @@ class Outcome:
     """One record's re-measure: the trees, and the paths that differ."""
 
     record: str
-    generator: str
+    generator: Generator
     before: dict[str, str]
     after: dict[str, str]
 
@@ -92,24 +128,40 @@ class Outcome:
         )
 
 
-def certified_pair(root: Path) -> Pair:
-    data = json.loads((root / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
-    return Pair(data["cliVersion"], data["generatorVersion"])
+def certified_pair(root: Path) -> Any:
+    """The pair `output-insensitive.py` holds every record to (it validates the declaration)."""
+    try:
+        return READER.certified_pair(root)
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        raise UsageError(f"assets/scaffolding/metadata.json: {error}") from error
 
 
-def read_rows(root: Path) -> list[dict[str, str]]:
+def read_rows(root: Path) -> list[Row]:
+    """Every row, each complete and naming evidence inside the documentation
+    tree, as `output-insensitive.py` requires before any file is read or written."""
     with (root / REGISTRY).open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
         if reader.fieldnames != list(COLUMNS):
             raise UsageError(f"{REGISTRY}: expected columns {COLUMNS}")
-        return list(reader)
+        rows = []
+        for number, cells in enumerate(reader, 2):
+            if set(cells) != set(COLUMNS) or not all(isinstance(v, str) and v for v in cells.values()):
+                raise UsageError(f"{REGISTRY} line {number}: a row fills every column")
+            row = Row(**{column: cells[column] for column in COLUMNS})
+            for path in (row.search_record, row.fern_comparison, row.crozier_comparison):
+                try:
+                    READER.local_file(root, path)
+                except ValueError as error:
+                    raise UsageError(f"{REGISTRY} line {number}: {error}") from error
+            rows.append(row)
+        return rows
 
 
-def write_rows(root: Path, rows: list[dict[str, str]]) -> None:
+def write_rows(root: Path, rows: list[Row]) -> None:
     out = io.StringIO()
-    writer = csv.DictWriter(out, COLUMNS, delimiter="\t", quoting=csv.QUOTE_NONE, lineterminator="\n")
-    writer.writeheader()
-    writer.writerows(rows)
+    writer = csv.writer(out, delimiter="\t", quoting=csv.QUOTE_NONE, lineterminator="\n")
+    writer.writerow(COLUMNS)
+    writer.writerows(astuple(row) for row in rows)
     (root / REGISTRY).write_text(out.getvalue(), encoding="utf-8")
 
 
@@ -120,28 +172,57 @@ def corpus_source(root: Path, name: str) -> Path | None:
     )
 
 
+def pointer_parts(pointer: object) -> list[str] | None:
+    """The unescaped tokens of a JSON pointer, or None when it is not one."""
+    match pointer:
+        case str() if pointer.startswith("/"):
+            return [part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/")]
+        case _:
+            return None
+
+
+def child(node: object, part: str) -> object:
+    """The member `part` names in `node`, or None: a list index is a JSON
+    pointer's decimal, within bounds."""
+    match node:
+        case dict() if part in node:
+            return node[part]
+        case list() if LIST_INDEX.fullmatch(part) and int(part) < len(node):
+            return node[int(part)]
+        case _:
+            return None
+
+
 def ablated(before: Path, edits_record: Path, doc: str, scratch: Path) -> Path:
     """The after document an edit record describes: `before` with each pointer it
-    names deleted. A record whose fixture is not `doc`, or with an edit that is
-    not a deletion, is refused rather than approximated."""
+    names deleted. A record whose fixture is not `doc`, an edit that is not a
+    deletion, or a pointer that names nothing is refused rather than approximated."""
     record = json.loads(edits_record.read_text(encoding="utf-8"))
-    edits = record.get("edits")
-    if record.get("fixture") != doc or not isinstance(edits, list) or not edits:
-        raise UsageError(f"{edits_record}: an edit record names its fixture {doc!r} and at least one edit")
+    match record:
+        case {"fixture": str(fixture), "edits": [*edits]} if fixture == doc and edits:
+            pass
+        case _:
+            raise UsageError(f"{edits_record}: an edit record names its fixture {doc!r} and at least one edit")
     document = yaml.safe_load(before.read_text(encoding="utf-8"))
     for edit in edits:
-        pointer, text = edit.get("pointer"), edit.get("edit")
-        if not isinstance(pointer, str) or not pointer.startswith("/") or not str(text).startswith("deleted"):
+        match edit:
+            case {"pointer": pointer, "edit": str(text)} if text.startswith("deleted"):
+                parts = pointer_parts(pointer)
+            case _:
+                parts = None
+        if not parts:
             raise UsageError(f"{edits_record}: {edit!r} is not a deletion at a JSON pointer")
-        *parents, last = [part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/")]
-        node = document
+        *parents, last = parts
+        node: object = document
         for part in parents:
-            node = node[int(part)] if isinstance(node, list) else node.get(part) if isinstance(node, dict) else None
-            if node is None:
-                raise UsageError(f"{edits_record}: {pointer} names nothing in {before}")
-        if not isinstance(node, dict) or last not in node:
-            raise UsageError(f"{edits_record}: {pointer} names nothing in {before}")
-        del node[last]
+            node = child(node, part)
+        match node:
+            case dict() if last in node:
+                del node[last]
+            case list() if LIST_INDEX.fullmatch(last) and int(last) < len(node):
+                del node[int(last)]
+            case _:
+                raise UsageError(f"{edits_record}: {edit['pointer']} names nothing in {before}")
     after = scratch / f"{edits_record.stem}.after.json"
     after.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
     return after
@@ -201,7 +282,7 @@ groups:
 """
 
 
-def fern_tree(fern: list[str], document: Path, pair: Pair, scratch: Path, log: Path) -> dict[str, str]:
+def fern_tree(fern: list[str], document: Path, pair: Any, scratch: Path, log: Path) -> dict[str, str]:
     """Fern's raw packaged tree for `document`, from the fixture recipe's workspace."""
     workspace = scratch / "fern"
     (workspace / "openapi").mkdir(parents=True)
@@ -264,10 +345,10 @@ def crozier_tree(crozier: Path, document: Path, scratch: Path) -> dict[str, str]
     return tree_digests(out)
 
 
-def record_text(generator: str, pair: Pair, before: dict[str, str], after: dict[str, str]) -> str:
+def record_text(generator: Generator, pair: Any, before: dict[str, str], after: dict[str, str]) -> str:
     record = {
         "schema_version": 1,
-        "generator": generator,
+        "generator": str(generator),
         "fern_cli_version": pair.cli,
         "fern_python_sdk_version": pair.generator,
         "before": before,
@@ -294,7 +375,7 @@ def main(argv: list[str]) -> int:
             raise UsageError(f"{crozier} is not built; run `cargo build --release --locked`")
         pair = certified_pair(root)
         rows = read_rows(root)
-        records = sorted({(row["fern_comparison"], row["crozier_comparison"]) for row in rows})
+        records = sorted({(row.fern_comparison, row.crozier_comparison) for row in rows})
         if args.only:
             unknown = set(args.only) - {fern for fern, _ in records}
             if unknown:
@@ -303,17 +384,17 @@ def main(argv: list[str]) -> int:
         derived = logs / "ablations"
         derived.mkdir(exist_ok=True)
         plans = {fern: documents(root, fern, derived) for fern, _ in records}
-    except (UsageError, OSError, KeyError, json.JSONDecodeError) as error:
+    except (UsageError, OSError, json.JSONDecodeError, yaml.YAMLError) as error:
         print(f"output-insensitive-remeasure: {error}", file=sys.stderr)
         return 2
     fern = shlex.split(args.fern)
-    measured: dict[tuple[str, Path], dict[str, str]] = {}
+    measured: dict[tuple[Generator, Path], dict[str, str]] = {}
 
-    def measure(generator: str, document: Path) -> dict[str, str]:
+    def measure(generator: Generator, document: Path) -> dict[str, str]:
         key = (generator, document)
         if key not in measured:
             with tempfile.TemporaryDirectory() as scratch:
-                if generator == "fern":
+                if generator is Generator.FERN:
                     log = logs / f"{hashlib.sha256(str(document).encode()).hexdigest()[:12]}.fern.log"
                     measured[key] = fern_tree(fern, document, pair, Path(scratch), log)
                 else:
@@ -327,7 +408,7 @@ def main(argv: list[str]) -> int:
         try:
             outcomes = [
                 Outcome(record, generator, measure(generator, plan.before), measure(generator, plan.after))
-                for generator, record in (("fern", fern_record), ("crozier", crozier_record))
+                for generator, record in ((Generator.FERN, fern_record), (Generator.CROZIER, crozier_record))
             ]
         except (GenerationError, OSError, subprocess.TimeoutExpired) as error:
             print(f"output-insensitive-remeasure: {fern_record}: {error}", file=sys.stderr)
@@ -348,10 +429,10 @@ def main(argv: list[str]) -> int:
                 record_text(outcome.generator, pair, outcome.before, outcome.after), encoding="utf-8"
             )
     if dropped:
-        kept = [row for row in rows if row["fern_comparison"] not in dropped]
+        kept = [row for row in rows if row.fern_comparison not in dropped]
         for row in rows:
-            if row["fern_comparison"] in dropped:
-                print(f"output-insensitive-remeasure: removed {row['key']} at {row['context']}", file=sys.stderr)
+            if row.fern_comparison in dropped:
+                print(f"output-insensitive-remeasure: removed {row.key} at {row.context}", file=sys.stderr)
         write_rows(root, kept)
     return 1 if failed or dropped else 0
 
