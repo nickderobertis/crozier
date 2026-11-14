@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.163](https://github.com/nickderobertis/crozier/compare/v0.0.162...v0.0.163) - 2026-11-14
+
+### Other
+
+- deliver the final required verdict within the gate budget and stop transient failures from rejecting changes ([#855](https://github.com/nickderobertis/crozier/pull/855))
+
 ## [0.0.162](https://github.com/nickderobertis/crozier/compare/v0.0.161...v0.0.162) - 2026-11-10
 
 ### Fixed
