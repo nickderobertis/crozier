@@ -1967,7 +1967,6 @@ docs/fern-measurements/parameter-lowering/header-defaults-managed/fern-expected	
 docs/fern-measurements/parameter-lowering/header-defaults-managed/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/header-defaults-managed/fern-expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/header-defaults-managed/fern-expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
-docs/fern-measurements/parameter-lowering/observatory-client-headers/fern-expected	.fern/metadata.json	6	fern-metadata-generator-config
 docs/fern-measurements/parameter-lowering/observatory-client-headers/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/observatory-client-headers/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/observatory-client-headers/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
@@ -2019,7 +2018,6 @@ docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected
 docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
-docs/fern-measurements/parameter-lowering/warehouse-header-token/fern-expected	.fern/metadata.json	6	fern-metadata-generator-config
 docs/fern-measurements/parameter-lowering/warehouse-header-token/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/warehouse-header-token/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/warehouse-header-token/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
