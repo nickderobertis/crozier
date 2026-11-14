@@ -28,6 +28,12 @@ and `swagger-petstore-organization` 19 each, `eos.local-extra-fields-forbid` 4,
 `client-class-name` 2, `audience-filter-strict` 1, and
 `googleapis-youtubeanalytics-v1` none (it documents no method).
 
+The departures ledger pins 122 occurrences: 117 in those goldens, 4 in the
+flat measurement trees under `docs/fern-measurements/clients-extensions/`, and
+1 in `readme-client-class-casing`'s flat reference tree. The other 2 of
+`truefoundry-trueforge`'s headings are streaming methods, pinned as
+`stream-reference-return-type`, which judges the flat link the same way.
+
 crozier links the module its flat tree holds and anchors it at the method:
 `client.pet.<a href="pet/client.py#L34-L93">add_pet</a>(...)`, lines 34 to 93 of
 `pet/client.py` being `add_pet`'s `def` through its `return`.

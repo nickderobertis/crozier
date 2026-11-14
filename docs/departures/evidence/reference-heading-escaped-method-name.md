@@ -25,18 +25,22 @@ client.applicants.all_ resolves: True
 client.applicants.all raises AttributeError: 'ApplicantsClient' object has no attribute 'all'
 ```
 
-The census over every reference tree regenerated at this pair (1233 trees: the
-corpus goldens and their overlays, the measurements, and the handwritten,
-authored and probe goldens) finds 76 such headings, every one without an
-anchor: 62 in `tests/fixtures/` and 14 in `docs/fern-measurements/`. By name:
-`all` 58, `import` 3, and `uuid`, `map`, `long`, `int`, `float`, `bool` and
-`async` 2 each, `del` 1.
+The census over every committed reference tree at this pair (1194 trees: the
+corpus goldens and overlays, the measurements, and the handwritten, authored,
+probe and departure-evidence trees) finds 77 such headings, every one without
+an anchor. By name: `all` 59, `import` 3, and `uuid`, `map`, `long`, `int`,
+`float`, `bool` and `async` 2 each, `del` 1. Overlay trees are counted by the
+files they carry; compared whole, as the gate rebuilds them, they hold more.
 
 ```text
-$ python3 docs/departures/evidence/reference-heading-escaped-method-name.py census <every 5.200.0 tree>
+$ python3 docs/departures/evidence/reference-heading-escaped-method-name.py census <every tree holding a reference.md>
 …
-headings naming a method the client defines only with a trailing `_`: 76
+headings naming a method the client defines only with a trailing `_`: 77
 ```
+
+The departures ledger pins 75 occurrences in the trees the gates compare. Seven
+of the census's headings are in two superseded measurement trees no gate
+compares (`superseded-fixtures/depot-bin-ledger` 6, `ferry-berth-desk` 1).
 
 crozier names the method the client defines and anchors the link at its lines,
 found as for every other heading. The rule admits only a `reference.md` heading

@@ -35,3 +35,7 @@ crozier's. A changed range on either side, any other change on the line, or a
 missing range is no departure; the unit test checks each. The line differences
 in the client itself are each accounted for by their own departure, and the
 departures ledger pins every occurrence of this one.
+
+At Fern CLI 5.200.0 / fern-python-sdk 5.41.25 the departures ledger pins 1040
+occurrences, each a heading whose client carries another departure above or
+inside the documented method.
