@@ -2075,6 +2075,14 @@ class BuildTests(BuildHarness):
         )
         self.assertEqual(0, acquired.returncode, acquired.stderr)
         self.assertEqual("population-screen: acquire: raw 2, refused-http-404 1\n", acquired.stdout)
+        # A candidate the census lists that the bounded raw lane never reached: planned after the acquisition
+        # ran, so it has no attempt, and still owes its row.
+        self.combination_census(
+            "witness-search-schema-combinations-models-unions-refs/census.tsv",
+            [(KEY_SA, "github-code-search", f"acme/unreached:openapi.json@{'e' * 40}", "5" * 64)],
+        )
+        census_plan = self.scratch / "census-later.tsv"
+        self.assertEqual(0, self.build("census", "--output", str(census_plan)).returncode)
         plan = self.scratch / "plan.tsv.gz"
         self.assertEqual(0, self.build("identities", "--output", str(plan)).returncode)
         SCREEN.store(self.handed_bytes, self.store)
@@ -2117,6 +2125,16 @@ class BuildTests(BuildHarness):
                 "unfetchable:fetched 1 time(s) at the recorded commit through the guarded raw lane, which gave HTTP 404",
             ),
             (far.sha256, far.status),
+        )
+        unreached = rows[(KEY_SA, "github", "acme/unreached/openapi.json")]
+        self.assertEqual(
+            (
+                f"{BUILD.RAW}/acme/unreached/{'e' * 40}/openapi.json",
+                "5" * 64,
+                "unfetchable:listed by an earlier named census and never fetched: the guarded raw lane's budget "
+                "was spent before it was reached",
+            ),
+            (unreached.source, unreached.sha256, unreached.status),
         )
         digest_only = rows[(KEY_SO, "github", f"sha256:{'3' * 64}")]
         self.assertEqual((f"sha256:{'3' * 64}", "3" * 64), (digest_only.source, digest_only.sha256))

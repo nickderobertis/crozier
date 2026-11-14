@@ -550,9 +550,13 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
     census = named_census(tree)
     listed = census.listed
     entries = []
+    # Every (population, document, key) a census lists, as each is claimed: the table must end with a row of each.
+    owed: set[tuple[str, str, str]] = set()
 
     def keys(population: str, document: str) -> str:
-        return ";".join(sorted(listed.pop((population, document), set()))) or "-"
+        claimed = listed.pop((population, document), set())
+        owed.update((population, document, key) for key in claimed)
+        return ";".join(sorted(claimed)) or "-"
 
     corpus = SCREEN.corpus_rows(tree.root)
     for name, path in sorted(SCREEN.registered_files(tree.root).items()):
@@ -666,11 +670,19 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
             )
         )
     entries = by_digest(entries, census, plan)
+    owed.update((population, document, key) for (population, document), ks in listed.items() for key in ks)
     entries += unavailable(tree, args, plan, seen, listed)
     if listed:
         fail(f"the earlier named census lists candidates no population names: {sorted(listed)[:5]}")
     # A handed-off document without its bytes owes rows only for keys an earlier census lists it for.
-    return [entry for entry in entries if entry.unfetchable == "-" or entry.keys != "-"]
+    entries = [entry for entry in entries if entry.unfetchable == "-" or entry.keys != "-"]
+    rowed = {(entry.population, entry.document, key) for entry in entries for key in entry.forced()}
+    if owed - rowed:
+        fail(
+            f"the earlier named census lists {len(owed - rowed)} (population, document, key) candidates the "
+            f"manifest gives no row (first: {sorted(owed - rowed)[0]}); each owes a screened or unfetchable row"
+        )
+    return entries
 
 
 def by_digest(entries: list[SCREEN.Entry], census: NamedCensus, plan: list[SCREEN.Identity]) -> list[SCREEN.Entry]:
