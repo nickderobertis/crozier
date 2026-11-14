@@ -52,6 +52,7 @@ import gzip
 import hashlib
 import importlib.util
 import json
+import math
 import os
 import re
 import shutil
@@ -2296,16 +2297,22 @@ def unsettled_record(name: str) -> tuple[Unsettled | None, list[str]]:
             f"{fields['fern_python_sdk_version']}, not the certified pair {FERN_CLI} / {FERN_PYTHON_SDK}; "
             "re-run `probe` at the pair and settle the class, or record why it is still unsettled"
         )
-    bound = float(fields["bound_seconds"]) if SECONDS.fullmatch(fields["bound_seconds"]) else 0.0
+
+    def seconds(text: str) -> float | None:
+        value = float(text) if SECONDS.fullmatch(text) else None
+        return value if value is not None and math.isfinite(value) else None
+
+    bound = seconds(fields["bound_seconds"]) or 0.0
     if bound <= 0:
         problems.append(f"{where}: bound_seconds must be the probe's positive per-stage bound in seconds")
     for stage in ("check", "generate"):
-        seconds = fields[f"{stage}_seconds"]
-        if fields[f"{stage}_exit"] != "timeout" or not SECONDS.fullmatch(seconds):
+        elapsed = seconds(fields[f"{stage}_seconds"])
+        if fields[f"{stage}_exit"] != "timeout" or elapsed is None:
             problems.append(f"{where}: {stage}_exit must be `timeout` with {stage}_seconds its elapsed seconds")
-        elif bound > 0 and float(seconds) < bound * UNSETTLED_REACH:
+        elif bound > 0 and elapsed < bound * UNSETTLED_REACH:
             problems.append(
-                f"{where}: {stage}_seconds {seconds} is short of the {fields['bound_seconds']}-second bound; "
+                f"{where}: {stage}_seconds {fields[f'{stage}_seconds']} is short of the "
+                f"{fields['bound_seconds']}-second bound; "
                 "a stage the bound cut short runs to it"
             )
     for key in ("reason", "follow_up"):
@@ -2323,8 +2330,8 @@ def unsettled_record(name: str) -> tuple[Unsettled | None, list[str]]:
     return Unsettled(
         kept[0],
         kept[1],
-        float(fields["check_seconds"]),
-        float(fields["generate_seconds"]),
+        seconds(fields["check_seconds"]) or 0.0,
+        seconds(fields["generate_seconds"]) or 0.0,
         bound,
         fields["reason"],
         fields["follow_up"],

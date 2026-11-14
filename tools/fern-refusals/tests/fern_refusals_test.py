@@ -323,6 +323,9 @@ class Drift(unittest.TestCase):
         self.edit_unsettled("generate_seconds: 12.5", line)
         self.edit_unsettled("bound_seconds: 900", "bound_seconds: 0")
         self.assert_check_fails_naming("bound_seconds must be the probe's positive per-stage bound")
+        # A decimal too long for a float is no bound, not an infinite one.
+        self.edit_unsettled("bound_seconds: 0", "bound_seconds: " + "9" * 400)
+        self.assert_check_fails_naming("bound_seconds must be the probe's positive per-stage bound")
 
     def test_an_unsettled_record_repeating_a_field_or_beside_an_unversioned_record_fails(self) -> None:
         line = self.unsettled_field("reason")
