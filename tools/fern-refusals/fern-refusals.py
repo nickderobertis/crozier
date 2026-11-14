@@ -2256,8 +2256,10 @@ UNSETTLED_REACH = 0.95
 
 
 class Unsettled(NamedTuple):
-    """A validated `unsettled.txt`: the pair the probe ran past its bound at,
-    each stage's elapsed seconds, the bound, why, and the follow-up."""
+    """A validated `unsettled.txt` (whose own pair is the certified one): the
+    earlier pair its kept refusal record was settled at (`cli`, `sdk`), each
+    stage's elapsed seconds at the certified pair, the bound, why, and the
+    follow-up."""
 
     cli: str
     sdk: str
