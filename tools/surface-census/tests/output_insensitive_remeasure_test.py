@@ -28,7 +28,7 @@ PAIR = {"cliVersion": "9.9.9", "generatorVersion": "8.8.8"}  # certified-pair: s
 FERN = textwrap.dedent(
     """\
     #!{python}
-    import json, pathlib, sys
+    import json, pathlib, sys, yaml
     args = sys.argv[1:]
     out = pathlib.Path(args[args.index("--output") + 1]) / "fern-python-sdk"
     config = json.loads(pathlib.Path("fern.config.json").read_text())
@@ -36,16 +36,16 @@ FERN = textwrap.dedent(
     assert "version: 8.8.8" in pathlib.Path("generators.yml").read_text()
     document = next(pathlib.Path("openapi").iterdir())
     (out / "src" / "fern").mkdir(parents=True)
-    (out / "src" / "fern" / "title.py").write_text(json.loads(document.read_text())["info"]["title"])
+    (out / "src" / "fern" / "title.py").write_text(yaml.safe_load(document.read_text())["info"]["title"])
     """
 )
 CROZIER = textwrap.dedent(
     """\
     #!{python}
-    import json, pathlib, sys
+    import json, pathlib, sys, yaml
     args = sys.argv[1:]
     out = pathlib.Path(args[args.index("--output") + 1])
-    title = json.loads(pathlib.Path(args[args.index("--spec") + 1]).read_text())["info"]["title"]
+    title = yaml.safe_load(pathlib.Path(args[args.index("--spec") + 1]).read_text())["info"]["title"]
     (out / "src" / "fern").mkdir(parents=True)
     (out / "src" / "fern" / "title.py").write_text(title)
     """
@@ -148,6 +148,45 @@ class RemeasureTests(unittest.TestCase):
         self.assertIn("steady-attribution/fern-comparison.json: a fern record is named `*-fern.json`", result.stderr)
         self.assertEqual({"stale": True}, self.record("moving", "fern"))
         self.assertFalse((self.root / "logs").exists() and any((self.root / "logs").rglob("*.log")))
+
+    def add_edit_record(self, edit: str) -> str:
+        """A combination search's control filed as an edit record beside its document."""
+        folder = self.surface / "witness-search-operation-combinations-lanterns"
+        (folder / "removal-controls").mkdir(parents=True)
+        source = "openapi: 3.0.3\ninfo:\n  title: Lanterns\n  version: '1'\n  description: Lit nightly.\npaths: {}\n"
+        (folder / "removal-controls/harbour.yml").write_text(source, encoding="utf-8")
+        record = {"key": "combo-lit", "fixture": "harbour", "edits": [{"pointer": "/info/description", "edit": edit}]}
+        (folder / "removal-controls/harbour-combo-lit.json").write_text(json.dumps(record), encoding="utf-8")
+        (folder / "README.md").write_text("`combo-lit`\n", encoding="utf-8")
+        for generator in ("fern", "crozier"):
+            (folder / f"harbour-combo-lit-{generator}.json").write_text('{"stale": true}\n', encoding="utf-8")
+        relative = folder.relative_to(self.root).as_posix()
+        with (self.surface / "output-insensitive.tsv").open("a", encoding="utf-8") as handle:
+            handle.write(
+                f"combo-lit\t-\t{relative}/README.md\t{relative}/harbour-combo-lit-fern.json\t"
+                f"{relative}/harbour-combo-lit-crozier.json\n"
+            )
+        return f"{relative}/harbour-combo-lit-fern.json"
+
+    @unittest.skipIf(os.name == "nt", "the stand-in generators are POSIX executables")
+    def test_an_edit_record_is_measured_as_its_document_with_each_pointer_deleted(self) -> None:
+        record = self.add_edit_record("deleted the description")
+        result = self.run_script("--only", record)
+        self.assertEqual(0, result.returncode, result.stderr)
+        rewritten = json.loads((self.root / record).read_text(encoding="utf-8"))
+        self.assertEqual(rewritten["before"], rewritten["after"])
+        after = json.loads(
+            (self.root / "logs/output-insensitive-remeasure/ablations/harbour-combo-lit.after.json").read_text()
+        )
+        self.assertNotIn("description", after["info"])
+        self.assertEqual("Lanterns", after["info"]["title"])
+
+    def test_an_edit_that_is_not_a_deletion_is_refused(self) -> None:
+        record = self.add_edit_record("renamed the description")
+        result = self.run_script("--only", record)
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("is not a deletion at a JSON pointer", result.stderr)
+        self.assertEqual({"stale": True}, json.loads((self.root / record).read_text(encoding="utf-8")))
 
     def test_an_unknown_only_record_is_a_usage_error(self) -> None:
         result = self.run_script("--only", "docs/openapi-surface/nowhere-fern.json")

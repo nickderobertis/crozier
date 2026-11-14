@@ -11,7 +11,9 @@ Each record's documents are found beside it, by the rule its search filed it
 under:
   - `<dir>/before.json` and `<dir>/after.json`, for a record in its own folder;
   - `removal-controls/<doc>.yml`, then `removal-controls/<stem>.json`, for
-    `<stem>-fern.json` whose stem starts with `<doc>`;
+    `<stem>-fern.json` whose stem starts with `<doc>`; where that JSON is an edit
+    record rather than a document, the after document is `<doc>.yml` with each
+    pointer it names deleted;
   - the committed corpus source of `<doc>`, then `removal-controls/<doc>-after.yml`.
 A record none of these resolves is refused: nothing is guessed.
 
@@ -46,6 +48,8 @@ import sys
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
+
+import yaml
 
 REGISTRY = Path("docs/openapi-surface/output-insensitive.tsv")
 COLUMNS = ("key", "context", "search_record", "fern_comparison", "crozier_comparison")
@@ -116,8 +120,36 @@ def corpus_source(root: Path, name: str) -> Path | None:
     )
 
 
-def documents(root: Path, record: str) -> Documents:
-    """The two documents a fern record measured, by the rule it was filed under."""
+def ablated(before: Path, edits_record: Path, doc: str, scratch: Path) -> Path:
+    """The after document an edit record describes: `before` with each pointer it
+    names deleted. A record whose fixture is not `doc`, or with an edit that is
+    not a deletion, is refused rather than approximated."""
+    record = json.loads(edits_record.read_text(encoding="utf-8"))
+    edits = record.get("edits")
+    if record.get("fixture") != doc or not isinstance(edits, list) or not edits:
+        raise UsageError(f"{edits_record}: an edit record names its fixture {doc!r} and at least one edit")
+    document = yaml.safe_load(before.read_text(encoding="utf-8"))
+    for edit in edits:
+        pointer, text = edit.get("pointer"), edit.get("edit")
+        if not isinstance(pointer, str) or not pointer.startswith("/") or not str(text).startswith("deleted"):
+            raise UsageError(f"{edits_record}: {edit!r} is not a deletion at a JSON pointer")
+        *parents, last = [part.replace("~1", "/").replace("~0", "~") for part in pointer[1:].split("/")]
+        node = document
+        for part in parents:
+            node = node[int(part)] if isinstance(node, list) else node.get(part) if isinstance(node, dict) else None
+            if node is None:
+                raise UsageError(f"{edits_record}: {pointer} names nothing in {before}")
+        if not isinstance(node, dict) or last not in node:
+            raise UsageError(f"{edits_record}: {pointer} names nothing in {before}")
+        del node[last]
+    after = scratch / f"{edits_record.stem}.after.json"
+    after.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    return after
+
+
+def documents(root: Path, record: str, scratch: Path) -> Documents:
+    """The two documents a fern record measured, by the rule it was filed under.
+    An edit record's after document is written into `scratch`."""
     path = root / record
     folder = path.parent
     if (folder / "before.json").is_file() and (folder / "after.json").is_file():
@@ -129,9 +161,12 @@ def documents(root: Path, record: str) -> Documents:
     parts = stem.split("-")
     for cut in range(len(parts) - 1, 0, -1):
         doc = "-".join(parts[:cut])
-        ablated = controls / f"{stem}.json"
-        if (controls / f"{doc}.yml").is_file() and ablated.is_file():
-            return Documents(controls / f"{doc}.yml", ablated)
+        ablated_path = controls / f"{stem}.json"
+        if (controls / f"{doc}.yml").is_file() and ablated_path.is_file():
+            before = controls / f"{doc}.yml"
+            if "openapi" in json.loads(ablated_path.read_text(encoding="utf-8")):
+                return Documents(before, ablated_path)
+            return Documents(before, ablated(before, ablated_path, doc, scratch))
         source = corpus_source(root, doc)
         if source is not None and (controls / f"{doc}-after.yml").is_file():
             return Documents(source, controls / f"{doc}-after.yml")
@@ -250,6 +285,10 @@ def main(argv: list[str]) -> int:
     args = parser.parse_args(argv)
     root = args.root.resolve()
     crozier = args.crozier or root / "target/release/crozier"
+    logs = (
+        Path(os.environ.get("ONEPIPELINE_NODE_SCRATCH_DIR") or tempfile.gettempdir()) / "output-insensitive-remeasure"
+    )
+    logs.mkdir(parents=True, exist_ok=True)
     try:
         if not crozier.is_file():
             raise UsageError(f"{crozier} is not built; run `cargo build --release --locked`")
@@ -261,15 +300,13 @@ def main(argv: list[str]) -> int:
             if unknown:
                 raise UsageError(f"--only names no record of {REGISTRY}: {sorted(unknown)}")
             records = [record for record in records if record[0] in args.only]
-        plans = {fern: documents(root, fern) for fern, _ in records}
+        derived = logs / "ablations"
+        derived.mkdir(exist_ok=True)
+        plans = {fern: documents(root, fern, derived) for fern, _ in records}
     except (UsageError, OSError, KeyError, json.JSONDecodeError) as error:
         print(f"output-insensitive-remeasure: {error}", file=sys.stderr)
         return 2
     fern = shlex.split(args.fern)
-    logs = (
-        Path(os.environ.get("ONEPIPELINE_NODE_SCRATCH_DIR") or tempfile.gettempdir()) / "output-insensitive-remeasure"
-    )
-    logs.mkdir(parents=True, exist_ok=True)
     measured: dict[tuple[str, Path], dict[str, str]] = {}
 
     def measure(generator: str, document: Path) -> dict[str, str]:
