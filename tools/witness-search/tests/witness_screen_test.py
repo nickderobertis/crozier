@@ -119,6 +119,11 @@ class _Raw(BaseHTTPRequestHandler):
             # Its own info.license decides, so its proprietary licence file must never be read.
             f"/acme/json/{COMMIT}/openapi.json": JSON_REPEATED_KEY,
             f"/acme/json/{COMMIT}/LICENSE": b"All rights reserved.\n",
+            # The same JSON behind a UTF-8 BOM: it still opens as JSON, so only the JSON read admits it.
+            f"/acme/bom/{COMMIT}/openapi.json": b"\xef\xbb\xbf" + JSON_REPEATED_KEY,
+            # Opens as JSON but is neither JSON nor a YAML flow mapping: unreadable, never the file's MIT.
+            f"/acme/torn/{COMMIT}/openapi.json": b'{"openapi": "3.0.3", "info": {"license": \n',
+            f"/acme/torn/{COMMIT}/LICENSE": b"MIT License\n",
         }
         body = files.get(self.path)
         self.send_response(200 if body is not None else 404)
@@ -660,6 +665,27 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual([], SCREEN.measured_failures(row["measured"], self.evidence))
         log = (self.evidence / row["measured"]["licence"]["log"]).read_text(encoding="utf-8")
         self.assertIn("info.license: 'Apache-2.0' -> Apache-2.0", log)
+
+    def test_json_past_a_bom_is_read_as_json_and_json_neither_reader_parses_is_unreadable(self) -> None:
+        # Issue 821's edges: a BOM before the `{` still selects the JSON read, and
+        # bytes that open as JSON yet parse as neither JSON nor YAML are refused as
+        # unreadable rather than screened against the repository's licence file.
+        for repository, licence, disposition in (
+            (
+                "acme/bom",
+                "passed: info.license 'Apache-2.0' reads as Apache-2.0, which the corpus rule admits",
+                "witness-found",
+            ),
+            ("acme/torn", "failed: the document could not be read for its info.license", "rejected"),
+        ):
+            with self.subTest(repository=repository):
+                self.server.requests.clear()
+                args = ("--disposition", "witness-found") if disposition == "witness-found" else ()
+                done = self.screen("--path", "openapi.json", *args, repository=repository)
+                self.assertEqual(0, done.returncode, done.stderr)
+                row = self.rows()[-1]
+                self.assertEqual((licence, disposition), (row["license"], row["disposition"]))
+                self.assertEqual([f"/{repository}/{COMMIT}/openapi.json"], self.server.requests)
 
     def test_a_document_declaring_its_own_licence_fetches_no_licence_path(self) -> None:
         # Issue 824: the screen fetched the repository's licence filenames before
