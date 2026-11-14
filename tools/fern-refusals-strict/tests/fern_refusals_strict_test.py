@@ -129,7 +129,7 @@ class ScratchCheckout(unittest.TestCase):
             encoding="utf-8",
         )
         registry = root / "docs" / "fern-refusals"
-        registry.mkdir()
+        registry.mkdir(exist_ok=True)  # the script's loads put its contract there
         classes = rows(REGISTRY / "classes.tsv")
         self.classes = [classes[0], next(row for row in classes[1:] if row[0] == self.CLASS)]
         self.assertNotEqual(self.classes[1][6], "unevaluated", f"{self.CLASS} is meant to be an evaluated class")
