@@ -9,12 +9,12 @@ workflow, reusable call and matrix leg against it).
 
 | Lane | Limit | Runs |
 | --- | --- | --- |
-| `lint` | 30 min | Release guard, pull request title, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), judged lint over the diff, visual docs |
+| `lint` | 60 min | Release guard, pull request title, suppressions comment, `just ci-lint` (format, lint, typecheck, supply chain, doc), judged lint over the diff, visual docs |
 | `test-linux` | 240 min | Crate dry run, install and smoke, packaging, offline projects, SDK environments, host budget, live and corpus proof |
 | `test-windows` | 150 min | Offline projects, SDK environments, install and smoke |
 | `test-macos` | 150 min | Offline projects, SDK environments, install and smoke |
 
-**The limits above 30 let a broad change finish; none is meant to cut off work that would pass.** Run
+**The limits above 30 let a broad change finish; none is meant to cut off work that would pass.** `lint`'s rose from 30 to 60 when a pair-moving change's judged diff needed 5 batches of ~2.5 minutes each after the job's ~23 minutes of setup. Run
 [42345332459](https://github.com/nickderobertis/crozier/actions/runs/42345332459), a broad pull
 request, spent this work across its old jobs: Linux 7371 s (Check 3053, SDK 160,
 live/corpus/fallback 3814, packaging 168, install 176), Windows 4307 s (Check 3557, SDK 363,

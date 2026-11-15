@@ -37,7 +37,11 @@ jobs:
   # that runs, and it holds that branch to the release tool's own edits.
   lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 60, not 30: setup reaches the judged diff tier about 23 minutes in, and each
+    # ~3 MB judge batch takes about 2.5 minutes, so a broad change (the Fern 5.200.0
+    # pair move needed 5 batches) cannot finish inside 30. The cap does not lengthen
+    # CI's critical path: test-linux already runs longer.
+    timeout-minutes: 60
     permissions:
       actions: write  # cancel this run when the judge gives no verdict (the last step below)
       contents: write  # visual docs: push the pull request's gallery preview to gh-pages
