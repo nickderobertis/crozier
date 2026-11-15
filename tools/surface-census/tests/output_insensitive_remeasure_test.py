@@ -67,6 +67,11 @@ FERN = textwrap.dedent(
     (out / "src" / "fern" / "title.py").write_text(title)
     """
 )
+# A real-binary journey for the crozier invocation is declined here: this suite
+# builds nothing, and a crozier build would add a cargo compile to test-census.
+# The stand-in refuses every argv but the measured one, so the composed
+# invocation is pinned exactly, and crozier-e2e's probe journeys (`probe_command`)
+# drive the real binary with that package and project name and compare its tree.
 CROZIER = textwrap.dedent(
     """\
     #!{python}
@@ -301,6 +306,23 @@ class RemeasureTests(unittest.TestCase):
         self.assertNotEqual(
             self.ablation("harbour-combo-lit").read_text(), self.ablation("harbour-combo-tags").read_text()
         )
+
+    def test_a_document_json_cannot_carry_is_refused_before_any_generation(self) -> None:
+        record = self.add_control(self.edits({"pointer": "/info/description", "edit": "deleted it"}))
+        source = self.surface / "witness-search-operation-combinations-lanterns/removal-controls/harbour.yml"
+        for value, kind in (("2024-01-01", "date"), ("!!set {a: null}", "set")):
+            with self.subTest(kind):
+                source.write_text(
+                    f"openapi: 3.0.3\ninfo:\n  title: Lanterns\n  version: '1'\n  description: Lit.\n"
+                    f"  x-lit: {value}\npaths: {{}}\n",
+                    encoding="utf-8",
+                )
+                result = self.run_script("--only", record)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn(f"/info/x-lit is a {kind}, which JSON cannot carry", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual([], self.ablations("harbour-combo-lit"))
+                self.assertFalse((self.tools / "fern.calls").exists())
 
     @POSIX_ONLY
     def test_an_escaped_pointer_deletes_the_key_it_spells(self) -> None:
@@ -602,8 +624,25 @@ class WorkspaceDriftTests(unittest.TestCase):
     `generate-fern-fixture.sh` scaffolds for a golden; this holds the two to one
     shape, so a change to the fixture recipe fails here until the re-measure follows."""
 
+    @POSIX_ONLY
     def test_the_generators_yml_is_the_fixture_recipe_s_with_its_options_unset(self) -> None:
         recipe = FIXTURE_RECIPE.read_text(encoding="utf-8")
+        # The recipe's own pydantic_config computation, run at its default enum
+        # type with no extra fields, so a change to either block moves this.
+        default = re.search(r"^ENUM_TYPE=(\S+)$", recipe, re.M)
+        block = re.search(r'^enum_type_block="".*?^pydantic_config_block=.*?^fi$', recipe, re.M | re.S)
+        assert default is not None and block is not None, "generate-fern-fixture.sh computes pydantic_config_block"
+        pydantic = subprocess.run(
+            [
+                "bash",
+                "-c",
+                f'ENUM_TYPE={default.group(1)}; extra_fields_block=""\n{block.group(0)}\nprintf %s "$pydantic_config_block"',
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+        self.assertIn("enum_type: python_enums", pydantic)
         template = re.search(r'cat > "\$workdir/fern/generators.yml" <<YAML\n(.*?)\nYAML\n', recipe, re.S)
         self.assertIsNotNone(template, "generate-fern-fixture.sh writes generators.yml from a heredoc")
         assert template is not None
@@ -613,7 +652,7 @@ class WorkspaceDriftTests(unittest.TestCase):
             .replace("${audiences_block}", "")
             .replace("${FERN_PYTHON_VERSION}", "{version}")
             .replace("${client_class_name_block}${default_max_retries_block}", "")
-            .replace("${pydantic_config_block}", "          pydantic_config:\n            enum_type: python_enums\n")
+            .replace("${pydantic_config_block}", pydantic)
         )
         module = load("remeasure", SCRIPT)
         self.assertEqual(rendered + "\n", module.GENERATORS_YML)

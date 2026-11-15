@@ -56,7 +56,9 @@ pub(super) fn failures(out: &Path) -> Vec<String> {
     }
 }
 
-/// The rows of `found` that carry `check` and contain `detail`.
+/// One check's rows (the audit's fourth column names the check) that mention
+/// `detail`, so an assertion reads only the finding it is about and another
+/// check reporting the same file cannot satisfy it.
 fn rows<'a>(found: &'a Audit, check: &str, detail: &str) -> Vec<&'a str> {
     found
         .stdout

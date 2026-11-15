@@ -6433,6 +6433,11 @@ fn digit_leading_method_reference_identifiers(pair: &Pair<'_>, fern: &str, crozi
 mod tests {
     use super::*;
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn non_string_client_header_examples_admit_only_the_declared_type() {
         let document = serde_json::json!({"paths": {"/berths": {"get": {
@@ -6610,6 +6615,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn digit_leading_documented_methods_require_the_declared_generated_identifier() {
         let document = serde_json::json!({"paths": {"/readings": {"get": {
@@ -7022,6 +7032,11 @@ mod tests {
         assert_eq!(without_examples("Examples\nx"), ["Examples", "x"]);
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn the_stream_heading_rule_holds_only_on_the_declared_iterator() {
         let client = "class FernApi:\n    def watch(\n        self, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> typing.Iterator[Tick]:\n        pass\n    def at(self) -> typing.Iterator[dt.datetime]:\n        pass\n    def raw(self) -> typing.Iterator[bytes]:\n        pass\nclass AsyncFernApi:\n    async def watch(self) -> typing.AsyncIterator[Tick]:\n        pass\n";
@@ -9554,6 +9569,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn emoji_tag_reference_identifiers_admit_only_the_raw_tag_spelling_of_a_module() {
         let document = serde_json::json!({"openapi": "3.0.3", "paths": {"/legacy": {"get": {
@@ -9657,6 +9677,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn a_reference_anchor_departs_only_where_each_side_names_its_own_method() {
         let fern_client = "class FernApi:\n    def __init__(self):\n        \"\"\"\n        api_key=\"k\",\n        api_key=\"k\",\n        \"\"\"\n\n    def relay(self) -> None:\n        pass\n";
@@ -9749,6 +9774,11 @@ mod tests {
         assert!(!line_holds(rule, "reference.md", &both, fern, &crozier));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn misspelt_reference_headings_admit_crozier_s_anchor_only_with_their_correction() {
         let document = serde_json::json!({"paths": {"/readings": {"get": {
@@ -9813,6 +9843,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn the_async_import_drops_only_the_sync_client_fern_s_casing_leaks() {
         let client = "class PetStoreApi:\n    pass\n\n\nclass AsyncPetStoreApi:\n    pass\n\n\nclass Pet:\n    pass\n";
@@ -9910,6 +9945,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn the_environment_snippet_takes_only_the_usage_constructor_s_arguments() {
         let readme = |environment_arguments: &str| {
@@ -9950,6 +9990,11 @@ mod tests {
         assert!(region_of(rule, "README.md", &fern, &crozier, &context).is_none());
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn a_readme_call_departs_only_to_the_escaped_method_the_group_defines() {
         let client = "class ApisClient:\n    def all_(self) -> None:\n        pass\n";
@@ -10005,6 +10050,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn an_abbreviated_call_departs_only_for_a_method_requiring_an_argument() {
         let required = "class FernApi:\n    def probe(\n        self, *, probe_param: typing.Sequence[str], request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
@@ -10069,6 +10119,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn a_list_path_parameter_departs_only_where_crozier_passes_that_parameter() {
         let client = "class UsersClient:\n    def get_users_id(\n        self, id: typing.Sequence[int], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n    def probe(\n        self, probe_param: typing.Sequence[str], *, request_options: typing.Optional[RequestOptions] = None\n    ) -> None:\n        pass\n";
@@ -10138,6 +10193,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn a_digit_leading_property_keyword_departs_only_to_the_declared_parameter() {
         let client = "class ContextClient:\n    def update_sm_context(\n        self,\n        *,\n        _5g_mm_cause_value: typing.Optional[int] = OMIT,\n    ) -> None:\n        pass\n";
@@ -10189,6 +10249,11 @@ mod tests {
         ));
     }
 
+    // End-to-end rejection proof declined: `crozier compare` refuses only against a
+    // Fern tree carrying the crafted defect, which Fern never writes, so each case
+    // would cost a reference regeneration while handing the rule the same Pair these
+    // cases build. Acceptance runs end to end in every golden comparison, pinned line
+    // by line in tests/fixtures/departures-ledger.tsv.
     #[test]
     fn a_constructor_departs_only_for_its_required_typed_headers() {
         let client = "class FernApi:\n    def __init__(\n        self,\n        *,\n        probe_param: typing.List[str],\n        tenant: str,\n        retries: typing.Optional[int] = None,\n    ):\n        pass\n\n    def probe(\n        self,\n        *,\n        count: int,\n    ) -> None:\n        pass\n";

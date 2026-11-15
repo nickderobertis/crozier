@@ -217,6 +217,27 @@ def child(node: object, part: str) -> object:
             return None
 
 
+def json_value(value: object, source: Path, at: str = "") -> None:
+    """Refuse a loaded YAML value JSON cannot carry: SafeLoader also builds dates,
+    sets, byte strings and non-string keys, which the ablated document's JSON
+    could only drop or misspell."""
+    match value:
+        case None | bool() | int() | float() | str():
+            return
+        case list():
+            for index, item in enumerate(value):
+                json_value(item, source, f"{at}/{index}")
+        case dict():
+            for key, item in value.items():
+                if not isinstance(key, str):
+                    raise UsageError(f"{source}: {at or '/'} has the non-string key {key!r}, which JSON cannot carry")
+                json_value(item, source, f"{at}/{key.replace('~', '~0').replace('/', '~1')}")
+        case _:
+            raise UsageError(
+                f"{source}: {at or '/'} is a {type(value).__name__}, which JSON cannot carry; quote it in the document"
+            )
+
+
 def ablated(before: Path, edits_record: Path, doc: str, scratch: Path) -> Path:
     """The after document an edit record describes: `before` with each pointer it
     names deleted. A record whose fixture is not `doc`, an edit that is not a
@@ -228,6 +249,7 @@ def ablated(before: Path, edits_record: Path, doc: str, scratch: Path) -> Path:
         case _:
             raise UsageError(f"{edits_record}: an edit record names its fixture {doc!r} and at least one edit")
     document = yaml.safe_load(before.read_text(encoding="utf-8"))
+    json_value(document, before)
     for edit in edits:
         match edit:
             case {"pointer": pointer, "edit": str(text)} if text.startswith("deleted"):
