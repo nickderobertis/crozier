@@ -420,14 +420,19 @@ class RemeasureTests(unittest.TestCase):
         self.assertIn("orphan-combo-x-fern.json: no before/after documents resolve beside it", result.stderr)
 
     def test_an_unbuilt_crozier_is_a_usage_error(self) -> None:
+        # The path as this OS renders it, so the message is compared path for path, not by separator.
+        crozier = self.root / "missing" / "crozier"
         result = subprocess.run(
-            [sys.executable, str(SCRIPT), "--root", str(self.root), "--crozier", str(self.root / "missing/crozier")],
+            [sys.executable, str(SCRIPT), "--root", str(self.root), "--crozier", str(crozier)],
             capture_output=True,
             text=True,
             check=False,
         )
         self.assertEqual(2, result.returncode, result.stderr)
-        self.assertIn("missing/crozier is not built; run `cargo build --release --locked`", result.stderr)
+        self.assertEqual(
+            f"output-insensitive-remeasure: {crozier} is not built; run `cargo build --release --locked`\n",
+            result.stderr,
+        )
 
     @POSIX_ONLY
     def test_a_generation_past_the_timeout_keeps_that_record_and_measures_the_rest(self) -> None:
