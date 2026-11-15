@@ -43,7 +43,7 @@ FERN = textwrap.dedent(
     args = sys.argv[1:]
     out = pathlib.Path(args[args.index("--output") + 1]) / "fern-python-sdk"
     config = json.loads(pathlib.Path("fern.config.json").read_text())
-    assert config == {{"organization": "fern", "version": "9.9.9"}}, config
+    assert config == {{"organization": "fern", "version": "9.9.9"}}, config  # certified-pair: stand-in
     assert "version: 8.8.8" in pathlib.Path("generators.yml").read_text()
     document = next(pathlib.Path("openapi").iterdir())
     title = yaml.safe_load(document.read_text())["info"]["title"]
@@ -481,7 +481,7 @@ class RemeasureTests(unittest.TestCase):
 
     def test_a_pair_that_is_not_two_releases_is_refused(self) -> None:
         for name, pair in (
-            ("empty", {"cliVersion": "", "generatorVersion": "8.8.8"}),
+            ("empty", {"cliVersion": "", "generatorVersion": "8.8.8"}),  # certified-pair: stand-in
             ("multiline", {"cliVersion": "9.9.9\n", "generatorVersion": "8.8.8"}),  # certified-pair: stand-in
             ("partial", {"cliVersion": "9.9.9", "generatorVersion": "8.8"}),  # certified-pair: stand-in
         ):
