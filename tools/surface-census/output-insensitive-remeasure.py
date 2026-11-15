@@ -42,6 +42,7 @@ import hashlib
 import importlib.util
 import io
 import json
+import math
 import os
 import re
 import shlex
@@ -217,21 +218,26 @@ def child(node: object, part: str) -> object:
             return None
 
 
-def json_value(value: object, source: Path, at: str = "") -> None:
+def json_value(value: object, source: Path, at: str = "", ancestors: frozenset[int] = frozenset()) -> None:
     """Refuse a loaded YAML value JSON cannot carry: SafeLoader also builds dates,
-    sets, byte strings and non-string keys, which the ablated document's JSON
-    could only drop or misspell."""
+    sets, byte strings, non-string keys, `.nan`/`.inf` and aliases that contain
+    themselves, which the ablated document's JSON could only drop, misspell or
+    never finish."""
     match value:
+        case float() if not math.isfinite(value):
+            raise UsageError(f"{source}: {at or '/'} is {value!r}, which JSON cannot carry; quote it in the document")
         case None | bool() | int() | float() | str():
             return
+        case list() | dict() if id(value) in ancestors:
+            raise UsageError(f"{source}: {at or '/'} is an alias containing itself, which JSON cannot carry")
         case list():
             for index, item in enumerate(value):
-                json_value(item, source, f"{at}/{index}")
+                json_value(item, source, f"{at}/{index}", ancestors | {id(value)})
         case dict():
             for key, item in value.items():
                 if not isinstance(key, str):
                     raise UsageError(f"{source}: {at or '/'} has the non-string key {key!r}, which JSON cannot carry")
-                json_value(item, source, f"{at}/{key.replace('~', '~0').replace('/', '~1')}")
+                json_value(item, source, f"{at}/{key.replace('~', '~0').replace('/', '~1')}", ancestors | {id(value)})
         case _:
             raise UsageError(
                 f"{source}: {at or '/'} is a {type(value).__name__}, which JSON cannot carry; quote it in the document"

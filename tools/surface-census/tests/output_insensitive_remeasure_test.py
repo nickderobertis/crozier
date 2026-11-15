@@ -8,8 +8,8 @@ stand-in Fern exit 1, one titled `Slow` makes it outlast a short `--timeout`, an
 one titled `Flat` makes it exit 0 without a packaged SDK. The stand-in crozier
 writes nothing for `Empty`, exits 1 for `Unbuildable` and outlasts the timeout
 for `Stalled`. Only the stand-in
-crozier reads `info.summary`, so a document differing there alone moves crozier
-and not Fern. Each stand-in appends one line per run to `<name>.calls` beside it.
+crozier reads `info.summary` and `info.x-extra-file` (which adds a second file),
+so a document differing there alone moves crozier and not Fern. Each stand-in appends one line per run to `<name>.calls` beside it.
 The stand-in crozier refuses any invocation but the measured configuration, and
 the stand-in Fern writes the environment it ran under to `fern.env` beside it.
 """
@@ -94,6 +94,8 @@ CROZIER = textwrap.dedent(
     if title != "Empty":
         (out / "src" / "fern").mkdir(parents=True)
         (out / "src" / "fern" / "title.py").write_text(title + info.get("summary", ""))
+        if "x-extra-file" in info:
+            (out / "src" / "fern" / "extra.py").write_text("extra")
     """
 )
 STALE = '{"stale": true}\n'
@@ -310,8 +312,15 @@ class RemeasureTests(unittest.TestCase):
     def test_a_document_json_cannot_carry_is_refused_before_any_generation(self) -> None:
         record = self.add_control(self.edits({"pointer": "/info/description", "edit": "deleted it"}))
         source = self.surface / "witness-search-operation-combinations-lanterns/removal-controls/harbour.yml"
-        for value, kind in (("2024-01-01", "date"), ("!!set {a: null}", "set")):
-            with self.subTest(kind):
+        for value, said in (
+            ("2024-01-01", "/info/x-lit is a date, which JSON cannot carry"),
+            ("!!set {a: null}", "/info/x-lit is a set, which JSON cannot carry"),
+            ("{1: one}", "/info/x-lit has the non-string key 1, which JSON cannot carry"),
+            (".nan", "/info/x-lit is nan, which JSON cannot carry"),
+            ("-.inf", "/info/x-lit is -inf, which JSON cannot carry"),
+            ("&lit [*lit]", "/info/x-lit/0 is an alias containing itself, which JSON cannot carry"),
+        ):
+            with self.subTest(value):
                 source.write_text(
                     f"openapi: 3.0.3\ninfo:\n  title: Lanterns\n  version: '1'\n  description: Lit.\n"
                     f"  x-lit: {value}\npaths: {{}}\n",
@@ -319,10 +328,35 @@ class RemeasureTests(unittest.TestCase):
                 )
                 result = self.run_script("--only", record)
                 self.assertEqual(2, result.returncode, result.stderr)
-                self.assertIn(f"/info/x-lit is a {kind}, which JSON cannot carry", result.stderr)
+                self.assertIn(said, result.stderr)
                 self.assertNotIn("Traceback", result.stderr)
                 self.assertEqual([], self.ablations("harbour-combo-lit"))
                 self.assertFalse((self.tools / "fern.calls").exists())
+
+    @POSIX_ONLY
+    def test_a_pointer_through_an_array_element_deletes_only_that_element_s_key(self) -> None:
+        record = self.add_control(self.edits({"pointer": "/tags/0/name", "edit": "deleted the first tag's name"}))
+        result = self.run_script("--only", record)
+        self.assertEqual(0, result.returncode, result.stderr)
+        after = json.loads(self.ablation("harbour-combo-lit").read_text())
+        self.assertEqual([{}, {"name": "two"}], after["tags"])
+
+    @POSIX_ONLY
+    def test_a_file_one_generator_adds_or_drops_removes_the_disposition(self) -> None:
+        for name, before, after in (
+            ("grown", document("Lanterns"), document("Lanterns", **{"x-extra-file": "yes"})),
+            ("shrunk", document("Lanterns", **{"x-extra-file": "yes"}), document("Lanterns")),
+        ):
+            with self.subTest(name):
+                record = self.add_feature(name, before, after)
+                result = self.run_script("--only", record)
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(
+                    f"{name}-attribution/fern-comparison.json: crozier moves src/fern/extra.py", result.stderr
+                )
+                self.assertNotIn("moves src/fern/title.py", result.stderr)
+                self.assertIn(f"removed {name}-key at -", result.stderr)
+                self.assertEqual({"stale": True}, self.feature_record(name, "crozier"))
 
     @POSIX_ONLY
     def test_an_escaped_pointer_deletes_the_key_it_spells(self) -> None:
