@@ -2095,9 +2095,10 @@ const REFERENCE_RANGE_MARKER: &str = "#@@CROZIER_REFERENCE_RANGE@@";
 /// documents, as Fern 5.41.25 does: `src/fern/pet/client.py#L34-L68` runs from
 /// the method's `def` line to its last line in the generated file, so the
 /// ranges are read from the final, formatted source rather than predicted. A
-/// link whose file the tree does not hold (a flat tree has no `src/`), or
-/// whose method the file's sync client does not define, keeps the bare path,
-/// as Fern's does.
+/// flat tree's links name its root-relative client files
+/// (`flat-reference-link-target`), so they are anchored the same way. A link
+/// whose file the tree does not hold, or whose method the file's sync client
+/// does not define, keeps the bare path, as Fern's does.
 fn resolve_reference_ranges(files: &mut [GeneratedFile]) {
     let Some(index) = files
         .iter()
