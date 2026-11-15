@@ -479,6 +479,49 @@ class RemeasureTests(unittest.TestCase):
                 self.assertIn(reason, result.stderr)
                 self.assertEqual({"stale": True}, self.feature_record("steady", "fern"))
 
+    def test_a_pair_that_is_not_two_releases_is_refused(self) -> None:
+        for name, pair in (
+            ("empty", {"cliVersion": "", "generatorVersion": "8.8.8"}),
+            ("multiline", {"cliVersion": "9.9.9\n", "generatorVersion": "8.8.8"}),  # certified-pair: stand-in
+            ("partial", {"cliVersion": "9.9.9", "generatorVersion": "8.8"}),  # certified-pair: stand-in
+        ):
+            with self.subTest(name):
+                (self.root / "assets/scaffolding/metadata.json").write_text(json.dumps(pair), encoding="utf-8")
+                result = self.run_script()
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn("is no MAJOR.MINOR.PATCH release", result.stderr)
+
+    def test_a_log_directory_that_cannot_be_made_is_a_usage_error(self) -> None:
+        blocker = self.root / "not-a-directory"
+        blocker.write_text("", encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--root", str(self.root), "--crozier", str(self.tools / "crozier")],
+            capture_output=True,
+            text=True,
+            env={**os.environ, "ONEPIPELINE_NODE_SCRATCH_DIR": str(blocker)},
+            check=False,
+        )
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("cannot create the log directory", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+
+    @POSIX_ONLY
+    @unittest.skipIf(hasattr(os, "geteuid") and os.geteuid() == 0, "root writes through read-only modes")
+    def test_a_record_or_table_that_cannot_be_written_is_reported_not_a_traceback(self) -> None:
+        steady = self.surface / "witness-search-unproven-features/steady-attribution/fern-comparison.json"
+        steady.chmod(0o444)
+        self.addCleanup(steady.chmod, 0o644)
+        table = self.surface / "output-insensitive.tsv"
+        table.chmod(0o444)
+        self.addCleanup(table.chmod, 0o644)
+        result = self.run_script()
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertIn("steady-attribution/fern-comparison.json was not written", result.stderr)
+        self.assertIn("output-insensitive.tsv was not rewritten, so no row was removed", result.stderr)
+        self.assertNotIn("removed moving-key", result.stderr)
+        self.assertIn("moving-key", table.read_text(encoding="utf-8"))
+
     def test_an_unknown_only_record_is_a_usage_error(self) -> None:
         result = self.run_script("--only", "docs/openapi-surface/nowhere-fern.json")
         self.assertEqual(2, result.returncode, result.stderr)

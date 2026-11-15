@@ -59,6 +59,7 @@ CORPUS_SOURCES = Path("tests/fixtures/corpus-sources")
 GENERATION_TIMEOUT_SECONDS = 1800
 LIST_INDEX = re.compile(r"0|[1-9][0-9]*")
 BAD_ESCAPE = re.compile(r"~(?![01])")
+RELEASE = re.compile(r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)")
 
 
 def load_reader() -> ModuleType:
@@ -144,9 +145,12 @@ def certified_pair(root: Path) -> Pair:
     """The pair `output-insensitive.py` holds every record to (it validates the declaration)."""
     try:
         cli, generator = READER.certified_pair(root)
-        return Pair(cli, generator)
     except (OSError, ValueError, KeyError, TypeError) as error:
         raise UsageError(f"assets/scaffolding/metadata.json: {error}") from error
+    for name, version in (("cliVersion", cli), ("generatorVersion", generator)):
+        if not RELEASE.fullmatch(version):
+            raise UsageError(f"assets/scaffolding/metadata.json: {name} {version!r} is no MAJOR.MINOR.PATCH release")
+    return Pair(cli, generator)
 
 
 def read_rows(root: Path) -> list[Row]:
@@ -402,8 +406,11 @@ def main(argv: list[str]) -> int:
     logs = (
         Path(os.environ.get("ONEPIPELINE_NODE_SCRATCH_DIR") or tempfile.gettempdir()) / "output-insensitive-remeasure"
     )
-    logs.mkdir(parents=True, exist_ok=True)
     try:
+        try:
+            logs.mkdir(parents=True, exist_ok=True)
+        except OSError as error:
+            raise UsageError(f"cannot create the log directory {logs}: {error}") from error
         if args.timeout <= 0:
             raise UsageError("--timeout is a positive number of seconds")
         try:
@@ -465,15 +472,26 @@ def main(argv: list[str]) -> int:
                     )
             continue
         for outcome in outcomes:
-            (root / outcome.record).write_text(
-                record_text(outcome.generator, pair, outcome.before, outcome.after), encoding="utf-8"
-            )
+            try:
+                (root / outcome.record).write_text(
+                    record_text(outcome.generator, pair, outcome.before, outcome.after), encoding="utf-8"
+                )
+            except OSError as error:
+                print(f"output-insensitive-remeasure: {outcome.record} was not written: {error}", file=sys.stderr)
+                failed = True
     if dropped:
         kept = [row for row in rows if row.fern_comparison not in dropped]
+        try:
+            write_rows(root, kept)
+        except OSError as error:
+            print(
+                f"output-insensitive-remeasure: {REGISTRY} was not rewritten, so no row was removed: {error}",
+                file=sys.stderr,
+            )
+            return 1
         for row in rows:
             if row.fern_comparison in dropped:
                 print(f"output-insensitive-remeasure: removed {row.key} at {row.context}", file=sys.stderr)
-        write_rows(root, kept)
     return 1 if failed or dropped else 0
 
 
