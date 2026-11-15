@@ -26,6 +26,13 @@
       ]
     },
     "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-certified-pair",
+        "lint-boundaries"
+      ]
+    },
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs migration-options"
@@ -33,6 +40,18 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/migration_options"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
       ]
     }
   }

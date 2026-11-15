@@ -107,6 +107,7 @@
       "{workspaceRoot}/tests/sdk_env/project.json",
       "{workspaceRoot}/tests/runtime/project.json",
       "{workspaceRoot}/tests/nested-discriminator/runtime/project.json",
+      "{workspaceRoot}/tests/migration_options/project.json",
       "{workspaceRoot}/pyproject.toml",
       "{workspaceRoot}/tests/corpus_match/match.sh",
       "{workspaceRoot}/tools/corpus/corpus_sources.py",

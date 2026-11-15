@@ -71,6 +71,7 @@ DELEGATED = (
     "tests/lane_inventory/",
     # llmlint: ignore-end[code_lands_in_the_domain_that_owns_it]
     "tests/live_e2e/",
+    "tests/migration_options/",
     # llmlint: ignore-block[code_lands_in_the_domain_that_owns_it] Delegation is declared here, as for every root above: the whole-tree check may not read the delegated projects' definitions (nx.json's boundaries), so it cannot discover them there.
     "tests/nested-discriminator/golden/",
     "tests/nested-discriminator/runtime/",

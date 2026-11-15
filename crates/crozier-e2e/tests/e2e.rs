@@ -252,10 +252,11 @@ fn tier_filter_selects(expression: &str, name: &str) -> bool {
 /// The project files of the tier projects `just test-sdk-env` runs, each also an
 /// `e2eReads` input. Read by path rather than by scanning `tests/`, so the suite
 /// reads no project the boundaries forbid it to depend on.
-const SDK_ENV_TIER_PROJECT_FILES: [&str; 3] = [
+const SDK_ENV_TIER_PROJECT_FILES: [&str; 4] = [
     "tests/sdk_env/project.json",
     "tests/runtime/project.json",
     "tests/nested-discriminator/runtime/project.json",
+    "tests/migration_options/project.json",
 ];
 
 /// Every `sdk_env_` journey this binary carries, a module-qualified one such as
