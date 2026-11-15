@@ -323,9 +323,7 @@ pub struct Context {
 /// One of the two trees a file pair belongs to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Tree {
-    /// The reference (Fern's) tree.
     Reference,
-    /// crozier's tree.
     Crozier,
 }
 
@@ -346,7 +344,6 @@ impl ClientModules {
     }
 }
 
-/// The `client.py` modules among `files`, by path.
 fn client_modules<'a>(
     files: impl IntoIterator<Item = (&'a str, &'a str)>,
 ) -> BTreeMap<String, String> {
@@ -444,7 +441,6 @@ impl Context {
         })
     }
 
-    /// Whether `tree` holds `rel` among its `client.py` modules.
     fn holds_client_module(&self, tree: Tree, rel: &str) -> bool {
         self.client_modules().of(tree).contains_key(rel)
     }

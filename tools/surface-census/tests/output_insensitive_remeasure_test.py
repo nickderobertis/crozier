@@ -150,6 +150,14 @@ class RemeasureTests(unittest.TestCase):
         (folder / f"removal-controls/{stem}.json").write_text(json.dumps(control), encoding="utf-8")
         return self.add_row(stem, folder, f"{stem}-{{generator}}.json")
 
+    def ablations(self, stem: str) -> list[Path]:
+        """The after documents the re-measure derived from edit records named `stem`."""
+        return sorted((self.root / "logs/output-insensitive-remeasure/ablations").glob(f"*-{stem}.after.json"))
+
+    def ablation(self, stem: str) -> Path:
+        (path,) = self.ablations(stem)
+        return path
+
     def edits(self, *edits: object, fixture: str = "harbour") -> dict[str, object]:
         return {"key": "combo-lit", "fixture": fixture, "edits": list(edits)}
 
@@ -228,10 +236,8 @@ class RemeasureTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         for name in ("fern", "crozier"):
             self.assertEqual(3, len((self.tools / f"{name}.calls").read_text().splitlines()), name)
-        ablations = self.root / "logs/output-insensitive-remeasure/ablations"
         self.assertNotEqual(
-            (ablations / "harbour-combo-lit.after.json").read_text(),
-            (ablations / "harbour-combo-tags.after.json").read_text(),
+            self.ablation("harbour-combo-lit").read_text(), self.ablation("harbour-combo-tags").read_text()
         )
 
     @POSIX_ONLY
@@ -244,9 +250,7 @@ class RemeasureTests(unittest.TestCase):
         )
         result = self.run_script("--only", record)
         self.assertEqual(0, result.returncode, result.stderr)
-        after = json.loads(
-            (self.root / "logs/output-insensitive-remeasure/ablations/harbour-combo-lit.after.json").read_text()
-        )
+        after = json.loads(self.ablation("harbour-combo-lit").read_text())
         self.assertNotIn("x-a/b", after["info"])
         self.assertNotIn("x-c~d", after["info"])
         self.assertEqual("Lit nightly.", after["info"]["description"])
@@ -377,9 +381,7 @@ class RemeasureTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
         rewritten = self.read(record)
         self.assertEqual(rewritten["before"], rewritten["after"])
-        after = json.loads(
-            (self.root / "logs/output-insensitive-remeasure/ablations/harbour-combo-lit.after.json").read_text()
-        )
+        after = json.loads(self.ablation("harbour-combo-lit").read_text())
         self.assertNotIn("description", after["info"])
         self.assertEqual([{"name": "one"}], after["tags"])
         self.assertEqual("Lanterns", after["info"]["title"])
@@ -430,9 +432,7 @@ class RemeasureTests(unittest.TestCase):
         result = self.run_script("--only", record)
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual("9.9.9", self.read(record)["fern_cli_version"])
-        self.assertFalse(
-            (self.root / "logs/output-insensitive-remeasure/ablations/harbour-combo-lit.after.json").exists()
-        )
+        self.assertEqual([], self.ablations("harbour-combo-lit"))
 
     @POSIX_ONLY
     def test_a_corpus_source_control_is_measured_against_its_after_document(self) -> None:
@@ -447,6 +447,37 @@ class RemeasureTests(unittest.TestCase):
         result = self.run_script("--only", record)
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertEqual(["src/fern/title.py"], list(self.read(record)["after"]))
+
+    @POSIX_ONLY
+    def test_two_searches_filing_a_control_under_one_stem_are_measured_apart(self) -> None:
+        records = [self.add_control(self.edits({"pointer": "/info/description", "edit": "deleted it"}))]
+        other = self.surface / "witness-search-schema-combinations-lanterns"
+        (other / "removal-controls").mkdir(parents=True)
+        source = "openapi: 3.0.3\ninfo:\n  title: Beacons\n  version: '1'\n  description: Lit nightly.\npaths: {}\n"
+        (other / "removal-controls/harbour.yml").write_text(source, encoding="utf-8")
+        control = self.edits({"pointer": "/info/description", "edit": "deleted it"})
+        (other / "removal-controls/harbour-combo-lit.json").write_text(json.dumps(control), encoding="utf-8")
+        records.append(self.add_row("harbour-combo-lit-beacons", other, "harbour-combo-lit-{generator}.json"))
+        result = self.run_script(*(argument for record in records for argument in ("--only", record)))
+        self.assertEqual(0, result.returncode, result.stderr)
+        titles = sorted(json.loads(path.read_text())["info"]["title"] for path in self.ablations("harbour-combo-lit"))
+        self.assertEqual(["Beacons", "Lanterns"], titles)
+        self.assertNotEqual(self.read(records[0])["after"], self.read(records[1])["after"])
+
+    def test_a_row_with_a_malformed_or_repeated_key_is_refused(self) -> None:
+        table = self.surface / "output-insensitive.tsv"
+        original = table.read_text(encoding="utf-8")
+        steady = next(line for line in original.splitlines() if line.startswith("steady-key\t"))
+        for broken, reason in (
+            (original.replace("steady-key\t", "Steady_Key\t", 1), "'Steady_Key' is no census key"),
+            (original + steady + "\n", "steady-key at - is filed twice"),
+        ):
+            with self.subTest(reason=reason):
+                table.write_text(broken, encoding="utf-8")
+                result = self.run_script()
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertIn(reason, result.stderr)
+                self.assertEqual({"stale": True}, self.feature_record("steady", "fern"))
 
     def test_an_unknown_only_record_is_a_usage_error(self) -> None:
         result = self.run_script("--only", "docs/openapi-surface/nowhere-fern.json")

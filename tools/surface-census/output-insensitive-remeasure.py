@@ -157,10 +157,16 @@ def read_rows(root: Path) -> list[Row]:
         if reader.fieldnames != list(COLUMNS):
             raise UsageError(f"{REGISTRY}: expected columns {COLUMNS}")
         rows = []
+        seen: set[tuple[str, str]] = set()
         for number, cells in enumerate(reader, 2):
             if set(cells) != set(COLUMNS) or not all(isinstance(v, str) and v for v in cells.values()):
                 raise UsageError(f"{REGISTRY} line {number}: a row fills every column")
             row = Row(**{column: cells[column] for column in COLUMNS})
+            if not READER.CENSUS_KEY.fullmatch(row.key):
+                raise UsageError(f"{REGISTRY} line {number}: {row.key!r} is no census key")
+            if (row.key, row.context) in seen:
+                raise UsageError(f"{REGISTRY} line {number}: {row.key} at {row.context} is filed twice")
+            seen.add((row.key, row.context))
             for path in (row.search_record, row.fern_comparison, row.crozier_comparison):
                 try:
                     READER.local_file(root, path)
@@ -237,7 +243,8 @@ def ablated(before: Path, edits_record: Path, doc: str, scratch: Path) -> Path:
                 del node[int(last)]
             case _:
                 raise UsageError(f"{edits_record}: {edit['pointer']} names nothing in {before}")
-    after = scratch / f"{edits_record.stem}.after.json"
+    # Keyed by the record's whole path: two searches may file a control under one stem.
+    after = scratch / f"{hashlib.sha256(str(edits_record).encode()).hexdigest()[:12]}-{edits_record.stem}.after.json"
     after.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
     return after
 

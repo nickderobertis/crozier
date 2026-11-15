@@ -1511,9 +1511,7 @@ struct TestProperty<'f> {
     is_required: bool,
 }
 
-/// The `tests/xml/test_xml_<module>.py` round-trip suite of every XML model
-/// (fern-python-sdk 5.41.25 names it `test_xml_<module>.py`; 5.41.3 named it
-/// `test_<module>.py`).
+/// The `tests/xml/test_xml_<module>.py` round-trip suite of every XML model.
 /// `first_party` says whether Fern's import sort files the SDK's own import in a
 /// section of its own (see `scaffolding_files`): always in the packaged tree, and
 /// in the flat tree only for a package named `fern`; otherwise it joins
