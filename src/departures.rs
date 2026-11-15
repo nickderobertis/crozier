@@ -9624,6 +9624,11 @@ mod tests {
         ));
     }
 
+    // Rejection runs end to end too: crates/crozier-e2e/tests/e2e/compare.rs's
+    // `compare_holds_each_reference_link_departure_to_its_own_shape` drives `crozier compare` over
+    // the real golden with Fern's heading edited into a different defect, and this rule refuses
+    // it. These cases add the controls a golden cannot carry (a client without the escaped method,
+    // a name needing no escape, another file).
     #[test]
     fn reference_heading_escaped_method_names_admit_only_the_method_the_client_defines() {
         let client = "class ApplicantsClient:\n    def all_(self) -> None:\n        pass\n";
@@ -9734,6 +9739,11 @@ mod tests {
         .is_none());
     }
 
+    // Rejection runs end to end too: crates/crozier-e2e/tests/e2e/compare.rs's
+    // `compare_holds_each_reference_link_departure_to_its_own_shape` drives `crozier compare` over
+    // the real golden with Fern's heading edited into a different defect, and this rule refuses
+    // it. These cases add the controls a golden cannot carry (a `_` module Fern's tree holds too,
+    // another module, another file).
     #[test]
     fn an_empty_namespace_heading_takes_only_the_anchor_of_crozier_s_own_module() {
         let client = "class UnderscoreClient:\n    def list_lamps(self) -> None:\n        pass\n";
@@ -9898,6 +9908,11 @@ mod tests {
         ));
     }
 
+    // Rejection runs end to end too: crates/crozier-e2e/tests/e2e/compare.rs's
+    // `compare_holds_each_reference_link_departure_to_its_own_shape` drives `crozier compare` over
+    // the real golden with Fern's heading edited into a different defect, and this rule refuses
+    // it. These cases add the controls a golden cannot carry (a Fern tree holding the file its
+    // link names, another file).
     #[test]
     fn a_flat_link_departs_only_to_the_module_the_flat_tree_holds() {
         let client = "class PetClient:\n    def add_pet(self) -> None:\n        pass\n";
