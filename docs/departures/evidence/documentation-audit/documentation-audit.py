@@ -15,8 +15,9 @@ it, is checked for
 
 Each finding is a stdout row: tree, file, line, check, detail, tab-separated.
 Exit 0 when there is none (a directory documenting no example has none), 1
-when there are findings, 2 when a TREE is not a directory (stderr says why). A
-one-line summary of trees, blocks and findings goes to stderr.
+when there are findings, 2 when a TREE is not a directory or holds a document
+or client module it cannot read as UTF-8 (stderr says why). A one-line summary
+of trees, blocks and findings goes to stderr.
 """
 
 from __future__ import annotations
@@ -369,6 +370,14 @@ def docstring_examples(source: str, module: ast.Module, file: str) -> list[Block
     return sections
 
 
+def read_text(path: Path) -> str:
+    """A documentation or client file as UTF-8, or an input error naming it."""
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as error:
+        raise InputError(f"{path} cannot be read as UTF-8 text: {error}") from error
+
+
 def audit_tree(tree: Path) -> Report:
     """The findings of every example `tree` documents, and how many blocks."""
     if not tree.is_dir():
@@ -378,11 +387,11 @@ def audit_tree(tree: Path) -> Report:
     findings: list[Finding] = []
     for document in ("README.md", "reference.md"):
         if (tree / document).is_file():
-            text = (tree / document).read_text(encoding="utf-8")
+            text = read_text(tree / document)
             blocks += [Block(document, m.group(1), text.count("\n", 0, m.start(1)) + 1) for m in FENCE.finditer(text)]
     for client in sorted(package.modules.rglob("client.py")):
         relative = str(client.relative_to(tree))
-        source = client.read_text(encoding="utf-8")
+        source = read_text(client)
         try:
             module = ast.parse(source)
         except SyntaxError as error:

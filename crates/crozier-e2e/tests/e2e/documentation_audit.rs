@@ -89,6 +89,18 @@ fn the_audit_reports_each_defect_class_on_its_line_and_nothing_in_crozier_s_tree
         ("client = FernApi()", "call", "FernApi(...): missing required ['base_url']"),
         ("client.record_reading(depot=\"YOUR_DEPOT\", vehicle=\"v\", metres=1, trip_count=1, drift=1, bias=1, checkpoints=[1])", "placeholder", "client.record_reading: `depot='YOUR_DEPOT'` for `int`"),
         ("client.no_such_method()", "call", "`client.no_such_method`: no such method"),
+        // A top-level `await` or `yield` is exempt from the syntax check, as Fern
+        // lays out async and streaming examples; the call it makes is still checked.
+        (
+            "await client.no_such_async()",
+            "call",
+            "`client.no_such_async`: no such method",
+        ),
+        (
+            "yield client.no_such_stream()",
+            "call",
+            "`client.no_such_stream`: no such method",
+        ),
         (
             "client.record_reading(1, depot=1, vehicle=\"v\", metres=1, trip_count=1, drift=1, bias=1, checkpoints=[1])",
             "call",
@@ -180,8 +192,20 @@ fn a_docstring_example_is_audited_as_the_client_module_writes_it() {
 fn the_audit_finds_fern_s_undefined_client_import() {
     let tree =
         repo_root().join("docs/departures/evidence/readme-client-class-casing/fern-reference");
-    let found = audit(&[&tree]);
+    // Audited beside a clean tree, in one run: each row names its own tree.
+    let scratch = tempfile::tempdir().unwrap();
+    let document = handwritten_document_as_json("odometer-reading", scratch.path());
+    let clean = scratch.path().join("crozier");
+    probe_command(&document, &clean).assert().success();
+    let found = audit(&[&clean, &tree]);
     assert_eq!(found.status, Some(1), "{}{}", found.stdout, found.stderr);
+    assert!(found.stderr.contains("2 tree(s)"), "{}", found.stderr);
+    let prefix = format!("{}\t", tree.display());
+    assert!(
+        found.stdout.lines().all(|row| row.starts_with(&prefix)),
+        "{}",
+        found.stdout
+    );
     assert!(
         !rows(
             &found,
@@ -214,6 +238,20 @@ fn the_audit_refuses_a_path_that_is_not_a_directory() {
         );
         assert!(!failures(&path).is_empty());
     }
+    // A README that is not UTF-8 is an input error naming it, never a clean tree.
+    let unreadable = scratch.path().join("unreadable");
+    std::fs::create_dir(&unreadable).unwrap();
+    std::fs::write(unreadable.join("README.md"), b"```python\n\xff\xfe\n```\n").unwrap();
+    let found = audit(&[&unreadable]);
+    assert_eq!(found.status, Some(2), "{}{}", found.stdout, found.stderr);
+    assert!(
+        found
+            .stderr
+            .contains("README.md cannot be read as UTF-8 text"),
+        "{}",
+        found.stderr
+    );
+    std::fs::remove_dir_all(&unreadable).unwrap();
     std::fs::remove_file(&file).unwrap();
     let empty = audit(&[scratch.path()]);
     assert_eq!(empty.status, Some(0), "{}{}", empty.stdout, empty.stderr);

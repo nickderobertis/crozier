@@ -5,7 +5,9 @@ drives (as the weekly journeys stand Fern in): each writes a tree derived from
 the document it is given, so two documents with the same `info.title` generate
 the same tree and two that differ do not. A document titled `Broken` makes the
 stand-in Fern exit 1, one titled `Slow` makes it outlast a short `--timeout`, and
-one titled `Empty` makes the stand-in crozier write nothing. Only the stand-in
+one titled `Flat` makes it exit 0 without a packaged SDK. The stand-in crozier
+writes nothing for `Empty`, exits 1 for `Unbuildable` and outlasts the timeout
+for `Stalled`. Only the stand-in
 crozier reads `info.summary`, so a document differing there alone moves crozier
 and not Fern. Each stand-in appends one line per run to `<name>.calls` beside it.
 """
@@ -52,6 +54,10 @@ FERN = textwrap.dedent(
     if title == "Slow":
         import time
         time.sleep(30)
+    if title == "Flat":
+        out.mkdir(parents=True)
+        (out / "client.py").write_text(title)
+        sys.exit(0)
     (out / "src" / "fern").mkdir(parents=True)
     (out / "src" / "fern" / "title.py").write_text(title)
     """
@@ -66,6 +72,11 @@ CROZIER = textwrap.dedent(
     title = info["title"]
     with pathlib.Path(__file__).with_name("crozier.calls").open("a") as calls:
         calls.write(title + "\\n")
+    if title == "Unbuildable":
+        sys.exit(1)
+    if title == "Stalled":
+        import time
+        time.sleep(30)
     out.mkdir(parents=True)
     if title != "Empty":
         (out / "src" / "fern").mkdir(parents=True)
@@ -134,7 +145,7 @@ class RemeasureTests(unittest.TestCase):
         folder = self.surface / "witness-search-operation-combinations-lanterns"
         (folder / "removal-controls").mkdir(parents=True, exist_ok=True)
         source = "openapi: 3.0.3\ninfo:\n  title: Lanterns\n  version: '1'\n  description: Lit nightly.\n"
-        source += "paths: {}\ntags: [{name: one}, {name: two}]\n"
+        source += "  x-a/b: slash\n  x-c~d: tilde\npaths: {}\ntags: [{name: one}, {name: two}]\n"
         (folder / "removal-controls/harbour.yml").write_text(source, encoding="utf-8")
         (folder / f"removal-controls/{stem}.json").write_text(json.dumps(control), encoding="utf-8")
         return self.add_row(stem, folder, f"{stem}-{{generator}}.json")
@@ -165,7 +176,6 @@ class RemeasureTests(unittest.TestCase):
     def read(self, record: str) -> dict[str, Any]:
         return json.loads((self.root / record).read_text(encoding="utf-8"))
 
-    # The same JSON record, by its feature's name.
     def feature_record(self, name: str, generator: str) -> dict[str, Any]:
         return self.read(
             f"docs/openapi-surface/witness-search-unproven-features/{name}-attribution/{generator}-comparison.json"
@@ -223,6 +233,68 @@ class RemeasureTests(unittest.TestCase):
             (ablations / "harbour-combo-lit.after.json").read_text(),
             (ablations / "harbour-combo-tags.after.json").read_text(),
         )
+
+    @POSIX_ONLY
+    def test_an_escaped_pointer_deletes_the_key_it_spells(self) -> None:
+        record = self.add_control(
+            self.edits(
+                {"pointer": "/info/x-a~1b", "edit": "deleted the slash key"},
+                {"pointer": "/info/x-c~0d", "edit": "deleted the tilde key"},
+            )
+        )
+        result = self.run_script("--only", record)
+        self.assertEqual(0, result.returncode, result.stderr)
+        after = json.loads(
+            (self.root / "logs/output-insensitive-remeasure/ablations/harbour-combo-lit.after.json").read_text()
+        )
+        self.assertNotIn("x-a/b", after["info"])
+        self.assertNotIn("x-c~d", after["info"])
+        self.assertEqual("Lit nightly.", after["info"]["description"])
+
+    @POSIX_ONLY
+    def test_a_generator_that_fails_or_stalls_keeps_its_record_and_row(self) -> None:
+        for name, title, reason in (
+            ("flat", "Flat", "without a packaged SDK"),
+            ("unbuildable", "Unbuildable", "crozier exited 1"),
+            ("stalled", "Stalled", "timed out after 2 seconds"),
+        ):
+            with self.subTest(name):
+                self.add_feature(name, title, title)
+                record = (
+                    f"docs/openapi-surface/witness-search-unproven-features/{name}-attribution/fern-comparison.json"
+                )
+                result = self.run_script("--timeout", "2", "--only", record)
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(f"{name}-attribution/fern-comparison.json: ", result.stderr)
+                self.assertIn(reason, result.stderr)
+                for generator in ("fern", "crozier"):
+                    self.assertEqual({"stale": True}, self.feature_record(name, generator))
+                self.assertIn(f"{name}-key", (self.surface / "output-insensitive.tsv").read_text(encoding="utf-8"))
+
+    def test_a_table_whose_header_is_not_the_shared_columns_is_refused(self) -> None:
+        table = self.surface / "output-insensitive.tsv"
+        table.write_text(table.read_text(encoding="utf-8").replace("search_record", "search", 1), encoding="utf-8")
+        result = self.run_script()
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("expected columns", result.stderr)
+
+    def test_a_record_with_no_documents_beside_it_is_refused(self) -> None:
+        folder = self.surface / "witness-search-schema-combinations-orphans"
+        (folder / "removal-controls").mkdir(parents=True)
+        record = self.add_row("combo-orphan", folder, "orphan-combo-x-{generator}.json")
+        result = self.run_script("--only", record)
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("orphan-combo-x-fern.json: no before/after documents resolve beside it", result.stderr)
+
+    def test_an_unbuilt_crozier_is_a_usage_error(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--root", str(self.root), "--crozier", str(self.root / "missing/crozier")],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("missing/crozier is not built; run `cargo build --release --locked`", result.stderr)
 
     @POSIX_ONLY
     def test_a_generation_past_the_timeout_keeps_that_record_and_measures_the_rest(self) -> None:
