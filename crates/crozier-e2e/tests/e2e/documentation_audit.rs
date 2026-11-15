@@ -261,3 +261,50 @@ fn the_audit_refuses_a_path_that_is_not_a_directory() {
         empty.stderr
     );
 }
+
+/// With no tree the audit prints its usage and exits 2; asked for help it
+/// prints the same usage and exits 0.
+#[test]
+fn the_audit_prints_its_usage_for_no_tree_and_for_help() {
+    for (args, status) in [
+        (&[][..], Some(2)),
+        (&["-h"][..], Some(0)),
+        (&["--help"][..], Some(0)),
+    ] {
+        let python =
+            python_interpreter().expect("a python3 interpreter runs the documentation audit");
+        let output = Command::new(python)
+            .arg(repo_root().join(SCRIPT))
+            .args(args)
+            .output()
+            .unwrap();
+        assert_eq!(output.status.code(), status, "{args:?}");
+        assert!(output.stdout.is_empty(), "{args:?}");
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            stderr.contains("Audit the Python examples of generated SDK trees"),
+            "{args:?}: {stderr}"
+        );
+    }
+}
+
+/// A string annotation whose forward reference does not parse is unknown, not
+/// a crash: a `YOUR_*` placeholder passed for it is not flagged.
+#[test]
+fn a_forward_reference_that_does_not_parse_is_an_unknown_annotation() {
+    let scratch = tempfile::tempdir().unwrap();
+    let document = handwritten_document_as_json("odometer-reading", scratch.path());
+    let generated = scratch.path().join("crozier");
+    probe_command(&document, &generated).assert().success();
+    let client = generated.join("src/fern/client.py");
+    let text = std::fs::read_to_string(&client).unwrap();
+    let malformed = text.replacen("        depot: int,\n", "        depot: \"[\",\n", 1);
+    assert_ne!(malformed, text, "the sync client declares `depot: int`");
+    std::fs::write(&client, malformed).unwrap();
+    let readme = generated.join("README.md");
+    let mut text = std::fs::read_to_string(&readme).unwrap();
+    text.push_str("\n```python\nclient.record_reading(depot=\"YOUR_DEPOT\", vehicle=\"v\", metres=1, trip_count=1, drift=1, bias=1, checkpoints=[1])\n```\n");
+    std::fs::write(&readme, text).unwrap();
+    let found = audit(&[&generated]);
+    assert_eq!(found.status, Some(0), "{}{}", found.stdout, found.stderr);
+}

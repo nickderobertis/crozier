@@ -235,7 +235,12 @@ def admits_str(annotation: str) -> bool:
             case ast.Attribute(attr=attribute):
                 return attribute == "Any"
             case ast.Constant(value=str(forward)):
-                return admits(ast.parse(forward, mode="eval").body)
+                # A forward reference that does not parse is unknown, as an
+                # annotation that does not parse is: no placeholder is flagged for it.
+                try:
+                    return admits(ast.parse(forward, mode="eval").body)
+                except SyntaxError:
+                    return True
             case ast.Subscript(value=head, slice=ast.Tuple(elts=members)) if ast.unparse(head) in (
                 "typing.Union",
                 "Union",

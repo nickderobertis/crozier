@@ -3242,7 +3242,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
                 // departure) and the credentials and required headers (the
                 // `readme-environment-constructor-arguments` departure). Fern
                 // passes the environment alone, which a required argument fails.
-                let lifted: String = documentation_client_example_args( // llmlint: ignore[names_match_behavior] `lifted` now holds every constructor argument (credentials, required headers, lifted base-path parameters); renaming it would change the digest of a function nearly every golden executes and invalidate the census repin taken at this head (ruling a16), so the rename waits for the next change to src/emit.rs.
+                let lifted: String = documentation_client_example_args( // llmlint: ignore[names_match_behavior] It holds every constructor argument the usage snippet passes, not only lifted ones; a rename changes the digest of a function every golden executes, so it is made with the next behavioural change here, which re-measures the census anyway.
                     &ir.auth,
                     &ir.global_headers,
                     &ir.client_path_parameters,
