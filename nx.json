@@ -152,6 +152,7 @@
       "{workspaceRoot}/tools/surface-census/handwritten-fixtures.py",
       "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
       "{workspaceRoot}/tools/surface-census/output-insensitive.py",
+      "{workspaceRoot}/tools/surface-census/output-insensitive-remeasure.py",
       "{workspaceRoot}/tools/surface-census/port_pins.py",
       "{workspaceRoot}/tools/surface-census/reach_base.py",
       "{workspaceRoot}/tools/surface-census/reach_document.py",

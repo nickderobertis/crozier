@@ -2317,7 +2317,7 @@ link and expect the named failure. The counts below are the output of
 shapes: 160
 by kind: handwritten 104, measurement 5, real 46, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
-by outcome: default=refuse;strict=refuse 5, departure 62, match 93
+by outcome: default=refuse;strict=refuse 5, departure 75, match 80
 closed with no open residual: 160
 closed on their proof with a residual open: 0
 witnesses: registered 6
