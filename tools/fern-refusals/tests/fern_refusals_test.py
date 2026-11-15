@@ -573,6 +573,8 @@ class MissingInputs(unittest.TestCase):
             ("boolean reach", json.dumps({**valid, "reach": True})),
             ("no fields", json.dumps({"reach": 0.95})),
             ("repeated field", json.dumps({**valid, "fields": ["reason", "reason"]})),
+            ("a read field dropped", json.dumps({**valid, "fields": ["reason"]})),
+            ("huge integer reach", json.dumps({**valid, "reach": 10**400})),
             ("not JSON", "{"),
         ):
             with self.subTest(name), tempfile.TemporaryDirectory() as scratch:

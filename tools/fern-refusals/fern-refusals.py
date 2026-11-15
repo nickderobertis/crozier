@@ -2240,9 +2240,26 @@ def shape_problems() -> list[str]:
 # must show (its trace starts a moment after the probe's timer, so it reads a few
 # seconds under the bound, never far under): one declaration the e2e gate reads
 # too, `docs/fern-refusals/unsettled-contract.json`.
+# The fields `unsettled_problems` reads; the contract may order them, never drop one.
+UNSETTLED_READ = frozenset(
+    (
+        "fern_cli_version",
+        "fern_python_sdk_version",
+        "check_exit",
+        "check_seconds",
+        "generate_exit",
+        "generate_seconds",
+        "bound_seconds",
+        "reason",
+        "follow_up",
+    )
+)
+
+
 def unsettled_contract(path: Path) -> tuple[tuple[str, ...], float]:
-    """The contract's fields (distinct, non-empty names) and its reach (a finite
-    fraction above zero, at most one); anything else fails naming the file."""
+    """The contract's fields (distinct, non-empty names, every one this script
+    reads among them) and its reach (a finite fraction above zero, at most one);
+    anything else fails naming the file."""
     where = rel(path)
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -2254,14 +2271,15 @@ def unsettled_contract(path: Path) -> tuple[tuple[str, ...], float]:
             and fields
             and all(isinstance(field, str) and field for field in fields)
             and len(set(fields)) == len(fields)
-            and math.isfinite(reach)
+            and UNSETTLED_READ.issubset(fields)
             and 0 < reach <= 1
+            and math.isfinite(reach)
         ):
             return tuple(fields), float(reach)
         case _:
             fail(
-                f"{where} must hold `fields`, distinct non-empty names, and `reach`, a finite fraction "
-                "above 0 and at most 1; restore it from git"
+                f"{where} must hold `fields`, distinct non-empty names including {sorted(UNSETTLED_READ)}, and "
+                "`reach`, a finite fraction above 0 and at most 1; restore it from git"
             )
 
 
