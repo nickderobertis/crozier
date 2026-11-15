@@ -10,8 +10,9 @@ writes nothing for `Empty`, exits 1 for `Unbuildable` and outlasts the timeout
 for `Stalled`. Only the stand-in
 crozier reads `info.summary` and `info.x-extra-file` (which adds a second file),
 so a document differing there alone moves crozier and not Fern. Each stand-in appends one line per run to `<name>.calls` beside it.
-The stand-in crozier refuses any invocation but the measured configuration, and
-the stand-in Fern writes the environment it ran under to `fern.env` beside it.
+Each stand-in refuses any argv but the one measured (Fern's local preview into
+`--output`, crozier's configuration), and the stand-in Fern writes the
+environment it ran under to `fern.env` beside it.
 """
 
 from __future__ import annotations
@@ -44,6 +45,9 @@ FERN = textwrap.dedent(
     #!{python}
     import json, os, pathlib, sys, yaml
     args = sys.argv[1:]
+    preview = ["generate", "--group", "python-sdk", "--local", "--preview", "--output", "OUT", "--force"]
+    if [arg if arg not in (args[args.index("--output") + 1],) else "OUT" for arg in args] != preview:
+        sys.exit(f"not the preview-only invocation: {{args}}")
     out = pathlib.Path(args[args.index("--output") + 1]) / "fern-python-sdk"
     config = json.loads(pathlib.Path("fern.config.json").read_text())
     assert config == {{"organization": "fern", "version": "9.9.9"}}, config  # certified-pair: stand-in
@@ -233,7 +237,7 @@ class RemeasureTests(unittest.TestCase):
         )
 
     @POSIX_ONLY
-    def test_fern_runs_preview_only_by_default_and_keeps_a_supplied_environment(self) -> None:
+    def test_fern_gets_a_placeholder_token_and_ci_by_default_and_keeps_supplied_values(self) -> None:
         names = ("FERN_TOKEN", "CI", "GITHUB_ACTIONS")
         bare = {name: value for name, value in os.environ.items() if name not in names}
         for env, expected in (
@@ -248,39 +252,46 @@ class RemeasureTests(unittest.TestCase):
             self.assertEqual(expected, json.loads((self.tools / "fern.env").read_text()))
 
     @POSIX_ONLY
-    def test_crozier_is_refused_any_configuration_but_the_measured_one(self) -> None:
-        # The stand-in exits 1 on any other invocation, so a changed argument
-        # leaves the record stale and fails the run.
-        # A copy beside the modules it loads, with the project name changed.
-        copies = self.root / "altered"
-        copies.mkdir()
-        for module in SCRIPT.parent.glob("*.py"):
-            (copies / module.name).write_bytes(module.read_bytes())
-        altered = copies / SCRIPT.name
+    def test_each_generator_is_refused_any_invocation_but_the_measured_one(self) -> None:
+        # Each stand-in exits 1 on any other argv, so a changed argument in the
+        # script leaves both records stale and fails the run. The script is run
+        # as a copy beside the modules it loads, with one argument changed.
         script = SCRIPT.read_text(encoding="utf-8")
-        self.assertIn('"default_package_name"', script)
-        altered.write_text(script.replace('"default_package_name"', '"another_name"'), encoding="utf-8")
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(altered),
-                "--root",
-                str(self.root),
-                "--fern",
-                str(self.tools / "fern"),
-                "--crozier",
-                str(self.tools / "crozier"),
-                "--only",
-                self.feature_path("steady"),
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-            env={**os.environ, "ONEPIPELINE_NODE_SCRATCH_DIR": str(self.root / "logs")},
-        )
-        self.assertNotEqual(0, result.returncode, result.stderr)
-        self.assertIn("not the measured configuration", result.stderr)
-        self.assertEqual({"stale": True}, self.feature_record("steady", "crozier"))
+        for generator, measured, changed, said in (
+            ("crozier", '"default_package_name"', '"another_name"', "not the measured configuration"),
+            ("fern", '"--local", "--preview", ', '"--local", ', "not the preview-only invocation"),
+        ):
+            with self.subTest(generator):
+                copies = self.root / f"altered-{generator}"
+                copies.mkdir()
+                for module in SCRIPT.parent.glob("*.py"):
+                    (copies / module.name).write_bytes(module.read_bytes())
+                self.assertEqual(1, script.count(measured), measured)
+                (copies / SCRIPT.name).write_text(script.replace(measured, changed), encoding="utf-8")
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(copies / SCRIPT.name),
+                        "--root",
+                        str(self.root),
+                        "--fern",
+                        str(self.tools / "fern"),
+                        "--crozier",
+                        str(self.tools / "crozier"),
+                        "--only",
+                        self.feature_path("steady"),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                    env={**os.environ, "ONEPIPELINE_NODE_SCRATCH_DIR": str(self.root / "logs")},
+                )
+                self.assertEqual(1, result.returncode, result.stderr)
+                # crozier's stderr is relayed; Fern's output goes to the log it names.
+                logs = self.root / "logs/output-insensitive-remeasure"
+                said_anywhere = result.stderr + "".join(log.read_text() for log in logs.glob("*.fern.log"))
+                self.assertIn(said, said_anywhere)
+                self.assertEqual({"stale": True}, self.feature_record("steady", generator))
 
     def feature_path(self, name: str) -> str:
         return f"docs/openapi-surface/witness-search-unproven-features/{name}-attribution/fern-comparison.json"
