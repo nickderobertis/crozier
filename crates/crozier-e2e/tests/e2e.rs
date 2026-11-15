@@ -24609,6 +24609,7 @@ fn sdk_env_xml_builder_name_collisions_resolve_through_the_sdk() {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] This `sdk_env_*` journey runs only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), promoted out of the affected tier into its own required CI leg, as every other `sdk_env_*` journey is; crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project, and every_sdk_env_journey_is_selected_by_the_sdk_env_tier holds it there.
 /// An XML model's extra keyword arguments through the generated SDK
 /// (fern-python-sdk 5.41.25's `check_xml_extra_attributes`): a declared
 /// attribute's wire name (`schemaLocation` for `xsi_schema_location`) sets it,
@@ -24644,6 +24645,7 @@ fn sdk_env_xml_extra_attributes_resolve_through_the_sdk() {
         String::from_utf8_lossy(&output.stderr)
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// No child builder shadows pydantic: over the installed pydantic's every
 /// public `BaseModel` attribute, a document whose XML model holds a list child
