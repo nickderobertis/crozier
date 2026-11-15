@@ -61,9 +61,15 @@ fn model_options(fields: &serde_json::Value, guide: &BTreeSet<String>) -> BTreeS
     for (name, nested) in fields.as_object().expect("the probe prints an object") {
         let nested: Vec<&str> = nested
             .as_array()
-            .expect("each field lists its nested names")
+            .unwrap_or_else(|| {
+                panic!("the probe's `{name}` is not a list of nested names: {nested}")
+            })
             .iter()
-            .filter_map(|child| child.as_str())
+            .map(|child| {
+                child.as_str().unwrap_or_else(|| {
+                    panic!("the probe's `{name}` lists a nested name that is not a string: {child}")
+                })
+            })
             .collect();
         if expanded.contains(name.as_str()) && !nested.is_empty() {
             options.extend(nested.iter().map(|child| (*child).to_string()));
@@ -75,7 +81,7 @@ fn model_options(fields: &serde_json::Value, guide: &BTreeSet<String>) -> BTreeS
 }
 
 #[test]
-#[ignore = "SDK Python-environment tier (reads the pinned fernapi/fern-python-sdk image with Docker); run via `just test-sdk-env`"]
+#[ignore = "opt-in Docker tier (reads the pinned fernapi/fern-python-sdk image); run via `just test-sdk-env`"]
 fn sdk_env_the_migration_guide_lists_every_option_the_pinned_generator_accepts() {
     let metadata: serde_json::Value = serde_json::from_str(
         &std::fs::read_to_string(repo_root().join("assets/scaffolding/metadata.json")).unwrap(),
@@ -141,4 +147,15 @@ fn the_option_comparison_names_each_disagreement() {
         ["client.filename", "lazy_imports"]
     );
     assert_eq!(guide.difference(&model).collect::<Vec<_>>(), ["retired"]);
+}
+
+/// A probe that lists anything but strings is refused, not read as fewer options.
+#[test]
+#[should_panic(expected = "lists a nested name that is not a string")]
+fn a_malformed_probe_is_refused() {
+    let guide = guide_options("### Generator `config`\n\n| `client.class_name` | x |\n\n### `pydantic_config`\n\n| `pydantic_config.frozen` | x |\n");
+    model_options(
+        &serde_json::json!({"client": ["client.class_name", 7]}),
+        &guide,
+    );
 }

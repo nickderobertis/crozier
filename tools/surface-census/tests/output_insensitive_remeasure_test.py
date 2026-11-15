@@ -10,12 +10,15 @@ writes nothing for `Empty`, exits 1 for `Unbuildable` and outlasts the timeout
 for `Stalled`. Only the stand-in
 crozier reads `info.summary`, so a document differing there alone moves crozier
 and not Fern. Each stand-in appends one line per run to `<name>.calls` beside it.
+The stand-in crozier refuses any invocation but the measured configuration, and
+the stand-in Fern writes the environment it ran under to `fern.env` beside it.
 """
 
 from __future__ import annotations
 
 import csv
 import dataclasses
+import hashlib
 import importlib.util
 import json
 import os
@@ -39,7 +42,7 @@ POSIX_ONLY = unittest.skipIf(os.name == "nt", "the stand-in generators are POSIX
 FERN = textwrap.dedent(
     """\
     #!{python}
-    import json, pathlib, sys, yaml
+    import json, os, pathlib, sys, yaml
     args = sys.argv[1:]
     out = pathlib.Path(args[args.index("--output") + 1]) / "fern-python-sdk"
     config = json.loads(pathlib.Path("fern.config.json").read_text())
@@ -49,6 +52,8 @@ FERN = textwrap.dedent(
     title = yaml.safe_load(document.read_text())["info"]["title"]
     with pathlib.Path(__file__).with_name("fern.calls").open("a") as calls:
         calls.write(title + "\\n")
+    names = ("FERN_TOKEN", "CI", "GITHUB_ACTIONS")
+    pathlib.Path(__file__).with_name("fern.env").write_text(json.dumps({{name: os.environ.get(name) for name in names}}))
     if title == "Broken":
         sys.exit(1)
     if title == "Slow":
@@ -67,6 +72,9 @@ CROZIER = textwrap.dedent(
     #!{python}
     import json, pathlib, sys, yaml
     args = sys.argv[1:]
+    measured = ["--no-config", "generate", "python", "--package-name", "fern", "--project-name", "default_package_name"]
+    if [arg for arg in args if arg not in (args[args.index("--spec") + 1], args[args.index("--output") + 1], "--spec", "--output")] != measured:
+        sys.exit(f"not the measured configuration: {{args}}")
     out = pathlib.Path(args[args.index("--output") + 1])
     info = yaml.safe_load(pathlib.Path(args[args.index("--spec") + 1]).read_text())["info"]
     title = info["title"]
@@ -161,7 +169,7 @@ class RemeasureTests(unittest.TestCase):
     def edits(self, *edits: object, fixture: str = "harbour") -> dict[str, object]:
         return {"key": "combo-lit", "fixture": fixture, "edits": list(edits)}
 
-    def run_script(self, *args: str) -> subprocess.CompletedProcess[str]:
+    def run_script(self, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [
                 sys.executable,
@@ -176,7 +184,7 @@ class RemeasureTests(unittest.TestCase):
             ],
             capture_output=True,
             text=True,
-            env={**os.environ, "ONEPIPELINE_NODE_SCRATCH_DIR": str(self.root / "logs")},
+            env={**(os.environ if env is None else env), "ONEPIPELINE_NODE_SCRATCH_DIR": str(self.root / "logs")},
             check=False,
         )
 
@@ -200,7 +208,8 @@ class RemeasureTests(unittest.TestCase):
                 (steady["generator"], steady["fern_cli_version"], steady["fern_python_sdk_version"]),
             )
             self.assertEqual(steady["before"], steady["after"])
-            self.assertEqual(["src/fern/title.py"], list(steady["before"]))
+            # Each stand-in writes the title's bytes, so the digest is theirs.
+            self.assertEqual({"src/fern/title.py": hashlib.sha256(b"Lanterns").hexdigest()}, steady["before"])
             self.assertEqual({"stale": True}, self.feature_record("moving", generator))
             self.assertIn(
                 f"moving-attribution/fern-comparison.json: {generator} moves src/fern/title.py", result.stderr
@@ -215,6 +224,59 @@ class RemeasureTests(unittest.TestCase):
         self.assertEqual(
             ([], {("steady-key", "-")}), (reader.read_records(self.root)[1], reader.read_records(self.root)[0])
         )
+
+    @POSIX_ONLY
+    def test_fern_runs_preview_only_by_default_and_keeps_a_supplied_environment(self) -> None:
+        names = ("FERN_TOKEN", "CI", "GITHUB_ACTIONS")
+        bare = {name: value for name, value in os.environ.items() if name not in names}
+        for env, expected in (
+            (bare, {"FERN_TOKEN": "preview-only-no-publish", "CI": "true", "GITHUB_ACTIONS": "true"}),
+            (
+                {**bare, "FERN_TOKEN": "supplied", "CI": "false", "GITHUB_ACTIONS": "false"},
+                {"FERN_TOKEN": "supplied", "CI": "false", "GITHUB_ACTIONS": "false"},
+            ),
+        ):
+            result = self.run_script("--only", self.feature_path("steady"), env=env)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual(expected, json.loads((self.tools / "fern.env").read_text()))
+
+    @POSIX_ONLY
+    def test_crozier_is_refused_any_configuration_but_the_measured_one(self) -> None:
+        # The stand-in exits 1 on any other invocation, so a changed argument
+        # leaves the record stale and fails the run.
+        # A copy beside the modules it loads, with the project name changed.
+        copies = self.root / "altered"
+        copies.mkdir()
+        for module in SCRIPT.parent.glob("*.py"):
+            (copies / module.name).write_bytes(module.read_bytes())
+        altered = copies / SCRIPT.name
+        script = SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('"default_package_name"', script)
+        altered.write_text(script.replace('"default_package_name"', '"another_name"'), encoding="utf-8")
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(altered),
+                "--root",
+                str(self.root),
+                "--fern",
+                str(self.tools / "fern"),
+                "--crozier",
+                str(self.tools / "crozier"),
+                "--only",
+                self.feature_path("steady"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            env={**os.environ, "ONEPIPELINE_NODE_SCRATCH_DIR": str(self.root / "logs")},
+        )
+        self.assertNotEqual(0, result.returncode, result.stderr)
+        self.assertIn("not the measured configuration", result.stderr)
+        self.assertEqual({"stale": True}, self.feature_record("steady", "crozier"))
+
+    def feature_path(self, name: str) -> str:
+        return f"docs/openapi-surface/witness-search-unproven-features/{name}-attribution/fern-comparison.json"
 
     @POSIX_ONLY
     def test_a_difference_in_one_generator_alone_removes_the_disposition(self) -> None:

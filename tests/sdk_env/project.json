@@ -31,9 +31,7 @@
         "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
         "{workspaceRoot}/tools/fern-refusals/sdk_evaluation.py",
         "{workspaceRoot}/tools/fern-refusals/sdk_evaluation_runtime.py",
-        "{workspaceRoot}/.ruff-version",
-  "{workspaceRoot}/docs/migrating-from-fern.md",
-  "{workspaceRoot}/assets/scaffolding/metadata.json"
+        "{workspaceRoot}/.ruff-version"
       ]
     },
     "lint-certified-pair": {

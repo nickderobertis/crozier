@@ -535,8 +535,6 @@ crozier-e2e::e2e mi_music_matches_fern_output
 crozier-e2e::e2e microcks_local_matches_fern_output
 crozier-e2e::e2e microsoft_adme_crs_converter_matches_fern_output
 crozier-e2e::e2e microsoft_adme_seismic_matches_fern_output
-crozier-e2e::e2e migration_options::sdk_env_the_migration_guide_lists_every_option_the_pinned_generator_accepts
-crozier-e2e::e2e migration_options::the_option_comparison_names_each_disagreement
 crozier-e2e::e2e millenium_falcon_challenge_matches_fern_output
 crozier-e2e::e2e milvus_restful_v2_3_matches_fern_output
 crozier-e2e::e2e milvus_restful_v2_4_matches_fern_output

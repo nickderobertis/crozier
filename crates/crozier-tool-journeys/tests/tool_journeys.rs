@@ -13,6 +13,10 @@ use std::path::{Path, PathBuf};
 #[path = "tool_journeys/migration.rs"]
 mod migration;
 
+/// The guide's generator-option tables, held to the pinned image's config models.
+#[path = "tool_journeys/migration_options.rs"]
+mod migration_options;
+
 /// The GitHub Action's scripts (`tools/github-action/`) over a real `crozier`.
 #[cfg(unix)]
 #[path = "tool_journeys/action.rs"]

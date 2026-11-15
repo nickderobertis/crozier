@@ -479,6 +479,11 @@
     }
   },
   "added": {
+    "migration-options:test": [
+      "linux",
+      "macos",
+      "windows"
+    ],
     "crozier-tool-journeys:test": [
       "linux",
       "macos",

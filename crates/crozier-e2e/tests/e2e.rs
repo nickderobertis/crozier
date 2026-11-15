@@ -388,10 +388,6 @@ mod example_values_inventory;
 #[path = "e2e/documentation_audit.rs"]
 mod documentation_audit;
 
-/// The migration guide's generator-option tables, held to the pinned image.
-#[path = "e2e/migration_options.rs"]
-mod migration_options;
-
 /// The ledger's contract, driven through the gates' own comparison.
 #[path = "e2e/departures_ledger_gate.rs"]
 mod departures_ledger_gate;
