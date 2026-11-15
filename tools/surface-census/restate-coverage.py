@@ -455,6 +455,52 @@ def restate_authored_tiers(root: Path, text: str) -> str:
     return rendered
 
 
+LEDGER_REMAINDERS_REASON = (
+    "`search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); "
+    "outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv)"
+)
+POPULATION_RECORD = Path("docs/openapi-surface/witness-search-combination-populations")
+POPULATION_REASON = (
+    "`search incomplete` — [bounded search](openapi-surface/witness-search-combination-populations/README.md#verdicts); "
+    "outstanding candidates: [named census](openapi-surface/witness-search-combination-populations/screen.tsv)"
+)
+
+
+def population_screen() -> ModuleType:
+    """`tools/witness-search/population_screen.py`, the one reader of the population screen table."""
+    path = REPO / "tools/witness-search/population_screen.py"
+    spec = importlib.util.spec_from_file_location("restate_population_screen", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def open_combination_search(root: Path, keys: set[str]) -> str:
+    """The `search incomplete` reason an authored open combination cites, checked against its record.
+
+    Once the population screen's table is committed, each key's candidate count is
+    read from it through its reader, and the record's README must state that count
+    on the key's verdict line; before then the ledger-remainders record is cited.
+    """
+    table = root / POPULATION_RECORD / "screen.tsv"
+    if not table.is_file():
+        return LEDGER_REMAINDERS_REASON
+    screen = population_screen()
+    counts = screen.pending_counts(screen.read_screen(table))
+    readme = (root / POPULATION_RECORD / "README.md").read_text(encoding="utf-8")
+    for key in sorted(keys):
+        stated = re.search(rf"^\| `{re.escape(key)}` \| `search-incomplete` \| (\d+) \|", readme, re.M)
+        if stated is None or int(stated.group(1)) != counts[key]:
+            raise ValueError(
+                f"{POPULATION_RECORD}/README.md: {key} states {stated.group(1) if stated else 'no'} candidates, and "
+                f"screen.tsv holds {counts[key]} certified-screen-pending; restate the README from the table"
+            )
+    return POPULATION_REASON
+
+
 def restate_open_combinations(root: Path, text: str) -> str:
     """Name authored open combinations without changing another row's reason."""
     records = authored_evidence(root)
@@ -483,11 +529,10 @@ def restate_open_combinations(root: Path, text: str) -> str:
             key = cells[0].strip("`")
             if not key.startswith("combo-") or cells[3].strip("`") != "gap" or key in decided:
                 continue
-            if key in owned:
-                reason = "`search incomplete` — [bounded search](openapi-surface/witness-search-ledger-remainders/README.md#authored-verdicts); outstanding candidates: [named census](openapi-surface/witness-search-ledger-remainders/census.tsv)"
-            else:
-                reason = existing.get(key, "`not searched`")
-            named.append((key, Path(region).stem, reason))
+            named.append((key, Path(region).stem, "" if key in owned else existing.get(key, "`not searched`")))
+    if any(not reason for _key, _region, reason in named):
+        searched = open_combination_search(root, {key for key, _region, reason in named if not reason})
+        named = [(key, region, reason or searched) for key, region, reason in named]
     rendered = "".join(f"| `{key}` | `{region}` | {reason} |\n" for key, region, reason in sorted(named))
     return before + separator + prefix + header + rendered + "\n" + next_heading + after
 

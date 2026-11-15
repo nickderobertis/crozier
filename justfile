@@ -626,6 +626,11 @@ test-witness-search-github:
 test-witness-screen:
     @just nx run witness-search:test-screen
 
+# The combination population screen: its trigger and licence screens, reader,
+# acquisition lane and the committed table, over a loopback raw-GitHub server.
+test-population-screen:
+    @just nx run witness-search:test-population-screen
+
 # Take one legacy witness-search candidate's licence, ref and Fern screens, measured.
 # Network (the guarded raw route) and Fern (`just setup-fern`).
 witness-screen *args:

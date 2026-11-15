@@ -36,6 +36,12 @@ COMMIT = "c" * 40
 DOCUMENT = b"openapi: 3.0.3\ninfo: {title: shop, version: '1'}\npaths: {}\n"
 PROPRIETARY = b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: {name: Shop EULA}}\npaths: {}\n"
 DECLARED = b"openapi: 3.0.3\ninfo: {title: shop, version: '1', license: {name: Apache 2.0}}\npaths: {}\n"
+# A JSON document whose generator wrote one key twice: JSON keeps the last
+# value, while YAML refuses a repeated key, so only a JSON read finds its grant.
+JSON_REPEATED_KEY = (
+    b'{"openapi": "3.0.3", "x-generator": "a", "x-generator": "b",\n'
+    b' "info": {"title": "shop", "version": "1", "license": {"name": "Apache-2.0"}}, "paths": {}}\n'
+)
 SECRET = "ghp_offlinesecretvalue0123456789"
 FERN = """\
     import os, pathlib, sys, time
@@ -97,8 +103,7 @@ class _Raw(BaseHTTPRequestHandler):
             f"/acme/shop/{COMMIT}/LICENSE": b"MIT License\n\nCopyright (c) acme\n",
             f"/acme/eula/{COMMIT}/openapi.yaml": PROPRIETARY,
             f"/acme/eula/{COMMIT}/LICENSE": b"MIT License\n",
-            # Declares an admissible grant itself; its repository's licence file is fetched and
-            # recorded, but never decides it.
+            # Declares an admissible grant itself, so its repository's licence file is never read.
             f"/acme/declared/{COMMIT}/openapi.yaml": DECLARED,
             f"/acme/declared/{COMMIT}/LICENSE": b"All rights reserved.\n",
             f"/acme/garbled/{COMMIT}/openapi.yaml": b"openapi: [3.0.3\ninfo: {title\n",
@@ -111,6 +116,14 @@ class _Raw(BaseHTTPRequestHandler):
             # Only the last spelling the stage tries is there.
             f"/acme/copying/{COMMIT}/openapi.yaml": DOCUMENT,
             f"/acme/copying/{COMMIT}/COPYING": b"Apache License\nVersion 2.0, January 2004\n",
+            # Its own info.license decides, so its proprietary licence file must never be read.
+            f"/acme/json/{COMMIT}/openapi.json": JSON_REPEATED_KEY,
+            f"/acme/json/{COMMIT}/LICENSE": b"All rights reserved.\n",
+            # The same JSON behind a UTF-8 BOM: it still opens as JSON, so only the JSON read admits it.
+            f"/acme/bom/{COMMIT}/openapi.json": b"\xef\xbb\xbf" + JSON_REPEATED_KEY,
+            # Opens as JSON but is neither JSON nor a YAML flow mapping: unreadable, never the file's MIT.
+            f"/acme/torn/{COMMIT}/openapi.json": b'{"openapi": "3.0.3", "info": {"license": \n',
+            f"/acme/torn/{COMMIT}/LICENSE": b"MIT License\n",
         }
         body = files.get(self.path)
         self.send_response(200 if body is not None else 404)
@@ -592,20 +605,20 @@ class LegacyScreenCliTests(unittest.TestCase):
                 "acme/declared",
                 ("--disposition", "witness-found"),
                 "passed: info.license 'Apache 2.0' reads as Apache-2.0, which the corpus rule admits",
-                ["openapi.yaml", "LICENSE"],
+                ["openapi.yaml"],
             ),
             (
                 "acme/garbled",
                 (),
                 "failed: the document could not be read for its info.license",
-                ["openapi.yaml", *tried],
+                ["openapi.yaml"],
             ),
             (
                 "acme/malformed",
                 (),
                 "failed: info.license is there but is no License Object (a mapping naming "
                 "the grant in a string identifier, name or url)",
-                ["openapi.yaml", "LICENSE"],
+                ["openapi.yaml"],
             ),
             (
                 "acme/custom",
@@ -639,6 +652,71 @@ class LegacyScreenCliTests(unittest.TestCase):
                     self.assertEqual(
                         ("rejected", "not-run: the licence screen failed"), (row["disposition"], row["fern"])
                     )
+
+    def test_a_json_document_is_read_as_json_for_its_licence(self) -> None:
+        # Issue 821: the licence read relabelled every document as YAML, so a JSON
+        # document took the YAML reader, which refuses this one's repeated key.
+        done = self.screen("--path", "openapi.json", "--disposition", "witness-found", repository="acme/json")
+        self.assertEqual(0, done.returncode, done.stderr)
+        row = self.rows()[-1]
+        self.assertEqual(
+            "passed: info.license 'Apache-2.0' reads as Apache-2.0, which the corpus rule admits", row["license"]
+        )
+        self.assertEqual([], SCREEN.measured_failures(row["measured"], self.evidence))
+        log = (self.evidence / row["measured"]["licence"]["log"]).read_text(encoding="utf-8")
+        self.assertIn("info.license: 'Apache-2.0' -> Apache-2.0", log)
+
+    def test_json_past_a_bom_is_read_as_json_and_json_neither_reader_parses_is_unreadable(self) -> None:
+        # Issue 821's edges: a BOM before the `{` still selects the JSON read, and
+        # bytes that open as JSON yet parse as neither JSON nor YAML are refused as
+        # unreadable rather than screened against the repository's licence file.
+        for repository, licence, disposition in (
+            (
+                "acme/bom",
+                "passed: info.license 'Apache-2.0' reads as Apache-2.0, which the corpus rule admits",
+                "witness-found",
+            ),
+            ("acme/torn", "failed: the document could not be read for its info.license", "rejected"),
+        ):
+            with self.subTest(repository=repository):
+                self.server.requests.clear()
+                args = ("--disposition", "witness-found") if disposition == "witness-found" else ()
+                done = self.screen("--path", "openapi.json", *args, repository=repository)
+                self.assertEqual(0, done.returncode, done.stderr)
+                row = self.rows()[-1]
+                self.assertEqual((licence, disposition), (row["license"], row["disposition"]))
+                self.assertEqual([f"/{repository}/{COMMIT}/openapi.json"], self.server.requests)
+
+    def test_a_document_declaring_its_own_licence_fetches_no_licence_path(self) -> None:
+        # Issue 824: the screen fetched the repository's licence filenames before
+        # reading the document's own info.license, so a search bounded to named
+        # document fetches could not use it. Where the document's licence decides
+        # (an admissible grant, an inadmissible one, a malformed one or an
+        # unreadable document), no licence path is requested at all.
+        for repository, path, licence in (
+            ("acme/json", "openapi.json", "passed: info.license 'Apache-2.0' reads as Apache-2.0"),
+            ("acme/declared", "openapi.yaml", "passed: info.license 'Apache 2.0' reads as Apache-2.0"),
+            ("acme/eula", "openapi.yaml", "failed: info.license 'Shop EULA' names no grant"),
+            ("acme/malformed", "openapi.yaml", "failed: info.license is there but is no License Object"),
+            ("acme/garbled", "openapi.yaml", "failed: the document could not be read for its info.license"),
+        ):
+            with self.subTest(repository=repository):
+                self.server.requests.clear()
+                (self.evidence / "raw-github-calls.jsonl").unlink(missing_ok=True)
+                args = ("--disposition", "witness-found") if licence.startswith("passed") else ()
+                done = self.screen("--path", path, *args, repository=repository)
+                self.assertEqual(0, done.returncode, done.stderr)
+                row = self.rows()[-1]
+                self.assertTrue(row["license"].startswith(licence), row["license"])
+                self.assertEqual([f"/{repository}/{COMMIT}/{path}"], self.server.requests)
+                self.assertEqual([path], [url.rsplit("/", 1)[1] for url in self.raw_calls()])
+                self.assertEqual("none", row["measured"]["licence"]["exit"])
+                self.assertEqual([], SCREEN.measured_failures(row["measured"], self.evidence))
+        # A document that says nothing still falls back to the licence file.
+        self.server.requests.clear()
+        done = self.screen("--disposition", "witness-found")
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertEqual([f"/acme/shop/{COMMIT}/openapi.yaml", f"/acme/shop/{COMMIT}/LICENSE"], self.server.requests)
 
     def test_a_path_outside_the_repository_or_a_mutable_ref_is_never_fetched(self) -> None:
         for path in ("../openapi.yaml", "/openapi.yaml", "specs/./openapi.yaml", "specs\\openapi.yaml", ""):

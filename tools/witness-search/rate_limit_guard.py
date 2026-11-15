@@ -191,7 +191,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, NotRequired, Protocol, TypeAlias, TypedDict
 
@@ -905,6 +905,19 @@ def _meta_path(root: Path, key: str) -> Path:
 def _body_path(root: Path, key: str, sha256: str) -> Path:
     """A body's file, named by its own digest so no writer ever replaces it with other bytes."""
     return root / key[:2] / f"{key}.{sha256}.body"
+
+
+def cached_bodies(root: Path) -> Iterator[tuple[CacheKey, Sha256, Path]]:
+    """Every body stored under a response-cache root: its request's key, its own digest and its file.
+
+    Read in the layout `_body_path` writes, so a reader of stored bodies never
+    restates it.
+    """
+    for path in sorted(root.glob("*/*.body")):
+        key, _dot, rest = path.name.partition(".")
+        sha256, _dot, suffix = rest.partition(".")
+        if suffix == "body" and path.parent.name == key[:2] and _body_path(root, key, sha256) == path:
+            yield key, sha256, path
 
 
 def _file_digest(path: Path) -> tuple[str, int]:
