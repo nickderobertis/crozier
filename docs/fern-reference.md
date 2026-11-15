@@ -66,7 +66,7 @@ environment `crozier compare` passes, runs Fern, and leaves the reference SDK in
 | --- | --- |
 | `SPEC` | Copied into the workspace's `openapi/` directory (file name kept) and named as `api.path` in `generators.yml`. |
 | `PACKAGE_NAME` | Becomes the `organization` in `fern.config.json`: Fern names the module, the `{Organization}Api` default client class and the README heading after it. A value Fern cannot reproduce makes the script exit non-zero naming it (see [Names](#names)). |
-| `PROJECT_NAME` | Not written. Under `packaged` it must be `default_package_name`, Fern's fixed distribution name, or the script exits non-zero naming it; under `flat` it is not read further, since a flat tree has no distribution (see [Names](#names)). |
+| `PROJECT_NAME` | Not written. Under `packaged` it must be `default-package-name`, Fern's fixed distribution name (crozier exports `project-name: default_package_name` hyphenated, as the generated `pyproject.toml` names it), or the script exits non-zero naming it; under `flat` it is not read further, since a flat tree has no distribution (see [Names](#names)). |
 | `CLIENT_CLASS_NAME` | The generator's `config.client_class_name`. |
 | `AUDIENCES` | The group's `audiences:` list (comma-separated values, one entry each); no `audiences:` key when empty. |
 | `AUDIENCE_STRICT` | Not written: Fern has no such setting. Its group `audiences:` filter always drops operations that carry no audience, which is crozier's `audience-strict: true`. With `false`, crozier keeps those operations and a document that has any reports `mismatched`. |
@@ -96,8 +96,8 @@ Measured with Fern CLI 5.200.0 and `fernapi/fern-python-sdk` 5.41.25:
 
 - **Packaged.** Fern emits its packaged tree with a placeholder token only for
   the organization `fern`: with `acme` it falls back to the flat module tree. Its
-  packaged distribution is then `default_package_name`. So under `packaged` the
-  script reproduces only package `fern` with project `default_package_name`, the
+  packaged distribution is then `default-package-name`. So under `packaged` the
+  script reproduces only package `fern` with project `default-package-name`, the
   names crozier's own Fern goldens are produced under, and exits non-zero naming
   any other package or project name. Fern's `package_name` option is no way out:
   it renames the module and distribution but leaves the client class and the
@@ -201,9 +201,9 @@ layout="$CROZIER_REFERENCE_LAYOUT"
 case "$layout" in
   packaged)
     # Fern emits the packaged tree only for the `fern` organization, whose
-    # distribution is always `default_package_name`.
+    # distribution is always `default-package-name`.
     [ "$package" = fern ] || fail "package name '$package' cannot be reproduced under the packaged layout: Fern emits its packaged form only for the organization 'fern'; set package-name: fern, or compare under layout: flat"
-    [ "$project" = default_package_name ] || fail "project name '$project' cannot be reproduced under the packaged layout: Fern's packaged distribution is always 'default_package_name'"
+    [ "$project" = default-package-name ] || fail "project name '$project' cannot be reproduced under the packaged layout: Fern's packaged distribution is always 'default-package-name'"
     ;;
   flat)
     # Measured: `acme`, `acme2` and `my_api` name Fern's module as given;

@@ -239,9 +239,9 @@ jobs:
           case "$layout" in
             packaged)
               # Fern emits the packaged tree only for the `fern` organization, whose
-              # distribution is always `default_package_name`.
+              # distribution is always `default-package-name`.
               [ "$package" = fern ] || fail "package name '$package' cannot be reproduced under the packaged layout: Fern emits its packaged form only for the organization 'fern'; set package-name: fern, or compare under layout: flat"
-              [ "$project" = default_package_name ] || fail "project name '$project' cannot be reproduced under the packaged layout: Fern's packaged distribution is always 'default_package_name'"
+              [ "$project" = default-package-name ] || fail "project name '$project' cannot be reproduced under the packaged layout: Fern's packaged distribution is always 'default-package-name'"
               ;;
             flat)
               # Measured: `acme`, `acme2` and `my_api` name Fern's module as given;

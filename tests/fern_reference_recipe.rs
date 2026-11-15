@@ -270,7 +270,10 @@ const BASE: &[(&str, &str)] = &[
     ("CROZIER_REFERENCE_GENERATOR", "python"),
     ("CROZIER_REFERENCE_CONFIG_FILE", "/repo/crozier.yml"),
     ("CROZIER_REFERENCE_PACKAGE_NAME", "fern"),
-    ("CROZIER_REFERENCE_PROJECT_NAME", "default_package_name"),
+    // What `crozier compare` exports for `project-name: default_package_name`
+    // (`crozier::config::distribution_name`), which
+    // `the_recipe_is_handed_the_distribution_crozier_exports` holds it to.
+    ("CROZIER_REFERENCE_PROJECT_NAME", "default-package-name"),
     ("CROZIER_REFERENCE_CLIENT_CLASS_NAME", "AcmeClient"),
     ("CROZIER_REFERENCE_AUDIENCES", "public,internal"),
     ("CROZIER_REFERENCE_AUDIENCE_STRICT", "true"),
@@ -317,6 +320,25 @@ fn the_recipe_reads_only_variables_crozier_exports() {
             "{name} is not a variable crozier exports"
         );
     }
+}
+
+/// The packaged guard compares against the project name `crozier compare` really
+/// exports, so a change to crozier's distribution spelling fails here, and then
+/// every packaged recipe run below until the script accepts the new spelling.
+#[test]
+fn the_recipe_is_handed_the_distribution_crozier_exports() {
+    let handed = BASE
+        .iter()
+        .find(|(name, _)| *name == "CROZIER_REFERENCE_PROJECT_NAME")
+        .map(|(_, value)| *value);
+    assert_eq!(
+        handed,
+        Some(crozier::config::distribution_name("default_package_name").as_str())
+    );
+    assert!(
+        recipe().contains(&format!("[ \"$project\" = {} ]", handed.unwrap())),
+        "docs/fern-reference.md's packaged guard must accept the distribution crozier exports"
+    );
 }
 
 fn run(overrides: &[(&str, &str)], removed: &[&str]) -> Run {

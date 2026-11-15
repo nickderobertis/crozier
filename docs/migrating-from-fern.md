@@ -227,7 +227,7 @@ the difference, or stays on Fern.
 | Fern | Default | crozier |
 | --- | --- | --- |
 | `organization` (`fern.config.json`) | — | `package-name`: Fern names the module, the default `{Organization}Api` client class and the README heading after it ([Names](fern-reference.md#names)). |
-| Distribution name | `default_package_name` under `--preview` | `project-name`. Under `packaged` the recipe reproduces only `default_package_name`; a `flat` tree has no distribution, so any value is accepted ([Names](fern-reference.md#names)). |
+| Distribution name | `default-package-name` under `--preview` | `project-name`, written with every `_` as `-`. Under `packaged` the recipe reproduces only `default-package-name` (`project-name: default_package_name`); a `flat` tree has no distribution, so any value is accepted ([Names](fern-reference.md#names)). |
 | Group `audiences` | none | `audiences`, with `audience-strict: true`: Fern's filter drops operations that carry no audience ([How each setting maps](fern-reference.md#how-each-setting-maps)). |
 
 ### Generator `config`
