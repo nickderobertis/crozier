@@ -46,6 +46,12 @@ files:
     # Each measurement's openapi.yml, README.md and runtime.txt stay linted.
     - "docs/fern-measurements/handed-off/*/*/fern-expected/**"
     - "docs/fern-measurements/handed-off/*/*/expected-literals/**"
+    # The union-modelling cases nest one level deeper (a case's `literals/`
+    # mode, and the `union-modelling/<case>/` documents): the same certified
+    # pair's vendored Fern trees, each byte-gated by
+    # crates/crozier-e2e/tests/e2e/union_modelling.rs. Each case's openapi.yml
+    # and README.md stay linted.
+    - "docs/fern-measurements/handed-off/**/fern-expected/**"
     # screencomp visual-docs artifacts — generated captures, not hand-written
     # code: the committed SVG screenshots (each ~370KB of base64-embedded font),
     # the animated GIF, the digest baseline, and the vendored binary font. They
@@ -128,10 +134,19 @@ files:
     - "docs/fern-refusals/documents.tsv"
     - "docs/fern-refusals/generated.tsv"
     - "docs/fern-refusals/unretrievable.tsv"
+    # Each refusal class's per-shape Fern logs, written by fern-refusals.py
+    # `shapes`: Fern's own check and generate output. `fern-refusals.py check`
+    # re-derives every shapes.tsv row from its log and refuses any drift; each
+    # class's shapes, evaluation.md and fern-refusal.txt stay linted.
+    - "docs/fern-refusals/*/evaluation-logs/**"
     # Vendored upstream rule plugins (llmlint-plugins/, refreshed by
     # tools/llmlint/llmlint-plugins.py): someone else's authored configs, judged in
     # their own repository, not crozier's code.
     - "llmlint-plugins/**"
+    # The collected-case pins: each suite's collected test names, written by
+    # tools/ci/suite-cases and compared with what the suite collects now by its
+    # test (suite-cases.test.mjs); the tool, its tests and the suites stay linted.
+    - "tools/ci/suite-cases/pins/**"
 rationales: true
 # No `agents` block: the committed fallback `oneharness.toml` selects the harness.
 plugins:
