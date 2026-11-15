@@ -267,7 +267,7 @@ fn a_pull_request_push_runs_exactly_the_governed_lanes() {
             "lint" => 60,
             "test-linux" => 240,
             "test-windows" => 150,
-            "test-macos" => 150,
+            "test-macos" => 240,
             other => panic!("{other} is not a lane"),
         };
         assert_eq!(
@@ -1131,11 +1131,13 @@ fn the_tool_proof_names_a_tool_its_installer_left_off_path() {
 /// is `lint`'s, 30 to 60, by the manager's ruling on the Fern 5.200.0 pair move: setup
 /// reaches its judged diff tier ~23 minutes in and that change's diff needed 5 batches of
 /// ~2.5 minutes each; test-linux already runs longer, so the critical path is unchanged.
+/// `test-macos` rose 150 to 240, test-linux's limit, by the manager's ruling (c33.0) on the
+/// same move: run 43716165831's first stage took 2h04m there and 150 cancelled its sdk-env stage.
 const LANE_LIMITS: [(&str, u64); 4] = [
     ("lint", 60),
     ("test-linux", 240),
     ("test-windows", 150),
-    ("test-macos", 150),
+    ("test-macos", 240),
 ];
 
 /// No lane's limit rises, and every entrypoint, comparison and command the inventory
