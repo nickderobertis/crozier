@@ -562,6 +562,35 @@ class MissingInputs(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr)
         self.assertIn(f"{missing} is missing; restore it from git", result.stderr)
 
+    def test_a_malformed_unsettled_contract_fails_naming_it(self) -> None:
+        contract = "docs/fern-refusals/unsettled-contract.json"
+        valid = json.loads((REPO / contract).read_text(encoding="utf-8"))
+        for name, text in (
+            ("zero reach", json.dumps({**valid, "reach": 0})),
+            ("negative reach", json.dumps({**valid, "reach": -0.5})),
+            ("reach above one", json.dumps({**valid, "reach": 1.5})),
+            ("NaN reach", json.dumps({**valid, "reach": float("nan")})),
+            ("boolean reach", json.dumps({**valid, "reach": True})),
+            ("no fields", json.dumps({"reach": 0.95})),
+            ("repeated field", json.dumps({**valid, "fields": ["reason", "reason"]})),
+            ("not JSON", "{"),
+        ):
+            with self.subTest(name), tempfile.TemporaryDirectory() as scratch:
+                root = Path(scratch)
+                for relative in SCRIPT_LOADS:
+                    (root / relative).parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy(REPO / relative, root / relative)
+                (root / contract).write_text(text, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(root / "tools" / "fern-refusals" / "fern-refusals.py"), "check"],
+                    capture_output=True,
+                    text=True,
+                    cwd=root,
+                )
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertIn(contract, result.stderr)
+
     def test_a_missing_corpus_table_names_it(self) -> None:
         self.assert_select_names_missing("tests/fixtures/CORPUS.md")
 

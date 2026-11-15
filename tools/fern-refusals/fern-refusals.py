@@ -2240,11 +2240,32 @@ def shape_problems() -> list[str]:
 # must show (its trace starts a moment after the probe's timer, so it reads a few
 # seconds under the bound, never far under): one declaration the e2e gate reads
 # too, `docs/fern-refusals/unsettled-contract.json`.
-_UNSETTLED_CONTRACT = json.loads(
-    (REPO / "docs" / "fern-refusals" / "unsettled-contract.json").read_text(encoding="utf-8")
-)
-UNSETTLED_FIELDS: tuple[str, ...] = tuple(_UNSETTLED_CONTRACT["fields"])
-UNSETTLED_REACH: float = float(_UNSETTLED_CONTRACT["reach"])
+def unsettled_contract(path: Path) -> tuple[tuple[str, ...], float]:
+    """The contract's fields (distinct, non-empty names) and its reach (a finite
+    fraction above zero, at most one); anything else fails naming the file."""
+    where = rel(path)
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as error:
+        fail(f"{where} cannot be read: {error}; restore it from git")
+    match data:
+        case {"fields": [*fields], "reach": int() | float() as reach} if (
+            not isinstance(reach, bool)
+            and fields
+            and all(isinstance(field, str) and field for field in fields)
+            and len(set(fields)) == len(fields)
+            and math.isfinite(reach)
+            and 0 < reach <= 1
+        ):
+            return tuple(fields), float(reach)
+        case _:
+            fail(
+                f"{where} must hold `fields`, distinct non-empty names, and `reach`, a finite fraction "
+                "above 0 and at most 1; restore it from git"
+            )
+
+
+UNSETTLED_FIELDS, UNSETTLED_REACH = unsettled_contract(REPO / "docs" / "fern-refusals" / "unsettled-contract.json")
 SECONDS = re.compile(r"(0|[1-9][0-9]*)(\.[0-9]+)?")
 RELEASE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 
