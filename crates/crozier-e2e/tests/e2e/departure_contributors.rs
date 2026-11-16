@@ -321,6 +321,17 @@ pub fn rename_goldens(root: &Path, renames: &[(String, String)]) -> Result<(), S
         .map_err(|failures| failures.join("\n"))?;
     let mut contributors = parse(&read(CONTRIBUTORS)?)?;
     for (old, new) in renames {
+        for path in [old, new] {
+            let plain = !path.is_empty()
+                && Path::new(path)
+                    .components()
+                    .all(|part| matches!(part, std::path::Component::Normal(_)));
+            if !plain || path.contains('\\') {
+                return Err(format!(
+                    "{RENAME_ENV}: `{path}` is no repository-relative golden path"
+                ));
+            }
+        }
         let entry = compared.goldens.remove(old).ok_or_else(|| {
             format!(
                 "{}: {old} is not a compared golden to rename",
@@ -569,6 +580,14 @@ fn the_rename_step_reads_its_renames_as_the_script_passes_them() {
     let before = committed(root);
     for (renames, says) in [
         ("docs/nowhere/fern-expected", "is not OLD=NEW"),
+        (
+            "docs/nowhere/fern-expected=/tmp/fern-expected",
+            "`/tmp/fern-expected` is no repository-relative golden path",
+        ),
+        (
+            "docs/nowhere/fern-expected=docs/../fern-expected",
+            "`docs/../fern-expected` is no repository-relative golden path",
+        ),
         (
             "docs/nowhere/fern-expected=docs/elsewhere/fern-expected",
             "docs/nowhere/fern-expected is not a compared golden to rename",

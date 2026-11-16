@@ -557,6 +557,41 @@ class FernReferencesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "must be plain file names"):
             store.publish(self.root / document, tree, store.EnumMode.LITERALS, records={"tree": "x"})
 
+    def test_the_store_lives_under_the_home_cache_unless_an_absolute_xdg_cache_home_moves_it(self) -> None:
+        """XDG_CACHE_HOME places the store only when absolute, as XDG asks; otherwise ~/.cache."""
+        document = "docs/fern-measurements/kept/phi/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: phi}\n")
+        self.write("tree/src/fern/client.py", "CLIENT = 1\n")
+        self.write(
+            "tree/.fern/metadata.json",
+            json.dumps(
+                {
+                    "cliVersion": CLI,
+                    "generatorName": "fernapi/fern-python-sdk",
+                    "generatorVersion": SDK,
+                    "generatorConfig": {"pydantic_config": {"enum_type": "python_enums"}},
+                }
+            ),
+        )
+        home = self.root / "home"
+        digest = hashlib.sha256((self.root / document).read_bytes()).hexdigest()
+        expected = home / ".cache/crozier/certified-trees" / f"fern-{CLI}_python-{SDK}" / digest / "python_enums"
+        for xdg in (None, "relative/cache"):
+            with self.subTest(xdg=xdg):
+                saved = dict(self.env)
+                self.env.pop("XDG_CACHE_HOME", None)
+                self.env["HOME"] = str(home)
+                if xdg is not None:
+                    self.env["XDG_CACHE_HOME"] = xdg
+                try:
+                    published = self.publish(document, self.root / "tree")
+                    found = self.find_entry(document, "python-enums")
+                finally:
+                    self.env = saved
+                self.assertEqual(published.returncode, 0, published.stderr)
+                self.assertEqual((published.stdout.strip(), found.stdout.strip()), (str(expected), str(expected)))
+                self.assertFalse((Path.cwd() / "relative").exists(), "a relative XDG_CACHE_HOME is ignored")
+
     def test_an_unwritable_store_leaves_the_golden_generated_and_names_the_fix(self) -> None:
         """A store write failure costs only the reuse: the reference tree is still written."""
         if os.name == "nt" or os.geteuid() == 0:

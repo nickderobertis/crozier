@@ -58,6 +58,11 @@ same_blob() { # same_blob COMMITTED-PATH WORKTREE-PATH: the file holds exactly t
 for pair in ${renames[@]+"${renames[@]}"}; do
   old=${pair%%=*} new=${pair#*=}
   [ "$pair" != "$old" ] && [ -n "$old" ] && [ -n "$new" ] || fail "--rename '$pair' is not OLD=NEW" "$usage"
+  for path in "$old" "$new"; do
+    case "/$path/" in
+      //*|*/../*|*/./*|*//*) fail "--rename '$pair': $path is no repository-relative golden path" "$usage" ;;
+    esac
+  done
   [ "$(git cat-file -t "HEAD:$old" 2>/dev/null)" = tree ] \
     || fail "$old is no golden tree at HEAD" "name the committed path the tree moved from"
   [ ! -e "$old" ] || fail "$old still exists, so it was copied, not moved" "remove it, or regenerate without --rename"

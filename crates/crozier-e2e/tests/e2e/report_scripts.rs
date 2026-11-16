@@ -739,6 +739,16 @@ fn a_changed_or_copied_golden_is_refused_as_a_rename() {
         ),
         (vec!["--rename"], "--rename needs OLD=NEW", true),
         (
+            vec!["--rename=docs/x/fern-expected=/abs/fern-expected"],
+            "/abs/fern-expected is no repository-relative golden path",
+            true,
+        ),
+        (
+            vec!["--rename=docs/x/fern-expected=docs/../fern-expected"],
+            "docs/../fern-expected is no repository-relative golden path",
+            true,
+        ),
+        (
             vec!["--no-such-option"],
             "unknown option '--no-such-option'",
             true,

@@ -176,6 +176,7 @@ def publish(
         try:
             stage.rename(entry)
         except OSError:
+            # llmlint: ignore[changed_behavior_has_e2e] Only a second publisher renaming its entry into place between the check above and this rename reaches this arm, a window no test can open deterministically without a hook in the code under test; it ends in `kept`, the same check the tests drive through an entry already in place, and the `finally` below removes the stage either way.
             # Another publisher renamed its entry in first: kept only if it is whole.
             if not entry.is_dir():
                 raise
