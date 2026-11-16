@@ -472,6 +472,7 @@ fn record_to(dir: &Path, goldens: &[(&str, bool)], rows: &BTreeSet<Row>) -> Resu
             .map_err(|error| format!("{RECORD_ENV}: {error}"))?;
         file.keep()
             .map_err(|error| format!("{RECORD_ENV}: {error}"))?;
+        super::departures_ledger::note_contributor(golden, dir, RECORD_ENV)?;
     }
     Ok(())
 }

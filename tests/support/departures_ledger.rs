@@ -29,6 +29,46 @@ pub const REGENERATE: &str = "just departures-ledger";
 /// departures-ledger` then merges the records into it.
 pub const RECORD_ENV: &str = "CROZIER_RECORD_DEPARTURES";
 
+/// Set to a directory beside [`RECORD_ENV`], every recording comparison also
+/// notes there which test recorded which golden, so `just departures-ledger`
+/// can hold its committed inventory of contributing tests to what ran.
+pub const CONTRIBUTOR_ENV: &str = "CROZIER_RECORD_CONTRIBUTORS";
+
+/// Under [`CONTRIBUTOR_ENV`], note that the running test recorded `golden` into
+/// `records`, as `golden`, the nextest binary id and the test name, one
+/// tab-separated line. Only a record written where `record_env` points — the
+/// run's own record directory — is noted: a test that records into a scratch
+/// directory of its own contributes nothing the merge reads.
+pub fn note_contributor(golden: &str, records: &Path, record_env: &str) -> Result<(), String> {
+    let Some(dir) = std::env::var_os(CONTRIBUTOR_ENV) else {
+        return Ok(());
+    };
+    if std::env::var_os(record_env).is_none_or(|run| Path::new(&run) != records) {
+        return Ok(());
+    }
+    let (Ok(binary), Ok(test)) = (
+        std::env::var("NEXTEST_BINARY_ID"),
+        std::env::var("NEXTEST_TEST_NAME"),
+    ) else {
+        return Err(format!(
+            "{CONTRIBUTOR_ENV}: the recording test is not running under cargo nextest, which \
+             names it; record through `{REGENERATE}`"
+        ));
+    };
+    let mut file = tempfile::Builder::new()
+        .suffix(".tsv")
+        .tempfile_in(&dir)
+        .map_err(|error| format!("{CONTRIBUTOR_ENV}: {error}"))?;
+    std::io::Write::write_all(
+        &mut file,
+        format!("{golden}\t{binary}\t{test}\n").as_bytes(),
+    )
+    .map_err(|error| format!("{CONTRIBUTOR_ENV}: {error}"))?;
+    file.keep()
+        .map_err(|error| format!("{CONTRIBUTOR_ENV}: {error}"))?;
+    Ok(())
+}
+
 /// The file-level carve-outs a comparison records, each as its inventory slug
 /// and the words a failure uses for it.
 pub const CARVE_OUT_KINDS: [(&str, &str); 4] = [
@@ -395,6 +435,7 @@ impl GoldenLedger {
                 .map_err(|error| format!("{RECORD_ENV}: {error}"))?;
             file.keep()
                 .map_err(|error| format!("{RECORD_ENV}: {error}"))?;
+            note_contributor(golden, dir, RECORD_ENV)?;
         }
         Ok(())
     }
