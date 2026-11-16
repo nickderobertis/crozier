@@ -798,9 +798,9 @@ def golden_constants(repo_root: Path) -> dict[str, str]:
     source = (repo_root / census.GOLDEN_REGISTRY).read_text(encoding="utf-8")
     by_api = {api: r.test for api, r in census.golden_registrations(repo_root / census.GOLDEN_REGISTRY).items()}
     return {
-        constant: by_api[api]
-        for constant, api in re.findall(r'^const (\w+): Corpus = Corpus \{\s*api: "([^"]+)"', source, re.M)
-        if api in by_api
+        constant: by_api[literal.api]
+        for constant, literal in census.corpus_constants(source).items()
+        if literal.api in by_api
     }
 
 

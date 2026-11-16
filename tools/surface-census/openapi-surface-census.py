@@ -49,6 +49,7 @@ here. What only this file knows is the object-model table itself — `OBJECTS` a
 from __future__ import annotations
 
 import argparse
+import bisect
 import difflib
 import io
 import json
@@ -8840,7 +8841,103 @@ def pinned_tree_root(fixtures_root: Path, corpus_root: Path, fixture: str) -> Pa
 # against Fern's: `<api>_matches_fern_output`, as `tools/surface-census/golden-reach.py`
 # scopes one instrumented run to it.
 GOLDEN_TEST = re.compile(r"matches_fern_output")
-_CORPUS_HELPER = re.compile(r"assert_(?:link_ok_|committed_)?corpus_matches\(&(\w+)\)")
+# A corpus assertion helper's name, wherever a call to it starts. Its argument is
+# parsed separately (`_CORPUS_ARGUMENT`) so rustfmt's wrapping — the call broken
+# across lines, a trailing comma, spacing around `&` — cannot hide a registration.
+_CORPUS_HELPER = re.compile(r"\b(assert_(?:link_ok_|committed_)?corpus_matches)\s*\(")
+_CORPUS_ARGUMENT = re.compile(r"\s*&\s*(\w+)\s*,?\s*\)")
+# A `Corpus { api: "…", … }` literal, optionally bound to a `const`, however the
+# binding is wrapped: rustfmt moves a long `const NAME: Corpus =` onto its own line.
+_CORPUS_LITERAL = re.compile(
+    r"(?:^const\s+(\w+)\s*:\s*Corpus\s*=\s*)?\bCorpus\s*\{\s*api:\s*\"([^\"]+)\"\s*,(.*?)\n\s*\}",
+    re.M | re.S,
+)
+_TOP_LEVEL_FN = re.compile(r"^(?:pub(?:\([^)]*\))?\s+)?fn\s+(\w+)\s*[<(]", re.M)
+# A whole-line comment is prose, not code: a doc comment naming a helper is no call.
+_LINE_COMMENT = re.compile(r"^[ \t]*//[^\n]*", re.M)
+
+
+def _rust_code(source: str) -> str:
+    """`source` with its whole-line comments blanked, line numbers kept."""
+    return _LINE_COMMENT.sub("", source)
+
+
+class CorpusLiteral(NamedTuple):
+    """One `Corpus` literal: the fixture directory it names and its declared residual."""
+
+    api: str
+    unmatched: tuple[str, ...]
+
+
+class CorpusDrive(NamedTuple):
+    """A golden test driving one `Corpus` constant through a corpus assertion helper."""
+
+    test: str
+    constant: str
+
+
+def corpus_constants(source: str) -> dict[str, CorpusLiteral]:
+    """`const NAME: Corpus` -> its literal, however rustfmt wrapped the binding."""
+    constants: dict[str, CorpusLiteral] = {}
+    for match in _CORPUS_LITERAL.finditer(_rust_code(source)):
+        constant, api, body = match.groups()
+        if constant:
+            constants[constant] = CorpusLiteral(api, _unmatched_files(body))
+    return constants
+
+
+def _unmatched_files(body: str) -> tuple[str, ...]:
+    residual = re.search(r"unmatched:\s*&\[(.*?)\]", body, re.S)
+    return tuple(re.findall(r'"([^"]+)"', residual.group(1))) if residual else ()
+
+
+def _call_end(code: str, opened: int) -> int:
+    """The offset just past the `)` closing the call whose `(` ends at `opened`."""
+    depth = 1
+    for offset in range(opened, len(code)):
+        depth += {"(": 1, ")": -1}.get(code[offset], 0)
+        if depth == 0:
+            return offset + 1
+    return len(code)
+
+
+def corpus_drives(source: str) -> list[CorpusDrive]:
+    """Every `Corpus` constant a golden test drives through a corpus assertion helper.
+
+    A call is recognised across whitespace, newlines and a trailing comma. One a
+    golden test makes that names no `Corpus` constant is refused, with its line,
+    rather than dropped: a registration this reader cannot read would otherwise
+    leave the measured population silently.
+    """
+    code = _rust_code(source)
+    constants = corpus_constants(source)
+    starts = [(match.start(), match.group(1)) for match in _TOP_LEVEL_FN.finditer(code)]
+    positions = [start for start, _name in starts]
+    drives: list[CorpusDrive] = []
+    refused: list[str] = []
+    for call in _CORPUS_HELPER.finditer(code):
+        if re.search(r"\bfn\s+$", code[max(0, call.start() - 8) : call.start()]):
+            continue  # the helper's own definition
+        index = bisect.bisect_right(positions, call.start()) - 1
+        test = starts[index][1] if index >= 0 else None
+        if test is None or not GOLDEN_TEST.search(test):
+            continue
+        argument = _CORPUS_ARGUMENT.match(code, call.end())
+        if argument and argument.group(1) in constants:
+            drives.append(CorpusDrive(test, argument.group(1)))
+            continue
+        line = code.count("\n", 0, call.start()) + 1
+        text = code[call.start() : _call_end(code, call.end())]
+        refused.append(f"line {line}: `{' '.join(text.split())}` in `{test}`")
+    if refused:
+        raise SystemExit(
+            "openapi-surface-census: a golden test drives a corpus helper with an argument the "
+            "census cannot read as `&CONST` naming a `Corpus` constant, so its registration "
+            "would leave the measured population: "
+            + "; ".join(refused)
+            + " — pass the `Corpus` constant itself (`&NAME`), or teach `corpus_drives` the new form"
+        )
+    return drives
 
 
 @dataclass(frozen=True)
@@ -8862,34 +8959,17 @@ def golden_registrations(e2e: Path) -> dict[str, GoldenRegistration]:
 
     A `Corpus { api, …, unmatched }` literal names a fixture directory and its
     residual; a `fn …matches_fern_output` that drives `&CONST` through one of the
-    corpus assertion helpers, or a `feature_target_goldens!` entry naming the
-    `api`, is that directory's golden test. A literal no golden test drives (the
-    known-upstream-failure rows) is not a registration.
+    corpus assertion helpers (`corpus_drives`), or a `feature_target_goldens!`
+    entry naming the `api`, is that directory's golden test. A literal no golden
+    test drives (the known-upstream-failure rows) is not a registration.
     """
     source = e2e.read_text(encoding="utf-8")
-    literals: dict[str, tuple[str, tuple[str, ...]]] = {}
-    unmatched_of: dict[str, tuple[str, ...]] = {}
-    for match in re.finditer(
-        r"(?:^const (\w+): Corpus = )?Corpus \{\s*api: \"([^\"]+)\",(.*?)\n\s*\}",
-        source,
-        re.M | re.S,
-    ):
-        constant, api, body = match.groups()
-        residual = re.search(r"unmatched: &\[(.*?)\]", body, re.S)
-        files = tuple(re.findall(r'"([^"]+)"', residual.group(1))) if residual else ()
-        unmatched_of[api] = files
-        if constant:
-            literals[constant] = (api, files)
+    unmatched_of = {api: _unmatched_files(body) for _constant, api, body in _CORPUS_LITERAL.findall(_rust_code(source))}
+    literals = corpus_constants(source)
     registrations: dict[str, GoldenRegistration] = {}
-    current = None
-    for line in source.splitlines():
-        fn = re.match(r"^fn (\w+)\(", line)
-        if fn:
-            current = fn.group(1)
-        drive = _CORPUS_HELPER.search(line)
-        if drive and current and GOLDEN_TEST.search(current) and drive.group(1) in literals:
-            api, files = literals[drive.group(1)]
-            registrations[api] = GoldenRegistration(api, current, files)
+    for drive in corpus_drives(source):
+        literal = literals[drive.constant]
+        registrations[literal.api] = GoldenRegistration(literal.api, drive.test, literal.unmatched)
     for test, api in re.findall(r"^\s*(\w+_matches_fern_output) => \"([^\"]+)\"", source, re.M):
         registrations[api] = GoldenRegistration(api, test, unmatched_of.get(api, ()))
     return registrations

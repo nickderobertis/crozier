@@ -8938,6 +8938,108 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             self.assertEqual(1, unregistered.returncode, unregistered.stdout)
             self.assertIn("missing golden registry", unregistered.stderr)
 
+    # Each spelling rustfmt (or an author) gives a registration: the compact one,
+    # a call wrapped across lines with a trailing comma, a `const` binding wrapped
+    # onto its own line, and spacing around `&`.
+    FORMATTED_REGISTRY = textwrap.dedent(
+        """\
+        // A comment naming `assert_corpus_matches(&NOT_A_ROW)` registers nothing.
+        const COMPACT: Corpus = Corpus {
+            api: "compact",
+            unmatched: &[],
+        };
+
+        #[test]
+        fn compact_matches_fern_output() {
+            assert_committed_corpus_matches(&COMPACT);
+        }
+
+        const A_REGISTRATION_CONSTANT_NAME_LONG_ENOUGH_TO_WRAP_THE_BINDING: Corpus =
+            Corpus {
+                api: "wrapped-constant",
+                unmatched: &["reference.md"],
+            };
+
+        #[test]
+        fn wrapped_constant_matches_fern_output() {
+            assert_committed_corpus_matches(
+                &A_REGISTRATION_CONSTANT_NAME_LONG_ENOUGH_TO_WRAP_THE_BINDING,
+            );
+        }
+
+        const WRAPPED_CALL: Corpus = Corpus {
+            api: "wrapped-call",
+            unmatched: &[],
+        };
+
+        #[test]
+        fn wrapped_call_matches_fern_output() {
+            assert_corpus_matches(
+                & WRAPPED_CALL
+            );
+        }
+        """
+    )
+
+    def write_population(self, root: Path, registry: str, *names: str) -> tuple[Path, Path]:
+        fixtures, corpus = root / "tests" / "fixtures", root / "corpus"
+        fixtures.mkdir(parents=True)
+        rows_md = [
+            "| # | name | method | source | pinned ref | license | decision | shapes |",
+            "|---:|---|---|---|---|---|---|---|",
+        ]
+        for number, name in enumerate(names, 1):
+            rows_md.append(
+                f"| {number} | `{name}` | api-guru | https://example.test/{name}.yml | `1` | MIT | committed | t |"
+            )
+            (corpus / name).mkdir(parents=True)
+            (corpus / name / "openapi.yml").write_text(self.DOCUMENT, encoding="utf-8", newline="\n")
+            (fixtures / name / "expected").mkdir(parents=True)
+        (fixtures / "CORPUS.md").write_text("\n".join(rows_md) + "\n", encoding="utf-8", newline="\n")
+        registry_path = census.golden_registry(fixtures)
+        registry_path.parent.mkdir(parents=True)
+        registry_path.write_text(registry, encoding="utf-8", newline="\n")
+        return fixtures, corpus
+
+    def test_every_formatting_of_a_registration_is_counted(self) -> None:
+        """Issue #811: formatting a registration must not remove it from the census."""
+        with tempfile.TemporaryDirectory() as directory:
+            fixtures, corpus = self.write_population(
+                Path(directory), self.FORMATTED_REGISTRY, "compact", "wrapped-constant", "wrapped-call"
+            )
+            completed = run(
+                "--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--selector", "pathItem.trace", "--json"
+            )
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            payload = json.loads(completed.stdout)
+            self.assertEqual(
+                ["compact", "wrapped-call", "wrapped-constant"], sorted(s["fixture"] for s in payload["sources"])
+            )
+            self.assertEqual(
+                {("pathItem.trace", "compact", 1), ("pathItem.trace", "wrapped-call", 1)}
+                | {("pathItem.trace", "wrapped-constant", 1)},
+                {(row["selector"], row["fixture"], row["count"]) for row in payload["rows"]},
+            )
+
+    def test_a_registration_the_census_cannot_read_is_refused_not_dropped(self) -> None:
+        """A golden test driving a helper with no readable `&CONST` fails the census, naming the line."""
+        unreadable = self.FORMATTED_REGISTRY + textwrap.dedent(
+            """
+            #[test]
+            fn indirect_matches_fern_output() {
+                assert_corpus_matches(corpus_named("compact"));
+            }
+            """
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            fixtures, corpus = self.write_population(Path(directory), unreadable, "compact")
+            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--json")
+            self.assertEqual(1, refused.returncode, refused.stdout)
+            self.assertIn(
+                '`assert_corpus_matches(corpus_named("compact"))` in `indirect_matches_fern_output`', refused.stderr
+            )
+            self.assertIn("line 39:", refused.stderr)
+
     def test_the_real_population_is_exactly_the_compared_goldens(self) -> None:
         corpus_root = REPO / "tests" / "fixtures" / "corpus-sources"
         acquired = census.acquisition_sources(FIXTURES, corpus_root, False)
