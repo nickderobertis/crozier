@@ -14,6 +14,7 @@ table's offline shape checks are `tools/surface-census/tests/surface_census_test
 from __future__ import annotations
 
 import contextlib
+import dataclasses
 import importlib.util
 import io
 import json
@@ -337,6 +338,27 @@ def test_a_merge_conflicted_record_is_regenerated_from_the_merged_tree(tmp_path:
     main, side = git("rev-parse", "main"), git("rev-parse", "side")
     merge = subprocess.run(["git", "merge", "-q", "side"], cwd=root, capture_output=True, text=True)
     assert merge.returncode != 0 and "<<<<<<<" in path.read_text(encoding="utf-8")
+    # A regeneration that cannot run refuses, naming why, and leaves the merge
+    # uncommitted for a rerun: here `ruff`, which the measurement needs, is absent.
+    without_ruff = os.pathsep.join(
+        directory
+        for directory in os.environ["PATH"].split(os.pathsep)
+        if not (Path(directory) / ("ruff.exe" if os.name == "nt" else "ruff")).exists()
+    )
+    blocked = subprocess.run(
+        [sys.executable, str(root / "tools/surface-census/census-repin.py")],
+        cwd=root,
+        env=dict(os.environ, PATH=without_ruff),
+        capture_output=True,
+        text=True,
+        timeout=1800,
+        encoding="utf-8",
+    )
+    assert blocked.returncode != 0
+    assert "re-measuring the residual attribution failed" in blocked.stderr, blocked.stderr
+    assert "`ruff` is not on PATH" in blocked.stderr and "the merge is left uncommitted" in blocked.stderr
+    assert (root / git("rev-parse", "--git-path", "MERGE_HEAD")).is_file()
+    assert "<<<<<<<" in path.read_text(encoding="utf-8"), "the conflict is left for the rerun to resolve"
     run = subprocess.run(
         [sys.executable, str(root / "tools/surface-census/census-repin.py"), "--verbose"],
         cwd=root,
@@ -403,6 +425,21 @@ def test_a_version_only_release_keeps_the_saved_attribution_valid(tmp_path: Path
 
     git("init", "-qb", "main")
     git("config", "core.autocrlf", "false")
+    import residual_attribution_record as record_model
+
+    # A record saved before this change hashed the version line as it read; it
+    # stays valid for exactly the tree it measured.
+    record = root / record_model.RECORD
+    neutral = record.read_bytes()
+    current = record_model.fingerprints(root, "webflow-v2")
+    [legacy] = record_model.accepted_fingerprints(root, "webflow-v2") - {current}
+    saved = record_model.read(root)
+    record_model.write(
+        root, {key: dataclasses.replace(row, inputs_digest=legacy.inputs_digest) for key, row in saved.items()}
+    )
+    unchanged = repin()
+    assert "stale residual attribution" not in unchanged.stderr, unchanged.stderr
+    assert "interpreter selector scripts/census-python.sh" in unchanged.stderr, unchanged.stderr
     manifest, lock = root / "Cargo.toml", root / "Cargo.lock"
     version = re.search(r'(?m)^version = "([^"]+)"', manifest.read_text(encoding="utf-8"))
     assert version is not None
@@ -416,6 +453,9 @@ def test_a_version_only_release_keeps_the_saved_attribution_valid(tmp_path: Path
     lock.write_text(
         lock.read_text(encoding="utf-8").replace(entry, entry.replace(version[1], released)), encoding="utf-8"
     )
+    legacy_bumped = repin()
+    assert "boolean-schema-true: stale residual attribution" in legacy_bumped.stderr, legacy_bumped.stderr
+    record.write_bytes(neutral)
     bumped = repin()
     assert "stale residual attribution" not in bumped.stderr, bumped.stderr
     assert "interpreter selector scripts/census-python.sh" in bumped.stderr, bumped.stderr

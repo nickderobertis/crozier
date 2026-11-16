@@ -22,7 +22,6 @@ paths:
                 $ref: "#/components/schemas/Consignment"
 components:
   schemas:
-    # Properties beside an undiscriminated `oneOf` of two references.
     Consignment:
       type: object
       properties:
