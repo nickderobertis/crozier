@@ -113,8 +113,21 @@ def cached_path(commit: str) -> Path:
     return cache_dir() / commit / ARTIFACT_FILE
 
 
-def publish(store: Store) -> Path:
-    """Leave `store` in the host cache under its own commit, for the next step on this host."""
+UNPUBLISHED = (
+    "a scoped measurement holds only the selected tests and fixtures, so it was not published as a base "
+    "and any earlier complete base is kept; run `just census-repin` unscoped to publish one"
+)
+
+
+def publish(store: Store, *, complete: bool = True) -> Path | None:
+    """Leave `store` in the host cache under its own commit, for the next step on this host.
+
+    A store missing registered tests or fixtures (`complete=False`, a scoped
+    measurement) is not published: a later step would carry its partial
+    population as though it were the whole one. Returns None for it.
+    """
+    if not complete:
+        return None
     path = cached_path(store["commit"])
     RS.save(store, path)
     return path

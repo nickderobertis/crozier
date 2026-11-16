@@ -46,16 +46,59 @@ class Attribution:
         return f"| `{self.key}` | `{self.fixture}` | {matched}{gaps} | `{verdict}` |\n"
 
 
-def content_digest(root: Path, paths: list[Path]) -> str:
+# The product's own release version, the one value a version-only release moves:
+# the `[package]` version of Cargo.toml and that package's entry in Cargo.lock.
+# Every other byte of both files (dependencies, features, other versions) stays
+# an input, so a substantive change still invalidates the attribution.
+RELEASED_VERSION = "<released-version>"
+_PACKAGE_VERSION = re.compile(r'(?ms)^(\[package\]\n(?:(?!^\[).)*?^version = )"[^"\n]*"')
+_PACKAGE_NAME = re.compile(r'(?ms)^\[package\]\n(?:(?!^\[).)*?^name = "([^"\n]+)"')
+
+
+def _without_released_version(root: Path, path: Path, data: bytes) -> bytes:
+    """`data` with the product's release version replaced, for Cargo.toml and Cargo.lock only."""
+    if path not in (root / "Cargo.toml", root / "Cargo.lock"):
+        return data
+    manifest = (root / "Cargo.toml").read_text(encoding="utf-8")
+    product = _PACKAGE_NAME.search(manifest)
+    if product is None:
+        return data
+    text = data.decode("utf-8")
+    if path.name == "Cargo.toml":
+        text = _PACKAGE_VERSION.sub(lambda match: f'{match[1]}"{RELEASED_VERSION}"', text, count=1)
+    else:
+        entry = re.compile(rf'(?m)^(name = "{re.escape(product[1])}"\nversion = )"[^"\n]*"\n(?!source = )')
+        text = entry.sub(lambda match: f'{match[1]}"{RELEASED_VERSION}"\n', text, count=1)
+    return text.encode("utf-8")
+
+
+def content_digest(root: Path, paths: list[Path], *, release_neutral: bool = False) -> str:
     digest = hashlib.sha256()
     for path in sorted(paths, key=lambda path: path.relative_to(root).as_posix()):
-        for value in (path.relative_to(root).as_posix().encode(), path.read_bytes()):
+        data = path.read_bytes()
+        if release_neutral:
+            data = _without_released_version(root, path, data)
+        for value in (path.relative_to(root).as_posix().encode(), data):
             digest.update(len(value).to_bytes(8, "big"))
             digest.update(value)
     return digest.hexdigest()
 
 
 def fingerprints(root: Path, fixture: FixtureName) -> Fingerprints:
+    """The digests a measurement of `fixture` is recorded under, blind to the product's release version."""
+    return _fingerprints(root, fixture, release_neutral=True)
+
+
+def accepted_fingerprints(root: Path, fixture: FixtureName) -> set[Fingerprints]:
+    """Every digest pair a saved measurement may carry and still describe the tree.
+
+    A record written before the release-neutral digest hashed the version line
+    as it read; it stays valid for exactly the tree it was measured on.
+    """
+    return {_fingerprints(root, fixture, release_neutral=True), _fingerprints(root, fixture, release_neutral=False)}
+
+
+def _fingerprints(root: Path, fixture: FixtureName, *, release_neutral: bool) -> Fingerprints:
     golden = root / "tests/fixtures" / fixture / "expected"
     sources = root / "tests/fixtures/corpus-sources" / fixture
     if not golden.is_dir() or not sources.is_dir():
@@ -90,7 +133,9 @@ def fingerprints(root: Path, fixture: FixtureName) -> Fingerprints:
     registrations = census.golden_registrations(registry)
     if fixture not in registrations:
         raise ValueError(f"{fixture}: no golden registration; re-measure with `{REMEASURE}`")
-    classified_inputs = json.dumps([content_digest(root, inputs), registrations[fixture].unmatched]).encode()
+    classified_inputs = json.dumps(
+        [content_digest(root, inputs, release_neutral=release_neutral), registrations[fixture].unmatched]
+    ).encode()
     return Fingerprints(content_digest(root, outputs), hashlib.sha256(classified_inputs).hexdigest())
 
 
@@ -155,12 +200,12 @@ def require(root: Path, key: str, fixture: str, rows: dict[str, Attribution]) ->
     if row is None:
         raise ValueError(f"{key}: no residual attribution for {fixture}; re-measure with `{REMEASURE}`")
     try:
-        current = fingerprints(root, fixture)
+        current = accepted_fingerprints(root, fixture)
     except (ValueError, OSError) as error:
         raise ValueError(
             f"{key}: cannot validate residual attribution for {fixture}: {error}; re-measure with `{REMEASURE}`"
         ) from error
-    if row.fixture != fixture or (row.golden_digest, row.inputs_digest) != current:
+    if row.fixture != fixture or Fingerprints(row.golden_digest, row.inputs_digest) not in current:
         raise ValueError(
             f"{key}: stale residual attribution for {fixture} (golden output or generator inputs changed); re-measure with `{REMEASURE}`"
         )

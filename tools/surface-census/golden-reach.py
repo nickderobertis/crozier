@@ -841,6 +841,9 @@ class Step(NamedTuple):
     fixtures_run: tuple[str, ...]
     fixtures_carried: tuple[str, ...]
     reasons: dict[str, str]
+    # Whether the store holds every registered golden test and every measured
+    # hand-written fixture: only such a store may be published as a shared base.
+    complete: bool = True
 
 
 def measure_step(
@@ -857,6 +860,7 @@ def measure_step(
     plan_fixtures: bool = True,
     handwritten_dir: Path | None = None,
     jobs: int = 1,
+    progress: Callable[[str], None] | None = None,
 ) -> Step:
     """One step of the store from `base` to the tree at `repo_root`'s HEAD.
 
@@ -864,13 +868,15 @@ def measure_step(
     decides what re-runs, and every other entry is carried, translated to HEAD's
     universe. A test or fixture left out (`include_*`) is carried only where the
     carry rule allows, and dropped where it does not: nothing is carried for a
-    test that executed changed code.
+    test that executed changed code. `progress`, when given, hears each test and
+    fixture the moment its run completes, with the completed and total counts.
     """
     handwritten = _load_handwritten_module()
     head = RS.git(repo_root, "rev-parse", "HEAD").strip()
     tree = RS.read_tree(repo_root)
     versions = RS.toolchain(repo_root)
     population = golden_population(repo_root)
+    registered_tests = frozenset(population)
     if select_tests is not None:
         population = {name: inputs for name, inputs in population.items() if select_tests.search(name)}
         if not population:
@@ -879,6 +885,7 @@ def measure_step(
     # `plan_fixtures=False` measures the golden tests alone: a tree whose hand-written
     # evidence does not plan (an older commit's) still measures its golden tests.
     fixtures = handwritten.measured_fixtures(repo_root, fixture_base) if plan_fixtures else {}
+    registered_fixtures = frozenset(fixtures) if plan_fixtures else None
     if select_fixtures is not None:
         fixtures = {name: audiences for name, audiences in fixtures.items() if select_fixtures.search(name)}
         if not fixtures:
@@ -954,14 +961,18 @@ def measure_step(
 
         failures = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=jobs) as pool:
-            for done, (test, hit, error) in enumerate(pool.map(one, sorted(run_tests)), start=1):
-                if done % 25 == 0 and done < len(run_tests) and sys.stderr.isatty():
+            pending = [pool.submit(one, test) for test in sorted(run_tests)]
+            for done, future in enumerate(concurrent.futures.as_completed(pending), start=1):
+                test, hit, error = future.result()
+                if progress is not None:
+                    progress(f"completed golden test {test} ({done}/{len(run_tests)})")
+                elif done % 25 == 0 and done < len(run_tests) and sys.stderr.isatty():
                     print(f"golden-reach: ran {done} of {len(run_tests)} golden test(s)", file=sys.stderr, flush=True)
                 if error is not None or hit is None:
                     failures.append((test, error))
                     continue
                 tests[test] = {"commit": head, "regions": RS.entry_regions(tree, functions, hit)}
-        for test, error in failures:
+        for test, error in sorted(failures):
             sys.stderr.write(f"--- {test} ---\n{error}\n")
         if failures:
             fail(
@@ -969,7 +980,7 @@ def measure_step(
                 f"golden measures nothing. Fix them (`just test-corpus-match`) and re-run `{REPIN}`."
             )
         tools = _CoverageTools()
-        for name in sorted(run_fixtures):
+        for done, name in enumerate(sorted(run_fixtures), start=1):
             spec, audiences = fixture_base / name / "openapi.yml", fixtures[name]
             _universe, hit = handwritten.scoped_run(spec, audiences, crozier, profdata, llvm_cov, repo_root, tools)
             entry: Entry = {"commit": head, "regions": RS.entry_regions(tree, functions, hit)}
@@ -977,6 +988,8 @@ def measure_step(
                 _universe, control = handwritten.scoped_run(spec, (), crozier, profdata, llvm_cov, repo_root, tools)
                 entry["control"] = RS.entry_regions(tree, functions, control)
             fixture_entries[name] = entry
+            if progress is not None:
+                progress(f"completed hand-written fixture {name} ({done}/{len(run_fixtures)})")
     store: Store = {
         "schema": RS.SCHEMA,
         "commit": head,
@@ -998,6 +1011,9 @@ def measure_step(
         tuple(sorted(run_fixtures)),
         tuple(sorted(set(fixture_entries) - run_fixtures)),
         dict(plan.reasons),
+        complete=set(tests) == registered_tests
+        and registered_fixtures is not None
+        and set(fixture_entries) == registered_fixtures,
     )
 
 
@@ -1139,8 +1155,12 @@ def measure(args: argparse.Namespace) -> int:
                 jobs=args.jobs,
             )
     write_views(step, out, repo_root)
-    _sibling("reach_base").publish(step.store)
-    print(f"golden-reach: measured into {out}: {describe(step)}" + (f" (base: {origin})" if origin else ""))
+    published = _sibling("reach_base").publish(step.store, complete=step.complete)
+    print(
+        f"golden-reach: measured into {out}: {describe(step)}"
+        + (f" (base: {origin})" if origin else "")
+        + ("" if published else f"; {_sibling('reach_base').UNPUBLISHED}")
+    )
     return 0
 
 
@@ -2276,7 +2296,8 @@ def package_base(args: argparse.Namespace) -> int:
         choice = base_module.find(repo_root, include_head=False)
         step = measure_step(repo_root, base=choice.store, full_reason=choice.reason, jobs=args.jobs)
     write_views(step, args.out, repo_root)
-    base_module.publish(step.store)
+    if base_module.publish(step.store, complete=step.complete) is None:
+        fail(f"the packaged step does not hold the whole registered population; {base_module.UNPUBLISHED}")
     RS.save(step.store, args.package / base_module.ARTIFACT_FILE)
     print(
         f"golden-reach: packaged {args.package / base_module.ARTIFACT_FILE} for "

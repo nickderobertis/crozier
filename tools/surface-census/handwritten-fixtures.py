@@ -1408,7 +1408,7 @@ def measure(args: argparse.Namespace) -> int:
         rows, gate_rows = ledger_rows(repo_root, base, step.store, reach.RS.read_tree(repo_root))
         if own:
             reach.write_views(step, out, repo_root)
-            reach._sibling("reach_base").publish(step.store)
+            reach._sibling("reach_base").publish(step.store, complete=step.complete)
     write_ledgers(rows, gate_rows, ledger, gates)
     print(
         f"handwritten-reach: measured {len(planned)} arm-level cover(s) and {len(interactions)} "
