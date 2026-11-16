@@ -1407,8 +1407,10 @@ def measure(args: argparse.Namespace) -> int:
             )
         rows, gate_rows = ledger_rows(repo_root, base, step.store, reach.RS.read_tree(repo_root))
         if own:
+            # Never published as a shared base: a fixtures-only step holds none of
+            # the golden tests, so a later repin stepping from it would carry a
+            # partial population as the whole one (#840).
             reach.write_views(step, out, repo_root)
-            reach._sibling("reach_base").publish(step.store, complete=step.complete)
     write_ledgers(rows, gate_rows, ledger, gates)
     print(
         f"handwritten-reach: measured {len(planned)} arm-level cover(s) and {len(interactions)} "

@@ -55,6 +55,7 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
+from typing import NamedTuple
 
 # `scripts/lib.sh`'s `valid_fern_version` (fern_references_test holds this copy to
 # it); it also keeps a recorded version from naming any path but one directory.
@@ -208,7 +209,14 @@ def find(document: Path, cli: str, generator: str, mode: EnumMode, root: Path | 
     return entry if entry.is_dir() and entry_failure(entry) is None else None
 
 
-def certified_pair(repo: Path) -> tuple[str, str]:
+class Pair(NamedTuple):
+    """A Fern CLI version and the fern-python-sdk version it runs, as a key names them."""
+
+    cli: str
+    generator: str
+
+
+def certified_pair(repo: Path) -> Pair:
     """The pair `assets/scaffolding/metadata.json` certifies."""
     path = repo / METADATA
     record = json.loads(path.read_text(encoding="utf-8"))
@@ -219,7 +227,7 @@ def certified_pair(repo: Path) -> tuple[str, str]:
         isinstance(cli, str) and VERSION.fullmatch(cli) and isinstance(generator, str) and VERSION.fullmatch(generator)
     ):
         raise ValueError(f"{path} records no exact cliVersion and generatorVersion")
-    return cli, generator
+    return Pair(cli, generator)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -245,7 +253,7 @@ def main(argv: list[str] | None = None) -> int:
         if (args.cli is None) != (args.generator is None):
             parser.error("--cli and --generator name one pair: pass both, or neither for the certified pair")
         repo = Path(__file__).resolve().parents[2]
-        cli, generator = (args.cli, args.generator) if args.cli else certified_pair(repo)
+        cli, generator = Pair(args.cli, args.generator) if args.cli else certified_pair(repo)
         if not (VERSION.fullmatch(cli) and VERSION.fullmatch(generator)):
             parser.error("--cli and --generator are exact versions")
         entry = find(args.document, cli, generator, mode)

@@ -624,6 +624,7 @@ fn moved_checkout(root: &Path, edit: impl FnOnce(&Path)) {
 
 /// Issue #819: an unchanged move is renamed in the committed files before
 /// anything records, so the recording run's ledger load finds the new path.
+// llmlint: ignore[shell_test_tiers_stay_split] `git` is part of every lane's base toolchain (this suite already shells out to it), and the rename step verifies a moved tree's bytes against the commit it moved from, which only a real repository has; the case stays offline, installs nothing and reaches no network.
 #[test]
 fn a_moved_golden_is_renamed_before_anything_records() {
     let rename = format!("{OLD}={NEW}");
@@ -666,12 +667,13 @@ fn a_moved_golden_is_renamed_before_anything_records() {
     );
 }
 
-/// A rename is only for a byte-preserving move: a changed file, an added one,
-/// a changed or missing source document, or a tree still at its old path is
-/// refused before cargo runs, naming what differs.
 /// What a refused rename names, and the edit to the moved tree that earns it.
 type RefusedRename = (&'static str, fn(&Path));
 
+/// A rename is only for a byte-preserving move: a changed file, an added one,
+/// a changed or missing source document, or a tree still at its old path is
+/// refused before cargo runs, naming what differs.
+// llmlint: ignore[shell_test_tiers_stay_split] `git` is part of every lane's base toolchain (this suite already shells out to it), and the rename step verifies a moved tree's bytes against the commit it moved from, which only a real repository has; the case stays offline, installs nothing and reaches no network.
 #[test]
 fn a_changed_or_copied_golden_is_refused_as_a_rename() {
     let rename = format!("--rename={OLD}={NEW}");

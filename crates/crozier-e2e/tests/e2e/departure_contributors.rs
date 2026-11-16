@@ -431,6 +431,7 @@ fn committed(root: &Path) -> [String; 4] {
     .map(|rel| std::fs::read_to_string(root.join(rel)).expect("read"))
 }
 
+// llmlint: ignore-block[tests_mirror_real_usage] The rename step's entry point, `rename_departure_goldens`, fixes its root at this repository, so applying a rename can only be watched over a scratch tree through `rename_goldens`, the function that entry point calls; the entry point's own parsing of `CROZIER_RENAME_GOLDENS` is driven through this binary by `the_rename_step_reads_its_renames_as_the_script_passes_them`, and the script's byte checks by report_scripts.rs.
 /// Issue #819: a golden moved unchanged leaves every committed row naming its
 /// old path, which the ledger load every recording comparison makes refuses;
 /// renaming it in the four files restores the load, the rows re-sorted.
@@ -492,6 +493,66 @@ fn a_refused_rename_writes_nothing() {
             rename_goldens(root.path(), &[(old.to_owned(), new.to_owned())]).expect_err("refused");
         assert!(error.contains(says), "{error}");
         assert_eq!(committed(root.path()), before);
+    }
+}
+// llmlint: ignore-end[tests_mirror_real_usage]
+
+/// The rename step, run as the script runs it (this suite's own binary, its
+/// renames in [`RENAME_ENV`]), refuses a pair that is not `OLD=NEW` and a golden
+/// the committed inventory does not compare, before writing anything.
+#[test]
+fn the_rename_step_reads_its_renames_as_the_script_passes_them() {
+    let root = crate::repo_root();
+    let before = committed(root);
+    for (renames, says) in [
+        ("docs/nowhere/fern-expected", "is not OLD=NEW"),
+        (
+            "docs/nowhere/fern-expected=docs/elsewhere/fern-expected",
+            "docs/nowhere/fern-expected is not a compared golden to rename",
+        ),
+    ] {
+        let output = std::process::Command::new(std::env::current_exe().expect("this suite"))
+            .args([
+                "departure_contributors::rename_departure_goldens",
+                "--exact",
+                "--ignored",
+                "--nocapture",
+            ])
+            .env(RENAME_ENV, renames)
+            .output()
+            .expect("run the rename step");
+        let said = format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(!output.status.success() && said.contains(says), "{said}");
+        assert_eq!(committed(root), before, "a refused rename writes nothing");
+    }
+}
+
+/// The script passes each step its inputs by the variable names, and runs the
+/// steps by the test names, these Rust constants and functions declare.
+#[test]
+fn the_script_names_the_variables_and_steps_these_constants_declare() {
+    let script =
+        std::fs::read_to_string(crate::repo_root().join("crates/crozier-e2e/departures-ledger.sh"))
+            .expect("the script");
+    for name in [
+        RENAME_ENV,
+        CONTRIBUTOR_ENV,
+        SELECTION_ENV,
+        DISCOVER_ENV,
+        departures_ledger::RECORD_ENV,
+        example_values_inventory::RECORD_ENV,
+        "test(=departure_contributors::rename_departure_goldens)",
+        "test(=departure_contributors::verify_departure_contributors)",
+        CONTRIBUTORS,
+    ] {
+        assert!(
+            script.contains(name),
+            "departures-ledger.sh does not name `{name}`"
+        );
     }
 }
 

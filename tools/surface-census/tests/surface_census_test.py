@@ -9050,6 +9050,10 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             "tooling-resource": "https://raw.githubusercontent.com/acme/gateway/" + "b" * 40 + "/" + tooling_path,
             # A repository named `examples` is not by that fact a test resource.
             "examples-repository": "https://raw.githubusercontent.com/acme/examples/" + "c" * 40 + "/app/openapi.yaml",
+            # A github.com blob or raw URL: the owner, repository, `blob`/`raw` and
+            # revision segments are its identity, the rest is where it sits.
+            "blob-sample": "https://github.com/acme/api/blob/" + "d" * 40 + "/samples/openapi.yaml",
+            "raw-tests-repository": "https://github.com/acme/tests/raw/" + "e" * 40 + "/spec/openapi.yaml",
         }
         with tempfile.TemporaryDirectory() as directory:
             fixtures, corpus = self.write_population(
@@ -9074,6 +9078,8 @@ class GoldenSourcePopulationTests(unittest.TestCase):
                     "publisher-api": "real-world",
                     "tooling-resource": "tooling-resource",
                     "examples-repository": "real-world",
+                    "blob-sample": "tooling-resource",
+                    "raw-tests-repository": "real-world",
                 },
                 witnesses,
             )
@@ -9102,6 +9108,31 @@ class GoldenSourcePopulationTests(unittest.TestCase):
         self.assertEqual(1, refused.returncode, refused.stdout)
         self.assertIn("is a tooling resource by its path", refused.stderr)
         self.assertIn("not a real-world specification: a test fixture written to exercise a tool", refused.stderr)
+        # An eligible publisher path passes the rule and meets only the verb's
+        # ordinary checks (here: no recorded search declares it).
+        eligible = subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools/surface-census/golden-reach-search.py"),
+                "screen",
+                "--source",
+                "github-code-search",
+                "--key",
+                "boolean-schema-true",
+                "--candidate",
+                f"acme/api:openapi/openapi.yaml@{'a' * 40}",
+                "--registered",
+                "publisher-api",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=CENSUS_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(1, eligible.returncode, eligible.stdout)
+        self.assertNotIn("tooling resource", eligible.stderr)
+        self.assertIn("is no declarer of boolean-schema-true", eligible.stderr)
 
     def test_the_real_population_is_exactly_the_compared_goldens(self) -> None:
         corpus_root = REPO / "tests" / "fixtures" / "corpus-sources"
