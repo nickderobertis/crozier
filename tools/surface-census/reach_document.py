@@ -74,7 +74,7 @@ def render(
     ledger: list[tuple[int, LedgerRow]],
     golden: set[str],
     residual: set[str],
-    vendored: set[str],
+    authored: set[str],
     insensitive: dict[str, frozenset[str]],
     supplemental: set[str],
 ) -> str:
@@ -135,7 +135,7 @@ def render(
     cells = []
     residual_count = 0
     for _rank, row in population:
-        real = set(row.witnesses) - vendored - insensitive.get(row.key, frozenset())
+        real = set(row.witnesses) - authored - insensitive.get(row.key, frozenset())
         if not real or not real <= residual:
             continue
         residual_count += 1
@@ -190,7 +190,7 @@ def generated(root: Path, reach: ReachReader, handwritten: HandwrittenReader) ->
         reach.read_ledger(root / SURFACE / "golden-reach.tsv"),
         set(reach.golden_rows(root / SURFACE)),
         {name for name, registration in registrations.items() if registration.unmatched},
-        {path.parent.name for path in (root / "tests/fixtures").glob("*/openapi.*")},
+        set(census.authored_witnesses(root / "tests/fixtures", root / "tests/fixtures/corpus-sources")),
         insensitive,
         {item.key for item in supplements},
     )

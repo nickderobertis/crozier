@@ -9040,6 +9040,67 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             )
             self.assertIn("line 39:", refused.stderr)
 
+    def test_a_tooling_test_resource_is_no_real_world_witness_to_census_or_search(self) -> None:
+        """Issue #835: one eligibility rule, applied to registered sources and to search admission alike."""
+        tooling_path = "core/src/test/resources/openapi/specs/boolean-schemas.yaml"
+        publishers = {
+            "publisher-api": "https://raw.githubusercontent.com/acme/api/" + "a" * 40 + "/openapi/openapi.yaml",
+            "tooling-resource": "https://raw.githubusercontent.com/acme/gateway/" + "b" * 40 + "/" + tooling_path,
+            # A repository named `examples` is not by that fact a test resource.
+            "examples-repository": "https://raw.githubusercontent.com/acme/examples/" + "c" * 40 + "/app/openapi.yaml",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            fixtures, corpus = self.write_population(
+                Path(directory),
+                "".join(
+                    f'const ROW_{index}: Corpus = Corpus {{\n    api: "{name}",\n    unmatched: &[],\n}};\n'
+                    f"#[test]\nfn row_{index}_matches_fern_output() {{\n    assert_committed_corpus_matches(&ROW_{index});\n}}\n"
+                    for index, name in enumerate(publishers)
+                ),
+                *publishers,
+            )
+            manifest = fixtures / "CORPUS.md"
+            text = manifest.read_text(encoding="utf-8")
+            for name, url in publishers.items():
+                text = text.replace(f"https://example.test/{name}.yml", url)
+            manifest.write_text(text, encoding="utf-8", newline="\n")
+            completed = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--json")
+            self.assertEqual(0, completed.returncode, completed.stderr)
+            witnesses = {source["fixture"]: source["witness"] for source in json.loads(completed.stdout)["sources"]}
+            self.assertEqual(
+                {
+                    "publisher-api": "real-world",
+                    "tooling-resource": "tooling-resource",
+                    "examples-repository": "real-world",
+                },
+                witnesses,
+            )
+        # Search admits a witness through `golden-reach-search screen --registered`;
+        # the same rule refuses that path there before any screen is measured.
+        refused = subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools/surface-census/golden-reach-search.py"),
+                "screen",
+                "--source",
+                "github-code-search",
+                "--key",
+                "boolean-schema-true",
+                "--candidate",
+                f"acme/gateway:{tooling_path}@{'b' * 40}",
+                "--registered",
+                "tooling-resource",
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=CENSUS_TIMEOUT,
+            encoding="utf-8",
+        )
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("is a tooling resource by its path", refused.stderr)
+        self.assertIn("not a real-world specification: a test fixture written to exercise a tool", refused.stderr)
+
     def test_the_real_population_is_exactly_the_compared_goldens(self) -> None:
         corpus_root = REPO / "tests" / "fixtures" / "corpus-sources"
         acquired = census.acquisition_sources(FIXTURES, corpus_root, False)

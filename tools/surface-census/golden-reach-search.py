@@ -1607,6 +1607,14 @@ def screen(args: argparse.Namespace) -> int:
         )
     if args.declined and args.registered:
         fail("a candidate is registered or declined, not both; pass one of --registered and --declined")
+    if args.registered and args.source in QUERY_SOURCES:
+        pinned = re.fullmatch(r"(?:github\.com/)?([^/:]+/[^/:]+):(.+)@([0-9a-f]{40})", args.candidate)
+        if pinned and CENSUS.tooling_resource_path(pinned.group(2)):
+            fail(
+                f"{args.candidate} is a tooling resource by its path ({pinned.group(2)}), and the eligibility rule "
+                "the census applies to every registered source makes it no real-world witness: file it with "
+                f"`--declined '{FIXTURE_DECLINE} — <its repository, pinned path and directory>'`, not --registered"
+            )
     if args.declined.startswith(FIXTURE_DECLINE) and not args.declined[len(FIXTURE_DECLINE) :].startswith(" — "):
         fail(
             f"a fixture decline reads `{FIXTURE_DECLINE} — <what makes it one>`: name the repository, the "
