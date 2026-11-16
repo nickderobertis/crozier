@@ -331,6 +331,47 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertNotIn("enum_type", call["generators"])
 
+    def test_a_triage_cause_directory_is_a_measurement_case(self) -> None:
+        """Issue #823: the recorded triage layout's upper-case cause directories, and
+        their literals trees, regenerate like any other case."""
+        cause = "docs/fern-measurements/handed-off/union-modelling/R9"
+        self.write(f"{cause}/openapi.yml", "openapi: 3.0.3\n")
+        header = "case\tdocument\tenum_type\tlayout\toverlay\n"
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            header
+            + f"handed-off/union-modelling/R9\t{cause}/openapi.yml\tpython-enums\tpackaged\t-\n"
+            + f"handed-off/union-modelling/R9/literals\t{cause}/openapi.yml\tliterals\tpackaged\t-\n",
+        )
+
+        listed = self.run_tool("list", "measurements")
+        self.assertEqual(listed.returncode, 0, listed.stderr)
+        self.assertIn("handed-off/union-modelling/R9/literals", listed.stdout.split())
+
+        result = self.run_tool("generate", "measurements", "handed-off/union-modelling/R9/literals")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        tree = self.root / cause / "literals/fern-expected"
+        self.assertEqual((tree / "src/fern/client.py").read_text(encoding="utf-8"), "CLIENT = 1\n")
+        self.assertTrue((tree / "src/fern/literal.py").is_file())
+        self.assertFalse((self.root / cause / "fern-expected").exists(), "only the named case regenerates")
+
+        # Traversal, an absolute path and a duplicate (even one differing only in
+        # case) stay refused, before Fern runs.
+        before = len(self.calls())
+        for name in ("../R9", "/R9", "handed-off/../R9", "handed-off/union-modelling/r9"):
+            with self.subTest(name=name):
+                self.write(
+                    "docs/fern-measurements/cases.tsv",
+                    header
+                    + f"handed-off/union-modelling/R9\t{cause}/openapi.yml\tpython-enums\tpackaged\t-\n"
+                    + f"{name}\t{cause}/openapi.yml\tliterals\tpackaged\t-\n",
+                )
+                refused = self.run_tool("generate", "measurements")
+                self.assertEqual(refused.returncode, 1, refused.stdout)
+                self.assertIn(f"row {name!r}: a case is a unique relative path", refused.stderr)
+        self.assertEqual(len(self.calls()), before)
+
     def test_a_flat_measurement_runs_tokenless_into_the_module_tree(self) -> None:
         self.write("docs/fern-measurements/clients/delta/openapi.yml", "openapi: 3.0.3\n")
         self.write(

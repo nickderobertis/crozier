@@ -827,13 +827,25 @@ class MeasurementCase:
     overlay: CaseOverlay | None
 
 
+# A case's directory under docs/fern-measurements/. The recorded triage layout
+# names cause directories in upper case (`handed-off/union-modelling/R9/literals`);
+# every segment still starts with a letter or digit, so `..` and an absolute path
+# stay refused.
+CASE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)*")
+
+
 def case_row_failure(row: dict[str, str], seen: set[str]) -> str | None:
     """Why one `cases.tsv` row is malformed, or `None`. Whether the document and
     base tree it names exist is the item's own check (`validate_measurement`),
     so one missing input never hides the rest of the table."""
     name, document, overlay = row["case"], row["document"], row["overlay"]
-    if not re.fullmatch(r"[a-z0-9][a-z0-9._-]*(?:/[a-z0-9][a-z0-9._-]*)*", name) or name in seen:
-        return "a case is a unique lower-case path under docs/fern-measurements/"
+    # Unique ignoring case: two rows differing only in case would share one
+    # directory on a case-insensitive filesystem (macOS, Windows).
+    if not CASE_NAME.fullmatch(name) or name.casefold() in {case.casefold() for case in seen}:
+        return (
+            "a case is a unique relative path under docs/fern-measurements/ (ignoring case), each segment "
+            "a letter or digit followed by letters, digits, `.`, `_` or `-`"
+        )
     if row["enum_type"] not in ENUM_TYPES or row["layout"] not in LAYOUTS:
         return f"enum_type is one of {', '.join(ENUM_TYPES)} and layout one of {', '.join(LAYOUTS)}"
     target = (ROOT / document).resolve()
