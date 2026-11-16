@@ -387,6 +387,33 @@ class AuthoredEvidence(NamedTuple):
     search: str
 
 
+def region_keys(root: Path) -> frozenset[str]:
+    """Every key the region tables declare: the inventory an authored case may cite."""
+    parser = reader()
+    return frozenset(
+        cells[0].strip("`")
+        for region in parser.region_files(root / "docs/openapi-surface-coverage.md")
+        for cells in parser.region_rows((root / "docs/openapi-surface" / region).read_text(encoding="utf-8"))
+    )
+
+
+def authored_key_refusal(keys: tuple[str, ...], inventory: frozenset[str]) -> str | None:
+    """Why one row's `keys` cell cannot be counted, or None when every key is a real, distinct row.
+
+    A tier total counts the case, and the open-combination table renders it under
+    each key, so an empty, repeated or undeclared key would move a total with no
+    proof row behind it.
+    """
+    if any(not key for key in keys):
+        return "carry an empty key (a stray `;`)"
+    if len(set(keys)) != len(keys):
+        return "repeat a key"
+    unknown = sorted(set(keys) - inventory)
+    if unknown:
+        return f"name {', '.join(f'`{key}`' for key in unknown)}, which no region table declares"
+    return None
+
+
 def authored_evidence(root: Path) -> list[AuthoredEvidence] | None:
     """Validate the versioned evidence inventory before using any row."""
     path = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
@@ -398,6 +425,7 @@ def authored_evidence(root: Path) -> list[AuthoredEvidence] | None:
             raise ValueError(f"{path}: expected the version-1 authored tier columns")
         result = []
         seen = set()
+        inventory = region_keys(root)
         for row in records:
             if None in row or any(not isinstance(row.get(key), str) or not row[key] for key in AUTHORED_TIER_HEADER):
                 raise ValueError(f"{path}: incomplete authored tier row")
@@ -411,11 +439,15 @@ def authored_evidence(root: Path) -> list[AuthoredEvidence] | None:
             if not source.is_file() or hashlib.sha256(source.read_bytes()).hexdigest() != row["sha256"]:
                 raise ValueError(f"{path}: {name} source is missing or its SHA-256 drifted")
             seen.add(name)
+            keys = tuple(row["keys"].split(";"))
+            refused = authored_key_refusal(keys, inventory)
+            if refused:
+                raise ValueError(f"{path}: {name} keys `{row['keys']}` {refused}")
             result.append(
                 AuthoredEvidence(
                     name,
                     AuthoredTier(row["tier"]),
-                    tuple(row["keys"].split(";")),
+                    keys,
                     relative,
                     row["sha256"],
                     row["search"],

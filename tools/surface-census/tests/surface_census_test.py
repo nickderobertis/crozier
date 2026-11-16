@@ -21594,6 +21594,38 @@ class CoverageRestatementTests(unittest.TestCase):
         self.index.write_text(valid, encoding="utf-8")
         self.assertEqual(0, self.run_restater().returncode)
 
+    def test_authored_inventory_counts_only_known_nonempty_distinct_keys(self) -> None:
+        """Issue #812: a key no region row declares must not move a tier total."""
+        matrix = self.root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
+        matrix.parent.mkdir(parents=True)
+        source = self.root / "case.yml"
+        source.write_text("openapi: 3.0.3\n", encoding="utf-8")
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        header = "schema_version\tcase\ttier\tkeys\tsource\tsha256\tsearch\n"
+
+        def row(case: str, keys: str) -> str:
+            return f"1\t{case}\topen\t{keys}\tcase.yml\t{digest}\tsearch.md\n"
+
+        valid = row("case", "combo-header-string-default")
+        for keys, reason in (
+            ("combo-header-string-default;", "carry an empty key"),
+            ("combo-header-string-default;combo-header-string-default", "repeat a key"),
+            ("combo-no-such-region-row", "name `combo-no-such-region-row`, which no region table declares"),
+        ):
+            with self.subTest(keys=keys):
+                matrix.write_text(header + valid + row("offending", keys), encoding="utf-8")
+                refused = self.run_restater("--write")
+                self.assertEqual(1, refused.returncode, refused.stdout)
+                self.assertIn(f"offending keys `{keys}` {reason}", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                self.assertNotIn("2 decided", self.index.read_text(encoding="utf-8"))
+        matrix.write_text(
+            header + valid + row("second", "combo-header-string-default;combo-tag-only-operation-id"), encoding="utf-8"
+        )
+        recovered = self.run_restater("--write")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertIn("2 decided, 0 undecided", self.index.read_text(encoding="utf-8"))
+
     def test_authored_snapshot_gap_counts_preserve_cells_and_recover(self) -> None:
         payload = {
             "sources": [{"fixture": "sample", "origin": "corpus"}],
@@ -24519,6 +24551,14 @@ class AuthoredEvidenceTierTests(unittest.TestCase):
             root = Path(directory)
             target = root / "docs/openapi-surface/authored-probes/evidence-tiers.tsv"
             target.parent.mkdir(parents=True)
+            # The region inventory the case's key must name.
+            (root / "docs/openapi-surface-coverage.md").write_text(
+                "# Coverage\n\n## The region files\n\n| `combinations` | [`openapi-surface/combinations.md`](x) |\n",
+                encoding="utf-8",
+            )
+            (root / "docs/openapi-surface/combinations.md").write_text(
+                "| combo-case | both | x | gap | - | - | - | - |\n", encoding="utf-8"
+            )
             source = root / "source.yml"
             source.write_text("openapi: 3.0.3\n", encoding="utf-8")
             digest = hashlib.sha256(source.read_bytes()).hexdigest()
