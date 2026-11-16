@@ -977,17 +977,20 @@ class ScreenHarness(unittest.TestCase):
 class AuthoredCandidateTests(ScreenHarness):
     """Issue #835: a tooling resource is screened as authored evidence, never as a real-world candidate."""
 
-    def tooling_entry(self, population: str, data: bytes, keys: list[str]) -> list[str]:
-        SCREEN.store(data, self.store)
+    def tooling_entry(
+        self, population: str, data: bytes, keys: list[str], *, commit: str = COMMIT, unfetchable: str = "-"
+    ) -> list[str]:
+        if unfetchable == "-":
+            SCREEN.store(data, self.store)
         path = "core/src/test/resources/openapi.json"
         return [
             population,
             f"acme/gateway/{path}",
-            f"https://raw.githubusercontent.com/acme/gateway/{COMMIT}/{path}",
+            f"https://raw.githubusercontent.com/acme/gateway/{commit}/{path}",
             hashlib.sha256(data).hexdigest(),
-            f"repository:acme/gateway@{COMMIT}",
+            f"repository:acme/gateway@{commit}",
             ";".join(keys),
-            "-",
+            unfetchable,
         ]
 
     def test_a_tooling_resource_is_authored_and_never_pending(self) -> None:
@@ -1007,6 +1010,39 @@ class AuthoredCandidateTests(ScreenHarness):
         self.assertEqual(exact, sorted(row.key for row in rows))
         for row in rows:
             self.assertEqual(("authored", "exact", "rejected-authored"), (row.population, row.trigger, row.status))
+
+    def test_every_read_authored_row_is_rejected_and_an_unread_one_stays_unfetchable(self) -> None:
+        """Whatever its trigger or licence reads, a read authored row is `rejected-authored`."""
+        _name, body, expected = next(case for case in CASES if set(case[2].values()) - {"exact"})
+        missed = sorted(key for key, verdict in expected.items() if verdict != "exact")
+        exact_key = next(key for case in CASES for key, verdict in case[2].items() if verdict == "exact")
+        exact_body = next(case[1] for case in CASES if case[2].get(exact_key) == "exact")
+        inadmissible = {**exact_body, "info": {"title": "t", "version": "1", "license": {"name": "Commercial"}}}
+        rows = [
+            self.tooling_entry("authored", json.dumps(body).encode(), missed, commit="b" * 40),
+            self.tooling_entry("authored", json.dumps(inadmissible).encode(), [exact_key], commit="c" * 40),
+            self.tooling_entry("authored", b"", [exact_key], commit="d" * 40, unfetchable="never fetched: test"),
+        ]
+        rows[2][3] = "-"
+        done, output = self.screen(rows, "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        by_source = {}
+        for row in SCREEN.read_screen(output):
+            by_source.setdefault(row.source.split("/")[5], []).append(row)
+        for row in by_source["b" * 40]:
+            self.assertTrue(row.trigger.startswith(("partial:", "absent")), row)
+            self.assertEqual("rejected-authored", row.status)
+        [inadmissible_row] = by_source["c" * 40]
+        self.assertTrue(inadmissible_row.licence.startswith("inadmissible:"), inadmissible_row)
+        self.assertEqual("rejected-authored", inadmissible_row.status)
+        [unread] = by_source["d" * 40]
+        self.assertEqual("unfetchable:never fetched: test", unread.status)
+        # One document at two commits is two authored candidates, as it was two
+        # in the population it was read from; the same pinned file twice is one.
+        self.assertEqual(3, len({row.source for rows_ in by_source.values() for row in rows_}))
+        twice, _ = self.screen([rows[0], rows[0]], "--no-discover")
+        self.assertEqual(1, twice.returncode, twice.stdout)
+        self.assertIn("duplicates line", twice.stderr)
 
 
 class TriggerConditionTests(ScreenHarness):
@@ -1991,10 +2027,21 @@ class BuildTests(BuildHarness):
         # A hit under a publisher's test resources is a tooling resource: the eligibility rule files it `authored`.
         tooling = ("github", "acme/gateway/src/test/resources/openapi.json", "acme/gateway", "e" * 40)
         tooling += ("src/test/resources/openapi.json", hashlib.sha256(blobbed).hexdigest(), "", "2")
+        # The same pinned file found by the other code-search lane too, which an
+        # earlier census lists for another key: one authored candidate owing both.
+        found_twice = ("sourcegraph", *tooling[1:])
+        pinned = f"acme/gateway:src/test/resources/openapi.json@{'e' * 40}"
+        self.combination_census(
+            "witness-search-operation-combinations-parameters/census.tsv",
+            [
+                (KEY_HD, "github-code-search", pinned, tooling[5]),
+                (KEY_O, "sourcegraph", f"github.com/{pinned}", tooling[5]),
+            ],
+        )
         hits.write_text(
             "\t".join(SCREEN.IDENTITY_COLUMNS)
             + "\n"
-            + "".join("\t".join(identity) + "\n" for identity in (hit, mirror, tooling)),
+            + "".join("\t".join(identity) + "\n" for identity in (hit, mirror, tooling, found_twice)),
             encoding="utf-8",
             newline="\n",
         )
@@ -2056,12 +2103,14 @@ class BuildTests(BuildHarness):
                 ("github", "acme/mirror/openapi.json"): (f"aggregation:acme/mirror@{'d' * 40}", "-", "-"),
                 ("authored", "acme/gateway/src/test/resources/openapi.json"): (
                     f"repository:acme/gateway@{'e' * 40}",
-                    "-",
+                    ";".join(sorted((KEY_HD, KEY_O))),
                     "-",
                 ),
             },
             got,
         )
+        tooling_entries = [e for e in SCREEN.read_manifest(output) if e.document == tooling[1]]
+        self.assertEqual(["authored"], [e.population for e in tooling_entries], "both lanes' hits are one candidate")
         [blob_entry] = [e for e in SCREEN.read_manifest(output) if e.document == "acme/blobbed/openapi.json"]
         self.assertEqual(
             (
