@@ -707,7 +707,7 @@ def authored(entries: list[SCREEN.Entry]) -> list[SCREEN.Entry]:
     """
     publishers = SCREEN.corpus_publishers()
     kept: list[SCREEN.Entry] = []
-    merged: dict[tuple[str, str, str], SCREEN.Entry] = {}
+    merged: dict[SCREEN.CandidateIdentity, SCREEN.Entry] = {}
     for entry in entries:
         if not SCREEN.tooling_resource(entry.population, entry.document, entry.source, publishers):
             kept.append(entry)

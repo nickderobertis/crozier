@@ -1196,13 +1196,22 @@ def corpus_publishers() -> dict[str, str]:
     return census().manifest_sources(REPO / "tests" / "fixtures" / "CORPUS.md")
 
 
-def candidate_identity(population: str, document: str, source: str) -> tuple[str, str, str]:
+class CandidateIdentity(NamedTuple):
     """What names one candidate: its population and document, and for an `authored` one its source too.
 
     An authored candidate keeps the document form it was read in, so one path at
-    two commits (two sources) is two candidates there as it was in its origin.
+    two commits (two sources) is two candidates there as it was in its origin;
+    any other candidate's `source` is "" here.
     """
-    return population, document, source if population == Population.AUTHORED else ""
+
+    population: str
+    document: str
+    source: str
+
+
+def candidate_identity(population: str, document: str, source: str) -> CandidateIdentity:
+    """The identity naming one candidate (see `CandidateIdentity`)."""
+    return CandidateIdentity(population, document, source if population == Population.AUTHORED else "")
 
 
 def authored_failure(population: str, document: str, source: str) -> str | None:
@@ -1463,7 +1472,7 @@ MANIFEST_COLUMNS = Entry._fields
 
 
 def read_manifest(path: Path) -> list[Entry]:
-    seen: dict[tuple[str, str, str], int] = {}
+    seen: dict[CandidateIdentity, int] = {}
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
         header = next(reader, None)

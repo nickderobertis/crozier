@@ -91,7 +91,8 @@ for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
 (root / ".fern").mkdir(parents=True, exist_ok=True)
 metadata = {
     "cliVersion": json.loads(config)["version"],
-    "generatorName": "fernapi/fern-python-sdk",
+    # A case may have this stand-in record another generator, as a tree the store refuses.
+    "generatorName": os.environ.get("FERN_STAND_IN_GENERATOR", "fernapi/fern-python-sdk"),
     "generatorVersion": version,
 }
 if "enum_type: python_enums" in generators:
@@ -591,6 +592,25 @@ class FernReferencesTests(unittest.TestCase):
                 self.assertEqual(published.returncode, 0, published.stderr)
                 self.assertEqual((published.stdout.strip(), found.stdout.strip()), (str(expected), str(expected)))
                 self.assertFalse((Path.cwd() / "relative").exists(), "a relative XDG_CACHE_HOME is ignored")
+
+    def test_a_tree_the_store_refuses_leaves_the_golden_generated_and_names_why(self) -> None:
+        """A generation whose tree does not describe the store's key is still a golden."""
+        document = "docs/fern-measurements/kept/chi/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: chi}\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            f"case\tdocument\tenum_type\tlayout\toverlay\nkept/chi\t{document}\tpython-enums\tpackaged\t-\n",
+        )
+        self.env["FERN_STAND_IN_GENERATOR"] = "fernapi/fern-typescript-sdk"
+        try:
+            result = self.run_tool("generate", "measurements")
+        finally:
+            self.env.pop("FERN_STAND_IN_GENERATOR")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("fern-references: not kept in the certified-tree store:", result.stderr)
+        self.assertIn("records generator 'fernapi/fern-typescript-sdk', not fernapi/fern-python-sdk", result.stderr)
+        self.assertTrue((self.root / "docs/fern-measurements/kept/chi/fern-expected/src/fern/client.py").is_file())
+        self.assert_store_holds_nothing()
 
     def test_an_unwritable_store_leaves_the_golden_generated_and_names_the_fix(self) -> None:
         """A store write failure costs only the reuse: the reference tree is still written."""
