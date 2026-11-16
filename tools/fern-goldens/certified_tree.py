@@ -163,13 +163,7 @@ def publish(
         raise ValueError(f"record names {sorted(records)} must be plain file names other than {sorted(reserved)}")
     entry = tree_key(document, tree, mode).entry(root or store_root())
     if entry.is_dir():
-        incomplete = entry_failure(entry)
-        if incomplete:
-            raise RefusedTree(
-                f"the entry already at {entry} is incomplete ({incomplete}); remove that directory so this "
-                "generation can publish it, then re-run"
-            )
-        return entry
+        return kept(entry)
     entry.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=f".{entry.name}.", dir=entry.parent))
     try:
@@ -182,11 +176,23 @@ def publish(
         try:
             stage.rename(entry)
         except OSError:
-            # Another publisher renamed its entry in first; theirs is the same tree.
+            # Another publisher renamed its entry in first: kept only if it is whole.
             if not entry.is_dir():
                 raise
+            return kept(entry)
     finally:
         shutil.rmtree(stage, ignore_errors=True)
+    return entry
+
+
+def kept(entry: Path) -> Path:
+    """An entry already in place, which first-wins publication keeps; refused unless it is whole."""
+    incomplete = entry_failure(entry)
+    if incomplete:
+        raise RefusedTree(
+            f"the entry already at {entry} is incomplete ({incomplete}); remove that directory so this "
+            "generation can publish it, then re-run"
+        )
     return entry
 
 

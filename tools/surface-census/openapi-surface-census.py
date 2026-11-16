@@ -8867,6 +8867,14 @@ def manifest_sources(manifest: Path) -> dict[str, str]:
             continue
         cells = [cell.strip().strip("`").strip() for cell in line.split("|")]
         if len(cells) >= 9 and cells[2] and cells[7] in {"link-ok", "committed"}:
+            # The eligibility rule reads this URL's path; one that is no URL would
+            # read as a real-world publisher's by default, so it is refused instead.
+            url = urlsplit(cells[4])
+            if url.scheme not in {"http", "https"} or not url.hostname:
+                raise SystemExit(
+                    f"openapi-surface-census: {manifest} row `{cells[2]}` names source {cells[4]!r}, which is no "
+                    "http(s) URL of the document it pins; restore the row's source cell"
+                )
             sources[cells[2]] = cells[4]
     return sources
 

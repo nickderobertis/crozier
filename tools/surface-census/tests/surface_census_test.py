@@ -9083,6 +9083,11 @@ class GoldenSourcePopulationTests(unittest.TestCase):
                 },
                 witnesses,
             )
+            # A row whose source cell is no URL cannot be classified, so it is refused.
+            manifest.write_text(text.replace(publishers["publisher-api"], "see the vendor"), encoding="utf-8")
+            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--json")
+            self.assertEqual(1, refused.returncode, refused.stdout)
+            self.assertIn("row `publisher-api` names source 'see the vendor', which is no http(s) URL", refused.stderr)
         # Search admits a witness through `golden-reach-search screen --registered`;
         # the same rule refuses that path there before any screen is measured.
         refused = subprocess.run(
@@ -21566,7 +21571,9 @@ def stage_restatement_population(root: Path) -> None:
         (directory / "openapi.yml").write_text(
             "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
         )
-        corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
+        corpus_rows.append(
+            f"| {number + 1} | {name} | 3.0 | https://example.test/{name}.yml | grant | notes | committed | bytes |\n"
+        )
     (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
     registry = root / "crates/crozier-e2e/tests/e2e.rs"
     registry.parent.mkdir(parents=True)

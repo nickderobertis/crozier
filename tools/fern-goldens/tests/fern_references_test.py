@@ -528,6 +528,19 @@ class FernReferencesTests(unittest.TestCase):
         # A refused generation's record (its status, no SDK) stays a readable entry.
         self.write(str((entry / "exit-code").relative_to(self.root)), "1\n")
         self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(entry))
+        # Records that do not describe the entry make it no entry, to find and to publish.
+        for name, text, says in (
+            ("document.sha256", "0" * 64 + "\n", "its document.sha256 reads"),
+            ("exit-code", "killed\n", "its exit-code reads 'killed', no exit status"),
+        ):
+            with self.subTest(record=name):
+                saved = (entry / name).read_text(encoding="utf-8")
+                self.write(str((entry / name).relative_to(self.root)), text)
+                self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+                refused = self.publish(document, tree)
+                self.assertEqual(refused.returncode, 1, refused.stdout)
+                self.assertIn(says, refused.stderr)
+                self.write(str((entry / name).relative_to(self.root)), saved)
         shutil.rmtree(entry)
         kept = self.publish(document, tree)
         self.assertEqual(kept.returncode, 0, kept.stderr)

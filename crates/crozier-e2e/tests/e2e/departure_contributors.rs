@@ -846,6 +846,45 @@ fn discovery_rewrites_the_inventory_from_what_the_run_recorded() {
     );
 }
 
+/// The check refuses, naming the fix, an inventory that is not one — a wrong
+/// header, a malformed, repeated or unsorted row — and a run whose notes are
+/// not notes, before anything merges.
+#[test]
+fn the_contributor_check_refuses_an_inventory_or_notes_that_are_not_ones() {
+    let root = crate::repo_root();
+    let committed =
+        parse(&std::fs::read_to_string(root.join(CONTRIBUTORS)).expect("the inventory"))
+            .expect("parses");
+    let rows: BTreeSet<Contributor> = committed.iter().take(2).cloned().collect();
+    let [first, second]: [String; 2] = rows
+        .iter()
+        .map(Contributor::render)
+        .collect::<Vec<_>>()
+        .try_into()
+        .expect("two rows");
+    let scratch = tempfile::tempdir().expect("scratch");
+    for (text, says) in [
+        (format!("golden\ttest\n{first}\n"), "the first line is not"),
+        (
+            format!("{HEADER}\n{first}\nonly-a-golden\n"),
+            "only-a-golden",
+        ),
+        (format!("{HEADER}\n{first}\n{first}\n"), &first),
+        (format!("{HEADER}\n{second}\n{first}\n"), &first),
+    ] {
+        let inventory = scratch.path().join("inventory.tsv");
+        std::fs::write(&inventory, &text).expect("the inventory");
+        let mut recording = Recording::of(&rows);
+        recording.inventory = Some(inventory);
+        let said = recording.check("").expect_err("not an inventory");
+        assert!(said.contains(says), "{text:?}: {said}");
+    }
+    let recording = Recording::of(&rows);
+    std::fs::write(recording.noted.path().join("broken.tsv"), "not a note\n").expect("a note");
+    let said = recording.check("").expect_err("a malformed note");
+    assert!(said.contains("`not a note` is not a note"), "{said}");
+}
+
 /// Every compared golden has an inventoried contributor, except those only an
 /// ignored journey compares ([`JOURNEY_ONLY_GOLDENS`]): a new comparison
 /// missing from the inventory would never run in a selected regeneration, so
