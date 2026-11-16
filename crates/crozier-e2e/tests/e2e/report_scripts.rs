@@ -722,4 +722,38 @@ fn a_changed_or_copied_golden_is_refused_as_a_rename() {
         "{}",
         malformed.stderr
     );
+    // A pair naming no tree HEAD has, or a destination that is not there, and a
+    // malformed command line (which also prints the usage), are each refused.
+    let missing = format!("--rename=docs/nowhere/fern-expected={NEW}");
+    let elsewhere = format!("--rename={OLD}=docs/elsewhere/fern-expected");
+    for (args, says, usage) in [
+        (
+            vec![missing.as_str()],
+            "docs/nowhere/fern-expected is no golden tree at HEAD",
+            false,
+        ),
+        (
+            vec![elsewhere.as_str()],
+            "docs/elsewhere/fern-expected is not a directory",
+            false,
+        ),
+        (vec!["--rename"], "--rename needs OLD=NEW", true),
+        (
+            vec!["--no-such-option"],
+            "unknown option '--no-such-option'",
+            true,
+        ),
+    ] {
+        let run = departures_ledger_with("", &args, &[], |root| moved_checkout(root, |_| {}));
+        assert_eq!(run.status, 1, "{args:?}");
+        assert_eq!(run.calls, "", "{args:?}: cargo ran");
+        assert!(run.stderr.contains(says), "{args:?}: {}", run.stderr);
+        assert_eq!(
+            usage,
+            run.stderr
+                .contains("usage: crates/crozier-e2e/departures-ledger.sh"),
+            "{args:?}: {}",
+            run.stderr
+        );
+    }
 }

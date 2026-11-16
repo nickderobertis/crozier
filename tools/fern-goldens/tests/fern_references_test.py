@@ -504,9 +504,16 @@ class FernReferencesTests(unittest.TestCase):
                 self.assertIn(says, refused.stderr)
                 self.assertIn("regenerate with the certified pair", refused.stderr)
                 self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
-        # An entry left incomplete (an interrupted copy) is never read and never
-        # silently kept: publication names it and how to clear it.
+        # A tree holding only its provenance record is no SDK Fern wrote.
         self.write("tree/.fern/metadata.json", json.dumps(whole))
+        bare = self.root / "bare"
+        self.write("bare/.fern/metadata.json", json.dumps(whole))
+        refused = self.publish(document, bare)
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn("holds no generated file beside its .fern/ record", refused.stderr)
+        # An entry left incomplete (an interrupted copy: no records, or an empty
+        # tree) is never read and never silently kept: publication names it and
+        # how to clear it.
         entry = self.store_entry(document, "python_enums")
         (entry / "tree").mkdir(parents=True)
         self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
@@ -514,6 +521,13 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(refused.returncode, 1, refused.stdout)
         self.assertIn("is incomplete (its records cannot be read", refused.stderr)
         self.assertIn("remove that directory", refused.stderr)
+        for name, text in (("document.sha256", entry.parent.name + "\n"), ("exit-code", "0\n")):
+            self.write(str((entry / name).relative_to(self.root)), text)
+        refused = self.publish(document, tree)
+        self.assertIn("records a successful generation but holds no generated tree/", refused.stderr)
+        # A refused generation's record (its status, no SDK) stays a readable entry.
+        self.write(str((entry / "exit-code").relative_to(self.root)), "1\n")
+        self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(entry))
         shutil.rmtree(entry)
         kept = self.publish(document, tree)
         self.assertEqual(kept.returncode, 0, kept.stderr)

@@ -513,6 +513,41 @@ fn a_refused_rename_writes_nothing() {
         assert_eq!(committed(root.path()), before);
     }
 }
+
+/// Repeated renames apply together, in the four files at once; a batch whose
+/// later pair is refused leaves every file as it was, the earlier pair too.
+#[test]
+fn a_batch_of_renames_applies_whole_or_not_at_all() {
+    let root = moved();
+    let renamed_kept = "docs/openapi-surface/authored-probes/nn-kept/fern-expected";
+    let both = [
+        (OLD.to_owned(), NEW.to_owned()),
+        (KEPT.to_owned(), renamed_kept.to_owned()),
+    ];
+    let before = committed(root.path());
+    let refused = [
+        (OLD.to_owned(), NEW.to_owned()),
+        ("docs/nowhere/fern-expected".to_owned(), KEPT.to_owned()),
+    ];
+    let error = rename_goldens(root.path(), &refused).expect_err("the second pair is refused");
+    assert!(
+        error.contains("docs/nowhere/fern-expected is not a compared golden"),
+        "{error}"
+    );
+    assert_eq!(
+        committed(root.path()),
+        before,
+        "a refused batch writes nothing"
+    );
+    rename_goldens(root.path(), &both).expect("both renamed");
+    for file in committed(root.path()) {
+        assert!(
+            !file.contains(OLD) && !file.contains(&format!("{KEPT}\t")),
+            "{file}"
+        );
+        assert!(file.contains(NEW) && file.contains(renamed_kept), "{file}");
+    }
+}
 // llmlint: ignore-end[tests_mirror_real_usage]
 
 /// The rename step, run as the script runs it (this suite's own binary, its

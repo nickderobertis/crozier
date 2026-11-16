@@ -1045,6 +1045,58 @@ class AuthoredCandidateTests(ScreenHarness):
         self.assertIn("duplicates line", twice.stderr)
 
 
+class AuthoredOriginTests(ScreenHarness):
+    """An authored candidate keeps the form of the population it was read from (#835)."""
+
+    def test_a_registered_tooling_resource_is_read_from_the_tree_and_rejected(self) -> None:
+        # A committed corpus row whose pinned publisher path is a test resource:
+        # its bytes are the registered source in this repository, as before.
+        name = "registered-literals-openapitools-openapi-generator-3d039741"
+        [entry] = [e for e in SCREEN.read_manifest(SCREEN.POPULATION) if e.document == name]
+        self.assertEqual(("authored", "-"), (entry.population, entry.source))
+        registered = [["registered", *entry[1:]]]
+        refused, _ = self.screen(registered, "--no-discover")
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("is a tooling resource by its path", refused.stderr)
+        done, output = self.screen([[*entry[:5], "combo-success-anyof-nullable", "-"]], "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        [row] = SCREEN.read_screen(output)
+        self.assertEqual(
+            ("authored", name, "-", entry.sha256, "exact", "rejected-authored"),
+            (row.population, row.document, row.source, row.sha256, row.trigger, row.status),
+        )
+
+    def test_a_handed_off_tooling_resource_keeps_its_pinned_identity_and_is_rejected(self) -> None:
+        name, body, expected = next(case for case in CASES if "exact" in case[2].values())
+        exact = sorted(key for key, verdict in expected.items() if verdict == "exact")
+        data = json.dumps(body).encode()
+        SCREEN.store(data, self.store)
+        path = "packages/openapi/test/integration/spec.json"
+        row = [
+            "authored",
+            f"acme/{name}:{path}@{COMMIT}",
+            f"https://raw.githubusercontent.com/acme/{name}/{COMMIT}/{path}",
+            hashlib.sha256(data).hexdigest(),
+            f"repository:acme/{name}@{COMMIT}",
+            ";".join(exact),
+            "-",
+        ]
+        handed = ["handed-off", *row[1:]]
+        refused, _ = self.screen([handed], "--no-discover")
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("is a tooling resource by its path", refused.stderr)
+        renamed = [*row[:1], f"acme/{name}:{path}@{'b' * 40}", *row[2:]]
+        mismatched, _ = self.screen([renamed], "--no-discover")
+        self.assertEqual(1, mismatched.returncode, mismatched.stdout)
+        self.assertIn("is not the", mismatched.stderr)
+        done, output = self.screen([row], "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        rows = SCREEN.read_screen(output)
+        self.assertEqual(exact, sorted(r.key for r in rows))
+        for r in rows:
+            self.assertEqual((row[1], "rejected-authored"), (r.document, r.status))
+
+
 class TriggerConditionTests(ScreenHarness):
     def test_each_condition_met_and_missed_is_recorded_as_the_trigger_screen_reads_it(self) -> None:
         rows = [self.entry(name, json.dumps(body).encode(), sorted(expected)) for name, body, expected in CASES]

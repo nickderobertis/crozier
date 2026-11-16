@@ -133,7 +133,14 @@ def tree_key(document: Path, tree: Path, mode: EnumMode) -> Key:
             f"{path} records generatorConfig {json.dumps(config, sort_keys=True)}, not {mode}'s "
             f"{json.dumps(RECORDED_CONFIG[mode])}: the store keys a tree by its pair and enum mode alone"
         )
+    if not generated_files(tree):
+        raise RefusedTree(f"{tree} holds no generated file beside its .fern/ record, so it is no SDK Fern wrote")
     return Key(cli, generator, document_digest(document), mode)
+
+
+def generated_files(tree: Path) -> bool:
+    """Whether `tree` holds any file outside its `.fern/` provenance record."""
+    return any(path.is_file() and ".fern" not in path.relative_to(tree).parts for path in tree.rglob("*"))
 
 
 def publish(
@@ -186,11 +193,10 @@ def publish(
 def entry_failure(entry: Path) -> str | None:
     """Why `entry` is not a whole entry of its key's layout, or None when it is.
 
-    A whole entry holds `tree/`, the `document.sha256` its directory names and an
-    integer `exit-code` (a refused generation is recorded too, with its status).
+    A whole entry holds the `document.sha256` its directory names and an integer
+    `exit-code`. A refused generation is recorded too, with its status and
+    whatever tree it left, if any; one that exited 0 must hold the SDK it generated.
     """
-    if not (entry / "tree").is_dir():
-        return "it holds no tree/"
     try:
         digest = (entry / "document.sha256").read_text(encoding="utf-8").strip()
         status = (entry / "exit-code").read_text(encoding="utf-8").strip()
@@ -200,6 +206,8 @@ def entry_failure(entry: Path) -> str | None:
         return f"its document.sha256 reads {digest!r}, not the {entry.parent.name} it is filed under"
     if not re.fullmatch(r"[0-9]+", status):
         return f"its exit-code reads {status!r}, no exit status"
+    if status == "0" and not ((entry / "tree").is_dir() and generated_files(entry / "tree")):
+        return "it records a successful generation but holds no generated tree/"
     return None
 
 
