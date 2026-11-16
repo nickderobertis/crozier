@@ -278,6 +278,7 @@ def resolve_merge(root: Path) -> int:
     return resolved
 
 
+# llmlint: ignore[changed_behavior_has_e2e] Driven end to end through this verb by tools/surface-reach/tests/residual_attribution_test.py's test_a_merge_conflicted_record_is_regenerated_from_the_merged_tree (a real merge conflict regenerated and committed; a failed regeneration with `ruff` absent refused, the merge left uncommitted and the conflict restored; then the rerun resolving it). That suite lives in surface-reach because it needs a built crozier and ruff, so it is not read beside this file.
 def regenerate_attribution(root: Path) -> None:
     """Re-measure the residual attribution record over the merged tree, as `just residual-attribution` does.
 
