@@ -4615,6 +4615,8 @@ class CensusReportTests(unittest.TestCase):
                     "fixture": WEBHOOKS,
                     "origin": "vendored",
                     "path": f"tests/fixtures/{WEBHOOKS}/openapi.yml",
+                    # A vendored feature target is crozier's own authored evidence.
+                    "witness": "authored",
                 }
             ],
             payload["sources"],
