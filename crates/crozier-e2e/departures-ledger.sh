@@ -30,26 +30,31 @@ usage="usage: crates/crozier-e2e/departures-ledger.sh [--discover-contributors] 
 
 cd "$(dirname "$0")/../.." || fail "cannot enter the repository root above $0" "run it from a readable checkout"
 
-if [ $# -eq 0 ] && [ -n "${CROZIER_DEPARTURES_LEDGER_ARGS:-}" ]; then
+if [ "$#" -eq 0 ] && [ -n "${CROZIER_DEPARTURES_LEDGER_ARGS:-}" ]; then
   read -ra forwarded <<< "$CROZIER_DEPARTURES_LEDGER_ARGS"
   set -- "${forwarded[@]}"
 fi
 goldens=() renames=() discover=0
-while [ $# -gt 0 ]; do
+while [ "$#" -gt 0 ]; do
   case "$1" in
     --discover-contributors) discover=1 ;;
-    --rename) [ $# -ge 2 ] || fail "--rename needs OLD=NEW" "$usage"; renames+=("$2"); shift ;;
+    --rename) [ "$#" -ge 2 ] || fail "--rename needs OLD=NEW" "$usage"; renames+=("$2"); shift ;;
     --rename=*) renames+=("${1#--rename=}") ;;
     -*) fail "unknown option '$1'" "$usage" ;;
     *) goldens+=("$1") ;;
   esac
   shift
 done
-[ "$discover" = 0 ] || [ ${#goldens[@]} -eq 0 ] \
+[ "$discover" = 0 ] || [ "${#goldens[@]}" -eq 0 ] \
   || fail "--discover-contributors runs the whole suite, so it takes no GOLDEN" "$usage"
 
 contributors=tests/fixtures/departures-contributors.tsv
-same_blob() { [ "$(git rev-parse "HEAD:$1")" = "$(git hash-object "$2")" ]; }
+same_blob() { # same_blob COMMITTED-PATH WORKTREE-PATH: the file holds exactly the bytes HEAD has there
+  local committed actual
+  committed=$(git rev-parse "HEAD:$1") || fail "cannot read $1 at HEAD" "check the repository is readable"
+  actual=$(git hash-object "$2") || fail "cannot hash $2" "check it is readable"
+  [ "$committed" = "$actual" ]
+}
 for pair in ${renames[@]+"${renames[@]}"}; do
   old=${pair%%=*} new=${pair#*=}
   [ "$pair" != "$old" ] && [ -n "$old" ] && [ -n "$new" ] || fail "--rename '$pair' is not OLD=NEW" "$usage"
@@ -80,7 +85,7 @@ trap 'rm -rf "$scratch" || echo "departures-ledger: could not remove $scratch; d
 records="$scratch/records" inventory="$scratch/inventory" noted="$scratch/contributors" log="$scratch/log"
 mkdir "$records" "$inventory" "$noted" || fail "cannot create $records, $inventory and $noted" "point TMPDIR at a writable directory and rerun"
 
-if [ ${#renames[@]} -gt 0 ] && ! CROZIER_RENAME_GOLDENS="${renames[*]:-}" cargo nextest run --locked -p crozier-e2e --run-ignored only \
+if [ "${#renames[@]}" -gt 0 ] && ! CROZIER_RENAME_GOLDENS="${renames[*]:-}" cargo nextest run --locked -p crozier-e2e --run-ignored only \
   -E 'test(=departure_contributors::rename_departure_goldens)' >"$log" 2>&1; then
   cat "$log" >&2 || echo "departures-ledger: could not read the run log $log" >&2
   fail "the rename was refused (above)" "fix the named rename, then rerun just departures-ledger"
@@ -95,9 +100,15 @@ else
   # The tests recording the selected goldens (every listed one with none),
   # closed over the other goldens those tests record.
   filter=$(awk -F'\t' -v selected="${goldens[*]:-}" '
-    NR == 1 { next }
+    # The inventory becomes a nextest filter, so every cell is checked first:
+    # its header, three non-empty cells, and ids nextest names tests by.
+    NR == 1 { if ($0 != "golden\tbinary\ttest") { print "invalid " NR ": its header is not golden/binary/test"; bad = 1; exit } next }
+    NF != 3 || $1 == "" || $2 !~ /^[A-Za-z0-9_:.-]+$/ || $3 !~ /^[A-Za-z0-9_:.-]+$/ {
+      print "invalid " NR ": `" $0 "` is not golden, binary id and test name"; bad = 1; exit
+    }
     { golden[NR] = $1; test[NR] = $2 "\t" $3; listed[$1] = 1 }
     END {
+      if (bad) exit
       n = split(selected, wanted, " ")
       for (i = 1; i <= n; i++) {
         if (!(wanted[i] in listed)) { print "unknown " wanted[i]; exit }
@@ -111,11 +122,14 @@ else
       for (t in run) { split(t, id, "\t"); print "binary_id(=" id[1] ") & test(=" id[2] ")" }
     }' "$contributors" | LC_ALL=C sort) || fail "cannot read $contributors" "restore it with git checkout -- $contributors"
   case "$filter" in
+    invalid\ *) fail "$contributors line ${filter#invalid }" \
+      "rederive it with just departures-ledger --discover-contributors, or restore it with git checkout -- $contributors" ;;
     unknown\ *) fail "$contributors names no test recording ${filter#unknown }" \
       "name a golden of tests/fixtures/compared-goldens.json, or rederive it with just departures-ledger --discover-contributors" ;;
     "") fail "$contributors lists no test" "derive it with just departures-ledger --discover-contributors" ;;
   esac
-  filter=$(paste -sd'|' - <<< "$filter")
+  filter=$(paste -sd'|' - <<< "$filter") \
+    || fail "cannot join the selected tests into one nextest filter" "check that paste(1) is installed, then rerun"
 fi
 
 # llmlint: ignore[changed_behavior_has_e2e] running the whole crozier-e2e suite from its own tests would recurse; crates/crozier-e2e/tests/e2e/report_scripts.rs drives this script with only `cargo` stood in.

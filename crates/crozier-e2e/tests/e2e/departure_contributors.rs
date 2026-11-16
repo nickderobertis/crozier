@@ -241,7 +241,15 @@ fn verify_departure_contributors() {
     let observed = recorded(Path::new(&env(CONTRIBUTOR_ENV))).unwrap_or_else(|e| panic!("{e}"));
     let path = root.join(CONTRIBUTORS);
     if std::env::var(DISCOVER_ENV).as_deref() == Ok("1") {
-        std::fs::write(&path, render(&observed)).expect("write the contributor inventory");
+        // Replaced whole, never truncated in place: other tests read it meanwhile.
+        let mut staged =
+            tempfile::NamedTempFile::new_in(path.parent().expect("a file has a parent"))
+                .expect("stage the contributor inventory");
+        std::io::Write::write_all(&mut staged, render(&observed).as_bytes())
+            .expect("write the contributor inventory");
+        staged
+            .persist(&path)
+            .expect("replace the contributor inventory");
     }
     let text = std::fs::read_to_string(&path).unwrap_or_else(|error| {
         panic!("{CONTRIBUTORS}: cannot be read ({error}); derive it with `{DISCOVER}`")
@@ -532,6 +540,8 @@ struct Recording {
     noted: tempfile::TempDir,
     ledger: tempfile::TempDir,
     examples: tempfile::TempDir,
+    /// Whether the check runs as discovery's, rewriting the inventory first.
+    discover: bool,
 }
 
 impl Recording {
@@ -541,6 +551,7 @@ impl Recording {
             noted: tempfile::tempdir().expect("notes"),
             ledger: tempfile::tempdir().expect("ledger records"),
             examples: tempfile::tempdir().expect("example records"),
+            discover: false,
         };
         let notes: String = rows.iter().map(|row| row.render() + "\n").collect();
         std::fs::write(recording.noted.path().join("run.tsv"), notes).expect("notes");
@@ -568,7 +579,7 @@ impl Recording {
             .env(departures_ledger::RECORD_ENV, self.ledger.path())
             .env(example_values_inventory::RECORD_ENV, self.examples.path())
             .env(SELECTION_ENV, selection)
-            .env_remove(DISCOVER_ENV)
+            .env(DISCOVER_ENV, if self.discover { "1" } else { "0" })
             .output()
             .expect("run the check");
         let said = format!(
@@ -667,4 +678,30 @@ fn the_contributor_check_holds_a_run_to_the_inventory() {
             .expect_err("a partial whole run");
         assert!(said.contains("is inventoried as recording"), "{said}");
     }
+}
+
+/// Issue #820: discovery's own step rewrites the committed inventory from what
+/// the whole run recorded, then holds the run to it. A run recording exactly the
+/// committed rows rewrites it to the same bytes, through the real verifier.
+#[test]
+fn discovery_rewrites_the_inventory_from_what_the_run_recorded() {
+    let root = crate::repo_root();
+    let path = root.join(CONTRIBUTORS);
+    let committed = std::fs::read_to_string(&path).expect("the inventory");
+    let rows = parse(&committed).expect("the committed inventory parses");
+    let mut recording = Recording::of(&rows);
+    recording.discover = true;
+    if let Err(said) = recording.check("") {
+        panic!("discovery over exactly the committed rows was refused:\n{said}");
+    }
+    assert_eq!(
+        std::fs::read_to_string(&path).expect("the rewritten inventory"),
+        render(&rows),
+        "discovery writes the rows the run recorded"
+    );
+    assert_eq!(
+        render(&rows),
+        committed,
+        "the committed inventory is in its rendered form"
+    );
 }

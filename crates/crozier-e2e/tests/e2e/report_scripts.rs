@@ -455,6 +455,40 @@ fn a_missing_contributor_inventory_names_how_to_derive_it() {
     );
 }
 
+/// The inventory becomes the recording's nextest filter, so a header or row that
+/// is not one is refused, naming its line, before cargo runs.
+#[test]
+fn a_malformed_contributor_inventory_is_refused_before_cargo() {
+    for (inventory, says) in [
+        (
+            "golden\ttest\npetstore\tpetstore_matches_fern_output\n",
+            "departures-contributors.tsv line 1: its header is not golden/binary/test",
+        ),
+        (
+            "golden\tbinary\ttest\npetstore\tcrozier-e2e::e2e\tpetstore) | test(=other\n",
+            "departures-contributors.tsv line 2: `petstore\tcrozier-e2e::e2e\tpetstore) | test(=other` is not golden, binary id and test name",
+        ),
+        (
+            "golden\tbinary\ttest\npetstore\tcrozier-e2e::e2e\n",
+            "departures-contributors.tsv line 2: `petstore\tcrozier-e2e::e2e` is not golden, binary id and test name",
+        ),
+    ] {
+        let run = departures_ledger_with("", &[], &[], |root| {
+            ledger_checkout(root, Some(inventory))
+        });
+        assert_eq!(run.status, 1, "{inventory:?}");
+        assert_eq!(run.calls, "", "{inventory:?}: cargo must not run");
+        assert!(
+            run.stderr.contains(says)
+                && run
+                    .stderr
+                    .contains("rederive it with just departures-ledger --discover-contributors"),
+            "{}",
+            run.stderr
+        );
+    }
+}
+
 /// Discovery runs the whole suite as the recording did before the inventory,
 /// less the steps' own tests, and has the check rederive the inventory.
 #[test]
