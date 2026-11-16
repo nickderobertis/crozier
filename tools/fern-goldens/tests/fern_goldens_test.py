@@ -677,6 +677,46 @@ class OverlayCertifiedTreeTests(unittest.TestCase):
         self.assertTrue((self.root / "tests/fixtures/alpha/expected-default-max-retries").is_dir())
         self.assertFalse((self.cache / "crozier" / "certified-trees").exists())
 
+    def test_a_requested_generation_under_a_setting_the_key_does_not_name_is_not_kept(self) -> None:
+        """Asked to publish, the script still keeps nothing a setting outside the key shaped."""
+        for setting, value in (
+            ("FERN_AUDIENCES", "public"),
+            ("CLIENT_CLASS_NAME", "HarbourClient"),
+            ("EXTRA_FIELDS", "allow"),
+            ("ORGANIZATION", "LanternHarbor"),
+        ):
+            with self.subTest(setting=setting):
+                self.env.update({"CROZIER_CERTIFIED_TREE_PUBLISH": "1", setting: value})
+                try:
+                    result = self.run_script("generate-fern-fixture.sh", "alpha", STAND_IN)
+                finally:
+                    self.env.pop(setting)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertTrue((self.root / "tests/fixtures/alpha/expected/src/fern/client.py").is_file())
+                self.assertFalse((self.cache / "crozier" / "certified-trees").exists())
+
+    def test_a_publication_that_fails_leaves_the_golden_installed_and_names_the_fix(self) -> None:
+        if os.name == "nt" or os.geteuid() == 0:
+            self.skipTest("a read-only directory is enforced only for a non-root POSIX user")
+        store = self.cache / "crozier" / "certified-trees"
+        store.mkdir(parents=True)
+        store.chmod(0o500)
+        self.env["CROZIER_CERTIFIED_TREE_PUBLISH"] = "1"
+        try:
+            result = self.run_script("generate-fern-fixture.sh", "alpha", STAND_IN)
+        finally:
+            store.chmod(0o700)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("Fern's untouched tree was not kept in the certified-tree store", result.stderr)
+        self.assertIn("free space or fix its permissions", result.stderr)
+        self.assertEqual(
+            (self.root / "tests/fixtures/alpha/expected/src/fern/client.py").read_text(encoding="utf-8"), "CLIENT = 1\n"
+        )
+        self.assertEqual([], list(store.iterdir()))
+        recovered = self.run_script("generate-fern-fixture.sh", "alpha", STAND_IN)
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertTrue((self.entry("python_enums") / "tree").is_dir())
+
     def test_a_direct_generation_without_the_request_publishes_nothing(self) -> None:
         """`generate-fern-fixture.sh` run as before, with no new argument or
         variable, installs its golden and leaves the store alone."""

@@ -297,6 +297,38 @@ def test_a_closed_key_leaves_the_record_when_it_is_rewritten(tmp_path: Path) -> 
         record_model.require(root, "boolean-schema-true", "webflow-v2", record_model.read(root))
 
 
+def test_a_record_is_never_rewritten_over_a_failing_supplemental_proof(tmp_path: Path) -> None:
+    """Even measuring the real witnesses only, `--write-record` first holds the
+    supplemental proofs to their gate, and a failing one leaves the record as it was."""
+    if shutil.which("ruff") is None:
+        pytest.fail("no ruff on PATH; install it with `just bootstrap`")
+    try:
+        root = linked_repository(
+            tmp_path,
+            "docs/openapi-surface/residual-attribution.json",
+            "docs/openapi-surface/residual-handwritten.toml",
+        )
+    except OSError as error:
+        pytest.skip(f"this host cannot create symbolic links ({error}); the linux and macos lanes run it")
+    record = root / "docs/openapi-surface/residual-attribution.json"
+    proofs = root / "docs/openapi-surface/residual-handwritten.toml"
+    saved, valid = record.read_bytes(), proofs.read_text(encoding="utf-8")
+    assert 'fixture = "harbor-signal-null"' in valid, "the committed supplemental proof this case breaks moved"
+    proofs.write_text(valid.replace('fixture = "harbor-signal-null"', 'fixture = "no-such-fixture"'), encoding="utf-8")
+    refused = subprocess.run(
+        [sys.executable, str(root / "tools/surface-census" / SCRIPT.name), "--real-witnesses-only", "--write-record"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        timeout=600,
+        encoding="utf-8",
+    )
+    assert refused.returncode != 0
+    assert refused.stderr.startswith("residual-attribution: "), refused.stderr
+    assert "residual-handwritten.toml `schema-example-null`: its fixture needs the matching" in refused.stderr
+    assert record.read_bytes() == saved, "a refused rewrite leaves the saved record"
+
+
 def test_a_merge_conflicted_record_is_regenerated_from_the_merged_tree(tmp_path: Path) -> None:
     """Issue #832: `just census-repin` resolves a conflicted attribution record by re-measuring it."""
     if shutil.which("ruff") is None:

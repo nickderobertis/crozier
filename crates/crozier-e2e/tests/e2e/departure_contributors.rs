@@ -57,6 +57,19 @@ pub const JOURNEY_ONLY_GOLDENS: [&str; 6] = [
     "docs/fern-measurements/superseded-fixtures/request-example-nulls/fern-expected",
 ];
 
+/// The characters a binary id and a test name may hold: the script turns each
+/// into a nextest filter, so it holds them to the same class
+/// (`the_script_names_the_variables_and_steps_these_constants_declare`).
+pub const ID_CHARACTERS: &str = "A-Za-z0-9_:.-";
+
+/// Whether `cell` is a non-empty run of [`ID_CHARACTERS`].
+fn is_id(cell: &str) -> bool {
+    !cell.is_empty()
+        && cell
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || "_:.-".contains(c))
+}
+
 /// One test recording one golden.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Contributor {
@@ -71,14 +84,11 @@ impl Contributor {
         let [golden, binary, test] = line.split('\t').collect::<Vec<_>>()[..] else {
             return None;
         };
-        [golden, binary, test]
-            .iter()
-            .all(|cell| !cell.is_empty())
-            .then(|| Self {
-                golden: golden.to_owned(),
-                binary: binary.to_owned(),
-                test: test.to_owned(),
-            })
+        (!golden.is_empty() && is_id(binary) && is_id(test)).then(|| Self {
+            golden: golden.to_owned(),
+            binary: binary.to_owned(),
+            test: test.to_owned(),
+        })
     }
 
     fn render(&self) -> String {
@@ -607,6 +617,18 @@ fn the_script_names_the_variables_and_steps_these_constants_declare() {
             "departures-ledger.sh does not name `{name}`"
         );
     }
+    // The script's own check of the inventory, before it becomes a filter, is
+    // this module's grammar: the same header and the same id characters.
+    for grammar in [
+        HEADER.replace('\t', "\\t"),
+        format!("$2 !~ /^[{ID_CHARACTERS}]+$/"),
+        format!("$3 !~ /^[{ID_CHARACTERS}]+$/"),
+    ] {
+        assert!(
+            script.contains(&grammar),
+            "departures-ledger.sh does not check `{grammar}`"
+        );
+    }
 }
 
 /// A selection is closed over shared tests: selecting a golden runs every
@@ -868,6 +890,10 @@ fn the_contributor_check_refuses_an_inventory_or_notes_that_are_not_ones() {
         (
             format!("{HEADER}\n{first}\nonly-a-golden\n"),
             "only-a-golden",
+        ),
+        (
+            format!("{HEADER}\n{first}\ng\tcrozier-e2e::e2e\tno spaces\n"),
+            "no spaces",
         ),
         (format!("{HEADER}\n{first}\n{first}\n"), &first),
         (format!("{HEADER}\n{second}\n{first}\n"), &first),

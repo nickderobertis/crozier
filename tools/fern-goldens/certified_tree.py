@@ -275,7 +275,10 @@ def main(argv: list[str] | None = None) -> int:
         print(f"certified-tree: not published: {error}; {REMEDY}", file=sys.stderr)
         return 1
     except (OSError, ValueError) as error:
-        print(f"certified-tree: {error}; check the path named, then re-run", file=sys.stderr)
+        print(
+            f"certified-tree: {error}; check the path named exists, or free space or fix its permissions, then re-run",
+            file=sys.stderr,
+        )
         return 1
     if entry is None:
         print(

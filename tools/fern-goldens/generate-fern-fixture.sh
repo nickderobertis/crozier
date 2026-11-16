@@ -537,6 +537,7 @@ if [ "$LAYOUT" = packaged ]; then
   # the caller asks (fern-overlay-goldens.sh does) and the generation is one the
   # store's key — document digest, pair, enum mode — describes completely: no
   # audiences, client class name, extra fields, organization or retries setting.
+  # llmlint: ignore[changed_behavior_has_e2e] Every setting exclusion, the opt-in and a failed publication are driven through this script by fern_goldens_test's OverlayCertifiedTreeTests; the multi-file (`api_tree`) exclusion alone is not, because reaching it needs a pinned corpus tree verified by tools/corpus/corpus_remote_ref_pins.py and fetched whole, and it is the same short-circuit as the settings beside it.
   if [ "${CROZIER_CERTIFIED_TREE_PUBLISH:-}" = 1 ] && [ -z "$api_tree" ] \
     && [ -z "$FERN_AUDIENCES$CLIENT_CLASS_NAME${EXTRA_FIELDS:-}$ORGANIZATION$DEFAULT_MAX_RETRIES" ]; then
     python3 "$repo_root/tools/fern-goldens/certified_tree.py" publish "$spec" "$src" --enum-type "$ENUM_TYPE" >/dev/null \

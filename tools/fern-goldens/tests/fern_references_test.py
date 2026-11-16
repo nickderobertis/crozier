@@ -254,6 +254,8 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertIn("client_class_name: FernApi", call["generators"])
         self.assertIn("enum_type: python_enums\n            extra_fields: allow", call["generators"])
+        # A client class name and extra fields shape the tree but not the key.
+        self.assert_store_holds_nothing()
 
     def test_a_class_or_audience_name_yaml_reads_as_no_string_is_refused_before_fern_runs(self) -> None:
         for label, audiences, metadata, message in (
@@ -381,6 +383,11 @@ class FernReferencesTests(unittest.TestCase):
                 self.assertEqual(refused.returncode, 1, refused.stdout)
                 self.assertIn(f"row {name!r}: a case is a unique relative path", refused.stderr)
         self.assertEqual(len(self.calls()), before)
+
+    def assert_store_holds_nothing(self) -> None:
+        """The host's certified-tree store (this test's scratch cache) kept no entry."""
+        store = self.root / "cache/crozier/certified-trees"
+        self.assertEqual([], sorted(path.relative_to(store).as_posix() for path in store.glob("*/*/*")))
 
     def store_entry(self, document: str, mode: str) -> Path:
         digest = hashlib.sha256((self.root / document).read_bytes()).hexdigest()
@@ -613,6 +620,8 @@ class FernReferencesTests(unittest.TestCase):
         self.assertFalse((tree / "src").exists())
         (call,) = self.calls()
         self.assertNotIn("--preview", call["argv"])
+        # The flat layout is no part of the store's key, so nothing is kept.
+        self.assert_store_holds_nothing()
 
     def test_a_refused_measurement_rewrites_its_refusal_record_at_the_pair(self) -> None:
         self.write("docs/fern-measurements/lowering/epsilon/openapi.yml", "openapi: 3.0.3\nx-stub-refuse: true\n")
@@ -1136,6 +1145,8 @@ class FernReferencesTests(unittest.TestCase):
     def test_the_version_grammar_is_the_one_the_delegated_scripts_apply(self) -> None:
         tool = self.load_tool()
         store = tool.certified_tree_store()
+        # The store keys entries by the same enum modes the tool generates.
+        self.assertEqual({mode.value for mode in tool.EnumMode}, {mode.value for mode in store.EnumMode})
         samples = (
             "5.41.3",
             "10.0.12",
@@ -1173,6 +1184,8 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         served = self.root / "docs/fern-measurements/remote/case/fern-expected/src/fern/remote.txt"
         self.assertEqual(served.read_text(encoding="utf-8"), "Served: true\n")
+        # Fern read the remote ref from a scratch port the store's key does not name.
+        self.assert_store_holds_nothing()
 
     def test_a_parameter_literals_claim_is_re_measured_with_its_metadata_and_digest(self) -> None:
         for name, files in (
@@ -1384,6 +1397,11 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertEqual(call["config"], {"organization": "LanternHarbor", "version": CLI})
         self.assertNotIn("--preview", call["argv"])
+        # A non-default organization is no part of the key, packaged layout or not.
+        self.write("docs/departures/evidence/casing/fern-reference.json", json.dumps({"organization": "LanternHarbor"}))
+        packaged = self.run_tool("generate", "departure-evidence")
+        self.assertEqual(packaged.returncode, 0, packaged.stderr)
+        self.assert_store_holds_nothing()
 
     def manifest(self, *rows: str) -> None:
         self.write(
