@@ -1,0 +1,9 @@
+fern_cli_version = "5.200.0"
+fern_python_sdk_version = "5.41.25"
+digest = "7d6d94b52532c2fcdbc410bb521066cd6761ff1f0b14882e545102bddfaa8b93"
+
+[[covers]]
+key = "component-same-primitive-union"
+search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-shapes/README.md"
