@@ -16397,6 +16397,10 @@ fn select_diff_corpora(requested: Option<&str>) -> (Vec<&'static Corpus>, Vec<(S
     (selected, failures)
 }
 
+/// A report subprocess's output, failing with its status and standard error.
+#[path = "../../../tests/support/report_subprocess.rs"]
+mod report_subprocess;
+
 #[path = "e2e/fixture_diff_report.rs"]
 mod fixture_diff_report;
 

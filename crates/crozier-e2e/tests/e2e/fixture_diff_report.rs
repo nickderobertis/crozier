@@ -1,5 +1,6 @@
 //! Text rendering is deferred until the ledger accepts the comparison, and
 //! consumed one file at a time. The verdict never depends on these limits.
+use super::report_subprocess::successful_report;
 use super::*;
 
 // At most 128 KiB of normalized input and 1,000,000 u32 LCS cells (4 MiB).
@@ -122,9 +123,7 @@ fn small_report_preserves_text_and_names_missing_files() {
         std::fs::write(root.path().join(side).join("changed.txt"), text).unwrap();
     }
     std::fs::write(root.path().join("reference/missing.txt"), "missing").unwrap();
-    let output = reporter(root.path()).output().unwrap();
-    assert!(output.status.success());
-    let report = String::from_utf8(output.stdout).unwrap();
+    let report = successful_report(reporter(root.path()).output().unwrap());
     assert!(
         report.contains("- old\n+ new\n\nUnexplained original crozier line(s): 1\n"),
         "{report}"
@@ -148,9 +147,7 @@ fn byte_limit_reports_omitted_long_lines() {
         )
         .unwrap();
     }
-    let output = reporter(root.path()).output().unwrap();
-    assert!(output.status.success());
-    let report = String::from_utf8(output.stdout).unwrap();
+    let report = successful_report(reporter(root.path()).output().unwrap());
     assert!(report.contains("--- long.txt [REGRESSION"), "{report}");
     assert!(
         report.contains("Unified diff omitted: 2 normalized input line(s) (Fern: 1; crozier: 1)"),
@@ -187,10 +184,7 @@ fn source_aware_report_generates_and_recovers() {
         if summary {
             command.env("CROZIER_DIFF_SUMMARY_ONLY", "1");
         }
-        let output = command.output().unwrap();
-        let report = String::from_utf8(output.stdout).unwrap();
-        assert!(output.status.success(), "{report}");
-        report
+        successful_report(command.output().unwrap())
     };
     let report = run(false);
     assert!(report.contains("--- reference.md [REGRESSION"), "{report}");
@@ -235,9 +229,7 @@ fn disappearing_file_reports_error_and_continues() {
         }
     }
     std::fs::write(root.path().join("remove-before-render"), "a.txt").unwrap();
-    let output = reporter(root.path()).output().unwrap();
-    let report = String::from_utf8(output.stdout).unwrap();
-    assert!(output.status.success(), "{report}");
+    let report = successful_report(reporter(root.path()).output().unwrap());
     assert!(report.contains("--- a.txt [REGRESSION"), "{report}");
     assert!(
         report.contains("Could not normalize/compare this file:"),
@@ -246,6 +238,28 @@ fn disappearing_file_reports_error_and_continues() {
     assert!(report.contains("--- b.txt [REGRESSION"), "{report}");
     assert!(report.contains("- old\n+ new"), "{report}");
     assert!(report.contains(&format!("2 {DIFFS_SUMMARY}")), "{report}");
+}
+
+/// A reporter that dies before printing still names why (issue #834): its exit
+/// status and standard error reach the failing test's message.
+#[test]
+fn failed_reporter_surfaces_its_status_and_error_output() {
+    // No `generated/` tree and no `openapi.yml` to generate one from: the
+    // reporter panics before writing its report.
+    let root = tempfile::tempdir().unwrap();
+    let output = reporter(root.path()).output().unwrap();
+    let status = output.status;
+    assert!(!status.success());
+    let failure = std::panic::catch_unwind(|| successful_report(output))
+        .expect_err("a failed reporter must not read as a report");
+    let message = failure
+        .downcast_ref::<String>()
+        .expect("the failure is a formatted message");
+    assert!(
+        message.contains(&format!("the report subprocess failed ({status})")),
+        "{message}"
+    );
+    assert!(message.contains("generation needs a spec"), "{message}");
 }
 
 fn reporter(root: &Path) -> std::process::Command {
@@ -306,9 +320,7 @@ fn growing_reports_keep_peak_memory_bounded() {
                 "--nocapture",
             ])
             .env("CROZIER_TEST_DIFF_TREES", root.path());
-        let output = command.output().unwrap();
-        let report = String::from_utf8(output.stdout).unwrap();
-        assert!(output.status.success(), "{report}");
+        let report = successful_report(command.output().unwrap());
         let rss: u64 = std::fs::read_to_string(peak)
             .unwrap()
             .trim()
