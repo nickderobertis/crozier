@@ -296,15 +296,14 @@ just fern-references-check [<family>...]        # every item's inputs, without F
 ```
 
 Each generation also keeps Fern's untouched tree — before any comment
-stripping or overlay reduction — in the host's certified-tree store,
-`${XDG_CACHE_HOME:-$HOME/.cache}/crozier/certified-trees/fern-<cli>_python-<generator>/<document sha256>/<python_enums|literals>/`,
-so another measurement of the same document at the same pair and enum mode
-reuses it instead of generating again. `fern-references`, the witness screen
-and `fern-overlay-goldens.sh` publish there; a generation the key does not
-describe (audiences, a client class name, extra fields, retries, a non-default
-organization, the flat layout, a multi-file or scratch-served document) is not
-kept. `python3 tools/fern-goldens/certified_tree.py find <document> --enum-type
-<mode>` prints an entry's path; the module's docstring is the layout's contract.
+stripping or overlay reduction — in the host's certified-tree store, so another
+measurement of the same document at the same pair and enum mode reuses it
+instead of generating again. `fern-references`, the witness screen and
+`fern-overlay-goldens.sh` publish there. The store's key, its layout and which
+generations it keeps are stated once, in
+[`tools/fern-goldens/certified_tree.py`](../tools/fern-goldens/certified_tree.py)'s
+docstring; `python3 tools/fern-goldens/certified_tree.py find <document>
+--enum-type <mode>` prints an entry's path.
 
 `check` validates every item without starting Fern, Docker or a network
 request: each input its generation reads exists (its document, hand-written

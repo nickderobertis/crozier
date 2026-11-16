@@ -56,9 +56,12 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 
-# `scripts/lib.sh`'s `valid_fern_version`; it also keeps a recorded version from
-# naming any path but one directory.
+# `scripts/lib.sh`'s `valid_fern_version` (fern_references_test holds this copy to
+# it); it also keeps a recorded version from naming any path but one directory.
 VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?")
+# The one generator the store's `python-<generator>` key names.
+GENERATOR = "fernapi/fern-python-sdk"
+REMEDY = "regenerate with the certified pair and no setting the key does not name, then re-run"
 METADATA = Path("assets/scaffolding/metadata.json")
 RECORD_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 
@@ -116,6 +119,8 @@ def tree_key(document: Path, tree: Path, mode: EnumMode) -> Key:
         raise RefusedTree(f"{path} is no Fern metadata record ({error})") from None
     if not isinstance(record, dict):
         raise RefusedTree(f"{path} is no JSON object")
+    if record.get("generatorName") != GENERATOR:
+        raise RefusedTree(f"{path} records generator {record.get('generatorName')!r}, not {GENERATOR}")
     cli, generator = record.get("cliVersion"), record.get("generatorVersion")
     if not (
         isinstance(cli, str) and VERSION.fullmatch(cli) and isinstance(generator, str) and VERSION.fullmatch(generator)
@@ -150,6 +155,12 @@ def publish(
         raise ValueError(f"record names {sorted(records)} must be plain file names other than {sorted(reserved)}")
     entry = tree_key(document, tree, mode).entry(root or store_root())
     if entry.is_dir():
+        incomplete = entry_failure(entry)
+        if incomplete:
+            raise RefusedTree(
+                f"the entry already at {entry} is incomplete ({incomplete}); remove that directory so this "
+                "generation can publish it, then re-run"
+            )
         return entry
     entry.parent.mkdir(parents=True, exist_ok=True)
     stage = Path(tempfile.mkdtemp(prefix=f".{entry.name}.", dir=entry.parent))
@@ -171,16 +182,38 @@ def publish(
     return entry
 
 
+def entry_failure(entry: Path) -> str | None:
+    """Why `entry` is not a whole entry of its key's layout, or None when it is.
+
+    A whole entry holds `tree/`, the `document.sha256` its directory names and an
+    integer `exit-code` (a refused generation is recorded too, with its status).
+    """
+    if not (entry / "tree").is_dir():
+        return "it holds no tree/"
+    try:
+        digest = (entry / "document.sha256").read_text(encoding="utf-8").strip()
+        status = (entry / "exit-code").read_text(encoding="utf-8").strip()
+    except OSError as error:
+        return f"its records cannot be read: {error}"
+    if digest != entry.parent.name:
+        return f"its document.sha256 reads {digest!r}, not the {entry.parent.name} it is filed under"
+    if not re.fullmatch(r"[0-9]+", status):
+        return f"its exit-code reads {status!r}, no exit status"
+    return None
+
+
 def find(document: Path, cli: str, generator: str, mode: EnumMode, root: Path | None = None) -> Path | None:
-    """The published entry for `document` at the pair and mode, or None."""
+    """The whole published entry for `document` at the pair and mode, or None."""
     entry = Key(cli, generator, document_digest(document), mode).entry(root or store_root())
-    return entry if (entry / "tree").is_dir() else None
+    return entry if entry.is_dir() and entry_failure(entry) is None else None
 
 
 def certified_pair(repo: Path) -> tuple[str, str]:
     """The pair `assets/scaffolding/metadata.json` certifies."""
     path = repo / METADATA
     record = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(record, dict):
+        raise ValueError(f"{path} is no JSON object")
     cli, generator = record.get("cliVersion"), record.get("generatorVersion")
     if not (
         isinstance(cli, str) and VERSION.fullmatch(cli) and isinstance(generator, str) and VERSION.fullmatch(generator)
@@ -217,7 +250,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error("--cli and --generator are exact versions")
         entry = find(args.document, cli, generator, mode)
     except RefusedTree as error:
-        print(f"certified-tree: not published: {error}", file=sys.stderr)
+        print(f"certified-tree: not published: {error}; {REMEDY}", file=sys.stderr)
         return 1
     except (OSError, ValueError) as error:
         print(f"certified-tree: {error}; check the path named, then re-run", file=sys.stderr)

@@ -301,6 +301,42 @@ class LegacyScreenCliTests(unittest.TestCase):
         self.assertEqual((screen["sha256"], screen["check_exit"], screen["generate_exit"]), (digest, "0", "0"))
         self.assertNotIn(SECRET, (entry / "fern.log").read_text(encoding="utf-8"))
 
+    def test_an_unwritable_store_leaves_the_screen_filed_and_names_the_fix(self) -> None:
+        """A store write failure costs only the reuse: the screen is still measured and filed."""
+        if os.name == "nt" or os.geteuid() == 0:
+            self.skipTest("a read-only directory is enforced only for a non-root POSIX user")
+        cli, name, version, config = SCREEN.corpus_fern_pins()
+        metadata = {"cliVersion": cli, "generatorName": name, "generatorVersion": version, "generatorConfig": config}
+        cache = self.scratch / "cache"
+        store = cache / "crozier" / "certified-trees"
+        store.mkdir(parents=True)
+        store.chmod(0o500)
+        try:
+            done = self.screen(
+                "--disposition",
+                "witness-found",
+                XDG_CACHE_HOME=str(cache),
+                FERN_STUB="certified",
+                FERN_STUB_METADATA=json.dumps(metadata),
+            )
+        finally:
+            store.chmod(0o700)
+        self.assertEqual(0, done.returncode, done.stderr)
+        self.assertIn("witness-screen: could not keep Fern's tree in", done.stderr)
+        self.assertIn("free space or fix its permissions", done.stderr)
+        self.assertEqual("passed", self.rows()[-1]["fern"])
+        self.assertEqual([], list(store.iterdir()))
+        recovered = self.screen(
+            "--disposition",
+            "witness-found",
+            XDG_CACHE_HOME=str(cache),
+            FERN_STUB="certified",
+            FERN_STUB_METADATA=json.dumps(metadata),
+        )
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        digest = self.rows()[-1]["measured"]["document"]["sha256"]
+        self.assertTrue((store / f"fern-{cli}_python-{version}" / digest / "python_enums" / "tree").is_dir())
+
     def test_a_candidate_passing_every_screen_is_filed_with_its_measured_record(self) -> None:
         # Passing every screen owes a disposition; nothing is filed without one.
         refused = self.screen()

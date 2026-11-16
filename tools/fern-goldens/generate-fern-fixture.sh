@@ -541,7 +541,8 @@ if [ "$LAYOUT" = packaged ]; then
     && [ -z "$FERN_AUDIENCES$CLIENT_CLASS_NAME${EXTRA_FIELDS:-}$ORGANIZATION$DEFAULT_MAX_RETRIES" ]; then
     python3 "$repo_root/tools/fern-goldens/certified_tree.py" publish "$spec" "$src" --enum-type "$ENUM_TYPE" >/dev/null \
       || echo "generate-fern-fixture: Fern's untouched tree was not kept in the certified-tree store" \
-              "(the reason is above); the golden is generated regardless" >&2
+              "(the reason and its fix are above); the golden is generated regardless, and the next" \
+              "generation of this document publishes it once that is fixed" >&2
   fi
 else
   # Without `--preview`, Fern writes to the `local-file-system` path the

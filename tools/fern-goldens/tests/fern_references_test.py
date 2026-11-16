@@ -89,7 +89,11 @@ for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
     # llmlint: ignore[async_typed_clients_at_boundaries] This stands in for Fern's own resolver fetching a remote $ref, inside an executable stub script; it reads one loopback URL the tool under test serves and has no client boundary to type.
     (package / "remote.txt").write_text(urllib.request.urlopen(url).read().decode())
 (root / ".fern").mkdir(parents=True, exist_ok=True)
-metadata = {"cliVersion": json.loads(config)["version"], "generatorVersion": version}
+metadata = {
+    "cliVersion": json.loads(config)["version"],
+    "generatorName": "fernapi/fern-python-sdk",
+    "generatorVersion": version,
+}
 if "enum_type: python_enums" in generators:
     metadata["generatorConfig"] = {"pydantic_config": {"enum_type": "python_enums"}}
 (root / ".fern" / "metadata.json").write_text(json.dumps(metadata))
@@ -454,6 +458,96 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual((earlier / "tree/src/fern/client.py").read_text(encoding="utf-8"), "EARLIER = 1\n")
         self.assertTrue((earlier / "screen.json").is_file())
         self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(earlier))
+
+    def publish(self, document: str, tree: Path, mode: str = "python-enums") -> subprocess.CompletedProcess[str]:
+        """The store's own writer, `certified_tree.py publish`, as a generation calls it."""
+        return subprocess.run(
+            [
+                sys.executable,
+                str(self.tool.with_name("certified_tree.py")),
+                "publish",
+                str(self.root / document),
+                str(tree),
+                "--enum-type",
+                mode,
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def test_a_tree_that_does_not_describe_its_key_is_refused_with_the_fix(self) -> None:
+        """Only an untouched python-sdk tree recording exactly the pair and enum mode is kept."""
+        document = "docs/fern-measurements/kept/tau/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: tau}\n")
+        tree = self.root / "tree"
+        self.write("tree/src/fern/client.py", "CLIENT = 1\n")
+        whole = {
+            "cliVersion": CLI,
+            "generatorName": "fernapi/fern-python-sdk",
+            "generatorVersion": SDK,
+            "generatorConfig": {"pydantic_config": {"enum_type": "python_enums"}},
+        }
+        for metadata, says in (
+            ("not json", "is no Fern metadata record"),
+            ("[]", "is no JSON object"),
+            (json.dumps({**whole, "generatorName": "fernapi/fern-typescript-sdk"}), "not fernapi/fern-python-sdk"),
+            (json.dumps({**whole, "cliVersion": "v9"}), "records no exact cliVersion and generatorVersion"),
+            (json.dumps({**whole, "generatorConfig": {"client_class_name": "Acme"}}), "the store keys a tree"),
+        ):
+            with self.subTest(says=says):
+                self.write("tree/.fern/metadata.json", metadata)
+                refused = self.publish(document, tree)
+                self.assertEqual(refused.returncode, 1, refused.stdout)
+                self.assertIn(says, refused.stderr)
+                self.assertIn("regenerate with the certified pair", refused.stderr)
+                self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        # An entry left incomplete (an interrupted copy) is never read and never
+        # silently kept: publication names it and how to clear it.
+        self.write("tree/.fern/metadata.json", json.dumps(whole))
+        entry = self.store_entry(document, "python_enums")
+        (entry / "tree").mkdir(parents=True)
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        refused = self.publish(document, tree)
+        self.assertEqual(refused.returncode, 1, refused.stdout)
+        self.assertIn("is incomplete (its records cannot be read", refused.stderr)
+        self.assertIn("remove that directory", refused.stderr)
+        shutil.rmtree(entry)
+        kept = self.publish(document, tree)
+        self.assertEqual(kept.returncode, 0, kept.stderr)
+        self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(entry))
+        # A caller's extra records are plain names, never the entry's own.
+        store = self.load_tool().certified_tree_store()
+        with self.assertRaisesRegex(ValueError, "must be plain file names"):
+            store.publish(self.root / document, tree, store.EnumMode.LITERALS, records={"tree": "x"})
+
+    def test_an_unwritable_store_leaves_the_golden_generated_and_names_the_fix(self) -> None:
+        """A store write failure costs only the reuse: the reference tree is still written."""
+        if os.name == "nt" or os.geteuid() == 0:
+            self.skipTest("a read-only directory is enforced only for a non-root POSIX user")
+        document = "docs/fern-measurements/kept/upsilon/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: upsilon}\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            f"case\tdocument\tenum_type\tlayout\toverlay\nkept/upsilon\t{document}\tpython-enums\tpackaged\t-\n",
+        )
+        store = self.root / "cache/crozier/certified-trees"
+        store.mkdir(parents=True)
+        store.chmod(0o500)
+        try:
+            result = self.run_tool("generate", "measurements")
+        finally:
+            store.chmod(0o700)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("could not keep the untouched tree in", result.stderr)
+        self.assertIn("free space or fix its permissions", result.stderr)
+        self.assertTrue((self.root / "docs/fern-measurements/kept/upsilon/fern-expected/src/fern/client.py").is_file())
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+        recovered = self.run_tool("generate", "measurements")
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual(self.find_entry(document, "python-enums").returncode, 0)
 
     def test_a_generation_the_store_key_cannot_describe_is_not_kept(self) -> None:
         """Audiences shape Fern's output but are no part of the store's key, so a
@@ -1014,6 +1108,7 @@ class FernReferencesTests(unittest.TestCase):
 
     def test_the_version_grammar_is_the_one_the_delegated_scripts_apply(self) -> None:
         tool = self.load_tool()
+        store = tool.certified_tree_store()
         samples = (
             "5.41.3",
             "10.0.12",
@@ -1032,6 +1127,8 @@ class FernReferencesTests(unittest.TestCase):
                     check=False,
                 )
                 self.assertEqual(shell.returncode == 0, bool(tool.VERSION.fullmatch(sample)))
+                # The certified-tree store keys entries by the same grammar.
+                self.assertEqual(shell.returncode == 0, bool(store.VERSION.fullmatch(sample)))
 
     # llmlint: ignore[shell_test_tiers_stay_split] Serving a case's own documents on 127.0.0.1 is the behaviour under test (the tool hands Fern a loopback URL for a remote $ref); the socket never leaves the host, so this stays in the offline tier, which forbids external network rather than loopback.
     def test_a_remote_reference_is_served_from_the_documents_directory(self) -> None:
