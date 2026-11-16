@@ -112,6 +112,7 @@
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
         "{workspaceRoot}/justfile",
+        "{workspaceRoot}/tools/fern-goldens/certified_tree.py",
         "pythonTooling"
       ],
       "outputs": [

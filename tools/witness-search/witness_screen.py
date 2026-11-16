@@ -334,8 +334,34 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
             .replace("; ", ", ")
             .replace("`", "'")[:400],
         )
+        if status == "0" and package.is_dir():
+            keep_untouched(document, package, logs["generate"], row)
     row["logs"] = logs
     return row
+
+
+def keep_untouched(document: Path, package: Path, log: str, row: dict[str, Any]) -> None:
+    """Publish the tree Fern wrote to the host's certified-tree store
+    (`tools/fern-goldens/certified_tree.py`) before the screen's scratch is removed,
+    with the screen's row beside it, so a later measurement of the same document
+    at the same pair reuses it rather than generating again. A tree that does not
+    describe itself as the store's key (no `.fern/metadata.json` naming the pair
+    and enum mode) is left out: nothing in the screen's own record depends on it."""
+    store = _load("certified_tree", REPO / "tools" / "fern-goldens" / "certified_tree.py")
+    _cli, _name, _version, config = corpus_fern_pins()
+    pydantic = config.get("pydantic_config")
+    enums = isinstance(pydantic, dict) and pydantic.get("enum_type") == "python_enums"
+    mode = store.EnumMode.PYTHON_ENUMS if enums else store.EnumMode.LITERALS
+    try:
+        store.publish(document, package, mode, log, {"screen.json": json.dumps(row, indent=2) + "\n"})
+    except store.RefusedTree:
+        return
+    except OSError as error:
+        print(
+            f"witness-screen: could not keep Fern's tree in {store.store_root()} ({error}); "
+            "free space or fix its permissions so the next screen keeps it",
+            file=sys.stderr,
+        )
 
 
 def fern_verdict(row: dict[str, Any], pins: Pins | None = None) -> str | None:

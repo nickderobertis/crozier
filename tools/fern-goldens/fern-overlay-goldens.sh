@@ -134,10 +134,13 @@ one() {
     [ -n "$spec" ] || { echo "$fixture: no committed source; run just lint-corpus-sources" >&2; return 1; }
   fi
   # A stage below the fixture keeps the destination guard of
-  # generate-fern-fixture.sh satisfied; only a complete overlay is moved in.
+  # generate-fern-fixture.sh satisfied; only a complete overlay is moved in. The
+  # generation keeps Fern's untouched tree in the host's certified-tree store
+  # before its workspace is removed, so another measurement of the same document
+  # at the same pair and enum mode reuses it.
   staging="$(mktemp -d "$dir/.fern-overlay-stage.XXXXXX")"
-  if "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" "$@" "$fixture" "$version" \
-    "$spec" "$staging/$golden" >>"$log" 2>&1; then
+  if CROZIER_CERTIFIED_TREE_PUBLISH=1 "$repo_root/tools/fern-goldens/generate-fern-fixture.sh" "$@" "$fixture" \
+    "$version" "$spec" "$staging/$golden" >>"$log" 2>&1; then
     rm -rf "${dir:?}/$golden"
     mv "$staging/$golden" "$dir/$golden" || {
       echo "$fixture: could not install $golden; the overlay is left in $staging — make" \

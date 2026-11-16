@@ -7,6 +7,7 @@ helpers defined here.
 
 from __future__ import annotations
 
+import hashlib
 import importlib.machinery
 import importlib.util
 import json
@@ -527,6 +528,165 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn("beta: unreadable expected/.crozier-fern-golden.json — restore it", result.stderr)
         self.assertIn("git checkout -- tests/fixtures/beta/expected/.crozier-fern-golden.json", result.stderr)
         self.assertEqual(result.stdout, f"generated alpha/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
+
+
+# A stand-in `fern` that writes a packaged tree the way Fern does: a comment in
+# every module, and `.fern/metadata.json` recording the CLI and generator it ran
+# and the generator config it was given.
+OVERLAY_FERN = r"""#!/usr/bin/env python3
+import json, pathlib, re, sys
+workspace = pathlib.Path.cwd()
+generators = (workspace / "generators.yml").read_text()
+root = pathlib.Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
+(root / "src" / "fern").mkdir(parents=True)
+(root / "src" / "fern" / "client.py").write_text("# a comment Fern writes\nCLIENT = 1\n")
+config = {}
+if "enum_type: python_enums" in generators:
+    config["pydantic_config"] = {"enum_type": "python_enums"}
+if "default_max_retries" in generators:
+    config["default_max_retries"] = int(re.search(r"default_max_retries: (\d+)", generators).group(1))
+metadata = {
+    "cliVersion": json.loads((workspace / "fern.config.json").read_text())["version"],
+    "generatorName": "fernapi/fern-python-sdk",
+    "generatorVersion": re.search(r"version: (\S+)", generators).group(1),
+}
+if config:
+    metadata["generatorConfig"] = config
+(root / ".fern").mkdir()
+(root / ".fern" / "metadata.json").write_text(json.dumps(metadata))
+"""
+
+# The release crozier's comment stripper.
+OVERLAY_CROZIER = r"""#!/usr/bin/env python3
+import sys
+sys.stdout.write("".join(line for line in open(sys.argv[2]) if not line.startswith("#")))
+"""
+
+OVERLAY_CLI = "9.8.7"
+
+
+@unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
+class OverlayCertifiedTreeTests(unittest.TestCase):
+    """Issue #813 through `fern-overlay-goldens.sh` and the real
+    `generate-fern-fixture.sh`: an overlay generation keeps Fern's untouched tree
+    in the host's certified-tree store before its workspace is removed, with only
+    `fern`, Docker and the release crozier stood in."""
+
+    def setUp(self) -> None:
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name) / "repo"
+        mirror(
+            self.root,
+            "tools/fern-goldens/fern-overlay-goldens.sh",
+            "tools/fern-goldens/generate-fern-fixture.sh",
+            "tools/fern-goldens/golden_overlay.py",
+            "tools/fern-goldens/certified_tree.py",
+            "scripts/lib.sh",
+        )
+        metadata = self.root / "assets" / "scaffolding" / "metadata.json"
+        metadata.parent.mkdir(parents=True)
+        metadata.write_text(
+            json.dumps(
+                {
+                    "cliVersion": OVERLAY_CLI,  # certified-pair: stand-in
+                    "generatorName": "fernapi/fern-python-sdk",
+                    "generatorVersion": STAND_IN,
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+        for fixture in ("eos.local", "alpha"):
+            expected = self.root / "tests" / "fixtures" / fixture / "expected"
+            (expected / "src" / "fern").mkdir(parents=True)
+            (expected / STATE).write_text(json.dumps({"fern_python_sdk_version": STAND_IN}), encoding="utf-8")
+            (expected / "src" / "fern" / "client.py").write_text("CLIENT = 0\n", encoding="utf-8")
+            (expected.parent / "openapi.yml").write_text(
+                f"openapi: 3.0.3\ninfo: {{title: {fixture}}}\n", encoding="utf-8"
+            )
+        bin_dir = self.root / "stub-bin"
+        bin_dir.mkdir()
+        for name, text in (("fern", OVERLAY_FERN), ("docker", "#!/bin/sh\nexit 0\n")):
+            (bin_dir / name).write_text(text, encoding="utf-8")
+            (bin_dir / name).chmod(0o755)
+        crozier = self.root / "target" / "release" / "crozier"
+        crozier.parent.mkdir(parents=True)
+        crozier.write_text(OVERLAY_CROZIER, encoding="utf-8")
+        crozier.chmod(0o755)
+        self.cache = Path(temporary.name) / "cache"
+        self.env = {
+            **os.environ,
+            "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+            "XDG_CACHE_HOME": str(self.cache),
+            "CROZIER_FERN_NO_DOCKER_SHIM": "1",
+        }
+        self.env.pop("CROZIER_CERTIFIED_TREE_PUBLISH", None)
+
+    def run_script(self, script: str, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [str(self.root / "tools" / "fern-goldens" / script), *args],
+            cwd=self.root,
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def entry(self, mode: str) -> Path:
+        document = self.root / "tests" / "fixtures" / "alpha" / "openapi.yml"
+        digest = hashlib.sha256(document.read_bytes()).hexdigest()
+        return self.cache / "crozier" / "certified-trees" / f"fern-{OVERLAY_CLI}_python-{STAND_IN}" / digest / mode
+
+    def test_an_overlay_generation_keeps_its_untouched_tree_reusable(self) -> None:
+        result = self.run_script("fern-overlay-goldens.sh", "--enum-type", "literals", "alpha")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, f"generated alpha/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
+        golden = self.root / "tests" / "fixtures" / "alpha" / "expected-literals"
+        self.assertEqual((golden / "src" / "fern" / "client.py").read_text(encoding="utf-8"), "CLIENT = 1\n")
+        entry = self.entry("literals")
+        self.assertEqual(
+            (entry / "tree" / "src" / "fern" / "client.py").read_text(encoding="utf-8"),
+            "# a comment Fern writes\nCLIENT = 1\n",
+        )
+        self.assertEqual((entry / "document.sha256").read_text(encoding="utf-8"), entry.parent.name + "\n")
+        self.assertEqual((entry / "exit-code").read_text(encoding="utf-8"), "0\n")
+        found = subprocess.run(
+            [
+                sys.executable,
+                str(self.root / "tools/fern-goldens/certified_tree.py"),
+                "find",
+                str(self.root / "tests/fixtures/alpha/openapi.yml"),
+                "--enum-type",
+                "literals",
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertEqual((found.returncode, found.stdout.strip()), (0, str(entry)), found.stderr)
+
+    def test_a_setting_the_store_key_does_not_name_is_not_kept(self) -> None:
+        result = self.run_script("fern-overlay-goldens.sh", "--default-max-retries", "2", "alpha")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.root / "tests/fixtures/alpha/expected-default-max-retries").is_dir())
+        self.assertFalse((self.cache / "crozier" / "certified-trees").exists())
+
+    def test_a_direct_generation_without_the_request_publishes_nothing(self) -> None:
+        """`generate-fern-fixture.sh` run as before, with no new argument or
+        variable, installs its golden and leaves the store alone."""
+        result = self.run_script("generate-fern-fixture.sh", "alpha", STAND_IN)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            (self.root / "tests/fixtures/alpha/expected/src/fern/client.py").read_text(encoding="utf-8"), "CLIENT = 1\n"
+        )
+        self.assertFalse((self.cache / "crozier" / "certified-trees").exists())
 
 
 if __name__ == "__main__":

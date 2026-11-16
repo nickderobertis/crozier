@@ -330,6 +330,9 @@ trap cleanup EXIT
 # Fern's definition files by construction: only the OpenAPI document is wired in.
 mkdir -p "$workdir/fern/openapi"
 api_path="openapi/openapi.yml"
+# A pinned multi-file tree is more than the one document the certified-tree
+# store keys a generation by, so it is never published there.
+api_tree=""
 if [ -n "$SPEC_OVERRIDE" ]; then
   tree_root="$(python3 "$repo_root/tools/corpus/corpus_remote_ref_pins.py" tree-root "$FIXTURE")"
   if [ -n "$tree_root" ]; then
@@ -341,6 +344,7 @@ if [ -n "$SPEC_OVERRIDE" ]; then
     python3 "$repo_root/tools/corpus/corpus_remote_ref_pins.py" verify-tree "$FIXTURE" "$tree_dir" >/dev/null
     cp -R "$tree_dir/." "$workdir/fern/openapi/"
     api_path="openapi/$tree_root"
+    api_tree=1
   else
     cp "$spec" "$workdir/fern/openapi/openapi.yml"
   fi
@@ -527,6 +531,17 @@ if [ "$LAYOUT" = packaged ]; then
          "it exited 0 without one, so read its output above (a document it skips as" \
          "invalid writes nothing), fix the spec, then re-run" >&2
     exit 1
+  fi
+  # Keep Fern's untouched tree in the host's certified-tree store
+  # (tools/fern-goldens/certified_tree.py) before the workspace is removed, when
+  # the caller asks (fern-overlay-goldens.sh does) and the generation is one the
+  # store's key — document digest, pair, enum mode — describes completely: no
+  # audiences, client class name, extra fields, organization or retries setting.
+  if [ "${CROZIER_CERTIFIED_TREE_PUBLISH:-}" = 1 ] && [ -z "$api_tree" ] \
+    && [ -z "$FERN_AUDIENCES$CLIENT_CLASS_NAME${EXTRA_FIELDS:-}$ORGANIZATION$DEFAULT_MAX_RETRIES" ]; then
+    python3 "$repo_root/tools/fern-goldens/certified_tree.py" publish "$spec" "$src" --enum-type "$ENUM_TYPE" >/dev/null \
+      || echo "generate-fern-fixture: Fern's untouched tree was not kept in the certified-tree store" \
+              "(the reason is above); the golden is generated regardless" >&2
   fi
 else
   # Without `--preview`, Fern writes to the `local-file-system` path the

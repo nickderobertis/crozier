@@ -89,7 +89,10 @@ for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
     # llmlint: ignore[async_typed_clients_at_boundaries] This stands in for Fern's own resolver fetching a remote $ref, inside an executable stub script; it reads one loopback URL the tool under test serves and has no client boundary to type.
     (package / "remote.txt").write_text(urllib.request.urlopen(url).read().decode())
 (root / ".fern").mkdir(parents=True, exist_ok=True)
-(root / ".fern" / "metadata.json").write_text(json.dumps({"cliVersion": json.loads(config)["version"], "generatorVersion": version}))
+metadata = {"cliVersion": json.loads(config)["version"], "generatorVersion": version}
+if "enum_type: python_enums" in generators:
+    metadata["generatorConfig"] = {"pydantic_config": {"enum_type": "python_enums"}}
+(root / ".fern" / "metadata.json").write_text(json.dumps(metadata))
 print(f"[api]: python-sdk Wrote files to {root}")
 """
 
@@ -143,12 +146,15 @@ class FernReferencesTests(unittest.TestCase):
             "PATH": f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
             "FERN_STUB_LOG": str(self.log),
             "CROZIER_FERN_REFERENCES_ROOT": str(self.root),
+            # The certified-tree store this run publishes into, never the host's.
+            "XDG_CACHE_HOME": str(self.root / "cache"),
         }
-        # The tool loads golden_overlay.py from beside itself.
+        # The tool loads golden_overlay.py and certified_tree.py from beside itself.
         self.tool = self.root / "tools/fern-goldens/fern-references.py"
         self.tool.parent.mkdir(parents=True)
         shutil.copy2(TOOL, self.tool)
         shutil.copy2(REPO / "tools/fern-goldens/golden_overlay.py", self.tool.parent / "golden_overlay.py")
+        shutil.copy2(REPO / "tools/fern-goldens/certified_tree.py", self.tool.parent / "certified_tree.py")
 
     def write(self, path: str, text: str, *, executable: bool = False) -> Path:
         target = self.root / path
@@ -371,6 +377,98 @@ class FernReferencesTests(unittest.TestCase):
                 self.assertEqual(refused.returncode, 1, refused.stdout)
                 self.assertIn(f"row {name!r}: a case is a unique relative path", refused.stderr)
         self.assertEqual(len(self.calls()), before)
+
+    def store_entry(self, document: str, mode: str) -> Path:
+        digest = hashlib.sha256((self.root / document).read_bytes()).hexdigest()
+        return self.root / "cache/crozier/certified-trees" / f"fern-{CLI}_python-{SDK}" / digest / mode
+
+    def find_entry(self, document: str, mode: str) -> subprocess.CompletedProcess[str]:
+        """The store's own reader, `certified_tree.py find`, as another measurement asks it."""
+        return subprocess.run(
+            [
+                sys.executable,
+                str(self.tool.with_name("certified_tree.py")),
+                "find",
+                str(self.root / document),
+                *("--enum-type", mode, "--cli", CLI, "--generator", SDK),
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+
+    def test_a_certified_generation_keeps_its_untouched_tree_reusable(self) -> None:
+        """Issue #813: the tree Fern wrote is published to the host's certified-tree
+        store, keyed by document digest, pair and enum mode, before the scratch
+        workspace is removed — and an entry already there is kept and stays readable."""
+        document = "docs/fern-measurements/kept/omega/openapi.yml"
+        self.write(document, "openapi: 3.0.3\ninfo: {title: omega}\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            f"kept/omega\t{document}\tpython-enums\tpackaged\t-\n"
+            f"kept/omega-literals\t{document}\tliterals\tpackaged\t-\n",
+        )
+        self.assertNotEqual(self.find_entry(document, "python-enums").returncode, 0)
+
+        result = self.run_tool("generate", "measurements")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("certified-tree store", result.stderr)
+        for mode, directory, kept in (
+            ("python-enums", "python_enums", "core/enum.py"),
+            ("literals", "literals", "literal.py"),
+        ):
+            with self.subTest(mode=mode):
+                entry = self.store_entry(document, directory)
+                found = self.find_entry(document, mode)
+                self.assertEqual(found.returncode, 0, found.stderr)
+                self.assertEqual(found.stdout.strip(), str(entry))
+                # Untouched: the comment the committed tree has stripped is still there.
+                self.assertEqual(
+                    (entry / "tree/src/fern/client.py").read_text(encoding="utf-8"),
+                    "# a comment Fern writes\nCLIENT = 1\n",
+                )
+                self.assertTrue((entry / "tree/src/fern" / kept).is_file())
+                self.assertEqual((entry / "document.sha256").read_text(encoding="utf-8"), entry.parent.name + "\n")
+                self.assertEqual((entry / "exit-code").read_text(encoding="utf-8"), "0\n")
+                self.assertIn("Wrote files to <workspace>", (entry / "fern.log").read_text(encoding="utf-8"))
+        committed = self.root / "docs/fern-measurements/kept/omega/fern-expected/src/fern/client.py"
+        self.assertEqual(committed.read_text(encoding="utf-8"), "CLIENT = 1\n")
+        # Assembled beside its name and renamed in: no stage is left behind.
+        staged = [p.name for p in self.store_entry(document, "python_enums").parent.iterdir() if p.name.startswith(".")]
+        self.assertEqual(staged, [])
+
+        # An entry in the store's existing shape (a screen's, carrying screen.json)
+        # is read as it is and never replaced by a later generation.
+        earlier = self.store_entry(document, "python_enums")
+        shutil.rmtree(earlier)
+        self.write(str((earlier / "tree/src/fern/client.py").relative_to(self.root)), "EARLIER = 1\n")
+        for name, text in (("document.sha256", earlier.parent.name + "\n"), ("exit-code", "0\n"), ("fern.log", "")):
+            self.write(str((earlier / name).relative_to(self.root)), text)
+        self.write(str((earlier / "screen.json").relative_to(self.root)), '{"check_exit": "0"}\n')
+        again = self.run_tool("generate", "measurements", "kept/omega")
+        self.assertEqual(again.returncode, 0, again.stderr)
+        self.assertEqual((earlier / "tree/src/fern/client.py").read_text(encoding="utf-8"), "EARLIER = 1\n")
+        self.assertTrue((earlier / "screen.json").is_file())
+        self.assertEqual(self.find_entry(document, "python-enums").stdout.strip(), str(earlier))
+
+    def test_a_generation_the_store_key_cannot_describe_is_not_kept(self) -> None:
+        """Audiences shape Fern's output but are no part of the store's key, so a
+        generation under them publishes nothing; the regeneration itself is unchanged."""
+        self.handwritten(
+            "sigma", evidence=EVIDENCE.format("0" * 64).replace("\n[[covers]]", "audiences = ['public']\n\n[[covers]]")
+        )
+
+        result = self.run_tool("generate", "handwritten", "sigma")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(
+            (self.root / "docs/openapi-surface/handwritten/sigma/fern-expected/src/fern/audience_public.py").is_file()
+        )
+        self.assertFalse((self.root / "cache/crozier/certified-trees").exists())
 
     def test_a_flat_measurement_runs_tokenless_into_the_module_tree(self) -> None:
         self.write("docs/fern-measurements/clients/delta/openapi.yml", "openapi: 3.0.3\n")
