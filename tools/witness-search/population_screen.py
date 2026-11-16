@@ -17,7 +17,11 @@ The status rule ([`status_of`]):
   `unfetchable:<reason>`;
 * a `trigger` that is `partial:<condition>` or `absent` is `rejected-trigger`;
 * an `exact` trigger is `certified-screen-pending` under an `admissible:` licence
-  and `rejected-licence` under an `inadmissible:` one.
+  and `rejected-licence` under an `inadmissible:` one;
+* any read row of an `authored` candidate is `rejected-authored`: the census's
+  real-source eligibility rule (`tooling_resource_path`) finds it under a test,
+  sample, example, fixture or mock directory of its repository, so it is no
+  real-world witness whatever its licence and trigger read.
 
 Anything else (a read trigger beside bytes the licence could not read, an exact
 trigger whose licence was never read) is no row at all: the screen refuses to
@@ -63,7 +67,7 @@ import tempfile
 import time
 import urllib.parse
 from collections import Counter
-from collections.abc import Callable, Iterable, Iterator
+from collections.abc import Callable, Iterable, Iterator, Mapping
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -93,6 +97,10 @@ class Population(StrEnum):
     SOURCEGRAPH = "sourcegraph"
     ARCHIVE = "archive"
     HANDED_OFF = "handed-off"
+    # A candidate of any population above that the eligibility rule finds to be a
+    # tooling resource. Its document and source keep the form of the population it
+    # was read from (`origin`), so where it came from is still recorded.
+    AUTHORED = "authored"
 
 
 POPULATIONS = tuple(Population)
@@ -1052,6 +1060,7 @@ class StatusKind(StrEnum):
     PENDING = PENDING
     REJECTED_TRIGGER = "rejected-trigger"
     REJECTED_LICENCE = "rejected-licence"
+    REJECTED_AUTHORED = "rejected-authored"
     UNFETCHABLE = "unfetchable"
 
 
@@ -1098,8 +1107,17 @@ class Verdict(Generic[KindT]):
 STATUSES = tuple(f"{kind}:<reason>" if kind in REASONED else str(kind) for kind in StatusKind)
 
 
-def status_verdict(licence: Verdict[LicenceKind], trigger: Verdict[TriggerKind]) -> Verdict[StatusKind]:
+def status_verdict(
+    licence: Verdict[LicenceKind], trigger: Verdict[TriggerKind], population: str = ""
+) -> Verdict[StatusKind]:
     """The status the rule gives a licence and a trigger, or raise `ScreenError` for a pair no row may carry."""
+    read = _read_status(licence, trigger)
+    if population == Population.AUTHORED and read.kind is not StatusKind.UNFETCHABLE:
+        return Verdict(StatusKind.REJECTED_AUTHORED)
+    return read
+
+
+def _read_status(licence: Verdict[LicenceKind], trigger: Verdict[TriggerKind]) -> Verdict[StatusKind]:
     match trigger.kind, licence.kind:
         case TriggerKind.UNREAD, LicenceKind.UNREAD:
             return Verdict(StatusKind.UNFETCHABLE, trigger.reason)
@@ -1117,7 +1135,7 @@ def status_verdict(licence: Verdict[LicenceKind], trigger: Verdict[TriggerKind])
             )
 
 
-def status_of(licence: str, trigger_cell: str) -> str:
+def status_of(licence: str, trigger_cell: str, population: str = "") -> str:
     """The status cell the rule gives a row's licence and trigger cells, or raise `ScreenError` for a pair no row may carry."""
     parsed_trigger = Verdict.parse(trigger_cell, TriggerKind)
     if parsed_trigger is None:
@@ -1125,7 +1143,76 @@ def status_of(licence: str, trigger_cell: str) -> str:
     parsed_licence = Verdict.parse(licence, LicenceKind)
     if parsed_licence is None:
         raise ScreenError(f"licence {licence!r} is none of admissible:<grant>, inadmissible:<reason>, unread:<reason>")
-    return str(status_verdict(parsed_licence, parsed_trigger))
+    return str(status_verdict(parsed_licence, parsed_trigger, population))
+
+
+def origin(population: str, document: str, source: str) -> str:
+    """The population a candidate was read from: its own, or for an `authored` one, its document's form.
+
+    A registered row's source is `-`; a handed-off identity reads
+    `owner/repo:path@commit`; any other is a GitHub or Sourcegraph `owner/repo/path`.
+    """
+    if population != Population.AUTHORED:
+        return population
+    if source == "-":
+        return Population.REGISTERED
+    if HANDED_OFF_DOCUMENT.fullmatch(document):
+        return Population.HANDED_OFF
+    return Population.GITHUB
+
+
+HANDED_OFF_DOCUMENT = re.compile(r"[^/:]+/[^/:]+:(.+)@[0-9a-f]{40}")
+
+
+def repository_document_path(population: str, document: str) -> str | None:
+    """The path inside its repository of a GitHub, Sourcegraph or handed-off candidate, or None for another."""
+    if population in (Population.GITHUB, Population.SOURCEGRAPH):
+        parts = [part for part in document.split("/") if part]
+        return "/".join(parts[2:]) if len(parts) >= 3 else None
+    if population == Population.HANDED_OFF:
+        found = HANDED_OFF_DOCUMENT.fullmatch(document)
+        return found.group(1) if found else None
+    return None
+
+
+def tooling_resource(population: str, document: str, source: str, corpus_sources: Mapping[str, str]) -> bool:
+    """Whether the census's eligibility rule makes this candidate authored rather than a real-world witness.
+
+    A registered row is read at the publisher URL its `CORPUS.md` row pins; a
+    GitHub, Sourcegraph or handed-off one at its path inside its repository; an
+    APIs.guru archive copy is a registry's, not a repository's, and never is.
+    """
+    read_from = origin(population, document, source)
+    if read_from == Population.REGISTERED:
+        url = corpus_sources.get(document)
+        return url is not None and census().publisher_witness(url) is census().WitnessKind.TOOLING_RESOURCE
+    path = repository_document_path(read_from, document)
+    return path is not None and census().tooling_resource_path(path)
+
+
+@functools.lru_cache(maxsize=1)
+def corpus_publishers() -> dict[str, str]:
+    """Each committed corpus row's pinned publisher URL, as the census reads `CORPUS.md`."""
+    return census().manifest_sources(REPO / "tests" / "fixtures" / "CORPUS.md")
+
+
+def candidate_identity(population: str, document: str, source: str) -> tuple[str, str, str]:
+    """What names one candidate: its population and document, and for an `authored` one its source too.
+
+    An authored candidate keeps the document form it was read in, so one path at
+    two commits (two sources) is two candidates there as it was in its origin.
+    """
+    return population, document, source if population == Population.AUTHORED else ""
+
+
+def authored_failure(population: str, document: str, source: str) -> str | None:
+    """Why a candidate's `authored` marking disagrees with the eligibility rule, or None when it agrees."""
+    flagged = tooling_resource(population, document, source, corpus_publishers())
+    if flagged and population != Population.AUTHORED:
+        return f"{population} document {document!r} is a tooling resource by its path: the eligibility rule files it `authored`"
+    if population == Population.AUTHORED and not flagged:
+        return f"authored document {document!r} is no tooling resource by its path; file it under the population it was read from"
+    return None
 
 
 def source_failure(population: str, source: str) -> str | None:
@@ -1187,10 +1274,12 @@ def row_failures(row: ScreenRow) -> list[str]:
         wrong.append(f"key {row.key!r} is none of the {len(KEYS)} combination keys")
     if row.population not in POPULATIONS:
         wrong.append(f"population {row.population!r} is none of {', '.join(POPULATIONS)}")
+    read_from = origin(row.population, row.document, row.source)
     for failure in (
-        document_failure(row.population, row.document),
-        source_failure(row.population, row.source) if row.population in POPULATIONS else None,
-        identity_failure(row.population, row.document, row.source),
+        document_failure(read_from, row.document),
+        source_failure(read_from, row.source) if row.population in POPULATIONS else None,
+        identity_failure(read_from, row.document, row.source),
+        authored_failure(row.population, row.document, row.source) if row.population in POPULATIONS else None,
     ):
         if failure:
             wrong.append(failure)
@@ -1208,7 +1297,7 @@ def row_failures(row: ScreenRow) -> list[str]:
         wrong.append(f"trigger {row.trigger!r} names no condition of {row.key}'s screen")
     if licence is not None and trigger is not None:
         try:
-            expected = status_verdict(licence, trigger)
+            expected = status_verdict(licence, trigger, row.population)
         except ScreenError as error:
             wrong.append(str(error))
         else:
@@ -1247,7 +1336,7 @@ def read_screen(path: Path = TABLE) -> list[ScreenRow]:
     if not lines or tuple(lines[0].split("\t")) != COLUMNS:
         raise ScreenError(f"{path}: its header is not {'/'.join(COLUMNS)}; regenerate it with `screen`")
     rows: list[ScreenRow] = []
-    seen: dict[tuple[str, str, str], int] = {}
+    seen: dict[tuple[str, str, str, str], int] = {}
     for number, line in enumerate(lines[1:], 2):
         cells = line.split("\t")
         if len(cells) != len(COLUMNS) or "\r" in line:
@@ -1258,9 +1347,11 @@ def read_screen(path: Path = TABLE) -> list[ScreenRow]:
         wrong = row_failures(row)
         if wrong:
             raise ScreenError(f"{path}:{number}: " + "; ".join(wrong))
-        identity = (row.key, row.population, row.document)
+        identity = (row.key, *candidate_identity(row.population, row.document, row.source))
         if identity in seen:
-            raise ScreenError(f"{path}:{number}: duplicates line {seen[identity]}'s ({', '.join(identity)})")
+            raise ScreenError(
+                f"{path}:{number}: duplicates line {seen[identity]}'s ({', '.join(filter(None, identity))})"
+            )
         seen[identity] = number
         rows.append(row)
     return rows
@@ -1272,7 +1363,7 @@ def pending_counts(rows: Iterable[ScreenRow]) -> Counter[str]:
 
 
 def render(rows: Iterable[ScreenRow]) -> str:
-    ordered = sorted(rows, key=lambda row: (row.key, POPULATIONS.index(row.population), row.document))
+    ordered = sorted(rows, key=lambda row: (row.key, POPULATIONS.index(row.population), row.document, row.source))
     return "\t".join(COLUMNS) + "\n" + "".join("\t".join(row) + "\n" for row in ordered)
 
 
@@ -1372,7 +1463,7 @@ MANIFEST_COLUMNS = Entry._fields
 
 
 def read_manifest(path: Path) -> list[Entry]:
-    seen: dict[tuple[str, str], int] = {}
+    seen: dict[tuple[str, str, str], int] = {}
     with path.open(encoding="utf-8", newline="") as handle:
         reader = csv.reader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
         header = next(reader, None)
@@ -1386,11 +1477,12 @@ def read_manifest(path: Path) -> list[Entry]:
                 raise ScreenError(f"{path}:{number}: population {cells[0]!r} is none of {', '.join(POPULATIONS)}")
             entry = Entry(Population(cells[0]), *cells[1:])
             wrong = entry_failures(entry)
-            if (entry.population, entry.document) in seen:
-                wrong.append(f"duplicates line {seen[(entry.population, entry.document)]}'s candidate")
+            candidate = candidate_identity(entry.population, entry.document, entry.source)
+            if candidate in seen:
+                wrong.append(f"duplicates line {seen[candidate]}'s candidate")
             if wrong:
                 raise ScreenError(f"{path}:{number}: " + "; ".join(wrong))
-            seen[(entry.population, entry.document)] = number
+            seen[candidate] = number
             entries.append(entry)
     return entries
 
@@ -1399,12 +1491,14 @@ def entry_failures(entry: Entry) -> list[str]:
     """Why one manifest row is not a candidate the screen can read; empty when it is."""
     if entry.population not in POPULATIONS:
         return [f"population {entry.population!r} is none of {', '.join(POPULATIONS)}"]
+    read_from = origin(entry.population, entry.document, entry.source)
     wrong = [
         failure
         for failure in (
-            document_failure(entry.population, entry.document),
-            source_failure(entry.population, entry.source),
-            identity_failure(entry.population, entry.document, entry.source),
+            document_failure(read_from, entry.document),
+            source_failure(read_from, entry.source),
+            identity_failure(read_from, entry.document, entry.source),
+            authored_failure(entry.population, entry.document, entry.source),
         )
         if failure
     ]
@@ -1436,7 +1530,7 @@ def entry_failures(entry: Entry) -> list[str]:
 
 
 def write_manifest(path: Path, entries: Iterable[Entry]) -> None:
-    ordered = sorted(set(entries), key=lambda e: (POPULATIONS.index(e.population), e.document, e.sha256))
+    ordered = sorted(set(entries), key=lambda e: (POPULATIONS.index(e.population), e.document, e.sha256, e.source))
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "\t".join(MANIFEST_COLUMNS) + "\n" + "".join("\t".join(entry) + "\n" for entry in ordered),
@@ -1626,7 +1720,7 @@ def parse(data: bytes, scratch: Path) -> Any:
 
 
 def entry_bytes(entry: Entry, root: Path, store_root: Path) -> bytes | None:
-    if entry.population == "registered":
+    if origin(entry.population, entry.document, entry.source) == Population.REGISTERED:
         return registered_bytes(entry.document, root)
     return cached(entry.sha256, store_root) if SHA.fullmatch(entry.sha256) else None
 
@@ -1708,7 +1802,7 @@ def screen_entry(
             entry.sha256,
             licence,
             verdict_cell,
-            status_of(licence, verdict_cell),
+            status_of(licence, verdict_cell, entry.population),
         )
         wrong = row_failures(row)
         if wrong:
@@ -1822,9 +1916,9 @@ def run_screen(
                 fetch_file=fetch_file,
                 discover=discover,
             )
-    seen: set[tuple[str, str, str]] = set()
+    seen: set[tuple[str, str, str, str]] = set()
     for row in rows:
-        identity = (row.key, row.population, row.document)
+        identity = (row.key, *candidate_identity(row.population, row.document, row.source))
         if identity in seen:
             raise ScreenError(f"two manifest entries screen {identity}: name each candidate once")
         seen.add(identity)

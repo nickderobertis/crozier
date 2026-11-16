@@ -696,7 +696,30 @@ def manifest(tree: Tree, args: argparse.Namespace) -> list[SCREEN.Entry]:
             f"the earlier named census lists {len(owed - rowed)} (population, document, key) candidates the "
             f"manifest gives no row (first: {sorted(owed - rowed)[0]}); each owes a screened or unfetchable row"
         )
-    return entries
+    return authored(entries)
+
+
+def authored(entries: list[SCREEN.Entry]) -> list[SCREEN.Entry]:
+    """`entries`, each tooling resource the census's eligibility rule names filed `authored`.
+
+    Such a candidate is no real-world witness, so no combination proof may draw
+    one from its population; its document and source keep the form it was read in.
+    """
+    publishers = SCREEN.corpus_publishers()
+    kept: list[SCREEN.Entry] = []
+    merged: dict[tuple[str, str, str], SCREEN.Entry] = {}
+    for entry in entries:
+        if not SCREEN.tooling_resource(entry.population, entry.document, entry.source, publishers):
+            kept.append(entry)
+            continue
+        entry = entry._replace(population=SCREEN.Population.AUTHORED)
+        identity = SCREEN.candidate_identity(entry.population, entry.document, entry.source)
+        if identity in merged:
+            # One pinned file both code-search lanes found: one candidate, owing every key either lane listed.
+            keys = sorted(set(merged[identity].forced()) | set(entry.forced()))
+            entry = merged[identity]._replace(keys=";".join(keys) or "-")
+        merged[identity] = entry
+    return kept + list(merged.values())
 
 
 def by_digest(entries: list[SCREEN.Entry], census: NamedCensus, plan: list[SCREEN.Identity]) -> list[SCREEN.Entry]:

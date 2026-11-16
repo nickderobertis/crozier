@@ -974,6 +974,41 @@ class ScreenHarness(unittest.TestCase):
         return done, output
 
 
+class AuthoredCandidateTests(ScreenHarness):
+    """Issue #835: a tooling resource is screened as authored evidence, never as a real-world candidate."""
+
+    def tooling_entry(self, population: str, data: bytes, keys: list[str]) -> list[str]:
+        SCREEN.store(data, self.store)
+        path = "core/src/test/resources/openapi.json"
+        return [
+            population,
+            f"acme/gateway/{path}",
+            f"https://raw.githubusercontent.com/acme/gateway/{COMMIT}/{path}",
+            hashlib.sha256(data).hexdigest(),
+            f"repository:acme/gateway@{COMMIT}",
+            ";".join(keys),
+            "-",
+        ]
+
+    def test_a_tooling_resource_is_authored_and_never_pending(self) -> None:
+        name, body, expected = next(case for case in CASES if "exact" in case[2].values())
+        exact = sorted(key for key, verdict in expected.items() if verdict == "exact")
+        data = json.dumps(body).encode()
+        refused, _ = self.screen([self.tooling_entry("github", data, exact)], "--no-discover")
+        self.assertEqual(1, refused.returncode, refused.stdout)
+        self.assertIn("is a tooling resource by its path: the eligibility rule files it `authored`", refused.stderr)
+        plain = self.entry(name, data, exact)
+        misfiled, _ = self.screen([["authored", *plain[1:]]], "--no-discover")
+        self.assertEqual(1, misfiled.returncode, misfiled.stdout)
+        self.assertIn("is no tooling resource by its path", misfiled.stderr)
+        done, output = self.screen([self.tooling_entry("authored", data, exact)], "--no-discover")
+        self.assertEqual(0, done.returncode, done.stderr)
+        rows = SCREEN.read_screen(output)
+        self.assertEqual(exact, sorted(row.key for row in rows))
+        for row in rows:
+            self.assertEqual(("authored", "exact", "rejected-authored"), (row.population, row.trigger, row.status))
+
+
 class TriggerConditionTests(ScreenHarness):
     def test_each_condition_met_and_missed_is_recorded_as_the_trigger_screen_reads_it(self) -> None:
         rows = [self.entry(name, json.dumps(body).encode(), sorted(expected)) for name, body, expected in CASES]
@@ -1953,8 +1988,13 @@ class BuildTests(BuildHarness):
             "1",
         )
         SCREEN.store(self.registered, self.store)
+        # A hit under a publisher's test resources is a tooling resource: the eligibility rule files it `authored`.
+        tooling = ("github", "acme/gateway/src/test/resources/openapi.json", "acme/gateway", "e" * 40)
+        tooling += ("src/test/resources/openapi.json", hashlib.sha256(blobbed).hexdigest(), "", "2")
         hits.write_text(
-            "\t".join(SCREEN.IDENTITY_COLUMNS) + "\n" + "\t".join(hit) + "\n" + "\t".join(mirror) + "\n",
+            "\t".join(SCREEN.IDENTITY_COLUMNS)
+            + "\n"
+            + "".join("\t".join(identity) + "\n" for identity in (hit, mirror, tooling)),
             encoding="utf-8",
             newline="\n",
         )
@@ -2014,6 +2054,11 @@ class BuildTests(BuildHarness):
                 ("github", "acme/pointers/openapi.json"): (f"repository:acme/pointers@{'2' * 40}", "-", "-"),
                 ("github", "acme/blobbed/openapi.json"): (f"repository:acme/blobbed@{'b' * 40}", "-", "-"),
                 ("github", "acme/mirror/openapi.json"): (f"aggregation:acme/mirror@{'d' * 40}", "-", "-"),
+                ("authored", "acme/gateway/src/test/resources/openapi.json"): (
+                    f"repository:acme/gateway@{'e' * 40}",
+                    "-",
+                    "-",
+                ),
             },
             got,
         )
@@ -2898,17 +2943,23 @@ class CommittedTableTests(unittest.TestCase):
 
     def test_the_committed_table_reads_whole_through_the_reader(self) -> None:
         self.assertEqual(set(SCREEN.KEYS), {row.key for row in self.rows})
-        self.assertEqual(len(self.rows), len({(row.key, row.population, row.document) for row in self.rows}))
+        identities = {
+            (row.key, *SCREEN.candidate_identity(row.population, row.document, row.source)) for row in self.rows
+        }
+        self.assertEqual(len(self.rows), len(identities))
 
     def test_every_candidate_the_earlier_named_censuses_list_has_a_row(self) -> None:
         build = load("witness_populations_build_under_test", REPO / "tools/witness-search/witness-populations-build.py")
         have = {(row.key, row.population, row.document) for row in self.rows}
         census = build.named_census(build.Tree(REPO))
         self.assertGreaterEqual(sum(len(keys) for keys in build.earlier_rows(build.Tree(REPO)).values()), 749)
+        publishers = SCREEN.corpus_publishers()
         for (population, document), keys in census.listed.items():
+            # A tooling resource is listed under the population it was found in, and filed `authored`.
+            filed = "authored" if SCREEN.tooling_resource(population, document, "", publishers) else population
             for key in keys:
                 with self.subTest(key=key, population=population, document=document):
-                    self.assertIn((key, population, document), have)
+                    self.assertIn((key, filed, document), have)
         # A candidate named by digest alone owes a row of the bytes held under it, of the identity planned at
         # it, or of its own `sha256:<hex>`.
         by_digest: dict[str, set[tuple[str, str, str]]] = {}
@@ -2937,10 +2988,13 @@ class CommittedTableTests(unittest.TestCase):
         self.assertEqual(0, done.returncode, done.stderr)
 
     def test_every_row_names_a_manifest_candidate_with_its_digest(self) -> None:
-        entries = {(e.population, e.document): e for e in SCREEN.read_manifest(SCREEN.POPULATION)}
+        entries = {
+            SCREEN.candidate_identity(e.population, e.document, e.source): e
+            for e in SCREEN.read_manifest(SCREEN.POPULATION)
+        }
         for row in self.rows:
             with self.subTest(row=row[:3]):
-                entry = entries[(row.population, row.document)]
+                entry = entries[SCREEN.candidate_identity(row.population, row.document, row.source)]
                 self.assertEqual((entry.source, entry.sha256), (row.source, row.sha256))
 
     def test_the_registered_rows_are_reproduced_from_the_bytes_in_the_tree(self) -> None:
